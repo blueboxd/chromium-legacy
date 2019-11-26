@@ -128,8 +128,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
   base::Optional<double> UnlimitedCurrentTimeInternal() const;
 
+  // https://drafts.csswg.org/web-animations/#play-states
   static const char* PlayStateString(AnimationPlayState);
-  String playState() const { return PlayStateString(animation_play_state_); }
+  AnimationPlayState CalculateAnimationPlayState() const;
+  String playState() const {
+    return PlayStateString(CalculateAnimationPlayState());
+  }
 
   bool pending() const;
 
@@ -144,22 +148,13 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   ScriptPromise ready(ScriptState*);
 
   bool Paused() const {
-    return GetPlayState() == kPaused && !is_paused_for_testing_;
+    return CalculateAnimationPlayState() == kPaused && !is_paused_for_testing_;
   }
 
   bool Playing() const override {
-    return GetPlayState() == kRunning && !Limited() && !is_paused_for_testing_;
+    return CalculateAnimationPlayState() == kRunning && !Limited() &&
+           !is_paused_for_testing_;
   }
-
-  // Indicates if the animation is out of sync with the compositor. A change to
-  // the play state (running/paused) requires synchronization with the
-  // compositor.
-  bool NeedsCompositorTimeSync() const {
-    // TODO(crbug.com/958433): Eliminate need for pending play state.
-    return internal_play_state_ == kPending;
-  }
-
-  AnimationPlayState GetPlayState() const;
 
   bool Limited() const { return Limited(CurrentTimeInternal()); }
   bool FinishedInternal() const { return finished_; }
@@ -279,12 +274,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // similar purpose to micro-tasks in the spec. This additional state is for
   // internal flow control only and should not be reported via
   // animation.playState.
-  // TODO(crbug.com/958433): Cleanup implementation to better align with the
-  // spec.
-  AnimationPlayState CalculatePlayState() const;
-  // Spec compliant variant of play state calculation that is reported via
-  // animation.playState.
-  AnimationPlayState CalculateAnimationPlayState() const;
+  // TODO(crbug.com/958433): Deprecate this method in favor of the
+  // spec-compliant GetPlayState().
+  AnimationPlayState CalculateExtendedPlayState() const;
 
   base::Optional<double> CalculateStartTime(double current_time) const;
   base::Optional<double> CalculateCurrentTime() const;
@@ -353,8 +345,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // additional pending state that is not part of the spec by expected by dev
   // tools.
   AnimationPlayState reported_play_state_;
-  // Web exposed play state, which does not have pending state.
-  AnimationPlayState animation_play_state_;
   double playback_rate_;
   // The pending playback rate is not currently in effect. It typically takes
   // effect when running a scheduled task in response to the animation being

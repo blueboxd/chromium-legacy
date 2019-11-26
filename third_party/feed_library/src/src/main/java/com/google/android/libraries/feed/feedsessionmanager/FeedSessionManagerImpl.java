@@ -92,59 +92,59 @@ public final class FeedSessionManagerImpl
 
     // For the Shared State we will always cache them in the Session Manager
     // Accessed on main thread, updated on Executor task
-    private final InternerWithStats<StreamSharedState> sharedStateInterner =
+    private final InternerWithStats<StreamSharedState> mSharedStateInterner =
             new InternerWithStats<>(new StreamSharedStateInterner());
-    private final Map<String, StreamSharedState> sharedStateCache =
-            new InternedMap<>(new HashMap<>(), sharedStateInterner);
+    private final Map<String, StreamSharedState> mSharedStateCache =
+            new InternedMap<>(new HashMap<>(), mSharedStateInterner);
 
     // All writes are done on background threads, there are accesses on the main thread.  Leaving
     // the lock back accessibleContentSupplier may eventually run on a background task and not
     // on the executor thread.
-    private final SessionCache sessionCache;
+    private final SessionCache mSessionCache;
 
     // All access to the content cache happens on the executor thread so there is no need to
     // synchronize access.
-    private final ContentCache contentCache;
+    private final ContentCache mContentCache;
 
     @VisibleForTesting
-    final AtomicBoolean initialized = new AtomicBoolean(false);
+    final AtomicBoolean mInitialized = new AtomicBoolean(false);
 
-    private final Object lock = new Object();
+    private final Object mLock = new Object();
 
     // Keep track of sessions being created which haven't been added to the SessionCache.
     // This is accessed on the main thread and the background thread.
     @GuardedBy("lock")
-    private final List<InitializableSession> sessionsUnderConstruction = new ArrayList<>();
+    private final List<InitializableSession> mSessionsUnderConstruction = new ArrayList<>();
 
     // This captures the NO_CARDS_ERROR when a request fails. The request fails in one task and this
     // is sent to the ModelProvider in the populateSessionTask.
-    /*@Nullable*/ private ModelError noCardsError;
+    /*@Nullable*/ private ModelError mNoCardsError;
 
-    private final SessionFactory sessionFactory;
-    private final SessionManagerMutation sessionManagerMutation;
-    private final Store store;
-    private final ThreadUtils threadUtils;
-    private final TimingUtils timingUtils;
-    private final ProtocolAdapter protocolAdapter;
-    private final FeedRequestManager requestManager;
-    private final ActionUploadRequestManager actionUploadRequestManager;
-    private final SchedulerApi schedulerApi;
-    private final TaskQueue taskQueue;
-    private final Clock clock;
-    private final Configuration configuration;
-    private final MainThreadRunner mainThreadRunner;
-    private final BasicLoggingApi basicLoggingApi;
-    private final long sessionPopulationTimeoutMs;
-    private final boolean uploadingActionsEnabled;
+    private final SessionFactory mSessionFactory;
+    private final SessionManagerMutation mSessionManagerMutation;
+    private final Store mStore;
+    private final ThreadUtils mThreadUtils;
+    private final TimingUtils mTimingUtils;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final FeedRequestManager mRequestManager;
+    private final ActionUploadRequestManager mActionUploadRequestManager;
+    private final SchedulerApi mSchedulerApi;
+    private final TaskQueue mTaskQueue;
+    private final Clock mClock;
+    private final Configuration mConfiguration;
+    private final MainThreadRunner mMainThreadRunner;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final long mSessionPopulationTimeoutMs;
+    private final boolean mUploadingActionsEnabled;
 
     @VisibleForTesting
-    final Set<SessionMutationTracker> outstandingMutations = new HashSet<>();
+    final Set<SessionMutationTracker> mOutstandingMutations = new HashSet<>();
 
     // operation counts for the dumper
-    private int newSessionCount;
-    private int existingSessionCount;
-    private int handleTokenCount;
-    private Listener knownContentListener;
+    private int mNewSessionCount;
+    private int mExistingSessionCount;
+    private int mHandleTokenCount;
+    private Listener mKnownContentListener;
 
     @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
     public FeedSessionManagerImpl(TaskQueue taskQueue, SessionFactory sessionFactory,
@@ -156,26 +156,26 @@ public final class FeedSessionManagerImpl
             Configuration configuration, Clock clock,
             FeedObservable<FeedLifecycleListener> lifecycleListenerObservable,
             MainThreadRunner mainThreadRunner, BasicLoggingApi basicLoggingApi) {
-        this.taskQueue = taskQueue;
-        this.sessionFactory = sessionFactory;
-        this.sessionCache = sessionCache;
-        this.sessionManagerMutation = sessionManagerMutation;
-        this.contentCache = contentCache;
+        this.mTaskQueue = taskQueue;
+        this.mSessionFactory = sessionFactory;
+        this.mSessionCache = sessionCache;
+        this.mSessionManagerMutation = sessionManagerMutation;
+        this.mContentCache = contentCache;
 
-        this.store = store;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.protocolAdapter = protocolAdapter;
-        this.requestManager = feedRequestManager;
-        this.actionUploadRequestManager = actionUploadRequestManager;
-        this.schedulerApi = schedulerApi;
-        this.clock = clock;
-        this.configuration = configuration;
-        this.mainThreadRunner = mainThreadRunner;
-        this.basicLoggingApi = basicLoggingApi;
-        uploadingActionsEnabled =
+        this.mStore = store;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mRequestManager = feedRequestManager;
+        this.mActionUploadRequestManager = actionUploadRequestManager;
+        this.mSchedulerApi = schedulerApi;
+        this.mClock = clock;
+        this.mConfiguration = configuration;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mBasicLoggingApi = basicLoggingApi;
+        mUploadingActionsEnabled =
                 configuration.getValueOrDefault(ConfigKey.UNDOABLE_ACTIONS_ENABLED, false);
-        sessionPopulationTimeoutMs =
+        mSessionPopulationTimeoutMs =
                 configuration.getValueOrDefault(ConfigKey.TIMEOUT_TIMEOUT_MS, TIMEOUT_TIMEOUT_MS);
         lifecycleListenerObservable.registerObserver(this);
         Logger.i(TAG, "FeedSessionManagerImpl has been created");
@@ -188,35 +188,35 @@ public final class FeedSessionManagerImpl
      * an executor task.
      */
     public void initialize() {
-        boolean init = initialized.getAndSet(true);
+        boolean init = mInitialized.getAndSet(true);
         if (init) {
             Logger.w(TAG, "FeedSessionManagerImpl has previously been initialized");
             return;
         }
-        store.registerObserver(this);
-        taskQueue.initialize(this::initializationTask);
+        mStore.registerObserver(this);
+        mTaskQueue.initialize(this::initializationTask);
     }
 
     // Task which initializes the Session Manager.  This must be the first task run on the
     // Session Manager thread so it's complete before we create any sessions.
     private void initializationTask() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         Thread currentThread = Thread.currentThread();
         currentThread.setName("JardinExecutor");
-        timingUtils.pinThread(currentThread, "JardinExecutor");
+        mTimingUtils.pinThread(currentThread, "JardinExecutor");
 
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         // Initialize the Shared States cached here.
-        ElapsedTimeTracker sharedStateTimeTracker = timingUtils.getElapsedTimeTracker(TAG);
-        Result<List<StreamSharedState>> sharedStatesResult = store.getSharedStates();
+        ElapsedTimeTracker sharedStateTimeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        Result<List<StreamSharedState>> sharedStatesResult = mStore.getSharedStates();
         if (sharedStatesResult.isSuccessful()) {
             for (StreamSharedState sharedState : sharedStatesResult.getValue()) {
-                sharedStateCache.put(sharedState.getContentId(), sharedState);
+                mSharedStateCache.put(sharedState.getContentId(), sharedState);
             }
         } else {
             // without shared states we need to switch to ephemeral mode
             switchToEphemeralMode("SharedStates failed to load, no shared states are loaded.");
-            taskQueue.reset();
+            mTaskQueue.reset();
             sharedStateTimeTracker.stop("", "sharedStateTimeTracker", "error", "store error");
             timeTracker.stop("task", "Initialization", "error", "switchToEphemeralMode");
             return;
@@ -224,7 +224,7 @@ public final class FeedSessionManagerImpl
         sharedStateTimeTracker.stop("", "sharedStateTimeTracker");
 
         // create the head session from the data in the Store
-        if (!sessionCache.initialize()) {
+        if (!mSessionCache.initialize()) {
             // we failed to initialize the sessionCache, so switch to ephemeral mode.
             switchToEphemeralMode("unable to initialize the sessionCache");
             timeTracker.stop("task", "Initialization", "error", "switchToEphemeralMode");
@@ -236,20 +236,20 @@ public final class FeedSessionManagerImpl
     @Override
     public void getNewSession(ModelProvider modelProvider,
             /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
-        threadUtils.checkMainThread();
-        if (!initialized.get()) {
+        mThreadUtils.checkMainThread();
+        if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, getNewSession");
             initialize();
         }
-        InitializableSession session = sessionFactory.getSession();
+        InitializableSession session = mSessionFactory.getSession();
         session.bindModelProvider(modelProvider, viewDepthProvider);
-        synchronized (lock) {
-            sessionsUnderConstruction.add(session);
+        synchronized (mLock) {
+            mSessionsUnderConstruction.add(session);
         }
 
-        if (!sessionCache.isHeadInitialized()) {
+        if (!mSessionCache.isHeadInitialized()) {
             Logger.i(TAG, "Delaying populateSession until initialization is finished");
-            taskQueue.execute(Task.GET_NEW_SESSION, TaskType.IMMEDIATE,
+            mTaskQueue.execute(Task.GET_NEW_SESSION, TaskType.IMMEDIATE,
                     () -> populateSession(session, uiContext));
         } else {
             populateSession(session, uiContext);
@@ -262,15 +262,15 @@ public final class FeedSessionManagerImpl
     private void populateSession(InitializableSession session, UiContext uiContext) {
         // Create SessionState and call SchedulerApi to determine what the session-creation
         // experience should be.
-        SessionState sessionState = new SessionState(!sessionCache.getHead().isHeadEmpty(),
-                sessionCache.getHeadLastAddedTimeMillis(), taskQueue.isMakingRequest());
+        SessionState sessionState = new SessionState(!mSessionCache.getHead().isHeadEmpty(),
+                mSessionCache.getHeadLastAddedTimeMillis(), mTaskQueue.isMakingRequest());
         Logger.i(TAG,
                 "shouldSessionRequestData; hasContent(%b), contentCreationTime(%d),"
                         + " outstandingRequest(%b)",
                 sessionState.hasContent, sessionState.contentCreationDateTimeMs,
                 sessionState.hasOutstandingRequest);
         @RequestBehavior
-        int behavior = schedulerApi.shouldSessionRequestData(sessionState);
+        int behavior = mSchedulerApi.shouldSessionRequestData(sessionState);
 
         // Based on sessionState and behavior, determine if FeedSessionManager should start a
         // request, append an ongoing request to this session, or include a timeout.
@@ -290,10 +290,10 @@ public final class FeedSessionManagerImpl
         if (shouldStartRequest && behavior != RequestBehavior.REQUEST_WITH_CONTENT) {
             triggerRefresh(/* sessionId= */ null, RequestReason.OPEN_WITHOUT_CONTENT, uiContext);
         }
-        taskQueue.execute(Task.POPULATE_NEW_SESSION, requestBehaviorToTaskType(behavior),
+        mTaskQueue.execute(Task.POPULATE_NEW_SESSION, requestBehaviorToTaskType(behavior),
                 ()
                         -> populateSessionTask(session, shouldAppendOutstandingRequest, uiContext),
-                timeoutTask, sessionPopulationTimeoutMs);
+                timeoutTask, mSessionPopulationTimeoutMs);
         if (shouldStartRequest && behavior == RequestBehavior.REQUEST_WITH_CONTENT) {
             triggerRefresh(/* sessionId= */ null, RequestReason.OPEN_WITH_CONTENT, uiContext);
         }
@@ -301,10 +301,10 @@ public final class FeedSessionManagerImpl
 
     private void populateSessionTask(InitializableSession session,
             boolean shouldAppendOutstandingRequest, UiContext uiContext) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        if (noCardsError != null && sessionCache.getHead().isHeadEmpty()) {
+        if (mNoCardsError != null && mSessionCache.getHead().isHeadEmpty()) {
             ModelProvider modelProvider = session.getModelProvider();
             if (modelProvider == null) {
                 Logger.e(TAG, "populateSessionTask - noCardsError, modelProvider not found");
@@ -313,7 +313,7 @@ public final class FeedSessionManagerImpl
             }
             Logger.w(TAG, "populateSessionTask - noCardsError %s", modelProvider);
 
-            Result<String> streamSessionResult = store.createNewSession();
+            Result<String> streamSessionResult = mStore.createNewSession();
             if (!streamSessionResult.isSuccessful()) {
                 switchToEphemeralMode("Unable to create a new session during noCardsError failure");
                 timeTracker.stop("task", "Create/Populate New Session", "Failure", "noCardsError");
@@ -321,13 +321,13 @@ public final class FeedSessionManagerImpl
             }
 
             // properly track the session so that it's empty.
-            modelProvider.raiseError(Validators.checkNotNull(noCardsError));
+            modelProvider.raiseError(Validators.checkNotNull(mNoCardsError));
             String sessionId = streamSessionResult.getValue();
             session.setSessionId(sessionId);
-            sessionCache.putAttached(sessionId, clock.currentTimeMillis(),
-                    sessionCache.getHead().getSchemaVersion(), session);
-            synchronized (lock) {
-                sessionsUnderConstruction.remove(session);
+            mSessionCache.putAttached(sessionId, mClock.currentTimeMillis(),
+                    mSessionCache.getHead().getSchemaVersion(), session);
+            synchronized (mLock) {
+                mSessionsUnderConstruction.remove(session);
             }
 
             // Set the session id on the ModelProvider.
@@ -336,7 +336,7 @@ public final class FeedSessionManagerImpl
             return;
         }
 
-        Result<String> streamSessionResult = store.createNewSession();
+        Result<String> streamSessionResult = mStore.createNewSession();
         if (!streamSessionResult.isSuccessful()) {
             switchToEphemeralMode("Unable to create a new session, createNewSession failed");
             timeTracker.stop("task", "Create/Populate New Session", "Failure", "createNewSession");
@@ -344,7 +344,8 @@ public final class FeedSessionManagerImpl
         }
         String sessionId = streamSessionResult.getValue();
         session.setSessionId(sessionId);
-        Result<List<StreamStructure>> streamStructuresResult = store.getStreamStructures(sessionId);
+        Result<List<StreamStructure>> streamStructuresResult =
+                mStore.getStreamStructures(sessionId);
         if (!streamStructuresResult.isSuccessful()) {
             switchToEphemeralMode("Unable to create a new session, getStreamStructures failed");
             timeTracker.stop(
@@ -353,16 +354,16 @@ public final class FeedSessionManagerImpl
         }
 
         boolean cachedBindings;
-        cachedBindings = contentCache.size() > 0;
-        long creationTimeMillis = clock.currentTimeMillis();
+        cachedBindings = mContentCache.size() > 0;
+        long creationTimeMillis = mClock.currentTimeMillis();
         session.populateModelProvider(streamStructuresResult.getValue(), cachedBindings,
                 shouldAppendOutstandingRequest, uiContext);
-        sessionCache.putAttached(
-                sessionId, creationTimeMillis, sessionCache.getHead().getSchemaVersion(), session);
-        synchronized (lock) {
-            sessionsUnderConstruction.remove(session);
+        mSessionCache.putAttached(
+                sessionId, creationTimeMillis, mSessionCache.getHead().getSchemaVersion(), session);
+        synchronized (mLock) {
+            mSessionsUnderConstruction.remove(session);
         }
-        newSessionCount++;
+        mNewSessionCount++;
         Logger.i(TAG, "Populate new session: %s, creation time %s", session.getSessionId(),
                 StringFormattingUtils.formatLogDate(creationTimeMillis));
         timeTracker.stop("task", "Create/Populate New Session");
@@ -371,19 +372,19 @@ public final class FeedSessionManagerImpl
     @VisibleForTesting
     void switchToEphemeralMode(String message) {
         Logger.e(TAG, message);
-        store.switchToEphemeralMode();
+        mStore.switchToEphemeralMode();
     }
 
     @VisibleForTesting
     void modelErrorObserver(/*@Nullable*/ Session session, ModelError error) {
         if (session == null && error.getErrorType() == ErrorType.NO_CARDS_ERROR) {
             Logger.e(TAG, "No Cards Found on TriggerRefresh, setting noCardsError");
-            noCardsError = error;
+            mNoCardsError = error;
             // queue a clear which will run after all currently delayed tasks.  This allows delayed
             // session population tasks to inform the ModelProvider of errors then we clear the
             // error state.
-            taskQueue.execute(
-                    Task.NO_CARD_ERROR_CLEAR, TaskType.USER_FACING, () -> noCardsError = null);
+            mTaskQueue.execute(
+                    Task.NO_CARD_ERROR_CLEAR, TaskType.USER_FACING, () -> mNoCardsError = null);
             return;
         } else if (session != null && error.getErrorType() == ErrorType.PAGINATION_ERROR) {
             Logger.e(TAG, "Pagination Error found");
@@ -402,23 +403,23 @@ public final class FeedSessionManagerImpl
     @Override
     public void getExistingSession(
             String sessionId, ModelProvider modelProvider, UiContext uiContext) {
-        threadUtils.checkMainThread();
-        if (!initialized.get()) {
+        mThreadUtils.checkMainThread();
+        if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, getExistingSession");
             initialize();
         }
-        InitializableSession session = sessionFactory.getSession();
+        InitializableSession session = mSessionFactory.getSession();
         session.bindModelProvider(modelProvider, null);
 
         // Task which populates the newly created session.  This must be done
         // on the Session Manager thread so it atomic with the mutations.
-        taskQueue.execute(Task.GET_EXISTING_SESSION, TaskType.IMMEDIATE, () -> {
-            threadUtils.checkNotMainThread();
-            if (!sessionCache.hasSession(sessionId)) {
+        mTaskQueue.execute(Task.GET_EXISTING_SESSION, TaskType.IMMEDIATE, () -> {
+            mThreadUtils.checkNotMainThread();
+            if (!mSessionCache.hasSession(sessionId)) {
                 modelProvider.invalidate(uiContext);
                 return;
             }
-            Session existingSession = sessionCache.getAttached(sessionId);
+            Session existingSession = mSessionCache.getAttached(sessionId);
             if (existingSession != null && !existingSession.getContentInSession().isEmpty()) {
                 ModelProvider existingModelProvider = existingSession.getModelProvider();
                 if (existingModelProvider != null) {
@@ -427,13 +428,13 @@ public final class FeedSessionManagerImpl
             }
 
             Result<List<StreamStructure>> streamStructuresResult =
-                    store.getStreamStructures(sessionId);
+                    mStore.getStreamStructures(sessionId);
             if (streamStructuresResult.isSuccessful()) {
                 session.setSessionId(sessionId);
                 session.populateModelProvider(
                         streamStructuresResult.getValue(), false, false, uiContext);
-                sessionCache.putAttachedAndRetainMetadata(sessionId, session);
-                existingSessionCount++;
+                mSessionCache.putAttachedAndRetainMetadata(sessionId, session);
+                mExistingSessionCount++;
             } else {
                 Logger.e(TAG, "unable to get stream structure for existing session %s", sessionId);
                 switchToEphemeralMode("unable to get stream structure for existing session");
@@ -443,45 +444,45 @@ public final class FeedSessionManagerImpl
 
     @Override
     public void invalidateSession(String sessionId) {
-        if (threadUtils.isMainThread()) {
-            taskQueue.execute(Task.INVALIDATE_SESSION, TaskType.USER_FACING,
-                    () -> sessionCache.removeAttached(sessionId));
+        if (mThreadUtils.isMainThread()) {
+            mTaskQueue.execute(Task.INVALIDATE_SESSION, TaskType.USER_FACING,
+                    () -> mSessionCache.removeAttached(sessionId));
         } else {
-            sessionCache.removeAttached(sessionId);
+            mSessionCache.removeAttached(sessionId);
         }
     }
 
     @Override
     public void detachSession(String sessionId) {
-        if (threadUtils.isMainThread()) {
-            taskQueue.execute(Task.DETACH_SESSION, TaskType.USER_FACING,
-                    () -> sessionCache.detachModelProvider(sessionId));
+        if (mThreadUtils.isMainThread()) {
+            mTaskQueue.execute(Task.DETACH_SESSION, TaskType.USER_FACING,
+                    () -> mSessionCache.detachModelProvider(sessionId));
         } else {
-            sessionCache.detachModelProvider(sessionId);
+            mSessionCache.detachModelProvider(sessionId);
         }
     }
 
     @Override
     public void invalidateHead() {
-        sessionManagerMutation.resetHead();
+        mSessionManagerMutation.resetHead();
     }
 
     @Override
     public void handleToken(String sessionId, StreamToken streamToken) {
         Logger.i(TAG, "HandleToken on stream %s, token %s", sessionId, streamToken.getContentId());
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
 
         // At the moment, this doesn't try to prevent multiple requests with the same Token.
         // We may want to make sure we only make the request a single time.
-        handleTokenCount++;
+        mHandleTokenCount++;
         MutationContext mutationContext = new MutationContext.Builder()
                                                   .setContinuationToken(streamToken)
                                                   .setRequestingSessionId(sessionId)
                                                   .build();
-        taskQueue.execute(Task.HANDLE_TOKEN, TaskType.BACKGROUND, () -> {
+        mTaskQueue.execute(Task.HANDLE_TOKEN, TaskType.BACKGROUND, () -> {
             fetchActionsAndUpload(getConsistencyToken(), result -> {
                 ConsistencyToken token = handleUpdateConsistencyToken(result);
-                requestManager.loadMore(
+                mRequestManager.loadMore(
                         streamToken, token, getCommitter("handleToken", mutationContext));
             });
         });
@@ -495,25 +496,25 @@ public final class FeedSessionManagerImpl
     @Override
     public void triggerRefresh(
             /*@Nullable*/ String sessionId, @RequestReason int requestReason, UiContext uiContext) {
-        if (!initialized.get()) {
+        if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, triggerRefresh");
             initialize();
         }
-        taskQueue.execute(Task.SESSION_MANAGER_TRIGGER_REFRESH,
+        mTaskQueue.execute(Task.SESSION_MANAGER_TRIGGER_REFRESH,
                 TaskType.HEAD_INVALIDATE, // invalidate because we are requesting a refresh
                 () -> triggerRefreshTask(sessionId, requestReason, uiContext));
     }
 
     private ConsistencyToken handleUpdateConsistencyToken(Result<ConsistencyToken> result) {
-        threadUtils.checkNotMainThread();
-        if (!uploadingActionsEnabled) {
+        mThreadUtils.checkNotMainThread();
+        if (!mUploadingActionsEnabled) {
             return getConsistencyToken();
         }
 
         ConsistencyToken consistencyToken;
         if (result.isSuccessful()) {
             consistencyToken = result.getValue();
-            store.editContent()
+            mStore.editContent()
                     .add(SessionCache.CONSISTENCY_TOKEN_CONTENT_ID,
                             StreamPayload.newBuilder()
                                     .setConsistencyToken(consistencyToken)
@@ -529,17 +530,17 @@ public final class FeedSessionManagerImpl
 
     private void triggerRefreshTask(
             /*@Nullable*/ String sessionId, @RequestReason int requestReason, UiContext uiContext) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         fetchActionsAndUpload(getConsistencyToken(), result -> {
             ConsistencyToken consistencyToken = handleUpdateConsistencyToken(result);
-            requestManager.triggerRefresh(requestReason, consistencyToken,
+            mRequestManager.triggerRefresh(requestReason, consistencyToken,
                     getCommitter("triggerRefresh",
                             new MutationContext.Builder().setUiContext(uiContext).build()));
         });
 
         if (sessionId != null) {
-            Session session = sessionCache.getAttached(sessionId);
+            Session session = mSessionCache.getAttached(sessionId);
             if (session != null) {
                 ModelProvider modelProvider = session.getModelProvider();
                 if (modelProvider != null) {
@@ -557,32 +558,32 @@ public final class FeedSessionManagerImpl
 
     @Override
     public void fetchActionsAndUpload(Consumer<Result<ConsistencyToken>> consumer) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         fetchActionsAndUpload(getConsistencyToken(), consumer);
     }
 
     private void fetchActionsAndUpload(
             ConsistencyToken token, Consumer<Result<ConsistencyToken>> consumer) {
         // fail fast if we're not actually recording these actions.
-        if (!uploadingActionsEnabled) {
+        if (!mUploadingActionsEnabled) {
             consumer.accept(Result.success(token));
             return;
         }
-        Result<Set<StreamUploadableAction>> actionsResult = store.getAllUploadableActions();
+        Result<Set<StreamUploadableAction>> actionsResult = mStore.getAllUploadableActions();
         if (actionsResult.isSuccessful()) {
-            actionUploadRequestManager.triggerUploadActions(
+            mActionUploadRequestManager.triggerUploadActions(
                     actionsResult.getValue(), token, consumer);
         }
     }
 
     @Override
     public Result<List<PayloadWithId>> getStreamFeatures(List<String> contentIds) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         List<PayloadWithId> results = new ArrayList<>();
         List<String> cacheMisses = new ArrayList<>();
-        int contentSize = contentCache.size();
+        int contentSize = mContentCache.size();
         for (String contentId : contentIds) {
-            StreamPayload payload = contentCache.get(contentId);
+            StreamPayload payload = mContentCache.get(contentId);
             if (payload != null) {
                 results.add(new PayloadWithId(contentId, payload));
             } else {
@@ -591,10 +592,10 @@ public final class FeedSessionManagerImpl
         }
 
         if (!cacheMisses.isEmpty()) {
-            Result<List<PayloadWithId>> contentResult = store.getPayloads(cacheMisses);
+            Result<List<PayloadWithId>> contentResult = mStore.getPayloads(cacheMisses);
             boolean successfulRead = contentResult.isSuccessful()
                     && (contentResult.getValue().size()
-                                    + configuration.getValueOrDefault(
+                                    + mConfiguration.getValueOrDefault(
                                             ConfigKey.STORAGE_MISS_THRESHOLD, 4L)
                             >= cacheMisses.size());
             if (successfulRead) {
@@ -602,8 +603,8 @@ public final class FeedSessionManagerImpl
                         cacheMisses.size(), contentResult.getValue().size());
                 if (contentResult.getValue().size() < cacheMisses.size()) {
                     Logger.e(TAG, "ContentStorage is missing content");
-                    mainThreadRunner.execute("CONTENT_STORAGE_MISSING_ITEM", () -> {
-                        basicLoggingApi.onInternalError(
+                    mMainThreadRunner.execute("CONTENT_STORAGE_MISSING_ITEM", () -> {
+                        mBasicLoggingApi.onInternalError(
                                 InternalFeedError.CONTENT_STORAGE_MISSING_ITEM);
                     });
                 }
@@ -612,8 +613,8 @@ public final class FeedSessionManagerImpl
                 if (contentResult.isSuccessful()) {
                     Logger.e(TAG, "Storage miss beyond threshold; requestedItems(%d), returned(%d)",
                             cacheMisses.size(), contentResult.getValue().size());
-                    mainThreadRunner.execute("STORAGE_MISS_BEYOND_THRESHOLD", () -> {
-                        basicLoggingApi.onInternalError(
+                    mMainThreadRunner.execute("STORAGE_MISS_BEYOND_THRESHOLD", () -> {
+                        mBasicLoggingApi.onInternalError(
                                 InternalFeedError.STORAGE_MISS_BEYOND_THRESHOLD);
                     });
                 }
@@ -631,9 +632,9 @@ public final class FeedSessionManagerImpl
     @Override
     /*@Nullable*/
     public StreamSharedState getSharedState(ContentId contentId) {
-        threadUtils.checkMainThread();
-        String sharedStateId = protocolAdapter.getStreamContentId(contentId);
-        StreamSharedState state = sharedStateCache.get(sharedStateId);
+        mThreadUtils.checkMainThread();
+        String sharedStateId = mProtocolAdapter.getStreamContentId(contentId);
+        StreamSharedState state = mSharedStateCache.get(sharedStateId);
         if (state == null) {
             Logger.e(TAG, "Shared State [%s] was not found", sharedStateId);
         }
@@ -642,7 +643,7 @@ public final class FeedSessionManagerImpl
 
     @Override
     public Consumer<Result<Model>> getUpdateConsumer(MutationContext mutationContext) {
-        if (!initialized.get()) {
+        if (!mInitialized.get()) {
             Logger.i(TAG, "Lazy initialization triggered, getUpdateConsumer");
             initialize();
         }
@@ -651,26 +652,26 @@ public final class FeedSessionManagerImpl
 
     @VisibleForTesting
     class SessionMutationTracker implements Consumer<Result<Model>> {
-        private final MutationContext mutationContext;
-        private final String taskName;
+        private final MutationContext mMutationContext;
+        private final String mTaskName;
 
         @SuppressWarnings("argument.type.incompatible") // ok to add this to the map
         private SessionMutationTracker(MutationContext mutationContext, String taskName) {
-            this.mutationContext = mutationContext;
-            this.taskName = taskName;
-            outstandingMutations.add(this);
+            this.mMutationContext = mutationContext;
+            this.mTaskName = taskName;
+            mOutstandingMutations.add(this);
         }
 
         @Override
         public void accept(Result<Model> input) {
-            if (outstandingMutations.remove(this)) {
+            if (mOutstandingMutations.remove(this)) {
                 if (input.isSuccessful()) {
                     updateSharedStateCache(input.getValue().streamDataOperations);
                 }
-                sessionManagerMutation
-                        .createCommitter(taskName, mutationContext,
+                mSessionManagerMutation
+                        .createCommitter(mTaskName, mMutationContext,
                                 FeedSessionManagerImpl.this::modelErrorObserver,
-                                knownContentListener)
+                                mKnownContentListener)
                         .accept(input);
             } else {
                 Logger.w(TAG, "SessionMutationTracker dropping response due to clear");
@@ -682,8 +683,9 @@ public final class FeedSessionManagerImpl
     public <T> void getStreamFeaturesFromHead(
             Function<StreamPayload, /*@Nullable*/ T> filterPredicate,
             Consumer<Result<List</*@NonNull*/ T>>> consumer) {
-        taskQueue.execute(Task.GET_STREAM_FEATURES_FROM_HEAD, TaskType.BACKGROUND, () -> {
-            HeadAsStructure headAsStructure = new HeadAsStructure(store, timingUtils, threadUtils);
+        mTaskQueue.execute(Task.GET_STREAM_FEATURES_FROM_HEAD, TaskType.BACKGROUND, () -> {
+            HeadAsStructure headAsStructure =
+                    new HeadAsStructure(mStore, mTimingUtils, mThreadUtils);
             Function<TreeNode, /*@Nullable*/ T> toStreamPayload =
                     treeNode -> filterPredicate.apply(treeNode.getStreamPayload());
             headAsStructure.initialize(result -> {
@@ -702,7 +704,7 @@ public final class FeedSessionManagerImpl
 
     @Override
     public void setKnownContentListener(KnownContent.Listener knownContentListener) {
-        this.knownContentListener = knownContentListener;
+        this.mKnownContentListener = knownContentListener;
     }
 
     @Override
@@ -716,14 +718,14 @@ public final class FeedSessionManagerImpl
 
     @Override
     public void reset() {
-        threadUtils.checkNotMainThread();
-        sessionManagerMutation.forceResetHead();
-        sessionCache.reset();
+        mThreadUtils.checkNotMainThread();
+        mSessionManagerMutation.forceResetHead();
+        mSessionCache.reset();
         // Invalidate all sessions currently under construction
         List<InitializableSession> invalidateSessions;
-        synchronized (lock) {
-            invalidateSessions = new ArrayList<>(sessionsUnderConstruction);
-            sessionsUnderConstruction.clear();
+        synchronized (mLock) {
+            invalidateSessions = new ArrayList<>(mSessionsUnderConstruction);
+            mSessionsUnderConstruction.clear();
         }
         for (InitializableSession session : invalidateSessions) {
             ModelProvider modelProvider = session.getModelProvider();
@@ -731,32 +733,32 @@ public final class FeedSessionManagerImpl
                 modelProvider.invalidate();
             }
         }
-        contentCache.reset();
-        sharedStateCache.clear();
+        mContentCache.reset();
+        mSharedStateCache.clear();
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("newSessionCount").value(newSessionCount);
-        dumper.forKey("existingSessionCount").value(existingSessionCount).compactPrevious();
-        dumper.forKey("handleTokenCount").value(handleTokenCount).compactPrevious();
-        dumper.forKey("sharedStateSize").value(sharedStateCache.size()).compactPrevious();
+        dumper.forKey("newSessionCount").value(mNewSessionCount);
+        dumper.forKey("existingSessionCount").value(mExistingSessionCount).compactPrevious();
+        dumper.forKey("handleTokenCount").value(mHandleTokenCount).compactPrevious();
+        dumper.forKey("sharedStateSize").value(mSharedStateCache.size()).compactPrevious();
         dumper.forKey("sharedStateInternerSize")
-                .value(sharedStateInterner.size())
+                .value(mSharedStateInterner.size())
                 .compactPrevious();
         dumper.forKey("sharedStateInternerStats")
-                .value(sharedStateInterner.getStats())
+                .value(mSharedStateInterner.getStats())
                 .compactPrevious();
-        dumper.dump(contentCache);
-        dumper.dump(taskQueue);
-        dumper.dump(sessionCache);
-        dumper.dump(sessionManagerMutation);
+        dumper.dump(mContentCache);
+        dumper.dump(mTaskQueue);
+        dumper.dump(mSessionCache);
+        dumper.dump(mSessionManagerMutation);
     }
 
     private void invalidateSessionInternal(
             ModelProvider modelProvider, Session session, UiContext uiContext) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         Logger.i(TAG, "Invalidate session %s", session.getSessionId());
         modelProvider.invalidate(uiContext);
     }
@@ -764,19 +766,19 @@ public final class FeedSessionManagerImpl
     // This is only used in tests to verify the contents of the shared state cache.
     @VisibleForTesting
     Map<String, StreamSharedState> getSharedStateCacheForTest() {
-        return new HashMap<>(sharedStateCache);
+        return new HashMap<>(mSharedStateCache);
     }
 
     // This is only used in tests to access a the associated sessions.
     @VisibleForTesting
     SessionCache getSessionCacheForTest() {
-        return sessionCache;
+        return mSessionCache;
     }
 
     // Called in the integration tests
     @VisibleForTesting
     public boolean isDelayed() {
-        return taskQueue.isDelayed();
+        return mTaskQueue.isDelayed();
     }
 
     @Override
@@ -787,13 +789,13 @@ public final class FeedSessionManagerImpl
                 initialize();
                 break;
             case LifecycleEvent.CLEAR_ALL:
-                Logger.i(TAG, "CLEAR_ALL will cancel %s mutations", outstandingMutations.size());
-                outstandingMutations.clear();
+                Logger.i(TAG, "CLEAR_ALL will cancel %s mutations", mOutstandingMutations.size());
+                mOutstandingMutations.clear();
                 break;
             case LifecycleEvent.CLEAR_ALL_WITH_REFRESH:
                 Logger.i(TAG, "CLEAR_ALL_WITH_REFRESH will cancel %s mutations",
-                        outstandingMutations.size());
-                outstandingMutations.clear();
+                        mOutstandingMutations.size());
+                mOutstandingMutations.clear();
                 break;
             default:
                 // Do nothing
@@ -802,21 +804,21 @@ public final class FeedSessionManagerImpl
     // TODO: implement longer term fix for reading/saving the consistency token
     @Override
     public void triggerUploadActions(Set<StreamUploadableAction> actions) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        actionUploadRequestManager.triggerUploadActions(
+        mActionUploadRequestManager.triggerUploadActions(
                 actions, getConsistencyToken(), getConsistencyTokenConsumer());
     }
 
     @VisibleForTesting
     ConsistencyToken getConsistencyToken() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         // don't bother with reading consistencytoken if we're not uploading actions.
-        if (!uploadingActionsEnabled) {
+        if (!mUploadingActionsEnabled) {
             return ConsistencyToken.getDefaultInstance();
         }
-        Result<List<PayloadWithId>> contentResult = store.getPayloads(
+        Result<List<PayloadWithId>> contentResult = mStore.getPayloads(
                 Collections.singletonList(SessionCache.CONSISTENCY_TOKEN_CONTENT_ID));
         if (contentResult.isSuccessful()) {
             for (PayloadWithId payload : contentResult.getValue()) {
@@ -832,7 +834,7 @@ public final class FeedSessionManagerImpl
     Consumer<Result<ConsistencyToken>> getConsistencyTokenConsumer() {
         return result -> {
             if (result.isSuccessful()) {
-                store.editContent()
+                mStore.editContent()
                         .add(SessionCache.CONSISTENCY_TOKEN_CONTENT_ID,
                                 StreamPayload.newBuilder()
                                         .setConsistencyToken(result.getValue())
@@ -850,7 +852,7 @@ public final class FeedSessionManagerImpl
                 String contentId = dataOperation.getStreamStructure().getContentId();
                 StreamPayload payload = dataOperation.getStreamPayload();
                 if (payload.hasStreamSharedState()) {
-                    sharedStateCache.put(contentId, payload.getStreamSharedState());
+                    mSharedStateCache.put(contentId, payload.getStreamSharedState());
                 }
             }
         }
@@ -927,14 +929,14 @@ public final class FeedSessionManagerImpl
     // sometimes be identical, only the inner content_id differing (see [INTERNAL LINK]).
     @VisibleForTesting
     static class StreamSharedStateInterner implements Interner<StreamSharedState> {
-        private final Interner<PietSharedStateItem> interner = new HashPoolInterner<>();
+        private final Interner<PietSharedStateItem> mInterner = new HashPoolInterner<>();
 
         @SuppressWarnings("ReferenceEquality")
         // Intentional reference comparison for interned != orig
         @Override
         public StreamSharedState intern(StreamSharedState input) {
             PietSharedStateItem orig = input.getPietSharedStateItem();
-            PietSharedStateItem interned = interner.intern(orig);
+            PietSharedStateItem interned = mInterner.intern(orig);
             if (interned != orig) {
                 /*
                  * If interned != orig we have a memoized item and we need to replace the proto with
@@ -947,12 +949,12 @@ public final class FeedSessionManagerImpl
 
         @Override
         public void clear() {
-            interner.clear();
+            mInterner.clear();
         }
 
         @Override
         public int size() {
-            return interner.size();
+            return mInterner.size();
         }
     }
 }

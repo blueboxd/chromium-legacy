@@ -258,15 +258,66 @@
 #pragma mark - InfobarTranslateModalDelegate
 
 - (void)alwaysTranslateSourceLanguage {
-  // TODO(crbug.com/1014959):
+  DCHECK(!self.translateInfoBarDelegate->ShouldAlwaysTranslate());
+  self.userAction |= UserActionAlwaysTranslate;
+  // TODO(crbug.com/1014959): Add metrics
+  self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+  // Since toggle turned on always translate, translate now.
+  // This doesn't call performInfobarAction, because its implementation checks
+  // ShouldAutoAlwaysTranslate(), which modifies the Translate state. There is
+  // also no need update the badge state since it will be updated by
+  // translateInfoBarDelegate:didChangeTranslateStep:
+  self.translateInfoBarDelegate->Translate();
+  [self dismissInfobarModal:self animated:YES completion:nil];
+}
+
+- (void)undoAlwaysTranslateSourceLanguage {
+  DCHECK(self.translateInfoBarDelegate->ShouldAlwaysTranslate());
+  // TODO(crbug.com/1014959): Add metrics and new user action?
+  self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+  [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
 - (void)neverTranslateSourceLanguage {
-  // TODO(crbug.com/1014959):
+  DCHECK(self.translateInfoBarDelegate->IsTranslatableLanguageByPrefs());
+  self.userAction |= UserActionNeverTranslateLanguage;
+  // TODO(crbug.com/1014959): Add metrics
+  self.translateInfoBarDelegate->ToggleTranslatableLanguageByPrefs();
+  [self dismissInfobarModal:self
+                   animated:YES
+                 completion:^{
+                   // Completely remove the Infobar along with its badge after
+                   // blacklisting the Website.
+                   [self detachView];
+                 }];
+}
+
+- (void)undoNeverTranslateSourceLanguage {
+  DCHECK(!self.translateInfoBarDelegate->IsTranslatableLanguageByPrefs());
+  self.translateInfoBarDelegate->ToggleTranslatableLanguageByPrefs();
+  [self dismissInfobarModal:self animated:YES completion:nil];
+  // TODO(crbug.com/1014959): implement else logic. Should anything be done?
 }
 
 - (void)neverTranslateSite {
-  // TODO(crbug.com/1014959):
+  DCHECK(!self.translateInfoBarDelegate->IsSiteBlacklisted());
+  self.userAction |= UserActionNeverTranslateSite;
+  self.translateInfoBarDelegate->ToggleSiteBlacklist();
+  // TODO(crbug.com/1014959): Add metrics
+  [self dismissInfobarModal:self
+                   animated:YES
+                 completion:^{
+                   // Completely remove the Infobar along with its badge after
+                   // blacklisting the Website.
+                   [self detachView];
+                 }];
+}
+
+- (void)undoNeverTranslateSite {
+  DCHECK(self.translateInfoBarDelegate->IsSiteBlacklisted());
+  self.translateInfoBarDelegate->ToggleSiteBlacklist();
+  [self dismissInfobarModal:self animated:YES completion:nil];
+  // TODO(crbug.com/1014959): implement else logic. Should aything be done?
 }
 
 #pragma mark - Private

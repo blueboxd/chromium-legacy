@@ -24,7 +24,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
-import android.view.ViewStructure.HtmlInfo.Builder;
+import android.view.ViewStructure.HtmlInfo;
 import android.view.WindowManager;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
@@ -47,8 +47,8 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -125,7 +125,7 @@ public class AwAutofillTest {
         /**
          * Implementation of Builder
          */
-        public static class AwBuilder extends Builder {
+        public static class AwBuilder extends HtmlInfo.Builder {
             private String mTag;
             private ArrayList<Pair<String, String>> mAttributes;
             public AwBuilder(String tag) {
@@ -134,7 +134,7 @@ public class AwAutofillTest {
             }
 
             @Override
-            public Builder addAttribute(String name, String value) {
+            public HtmlInfo.Builder addAttribute(String name, String value) {
                 mAttributes.add(new Pair<String, String>(name, value));
                 return this;
             }
@@ -254,7 +254,7 @@ public class AwAutofillTest {
         }
 
         @Override
-        public Builder newHtmlInfoBuilder(String tag) {
+        public HtmlInfo.Builder newHtmlInfoBuilder(String tag) {
             return new AwBuilder(tag);
         }
 

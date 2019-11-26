@@ -22,19 +22,19 @@ public final class Dumper {
     private static final String TAG = "Dumper";
     private static final String SINGLE_INDENT = "  ";
 
-    private final int indentLevel;
+    private final int mIndentLevel;
 
     // Walk up the chain of parents to
     // ensure none are currently dumping a given dumpable, to prevent cycles. The WeakReference
     // itself is always non-null, but the Dumpable may be null.
-    private final WeakReference<Dumpable> currentDumpable;
-    /*@Nullable*/ private final Dumper parent;
-    private final boolean redacted;
+    private final WeakReference<Dumpable> mCurrentDumpable;
+    /*@Nullable*/ private final Dumper mParent;
+    private final boolean mRedacted;
 
     // The root Dumper will create the values used by all children Dumper instances.  This flattens
     // the output into one list.
     @VisibleForTesting
-    final List<DumperValue> values;
+    final List<DumperValue> mValues;
 
     /** Returns the default Dumper, this will show sensitive content. */
     public static Dumper newDefaultDumper() {
@@ -50,16 +50,16 @@ public final class Dumper {
     private Dumper(int indentLevel,
             /*@Nullable*/ Dumper parent, WeakReference<Dumpable> currentDumpable,
             List<DumperValue> values, boolean redacted) {
-        this.indentLevel = indentLevel;
-        this.parent = parent;
-        this.currentDumpable = currentDumpable;
-        this.values = values;
-        this.redacted = redacted;
+        this.mIndentLevel = indentLevel;
+        this.mParent = parent;
+        this.mCurrentDumpable = currentDumpable;
+        this.mValues = values;
+        this.mRedacted = redacted;
     }
 
     private boolean isDescendentOf(Dumpable dumpable) {
-        return (currentDumpable.get() == dumpable)
-                || (parent != null && parent.isDescendentOf(dumpable));
+        return (mCurrentDumpable.get() == dumpable)
+                || (mParent != null && mParent.isDescendentOf(dumpable));
     }
 
     /** Creates a new Dumper with a indent level one greater than the current indent level. */
@@ -68,12 +68,13 @@ public final class Dumper {
     }
 
     private Dumper getChildDumper(/*@Nullable*/ Dumpable dumpable) {
-        return new Dumper(indentLevel + 1, this, new WeakReference<>(dumpable), values, redacted);
+        return new Dumper(
+                mIndentLevel + 1, this, new WeakReference<>(dumpable), mValues, mRedacted);
     }
 
     /** Set the title of the section. This is output at the previous indent level. */
     public void title(String title) {
-        values.add(new DumperValue(indentLevel - 1, title));
+        mValues.add(new DumperValue(mIndentLevel - 1, title));
     }
 
     /** Adds a String as an indented line to the dump */
@@ -83,12 +84,12 @@ public final class Dumper {
 
     /** Create a Dumper value with the specified name. */
     public DumperValue forKey(String name) {
-        return addLine(indentLevel, name);
+        return addLine(mIndentLevel, name);
     }
 
     /** Allow the indent level to be adjusted. */
     public DumperValue forKey(String name, int indentAdjustment) {
-        return addLine(indentLevel + indentAdjustment, name);
+        return addLine(mIndentLevel + indentAdjustment, name);
     }
 
     /** Dump a Dumpable as a child of the current Dumper */
@@ -111,13 +112,13 @@ public final class Dumper {
     /** Write the Dumpable to an {@link Appendable}. */
     public void write(Appendable writer) throws IOException {
         boolean newLine = true;
-        for (DumperValue value : values) {
-            String stringValue = value.toString(redacted);
+        for (DumperValue value : mValues) {
+            String stringValue = value.toString(mRedacted);
             if (!newLine) {
-                if (value.compactPrevious) {
+                if (value.mCompactPrevious) {
                     writer.append(" | ");
                 } else {
-                    String indent = getIndent(value.indentLevel);
+                    String indent = getIndent(value.mIndentLevel);
                     writer.append("\n").append(indent);
                 }
             }
@@ -129,7 +130,7 @@ public final class Dumper {
 
     private DumperValue addLine(int indentLevel, String title) {
         DumperValue dumperValue = new DumperValue(indentLevel, title);
-        values.add(dumperValue);
+        mValues.add(dumperValue);
         return dumperValue;
     }
 
@@ -147,42 +148,42 @@ public final class Dumper {
         @VisibleForTesting
         static final String REDACTED = "[REDACTED]";
         @VisibleForTesting
-        final String name;
+        final String mName;
         @VisibleForTesting
-        final StringBuilder content;
+        final StringBuilder mContent;
         @VisibleForTesting
-        final int indentLevel;
-        private boolean compactPrevious;
-        private boolean sensitive;
+        final int mIndentLevel;
+        private boolean mCompactPrevious;
+        private boolean mSensitive;
 
         // create a DumpValue with just a name, this is not public, it will is called by Dumper
         DumperValue(int indentLevel, String name) {
-            this.indentLevel = indentLevel;
-            this.name = name;
-            this.content = new StringBuilder();
+            this.mIndentLevel = indentLevel;
+            this.mName = name;
+            this.mContent = new StringBuilder();
         }
 
         /** Append an int to the current content of this value */
         public DumperValue value(int value) {
-            this.content.append(value);
+            this.mContent.append(value);
             return this;
         }
 
         /** Append an String to the current content of this value */
         public DumperValue value(String value) {
-            this.content.append(value);
+            this.mContent.append(value);
             return this;
         }
 
         /** Append an boolean to the current content of this value */
         public DumperValue value(boolean value) {
-            this.content.append(value);
+            this.mContent.append(value);
             return this;
         }
 
         /** Add a Date value. It will be formatted as Logcat Dates are formatted */
         public DumperValue value(Date value) {
-            this.content.append(StringFormattingUtils.formatLogDate(value));
+            this.mContent.append(StringFormattingUtils.formatLogDate(value));
             return this;
         }
 
@@ -202,13 +203,13 @@ public final class Dumper {
          * value.
          */
         public DumperValue compactPrevious() {
-            compactPrevious = true;
+            mCompactPrevious = true;
             return this;
         }
 
         /** Mark the Value as containing sensitive data */
         public DumperValue sensitive() {
-            sensitive = true;
+            mSensitive = true;
             return this;
         }
 
@@ -218,13 +219,13 @@ public final class Dumper {
          */
         String toString(boolean suppressSensitive) {
             String value = "";
-            if (!TextUtils.isEmpty(content)) {
-                value = (suppressSensitive && sensitive) ? REDACTED : content.toString();
+            if (!TextUtils.isEmpty(mContent)) {
+                value = (suppressSensitive && mSensitive) ? REDACTED : mContent.toString();
             }
-            if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(value)) {
-                return name + ": " + value;
-            } else if (!TextUtils.isEmpty(name)) {
-                return name + ":";
+            if (!TextUtils.isEmpty(mName) && !TextUtils.isEmpty(value)) {
+                return mName + ": " + value;
+            } else if (!TextUtils.isEmpty(mName)) {
+                return mName + ":";
             } else if (!TextUtils.isEmpty(value)) {
                 return value;
             } else {

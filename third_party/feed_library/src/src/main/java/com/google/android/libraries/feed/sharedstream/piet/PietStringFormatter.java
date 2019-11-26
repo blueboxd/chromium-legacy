@@ -13,18 +13,18 @@ import javax.inject.Inject;
 
 /** Formats strings for Piet. */
 public class PietStringFormatter implements StringFormatter {
-    private final Clock clock;
+    private final Clock mClock;
 
     @Inject
     public PietStringFormatter(Clock clock) {
-        this.clock = clock;
+        this.mClock = clock;
     }
 
     @Override
     public String getRelativeElapsedString(long elapsedTimeMillis) {
         return DateUtils
-                .getRelativeTimeSpanString(clock.currentTimeMillis() - elapsedTimeMillis,
-                        clock.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+                .getRelativeTimeSpanString(mClock.currentTimeMillis() - elapsedTimeMillis,
+                        mClock.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
                 .toString();
     }
 }

@@ -550,13 +550,8 @@ RenderText::~RenderText() {
 }
 
 // static
-std::unique_ptr<RenderText> RenderText::CreateHarfBuzzInstance() {
+std::unique_ptr<RenderText> RenderText::CreateRenderText() {
   return std::make_unique<RenderTextHarfBuzz>();
-}
-
-// static
-std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
-  return CreateHarfBuzzInstance();
 }
 
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(

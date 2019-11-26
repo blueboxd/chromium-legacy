@@ -579,7 +579,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
     SkBitmap black_bitmap;
     black_bitmap.allocN32Pixels(size_.Width(), size_.Height());
     black_bitmap.eraseARGB(0, 0, 0, 0);
-    return StaticBitmapImage::Create(SkImage::MakeFromBitmap(black_bitmap));
+    return UnacceleratedStaticBitmapImage::Create(
+        SkImage::MakeFromBitmap(black_bitmap));
   }
 
   DCHECK_EQ(size_.Width(), transferable_resource.size.width());

@@ -34,23 +34,23 @@ import com.google.search.now.ui.stream.StreamSwipeExtensionProto.SwipeActionExte
 public class CardDriver implements FeatureDriver {
     private static final String TAG = "CardDriver";
 
-    private final ActionApi actionApi;
-    private final ActionManager actionManager;
-    private final ActionParserFactory actionParserFactory;
-    private final BasicLoggingApi basicLoggingApi;
-    private final ModelFeature cardModel;
-    private final ModelProvider modelProvider;
-    private final int position;
-    private final ClusterPendingDismissHelper clusterPendingDismissHelper;
-    private final StreamOfflineMonitor streamOfflineMonitor;
-    private final ContentChangedListener contentChangedListener;
-    private final ContextMenuManager contextMenuManager;
-    private final MainThreadRunner mainThreadRunner;
-    private final Configuration configuration;
-    private final ViewLoggingUpdater viewLoggingUpdater;
-    private final TooltipApi tooltipApi;
+    private final ActionApi mActionApi;
+    private final ActionManager mActionManager;
+    private final ActionParserFactory mActionParserFactory;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final ModelFeature mCardModel;
+    private final ModelProvider mModelProvider;
+    private final int mPosition;
+    private final ClusterPendingDismissHelper mClusterPendingDismissHelper;
+    private final StreamOfflineMonitor mStreamOfflineMonitor;
+    private final ContentChangedListener mContentChangedListener;
+    private final ContextMenuManager mContextMenuManager;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Configuration mConfiguration;
+    private final ViewLoggingUpdater mViewLoggingUpdater;
+    private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private ContentDriver contentDriver;
+    /*@Nullable*/ private ContentDriver mContentDriver;
 
     CardDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, BasicLoggingApi basicLoggingApi,
@@ -60,39 +60,39 @@ public class CardDriver implements FeatureDriver {
             ContentChangedListener contentChangedListener, ContextMenuManager contextMenuManager,
             MainThreadRunner mainThreadRunner, Configuration configuration,
             ViewLoggingUpdater viewLoggingUpdater, TooltipApi tooltipApi) {
-        this.actionApi = actionApi;
-        this.actionManager = actionManager;
-        this.actionParserFactory = actionParserFactory;
-        this.basicLoggingApi = basicLoggingApi;
-        this.cardModel = cardModel;
-        this.modelProvider = modelProvider;
-        this.position = position;
-        this.clusterPendingDismissHelper = clusterPendingDismissHelper;
-        this.streamOfflineMonitor = streamOfflineMonitor;
-        this.contentChangedListener = contentChangedListener;
-        this.contextMenuManager = contextMenuManager;
-        this.mainThreadRunner = mainThreadRunner;
-        this.configuration = configuration;
-        this.viewLoggingUpdater = viewLoggingUpdater;
-        this.tooltipApi = tooltipApi;
+        this.mActionApi = actionApi;
+        this.mActionManager = actionManager;
+        this.mActionParserFactory = actionParserFactory;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mCardModel = cardModel;
+        this.mModelProvider = modelProvider;
+        this.mPosition = position;
+        this.mClusterPendingDismissHelper = clusterPendingDismissHelper;
+        this.mStreamOfflineMonitor = streamOfflineMonitor;
+        this.mContentChangedListener = contentChangedListener;
+        this.mContextMenuManager = contextMenuManager;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mConfiguration = configuration;
+        this.mViewLoggingUpdater = viewLoggingUpdater;
+        this.mTooltipApi = tooltipApi;
     }
 
     @Override
     public void onDestroy() {
-        if (contentDriver != null) {
-            contentDriver.onDestroy();
+        if (mContentDriver != null) {
+            mContentDriver.onDestroy();
         }
     }
 
     @Override
     /*@Nullable*/
     public LeafFeatureDriver getLeafFeatureDriver() {
-        if (contentDriver == null) {
-            contentDriver = createContentChild(cardModel);
+        if (mContentDriver == null) {
+            mContentDriver = createContentChild(mCardModel);
         }
 
-        if (contentDriver != null) {
-            return contentDriver.getLeafFeatureDriver();
+        if (mContentDriver != null) {
+            return mContentDriver.getLeafFeatureDriver();
         }
 
         return null;
@@ -105,7 +105,7 @@ public class CardDriver implements FeatureDriver {
         ModelChild child;
         if ((child = cursor.getNextItem()) != null) {
             if (child.getType() != Type.FEATURE) {
-                basicLoggingApi.onInternalError(InternalFeedError.CARD_CHILD_MISSING_FEATURE);
+                mBasicLoggingApi.onInternalError(InternalFeedError.CARD_CHILD_MISSING_FEATURE);
                 Logger.e(TAG, "ContentChild was not bound to a Feature, found type: %s",
                         child.getType());
                 return null;
@@ -114,7 +114,7 @@ public class CardDriver implements FeatureDriver {
             checkState(
                     contentModel.getStreamFeature().hasContent(), "Expected content for feature");
             return createContentDriver(contentModel,
-                    cardModel.getStreamFeature()
+                    mCardModel.getStreamFeature()
                             .getCard()
                             .getExtension(SwipeActionExtension.swipeActionExtension)
                             .getSwipeAction());
@@ -125,9 +125,9 @@ public class CardDriver implements FeatureDriver {
 
     @VisibleForTesting
     ContentDriver createContentDriver(ModelFeature contentModel, FeedActionPayload swipeAction) {
-        return new ContentDriver(actionApi, actionManager, actionParserFactory, basicLoggingApi,
-                contentModel, modelProvider, position, swipeAction, clusterPendingDismissHelper,
-                streamOfflineMonitor, contentChangedListener, contextMenuManager, mainThreadRunner,
-                configuration, viewLoggingUpdater, tooltipApi);
+        return new ContentDriver(mActionApi, mActionManager, mActionParserFactory, mBasicLoggingApi,
+                contentModel, mModelProvider, mPosition, swipeAction, mClusterPendingDismissHelper,
+                mStreamOfflineMonitor, mContentChangedListener, mContextMenuManager,
+                mMainThreadRunner, mConfiguration, mViewLoggingUpdater, mTooltipApi);
     }
 }

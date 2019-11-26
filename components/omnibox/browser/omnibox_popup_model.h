@@ -142,10 +142,6 @@ class OmniboxPopupModel {
                           SkColor vector_icon_color);
 #endif
 
-  // Helper function to see if the current selection specifically has a
-  // tab switch button.
-  bool SelectedLineHasTabMatch();
-
   // Helper function to see if current selection is a tab switch suggestion
   // dedicated row.
   bool SelectedLineIsTabSwitchSuggestion();

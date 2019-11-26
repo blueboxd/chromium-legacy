@@ -61,144 +61,147 @@ import java.util.concurrent.Executor;
 /** Creates an instance of {@link ProcessScope} */
 public final class ProcessScopeBuilder {
     // Required fields.
-    private final Configuration configuration;
-    private final Executor sequencedExecutor;
-    private final BasicLoggingApi basicLoggingApi;
-    private final TooltipSupportedApi tooltipSupportedApi;
-    private final NetworkClient unwrappedNetworkClient;
-    private final SchedulerApi unwrappedSchedulerApi;
-    private final DebugBehavior debugBehavior;
-    private final Context context;
-    private final ApplicationInfo applicationInfo;
+    private final Configuration mConfiguration;
+    private final Executor mSequencedExecutor;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final TooltipSupportedApi mTooltipSupportedApi;
+    private final NetworkClient mUnwrappedNetworkClient;
+    private final SchedulerApi mUnwrappedSchedulerApi;
+    private final DebugBehavior mDebugBehavior;
+    private final Context mContext;
+    private final ApplicationInfo mApplicationInfo;
 
     // Optional fields - if they are not provided, we will use default implementations.
-    /*@MonotonicNonNull*/ private ProtoExtensionProvider protoExtensionProvider;
-    /*@MonotonicNonNull*/ private Clock clock;
+    /*@MonotonicNonNull*/ private ProtoExtensionProvider mProtoExtensionProvider;
+    /*@MonotonicNonNull*/ private Clock mClock;
 
     // Either contentStorage or rawContentStorage must be provided.
-    /*@MonotonicNonNull*/ ContentStorageDirect contentStorage;
-    /*@MonotonicNonNull*/ private ContentStorage rawContentStorage;
+    /*@MonotonicNonNull*/ ContentStorageDirect mContentStorage;
+    /*@MonotonicNonNull*/ private ContentStorage mRawContentStorage;
 
     // Either journalStorage or rawJournalStorage must be provided.
-    /*@MonotonicNonNull*/ JournalStorageDirect journalStorage;
-    /*@MonotonicNonNull*/ private JournalStorage rawJournalStorage;
+    /*@MonotonicNonNull*/ JournalStorageDirect mJournalStorage;
+    /*@MonotonicNonNull*/ private JournalStorage mRawJournalStorage;
 
     /** The APIs are all required to construct the scope. */
     public ProcessScopeBuilder(Configuration configuration, Executor sequencedExecutor,
             BasicLoggingApi basicLoggingApi, NetworkClient networkClient, SchedulerApi schedulerApi,
             DebugBehavior debugBehavior, Context context, ApplicationInfo applicationInfo,
             TooltipSupportedApi tooltipSupportedApi) {
-        this.configuration = configuration;
-        this.sequencedExecutor = sequencedExecutor;
-        this.basicLoggingApi = basicLoggingApi;
-        this.debugBehavior = debugBehavior;
-        this.context = context;
-        this.applicationInfo = applicationInfo;
-        this.unwrappedNetworkClient = networkClient;
-        this.unwrappedSchedulerApi = schedulerApi;
-        this.tooltipSupportedApi = tooltipSupportedApi;
+        this.mConfiguration = configuration;
+        this.mSequencedExecutor = sequencedExecutor;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mDebugBehavior = debugBehavior;
+        this.mContext = context;
+        this.mApplicationInfo = applicationInfo;
+        this.mUnwrappedNetworkClient = networkClient;
+        this.mUnwrappedSchedulerApi = schedulerApi;
+        this.mTooltipSupportedApi = tooltipSupportedApi;
     }
 
     public ProcessScopeBuilder setProtoExtensionProvider(
             ProtoExtensionProvider protoExtensionProvider) {
-        this.protoExtensionProvider = protoExtensionProvider;
+        this.mProtoExtensionProvider = protoExtensionProvider;
         return this;
     }
 
     public ProcessScopeBuilder setContentStorage(ContentStorage contentStorage) {
-        rawContentStorage = contentStorage;
+        mRawContentStorage = contentStorage;
         return this;
     }
 
     public ProcessScopeBuilder setContentStorageDirect(ContentStorageDirect contentStorage) {
-        this.contentStorage = contentStorage;
+        this.mContentStorage = contentStorage;
         return this;
     }
 
     public ProcessScopeBuilder setJournalStorage(JournalStorage journalStorage) {
-        rawJournalStorage = journalStorage;
+        mRawJournalStorage = journalStorage;
         return this;
     }
 
     public ProcessScopeBuilder setJournalStorageDirect(JournalStorageDirect journalStorage) {
-        this.journalStorage = journalStorage;
+        this.mJournalStorage = journalStorage;
         return this;
     }
 
     @VisibleForTesting
     ContentStorageDirect buildContentStorage(MainThreadRunner mainThreadRunner) {
-        if (contentStorage == null) {
+        if (mContentStorage == null) {
             boolean useDirect =
-                    configuration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
-            if (useDirect && rawContentStorage != null
-                    && rawContentStorage instanceof ContentStorageDirect) {
-                contentStorage = (ContentStorageDirect) rawContentStorage;
-            } else if (rawContentStorage != null) {
-                contentStorage = new ContentStorageDirectImpl(rawContentStorage, mainThreadRunner);
+                    mConfiguration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
+            if (useDirect && mRawContentStorage != null
+                    && mRawContentStorage instanceof ContentStorageDirect) {
+                mContentStorage = (ContentStorageDirect) mRawContentStorage;
+            } else if (mRawContentStorage != null) {
+                mContentStorage =
+                        new ContentStorageDirectImpl(mRawContentStorage, mainThreadRunner);
             } else {
                 throw new IllegalStateException(
                         "one of ContentStorage, ContentStorageDirect must be provided");
             }
         }
-        return contentStorage;
+        return mContentStorage;
     }
 
     @VisibleForTesting
     JournalStorageDirect buildJournalStorage(MainThreadRunner mainThreadRunner) {
-        if (journalStorage == null) {
+        if (mJournalStorage == null) {
             boolean useDirect =
-                    configuration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
-            if (useDirect && rawJournalStorage != null
-                    && rawJournalStorage instanceof JournalStorageDirect) {
-                journalStorage = (JournalStorageDirect) rawJournalStorage;
-            } else if (rawJournalStorage != null) {
-                journalStorage = new JournalStorageDirectImpl(rawJournalStorage, mainThreadRunner);
+                    mConfiguration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
+            if (useDirect && mRawJournalStorage != null
+                    && mRawJournalStorage instanceof JournalStorageDirect) {
+                mJournalStorage = (JournalStorageDirect) mRawJournalStorage;
+            } else if (mRawJournalStorage != null) {
+                mJournalStorage =
+                        new JournalStorageDirectImpl(mRawJournalStorage, mainThreadRunner);
             } else {
                 throw new IllegalStateException(
                         "one of JournalStorage, JournalStorageDirect must be provided");
             }
         }
-        return journalStorage;
+        return mJournalStorage;
     }
 
     public ProcessScope build() {
         MainThreadRunner mainThreadRunner = new MainThreadRunner();
-        contentStorage = buildContentStorage(mainThreadRunner);
-        journalStorage = buildJournalStorage(mainThreadRunner);
+        mContentStorage = buildContentStorage(mainThreadRunner);
+        mJournalStorage = buildJournalStorage(mainThreadRunner);
 
         ThreadUtils threadUtils = new ThreadUtils();
 
         boolean directHostCallEnabled =
-                configuration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
+                mConfiguration.getValueOrDefault(ConfigKey.USE_DIRECT_STORAGE, false);
         NetworkClient networkClient;
         SchedulerApi schedulerApi;
-        if (unwrappedNetworkClient instanceof DirectHostSupported && directHostCallEnabled) {
-            networkClient = unwrappedNetworkClient;
+        if (mUnwrappedNetworkClient instanceof DirectHostSupported && directHostCallEnabled) {
+            networkClient = mUnwrappedNetworkClient;
         } else {
-            networkClient =
-                    new NetworkClientWrapper(unwrappedNetworkClient, threadUtils, mainThreadRunner);
+            networkClient = new NetworkClientWrapper(
+                    mUnwrappedNetworkClient, threadUtils, mainThreadRunner);
         }
-        if (unwrappedSchedulerApi instanceof DirectHostSupported && directHostCallEnabled) {
-            schedulerApi = unwrappedSchedulerApi;
+        if (mUnwrappedSchedulerApi instanceof DirectHostSupported && directHostCallEnabled) {
+            schedulerApi = mUnwrappedSchedulerApi;
         } else {
             schedulerApi =
-                    new SchedulerApiWrapper(unwrappedSchedulerApi, threadUtils, mainThreadRunner);
+                    new SchedulerApiWrapper(mUnwrappedSchedulerApi, threadUtils, mainThreadRunner);
         }
 
         // Build default component instances if necessary.
-        if (protoExtensionProvider == null) {
+        if (mProtoExtensionProvider == null) {
             // Return an empty list of extensions by default.
-            protoExtensionProvider = ArrayList::new;
+            mProtoExtensionProvider = ArrayList::new;
         }
-        FeedExtensionRegistry extensionRegistry = new FeedExtensionRegistry(protoExtensionProvider);
-        if (clock == null) {
-            clock = new SystemClockImpl();
+        FeedExtensionRegistry extensionRegistry =
+                new FeedExtensionRegistry(mProtoExtensionProvider);
+        if (mClock == null) {
+            mClock = new SystemClockImpl();
         }
         TimingUtils timingUtils = new TimingUtils();
         TaskQueue taskQueue =
-                new TaskQueue(basicLoggingApi, sequencedExecutor, mainThreadRunner, clock);
-        FeedStore store = new FeedStore(configuration, timingUtils, extensionRegistry,
-                contentStorage, journalStorage, threadUtils, taskQueue, clock, basicLoggingApi,
+                new TaskQueue(mBasicLoggingApi, mSequencedExecutor, mainThreadRunner, mClock);
+        FeedStore store = new FeedStore(mConfiguration, timingUtils, extensionRegistry,
+                mContentStorage, mJournalStorage, threadUtils, taskQueue, mClock, mBasicLoggingApi,
                 mainThreadRunner);
 
         FeedAppLifecycleListener lifecycleListener = new FeedAppLifecycleListener(threadUtils);
@@ -207,35 +210,35 @@ public final class ProcessScopeBuilder {
         ProtocolAdapter protocolAdapter = new FeedProtocolAdapter(
                 Collections.singletonList(new PietRequiredContentAdapter()), timingUtils);
         ActionReader actionReader =
-                new FeedActionReader(store, clock, protocolAdapter, taskQueue, configuration);
-        FeedRequestManager feedRequestManager = new FeedRequestManagerImpl(configuration,
+                new FeedActionReader(store, mClock, protocolAdapter, taskQueue, mConfiguration);
+        FeedRequestManager feedRequestManager = new FeedRequestManagerImpl(mConfiguration,
                 networkClient, protocolAdapter, extensionRegistry, schedulerApi, taskQueue,
-                timingUtils, threadUtils, actionReader, context, applicationInfo, mainThreadRunner,
-                basicLoggingApi, tooltipSupportedApi);
+                timingUtils, threadUtils, actionReader, mContext, mApplicationInfo,
+                mainThreadRunner, mBasicLoggingApi, mTooltipSupportedApi);
         ActionUploadRequestManager actionUploadRequestManager =
-                new FeedActionUploadRequestManager(configuration, networkClient, protocolAdapter,
-                        extensionRegistry, taskQueue, threadUtils, store, clock);
+                new FeedActionUploadRequestManager(mConfiguration, networkClient, protocolAdapter,
+                        extensionRegistry, taskQueue, threadUtils, store, mClock);
         FeedSessionManagerFactory fsmFactory = new FeedSessionManagerFactory(taskQueue, store,
                 timingUtils, threadUtils, protocolAdapter, feedRequestManager,
-                actionUploadRequestManager, schedulerApi, configuration, clock, lifecycleListener,
-                mainThreadRunner, basicLoggingApi);
+                actionUploadRequestManager, schedulerApi, mConfiguration, mClock, lifecycleListener,
+                mainThreadRunner, mBasicLoggingApi);
         FeedSessionManager feedSessionManager = fsmFactory.create();
         RequestManagerImpl clientRequestManager =
                 new RequestManagerImpl(feedRequestManager, feedSessionManager);
         ActionManager actionManager = new FeedActionManagerImpl(
-                feedSessionManager, store, threadUtils, taskQueue, mainThreadRunner, clock);
+                feedSessionManager, store, threadUtils, taskQueue, mainThreadRunner, mClock);
 
         FeedKnownContent feedKnownContent =
                 new FeedKnownContentImpl(feedSessionManager, mainThreadRunner, threadUtils);
 
         ClearAllListener clearAllListener = new ClearAllListener(
                 taskQueue, feedSessionManager, store, threadUtils, lifecycleListener);
-        return new FeedProcessScope(basicLoggingApi, networkClient,
+        return new FeedProcessScope(mBasicLoggingApi, networkClient,
                 Validators.checkNotNull(protocolAdapter),
                 Validators.checkNotNull(clientRequestManager),
                 Validators.checkNotNull(feedSessionManager), store, timingUtils, threadUtils,
-                taskQueue, mainThreadRunner, lifecycleListener, clock, debugBehavior, actionManager,
-                configuration, feedKnownContent, extensionRegistry, clearAllListener,
-                tooltipSupportedApi, applicationInfo);
+                taskQueue, mainThreadRunner, lifecycleListener, mClock, mDebugBehavior,
+                actionManager, mConfiguration, feedKnownContent, extensionRegistry,
+                clearAllListener, mTooltipSupportedApi, mApplicationInfo);
     }
 }

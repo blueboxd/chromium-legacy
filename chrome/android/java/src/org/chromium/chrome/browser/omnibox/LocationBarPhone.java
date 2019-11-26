@@ -14,6 +14,7 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 
@@ -370,6 +371,10 @@ public class LocationBarPhone extends LocationBarLayout {
     public void onTabLoadingNTP(NewTabPage ntp) {
         super.onTabLoadingNTP(ntp);
         updateStatusVisibility();
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mAutocompleteCoordinator.setOverviewModeBehavior(overviewModeBehavior);
     }
 
     /** Update the status visibility according to the current state held in LocationBar. */

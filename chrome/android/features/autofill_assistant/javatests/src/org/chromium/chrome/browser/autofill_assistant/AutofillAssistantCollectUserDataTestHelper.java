@@ -165,7 +165,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
     void setRequestTimeoutForTesting() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PersonalDataManager.getInstance().setRequestTimeoutForTesting(0));
+                () -> PersonalDataManager.setRequestTimeoutForTesting(0));
     }
 
     void setSyncServiceForTesting() {

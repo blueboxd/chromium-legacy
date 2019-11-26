@@ -883,9 +883,18 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
         &is_cleared);
-    // A SCANOUT image should not require copy.
-    DCHECK(!image || image->ShouldBindOrCopy() == gl::GLImage::BIND);
-    if (!image || !image->BindTexImage(target)) {
+    // Scanout images have different constraints than GL images and might fail
+    // to allocate even if GL images can be created.
+    if (!image) {
+      // TODO(dcastagna): Use BufferUsage::GPU_READ_WRITE instead
+      // BufferUsage::GPU_READ once we add it.
+      image = image_factory_->CreateAnonymousImage(
+          size, format_info.buffer_format, gfx::BufferUsage::GPU_READ,
+          &is_cleared);
+    }
+    // The allocated image should not require copy.
+    if (!image || image->ShouldBindOrCopy() != gl::GLImage::BIND ||
+        !image->BindTexImage(target)) {
       LOG(ERROR) << "CreateSharedImage: Failed to "
                  << (image ? "bind" : "create") << " image";
       api->glDeleteTexturesFn(1, &service_id);

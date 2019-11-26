@@ -29,26 +29,26 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
 public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListener {
     private static final String TAG = "ZeroStateDriver";
 
-    private final ContentChangedListener contentChangedListener;
-    private final SpinnerLogger spinnerLogger;
+    private final ContentChangedListener mContentChangedListener;
+    private final SpinnerLogger mSpinnerLogger;
 
-    private ModelProvider modelProvider;
-    private boolean spinnerShown;
-    /*@Nullable*/ private ZeroStateViewHolder zeroStateViewHolder;
+    private ModelProvider mModelProvider;
+    private boolean mSpinnerShown;
+    /*@Nullable*/ private ZeroStateViewHolder mZeroStateViewHolder;
 
     ZeroStateDriver(BasicLoggingApi basicLoggingApi, Clock clock, ModelProvider modelProvider,
             ContentChangedListener contentChangedListener, boolean spinnerShown) {
-        this.contentChangedListener = contentChangedListener;
-        this.modelProvider = modelProvider;
-        this.spinnerLogger = createSpinnerLogger(basicLoggingApi, clock);
-        this.spinnerShown = spinnerShown;
+        this.mContentChangedListener = contentChangedListener;
+        this.mModelProvider = modelProvider;
+        this.mSpinnerLogger = createSpinnerLogger(basicLoggingApi, clock);
+        this.mSpinnerShown = spinnerShown;
     }
 
     @Override
     public void bind(FeedViewHolder viewHolder) {
         if (isBound()) {
             Logger.w(TAG, "Rebinding.");
-            if (viewHolder == zeroStateViewHolder) {
+            if (viewHolder == mZeroStateViewHolder) {
                 Logger.e(TAG, "Being rebound to the previously bound viewholder");
                 return;
             }
@@ -56,11 +56,11 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
         }
         checkState(viewHolder instanceof ZeroStateViewHolder);
 
-        zeroStateViewHolder = (ZeroStateViewHolder) viewHolder;
-        zeroStateViewHolder.bind(this, spinnerShown);
+        mZeroStateViewHolder = (ZeroStateViewHolder) viewHolder;
+        mZeroStateViewHolder.bind(this, mSpinnerShown);
         // Only log that spinner is being shown if it has not been logged before.
-        if (spinnerShown && !spinnerLogger.isSpinnerActive()) {
-            spinnerLogger.spinnerStarted(SpinnerType.INITIAL_LOAD);
+        if (mSpinnerShown && !mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerStarted(SpinnerType.INITIAL_LOAD);
         }
     }
 
@@ -71,52 +71,52 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
 
     @Override
     public void unbind() {
-        if (zeroStateViewHolder == null) {
+        if (mZeroStateViewHolder == null) {
             return;
         }
 
-        zeroStateViewHolder.unbind();
-        zeroStateViewHolder = null;
+        mZeroStateViewHolder.unbind();
+        mZeroStateViewHolder = null;
     }
 
     @Override
     public void maybeRebind() {
-        if (zeroStateViewHolder == null) {
+        if (mZeroStateViewHolder == null) {
             return;
         }
 
         // Unbinding clears the viewHolder, so storing to rebind.
-        ZeroStateViewHolder localViewHolder = zeroStateViewHolder;
+        ZeroStateViewHolder localViewHolder = mZeroStateViewHolder;
         unbind();
         bind(localViewHolder);
     }
 
     @Override
     public void onClick(View v) {
-        if (zeroStateViewHolder == null) {
+        if (mZeroStateViewHolder == null) {
             Logger.wtf(TAG, "Calling onClick before binding.");
             return;
         }
 
-        spinnerShown = true;
-        zeroStateViewHolder.showSpinner(spinnerShown);
-        contentChangedListener.onContentChanged();
+        mSpinnerShown = true;
+        mZeroStateViewHolder.showSpinner(mSpinnerShown);
+        mContentChangedListener.onContentChanged();
         UiContext uiContext =
                 UiContext.newBuilder()
                         .setExtension(UiRefreshReason.uiRefreshReasonExtension,
                                 UiRefreshReason.newBuilder().setReason(Reason.ZERO_STATE).build())
                         .build();
-        modelProvider.triggerRefresh(RequestReason.ZERO_STATE, uiContext);
+        mModelProvider.triggerRefresh(RequestReason.ZERO_STATE, uiContext);
 
-        spinnerLogger.spinnerStarted(SpinnerType.ZERO_STATE_REFRESH);
+        mSpinnerLogger.spinnerStarted(SpinnerType.ZERO_STATE_REFRESH);
     }
 
     @Override
     public void onDestroy() {
         // If the spinner was being shown, it will only be removed when the ZeroStateDriver is
         // destroyed. So spinner should be logged then.
-        if (spinnerLogger.isSpinnerActive()) {
-            spinnerLogger.spinnerFinished();
+        if (mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerFinished();
         }
     }
 
@@ -127,12 +127,12 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
      * stream drivers would result in the zero state flashing.
      */
     void setModelProvider(ModelProvider modelProvider) {
-        this.modelProvider = modelProvider;
+        this.mModelProvider = modelProvider;
     }
 
     @VisibleForTesting
     boolean isBound() {
-        return zeroStateViewHolder != null;
+        return mZeroStateViewHolder != null;
     }
 
     @VisibleForTesting
@@ -144,6 +144,6 @@ public class ZeroStateDriver extends LeafFeatureDriver implements OnClickListene
 
     /** Returns whether the spinner is showing. */
     boolean isSpinnerShowing() {
-        return spinnerShown;
+        return mSpinnerShown;
     }
 }

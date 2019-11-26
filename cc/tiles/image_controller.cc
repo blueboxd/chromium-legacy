@@ -161,7 +161,7 @@ void ImageController::ConvertImagesToTasks(
 
     ImageDecodeCache::TaskResult result =
         cache_->GetTaskForImageAndRef(*it, tracing_info);
-    *has_at_raster_images |= result.IsAtRaster();
+    *has_at_raster_images |= result.is_at_raster_decode;
     if (result.task)
       tasks->push_back(std::move(result.task));
     if (result.need_unref)
@@ -206,7 +206,8 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
   bool is_image_lazy = draw_image.paint_image().IsLazyGenerated();
 
   // Get the tasks for this decode.
-  ImageDecodeCache::TaskResult result(false);
+  ImageDecodeCache::TaskResult result(/*need_unref=*/false,
+                                      /*is_at_raster_decode=*/false);
   if (is_image_lazy)
     result = cache_->GetOutOfRasterDecodeTaskForImageAndRef(draw_image);
   // If we don't need to unref this, we don't actually have a task.

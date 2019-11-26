@@ -18,6 +18,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/network_isolation_key.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -45,8 +46,9 @@ bool LookUpProxyForURLCallback(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       site_instance->GetBrowserContext(), site_instance);
 
+  // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
   storage_partition->GetNetworkContext()->LookUpProxyForURL(
-      url, std::move(proxy_lookup_client));
+      url, net::NetworkIsolationKey::Todo(), std::move(proxy_lookup_client));
   return true;
 }
 

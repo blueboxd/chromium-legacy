@@ -30,7 +30,7 @@ class ElementStackAdapter extends ElementContainerAdapter<FrameLayout, ElementSt
     @Override
     public void onBindModel(ElementStack stack, Element baseElement, FrameContext frameContext) {
         super.onBindModel(stack, baseElement, frameContext);
-        for (ElementAdapter<?, ?> childAdapter : childAdapters) {
+        for (ElementAdapter<?, ?> childAdapter : mChildAdapters) {
             updateChildLayoutParams(childAdapter);
         }
     }

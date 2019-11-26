@@ -14,12 +14,12 @@ import android.util.LruCache;
  * <p>TODO: This should be made real so it supports control of the pool size
  */
 class KeyedRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<A> {
-    private final LruCache<RecyclerKey, SingleKeyRecyclerPool<A>> poolMap;
-    private final int capacityPerPool;
+    private final LruCache<RecyclerKey, SingleKeyRecyclerPool<A>> mPoolMap;
+    private final int mCapacityPerPool;
 
     KeyedRecyclerPool(int maxKeys, int capacityPerPool) {
-        poolMap = new LruCache<>(maxKeys);
-        this.capacityPerPool = capacityPerPool;
+        mPoolMap = new LruCache<>(maxKeys);
+        this.mCapacityPerPool = capacityPerPool;
     }
 
     @Override
@@ -28,7 +28,7 @@ class KeyedRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<
         if (key == null) {
             return null;
         }
-        SingleKeyRecyclerPool<A> pool = poolMap.get(key);
+        SingleKeyRecyclerPool<A> pool = mPoolMap.get(key);
         if (pool == null) {
             return null;
         } else {
@@ -39,16 +39,16 @@ class KeyedRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<
     @Override
     public void put(RecyclerKey key, A adapter) {
         checkNotNull(key, "null key for %s", adapter);
-        SingleKeyRecyclerPool<A> pool = poolMap.get(key);
+        SingleKeyRecyclerPool<A> pool = mPoolMap.get(key);
         if (pool == null) {
-            pool = new SingleKeyRecyclerPool<>(key, capacityPerPool);
-            poolMap.put(key, pool);
+            pool = new SingleKeyRecyclerPool<>(key, mCapacityPerPool);
+            mPoolMap.put(key, pool);
         }
         pool.put(key, adapter);
     }
 
     @Override
     public void clear() {
-        poolMap.evictAll();
+        mPoolMap.evictAll();
     }
 }

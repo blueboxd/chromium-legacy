@@ -167,6 +167,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       override {}
   void LookUpProxyForURL(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<::network::mojom::ProxyLookupClient>
           proxy_lookup_client) override {}
   void CreateNetLogExporter(

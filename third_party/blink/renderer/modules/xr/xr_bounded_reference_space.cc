@@ -14,6 +14,19 @@
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
+namespace {
+float RoundCm(float val) {
+  // Float round will only round to the nearest whole number. In order to get
+  // two decimal points of precision, we need to move the decimal out then
+  // back.
+  return std::round(val * 100) / 100;
+}
+
+Member<DOMPointReadOnly> RoundedDOMPoint(const FloatPoint3D& val) {
+  return DOMPointReadOnly::Create(RoundCm(val.X()), RoundCm(val.Y()),
+                                  RoundCm(val.Z()), 1.0);
+}
+}  // anonymous namespace
 
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(XRSession* session)
     : XRReferenceSpace(session, Type::kTypeBoundedFloor) {}
@@ -61,8 +74,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
       for (const auto& bound : *(display_info->stage_parameters->bounds)) {
         FloatPoint3D p =
             bounds_transform.MapPoint(FloatPoint3D(bound.X(), 0.0, bound.Z()));
-        bounds_geometry_.push_back(
-            DOMPointReadOnly::Create(p.X(), p.Y(), p.Z(), 1.0));
+        bounds_geometry_.push_back(RoundedDOMPoint(p));
       }
     }
   } else {

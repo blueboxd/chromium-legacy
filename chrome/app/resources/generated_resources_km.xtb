@@ -2617,7 +2617,6 @@
 <translation id="4839303808932127586">រក្សាទុកជាវីដេអូ...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ទៀត}other{# ទៀត}}</translation>
 <translation id="4842976633412754305">ទំព័រនេះកំពុងព្យាយាមដំណើរការស្គ្រីបពីប្រភពដែលមិនបានសម្គាល់អត្តសញ្ញាណ។</translation>
-<translation id="4843488774506045600">ការចូល​ដែលផ្ដល់ដោយ <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">ក្តារចុចផ្សេងទៀត</translation>
 <translation id="4846680374085650406">អ្នកកំពុងធ្វើតាមការណែនាំរបស់អ្នកគ្រប់គ្រងសម្រាប់ការកំណត់នេះ។</translation>
 <translation id="4848518990323155912">បើកដំណើរការចាក់សោស៊ីមកាត (តម្រូវឲ្យកូដ PIN ប្រើទិន្នន័យចល័ត)</translation>
@@ -3816,7 +3815,6 @@
 <translation id="6607831829715835317">ឧបករណ៍ច្រើនទៀត</translation>
 <translation id="6612358246767739896">មាតិកាដែលបានការពារ</translation>
 <translation id="6615455863669487791">បង្ហាញខ្ញុំ</translation>
-<translation id="6617100836880592260">ល្បឿនស្កេន៖ <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">មិនអី​ទេ​រក្សាទុក​ចុះ</translation>
 <translation id="6619058681307408113">ប្រូតូកូលបោះពុម្ពក្នុងបណ្តាញ (LPD)</translation>
 <translation id="661907246513853610">ទំព័រ​អាចតាមដាន​ទីតាំង​របស់អ្នក​បាន</translation>

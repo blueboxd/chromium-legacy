@@ -156,7 +156,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      * @return Possible mime type of the file.
      */
     private static String getMimeTypeFromUri(Uri fileUri) {
-        String extension = MimeTypeMap.getSingleton().getFileExtensionFromUrl(fileUri.toString());
+        String extension = MimeTypeMap.getFileExtensionFromUrl(fileUri.toString());
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
 

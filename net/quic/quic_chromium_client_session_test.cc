@@ -259,8 +259,8 @@ class QuicChromiumClientSessionTest
   const bool client_headers_include_h2_stream_dependency_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   quic::QuicCryptoClientConfig crypto_config_;
-  TestNetLog net_log_;
-  BoundTestNetLog bound_test_net_log_;
+  RecordingTestNetLog net_log_;
+  RecordingBoundTestNetLog bound_test_net_log_;
   MockClientSocketFactory socket_factory_;
   std::unique_ptr<MockRead> default_read_;
   std::unique_ptr<SequencedSocketData> socket_data_;

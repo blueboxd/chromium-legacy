@@ -44,3 +44,24 @@ async function show(options) { // eslint-disable-line no-unused-vars
     return e.toString();
   }
 }
+
+/**
+ * A version of show(options) that inserts a delay between creating the request
+ * and calling request.show().
+ * This is a regression test for https://crbug.com/1028114.
+ * @param {PaymentOptions} options - The payment options to use.
+ * @return {Promise<string>} The error message string, if any.
+ */
+async function delayedShow(options) { // eslint-disable-line no-unused-vars
+  let request = buildPaymentRequest(options);
+
+  try {
+    // Block on hasEnrolledInstrument() to make sure when show() is called,
+    // all instruments are available.
+    await request.hasEnrolledInstrument();
+    await request.show();
+    return '';
+  } catch (e) {
+    return e.toString();
+  }
+}

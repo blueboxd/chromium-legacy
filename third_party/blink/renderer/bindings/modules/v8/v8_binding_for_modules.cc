@@ -167,32 +167,27 @@ v8::Local<v8::Value> ToV8(const IDBAny* impl,
   return v8::Undefined(isolate);
 }
 
-#if defined(NDEBUG)
 static const size_t kMaximumDepth = 2000;
-#else
-// Stack frames in debug builds are generally much larger than in release
-// builds. Use a lower recursion depth to avoid stack overflows (see e.g.
-// http://crbug.com/729334).
-static const size_t kMaximumDepth = 1000;
-#endif
 
-// Convert a script value to an Indexed DB key. If the result cannot be
-// converted, nullptr is returned. Special case: if an array is being
-// converted, and a potential subkey cannot be converted, then the array is
-// returned but with an 'Invalid' entry; this is used for "multi-entry"
-// indexes where an array with invalid members is permitted will later be
-// sanitized.
+// Convert a simple (non-Array) script value to an Indexed DB key. If the
+// conversion fails due to a detached buffer, an exception is thrown. If
+// the value can't be converted into a key, an 'Invalid' key is returned. This
+// is used to implement part of the following spec algorithm:
+// https://w3c.github.io/IndexedDB/#convert-value-to-key
 // A V8 exception may be thrown on bad data or by script's getters; if so,
 // callers should not make further V8 calls.
-static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
+static std::unique_ptr<IDBKey> CreateIDBKeyFromSimpleValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
-    Vector<v8::Local<v8::Array>>& stack,
     ExceptionState& exception_state) {
+  DCHECK(!value->IsArray());
+
   if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
     return IDBKey::CreateNumber(value.As<v8::Number>()->Value());
+
   if (value->IsString())
     return IDBKey::CreateString(ToCoreString(value.As<v8::String>()));
+
   if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
     return IDBKey::CreateDate(value.As<v8::Date>()->ValueOf());
 
@@ -200,72 +195,31 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     DOMArrayBuffer* buffer = V8ArrayBuffer::ToImpl(value.As<v8::Object>());
     if (buffer->IsDetached()) {
       exception_state.ThrowTypeError("The ArrayBuffer is detached.");
-      return nullptr;
+      return IDBKey::CreateInvalid();
     }
     const char* start = static_cast<const char*>(buffer->Data());
     size_t length = buffer->ByteLengthAsSizeT();
     return IDBKey::CreateBinary(SharedBuffer::Create(start, length));
   }
+
   if (value->IsArrayBufferView()) {
     DOMArrayBufferView* view =
         V8ArrayBufferView::ToImpl(value.As<v8::Object>());
     if (view->buffer()->IsDetached()) {
       exception_state.ThrowTypeError("The viewed ArrayBuffer is detached.");
-      return nullptr;
+      return IDBKey::CreateInvalid();
     }
     const char* start = static_cast<const char*>(view->BaseAddress());
     size_t length = view->byteLength();
     return IDBKey::CreateBinary(SharedBuffer::Create(start, length));
   }
 
-  if (value->IsArray()) {
-    v8::Local<v8::Array> array = value.As<v8::Array>();
-
-    if (stack.Contains(array))
-      return nullptr;
-    if (stack.size() >= kMaximumDepth)
-      return nullptr;
-    stack.push_back(array);
-
-    uint32_t length = array->Length();
-    IDBKey::KeyArray subkeys;
-    subkeys.ReserveInitialCapacity(length);
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    for (uint32_t i = 0; i < length; ++i) {
-      bool has_own_property;
-      if (!array->HasOwnProperty(context, i).To(&has_own_property)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return nullptr;
-      }
-      if (!has_own_property)
-        return nullptr;
-      v8::Local<v8::Value> item;
-      if (!array->Get(context, i).ToLocal(&item)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return nullptr;
-      }
-      std::unique_ptr<IDBKey> subkey =
-          CreateIDBKeyFromValue(isolate, item, stack, exception_state);
-      if (exception_state.HadException()) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return nullptr;
-      }
-      if (!subkey)
-        subkeys.emplace_back(IDBKey::CreateInvalid());
-      else
-        subkeys.emplace_back(std::move(subkey));
-    }
-
-    stack.pop_back();
-    return IDBKey::CreateArray(std::move(subkeys));
-  }
-  return nullptr;
+  return IDBKey::CreateInvalid();
 }
 
 // Convert a script value to an Indexed DB key. If the result cannot be
-// converted, an 'Invalid' key is returned. Special case: if an array is being
-// converted, and a potential subkey cannot be converted, then the array is
+// converted, an 'Invalid' key is returned. If an array is being
+// converted, and a potential subkey does not exist, then the array is
 // returned but with an 'Invalid' entry; this is used for "multi-entry"
 // indexes where an array with invalid members is permitted will later be
 // sanitized. This is used to implement both of the following spec algorithms:
@@ -277,12 +231,97 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  Vector<v8::Local<v8::Array>> stack;
-  std::unique_ptr<IDBKey> key =
-      CreateIDBKeyFromValue(isolate, value, stack, exception_state);
-  if (!key)
-    key = IDBKey::CreateInvalid();
-  return key;
+  // Simple case:
+  if (!value->IsArray())
+    return CreateIDBKeyFromSimpleValue(isolate, value, exception_state);
+
+  // Recursion is done on the heap rather than the stack.
+  struct Record {
+    Record(v8::Local<v8::Array> array)
+        : array(std::move(array)), length(array->Length()) {
+      subkeys.ReserveInitialCapacity(length);
+    }
+    Record(const Record&) = delete;
+    Record& operator=(const Record&) = delete;
+
+    // Array being converted.
+    v8::Local<v8::Array> array;
+    // Length of |array|. Snapshotted (per spec), since getters may alter it.
+    uint32_t length;
+    // Converted sub-keys.
+    IDBKey::KeyArray subkeys;
+  };
+
+  // Recursion stack.
+  Vector<std::unique_ptr<Record>> stack;
+
+  // Tracks seen arrays, to detect circular references and abort (per spec).
+  Vector<v8::Local<v8::Array>> seen;
+
+  // Initial state.
+  {
+    v8::Local<v8::Array> array = value.As<v8::Array>();
+    stack.push_back(std::make_unique<Record>(array));
+    seen.push_back(array);
+  }
+
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::TryCatch try_block(isolate);
+
+  // Process stack - will return when complete.
+  while (true) {
+    DCHECK(!stack.IsEmpty());
+    Record* top = stack.back().get();
+    const wtf_size_t item_index = top->subkeys.size();
+
+    // Done this array?
+    if (item_index == top->length) {
+      std::unique_ptr<IDBKey> key =
+          IDBKey::CreateArray(std::move(top->subkeys));
+      seen.pop_back();
+      stack.pop_back();
+
+      if (stack.IsEmpty())
+        return key;
+      top = stack.back().get();
+      top->subkeys.push_back(std::move(key));
+      continue;
+    }
+
+    // Process next item from current array.
+    bool has_own_property;
+    if (!top->array->HasOwnProperty(context, item_index)
+             .To(&has_own_property)) {
+      exception_state.RethrowV8Exception(try_block.Exception());
+      return IDBKey::CreateInvalid();
+    }
+    if (!has_own_property)
+      return IDBKey::CreateInvalid();
+    v8::Local<v8::Value> item;
+    if (!top->array->Get(context, item_index).ToLocal(&item)) {
+      exception_state.RethrowV8Exception(try_block.Exception());
+      return IDBKey::CreateInvalid();
+    }
+
+    if (!item->IsArray()) {
+      // A non-array: convert it directly.
+      auto key = CreateIDBKeyFromSimpleValue(isolate, item, exception_state);
+      if (exception_state.HadException()) {
+        DCHECK(!try_block.HasCaught());
+        return IDBKey::CreateInvalid();
+      }
+      top->subkeys.push_back(std::move(key));
+    } else {
+      // A sub-array; push onto the stack and start processing it.
+      v8::Local<v8::Array> array = item.As<v8::Array>();
+      if (seen.Contains(array) || stack.size() >= kMaximumDepth) {
+        return IDBKey::CreateInvalid();
+      }
+
+      stack.push_back(std::make_unique<Record>(array));
+      seen.push_back(array);
+    }
+  }
 }
 
 // Indexed DB key paths should apply to explicitly copied properties (that

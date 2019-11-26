@@ -58,7 +58,7 @@ class PortalBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kValidateInputEventStream);
-    command_line->AppendSwitchASCII("--enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "OverscrollCustomization");
   }
 

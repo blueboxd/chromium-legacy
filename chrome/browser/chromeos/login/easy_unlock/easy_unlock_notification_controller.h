@@ -11,8 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
-#include "chromeos/components/proximity_auth/notification_controller.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
@@ -20,17 +18,22 @@ class Profile;
 
 namespace chromeos {
 
-class EasyUnlockNotificationController
-    : public proximity_auth::NotificationController {
+class EasyUnlockNotificationController {
  public:
   explicit EasyUnlockNotificationController(Profile* profile);
-  ~EasyUnlockNotificationController() override;
+  virtual ~EasyUnlockNotificationController();
 
-  // proximity_auth::NotificationController:
-  void ShowChromebookAddedNotification() override;
-  void ShowPairingChangeNotification() override;
-  void ShowPairingChangeAppliedNotification(
-      const std::string& phone_name) override;
+  // Shows the notification when EasyUnlock is synced to a new Chromebook.
+  virtual void ShowChromebookAddedNotification();
+
+  // Shows the notification when EasyUnlock is already enabled on a Chromebook,
+  // but a different phone is synced as the unlock key.
+  virtual void ShowPairingChangeNotification();
+
+  // Shows the notification after password reauth confirming that the new phone
+  // should be used for EasyUnlock from now on.
+  virtual void ShowPairingChangeAppliedNotification(
+      const std::string& phone_name);
 
  protected:
   // Exposed for testing.

@@ -5,22 +5,48 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_HOST_QUEUE_H_
 #define EXTENSIONS_BROWSER_EXTENSION_HOST_QUEUE_H_
 
-namespace extensions {
+#include <list>
 
+#include "base/memory/weak_ptr.h"
+
+namespace extensions {
 class DeferredStartRenderHost;
 
-// An interface for a queue of ExtensionHosts waiting for initialization.
-// This is used to implement different throttling strategies.
+// A queue of ExtensionHosts waiting for initialization. This initializes
+// DeferredStartRenderHosts in the order they're Add()ed, with simple rate
+// limiting logic that re-posts each task to the UI thread, to avoid clogging it
+// for a long period of time.
 class ExtensionHostQueue {
  public:
-  virtual ~ExtensionHostQueue() {}
+  ExtensionHostQueue();
+  ~ExtensionHostQueue();
+
+  ExtensionHostQueue(const ExtensionHostQueue& queue) = delete;
+  ExtensionHostQueue& operator=(const ExtensionHostQueue& queue) = delete;
 
   // Adds a host to the queue for RenderView creation.
-  virtual void Add(DeferredStartRenderHost* host) = 0;
+  void Add(DeferredStartRenderHost* host);
 
   // Removes a host from the queue (for example, it may be deleted before
-  // having a chance to start).
-  virtual void Remove(DeferredStartRenderHost* host) = 0;
+  // having a chance to start)
+  void Remove(DeferredStartRenderHost* host);
+
+ private:
+  // Queues up a delayed task to process the next DeferredStartRenderHost in
+  // the queue.
+  void PostTask();
+
+  // Creates the RenderView for the next host in the queue.
+  void ProcessOneHost();
+
+  // True if this queue is currently in the process of starting an
+  // DeferredStartRenderHost.
+  bool pending_create_;
+
+  // The list of DeferredStartRenderHosts waiting to be started.
+  std::list<DeferredStartRenderHost*> queue_;
+
+  base::WeakPtrFactory<ExtensionHostQueue> ptr_factory_{this};
 };
 
 }  // namespace extensions

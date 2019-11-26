@@ -12,11 +12,12 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_mojom_traits.h"
+#include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 #if defined(USE_OZONE)
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
+#include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"  // nogncheck
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"  // nogncheck
 #endif
 
@@ -90,6 +91,8 @@ void ExpectEventsEqual(const Event& expected, const Event& actual) {
 }  // namespace
 
 TEST(StructTraitsTest, KeyEvent) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   const KeyEvent kTestData[] = {
       {ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN},
       {ET_KEY_PRESSED, VKEY_MENU, EF_ALT_DOWN},
@@ -214,6 +217,8 @@ TEST(StructTraitsTest, FloatingPointLocations) {
 }
 
 TEST(StructTraitsTest, KeyEventPropertiesSerialized) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   KeyEvent key_event(ET_KEY_PRESSED, VKEY_T, EF_NONE);
   const std::string key = "key";
   const std::vector<uint8_t> value(0xCD, 2);
@@ -418,7 +423,7 @@ class FixedKeyboardLayoutEngine : public StubKeyboardLayoutEngine {
 
 TEST(StructTraitsTest, DifferentKeyboardLayout) {
   // Verifies KeyEvent serialization is not impacted by a KeyboardLayoutEngine.
-  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+  ScopedKeyboardLayoutEngine scoped_keyboard_layout_engine(
       std::make_unique<FixedKeyboardLayoutEngine>());
   std::unique_ptr<KeyEvent> key_event = std::make_unique<KeyEvent>(
       ET_KEY_PRESSED, VKEY_S, DomCode::US_S, EF_NONE,
@@ -428,8 +433,6 @@ TEST(StructTraitsTest, DifferentKeyboardLayout) {
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::Event>(&expected, &output));
   ExpectEventsEqual(*expected, *output);
-  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-      std::make_unique<StubKeyboardLayoutEngine>());
 }
 
 #endif

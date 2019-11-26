@@ -63,7 +63,7 @@ class DialServiceTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  net::TestNetLog test_net_log_;
+  net::RecordingTestNetLog test_net_log_;
   net::IPAddress mock_ip_;
   DialServiceImpl dial_service_;
   std::unique_ptr<DialServiceImpl::DialSocket> dial_socket_;

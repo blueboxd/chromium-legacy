@@ -12,13 +12,14 @@
 namespace content {
 
 void CreateVideoEncodeAccelerator(
-    const OnCreateVideoEncodeAcceleratorCallback& callback) {
+    OnCreateVideoEncodeAcceleratorCallback callback) {
   DCHECK(!callback.is_null());
 
   media::GpuVideoAcceleratorFactories* gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
-    callback.Run(nullptr, std::unique_ptr<media::VideoEncodeAccelerator>());
+    std::move(callback).Run(nullptr,
+                            std::unique_ptr<media::VideoEncodeAccelerator>());
     return;
   }
 
@@ -26,10 +27,10 @@ void CreateVideoEncodeAccelerator(
       gpu_factories->GetTaskRunner();
   base::PostTaskAndReplyWithResult(
       encode_task_runner.get(), FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &media::GpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator,
           base::Unretained(gpu_factories)),
-      base::Bind(callback, encode_task_runner));
+      base::BindOnce(std::move(callback), encode_task_runner));
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles

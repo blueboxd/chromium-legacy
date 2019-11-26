@@ -164,7 +164,7 @@ class ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag
   ~ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() override = default;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
                          testing::Bool());
 

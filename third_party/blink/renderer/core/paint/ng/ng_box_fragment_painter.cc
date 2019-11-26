@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
@@ -301,39 +302,10 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
 void NGBoxFragmentPainter::RecordScrollHitTestData(
     const PaintInfo& paint_info,
     const DisplayItemClient& background_client) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+  if (!box_fragment_.GetLayoutObject()->IsBox())
     return;
-
-  // If an object is not visible, it does not scroll.
-  if (!IsVisibleToPaint(PhysicalFragment(), box_fragment_.Style()))
-    return;
-
-  // Only create scroll hit test data for objects that scroll.
-  const auto* layer = PhysicalFragment().Layer();
-  if (!layer || !layer->GetScrollableArea() ||
-      !layer->GetScrollableArea()->ScrollsOverflow())
-    return;
-
-  // TODO(pdr): Break dependency on LayoutObject functionality.
-  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
-  const auto* fragment = paint_info.FragmentToPaint(layout_object);
-  const auto* properties = fragment ? fragment->PaintProperties() : nullptr;
-
-  // If there is an associated scroll node, emit a scroll hit test display item.
-  if (properties && properties->Scroll()) {
-    DCHECK(properties->ScrollTranslation());
-    // The local border box properties are used instead of the contents
-    // properties so that the scroll hit test is not clipped or scrolled.
-    ScopedPaintChunkProperties scroll_hit_test_properties(
-        paint_info.context.GetPaintController(),
-        fragment->LocalBorderBoxProperties(), background_client,
-        DisplayItem::kScrollHitTest);
-    ScrollHitTestDisplayItem::Record(
-        paint_info.context, background_client, DisplayItem::kScrollHitTest,
-        properties->ScrollTranslation(), fragment->VisualRect());
-  }
+  BoxPainter(ToLayoutBox(*box_fragment_.GetLayoutObject()))
+      .RecordScrollHitTestData(paint_info, background_client);
 }
 
 void NGBoxFragmentPainter::RecordHitTestDataForLine(

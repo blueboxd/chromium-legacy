@@ -128,15 +128,25 @@ void CacheStorageContextImpl::SetBlobParametersForCache(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!blob_storage_context)
     return;
-  // We can only get a mojo interface for BlobStorageContext on the IO thread.
-  // Bounce there first before setting the context on the manager.
+
+  // TODO(enne): this remote will need to be sent to the storage service when
+  // cache storage is moved.
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+  auto receiver = remote.InitWithNewPipeAndPassReceiver();
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
+          std::move(remote)));
+
+  // We can only bind a mojo interface for BlobStorageContext on the IO thread.
   // TODO(enne): clean this up in the future to not require this bounce and
   // to have this mojo context live on the cache storage sequence.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &CacheStorageContextImpl::GetBlobStorageMojoContextOnIOThread, this,
-          base::RetainedRef(blob_storage_context)));
+          &CacheStorageContextImpl::BindBlobStorageMojoContextOnIOThread, this,
+          base::RetainedRef(blob_storage_context), std::move(receiver)));
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
@@ -250,22 +260,14 @@ void CacheStorageContextImpl::ShutdownOnTaskRunner() {
   cache_manager_ = nullptr;
 }
 
-void CacheStorageContextImpl::GetBlobStorageMojoContextOnIOThread(
-    ChromeBlobStorageContext* blob_storage_context) {
+void CacheStorageContextImpl::BindBlobStorageMojoContextOnIOThread(
+    ChromeBlobStorageContext* blob_storage_context,
+    mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blob_storage_context);
+  DCHECK(receiver.is_valid());
 
-  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
-  blob_storage_context->BindMojoContext(
-      remote.InitWithNewPipeAndPassReceiver());
-
-  // TODO(enne): this remote will need to be sent to the storage service when
-  // cache storage is moved.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
-          std::move(remote)));
+  blob_storage_context->BindMojoContext(std::move(receiver));
 }
 
 void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(

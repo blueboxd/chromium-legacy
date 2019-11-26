@@ -15,29 +15,29 @@ document.addEventListener('DOMContentLoaded', onLoad);
  * This class handles the presentation of the net-export view. Used as a
  * singleton.
  */
-var NetExportView = (function() {
+const NetExportView = (function() {
   'use strict';
 
   // --------------------------------------------------------------------------
 
-  var kIdStateDivUninitialized = 'state-uninitialized';
-  var kIdStateDivInitial = 'state-initial';
-  var kIdStateDivLogging = 'state-logging';
-  var kIdStateDivStopped = 'state-stopped';
-  var kIdStartLoggingButton = 'start-logging';
-  var kIdStopLoggingButton = 'stop-logging';
-  var kIdEmailLogButton = 'mobile-email';
-  var kIdShowFileButton = 'show-file';
-  var kIdCaptureModeLogging = 'capture-mode-logging';
-  var kIdFilePathLogging = 'file-path-logging';
-  var kIdCaptureModeStopped = 'capture-mode-stopped';
-  var kIdFilePathStoppedLogging = 'file-path-stopped';
-  var kIdStartOverButton = 'startover';
-  var kIdPrivacyReadMoreLink = 'privacy-read-more-link';
-  var kIdPrivacyReadMoreDiv = 'privacy-read-more';
-  var kIdTooBigReadMoreLink = 'toobig-read-more-link';
-  var kIdTooBigReadMoreDiv = 'toobig-read-more';
-  var kIdLogMaxFileSizeInput = 'log-max-filesize';
+  const kIdStateDivUninitialized = 'state-uninitialized';
+  const kIdStateDivInitial = 'state-initial';
+  const kIdStateDivLogging = 'state-logging';
+  const kIdStateDivStopped = 'state-stopped';
+  const kIdStartLoggingButton = 'start-logging';
+  const kIdStopLoggingButton = 'stop-logging';
+  const kIdEmailLogButton = 'mobile-email';
+  const kIdShowFileButton = 'show-file';
+  const kIdCaptureModeLogging = 'capture-mode-logging';
+  const kIdFilePathLogging = 'file-path-logging';
+  const kIdCaptureModeStopped = 'capture-mode-stopped';
+  const kIdFilePathStoppedLogging = 'file-path-stopped';
+  const kIdStartOverButton = 'startover';
+  const kIdPrivacyReadMoreLink = 'privacy-read-more-link';
+  const kIdPrivacyReadMoreDiv = 'privacy-read-more';
+  const kIdTooBigReadMoreLink = 'toobig-read-more-link';
+  const kIdTooBigReadMoreDiv = 'toobig-read-more';
+  const kIdLogMaxFileSizeInput = 'log-max-filesize';
 
   /**
    * @constructor
@@ -58,14 +58,14 @@ var NetExportView = (function() {
      */
     onStartLogging_: function() {
       // Determine the capture mode to use.
-      var logMode =
+      const logMode =
           document.querySelector('input[name="log-mode"]:checked').value;
 
       // Determine the maximum file size, as the number of bytes (or -1 to mean
       // no limit)
-      var maxLogFileSizeBytes = -1;
-      var fileSizeString = $(kIdLogMaxFileSizeInput).value;
-      var numMegabytes = parseFloat(fileSizeString);
+      let maxLogFileSizeBytes = -1;
+      const fileSizeString = $(kIdLogMaxFileSizeInput).value;
+      const numMegabytes = parseFloat(fileSizeString);
       if (!isNaN(numMegabytes)) {
         // Convert to an integral number of bytes.
         maxLogFileSizeBytes = Math.round(numMegabytes * 1024 * 1024);
@@ -257,7 +257,7 @@ var NetExportView = (function() {
         return 'Unknown';
       }
 
-      var radioButton = document.querySelector(
+      const radioButton = document.querySelector(
           'input[name="log-mode"][value="' + info.captureMode + '"]');
       if (!radioButton) {
         return 'Unknown';
@@ -276,14 +276,14 @@ var NetExportView = (function() {
     },
 
     showStateDiv_: function(divId) {
-      var kAllDivIds = [
+      const kAllDivIds = [
         kIdStateDivUninitialized,
         kIdStateDivInitial,
         kIdStateDivLogging,
         kIdStateDivStopped
       ];
 
-      for (var curDivId of kAllDivIds) {
+      for (const curDivId of kAllDivIds) {
         $(curDivId).hidden = divId != curDivId;
       }
     },

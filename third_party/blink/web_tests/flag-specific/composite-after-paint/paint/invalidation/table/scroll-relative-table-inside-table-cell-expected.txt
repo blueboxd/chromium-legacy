@@ -5,6 +5,23 @@
       "bounds": [1566, 1781],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
+          "rect": [1114, 1314, 435, 450],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative red'",
+          "rect": [1114, 1314, 435, 450],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [1114, 1764, 435, 15],
+          "reason": "scroll control"
+        }
+      ],
       "transform": 1
     },
     {
@@ -18,33 +35,9 @@
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
-    },
-    {
-      "name": "LayoutNGBlockFlow HTML",
-      "position": [808, 1208],
-      "bounds": [758, 573],
-      "contentsOpaque": true,
-      "backgroundColor": "#FF0000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [306, 106, 435, 450],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative red'",
-          "rect": [306, 106, 435, 450],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [306, 556, 435, 15],
-          "reason": "scroll control"
-        }
-      ],
-      "transform": 1
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     }
   ],
   "transforms": [

@@ -61,7 +61,7 @@ class TransportConnectJobTest : public WithTaskEnvironment,
   }
 
  protected:
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   MockHostResolver host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   const CommonConnectJobParams common_connect_job_params_;

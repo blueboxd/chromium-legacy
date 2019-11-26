@@ -21,7 +21,7 @@ namespace app_list {
 class AppListFileIconUtilTest
     : public testing::TestWithParam<std::pair<std::string, int>> {};
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppListFileIconUtilTest,
     testing::ValuesIn((std::pair<std::string, int>[]){
         {"/my/test/file.pdf", IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},

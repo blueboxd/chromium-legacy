@@ -56,7 +56,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void AddICECandidate(RTCVoidRequest*,
                        scoped_refptr<RTCIceCandidatePlatform>) override;
   void RestartIce() override;
-  void GetStats(const WebRTCStatsRequest&) override;
+  void GetStats(RTCStatsRequest*) override;
   void GetStats(WebRTCStatsReportCallback,
                 const WebVector<webrtc::NonStandardGroupId>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
@@ -72,7 +72,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       RTCRtpSenderPlatform*) override;
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
-      const WebRTCDataChannelInit&) override;
+      const RTCDataChannelInitPlatform&) override;
   void Stop() override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(

@@ -4,6 +4,7 @@
 
 #include "components/sync/syncable/nigori_handler_proxy.h"
 
+#include "components/sync/base/model_type.h"
 #include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/user_share.h"
@@ -16,7 +17,7 @@ namespace syncable {
 NigoriHandlerProxy::NigoriHandlerProxy(UserShare* user_share)
     : user_share_(user_share),
       cryptographer_(std::make_unique<DirectoryCryptographer>()),
-      encrypted_types_(SyncEncryptionHandler::SensitiveTypes()),
+      encrypted_types_(AlwaysEncryptedUserTypes()),
       passphrase_type_(SyncEncryptionHandler::kInitialPassphraseType) {
   DCHECK(user_share);
 }

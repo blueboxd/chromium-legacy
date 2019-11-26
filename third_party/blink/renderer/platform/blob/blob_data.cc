@@ -120,24 +120,23 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
 
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path,
-    double expected_modification_time) {
+    const base::Optional<base::Time>& expected_modification_time) {
   std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
-      WebStringToFilePath(path), 0, BlobData::kToEndOfFile,
-      base::Time::FromDoubleT(expected_modification_time))));
+  data->elements_.push_back(DataElement::NewFile(
+      DataElementFile::New(WebStringToFilePath(path), 0, BlobData::kToEndOfFile,
+                           expected_modification_time)));
   return data;
 }
 
 std::unique_ptr<BlobData> BlobData::CreateForFileSystemURLWithUnknownSize(
     const KURL& file_system_url,
-    double expected_modification_time) {
+    const base::Optional<base::Time>& expected_modification_time) {
   std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->elements_.push_back(
-      DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
-          file_system_url, 0, BlobData::kToEndOfFile,
-          base::Time::FromDoubleT(expected_modification_time))));
+  data->elements_.push_back(DataElement::NewFileFilesystem(
+      DataElementFilesystemURL::New(file_system_url, 0, BlobData::kToEndOfFile,
+                                    expected_modification_time)));
   return data;
 }
 
@@ -162,10 +161,11 @@ void BlobData::AppendData(scoped_refptr<RawData> data) {
   AppendDataInternal(base::make_span(data->data(), data->length()), data);
 }
 
-void BlobData::AppendFile(const String& path,
-                          int64_t offset,
-                          int64_t length,
-                          double expected_modification_time) {
+void BlobData::AppendFile(
+    const String& path,
+    int64_t offset,
+    int64_t length,
+    const base::Optional<base::Time>& expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   DCHECK_NE(length, BlobData::kToEndOfFile)
@@ -177,8 +177,7 @@ void BlobData::AppendFile(const String& path,
   if (length == 0)
     return;
   elements_.push_back(DataElement::NewFile(DataElementFile::New(
-      WebStringToFilePath(path), offset, length,
-      base::Time::FromDoubleT(expected_modification_time))));
+      WebStringToFilePath(path), offset, length, expected_modification_time)));
 }
 
 void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
@@ -195,10 +194,11 @@ void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
       DataElementBlob::New(data_handle->CloneBlobRemote(), offset, length)));
 }
 
-void BlobData::AppendFileSystemURL(const KURL& url,
-                                   int64_t offset,
-                                   int64_t length,
-                                   double expected_modification_time) {
+void BlobData::AppendFileSystemURL(
+    const KURL& url,
+    int64_t offset,
+    int64_t length,
+    const base::Optional<base::Time>& expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   // Skip zero-byte items, as they don't matter for the contents of the blob.
@@ -206,8 +206,7 @@ void BlobData::AppendFileSystemURL(const KURL& url,
     return;
   elements_.push_back(
       DataElement::NewFileFilesystem(DataElementFilesystemURL::New(
-          url, offset, length,
-          base::Time::FromDoubleT(expected_modification_time))));
+          url, offset, length, expected_modification_time)));
 }
 
 void BlobData::AppendText(const String& text,

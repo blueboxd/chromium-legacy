@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.Clipboard;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
@@ -375,11 +374,11 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // Determine component or class name.
         ComponentName component;
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
-            component = mActivity.getComponentName();
-        } else {
+        if (mActivity instanceof HistoryActivity) { // phone
             component = IntentUtils.safeGetParcelableExtra(
                     mActivity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+        } else { // tablet
+            component = mActivity.getComponentName();
         }
         if (component != null) {
             ChromeTabbedActivity.setNonAliasedComponent(viewIntent, component);

@@ -51,6 +51,7 @@ namespace ash {
 enum class AnimationChangeType;
 class DragWindowFromShelfController;
 class PanelLayoutManagerTest;
+class PresentationTimeRecorder;
 class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTestBase;
@@ -530,6 +531,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                              float scroll_y);
   base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
   MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
+  // If overview session is active, goes to home screen if the gesture should
+  // initiate transition to home. It handles the gesture only if the
+  // |window_drag_controller_| is not handling a window drag (for example, in
+  // split view mode).
+  bool MaybeEndDragFromOverviewToHome(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
   bool IsWindowDragInProgress() const;
 
@@ -670,8 +676,19 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // up from shelf to homescreen, overview or splitview.
   std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
 
+  // Whether upward fling from shelf should be handled as potential gesture from
+  // overview to home. This is set when the swipe would otherwise be handled by
+  // |window_drag_controller_|, but the swipe cannot be associated with a window
+  // to drag (for example, because the swipe started in split view mode on a
+  // side which is showing overview). Note that the gesture will be handled only
+  // if the overview session is active.
+  bool allow_fling_from_overview_to_home_ = false;
+
   // Tracks whether the shelf is currently dimmed for inactivity.
   bool dimmed_for_inactivity_ = false;
+
+  // Records the presentation time for hotseat dragging.
+  std::unique_ptr<PresentationTimeRecorder> hotseat_presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

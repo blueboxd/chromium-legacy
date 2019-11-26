@@ -2,8 +2,10 @@ document Name='Action verbs'
 ++group
 ++++description Name='Generic div'
 ++heading Name='Heading'
+++++description Name='Heading' IsControlElement=false
 ++button Name='Button'
 ++link Name='Link'
+++++description Name='Link' IsControlElement=false
 ++textbox
 ++searchbox
 ++textbox
@@ -22,6 +24,7 @@ document Name='Action verbs'
 ++++description Name='Div with click handler'
 ++group
 ++++group
+++++++description Name='Paragraph with click handler on parent' IsControlElement=false
 ++menu Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++menuitem Name='Menu item 1'
 ++++menuitemcheckbox Name='Menu item 2' Toggle.ToggleState='On'

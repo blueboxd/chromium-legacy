@@ -9,6 +9,7 @@
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -85,7 +86,8 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("--enable-blink-features", "MediaSession");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "MediaSession");
   }
 
   void EnsurePlayer() {

@@ -18,6 +18,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
@@ -954,6 +956,41 @@ TEST_F(TabLifecycleUnitTest, TabUnfreezeOnOriginTrialOptOut) {
   ::testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(LifecycleUnitState::PENDING_UNFREEZE,
             tab_lifecycle_unit.GetState());
+}
+
+TEST_F(TabLifecycleUnitTest,
+       CannotFreezeOrDiscardTabWithNotificationsPermission) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  DecisionDetails decision_details;
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
+
+  NotificationPermissionContext::UpdatePermission(
+      profile(), web_contents_->GetLastCommittedURL().GetOrigin(),
+      CONTENT_SETTING_ALLOW);
+
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION,
+            decision_details.FailureReason());
+
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION,
+            decision_details.FailureReason());
+
+  NotificationPermissionContext::UpdatePermission(
+      profile(), web_contents_->GetLastCommittedURL().GetOrigin(),
+      CONTENT_SETTING_DEFAULT);
 }
 
 }  // namespace resource_coordinator

@@ -2617,7 +2617,6 @@
 <translation id="4839303808932127586">వీడియోను ఇలా సే&amp;వ్ చేయి...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{మరో 1}other{మరో #}}</translation>
 <translation id="4842976633412754305">ప్రామాణీకరించని మూలాల నుండి స్క్రిప్ట్‌లను లోడ్ చేయడానికి, ఈ పేజీ ప్రయత్నిస్తోంది.</translation>
-<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> ద్వారా లాగిన్ అందించినది</translation>
 <translation id="4844333629810439236">ఇతర కీబోర్డ్‌లు</translation>
 <translation id="4846680374085650406">మీరు ఈ సెట్టింగ్ కోసం నిర్వాహకుడి సిఫార్సును అనుసరిస్తున్నారు.</translation>
 <translation id="4848518990323155912">SIM కార్డ్ లాకింగ్‌ను ప్రారంభించు (మొబైల్ డేటాను వినియోగించడానికి PIN అవసరం)</translation>
@@ -3815,7 +3814,6 @@
 <translation id="6607831829715835317">మరిన్ని సాధనా&amp;లు</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
 <translation id="6615455863669487791">నాకు చూపించు</translation>
-<translation id="6617100836880592260">స్కానింగ్ వేగం: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">ఏదేమైనా ఉంచు</translation>
 <translation id="6619058681307408113">లైన్ ప్రింటర్ డెమాన్ (LPD)</translation>
 <translation id="661907246513853610">సైట్ మీ స్థానాన్ని ట్రాక్ చేయవచ్చు</translation>

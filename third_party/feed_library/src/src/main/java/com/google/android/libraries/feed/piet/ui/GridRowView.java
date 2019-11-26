@@ -19,23 +19,23 @@ import com.google.android.libraries.feed.common.logging.Logger;
 /** LinearLayout with special measuring code for GridRow */
 public class GridRowView extends LinearLayout {
     private static final String TAG = "GridRowView";
-    private final Supplier<Boolean> isRtlSupplier;
+    private final Supplier<Boolean> mIsRtlSupplier;
 
     // Total width of the GridRowView's internal padding, child widths, and child margins.
     // This will not equal getMeasuredWidth() when the GridRowView is MATCH_PARENT width and the
     // parent is wider than the space required by the GridRowView.
     // This is the analogue of LinearLayout.mTotalLength
     @VisibleForTesting
-    int totalContentWidth = 0;
+    int mTotalContentWidth;
 
     // Copied from LinearLayout.
-    private int viewGravity = Gravity.START | Gravity.TOP;
+    private int mViewGravity = Gravity.START | Gravity.TOP;
 
     // TODO: call to setOrientation(int) not allowed on the given receiver.
     @SuppressWarnings("nullness:method.invocation.invalid")
     public GridRowView(Context context, Supplier<Boolean> isRtlSupplier) {
         super(context);
-        this.isRtlSupplier = isRtlSupplier;
+        this.mIsRtlSupplier = isRtlSupplier;
         super.setOrientation(HORIZONTAL);
     }
 
@@ -107,7 +107,7 @@ public class GridRowView extends LinearLayout {
             LayoutParams params = ((LayoutParams) view.getLayoutParams());
             if (params.weight == 0
                     && (params.width > 0 || params.width == LayoutParams.WRAP_CONTENT)
-                    && !params.isCollapsible) {
+                    && !params.mIsCollapsible) {
                 if (params.width == LayoutParams.WRAP_CONTENT) {
                     view.measure(unlimitedSpace, getMaxHeightSpecForView(params, maxHeightSpec));
                 } else {
@@ -136,7 +136,7 @@ public class GridRowView extends LinearLayout {
             }
 
             LayoutParams params = ((LayoutParams) view.getLayoutParams());
-            if (!params.isCollapsible) {
+            if (!params.mIsCollapsible) {
                 continue;
             }
             int viewMaxHeight = getMaxHeightSpecForView(params, maxHeightSpec);
@@ -248,15 +248,15 @@ public class GridRowView extends LinearLayout {
         }
 
         // Calculate totalContentWidth
-        totalContentWidth = gridRowHorizontalPadding;
+        mTotalContentWidth = gridRowHorizontalPadding;
         for (int i = 0; i < getChildCount(); i++) {
             View view = getChildAt(i);
             if (view.getVisibility() == View.GONE) {
                 continue;
             }
-            totalContentWidth += view.getMeasuredWidth();
+            mTotalContentWidth += view.getMeasuredWidth();
             LayoutParams params = ((LayoutParams) view.getLayoutParams());
-            totalContentWidth += MarginLayoutParamsCompat.getMarginStart(params)
+            mTotalContentWidth += MarginLayoutParamsCompat.getMarginStart(params)
                     + MarginLayoutParamsCompat.getMarginEnd(params);
         }
 
@@ -290,7 +290,7 @@ public class GridRowView extends LinearLayout {
     // THIS METHOD IS UNTESTED: PROCEED WITH CAUTION!
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        final boolean isLayoutRtl = isRtlSupplier.get();
+        final boolean isLayoutRtl = mIsRtlSupplier.get();
         final int paddingTop = getPaddingTop();
 
         int childTop;
@@ -312,12 +312,12 @@ public class GridRowView extends LinearLayout {
         switch (Gravity.getAbsoluteGravity(majorGravity, layoutDirection)) {
             case Gravity.RIGHT:
                 // totalContentWidth contains the padding already
-                childLeft = getPaddingLeft() + right - left - totalContentWidth;
+                childLeft = getPaddingLeft() + right - left - mTotalContentWidth;
                 break;
 
             case Gravity.CENTER_HORIZONTAL:
                 // totalContentWidth contains the padding already
-                childLeft = getPaddingLeft() + (right - left - totalContentWidth) / 2;
+                childLeft = getPaddingLeft() + (right - left - mTotalContentWidth) / 2;
                 break;
 
             case Gravity.LEFT:
@@ -390,7 +390,7 @@ public class GridRowView extends LinearLayout {
      */
     @Override
     public void setGravity(int gravity) {
-        if (viewGravity != gravity) {
+        if (mViewGravity != gravity) {
             if ((gravity & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) == 0) {
                 gravity |= Gravity.START;
             }
@@ -399,7 +399,7 @@ public class GridRowView extends LinearLayout {
                 gravity |= Gravity.TOP;
             }
 
-            viewGravity = gravity;
+            mViewGravity = gravity;
             requestLayout();
         }
     }
@@ -413,15 +413,15 @@ public class GridRowView extends LinearLayout {
      */
     @Override
     public int getGravity() {
-        return viewGravity;
+        return mViewGravity;
     }
 
     // (Copied from LinearLayout.java API 27)
     @Override
     public void setHorizontalGravity(int horizontalGravity) {
         final int gravity = horizontalGravity & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK;
-        if ((viewGravity & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) != gravity) {
-            viewGravity = (viewGravity & ~Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) | gravity;
+        if ((mViewGravity & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) != gravity) {
+            mViewGravity = (mViewGravity & ~Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) | gravity;
             requestLayout();
         }
     }
@@ -430,8 +430,8 @@ public class GridRowView extends LinearLayout {
     @Override
     public void setVerticalGravity(int verticalGravity) {
         final int gravity = verticalGravity & Gravity.VERTICAL_GRAVITY_MASK;
-        if ((viewGravity & Gravity.VERTICAL_GRAVITY_MASK) != gravity) {
-            viewGravity = (viewGravity & ~Gravity.VERTICAL_GRAVITY_MASK) | gravity;
+        if ((mViewGravity & Gravity.VERTICAL_GRAVITY_MASK) != gravity) {
+            mViewGravity = (mViewGravity & ~Gravity.VERTICAL_GRAVITY_MASK) | gravity;
             requestLayout();
         }
     }
@@ -440,7 +440,7 @@ public class GridRowView extends LinearLayout {
     public boolean hasCollapsibleCells() {
         for (int i = 0; i < getChildCount(); i++) {
             View view = getChildAt(i);
-            if (((LayoutParams) view.getLayoutParams()).isCollapsible) {
+            if (((LayoutParams) view.getLayoutParams()).mIsCollapsible) {
                 return true;
             }
         }
@@ -455,11 +455,11 @@ public class GridRowView extends LinearLayout {
      * collapsible cell starts to shrink.
      */
     public static class LayoutParams extends LinearLayout.LayoutParams {
-        private final boolean isCollapsible;
+        private final boolean mIsCollapsible;
 
         public LayoutParams(LayoutParams source) {
             super(source);
-            isCollapsible = source.getIsCollapsible();
+            mIsCollapsible = source.getIsCollapsible();
         }
 
         public LayoutParams(int width, int height, boolean isCollapsible) {
@@ -478,43 +478,43 @@ public class GridRowView extends LinearLayout {
             if (width == MATCH_PARENT) {
                 Logger.wtf(TAG, "GridRowView cells cannot have width MATCH_PARENT.");
             }
-            this.isCollapsible = isCollapsible;
+            this.mIsCollapsible = isCollapsible;
         }
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public LayoutParams(int width, int height) {
             super(width, height);
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public LayoutParams(int width, int height, float weight) {
             super(width, height, weight);
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public LayoutParams(ViewGroup.LayoutParams p) {
             super(p);
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public LayoutParams(MarginLayoutParams source) {
             super(source);
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public LayoutParams(LinearLayout.LayoutParams source) {
             super((MarginLayoutParams) source);
             weight = source.weight;
             gravity = source.gravity;
-            isCollapsible = false;
+            mIsCollapsible = false;
         }
 
         public boolean getIsCollapsible() {
-            return isCollapsible;
+            return mIsCollapsible;
         }
     }
 }

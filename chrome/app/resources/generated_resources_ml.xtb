@@ -2613,7 +2613,6 @@
 <translation id="4839303808932127586">വീഡിയോ ഇതായി സംരക്ഷി&amp;ക്കുക...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 എണ്ണം കൂടി}other{# എണ്ണം കൂടി}}</translation>
 <translation id="4842976633412754305">ഈ പേജ്, പരിശോധിച്ചുറപ്പി ഉറവിടങ്ങളിൽ നിന്ന് സ്‌ക്രിപ്‌റ്റുകൾ ലോഡ് ചെയ്യാൻ ശ്രമിക്കുന്നു.</translation>
-<translation id="4843488774506045600">ലോഗിൻ ലഭ്യമാക്കിയത് <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">മറ്റ് കീബോർഡുകൾ</translation>
 <translation id="4846680374085650406">നിങ്ങൾ ഈ ക്രമീകരണത്തിനായി അഡ്‌മിനിസ്‌ട്രേറ്ററുടെ ശുപാർശ പാലിക്കുന്നു.</translation>
 <translation id="4848518990323155912">സിം കാർഡ് ലോക്കിംഗ് പ്രവർത്തനക്ഷമമാക്കുക (മൊബൈല്‍ ഡാറ്റ ഉപയോഗിക്കാൻ പിൻ നമ്പർ ആവശ്യമാണ്)</translation>
@@ -3813,7 +3812,6 @@
 <translation id="6607831829715835317">കൂടുതൽ ഉപക&amp;രണങ്ങൾ</translation>
 <translation id="6612358246767739896">പരിരക്ഷിത ഉള്ളടക്കം</translation>
 <translation id="6615455863669487791">എന്നെ കാണിക്കുക</translation>
-<translation id="6617100836880592260">സ്‌കാനിംഗ് വേഗത: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">എന്തായാലും സൂക്ഷിക്കുക</translation>
 <translation id="6619058681307408113">ലൈൻ പ്രിന്റർ ഡെമൺ (LPD)</translation>
 <translation id="661907246513853610">സൈറ്റിന് നിങ്ങളുടെ ലൊക്കേഷൻ ട്രാക്ക് ചെയ്യാനാകും</translation>

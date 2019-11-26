@@ -15,27 +15,27 @@ import java.util.concurrent.ExecutionException;
 /** Wrapper class which will call the {@link SchedulerApi} on the main thread. */
 public final class SchedulerApiWrapper implements SchedulerApi {
     private static final String TAG = "SchedulerApiWrapper";
-    private final SchedulerApi directSchedulerApi;
-    private final ThreadUtils threadUtils;
-    private final MainThreadRunner mainThreadRunner;
+    private final SchedulerApi mDirectSchedulerApi;
+    private final ThreadUtils mThreadUtils;
+    private final MainThreadRunner mMainThreadRunner;
 
     public SchedulerApiWrapper(SchedulerApi directSchedulerApi, ThreadUtils threadUtils,
             MainThreadRunner mainThreadRunner) {
         Logger.i(TAG, "Create SchedulerApiMainThreadWrapper");
-        this.directSchedulerApi = directSchedulerApi;
-        this.threadUtils = threadUtils;
-        this.mainThreadRunner = mainThreadRunner;
+        this.mDirectSchedulerApi = directSchedulerApi;
+        this.mThreadUtils = threadUtils;
+        this.mMainThreadRunner = mainThreadRunner;
     }
 
     @RequestBehavior
     @Override
     public int shouldSessionRequestData(SessionState sessionState) {
-        if (threadUtils.isMainThread()) {
-            return directSchedulerApi.shouldSessionRequestData(sessionState);
+        if (mThreadUtils.isMainThread()) {
+            return mDirectSchedulerApi.shouldSessionRequestData(sessionState);
         }
         SimpleSettableFuture<Integer> future = new SimpleSettableFuture<>();
-        mainThreadRunner.execute(TAG + " shouldSessionRequestData",
-                () -> future.put(directSchedulerApi.shouldSessionRequestData(sessionState)));
+        mMainThreadRunner.execute(TAG + " shouldSessionRequestData",
+                () -> future.put(mDirectSchedulerApi.shouldSessionRequestData(sessionState)));
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
@@ -46,21 +46,21 @@ public final class SchedulerApiWrapper implements SchedulerApi {
 
     @Override
     public void onReceiveNewContent(long contentCreationDateTimeMs) {
-        if (threadUtils.isMainThread()) {
-            directSchedulerApi.onReceiveNewContent(contentCreationDateTimeMs);
+        if (mThreadUtils.isMainThread()) {
+            mDirectSchedulerApi.onReceiveNewContent(contentCreationDateTimeMs);
             return;
         }
-        mainThreadRunner.execute(TAG + " onReceiveNewContent",
-                () -> { directSchedulerApi.onReceiveNewContent(contentCreationDateTimeMs); });
+        mMainThreadRunner.execute(TAG + " onReceiveNewContent",
+                () -> { mDirectSchedulerApi.onReceiveNewContent(contentCreationDateTimeMs); });
     }
 
     @Override
     public void onRequestError(int networkResponseCode) {
-        if (threadUtils.isMainThread()) {
-            directSchedulerApi.onRequestError(networkResponseCode);
+        if (mThreadUtils.isMainThread()) {
+            mDirectSchedulerApi.onRequestError(networkResponseCode);
             return;
         }
-        mainThreadRunner.execute(TAG + " onRequestError",
-                () -> { directSchedulerApi.onRequestError(networkResponseCode); });
+        mMainThreadRunner.execute(TAG + " onRequestError",
+                () -> { mDirectSchedulerApi.onRequestError(networkResponseCode); });
     }
 }

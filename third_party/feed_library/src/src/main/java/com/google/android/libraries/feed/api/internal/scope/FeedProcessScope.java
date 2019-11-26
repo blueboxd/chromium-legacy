@@ -48,26 +48,26 @@ import com.google.android.libraries.feed.common.time.TimingUtils;
 public final class FeedProcessScope implements ProcessScope {
     private static final String TAG = "FeedProcessScope";
 
-    private final NetworkClient networkClient;
-    private final ProtocolAdapter protocolAdapter;
-    private final RequestManager requestManager;
-    private final FeedSessionManager feedSessionManager;
-    private final Store store;
-    private final TimingUtils timingUtils;
-    private final ThreadUtils threadUtils;
-    private final TaskQueue taskQueue;
-    private final MainThreadRunner mainThreadRunner;
-    private final AppLifecycleListener appLifecycleListener;
-    private final Clock clock;
-    private final DebugBehavior debugBehavior;
-    private final ActionManager actionManager;
-    private final Configuration configuration;
-    private final FeedKnownContent feedKnownContent;
-    private final FeedExtensionRegistry feedExtensionRegistry;
-    private final ClearAllListener clearAllListener;
-    private final BasicLoggingApi basicLoggingApi;
-    private final TooltipSupportedApi tooltipSupportedApi;
-    private final ApplicationInfo applicationInfo;
+    private final NetworkClient mNetworkClient;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final RequestManager mRequestManager;
+    private final FeedSessionManager mFeedSessionManager;
+    private final Store mStore;
+    private final TimingUtils mTimingUtils;
+    private final ThreadUtils mThreadUtils;
+    private final TaskQueue mTaskQueue;
+    private final MainThreadRunner mMainThreadRunner;
+    private final AppLifecycleListener mAppLifecycleListener;
+    private final Clock mClock;
+    private final DebugBehavior mDebugBehavior;
+    private final ActionManager mActionManager;
+    private final Configuration mConfiguration;
+    private final FeedKnownContent mFeedKnownContent;
+    private final FeedExtensionRegistry mFeedExtensionRegistry;
+    private final ClearAllListener mClearAllListener;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final TooltipSupportedApi mTooltipSupportedApi;
+    private final ApplicationInfo mApplicationInfo;
 
     /** Created through the {@link Builder}. */
     public FeedProcessScope(BasicLoggingApi basicLoggingApi, NetworkClient networkClient,
@@ -79,51 +79,51 @@ public final class FeedProcessScope implements ProcessScope {
             FeedKnownContent feedKnownContent, FeedExtensionRegistry feedExtensionRegistry,
             ClearAllListener clearAllListener, TooltipSupportedApi tooltipSupportedApi,
             ApplicationInfo applicationInfo) {
-        this.basicLoggingApi = basicLoggingApi;
-        this.networkClient = networkClient;
-        this.protocolAdapter = protocolAdapter;
-        this.requestManager = requestManager;
-        this.feedSessionManager = feedSessionManager;
-        this.store = store;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.taskQueue = taskQueue;
-        this.mainThreadRunner = mainThreadRunner;
-        this.appLifecycleListener = appLifecycleListener;
-        this.clock = clock;
-        this.debugBehavior = debugBehavior;
-        this.actionManager = actionManager;
-        this.configuration = configuration;
-        this.feedKnownContent = feedKnownContent;
-        this.feedExtensionRegistry = feedExtensionRegistry;
-        this.clearAllListener = clearAllListener;
-        this.tooltipSupportedApi = tooltipSupportedApi;
-        this.applicationInfo = applicationInfo;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mNetworkClient = networkClient;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mRequestManager = requestManager;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mStore = store;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mTaskQueue = taskQueue;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mAppLifecycleListener = appLifecycleListener;
+        this.mClock = clock;
+        this.mDebugBehavior = debugBehavior;
+        this.mActionManager = actionManager;
+        this.mConfiguration = configuration;
+        this.mFeedKnownContent = feedKnownContent;
+        this.mFeedExtensionRegistry = feedExtensionRegistry;
+        this.mClearAllListener = clearAllListener;
+        this.mTooltipSupportedApi = tooltipSupportedApi;
+        this.mApplicationInfo = applicationInfo;
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        if (protocolAdapter instanceof Dumpable) {
-            dumper.dump((Dumpable) protocolAdapter);
+        if (mProtocolAdapter instanceof Dumpable) {
+            dumper.dump((Dumpable) mProtocolAdapter);
         }
-        dumper.dump(timingUtils);
-        if (feedSessionManager instanceof Dumpable) {
-            dumper.dump((Dumpable) feedSessionManager);
+        dumper.dump(mTimingUtils);
+        if (mFeedSessionManager instanceof Dumpable) {
+            dumper.dump((Dumpable) mFeedSessionManager);
         }
-        if (store instanceof Dumpable) {
-            dumper.dump((Dumpable) store);
+        if (mStore instanceof Dumpable) {
+            dumper.dump((Dumpable) mStore);
         }
-        dumper.dump(clearAllListener);
+        dumper.dump(mClearAllListener);
     }
 
     @Override
     public void onDestroy() {
         try {
             Logger.i(TAG, "FeedProcessScope onDestroy called");
-            networkClient.close();
-            taskQueue.reset();
-            taskQueue.completeReset();
+            mNetworkClient.close();
+            mTaskQueue.reset();
+            mTaskQueue.completeReset();
         } catch (Exception ignored) {
             // Ignore exception when closing.
         }
@@ -131,41 +131,41 @@ public final class FeedProcessScope implements ProcessScope {
 
     @Deprecated
     public ProtocolAdapter getProtocolAdapter() {
-        return protocolAdapter;
+        return mProtocolAdapter;
     }
 
     @Override
     public RequestManager getRequestManager() {
-        return requestManager;
+        return mRequestManager;
     }
 
     @Deprecated
     public TimingUtils getTimingUtils() {
-        return timingUtils;
+        return mTimingUtils;
     }
 
     @Override
     public TaskQueue getTaskQueue() {
-        return taskQueue;
+        return mTaskQueue;
     }
 
     @Override
     public AppLifecycleListener getAppLifecycleListener() {
-        return appLifecycleListener;
+        return mAppLifecycleListener;
     }
 
     @Deprecated
     public ActionManager getActionManager() {
-        return actionManager;
+        return mActionManager;
     }
 
     public KnownContent getKnownContent() {
-        return feedKnownContent;
+        return mFeedKnownContent;
     }
 
     @Deprecated
     public FeedExtensionRegistry getFeedExtensionRegistry() {
-        return feedExtensionRegistry;
+        return mFeedExtensionRegistry;
     }
 
     /**
@@ -179,10 +179,11 @@ public final class FeedProcessScope implements ProcessScope {
             StreamConfiguration streamConfiguration, CardConfiguration cardConfiguration,
             SnackbarApi snackbarApi, OfflineIndicatorApi offlineIndicatorApi,
             TooltipApi tooltipApi) {
-        return new StreamScopeBuilder(context, actionApi, imageLoaderApi, protocolAdapter,
-                feedSessionManager, threadUtils, timingUtils, taskQueue, mainThreadRunner, clock,
-                debugBehavior, streamConfiguration, cardConfiguration, actionManager, configuration,
-                snackbarApi, basicLoggingApi, offlineIndicatorApi, feedKnownContent, tooltipApi,
-                tooltipSupportedApi, applicationInfo, feedExtensionRegistry);
+        return new StreamScopeBuilder(context, actionApi, imageLoaderApi, mProtocolAdapter,
+                mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue, mMainThreadRunner,
+                mClock, mDebugBehavior, streamConfiguration, cardConfiguration, mActionManager,
+                mConfiguration, snackbarApi, mBasicLoggingApi, offlineIndicatorApi,
+                mFeedKnownContent, tooltipApi, mTooltipSupportedApi, mApplicationInfo,
+                mFeedExtensionRegistry);
     }
 }

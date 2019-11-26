@@ -24,7 +24,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="62dp"
-            android:paddingStart="8dp"
             android:orientation="horizontal">
 
             <org.chromium.ui.widget.ChromeImageView
@@ -32,7 +31,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="18dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="14dp"
                 android:scaleType="fitCenter"
@@ -66,7 +65,7 @@
                 android:layout_height="24dp"
                 android:layout_toStartOf="@+id/close"
                 android:layout_alignParentBottom="true"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="24dp"
                 android:layout_marginBottom="14dp"
                 android:src="@drawable/open_in_new_tab"
                 android:contentDescription="@string/contextmenu_open_in_new_tab"
@@ -78,7 +77,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginStart="8dp"
                 android:layout_toStartOf="@id/open_in_new_tab"
                 android:layout_toEndOf="@id/favicon"
                 android:textAlignment="viewStart"
@@ -90,10 +88,9 @@
                 android:id="@+id/security_icon"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                android:layout_marginStart="8dp"
+                android:layout_alignStart="@id/title"
                 android:layout_below="@id/title"
-                android:layout_toEndOf="@id/favicon"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="3dp"
                 app:tint="@color/default_icon_color" />
 
             <TextView

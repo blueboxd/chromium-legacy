@@ -193,6 +193,7 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
 
 std::unique_ptr<ProxyLookupClientImpl> PreconnectManager::LookupProxyForUrl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ProxyLookupCallback callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -203,8 +204,8 @@ std::unique_ptr<ProxyLookupClientImpl> PreconnectManager::LookupProxyForUrl(
     return nullptr;
   }
 
-  return std::make_unique<ProxyLookupClientImpl>(url, std::move(callback),
-                                                 network_context);
+  return std::make_unique<ProxyLookupClientImpl>(
+      url, network_isolation_key, std::move(callback), network_context);
 }
 
 void PreconnectManager::TryToLaunchPreresolveJobs() {
@@ -223,8 +224,9 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
       // configuration is in place, which improves efficiency, and is also
       // important if the unproxied DNS may contain incorrect entries.
       job->proxy_lookup_client = LookupProxyForUrl(
-          job->url, base::BindOnce(&PreconnectManager::OnProxyLookupFinished,
-                                   weak_factory_.GetWeakPtr(), job_id));
+          job->url, job->network_isolation_key,
+          base::BindOnce(&PreconnectManager::OnProxyLookupFinished,
+                         weak_factory_.GetWeakPtr(), job_id));
       if (info)
         ++info->inflight_count;
       ++inflight_preresolves_count_;
@@ -261,8 +263,10 @@ void PreconnectManager::OnProxyLookupFinished(PreresolveJobId job_id,
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
 
-  if (observer_)
-    observer_->OnProxyLookupFinished(job->url, success);
+  if (observer_) {
+    observer_->OnProxyLookupFinished(job->url, job->network_isolation_key,
+                                     success);
+  }
 
   job->proxy_lookup_client = nullptr;
   if (success) {

@@ -611,13 +611,6 @@ void SynchronousLayerTreeFrameSink::OnBeginFrame(
       client_->DidPresentCompositorFrame(pair.first, pair.second);
     }
   }
-  if (needs_begin_frame_for_animate_input_ && sync_client_) {
-    sync_client_->OnBeginFrameForAnimateInput(args);
-    needs_begin_frame_for_animate_input_ = false;
-    if (!needs_begin_frame_) {
-      compositor_frame_sink_->SetNeedsBeginFrame(false);
-    }
-  }
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnBeginFrame(args);
 }
@@ -636,24 +629,13 @@ void SynchronousLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
     external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
 }
 
-void SynchronousLayerTreeFrameSink::SetNeedsSynchronousAnimateInput() {
-  DCHECK(viz_for_webview_enabled_);
-  needs_begin_frame_for_animate_input_ = true;
-  if (compositor_frame_sink_) {
-    compositor_frame_sink_->SetNeedsBeginFrame(
-        needs_begin_frame_ || needs_begin_frame_for_animate_input_);
-  }
-}
-
 void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
-  needs_begin_frame_ = needs_begin_frames;
   if (!viz_for_webview_enabled_ && sync_client_) {
     sync_client_->SetNeedsBeginFrames(needs_begin_frames);
   }
   if (compositor_frame_sink_) {
-    compositor_frame_sink_->SetNeedsBeginFrame(
-        needs_begin_frame_ || needs_begin_frame_for_animate_input_);
+    compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
   }
 }
 

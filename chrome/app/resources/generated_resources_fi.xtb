@@ -2640,7 +2640,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4839303808932127586">Tallenna &amp;video nimellä...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 muu}other{# muuta}}</translation>
 <translation id="4842976633412754305">Tämä sivu yrittää ladata koodia todentamattomista lähteistä.</translation>
-<translation id="4843488774506045600">Kirjautumisnäytön tarjoaa <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Muut näppäimistöt</translation>
 <translation id="4846680374085650406">Noudatat järjestelmänvalvojan tätä asetusta koskevaa suositusta.</translation>
 <translation id="4848518990323155912">Ota SIM-kortin lukitus käyttöön (mobiilidatan käyttö edellyttää PIN-koodia)</translation>
@@ -3847,7 +3846,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6607831829715835317">&amp;Lisää työkaluja</translation>
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6615455863669487791">Näytä</translation>
-<translation id="6617100836880592260">Skannausnopeus: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Säilytä silti</translation>
 <translation id="6619058681307408113">Line Printer Daemon ‑protokolla (LPD)</translation>
 <translation id="661907246513853610">Sivusto voi seurata sijaintiasi</translation>

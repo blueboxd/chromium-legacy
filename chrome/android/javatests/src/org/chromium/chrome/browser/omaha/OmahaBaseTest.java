@@ -169,20 +169,6 @@ public class OmahaBaseTest {
         int TIMES_OUT = 1;
     }
 
-    @IntDef({InstallEvent.SEND, InstallEvent.DONT_SEND})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface InstallEvent {
-        int SEND = 0;
-        int DONT_SEND = 1;
-    }
-
-    @IntDef({PostStatus.DUE, PostStatus.NOT_DUE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface PostStatus {
-        int DUE = 0;
-        int NOT_DUE = 1;
-    }
-
     private AdvancedMockContext mContext;
     private MockOmahaDelegate mDelegate;
     private MockOmahaBase mOmahaBase;

@@ -2643,7 +2643,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4839303808932127586">Sal&amp;var vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}one{Mais #}other{Mais #}}</translation>
 <translation id="4842976633412754305">Esta página está tentando carregar scripts de fontes não autenticadas.</translation>
-<translation id="4843488774506045600">Login fornecido por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Você está seguindo a recomendação do administrador para esta configuração.</translation>
 <translation id="4848518990323155912">Ativar bloqueio do chip (PIN necessário para o uso de dados móveis)</translation>
@@ -3850,7 +3849,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6607831829715835317">Mais ferramen&amp;tas</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6615455863669487791">Exibir</translation>
-<translation id="6617100836880592260">Velocidade da verificação: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Manter assim mesmo</translation>
 <translation id="6619058681307408113">Daemon de impressora de linha (LPD)</translation>
 <translation id="661907246513853610">O site pode rastrear seu local</translation>

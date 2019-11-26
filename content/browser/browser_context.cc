@@ -578,6 +578,16 @@ void BrowserContext::SetDownloadManagerForTesting(
 }
 
 // static
+void BrowserContext::SetPermissionControllerForTesting(
+    BrowserContext* browser_context,
+    std::unique_ptr<PermissionController> permission_controller) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(permission_controller);
+  browser_context->SetUserData(kPermissionControllerKey,
+                               std::move(permission_controller));
+}
+
+// static
 void BrowserContext::Initialize(BrowserContext* browser_context,
                                 const base::FilePath& path) {
   const base::Token new_group = base::Token::CreateRandom();

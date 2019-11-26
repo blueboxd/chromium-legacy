@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(
   if (!image)
     return nullptr;
 
-  return StaticBitmapImage::Create(std::move(image));
+  return UnacceleratedStaticBitmapImage::Create(std::move(image));
 }
 
 base::Optional<SkBitmap> ToSkBitmap(

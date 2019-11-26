@@ -313,7 +313,7 @@ TEST_P(EmbeddedTestServerTest, DefaultNotFoundResponse) {
 TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
   ASSERT_TRUE(server_->Start());
 
-  TestNetLog net_log;
+  RecordingTestNetLog net_log;
   net::AddressList address_list;
   EXPECT_TRUE(server_->GetAddressList(&address_list));
 

@@ -3788,11 +3788,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle n'est pas configurée, l'étagère est placée par défaut au bas de l'écran. Toutefois, l'utilisateur peut la mettre à un autre endroit.</translation>
 <translation id="7040229947030068419">Exemple de valeur :</translation>
 <translation id="7044883996351280650">Gérer le service de sauvegarde et de restauration Android</translation>
-<translation id="7049373494483449255">Permet à <ph name="PRODUCT_NAME" /> d'envoyer des documents à <ph name="CLOUD_PRINT_NAME" /> en vue d'une impression. REMARQUE : Cette règle affecte uniquement la disponibilité de <ph name="CLOUD_PRINT_NAME" /> dans <ph name="PRODUCT_NAME" />. Elle n'empêche pas les utilisateurs de soumettre des travaux d'impression sur des sites Web. 
-
-Si ce paramètre est activé ou non configuré, les utilisateurs peuvent imprimer sur <ph name="CLOUD_PRINT_NAME" /> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />. 
-
-Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer sur <ph name="CLOUD_PRINT_NAME" /> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Lorsqu'elle est activée, cette règle force l'importation des favoris à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
 
 Si elle est désactivée, les favoris ne sont pas importés. 

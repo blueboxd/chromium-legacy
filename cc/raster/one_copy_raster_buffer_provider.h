@@ -48,7 +48,8 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override;
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override;
   void Flush() override;
   viz::ResourceFormat GetResourceFormat() const override;
   bool IsResourcePremultiplied() const override;

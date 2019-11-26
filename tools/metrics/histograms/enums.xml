@@ -66007,6 +66007,16 @@ Full version information for the fingerprint enum values:
   <int value="2136345292" label="/privacy"/>
 </enum>
 
+<enum name="WebUITabStripCloseActions">
+  <int value="0" label="Tap on tab counter"/>
+  <int value="1" label="Tap outside tab strip"/>
+  <int value="2" label="Tab selected in tab strip"/>
+</enum>
+
+<enum name="WebUITabStripOpenActions">
+  <int value="0" label="Tap on tab counter"/>
+</enum>
+
 <enum name="WebUIUrlHashes">
   <int value="-2103246641" label="chrome://signin-internals/"/>
   <int value="-2034706497" label="chrome://net-internals/"/>

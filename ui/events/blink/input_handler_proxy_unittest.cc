@@ -197,7 +197,6 @@ class MockInputHandler : public cc::InputHandler {
 
 class MockSynchronousInputHandler : public SynchronousInputHandler {
  public:
-  MOCK_METHOD0(SetNeedsSynchronousAnimateInput, void());
   MOCK_METHOD6(UpdateRootLayerState,
                void(const gfx::ScrollOffset& total_scroll_offset,
                     const gfx::ScrollOffset& max_scroll_offset,
@@ -338,7 +337,7 @@ class InputHandlerProxyTest
       EXPECT_CALL(mock_input_handler_,
                   RequestUpdateForSynchronousInputHandler())
           .Times(1);
-      input_handler_->SetOnlySynchronouslyAnimateRootFlings(
+      input_handler_->SetSynchronousInputHandler(
           &mock_synchronous_input_handler_);
     }
 
@@ -352,19 +351,9 @@ class InputHandlerProxyTest
 
 // This is defined as a macro so the line numbers can be traced back to the
 // correct spot when it fails.
-#define EXPECT_SET_NEEDS_ANIMATE_INPUT(times)                                \
-  do {                                                                       \
-    if (synchronous_root_scroll_) {                                          \
-      EXPECT_CALL(mock_synchronous_input_handler_,                           \
-                  SetNeedsSynchronousAnimateInput())                         \
-          .Times(times);                                                     \
-      EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(0);     \
-    } else {                                                                 \
-      EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(times); \
-      EXPECT_CALL(mock_synchronous_input_handler_,                           \
-                  SetNeedsSynchronousAnimateInput())                         \
-          .Times(0);                                                         \
-    }                                                                        \
+#define EXPECT_SET_NEEDS_ANIMATE_INPUT(times)                              \
+  do {                                                                     \
+    EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(times); \
   } while (false)
 
 // This is defined as a macro because when an expectation is not satisfied the
@@ -377,13 +366,7 @@ class InputHandlerProxyTest
     testing::Mock::VerifyAndClearExpectations(&mock_client_);        \
   } while (false)
 
-  void Animate(base::TimeTicks time) {
-    if (synchronous_root_scroll_) {
-      input_handler_->SynchronouslyAnimate(time);
-    } else {
-      input_handler_->Animate(time);
-    }
-  }
+  void Animate(base::TimeTicks time) { input_handler_->Animate(time); }
 
   void SetSmoothScrollEnabled(bool value) {
     input_handler_->smooth_scroll_enabled_ = value;
@@ -1476,7 +1459,7 @@ TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
   // UpdateRootLayerStateForSynchronousInputHandler() call.
   EXPECT_CALL(mock_input_handler, RequestUpdateForSynchronousInputHandler())
       .Times(1);
-  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+  proxy.SetSynchronousInputHandler(&mock_synchronous_input_handler);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
   testing::Mock::VerifyAndClearExpectations(&mock_client);
@@ -1484,7 +1467,7 @@ TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
 
   EXPECT_CALL(mock_input_handler, RequestUpdateForSynchronousInputHandler())
       .Times(0);
-  proxy.SetOnlySynchronouslyAnimateRootFlings(nullptr);
+  proxy.SetSynchronousInputHandler(nullptr);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
   testing::Mock::VerifyAndClearExpectations(&mock_client);
@@ -1498,7 +1481,7 @@ TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
       mock_synchronous_input_handler;
   ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
 
-  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+  proxy.SetSynchronousInputHandler(&mock_synchronous_input_handler);
 
   // When adding a SynchronousInputHandler, immediately request an
   // UpdateRootLayerStateForSynchronousInputHandler() call.
@@ -1523,7 +1506,7 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
       mock_synchronous_input_handler;
   ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
 
-  proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
+  proxy.SetSynchronousInputHandler(&mock_synchronous_input_handler);
 
   EXPECT_CALL(mock_input_handler, SetSynchronousInputHandlerRootScrollOffset(
                                       gfx::ScrollOffset(5, 6)));

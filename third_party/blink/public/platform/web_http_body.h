@@ -94,6 +94,7 @@ class WebHTTPBody {
   BLINK_PLATFORM_EXPORT void AppendData(const WebData&);
   BLINK_PLATFORM_EXPORT void AppendFile(const WebString&);
   // Passing -1 to |file_length| means to the end of the file.
+  // |modification_time| - Seconds from Unix epoch.
   BLINK_PLATFORM_EXPORT void AppendFileRange(const WebString&,
                                              int64_t file_start,
                                              int64_t file_length,

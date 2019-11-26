@@ -8,6 +8,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
@@ -48,22 +49,22 @@ void GeolocationServiceImplContext::HandlePermissionStatus(
 
 GeolocationServiceImpl::GeolocationServiceImpl(
     device::mojom::GeolocationContext* geolocation_context,
-    PermissionControllerImpl* permission_controller,
     RenderFrameHost* render_frame_host)
     : geolocation_context_(geolocation_context),
-      permission_controller_(permission_controller),
       render_frame_host_(render_frame_host) {
   DCHECK(geolocation_context);
-  DCHECK(permission_controller);
   DCHECK(render_frame_host);
+
+  permission_controller_ = PermissionControllerImpl::FromBrowserContext(
+      render_frame_host_->GetProcess()->GetBrowserContext());
 }
 
 GeolocationServiceImpl::~GeolocationServiceImpl() {}
 
 void GeolocationServiceImpl::Bind(
-    blink::mojom::GeolocationServiceRequest request) {
-  binding_set_.AddBinding(
-      this, std::move(request),
+    mojo::PendingReceiver<blink::mojom::GeolocationService> receiver) {
+  receiver_set_.Add(
+      this, std::move(receiver),
       std::make_unique<GeolocationServiceImplContext>(permission_controller_));
 }
 
@@ -82,7 +83,7 @@ void GeolocationServiceImpl::CreateGeolocation(
   auto scoped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), blink::mojom::PermissionStatus::DENIED);
 
-  binding_set_.dispatch_context()->RequestPermission(
+  receiver_set_.current_context()->RequestPermission(
       render_frame_host_, user_gesture,
       // There is an assumption here that the GeolocationServiceImplContext will
       // outlive the GeolocationServiceImpl.

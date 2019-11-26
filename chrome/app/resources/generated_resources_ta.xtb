@@ -2643,7 +2643,6 @@
 <translation id="4839303808932127586">வீடியோவை இவ்வாறு சே&amp;மி...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{மேலும் 1}other{மேலும் #}}</translation>
 <translation id="4842976633412754305">அங்கீகரிக்கப்படாத மூலங்களிலிருந்து ஸ்கிரிப்ட்களை ஏற்ற இந்தப் பக்கம் முயற்சிக்கிறது.</translation>
-<translation id="4843488774506045600">உள்நுழைவை வழங்குவது: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">பிற விசைப்பலகைகள்</translation>
 <translation id="4846680374085650406">இந்த அமைப்பிற்கு நிர்வாகியின் பரிந்துரையைப் பின்பற்றுகிறீர்கள்.</translation>
 <translation id="4848518990323155912">சிம் கார்டு பூட்டுதலை இயக்கு (மொபைல் டேட்டாவைப் பயன்படுத்த, பின் தேவை)</translation>
@@ -3849,7 +3848,6 @@
 <translation id="6607831829715835317">மேலும் கருவி&amp;கள்</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6615455863669487791">எனக்கு காண்பி</translation>
-<translation id="6617100836880592260">ஸ்கேனிங் வேகம்: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">பரவாயில்லை, வைத்திரு</translation>
 <translation id="6619058681307408113">லைன் பிரிண்டர் டீமன் (LPD)</translation>
 <translation id="661907246513853610">தளத்தால் உங்கள் இருப்பிடத்தைக் கண்காணிக்க முடியும்</translation>

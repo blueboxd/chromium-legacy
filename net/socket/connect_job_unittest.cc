@@ -109,7 +109,7 @@ class ConnectJobTest : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   const CommonConnectJobParams common_connect_job_params_;
   TestConnectJobDelegate delegate_;
 };

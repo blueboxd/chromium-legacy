@@ -83,7 +83,6 @@ BinaryUploadService::~BinaryUploadService() {}
 void BinaryUploadService::MaybeUploadForDeepScanning(
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  can_upload_data_ = true;
   if (!can_upload_data_.has_value()) {
     IsAuthorized(
         base::BindOnce(&BinaryUploadService::MaybeUploadForDeepScanningCallback,
@@ -455,6 +454,10 @@ void BinaryUploadService::ResetAuthorizationData() {
 
   // Call IsAuthorized  to update |can_upload_data_| right away.
   IsAuthorized(base::DoNothing());
+}
+
+void BinaryUploadService::SetAuthForTesting(bool authorized) {
+  can_upload_data_ = authorized;
 }
 
 // static

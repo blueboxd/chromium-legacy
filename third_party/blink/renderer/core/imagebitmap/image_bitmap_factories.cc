@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -366,7 +367,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   DCHECK(frame->height());
 
   scoped_refptr<StaticBitmapImage> image =
-      StaticBitmapImage::Create(std::move(frame));
+      UnacceleratedStaticBitmapImage::Create(std::move(frame));
   image->SetOriginClean(true);
   ImageBitmap* image_bitmap = ImageBitmap::Create(image, crop_rect_, options_);
   if (image_bitmap && image_bitmap->BitmapImage()) {

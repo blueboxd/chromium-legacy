@@ -77,6 +77,13 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
       const std::vector<std::string>& variation_ids,
       const std::string& command_line_variation_ids);
 
+  // Ensures that the given variation ids and trigger variation ids are not
+  // encoded in the X-Client-Data request header. This is intended for
+  // development use to force that a server side experiment id is not set.
+  // |command_line_variation_ids| are comma-separted experiment ids.
+  // Returns true on success.
+  bool ForceDisableVariationIds(const std::string& command_line_variation_ids);
+
   // Methods to register or remove observers of variation ids header update.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -95,6 +102,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
                            ForceVariationIds_ValidCommandLine);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            ForceVariationIds_Invalid);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           ForceDisableVariationIds_ValidCommandLine);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           ForceDisableVariationIds_Invalid);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            OnFieldTrialGroupFinalized);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
@@ -135,9 +146,16 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // |is_signed_in| state.
   std::string GenerateBase64EncodedProto(bool is_signed_in);
 
-  // Adds *additional* variation ids and trigger variation ids to be encoded in
-  // the X-Client-Data request header.
-  bool AddDefaultVariationIds(const std::vector<std::string>& variation_ids);
+  // Adds variation ids and trigger variation ids to |target_set|.
+  static bool AddVariationIdsToSet(
+      const std::vector<std::string>& variation_ids,
+      std::set<VariationIDEntry>* target_set);
+
+  // Parses a comma-separated string of variation ids and trigger variation ids
+  // and adds them to |target_set|.
+  static bool ParseVariationIdsParameter(
+      const std::string& command_line_variation_ids,
+      std::set<VariationIDEntry>* target_set);
 
   // Returns the currently active set of variation ids, which includes any
   // default values, synthetic variations and actual field trial variations.
@@ -158,6 +176,9 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
 
   // Variations ids from synthetic field trials.
   std::set<VariationIDEntry> synthetic_variation_ids_set_;
+
+  // Provides the google experiment ids that are force-disabled by command line.
+  std::set<VariationIDEntry> force_disabled_ids_set_;
 
   std::string cached_variation_ids_header_;
   std::string cached_variation_ids_header_signed_in_;

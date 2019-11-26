@@ -13,13 +13,13 @@ import com.google.android.libraries.feed.api.internal.modelprovider.RemoveTracki
 
 /** {@link RemoveTrackingFactory} to notify host of removed content. */
 public class StreamRemoveTrackingFactory implements RemoveTrackingFactory<ContentRemoval> {
-    private final ModelProvider modelProvider;
-    private final FeedKnownContent feedKnownContent;
+    private final ModelProvider mModelProvider;
+    private final FeedKnownContent mFeedKnownContent;
 
     public StreamRemoveTrackingFactory(
             ModelProvider modelProvider, FeedKnownContent feedKnownContent) {
-        this.modelProvider = modelProvider;
-        this.feedKnownContent = feedKnownContent;
+        this.mModelProvider = modelProvider;
+        this.mFeedKnownContent = feedKnownContent;
     }
 
     /*@Nullable*/
@@ -31,7 +31,7 @@ public class StreamRemoveTrackingFactory implements RemoveTrackingFactory<Conten
         }
 
         // Only notify host on the StreamScope that requested the dismiss.
-        if (!requestingSessionId.equals(modelProvider.getSessionId())) {
+        if (!requestingSessionId.equals(mModelProvider.getSessionId())) {
             return null;
         }
 
@@ -47,6 +47,7 @@ public class StreamRemoveTrackingFactory implements RemoveTrackingFactory<Conten
                             mutationContext.isUserInitiated());
                 },
                 removedContent
-                -> feedKnownContent.getKnownContentHostNotifier().onContentRemoved(removedContent));
+                -> mFeedKnownContent.getKnownContentHostNotifier().onContentRemoved(
+                        removedContent));
     }
 }

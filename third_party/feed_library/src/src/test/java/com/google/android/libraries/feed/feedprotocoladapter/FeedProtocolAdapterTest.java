@@ -37,13 +37,13 @@ import java.util.List;
 /** Tests of the {@link FeedProtocolAdapter} class. */
 @RunWith(RobolectricTestRunner.class)
 public class FeedProtocolAdapterTest {
-    private final TimingUtils timingUtils = new TimingUtils();
-    private final FeedProtocolAdapter protocolAdapter =
+    private final TimingUtils mTimingUtils = new TimingUtils();
+    private final FeedProtocolAdapter mProtocolAdapter =
             new FeedProtocolAdapter(ImmutableList.of(), timingUtils);
 
     @Mock
-    private RequiredContentAdapter adapter;
-    private ResponseBuilder responseBuilder;
+    private RequiredContentAdapter mAdapter;
+    private ResponseBuilder mResponseBuilder;
 
     @Before
     public void init() {

@@ -248,7 +248,8 @@ class LauncherSearch {
     return new Promise((resolve, reject) => {
       chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
         chrome.fileManagerPrivate.getDriveConnectionState(connectionState => {
-          if (connectionState.type !== 'online') {
+          if (connectionState.type !==
+              chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE) {
             results = results.filter(
                 result => result.entry.isDirectory ||
                     result.availableOffline !== false);

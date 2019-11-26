@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/login/ui/bottom_status_indicator.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
@@ -89,7 +90,7 @@ class ASH_EXPORT LockContentsView
     LoginErrorBubble* warning_banner_bubble() const;
     LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
-    views::View* warning_indicator() const;
+    views::View* bottom_status_indicator() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
 
@@ -126,6 +127,8 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowEntrepriseDomainName(const std::string& entreprise_domain_name);
+  void ShowAdbEnabled();
   void ShowSystemInfo();
   void ShowParentAccessDialog();
   void RequestSecurityTokenPin(SecurityTokenPinRequest request);
@@ -268,9 +271,10 @@ class ASH_EXPORT LockContentsView
   // change contents or visibility.
   void LayoutTopHeader();
 
-  // Lay out the warning indicator. This is called when system information is
-  // shown.
-  void LayoutWarningIndicator();
+  // Lay out the bottom status indicator. This is called when system information
+  // is shown if ADB is enabled and at the initialization of lock screen if the
+  // device is enrolled.
+  void LayoutBottomStatusIndicator();
 
   // Lay out the expanded public session view.
   void LayoutPublicSessionView();
@@ -391,9 +395,6 @@ class ASH_EXPORT LockContentsView
   // other views.
   views::View* top_header_ = nullptr;
 
-  // View for the warning indicator at login screen.
-  views::View* warning_indicator_ = nullptr;
-
   // View for launching a note taking action handler from the lock screen.
   NoteActionLaunchButton* note_action_ = nullptr;
 
@@ -424,6 +425,9 @@ class ASH_EXPORT LockContentsView
   LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.
   LoginErrorBubble* supervised_user_deprecation_bubble_;
+
+  // Bottom status indicator displaying entreprise domain or ADB enabled alert
+  BottomStatusIndicator* bottom_status_indicator_;
 
   int unlock_attempt_ = 0;
 

@@ -23,9 +23,9 @@ import java.util.List;
  * addition, the {@code Consumer} is called before the change operation.
  */
 public final class RemoveTracking<T> {
-    private final Function<StreamFeature, /*@Nullable*/ T> filterPredicate;
-    private final Consumer<List<T>> consumer;
-    private final List<T> matchingItems = new ArrayList<>();
+    private final Function<StreamFeature, /*@Nullable*/ T> mFilterPredicate;
+    private final Consumer<List<T>> mConsumer;
+    private final List<T> mMatchingItems = new ArrayList<>();
 
     /**
      * Create the state necessary to call transform and filter the removed subtree before calling
@@ -34,17 +34,17 @@ public final class RemoveTracking<T> {
      */
     public RemoveTracking(
             Function<StreamFeature, /*@Nullable*/ T> filterPredicate, Consumer<List<T>> consumer) {
-        this.filterPredicate = filterPredicate;
-        this.consumer = consumer;
+        this.mFilterPredicate = filterPredicate;
+        this.mConsumer = consumer;
     }
 
     /**
      * Called to transform and filter a {@link StreamFeature} found within a subtree being removed.
      */
     public void filterStreamFeature(StreamFeature streamFeature) {
-        T value = filterPredicate.apply(streamFeature);
+        T value = mFilterPredicate.apply(streamFeature);
         if (value != null) {
-            matchingItems.add(value);
+            mMatchingItems.add(value);
         }
     }
 
@@ -52,6 +52,6 @@ public final class RemoveTracking<T> {
      * Called on the main thread call the {@link Consumer} after all removes have been processed.
      */
     public void triggerConsumerUpdate() {
-        consumer.accept(matchingItems);
+        mConsumer.accept(mMatchingItems);
     }
 }

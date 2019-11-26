@@ -18,13 +18,13 @@ public class DebugBehavior {
     /** Convenience constant for configuration that disables all debug behavior. */
     public static final DebugBehavior SILENT = new DebugBehavior(false);
 
-    private final boolean showDebugViews;
+    private final boolean mShowDebugViews;
 
     private DebugBehavior(boolean showDebugViews) {
-        this.showDebugViews = showDebugViews;
+        this.mShowDebugViews = showDebugViews;
     }
 
     public boolean getShowDebugViews() {
-        return showDebugViews;
+        return mShowDebugViews;
     }
 }

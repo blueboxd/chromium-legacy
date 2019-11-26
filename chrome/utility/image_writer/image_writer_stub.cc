@@ -14,7 +14,7 @@ bool ImageWriter::IsValidDevice() {
   return false;
 }
 
-void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
+void ImageWriter::UnmountVolumes(base::OnceClosure continuation) {
   NOTIMPLEMENTED();
   return;
 }

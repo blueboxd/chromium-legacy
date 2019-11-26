@@ -13,6 +13,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/bottom_status_indicator.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
@@ -36,6 +37,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
@@ -106,11 +109,11 @@ constexpr int kVerticalPaddingAuthErrorBubbleDp = 8;
 // Spacing between the auth error text and the learn more button.
 constexpr int kLearnMoreButtonVerticalSpacingDp = 6;
 
-// Spacing between the warning indicator and the shelf.
-constexpr int kWarningIndicatorBottomMarginDp = 16;
+// Spacing between the bottom status indicator and the shelf.
+constexpr int kBottomStatusIndicatorBottomMarginDp = 16;
 
-// Spacing between icon and text in the warning indicator.
-constexpr int kWarningIndicatorChildSpacingDp = 8;
+// Spacing between icon and text in the bottom status indicator.
+constexpr int kBottomStatusIndicatorChildSpacingDp = 8;
 
 // Blue-ish color for the "learn more" button text.
 constexpr SkColor kLearnMoreButtonTextColor =
@@ -407,8 +410,8 @@ views::View* LockContentsView::TestApi::system_info() const {
   return view_->system_info_;
 }
 
-views::View* LockContentsView::TestApi::warning_indicator() const {
-  return view_->warning_indicator_;
+views::View* LockContentsView::TestApi::bottom_status_indicator() const {
+  return view_->bottom_status_indicator_;
 }
 
 LoginExpandedPublicAccountView* LockContentsView::TestApi::expanded_view()
@@ -481,15 +484,23 @@ LockContentsView::LockContentsView(
   system_info_->SetVisible(false);
   top_header_->AddChildView(system_info_);
 
-  // The warning indicator view.
-  warning_indicator_ = new views::View();
-  auto warning_indicator_layout = std::make_unique<views::BoxLayout>(
+  // The bottom status indicator view.
+  bottom_status_indicator_ = new BottomStatusIndicator();
+  auto bottom_status_indicator_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-      kWarningIndicatorChildSpacingDp);
-  warning_indicator_layout->set_main_axis_alignment(
+      kBottomStatusIndicatorChildSpacingDp);
+  bottom_status_indicator_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
-  warning_indicator_->SetLayoutManager(std::move(warning_indicator_layout));
-  AddChildView(warning_indicator_);
+  bottom_status_indicator_->SetLayoutManager(
+      std::move(bottom_status_indicator_layout));
+  AddChildView(bottom_status_indicator_);
+
+  std::string entreprise_domain_name = Shell::Get()
+                                           ->system_tray_model()
+                                           ->enterprise_domain()
+                                           ->enterprise_display_domain();
+  if (!entreprise_domain_name.empty())
+    ShowEntrepriseDomainName(entreprise_domain_name);
 
   note_action_ = new NoteActionLaunchButton(initial_note_action_state);
   top_header_->AddChildView(note_action_);
@@ -619,13 +630,34 @@ void LockContentsView::FocusPreviousUser() {
   }
 }
 
+void LockContentsView::ShowEntrepriseDomainName(
+    const std::string& entreprise_domain_name) {
+  bottom_status_indicator_->SetIcon(
+      kLoginScreenEnterpriseIcon,
+      AshColorProvider::ContentLayerType::kIconPrimary);
+  bottom_status_indicator_->SetText(
+      l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR,
+                                 base::UTF8ToUTF16(entreprise_domain_name)),
+      gfx::kGoogleGrey200);
+  bottom_status_indicator_->SetVisible(true);
+}
+
+void LockContentsView::ShowAdbEnabled() {
+  bottom_status_indicator_->SetIcon(
+      kLockScreenAlertIcon, AshColorProvider::ContentLayerType::kIconRed);
+  bottom_status_indicator_->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING),
+      gfx::kGoogleRed300);
+  bottom_status_indicator_->SetVisible(true);
+}
+
 void LockContentsView::ShowSystemInfo() {
   enable_system_info_if_possible_ = true;
   bool system_info_visible = GetSystemInfoVisibility();
   if (system_info_visible && !system_info_->GetVisible()) {
     system_info_->SetVisible(true);
     LayoutTopHeader();
-    LayoutWarningIndicator();
+    LayoutBottomStatusIndicator();
   }
 }
 
@@ -673,7 +705,7 @@ void LockContentsView::ClearSecurityTokenPinRequest() {
 void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
-  LayoutWarningIndicator();
+  LayoutBottomStatusIndicator();
   LayoutPublicSessionView();
 
   if (users_list_)
@@ -1126,29 +1158,12 @@ void LockContentsView::OnSystemInfoChanged(
 
   LayoutTopHeader();
 
-  // Initialize the warning indicator view.
-  if (adb_sideloading_enabled && warning_indicator_->children().empty()) {
-    auto* icon = new views::ImageView;
-    icon->SetImage(gfx::CreateVectorIcon(
-        kLockScreenAlertIcon, AshColorProvider::Get()->GetContentLayerColor(
-                                  AshColorProvider::ContentLayerType::kIconRed,
-                                  AshColorProvider::AshColorMode::kDark)));
-    warning_indicator_->AddChildView(icon);
+  // Note that if ADB is enabled and the device is enrolled, only the ADB
+  // warning message will be displayed.
+  if (adb_sideloading_enabled)
+    ShowAdbEnabled();
 
-    auto* label = new views::Label();
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetEnabledColor(gfx::kGoogleRed300);
-    label->SetFontList(
-        views::Label::GetDefaultFontList().DeriveWithSizeDelta(1));
-    label->SetSubpixelRenderingEnabled(false);
-    label->SetText(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING));
-
-    warning_indicator_->AddChildView(label);
-  }
-  warning_indicator_->SetVisible(adb_sideloading_enabled);
-
-  LayoutWarningIndicator();
+  LayoutBottomStatusIndicator();
 }
 
 void LockContentsView::OnPublicSessionDisplayNameChanged(
@@ -1599,16 +1614,16 @@ void LockContentsView::LayoutTopHeader() {
                            gfx::Vector2d(preferred_width, 0));
 }
 
-void LockContentsView::LayoutWarningIndicator() {
-  warning_indicator_->SizeToPreferredSize();
+void LockContentsView::LayoutBottomStatusIndicator() {
+  bottom_status_indicator_->SizeToPreferredSize();
 
   // Position the warning indicator in the middle above the shelf.
-  warning_indicator_->SetPosition(
+  bottom_status_indicator_->SetPosition(
       GetLocalBounds().bottom_center() -
-      gfx::Vector2d(warning_indicator_->width() / 2,
+      gfx::Vector2d(bottom_status_indicator_->width() / 2,
                     ShelfConfig::Get()->shelf_size() +
-                        kWarningIndicatorBottomMarginDp +
-                        warning_indicator_->height()));
+                        kBottomStatusIndicatorBottomMarginDp +
+                        bottom_status_indicator_->height()));
 }
 
 void LockContentsView::LayoutPublicSessionView() {
@@ -2121,7 +2136,7 @@ void LockContentsView::SetDisplayStyle(DisplayStyle style) {
   expanded_view_->SetVisible(show_expanded_view);
   main_view_->SetVisible(!show_expanded_view);
   top_header_->SetVisible(!show_expanded_view);
-  warning_indicator_->SetVisible(!show_expanded_view);
+  bottom_status_indicator_->SetVisible(!show_expanded_view);
   Layout();
 }
 

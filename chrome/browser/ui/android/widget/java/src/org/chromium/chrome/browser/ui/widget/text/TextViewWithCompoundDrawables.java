@@ -80,10 +80,10 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
             if (mDrawableWidth > 0 || mDrawableHeight > 0) {
                 Rect bounds = drawable.getBounds();
                 if (mDrawableWidth > 0) {
-                    bounds.right = bounds.left + Math.round(mDrawableWidth);
+                    bounds.right = bounds.left + mDrawableWidth;
                 }
                 if (mDrawableHeight > 0) {
-                    bounds.bottom = bounds.top + Math.round(mDrawableHeight);
+                    bounds.bottom = bounds.top + mDrawableHeight;
                 }
                 drawable.setBounds(bounds);
             }

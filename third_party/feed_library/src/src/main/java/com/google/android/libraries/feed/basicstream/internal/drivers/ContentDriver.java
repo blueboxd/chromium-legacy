@@ -61,26 +61,26 @@ public class ContentDriver
         extends LeafFeatureDriver implements LoggingListener, ViewElementActionHandler {
     private static final String TAG = "ContentDriver";
 
-    private final BasicLoggingApi basicLoggingApi;
-    private final List<PietSharedState> pietSharedStates;
-    private final Frame frame;
-    private final StreamActionApi streamActionApi;
-    private final FeedActionPayload swipeAction;
-    private final String contentId;
-    private final StreamOfflineMonitor streamOfflineMonitor;
-    private final OfflineStatusConsumer offlineStatusConsumer;
-    private final String contentUrl;
-    private final ContentChangedListener contentChangedListener;
-    private final ActionParser actionParser;
-    private final MainThreadRunner mainThreadRunner;
-    private final long viewDelayMs;
-    private final HashMap<Integer, CancelableTask> viewActionTaskMap = new HashMap<>();
-    private final ViewLoggingUpdater viewLoggingUpdater;
-    private final ResettableOneShotVisibilityLoggingListener loggingListener;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final List<PietSharedState> mPietSharedStates;
+    private final Frame mFrame;
+    private final StreamActionApi mStreamActionApi;
+    private final FeedActionPayload mSwipeAction;
+    private final String mContentId;
+    private final StreamOfflineMonitor mStreamOfflineMonitor;
+    private final OfflineStatusConsumer mOfflineStatusConsumer;
+    private final String mContentUrl;
+    private final ContentChangedListener mContentChangedListener;
+    private final ActionParser mActionParser;
+    private final MainThreadRunner mMainThreadRunner;
+    private final long mViewDelayMs;
+    private final HashMap<Integer, CancelableTask> mViewActionTaskMap = new HashMap<>();
+    private final ViewLoggingUpdater mViewLoggingUpdater;
+    private final ResettableOneShotVisibilityLoggingListener mLoggingListener;
 
-    private StreamContentLoggingData contentLoggingData;
-    private boolean availableOffline;
-    /*@Nullable*/ private PietViewHolder viewHolder;
+    private StreamContentLoggingData mContentLoggingData;
+    private boolean mAvailableOffline;
+    /*@Nullable*/ private PietViewHolder mViewHolder;
 
     // TODO: Remove these suppressions when drivers have a proper lifecycle.
     @SuppressWarnings(
@@ -93,46 +93,46 @@ public class ContentDriver
             ContentChangedListener contentChangedListener, ContextMenuManager contextMenuManager,
             MainThreadRunner mainThreadRunner, Configuration configuration,
             ViewLoggingUpdater viewLoggingUpdater, TooltipApi tooltipApi) {
-        this.mainThreadRunner = mainThreadRunner;
-        viewDelayMs = configuration.getValueOrDefault(
+        this.mMainThreadRunner = mainThreadRunner;
+        mViewDelayMs = configuration.getValueOrDefault(
                 ConfigKey.VIEW_MIN_TIME_MS, Constants.VIEW_MIN_TIME_MS_DEFAULT);
         Content content = contentFeatureModel.getStreamFeature().getContent();
 
         PietContent pietContent = getPietContent(content);
-        this.basicLoggingApi = basicLoggingApi;
-        frame = pietContent.getFrame();
-        pietSharedStates = getPietSharedStates(pietContent, modelProvider, basicLoggingApi);
-        contentId = contentFeatureModel.getStreamFeature().getContentId();
+        this.mBasicLoggingApi = basicLoggingApi;
+        mFrame = pietContent.getFrame();
+        mPietSharedStates = getPietSharedStates(pietContent, modelProvider, basicLoggingApi);
+        mContentId = contentFeatureModel.getStreamFeature().getContentId();
         RepresentationData representationData = content.getRepresentationData();
-        contentUrl = representationData.getUri();
-        availableOffline = streamOfflineMonitor.isAvailableOffline(contentUrl);
-        offlineStatusConsumer = new OfflineStatusConsumer();
-        streamOfflineMonitor.addOfflineStatusConsumer(contentUrl, offlineStatusConsumer);
-        contentLoggingData = new StreamContentLoggingData(
-                position, content.getBasicLoggingMetadata(), representationData, availableOffline);
-        actionParser = actionParserFactory.build(
+        mContentUrl = representationData.getUri();
+        mAvailableOffline = streamOfflineMonitor.isAvailableOffline(mContentUrl);
+        mOfflineStatusConsumer = new OfflineStatusConsumer();
+        streamOfflineMonitor.addOfflineStatusConsumer(mContentUrl, mOfflineStatusConsumer);
+        mContentLoggingData = new StreamContentLoggingData(
+                position, content.getBasicLoggingMetadata(), representationData, mAvailableOffline);
+        mActionParser = actionParserFactory.build(
                 ()
                         -> ContentMetadata.maybeCreateContentMetadata(
                                 content.getOfflineMetadata(), representationData));
-        streamActionApi =
-                createStreamActionApi(actionApi, actionParser, actionManager, basicLoggingApi,
+        mStreamActionApi =
+                createStreamActionApi(actionApi, mActionParser, actionManager, basicLoggingApi,
                         ()
-                                -> contentLoggingData,
+                                -> mContentLoggingData,
                         modelProvider.getSessionId(), contextMenuManager,
-                        clusterPendingDismissHelper, this, contentId, tooltipApi);
-        this.swipeAction = swipeAction;
-        this.streamOfflineMonitor = streamOfflineMonitor;
-        this.contentChangedListener = contentChangedListener;
-        this.viewLoggingUpdater = viewLoggingUpdater;
-        loggingListener = new ResettableOneShotVisibilityLoggingListener(this);
-        viewLoggingUpdater.registerObserver(loggingListener);
+                        clusterPendingDismissHelper, this, mContentId, tooltipApi);
+        this.mSwipeAction = swipeAction;
+        this.mStreamOfflineMonitor = streamOfflineMonitor;
+        this.mContentChangedListener = contentChangedListener;
+        this.mViewLoggingUpdater = viewLoggingUpdater;
+        mLoggingListener = new ResettableOneShotVisibilityLoggingListener(this);
+        viewLoggingUpdater.registerObserver(mLoggingListener);
     }
 
     @Override
     public void onDestroy() {
-        streamOfflineMonitor.removeOfflineStatusConsumer(contentUrl, offlineStatusConsumer);
+        mStreamOfflineMonitor.removeOfflineStatusConsumer(mContentUrl, mOfflineStatusConsumer);
         removeAllPendingTasks();
-        viewLoggingUpdater.unregisterObserver(loggingListener);
+        mViewLoggingUpdater.unregisterObserver(mLoggingListener);
     }
 
     @Override
@@ -189,34 +189,34 @@ public class ContentDriver
             throw new AssertionError();
         }
 
-        this.viewHolder = (PietViewHolder) viewHolder;
+        this.mViewHolder = (PietViewHolder) viewHolder;
 
         ((PietViewHolder) viewHolder)
-                .bind(frame, pietSharedStates, streamActionApi, swipeAction, loggingListener,
-                        actionParser);
+                .bind(mFrame, mPietSharedStates, mStreamActionApi, mSwipeAction, mLoggingListener,
+                        mActionParser);
     }
 
     @Override
     public void unbind() {
-        if (viewHolder == null) {
+        if (mViewHolder == null) {
             return;
         }
 
-        viewHolder.unbind();
-        viewHolder = null;
+        mViewHolder.unbind();
+        mViewHolder = null;
     }
 
     @Override
     public void maybeRebind() {
-        if (viewHolder == null) {
+        if (mViewHolder == null) {
             return;
         }
 
         // Unbinding clears the viewHolder, so storing to rebind.
-        PietViewHolder localViewHolder = viewHolder;
+        PietViewHolder localViewHolder = mViewHolder;
         unbind();
         bind(localViewHolder);
-        contentChangedListener.onContentChanged();
+        mContentChangedListener.onContentChanged();
     }
 
     @Override
@@ -231,27 +231,27 @@ public class ContentDriver
 
     @VisibleForTesting
     boolean isBound() {
-        return viewHolder != null;
+        return mViewHolder != null;
     }
 
     @Override
     public String getContentId() {
-        return contentId;
+        return mContentId;
     }
 
     @Override
     public void onViewVisible() {
-        basicLoggingApi.onContentViewed(contentLoggingData);
+        mBasicLoggingApi.onContentViewed(mContentLoggingData);
     }
 
     @Override
     public void onContentClicked() {
-        basicLoggingApi.onContentClicked(contentLoggingData);
+        mBasicLoggingApi.onContentClicked(mContentLoggingData);
     }
 
     @Override
     public void onContentSwiped() {
-        basicLoggingApi.onContentSwiped(contentLoggingData);
+        mBasicLoggingApi.onContentSwiped(mContentLoggingData);
     }
 
     @Override
@@ -262,15 +262,15 @@ public class ContentDriver
     }
 
     private void removeAllPendingTasks() {
-        for (CancelableTask cancellable : viewActionTaskMap.values()) {
+        for (CancelableTask cancellable : mViewActionTaskMap.values()) {
             cancellable.cancel();
         }
 
-        viewActionTaskMap.clear();
+        mViewActionTaskMap.clear();
     }
 
     private void removePendingViewActionTaskForElement(int elementType) {
-        CancelableTask cancelable = viewActionTaskMap.remove(elementType);
+        CancelableTask cancelable = mViewActionTaskMap.remove(elementType);
         if (cancelable != null) {
             cancelable.cancel();
         }
@@ -292,11 +292,11 @@ public class ContentDriver
     @Override
     public void onElementView(int elementType) {
         removePendingViewActionTaskForElement(elementType);
-        CancelableTask cancelableTask = mainThreadRunner.executeWithDelay(TAG + elementType,
+        CancelableTask cancelableTask = mMainThreadRunner.executeWithDelay(TAG + elementType,
                 ()
-                        -> basicLoggingApi.onVisualElementViewed(contentLoggingData, elementType),
-                viewDelayMs);
-        viewActionTaskMap.put(elementType, cancelableTask);
+                        -> mBasicLoggingApi.onVisualElementViewed(mContentLoggingData, elementType),
+                mViewDelayMs);
+        mViewActionTaskMap.put(elementType, cancelableTask);
     }
 
     @Override
@@ -307,12 +307,12 @@ public class ContentDriver
     private class OfflineStatusConsumer implements Consumer<Boolean> {
         @Override
         public void accept(Boolean offlineStatus) {
-            if (offlineStatus.equals(availableOffline)) {
+            if (offlineStatus.equals(mAvailableOffline)) {
                 return;
             }
 
-            availableOffline = offlineStatus;
-            contentLoggingData = contentLoggingData.createWithOfflineStatus(offlineStatus);
+            mAvailableOffline = offlineStatus;
+            mContentLoggingData = mContentLoggingData.createWithOfflineStatus(offlineStatus);
             maybeRebind();
         }
     }

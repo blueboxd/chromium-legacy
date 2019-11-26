@@ -97,8 +97,8 @@ void ScreenSwitchCheckController::CanSwitchAwayFromActiveUser(
 }
 
 void ScreenSwitchCheckController::OnScreenCaptureStart(
-    base::RepeatingClosure stop_callback,
-    base::RepeatingClosure source_callback,
+    const base::RepeatingClosure& stop_callback,
+    const base::RepeatingClosure& source_callback,
     const base::string16& screen_capture_status) {
   has_capture_ = true;
 }
@@ -110,7 +110,7 @@ void ScreenSwitchCheckController::OnScreenCaptureStop() {
 }
 
 void ScreenSwitchCheckController::OnScreenShareStart(
-    const base::Closure& stop_callback,
+    const base::RepeatingClosure& stop_callback,
     const base::string16& helper_name) {
   has_share_ = true;
 }

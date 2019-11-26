@@ -14,9 +14,9 @@ import com.google.android.libraries.feed.api.host.stream.CardConfiguration;
 public class FakeCardConfiguration implements CardConfiguration {
     private static final ColorDrawable COLOR_DRAWABLE = new ColorDrawable(Color.RED);
 
-    private int bottomMargin = 1;
-    private int startMargin = 2;
-    private int endMargin = 3;
+    private int mBottomMargin = 1;
+    private int mStartMargin = 2;
+    private int mEndMargin = 3;
 
     @Override
     public int getDefaultCornerRadius() {
@@ -30,28 +30,28 @@ public class FakeCardConfiguration implements CardConfiguration {
 
     @Override
     public int getCardBottomMargin() {
-        return bottomMargin;
+        return mBottomMargin;
     }
 
     @Override
     public int getCardStartMargin() {
-        return startMargin;
+        return mStartMargin;
     }
 
     @Override
     public int getCardEndMargin() {
-        return endMargin;
+        return mEndMargin;
     }
 
     public void setCardStartMargin(int cardStartMargin) {
-        this.startMargin = cardStartMargin;
+        this.mStartMargin = cardStartMargin;
     }
 
     public void setCardEndMargin(int cardEndMargin) {
-        this.endMargin = cardEndMargin;
+        this.mEndMargin = cardEndMargin;
     }
 
     public void setCardBottomMargin(int cardBottomMargin) {
-        this.bottomMargin = cardBottomMargin;
+        this.mBottomMargin = cardBottomMargin;
     }
 }

@@ -13,8 +13,11 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/rounded_label_button.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/interpolated_transform.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
@@ -120,14 +123,115 @@ class StackingBarLabelButton : public views::LabelButton {
 }  // namespace
 
 class StackedNotificationBar::StackedNotificationBarIcon
-    : public views::ImageView {
+    : public views::ImageView,
+      public ui::LayerAnimationObserver {
  public:
-  StackedNotificationBarIcon(const std::string& id)
-      : views::ImageView(), id_(id) {}
+  StackedNotificationBarIcon(StackedNotificationBar* notification_bar,
+                             const std::string& id)
+      : views::ImageView(), notification_bar_(notification_bar), id_(id) {
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  ~StackedNotificationBarIcon() override {
+    if (is_animating_out())
+      layer()->GetAnimator()->StopAnimating();
+  }
+
+  void AnimateIn() {
+    DCHECK(!is_animating_out());
+
+    std::unique_ptr<ui::InterpolatedTransform> scale =
+        std::make_unique<ui::InterpolatedScale>(
+            gfx::Point3F(kNotificationIconAnimationScaleFactor,
+                         kNotificationIconAnimationScaleFactor, 1),
+            gfx::Point3F(1, 1, 1));
+
+    std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
+        std::make_unique<ui::InterpolatedTransformAboutPivot>(
+            GetLocalBounds().CenterPoint(), std::move(scale));
+
+    scale_about_pivot->SetChild(std::make_unique<ui::InterpolatedTranslation>(
+        gfx::PointF(0, kNotificationIconAnimationLowPosition),
+        gfx::PointF(0, kNotificationIconAnimationHighPosition)));
+
+    std::unique_ptr<ui::LayerAnimationElement> scale_and_move_up =
+        ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+            std::move(scale_about_pivot),
+            base::TimeDelta::FromMilliseconds(
+                kNotificationIconAnimationUpDurationMs));
+    scale_and_move_up->set_tween_type(gfx::Tween::EASE_IN);
+
+    std::unique_ptr<ui::LayerAnimationElement> move_down =
+        ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+            std::make_unique<ui::InterpolatedTranslation>(
+                gfx::PointF(0, kNotificationIconAnimationHighPosition),
+                gfx::PointF(0, 0)),
+            base::TimeDelta::FromMilliseconds(
+                kNotificationIconAnimationDownDurationMs));
+
+    std::unique_ptr<ui::LayerAnimationSequence> sequence =
+        std::make_unique<ui::LayerAnimationSequence>();
+
+    sequence->AddElement(std::move(scale_and_move_up));
+    sequence->AddElement(std::move(move_down));
+    layer()->GetAnimator()->StartAnimation(sequence.release());
+  }
+
+  void AnimateOut() {
+    layer()->GetAnimator()->StopAnimating();
+
+    std::unique_ptr<ui::InterpolatedTransform> scale =
+        std::make_unique<ui::InterpolatedScale>(
+            gfx::Point3F(1, 1, 1),
+            gfx::Point3F(kNotificationIconAnimationScaleFactor,
+                         kNotificationIconAnimationScaleFactor, 1));
+    std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
+        std::make_unique<ui::InterpolatedTransformAboutPivot>(
+            gfx::Point(bounds().width() * 0.5, bounds().height() * 0.5),
+            std::move(scale));
+
+    scale_about_pivot->SetChild(std::make_unique<ui::InterpolatedTranslation>(
+        gfx::PointF(0, 0),
+        gfx::PointF(0, kNotificationIconAnimationLowPosition)));
+
+    std::unique_ptr<ui::LayerAnimationElement> scale_and_move_down =
+        ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+            std::move(scale_about_pivot),
+            base::TimeDelta::FromMilliseconds(
+                kNotificationIconAnimationOutDurationMs));
+    scale_and_move_down->set_tween_type(gfx::Tween::EASE_IN);
+
+    std::unique_ptr<ui::LayerAnimationSequence> sequence =
+        std::make_unique<ui::LayerAnimationSequence>();
+
+    sequence->AddElement(std::move(scale_and_move_down));
+    sequence->AddObserver(this);
+    set_animating_out(true);
+    layer()->GetAnimator()->StartAnimation(sequence.release());
+    // Note |this| may be deleted after this point.
+  }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    set_animating_out(false);
+    notification_bar_->OnIconAnimatedOut(this);
+    // Note |this| is deleted after this point.
+  }
+
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
   const std::string& id() const { return id_; }
+  bool is_animating_out() const { return animating_out_; }
+  void set_animating_out(bool animating_out) { animating_out_ = animating_out; }
 
  private:
+  StackedNotificationBar* notification_bar_;
   std::string id_;
+  bool animating_out_ = false;
 };
 
 StackedNotificationBar::StackedNotificationBar(
@@ -238,7 +342,7 @@ void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
   views::ImageView* icon_view_ =
-      new StackedNotificationBarIcon(notification->id());
+      new StackedNotificationBarIcon(this, notification->id());
   if (at_front)
     notification_icons_container_->AddChildViewAt(icon_view_, 0);
   else
@@ -257,8 +361,26 @@ void StackedNotificationBar::AddNotificationIcon(
   }
 }
 
+void StackedNotificationBar::OnIconAnimatedOut(views::View* icon) {
+  delete icon;
+  Layout();
+}
+
+StackedNotificationBar::StackedNotificationBarIcon*
+StackedNotificationBar::GetFrontIcon() {
+  const auto i = std::find_if(
+      notification_icons_container_->children().cbegin(),
+      notification_icons_container_->children().cend(), [](const auto* v) {
+        return !static_cast<const StackedNotificationBarIcon*>(v)
+                    ->is_animating_out();
+      });
+
+  return (i == notification_icons_container_->children().cend()
+              ? nullptr
+              : static_cast<StackedNotificationBarIcon*>(*i));
+}
 const StackedNotificationBar::StackedNotificationBarIcon*
-StackedNotificationBar::GetIconFromId(const std::string& id) {
+StackedNotificationBar::GetIconFromId(const std::string& id) const {
   for (auto* v : notification_icons_container_->children()) {
     const StackedNotificationBarIcon* icon =
         static_cast<const StackedNotificationBarIcon*>(v);
@@ -276,10 +398,20 @@ void StackedNotificationBar::ShiftIconsLeft(
                kStackedNotificationBarMaxIcons);
 
   // Remove required number of icons from the front.
-  for (int i = 0; i < removed_icons_count; i++) {
-    delete notification_icons_container_->children().front();
+  // Only animate if we're removing one icon.
+  if (removed_icons_count == 1) {
+    StackedNotificationBarIcon* icon = GetFrontIcon();
+    if (icon) {
+      icon->AnimateOut();
+    }
+  } else {
+    for (int i = 0; i < removed_icons_count; i++) {
+      StackedNotificationBarIcon* icon = GetFrontIcon();
+      if (icon) {
+        delete icon;
+      }
+    }
   }
-
   // Add icons to the back if there was a backfill.
   int backfill_start = kStackedNotificationBarMaxIcons - removed_icons_count;
   int backfill_end =
@@ -306,6 +438,10 @@ void StackedNotificationBar::ShiftIconsRight(
                         true /*at_front*/);
     ++stacked_notification_count_;
   }
+  // Animate in the first stacked notification icon.
+  StackedNotificationBarIcon* icon = GetFrontIcon();
+  if (icon)
+    GetFrontIcon()->AnimateIn();
 }
 
 void StackedNotificationBar::UpdateStackedNotifications(

@@ -29,11 +29,9 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -48,10 +46,12 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -100,7 +100,7 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
   int statistic_count_;
 };
 
-// Mocked wrapper for blink::WebRTCStatsRequest
+// Mocked wrapper for RTCStatsRequest
 class MockRTCStatsRequest : public LocalRTCStatsRequest {
  public:
   MockRTCStatsRequest()
@@ -1275,7 +1275,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
               TrackCreateDataChannel(pc_handler_.get(), testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
   scoped_refptr<webrtc::DataChannelInterface> channel =
-      pc_handler_->CreateDataChannel("d1", blink::WebRTCDataChannelInit());
+      pc_handler_->CreateDataChannel("d1", RTCDataChannelInitPlatform());
   EXPECT_TRUE(channel.get());
   EXPECT_EQ(label.Utf8(), channel->label());
 }

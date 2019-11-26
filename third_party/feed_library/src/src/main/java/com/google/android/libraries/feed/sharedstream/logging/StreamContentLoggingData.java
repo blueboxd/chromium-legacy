@@ -13,12 +13,12 @@ import java.util.Objects;
 
 /** Implementation of {@link ContentLoggingData} to capture content data when logging events. */
 public class StreamContentLoggingData implements ContentLoggingData {
-    private final int positionInStream;
-    private final long publishedTimeSeconds;
-    private final long timeContentBecameAvailable;
-    private final float score;
-    private final String representationUri;
-    private final boolean isAvailableOffline;
+    private final int mPositionInStream;
+    private final long mPublishedTimeSeconds;
+    private final long mTimeContentBecameAvailable;
+    private final float mScore;
+    private final String mRepresentationUri;
+    private final boolean mIsAvailableOffline;
 
     public StreamContentLoggingData(int positionInStream, BasicLoggingMetadata basicLoggingMetadata,
             RepresentationData representationData, boolean availableOffline) {
@@ -32,48 +32,48 @@ public class StreamContentLoggingData implements ContentLoggingData {
     private StreamContentLoggingData(int positionInStream, long publishedTimeSeconds,
             long timeContentBecameAvailable, float score, String representationUri,
             boolean isAvailableOffline) {
-        this.positionInStream = positionInStream;
-        this.publishedTimeSeconds = publishedTimeSeconds;
-        this.timeContentBecameAvailable = timeContentBecameAvailable;
-        this.score = score;
-        this.representationUri = representationUri;
-        this.isAvailableOffline = isAvailableOffline;
+        this.mPositionInStream = positionInStream;
+        this.mPublishedTimeSeconds = publishedTimeSeconds;
+        this.mTimeContentBecameAvailable = timeContentBecameAvailable;
+        this.mScore = score;
+        this.mRepresentationUri = representationUri;
+        this.mIsAvailableOffline = isAvailableOffline;
     }
 
     @Override
     public int getPositionInStream() {
-        return positionInStream;
+        return mPositionInStream;
     }
 
     @Override
     public long getPublishedTimeSeconds() {
-        return publishedTimeSeconds;
+        return mPublishedTimeSeconds;
     }
 
     @Override
     public long getTimeContentBecameAvailable() {
-        return timeContentBecameAvailable;
+        return mTimeContentBecameAvailable;
     }
 
     @Override
     public float getScore() {
-        return score;
+        return mScore;
     }
 
     @Override
     public String getRepresentationUri() {
-        return representationUri;
+        return mRepresentationUri;
     }
 
     @Override
     public boolean isAvailableOffline() {
-        return isAvailableOffline;
+        return mIsAvailableOffline;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(positionInStream, publishedTimeSeconds, timeContentBecameAvailable,
-                score, representationUri, isAvailableOffline);
+        return Objects.hash(mPositionInStream, mPublishedTimeSeconds, mTimeContentBecameAvailable,
+                mScore, mRepresentationUri, mIsAvailableOffline);
     }
 
     @Override
@@ -87,32 +87,32 @@ public class StreamContentLoggingData implements ContentLoggingData {
 
         StreamContentLoggingData that = (StreamContentLoggingData) o;
 
-        if (positionInStream != that.positionInStream) {
+        if (mPositionInStream != that.mPositionInStream) {
             return false;
         }
-        if (publishedTimeSeconds != that.publishedTimeSeconds) {
+        if (mPublishedTimeSeconds != that.mPublishedTimeSeconds) {
             return false;
         }
-        if (timeContentBecameAvailable != that.timeContentBecameAvailable) {
+        if (mTimeContentBecameAvailable != that.mTimeContentBecameAvailable) {
             return false;
         }
-        if (Float.compare(that.score, score) != 0) {
+        if (Float.compare(that.mScore, mScore) != 0) {
             return false;
         }
-        if (isAvailableOffline != that.isAvailableOffline) {
+        if (mIsAvailableOffline != that.mIsAvailableOffline) {
             return false;
         }
 
-        return Objects.equals(representationUri, that.representationUri);
+        return Objects.equals(mRepresentationUri, that.mRepresentationUri);
     }
 
     @Override
     public String toString() {
         return "StreamContentLoggingData{"
-                + "positionInStream=" + positionInStream
-                + ", publishedTimeSeconds=" + publishedTimeSeconds
-                + ", timeContentBecameAvailable=" + timeContentBecameAvailable + ", score=" + score
-                + ", representationUri='" + representationUri + '\'' + '}';
+                + "positionInStream=" + mPositionInStream
+                + ", publishedTimeSeconds=" + mPublishedTimeSeconds
+                + ", timeContentBecameAvailable=" + mTimeContentBecameAvailable
+                + ", score=" + mScore + ", representationUri='" + mRepresentationUri + '\'' + '}';
     }
 
     /**
@@ -122,11 +122,11 @@ public class StreamContentLoggingData implements ContentLoggingData {
      * <p>Will not create a new instance if unneeded.
      */
     public StreamContentLoggingData createWithOfflineStatus(boolean offlineStatus) {
-        if (offlineStatus == this.isAvailableOffline) {
+        if (offlineStatus == this.mIsAvailableOffline) {
             return this;
         }
 
-        return new StreamContentLoggingData(positionInStream, publishedTimeSeconds,
-                timeContentBecameAvailable, score, representationUri, offlineStatus);
+        return new StreamContentLoggingData(mPositionInStream, mPublishedTimeSeconds,
+                mTimeContentBecameAvailable, mScore, mRepresentationUri, offlineStatus);
     }
 }

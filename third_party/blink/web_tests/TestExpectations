@@ -139,16 +139,6 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 Bug(none) virtual/composite-after-paint/scrollingcoordinator [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
-# CompositeAfterPaint incorrectly composites all scrollers, and these do not
-# produce non-fast scrollable regions, so there are differences in the non-fast
-# regions compared to pre-CompositeAfterPaint.
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -773,7 +763,6 @@ crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/selection/inline-block-in-selection-root.html [ Failure ]
 crbug.com/591099 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
-crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/border-radius-clipped-layer.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
@@ -5883,3 +5872,39 @@ crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any
 
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
+
+# Temporary suppression to allow Skia change to opaqueness tracking
+crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-jpeg-with-color-profile.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-animate-rotate.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-animate.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-border-fade.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-clip.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-iframe.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas-svg.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-svg-resource-url.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb-webgl.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-svg-foreign-object.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/jpeg-with-color-profile.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/png-with-color-profile.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossless.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossy-alpha.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
+crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
+
+crbug.com/1025557 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
+crbug.com/1025557 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
+

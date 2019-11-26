@@ -63,7 +63,7 @@ void ImageWriterHandler::Write(
   }
 
   image_writer_->UnmountVolumes(
-      base::Bind(&ImageWriter::Write, image_writer_->AsWeakPtr()));
+      base::BindOnce(&ImageWriter::Write, image_writer_->AsWeakPtr()));
 }
 
 void ImageWriterHandler::Verify(

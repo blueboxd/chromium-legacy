@@ -13,12 +13,22 @@
 @protocol InfobarTranslateModalDelegate <InfobarModalDelegate>
 
 // Indicates the user chose to always translate sites in the source language.
+// Triggers a translate as well.
 - (void)alwaysTranslateSourceLanguage;
+// Indicates the user chose to undo always translate sites in the source
+// language.
+- (void)undoAlwaysTranslateSourceLanguage;
 
 // Indicates the user chose to never translate sites in the source language.
 - (void)neverTranslateSourceLanguage;
+// Indicates the user chose to undo never translate sites in the source
+// language.
+- (void)undoNeverTranslateSourceLanguage;
 
-// TODO(crbug.com/1014959): Consider implementing neverTranslateSite.
+// Indicates the user chose to never translate for this site.
+- (void)neverTranslateSite;
+// Indicates the user chose to undo never translate for this site.
+- (void)undoNeverTranslateSite;
 
 @end
 

@@ -34,6 +34,11 @@ const char kForceFieldTrialParams[] = "force-fieldtrial-params";
 // prefixed with the character "t" will be treated as Trigger Variation Ids.
 const char kForceVariationIds[] = "force-variation-ids";
 
+// Forces to remove Chrome Variation Ids from being sent in X-Client-Data
+// header, specified as a 64-bit encoded list of numeric experiment ids. Ids
+// prefixed with the character "t" will be treated as Trigger Variation Ids.
+const char kForceDisableVariationIds[] = "force-disable-variation-ids";
+
 // Allows overriding the country used for evaluating variations. This is similar
 // to the "Override Variations Country" entry on chrome://translate-internals,
 // but is exposed as a command-line flag to allow testing First Run scenarios.

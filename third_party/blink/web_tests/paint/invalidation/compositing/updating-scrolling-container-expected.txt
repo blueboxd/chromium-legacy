@@ -10,11 +10,6 @@
           "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [8, 108, 210, 210],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='container'",
-          "rect": [8, 108, 210, 210],
-          "reason": "style change"
         }
       ]
     }

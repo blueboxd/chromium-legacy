@@ -97,7 +97,7 @@ class TestNetworkQualityEstimatorManagerClient
 class NetworkQualityEstimatorManagerTest : public testing::Test {
  public:
   NetworkQualityEstimatorManagerTest()
-      : net_log_(std::make_unique<net::BoundTestNetLog>()),
+      : net_log_(std::make_unique<net::RecordingBoundTestNetLog>()),
         network_quality_estimator_manager_(
             std::make_unique<NetworkQualityEstimatorManager>(
                 net_log_->bound().net_log())) {
@@ -127,7 +127,7 @@ class NetworkQualityEstimatorManagerTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<net::BoundTestNetLog> net_log_;
+  std::unique_ptr<net::RecordingBoundTestNetLog> net_log_;
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;
   std::unique_ptr<TestNetworkQualityEstimatorManagerClient>

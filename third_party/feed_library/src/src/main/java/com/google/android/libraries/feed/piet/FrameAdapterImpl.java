@@ -50,25 +50,25 @@ public class FrameAdapterImpl implements FrameAdapter {
 
     private static final String GENERIC_EXCEPTION = "Top Level Exception was caught - see logcat";
 
-    private final Set<ElementAdapter<?, ?>> childAdapters;
+    private final Set<ElementAdapter<?, ?>> mChildAdapters;
 
-    private final Context context;
-    private final AdapterParameters parameters;
-    private final ActionHandler actionHandler;
-    private final EventLogger eventLogger;
-    private final DebugBehavior debugBehavior;
-    private final Set<VisibilityAction> activeActions = new HashSet<>();
-    /*@Nullable*/ private LinearLayout view;
-    /*@Nullable*/ private FrameContext frameContext;
+    private final Context mContext;
+    private final AdapterParameters mParameters;
+    private final ActionHandler mActionHandler;
+    private final EventLogger mEventLogger;
+    private final DebugBehavior mDebugBehavior;
+    private final Set<VisibilityAction> mActiveActions = new HashSet<>();
+    /*@Nullable*/ private LinearLayout mView;
+    /*@Nullable*/ private FrameContext mFrameContext;
 
     FrameAdapterImpl(Context context, AdapterParameters parameters, ActionHandler actionHandler,
             EventLogger eventLogger, DebugBehavior debugBehavior) {
-        this.context = context;
-        this.parameters = parameters;
-        this.actionHandler = actionHandler;
-        this.eventLogger = eventLogger;
-        this.debugBehavior = debugBehavior;
-        childAdapters = new HashSet<>();
+        this.mContext = context;
+        this.mParameters = parameters;
+        this.mActionHandler = actionHandler;
+        this.mEventLogger = eventLogger;
+        this.mDebugBehavior = debugBehavior;
+        mChildAdapters = new HashSet<>();
     }
 
     // TODO: Need to implement support for sharding
@@ -76,13 +76,13 @@ public class FrameAdapterImpl implements FrameAdapter {
     public void bindModel(Frame frame, int frameWidthPx,
             /*@Nullable*/ ShardingControl shardingControl, List<PietSharedState> pietSharedStates) {
         long startTime = System.nanoTime();
-        initialBind(parameters.parentViewSupplier.get());
+        initialBind(mParameters.mParentViewSupplier.get());
         FrameContext localFrameContext =
-                createFrameContext(frame, frameWidthPx, pietSharedStates, checkNotNull(view));
-        frameContext = localFrameContext;
-        activeActions.clear();
-        activeActions.addAll(frame.getActions().getOnHideActionsList());
-        LinearLayout frameView = checkNotNull(view);
+                createFrameContext(frame, frameWidthPx, pietSharedStates, checkNotNull(mView));
+        mFrameContext = localFrameContext;
+        mActiveActions.clear();
+        mActiveActions.addAll(frame.getActions().getOnHideActionsList());
+        LinearLayout frameView = checkNotNull(mView);
 
         try {
             for (Content content : frame.getContentsList()) {
@@ -91,7 +91,7 @@ public class FrameAdapterImpl implements FrameAdapter {
                 List<ElementAdapter<?, ?>> adapters =
                         getBoundAdaptersForContent(content, localFrameContext);
                 for (ElementAdapter<?, ?> adapter : adapters) {
-                    childAdapters.add(adapter);
+                    mChildAdapters.add(adapter);
                     setLayoutParamsOnChild(adapter);
                     frameView.addView(adapter.getView());
                 }
@@ -123,18 +123,18 @@ public class FrameAdapterImpl implements FrameAdapter {
         // If there were errors add an error slice to the frame
         if (localFrameContext.getDebugBehavior().getShowDebugViews()) {
             View errorView =
-                    localFrameContext.getDebugLogger().getReportView(MessageType.ERROR, context);
+                    localFrameContext.getDebugLogger().getReportView(MessageType.ERROR, mContext);
             if (errorView != null) {
                 frameView.addView(errorView);
             }
             View warningView =
-                    localFrameContext.getDebugLogger().getReportView(MessageType.WARNING, context);
+                    localFrameContext.getDebugLogger().getReportView(MessageType.WARNING, mContext);
             if (warningView != null) {
                 frameView.addView(warningView);
             }
         }
-        eventLogger.logEvents(localFrameContext.getDebugLogger().getErrorCodes());
-        LogDataCallback callback = parameters.hostProviders.getLogDataCallback();
+        mEventLogger.logEvents(localFrameContext.getDebugLogger().getErrorCodes());
+        LogDataCallback callback = mParameters.mHostProviders.getLogDataCallback();
         Frame localFrame = localFrameContext.getFrame();
         if (callback != null && localFrame != null && localFrame.hasLogData()) {
             callback.onBind(localFrame.getLogData(), frameView);
@@ -145,20 +145,20 @@ public class FrameAdapterImpl implements FrameAdapter {
     public void unbindModel() {
         triggerHideActions();
 
-        LinearLayout view = checkNotNull(this.view);
-        LogDataCallback callback = parameters.hostProviders.getLogDataCallback();
-        if (frameContext != null) {
-            Frame frame = frameContext.getFrame();
+        LinearLayout view = checkNotNull(this.mView);
+        LogDataCallback callback = mParameters.mHostProviders.getLogDataCallback();
+        if (mFrameContext != null) {
+            Frame frame = mFrameContext.getFrame();
             if (callback != null && frame != null && frame.hasLogData()) {
                 callback.onUnbind(frame.getLogData(), view);
             }
         }
-        for (ElementAdapter<?, ?> child : childAdapters) {
-            parameters.elementAdapterFactory.releaseAdapter(child);
+        for (ElementAdapter<?, ?> child : mChildAdapters) {
+            mParameters.mElementAdapterFactory.releaseAdapter(child);
         }
-        childAdapters.clear();
+        mChildAdapters.clear();
         view.removeAllViews();
-        frameContext = null;
+        mFrameContext = null;
     }
 
     private void setLayoutParamsOnChild(ElementAdapter<?, ?> childAdapter) {
@@ -169,7 +169,7 @@ public class FrameAdapterImpl implements FrameAdapter {
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, height);
 
-        childAdapter.getElementStyle().applyMargins(context, params);
+        childAdapter.getElementStyle().applyMargins(mContext, params);
 
         params.gravity = childAdapter.getGravity(Gravity.TOP | Gravity.START);
 
@@ -178,46 +178,47 @@ public class FrameAdapterImpl implements FrameAdapter {
 
     @Override
     public LinearLayout getFrameContainer() {
-        initialBind(parameters.parentViewSupplier.get());
-        return checkNotNull(view);
+        initialBind(mParameters.mParentViewSupplier.get());
+        return checkNotNull(mView);
     }
 
     @VisibleForTesting
     FrameContext createFrameContext(
             Frame frame, int frameWidthPx, List<PietSharedState> pietSharedStates, View frameView) {
         MediaQueryHelper mediaQueryHelper = new MediaQueryHelper(
-                frameWidthPx, parameters.hostProviders.getAssetProvider(), context);
+                frameWidthPx, mParameters.mHostProviders.getAssetProvider(), mContext);
         PietStylesHelper pietStylesHelper = checkNotNull(
-                parameters.pietStylesHelperFactory.get(pietSharedStates, mediaQueryHelper));
+                mParameters.mPietStylesHelperFactory.get(pietSharedStates, mediaQueryHelper));
         return FrameContext.createFrameContext(frame, pietSharedStates, pietStylesHelper,
-                debugBehavior, new DebugLogger(), actionHandler, parameters.hostProviders,
+                mDebugBehavior, new DebugLogger(), mActionHandler, mParameters.mHostProviders,
                 frameView);
     }
 
     @Override
     public void triggerHideActions() {
-        if (frameContext == null || view == null) {
+        if (mFrameContext == null || mView == null) {
             return;
         }
-        FrameContext localFrameContext = frameContext;
-        ViewUtils.triggerHideActions(view, localFrameContext.getFrame().getActions(),
-                localFrameContext.getActionHandler(), localFrameContext.getFrame(), activeActions);
+        FrameContext localFrameContext = mFrameContext;
+        ViewUtils.triggerHideActions(mView, localFrameContext.getFrame().getActions(),
+                localFrameContext.getActionHandler(), localFrameContext.getFrame(), mActiveActions);
 
-        for (ElementAdapter<?, ?> adapter : childAdapters) {
+        for (ElementAdapter<?, ?> adapter : mChildAdapters) {
             adapter.triggerHideActions(localFrameContext);
         }
     }
 
     @Override
     public void triggerViewActions(View viewport) {
-        if (frameContext == null || view == null) {
+        if (mFrameContext == null || mView == null) {
             return;
         }
-        FrameContext localFrameContext = frameContext;
-        ViewUtils.maybeTriggerViewActions(view, viewport, localFrameContext.getFrame().getActions(),
-                localFrameContext.getActionHandler(), localFrameContext.getFrame(), activeActions);
+        FrameContext localFrameContext = mFrameContext;
+        ViewUtils.maybeTriggerViewActions(mView, viewport,
+                localFrameContext.getFrame().getActions(), localFrameContext.getActionHandler(),
+                localFrameContext.getFrame(), mActiveActions);
 
-        for (ElementAdapter<?, ?> adapter : childAdapters) {
+        for (ElementAdapter<?, ?> adapter : mChildAdapters) {
             adapter.triggerViewActions(viewport, localFrameContext);
         }
     }
@@ -229,7 +230,7 @@ public class FrameAdapterImpl implements FrameAdapter {
             case ELEMENT:
                 Element element = content.getElement();
                 ElementAdapter<?, ?> inlineSliceAdapter =
-                        parameters.elementAdapterFactory.createAdapterForElement(
+                        mParameters.mElementAdapterFactory.createAdapterForElement(
                                 element, frameContext);
                 inlineSliceAdapter.bindModel(element, frameContext);
                 return Collections.singletonList(inlineSliceAdapter);
@@ -240,7 +241,7 @@ public class FrameAdapterImpl implements FrameAdapter {
                     TemplateAdapterModel model = new TemplateAdapterModel(
                             templateInvocation.getTemplateId(), frameContext, bindingContext);
                     ElementAdapter<? extends View, ?> templateAdapter =
-                            parameters.templateBinder.createAndBindTemplateAdapter(
+                            mParameters.mTemplateBinder.createAndBindTemplateAdapter(
                                     model, frameContext);
                     returnList.add(templateAdapter);
                 }
@@ -258,24 +259,24 @@ public class FrameAdapterImpl implements FrameAdapter {
 
     @VisibleForTesting
     AdapterParameters getParameters() {
-        return this.parameters;
+        return this.mParameters;
     }
 
     @VisibleForTesting
     /*@Nullable*/
     LinearLayout getView() {
-        return this.view;
+        return this.mView;
     }
 
     private void initialBind(/*@Nullable*/ ViewGroup parent) {
-        if (view != null) {
+        if (mView != null) {
             return;
         }
-        this.view = createView(parent);
+        this.mView = createView(parent);
     }
 
     private LinearLayout createView(/*@Nullable*/ ViewGroup parent) {
-        LinearLayout linearLayout = new LinearLayout(context);
+        LinearLayout linearLayout = new LinearLayout(mContext);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         ViewGroup.LayoutParams layoutParams;
         if (parent != null && parent.getLayoutParams() != null) {

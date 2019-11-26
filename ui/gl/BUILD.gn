@@ -30,6 +30,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
@@ -56,14 +62,6 @@ jumbo_component("gl") {
   output_name = "gl_wrapper"  # Avoid colliding with OS X"s libGL.dylib.
 
   sources = [
-    "android/android_surface_control_compat.cc",
-    "android/android_surface_control_compat.h",
-    "android/scoped_java_surface.cc",
-    "android/scoped_java_surface.h",
-    "android/surface_texture.cc",
-    "android/surface_texture.h",
-    "android/surface_texture_listener.cc",
-    "android/surface_texture_listener.h",
     "buffer_format_utils.cc",
     "buffer_format_utils.h",
     "ca_renderer_layer_params.cc",
@@ -153,6 +151,19 @@ jumbo_component("gl") {
     "trace_util.cc",
     "trace_util.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "android/android_surface_control_compat.cc",
+      "android/android_surface_control_compat.h",
+      "android/scoped_java_surface.cc",
+      "android/scoped_java_surface.h",
+      "android/surface_texture.cc",
+      "android/surface_texture.h",
+      "android/surface_texture_listener.cc",
+      "android/surface_texture_listener.h",
+    ]
+  }
 
   configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]

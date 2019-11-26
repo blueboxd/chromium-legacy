@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">पत्ते</translation>
 <translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
 <translation id="2904414404539560095">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
+<translation id="2905036901251765993">जवळपासच्या लोकांसोबत शेअर करण्यासाठी, त्यांना हा QR कोड स्कॅन करू द्या</translation>
 <translation id="2909615210195135082">Google सूचना प्लॅटफॉर्म</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
 <translation id="2913331724188855103">कुकी डेटा सेव्ह करणे आणि वाचण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">पासवर्ड पहा</translation>
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
+<translation id="3682730288090679318">तुम्हाला सूचना दाखवण्यास सांगण्यापासून आपोआप ब्लॉक करण्यासाठी सुरू करा. साइटने सूचनांची विनंती केल्यास, पेजच्या तळाशी इन्फोबार दिसेल.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
 <translation id="3716182511346448902">हे पेज खूपच जास्त मेमरी वापरत असल्यामुळे Chrome ने ते थांबवून ठेवलेले आहे.</translation>
@@ -542,6 +544,7 @@
 <translation id="5048398596102334565">साइटना मोशन सेन्सर ॲक्सेस करण्याची अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="5063480226653192405">वापर</translation>
 <translation id="5087580092889165836">कार्ड जोडा</translation>
+<translation id="5096950519211870196">तुम्हाला सूचना दाखवण्यास सांगण्यापासून साइट ब्लॉक केल्या जातील. साइटने सूचनांची विनंती केल्यास, पेजच्या तळाशी इन्फोबार दिसेल.</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
 <translation id="510275257476243843">1 तास शिल्लक</translation>
 <translation id="5123685120097942451">गुप्त टॅब</translation>
@@ -589,6 +592,7 @@
 <translation id="5414836363063783498">सत्यापित करत आहे...</translation>
 <translation id="5423934151118863508">तुमची सर्वाधिक भेट दिलेली पेज येथे दिसतील</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB उपलब्ध आहे</translation>
+<translation id="5427766642345310212">समजले. नवीन सूचना विनंत्या बाय डीफॉल्ट येथे दिसतील.</translation>
 <translation id="543338862236136125">पासवर्ड संपादित करा</translation>
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="543509235395288790">(<ph name="MEGABYTES" />) च्या <ph name="COUNT" /> फायली डाउनलोड करत आहे.</translation>
@@ -687,6 +691,7 @@
 <translation id="6108923351542677676">सेटअप प्रगती पथावर आहे...</translation>
 <translation id="6111020039983847643">डेटा वापरला</translation>
 <translation id="6112702117600201073">पृष्ठ रिफ्रेश करीत आहे</translation>
+<translation id="6113400363611269907">सूचना शांतपणे दाखवा</translation>
 <translation id="6127379762771434464">आयटम काढला</translation>
 <translation id="6140912465461743537">देश/प्रदेश</translation>
 <translation id="614940544461990577">हे करून पहा:</translation>
@@ -1019,6 +1024,7 @@
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="8514477925623180633">Chrome सह स्टोअर केलेला पासवर्ड पाठवा</translation>
 <translation id="8514577642972634246">गुप्त मोडमध्ये प्रवेश करा</translation>
+<translation id="8516012719330875537">इमेज संपादक</translation>
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="8523928698583292556">स्टोअर केलेला पासवर्ड हटवा</translation>
 <translation id="854522910157234410">हे पृष्ठ उघडा</translation>

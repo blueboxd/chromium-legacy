@@ -323,8 +323,8 @@ SkPath NewTabButton::GetBorderPath(const gfx::Point& origin,
     const float diameter = radius * 2;
     path.rLineTo(diameter, 0);
     path.rLineTo(0, scaled_origin.y() + radius);
-    path.rArcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                SkPath::kCW_Direction, -diameter, 0);
+    path.rArcTo(radius, radius, 0, SkPath::kSmall_ArcSize, SkPathDirection::kCW,
+                -diameter, 0);
     path.close();
   } else {
     path.addCircle(scaled_origin.x() + radius, scaled_origin.y() + radius,

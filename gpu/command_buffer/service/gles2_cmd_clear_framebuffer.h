@@ -22,6 +22,7 @@ class GPU_GLES2_EXPORT ClearFramebufferResourceManager {
   ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder);
   ~ClearFramebufferResourceManager();
 
+  void Destroy();
   void ClearFramebuffer(const gles2::GLES2Decoder* decoder,
                         const gfx::Size& max_viewport_size,
                         GLbitfield mask,
@@ -34,7 +35,6 @@ class GPU_GLES2_EXPORT ClearFramebufferResourceManager {
 
  private:
   void Initialize(const gles2::GLES2Decoder* decoder);
-  void Destroy();
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;

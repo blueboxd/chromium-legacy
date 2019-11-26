@@ -161,6 +161,8 @@ void WebContentController::AttachTo(aura::Window* window, int window_id) {
 
 void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
   content::WebContents* contents = GetWebContents();
+  if (!contents->GetNativeView()->CanFocus())
+    return;
   // Ensure this web contents has focus before sending it input.
   if (!contents->GetNativeView()->HasFocus())
     contents->GetNativeView()->Focus();

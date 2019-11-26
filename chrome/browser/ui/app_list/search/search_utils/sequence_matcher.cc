@@ -183,7 +183,7 @@ double SequenceMatcher::Ratio() {
     if (edit_distance_ratio_ < 0) {
       const int edit_distance = EditDistance();
       edit_distance_ratio_ =
-          1.0 - static_cast<double>(edit_distance) /
+          1.0 - static_cast<double>(edit_distance) * 2 /
                     (first_string_.size() + second_string_.size());
     }
     return edit_distance_ratio_;

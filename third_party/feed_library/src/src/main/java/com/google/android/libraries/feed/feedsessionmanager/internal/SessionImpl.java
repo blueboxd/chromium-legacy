@@ -32,65 +32,65 @@ import java.util.Set;
 public class SessionImpl implements InitializableSession, Dumpable {
     private static final String TAG = "SessionImpl";
 
-    protected final Store store;
-    protected final TaskQueue taskQueue;
-    protected final ThreadUtils threadUtils;
-    protected final TimingUtils timingUtils;
-    private final boolean limitPagingUpdates;
-    private final SessionContentTracker sessionContentTracker =
+    protected final Store mStore;
+    protected final TaskQueue mTaskQueue;
+    protected final ThreadUtils mThreadUtils;
+    protected final TimingUtils mTimingUtils;
+    private final boolean mLimitPagingUpdates;
+    private final SessionContentTracker mSessionContentTracker =
             new SessionContentTracker(/* supportsClearAll= */ false);
 
     // Allow creation of the session without a model provider, this becomes an unbound session
-    /*@Nullable*/ protected ModelProvider modelProvider;
-    /*@Nullable*/ protected ViewDepthProvider viewDepthProvider;
-    protected boolean legacyHeadContent;
+    /*@Nullable*/ protected ModelProvider mModelProvider;
+    /*@Nullable*/ protected ViewDepthProvider mViewDepthProvider;
+    protected boolean mLegacyHeadContent;
 
-    protected String sessionId;
+    protected String mSessionId;
 
     // operation counts for the dumper
-    int updateCount;
+    int mUpdateCount;
 
     SessionImpl(Store store, boolean limitPagingUpdates, TaskQueue taskQueue,
             TimingUtils timingUtils, ThreadUtils threadUtils) {
-        this.store = store;
-        this.taskQueue = taskQueue;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.limitPagingUpdates = limitPagingUpdates;
+        this.mStore = store;
+        this.mTaskQueue = taskQueue;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mLimitPagingUpdates = limitPagingUpdates;
     }
 
     @Override
     public void bindModelProvider(
             /*@Nullable*/ ModelProvider modelProvider,
             /*@Nullable*/ ViewDepthProvider viewDepthProvider) {
-        this.modelProvider = modelProvider;
-        this.viewDepthProvider = viewDepthProvider;
+        this.mModelProvider = modelProvider;
+        this.mViewDepthProvider = viewDepthProvider;
     }
 
     @Override
     public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+        this.mSessionId = sessionId;
     }
 
     @Override
     /*@Nullable*/
     public ModelProvider getModelProvider() {
-        return modelProvider;
+        return mModelProvider;
     }
 
     @Override
     public void populateModelProvider(List<StreamStructure> head, boolean cachedBindings,
             boolean legacyHeadContent, UiContext uiContext) {
         Logger.i(TAG, "PopulateModelProvider %s items", head.size());
-        this.legacyHeadContent = legacyHeadContent;
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        this.mLegacyHeadContent = legacyHeadContent;
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        if (modelProvider != null) {
+        if (mModelProvider != null) {
             ModelMutation modelMutation =
-                    modelProvider.edit()
+                    mModelProvider.edit()
                             .hasCachedBindings(cachedBindings)
-                            .setSessionId(sessionId)
+                            .setSessionId(mSessionId)
                             .setMutationContext(
                                     new MutationContext.Builder().setUiContext(uiContext).build());
 
@@ -99,7 +99,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
                 String contentId = streamStructure.getContentId();
                 switch (streamStructure.getOperation()) {
                     case UPDATE_OR_APPEND:
-                        if (!sessionContentTracker.contains(contentId)) {
+                        if (!mSessionContentTracker.contains(contentId)) {
                             modelMutation.addChild(streamStructure);
                         }
                         break;
@@ -113,25 +113,25 @@ public class SessionImpl implements InitializableSession, Dumpable {
                         Logger.e(TAG, "unsupported StreamDataOperation: %s",
                                 streamStructure.getOperation());
                 }
-                sessionContentTracker.update(streamStructure);
+                mSessionContentTracker.update(streamStructure);
             }
             modelMutation.commit();
         } else {
-            sessionContentTracker.update(head);
+            mSessionContentTracker.update(head);
         }
 
-        timeTracker.stop("populateSession", sessionId, "operations", head.size());
+        timeTracker.stop("populateSession", mSessionId, "operations", head.size());
     }
 
     @Override
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
             int schemaVersion,
             /*@Nullable*/ MutationContext mutationContext) {
-        String localSessionId = Validators.checkNotNull(sessionId);
+        String localSessionId = Validators.checkNotNull(mSessionId);
         if (clearHead) {
             if (shouldInvalidateModelProvider(mutationContext, localSessionId)) {
-                if (modelProvider != null) {
-                    modelProvider.invalidate();
+                if (mModelProvider != null) {
+                    mModelProvider.invalidate();
                     Logger.i(TAG, "Invalidating Model Provider for session %s due to a clear head",
                             localSessionId);
                 }
@@ -140,13 +140,13 @@ public class SessionImpl implements InitializableSession, Dumpable {
             }
             return;
         }
-        updateCount++;
+        mUpdateCount++;
         updateSessionInternal(streamStructures, mutationContext);
     }
 
     protected boolean shouldInvalidateModelProvider(
             /*@Nullable*/ MutationContext mutationContext, String sessionId) {
-        if (modelProvider != null && mutationContext != null
+        if (mModelProvider != null && mutationContext != null
                 && mutationContext.getContinuationToken() != null) {
             return sessionId.equals(mutationContext.getRequestingSessionId());
         }
@@ -160,32 +160,32 @@ public class SessionImpl implements InitializableSession, Dumpable {
 
     void updateSessionInternal(
             List<StreamStructure> streamStructures, /*@Nullable*/ MutationContext mutationContext) {
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         StreamToken mutationSourceToken =
                 mutationContext != null ? mutationContext.getContinuationToken() : null;
         if (mutationSourceToken != null) {
             String contentId = mutationSourceToken.getContentId();
-            if (!sessionContentTracker.contains(contentId)) {
+            if (!mSessionContentTracker.contains(contentId)) {
                 // Make sure that mutationSourceToken is a token in this session, if not, we don't
                 // update the session.
-                timeTracker.stop("updateSessionIgnored", sessionId, "Token Not Found", contentId);
+                timeTracker.stop("updateSessionIgnored", mSessionId, "Token Not Found", contentId);
                 Logger.i(TAG, "Token %s not found in session, ignoring update", contentId);
                 return;
-            } else if (limitPagingUpdates) {
+            } else if (mLimitPagingUpdates) {
                 String mutationSessionId =
                         Validators.checkNotNull(mutationContext).getRequestingSessionId();
                 if (mutationSessionId == null) {
                     Logger.i(TAG, "Request Session was not set, ignoring update");
                     return;
                 }
-                if (!sessionId.equals(mutationSessionId)) {
+                if (!mSessionId.equals(mutationSessionId)) {
                     Logger.i(TAG, "Limiting Updates, paging request made on another session");
                     return;
                 }
             }
         }
 
-        ModelMutation modelMutation = (modelProvider != null) ? modelProvider.edit() : null;
+        ModelMutation modelMutation = (mModelProvider != null) ? mModelProvider.edit() : null;
         if (modelMutation != null && mutationContext != null) {
             modelMutation.setMutationContext(mutationContext);
             if (mutationContext.getContinuationToken() != null) {
@@ -196,12 +196,12 @@ public class SessionImpl implements InitializableSession, Dumpable {
         int updateCnt = 0;
         int addFeatureCnt = 0;
         int requiredContentCnt = 0;
-        SessionMutation sessionMutation = store.editSession(sessionId);
+        SessionMutation sessionMutation = mStore.editSession(mSessionId);
         for (StreamStructure streamStructure : streamStructures) {
             String contentId = streamStructure.getContentId();
             switch (streamStructure.getOperation()) {
                 case UPDATE_OR_APPEND:
-                    if (sessionContentTracker.contains(contentId)) {
+                    if (mSessionContentTracker.contains(contentId)) {
                         // TODO: This could leave an empty feature if contentKey already exists in
                         // the session with a different parent.
                         if (modelMutation != null) {
@@ -227,7 +227,7 @@ public class SessionImpl implements InitializableSession, Dumpable {
                     Logger.i(TAG, "CLEAR_ALL not support on this session type");
                     break;
                 case REQUIRED_CONTENT:
-                    if (!sessionContentTracker.contains(contentId)) {
+                    if (!mSessionContentTracker.contains(contentId)) {
                         sessionMutation.add(streamStructure);
                         requiredContentCnt++;
                     }
@@ -236,42 +236,42 @@ public class SessionImpl implements InitializableSession, Dumpable {
                     Logger.e(
                             TAG, "Unknown operation, ignoring: %s", streamStructure.getOperation());
             }
-            sessionContentTracker.update(streamStructure);
+            mSessionContentTracker.update(streamStructure);
         }
 
         // Commit the Model Provider mutation after the store is updated.
         int taskType = mutationContext != null && mutationContext.isUserInitiated()
                 ? TaskType.IMMEDIATE
                 : TaskType.USER_FACING;
-        taskQueue.execute(Task.SESSION_MUTATION, taskType, sessionMutation::commit);
+        mTaskQueue.execute(Task.SESSION_MUTATION, taskType, sessionMutation::commit);
         if (modelMutation != null) {
             modelMutation.commit();
         }
-        timeTracker.stop("updateSession", sessionId, "features", addFeatureCnt, "updates",
+        timeTracker.stop("updateSession", mSessionId, "features", addFeatureCnt, "updates",
                 updateCnt, "requiredContent", requiredContentCnt);
     }
 
     @Override
     public String getSessionId() {
-        return Validators.checkNotNull(sessionId);
+        return Validators.checkNotNull(mSessionId);
     }
 
     @Override
     public Set<String> getContentInSession() {
-        return sessionContentTracker.getContentIds();
+        return mSessionContentTracker.getContentIds();
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("sessionName").value(sessionId);
+        dumper.forKey("sessionName").value(mSessionId);
         dumper.forKey("")
-                .value((modelProvider == null) ? "sessionIsUnbound" : "sessionIsBound")
+                .value((mModelProvider == null) ? "sessionIsUnbound" : "sessionIsBound")
                 .compactPrevious();
-        dumper.forKey("updateCount").value(updateCount).compactPrevious();
-        dumper.dump(sessionContentTracker);
-        if (modelProvider instanceof Dumpable) {
-            dumper.dump((Dumpable) modelProvider);
+        dumper.forKey("updateCount").value(mUpdateCount).compactPrevious();
+        dumper.dump(mSessionContentTracker);
+        if (mModelProvider instanceof Dumpable) {
+            dumper.dump((Dumpable) mModelProvider);
         }
     }
 }

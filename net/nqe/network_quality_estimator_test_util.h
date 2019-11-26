@@ -40,14 +40,14 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
       const std::map<std::string, std::string>& variation_params,
       bool allow_local_host_requests_for_tests,
       bool allow_smaller_responses_for_tests,
-      std::unique_ptr<BoundTestNetLog> net_log);
+      std::unique_ptr<RecordingBoundTestNetLog> net_log);
 
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
       bool allow_local_host_requests_for_tests,
       bool allow_smaller_responses_for_tests,
       bool suppress_notifications_for_testing,
-      std::unique_ptr<BoundTestNetLog> net_log);
+      std::unique_ptr<RecordingBoundTestNetLog> net_log);
 
   explicit TestNetworkQualityEstimator(
       std::unique_ptr<NetworkQualityEstimatorParams> params);
@@ -233,7 +233,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   TestNetworkQualityEstimator(
       std::unique_ptr<NetworkQualityEstimatorParams> params,
-      std::unique_ptr<BoundTestNetLog> net_log);
+      std::unique_ptr<RecordingBoundTestNetLog> net_log);
 
   void RecordSpdyPingLatency(const HostPortPair& host_port_pair,
                              base::TimeDelta rtt) override;
@@ -246,7 +246,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   base::Optional<net::EffectiveConnectionType> GetOverrideECT() const override;
 
   // Net log provided to network quality estimator.
-  std::unique_ptr<net::BoundTestNetLog> net_log_;
+  std::unique_ptr<net::RecordingBoundTestNetLog> net_log_;
 
   // If set, GetEffectiveConnectionType() and GetRecentEffectiveConnectionType()
   // would return the set values, respectively.

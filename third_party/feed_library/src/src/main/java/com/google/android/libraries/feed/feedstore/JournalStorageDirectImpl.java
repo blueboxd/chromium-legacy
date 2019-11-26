@@ -23,41 +23,41 @@ import java.util.List;
 public final class JournalStorageDirectImpl
         extends MainThreadCaller implements JournalStorageDirect {
     private static final String LOCATION = "JournalStorage.";
-    private final JournalStorage journalStorage;
+    private final JournalStorage mJournalStorage;
 
     public JournalStorageDirectImpl(
             JournalStorage journalStorage, MainThreadRunner mainThreadRunner) {
         super(mainThreadRunner);
-        this.journalStorage = journalStorage;
+        this.mJournalStorage = journalStorage;
     }
 
     @Override
     public Result<List<byte[]>> read(String journalName) {
         return mainThreadCaller(LOCATION + "read",
-                (consumer) -> journalStorage.read(journalName, consumer), Result.failure());
+                (consumer) -> mJournalStorage.read(journalName, consumer), Result.failure());
     }
 
     @Override
     public CommitResult commit(JournalMutation mutation) {
         return mainThreadCaller(LOCATION + "commit",
-                (consumer) -> journalStorage.commit(mutation, consumer), CommitResult.FAILURE);
+                (consumer) -> mJournalStorage.commit(mutation, consumer), CommitResult.FAILURE);
     }
 
     @Override
     public Result<Boolean> exists(String journalName) {
         return mainThreadCaller(LOCATION + "exists",
-                (consumer) -> journalStorage.exists(journalName, consumer), Result.failure());
+                (consumer) -> mJournalStorage.exists(journalName, consumer), Result.failure());
     }
 
     @Override
     public Result<List<String>> getAllJournals() {
         return mainThreadCaller(
-                LOCATION + "getAllJournals", journalStorage::getAllJournals, Result.failure());
+                LOCATION + "getAllJournals", mJournalStorage::getAllJournals, Result.failure());
     }
 
     @Override
     public CommitResult deleteAll() {
         return mainThreadCaller(
-                LOCATION + "deleteAll", journalStorage::deleteAll, CommitResult.FAILURE);
+                LOCATION + "deleteAll", mJournalStorage::deleteAll, CommitResult.FAILURE);
     }
 }

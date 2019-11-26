@@ -411,19 +411,19 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
     @Override
     public void updateWith(PaymentRequestDetailsUpdate response) {
-        assert isChangingPaymentMethod();
+        assert isChanging();
         mPaymentHandlerHost.updateWith(response);
     }
 
     @Override
     public void noUpdatedPaymentDetails() {
-        assert isChangingPaymentMethod();
+        assert isChanging();
         mPaymentHandlerHost.noUpdatedPaymentDetails();
     }
 
     @Override
-    public boolean isChangingPaymentMethod() {
-        return mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod();
+    public boolean isChanging() {
+        return mPaymentHandlerHost != null && mPaymentHandlerHost.isChanging();
     }
 
     @Override

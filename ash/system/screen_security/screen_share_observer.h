@@ -13,7 +13,9 @@ namespace ash {
 class ScreenShareObserver {
  public:
   // Called when screen share is started.
-  virtual void OnScreenShareStart(const base::Closure& stop_callback,
+  // |stop_callback| must be a base::RepeatingCallback so that it can be passed
+  // to all observers.
+  virtual void OnScreenShareStart(const base::RepeatingClosure& stop_callback,
                                   const base::string16& helper_name) = 0;
 
   // Called when screen share is stopped.

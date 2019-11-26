@@ -58,6 +58,9 @@ class TabStripUI : public content::WebUIController {
   // Embedder::GetLayout() changes.
   void LayoutChanged();
 
+  // The embedder should call this whenever the tab strip gains keyboard focus.
+  void ReceivedKeyboardFocus();
+
  private:
   void HandleThumbnailUpdate(int extension_tab_id,
                              ThumbnailTracker::CompressedThumbnailData image);

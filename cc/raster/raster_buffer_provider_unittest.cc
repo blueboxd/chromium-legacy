@@ -289,25 +289,28 @@ class RasterBufferProviderTest
     return pool_->AcquireResource(size, viz::RGBA_8888, gfx::ColorSpace());
   }
 
-  void AppendTask(unsigned id, const gfx::Size& size) {
+  void AppendTask(unsigned id,
+                  const gfx::Size& size,
+                  bool depends_on_at_raster_decodes) {
     ResourcePool::InUsePoolResource resource = AllocateResource(size);
     // The raster buffer has no tile ids associated with it for partial update,
     // so doesn't need to provide a valid dirty rect.
     std::unique_ptr<RasterBuffer> raster_buffer =
-        raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
+        raster_buffer_provider_->AcquireBufferForRaster(
+            resource, 0, 0, depends_on_at_raster_decodes);
     TileTask::Vector empty;
     tasks_.push_back(
         new TestRasterTaskImpl(this, id, std::move(raster_buffer), &empty));
     resources_.push_back(std::move(resource));
   }
 
-  void AppendTask(unsigned id) { AppendTask(id, gfx::Size(1, 1)); }
+  void AppendTask(unsigned id) { AppendTask(id, gfx::Size(1, 1), false); }
 
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
     ResourcePool::InUsePoolResource resource =
         AllocateResource(gfx::Size(1, 1));
     std::unique_ptr<RasterBuffer> raster_buffer =
-        raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
+        raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0, false);
     TileTask::Vector empty;
     tasks_.push_back(new BlockingTestRasterTaskImpl(
         this, id, std::move(raster_buffer), lock, &empty));
@@ -317,7 +320,7 @@ class RasterBufferProviderTest
   void AppendTaskWithResource(unsigned id,
                               const ResourcePool::InUsePoolResource* resource) {
     std::unique_ptr<RasterBuffer> raster_buffer =
-        raster_buffer_provider_->AcquireBufferForRaster(*resource, 0, 0);
+        raster_buffer_provider_->AcquireBufferForRaster(*resource, 0, 0, false);
     TileTask::Vector empty;
     tasks_.push_back(
         new TestRasterTaskImpl(this, id, std::move(raster_buffer), &empty));
@@ -571,8 +574,9 @@ TEST_P(RasterBufferProviderTest, MeasureGpuRasterDuration) {
     return;
   }
 
-  // Schedule a task.
-  AppendTask(0u);
+  // Schedule a couple of tasks.
+  AppendTask(0u, gfx::Size(1, 1), false /* depends_on_at_raster_decodes */);
+  AppendTask(1u, gfx::Size(1, 1), true /* depends_on_at_raster_decodes */);
   ScheduleTasks();
   RunMessageLoopUntilAllTasksHaveCompleted();
 
@@ -592,16 +596,16 @@ TEST_P(RasterBufferProviderTest, MeasureGpuRasterDuration) {
   duration_histogram +=
       GetParam() == RASTER_BUFFER_PROVIDER_TYPE_GPU_OOPR ? "Oop" : "Gpu";
   std::string delay_histogram(
-      "Renderer4.Renderer.RasterTaskSchedulingDelay.All");
+      "Renderer4.Renderer.RasterTaskSchedulingDelayNoAtRasterDecodes.All");
   histogram_tester.ExpectTotalCount(duration_histogram, 0);
   histogram_tester.ExpectTotalCount(delay_histogram, 0);
   bool has_pending_queries =
       raster_buffer_provider_->CheckRasterFinishedQueries();
   EXPECT_FALSE(has_pending_queries);
-  histogram_tester.ExpectTotalCount(duration_histogram, 1);
+  histogram_tester.ExpectTotalCount(duration_histogram, 2);
 
   // Only in Chrome OS with OOP-R, we should be measuring raster scheduling
-  // delay.
+  // delay (and only for tasks that don't depend on at-raster image decodes).
   base::HistogramBase::Count expected_delay_histogram_count = 0;
 #if defined(OS_CHROMEOS)
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_GPU_OOPR)

@@ -222,6 +222,8 @@ static_library("arc_base") {
     "session/arc_vm_client_adapter.h",
     "session/arc_vm_client_adapter_util.cc",
     "session/arc_vm_client_adapter_util.h",
+    "session/file_system_status.cc",
+    "session/file_system_status.h",
   ]
 
   deps = [
@@ -370,6 +372,7 @@ source_set("unit_tests") {
     "session/arc_session_runner_unittest.cc",
     "session/arc_vm_client_adapter_unittest.cc",
     "session/arc_vm_client_adapter_util_unittest.cc",
+    "session/file_system_status_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]

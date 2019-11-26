@@ -2640,7 +2640,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4839303808932127586">De&amp;sa el vídeo com a...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 més}other{# més}}</translation>
 <translation id="4842976633412754305">Aquesta pàgina està provant de carregar scripts de fonts no autenticades.</translation>
-<translation id="4843488774506045600">Inici de sessió proporcionat per <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Altres teclats</translation>
 <translation id="4846680374085650406">Esteu seguint la recomanació de l'administració per a aquesta configuració.</translation>
 <translation id="4848518990323155912">Activa el bloqueig de la targeta SIM (requereix el PIN per utilitzar dades de telefonia mòbil)</translation>
@@ -3847,7 +3846,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6607831829715835317">Més eine&amp;s</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6615455863669487791">Mostra-m'ho</translation>
-<translation id="6617100836880592260">Velocitat de cerca: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Desa de totes maneres</translation>
 <translation id="6619058681307408113">Protocol Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">El lloc web pot fer un seguiment de la teva ubicació</translation>

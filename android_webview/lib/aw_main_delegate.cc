@@ -180,15 +180,25 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView does not and should not support WebAuthN.
     features.DisableIfNotSet(::features::kWebAuth);
 
-    // WebView isn't compatible with OOP-D.
-    features.DisableIfNotSet(::features::kVizDisplayCompositor);
+    // Checking for command line here as FeatureList isn't initialized here yet,
+    // so we can't use FeatureList::IsEnabled. This is necessary if someone
+    // enabled feature through command line. Finch experiments will need to set
+    // all flags in trial config.
+    if (features.IsEnabled(::features::kVizForWebView)) {
+      cl->AppendSwitch(switches::kWebViewEnableSharedImage);
+      features.EnableIfNotSet(::features::kUseSkiaRenderer);
+    } else {
+      // Disable OOP-D if viz for WebView not enabled.
+      features.DisableIfNotSet(::features::kVizDisplayCompositor);
+
+      // Viz for WebView is required to support embedding CompositorFrameSinks
+      // which is needed for UseSurfaceLayerForVideo feature.
+      // https://crbug.com/853832
+      features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
+    }
 
     // WebView does not support overlay fullscreen yet for video overlays.
     features.DisableIfNotSet(media::kOverlayFullscreenVideo);
-
-    // WebView doesn't support embedding CompositorFrameSinks which is needed
-    // for UseSurfaceLayerForVideo feature. https://crbug.com/853832
-    features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
 
     // WebView does not support EME persistent license yet, because it's not
     // clear on how user can remove persistent media licenses from UI.

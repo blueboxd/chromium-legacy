@@ -42,7 +42,7 @@ class HeaderCoalescerTest : public ::testing::Test {
   }
 
  protected:
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   HeaderCoalescer header_coalescer_;
 };
 

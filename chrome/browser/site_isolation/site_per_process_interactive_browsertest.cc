@@ -1299,6 +1299,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
     LOG(ERROR) << "Embedder focused frame = "
                << embedder_web_contents->GetFocusedFrame()
                << ", main frame = " << main_frame
+               << ", embedder_contents_focused = "
+               << IsRenderWidgetHostFocused(
+                      embedder_web_contents->GetRenderWidgetHostView()
+                          ->GetRenderWidgetHost())
                << ", iframe_text = " << child_text_area
                << ", iframe_pdf = " << ChildFrameAt(main_frame, 1);
   }

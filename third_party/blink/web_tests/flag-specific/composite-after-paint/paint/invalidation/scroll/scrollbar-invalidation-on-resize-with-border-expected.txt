@@ -12,11 +12,6 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='scrollable'",
-          "rect": [8, 50, 320, 120],
-          "reason": "geometry"
-        },
-        {
           "object": "HorizontalScrollbar",
           "rect": [18, 145, 285, 15],
           "reason": "scroll control"
@@ -30,6 +25,16 @@
           "object": "VerticalScrollbar",
           "rect": [103, 60, 15, 85],
           "reason": "scroll control"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [303, 145, 15, 15],
+          "reason": "geometry"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [103, 145, 15, 15],
+          "reason": "geometry"
         }
       ]
     }

@@ -51,12 +51,12 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
         const enterprise_management::PolicyData& policy_data) {}
   };
 
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       std::unique_ptr<enterprise_management::PolicyFetchResponse>
           policy_response)>
       AssembleAndSignPolicyAsyncCallback;
 
-  typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
+  typedef base::RepeatingCallback<void(bool is_owner)> IsOwnerCallback;
 
   explicit OwnerSettingsService(
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
@@ -89,7 +89,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   bool AssembleAndSignPolicyAsync(
       base::TaskRunner* task_runner,
       std::unique_ptr<enterprise_management::PolicyData> policy,
-      const AssembleAndSignPolicyAsyncCallback& callback);
+      AssembleAndSignPolicyAsyncCallback callback);
 
   // Checks whether |setting| is handled by OwnerSettingsService.
   virtual bool HandlesSetting(const std::string& setting) = 0;

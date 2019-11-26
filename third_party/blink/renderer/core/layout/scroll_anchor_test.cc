@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -926,5 +928,44 @@ TEST_P(ScrollAnchorTest, DeleteAnonymousBlockCrash) {
   ScrollLayoutViewport(ScrollOffset(0, 20000));
   GetDocument().getElementById("deleteMe")->remove();
   Update();
+}
+
+TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      .content {
+        height: 45vh;
+        background: lightblue;
+      }
+      #hidden {
+        height: 200px;
+        display: none;
+      }
+    </style>
+    <div class="content" id=one></div>
+    <div id="hidden"></div>
+    <div class="content" id=two></div>
+    <div class="content" id=three></div>
+    <div class="content" id=four></div>
+  )HTML");
+  LayoutViewport()->SetScrollOffset(ScrollOffset(0, 2000), kUserScroll);
+  Update();
+  GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
+                                                       "display:block");
+  GetDocument().UpdateStyleAndLayout();
+#if !defined(OS_MACOSX)
+  EXPECT_EQ(IntSize(0, 200), LayoutViewport()
+                                 ->GetScrollAnimator()
+                                 .ImplOnlyAnimationAdjustmentForTesting());
+#endif
+  GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
+                                                       "");
+  GetDocument().UpdateStyleAndLayout();
+  // The clamping scroll after resizing layout overflow to be smaller
+  // should adjust the animation back to 0.
+  EXPECT_EQ(IntSize(0, 0), LayoutViewport()
+                               ->GetScrollAnimator()
+                               .ImplOnlyAnimationAdjustmentForTesting());
 }
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -495,6 +496,514 @@ TEST_F(RulesetMatcherTest, UrlTransform) {
     ASSERT_TRUE(redirect_action.has_value());
     EXPECT_EQ(GURL(*test_case.expected_redirect_url),
               redirect_action->redirect_url);
+  }
+}
+
+// Tests regex rules are evaluated correctly for different action types.
+TEST_F(RulesetMatcherTest, RegexRules) {
+  auto create_regex_rule = [](size_t id, const std::string& regex_filter) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter.reset();
+    rule.condition->regex_filter = regex_filter;
+    return rule;
+  };
+
+  std::vector<TestRule> rules;
+
+  // Add a blocking rule.
+  TestRule block_rule = create_regex_rule(1, R"((?:block|collapse)\.com/path)");
+  rules.push_back(block_rule);
+
+  // Add an allowlist rule.
+  TestRule allow_rule = create_regex_rule(2, R"(http://(\w+\.)+allow\.com)");
+  allow_rule.action->type = "allow";
+  rules.push_back(allow_rule);
+
+  // Add a redirect rule.
+  TestRule redirect_rule = create_regex_rule(3, R"(redirect\.com)");
+  redirect_rule.action->type = "redirect";
+  redirect_rule.action->redirect.emplace();
+  redirect_rule.priority = kMinValidPriority;
+  redirect_rule.action->redirect->url = "https://google.com";
+  rules.push_back(redirect_rule);
+
+  // Add a upgrade rule.
+  TestRule upgrade_rule = create_regex_rule(4, "upgrade");
+  upgrade_rule.action->type = "upgradeScheme";
+  upgrade_rule.priority = kMinValidPriority;
+  rules.push_back(upgrade_rule);
+
+  // Add a remove headers rule.
+  TestRule remove_headers_rule =
+      create_regex_rule(5, R"(^(?:http|https)://[a-z\.]+\.in)");
+  remove_headers_rule.action->type = "removeHeaders";
+  remove_headers_rule.action->remove_headers_list =
+      std::vector<std::string>({"referer", "cookie"});
+  rules.push_back(remove_headers_rule);
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  struct TestCase {
+    const char* url = nullptr;
+    base::Optional<RequestAction> expected_block_or_collapse_action;
+    base::Optional<RequestAction> expected_allow_action;
+    base::Optional<RequestAction> expected_redirect_action;
+    base::Optional<RequestAction> expected_upgrade_action;
+    uint8_t expected_remove_headers_mask = 0u;
+    base::Optional<RequestAction> expected_remove_header_action;
+  };
+
+  std::vector<TestCase> test_cases;
+
+  {
+    TestCase test_case = {"http://www.block.com/path"};
+    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+        RequestAction::Type::BLOCK, *block_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://www.collapse.com/PATH"};
+    test_cases.push_back(std::move(test_case));
+    // Filters are case sensitive by default, hence the request doesn't match.
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.xyz.allow.com/path"};
+    test_case.expected_allow_action = CreateRequestActionForTesting(
+        RequestAction::Type::ALLOW, *allow_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://allow.com/path"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://redirect.com?path=abc"};
+    test_case.expected_redirect_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, *redirect_rule.id);
+    test_case.expected_redirect_action->redirect_url =
+        GURL(*redirect_rule.action->redirect->url);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://redirect.eu#query"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/upgrade"};
+    test_case.expected_upgrade_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, *upgrade_rule.id);
+    test_case.expected_upgrade_action->redirect_url.emplace(
+        "https://example.com/upgrade");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.in/path"};
+    test_case.expected_remove_headers_mask =
+        flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_referer;
+    test_case.expected_remove_header_action = CreateRequestActionForTesting(
+        RequestAction::Type::REMOVE_HEADERS, *remove_headers_rule.id);
+    test_case.expected_remove_header_action->request_headers_to_remove = {
+        net::HttpRequestHeaders::kCookie, net::HttpRequestHeaders::kReferer};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc123.in/path"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.url);
+
+    GURL url(test_case.url);
+    RequestParams params;
+    params.url = &url;
+
+    EXPECT_EQ(test_case.expected_block_or_collapse_action,
+              matcher->GetBlockOrCollapseAction(params));
+    EXPECT_EQ(test_case.expected_allow_action, matcher->GetAllowAction(params));
+    EXPECT_EQ(test_case.expected_redirect_action,
+              matcher->GetRedirectAction(params));
+    EXPECT_EQ(test_case.expected_upgrade_action,
+              matcher->GetUpgradeAction(params));
+
+    std::vector<RequestAction> remove_header_actions;
+    EXPECT_EQ(test_case.expected_remove_headers_mask,
+              matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+                                            &remove_header_actions));
+    if (test_case.expected_remove_header_action) {
+      EXPECT_THAT(remove_header_actions,
+                  testing::ElementsAre(testing::Eq(testing::ByRef(
+                      test_case.expected_remove_header_action))));
+    } else {
+      EXPECT_TRUE(remove_header_actions.empty());
+    }
+  }
+
+  EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
+}
+
+// Ensure that the rule metadata is checked correctly for regex rules.
+TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
+  auto create_regex_rule = [](size_t id, const std::string& regex_filter) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter.reset();
+    rule.condition->regex_filter = regex_filter;
+    return rule;
+  };
+
+  std::vector<TestRule> rules;
+
+  // Add a case sensitive rule.
+  TestRule path_rule = create_regex_rule(1, "/PATH");
+  rules.push_back(path_rule);
+
+  // Add a case insensitive rule.
+  TestRule xyz_rule = create_regex_rule(2, "/XYZ");
+  xyz_rule.condition->is_url_filter_case_sensitive = false;
+  rules.push_back(xyz_rule);
+
+  // Test |domains|, |excludedDomains|.
+  TestRule google_rule = create_regex_rule(3, "google");
+  google_rule.condition->domains = std::vector<std::string>({"example.com"});
+  google_rule.condition->excluded_domains =
+      std::vector<std::string>({"b.example.com"});
+  rules.push_back(google_rule);
+
+  // Test |resourceTypes|.
+  TestRule sub_frame_rule = create_regex_rule(4, R"((abc|def)\.com)");
+  sub_frame_rule.condition->resource_types =
+      std::vector<std::string>({"sub_frame"});
+  rules.push_back(sub_frame_rule);
+
+  // Test |domainType|.
+  TestRule third_party_rule = create_regex_rule(5, R"(http://(\d+)\.com)");
+  third_party_rule.condition->domain_type = "thirdParty";
+  rules.push_back(third_party_rule);
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  struct TestCase {
+    const char* url = nullptr;
+    url::Origin first_party_origin;
+    url_pattern_index::flat::ElementType element_type =
+        url_pattern_index::flat::ElementType_OTHER;
+    bool is_third_party = false;
+    base::Optional<RequestAction> expected_block_or_collapse_action;
+  };
+  std::vector<TestCase> test_cases;
+
+  {
+    TestCase test_case = {"http://example.com/path/abc"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/PATH/abc"};
+    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+        RequestAction::Type::BLOCK, *path_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/xyz/abc"};
+    test_case.expected_block_or_collapse_action =
+        CreateRequestActionForTesting(RequestAction::Type::BLOCK, *xyz_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/XYZ/abc"};
+    test_case.expected_block_or_collapse_action =
+        CreateRequestActionForTesting(RequestAction::Type::BLOCK, *xyz_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/google"};
+    test_case.first_party_origin =
+        url::Origin::Create(GURL("http://a.example.com"));
+    test_case.is_third_party = true;
+    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+        RequestAction::Type::BLOCK, *google_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com/google"};
+    test_case.first_party_origin =
+        url::Origin::Create(GURL("http://b.example.com"));
+    test_case.is_third_party = true;
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.com"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.com"};
+    test_case.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+        RequestAction::Type::COLLAPSE, *sub_frame_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://243.com"};
+    test_case.is_third_party = true;
+    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+        RequestAction::Type::BLOCK, *third_party_rule.id);
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://243.com"};
+    test_case.first_party_origin = url::Origin::Create(GURL(test_case.url));
+    test_case.is_third_party = false;
+    test_cases.push_back(std::move(test_case));
+  }
+
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Case number-%" PRIuS " url-%s", i,
+                                    test_cases[i].url));
+
+    GURL url(test_cases[i].url);
+    RequestParams params;
+    params.url = &url;
+    params.first_party_origin = test_cases[i].first_party_origin;
+    params.element_type = test_cases[i].element_type;
+    params.is_third_party = test_cases[i].is_third_party;
+
+    EXPECT_EQ(test_cases[i].expected_block_or_collapse_action,
+              matcher->GetBlockOrCollapseAction(params));
+  }
+}
+
+// Ensures that RulesetMatcher combines the results of regex and filter-list
+// style redirect rules correctly.
+TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RedirectPriority) {
+  struct {
+    size_t id;
+    size_t priority;
+    const char* action_type;
+    const char* filter;
+    bool is_regex_rule;
+    base::Optional<std::string> redirect_url;
+  } rule_info[] = {
+      {1, 1, "redirect", "filter.com", false, "http://redirect_filter.com"},
+      {2, 1, "upgradeScheme", "regex\\.com", true, base::nullopt},
+      {3, 9, "redirect", "common1.com", false, "http://common1_filter.com"},
+      {4, 10, "redirect", "common1\\.com", true, "http://common1_regex.com"},
+      {5, 10, "upgradeScheme", "common2.com", false, base::nullopt},
+      {6, 9, "upgradeScheme", "common2\\.com", true, base::nullopt},
+      {7, 10, "redirect", "abc\\.com", true, "http://example1.com"},
+      {8, 9, "redirect", "abc", true, "http://example2.com"},
+  };
+
+  std::vector<TestRule> rules;
+  for (const auto& info : rule_info) {
+    TestRule rule = CreateGenericRule();
+    rule.id = info.id;
+    rule.priority = info.priority;
+    rule.action->type = info.action_type;
+
+    rule.condition->url_filter.reset();
+    if (info.is_regex_rule)
+      rule.condition->regex_filter = info.filter;
+    else
+      rule.condition->url_filter = info.filter;
+
+    if (info.redirect_url) {
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = info.redirect_url;
+    }
+
+    rules.push_back(rule);
+  }
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  struct TestCase {
+    const char* url = nullptr;
+    base::Optional<RequestAction> expected_redirect_action;
+    base::Optional<RequestAction> expected_upgrade_action;
+  };
+  std::vector<TestCase> test_cases;
+
+  {
+    TestCase test_case = {"http://filter.com"};
+    test_case.expected_redirect_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[0].id, rule_info[0].priority);
+    test_case.expected_redirect_action->redirect_url.emplace(
+        "http://redirect_filter.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://regex.com"};
+    test_case.expected_upgrade_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[1].id, rule_info[1].priority);
+    test_case.expected_upgrade_action->redirect_url.emplace(
+        "https://regex.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://common1.com"};
+    test_case.expected_redirect_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[3].id, rule_info[3].priority);
+    test_case.expected_redirect_action->redirect_url.emplace(
+        "http://common1_regex.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://common2.com"};
+    test_case.expected_upgrade_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[4].id, rule_info[4].priority);
+    test_case.expected_upgrade_action->redirect_url.emplace(
+        "https://common2.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"https://common2.com"};
+    // No action since request is not upgradeable.
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://example.com"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.com"};
+    test_case.expected_redirect_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[6].id, rule_info[6].priority);
+    test_case.expected_redirect_action->redirect_url.emplace(
+        "http://example1.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://xyz.com/abc"};
+    test_case.expected_redirect_action = CreateRequestActionForTesting(
+        RequestAction::Type::REDIRECT, rule_info[7].id, rule_info[7].priority);
+    test_case.expected_redirect_action->redirect_url.emplace(
+        "http://example2.com");
+    test_cases.push_back(std::move(test_case));
+  }
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.url);
+
+    GURL url(test_case.url);
+    RequestParams params;
+    params.url = &url;
+
+    EXPECT_EQ(test_case.expected_redirect_action,
+              matcher->GetRedirectAction(params));
+    EXPECT_EQ(test_case.expected_upgrade_action,
+              matcher->GetUpgradeAction(params));
+  }
+}
+
+// Ensures that RulesetMatcher combines the results of regex and filter-list
+// style remove headers rules correctly.
+TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
+  std::vector<TestRule> rules;
+
+  TestRule rule = CreateGenericRule();
+  rule.id = 1;
+  rule.action->type = "removeHeaders";
+  rule.condition->url_filter = "abc";
+  rule.action->remove_headers_list = std::vector<std::string>({"cookie"});
+  rules.push_back(rule);
+  RequestAction action_1 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS, 1);
+  action_1.request_headers_to_remove = {net::HttpRequestHeaders::kCookie};
+
+  rule = CreateGenericRule();
+  rule.id = 2;
+  rule.condition->url_filter.reset();
+  rule.condition->regex_filter = "example";
+  rule.action->type = "removeHeaders";
+  rule.action->remove_headers_list =
+      std::vector<std::string>({"cookie", "setCookie"});
+  rules.push_back(rule);
+  RequestAction action_2 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS, 2);
+  action_2.request_headers_to_remove = {net::HttpRequestHeaders::kCookie};
+  action_2.response_headers_to_remove = {"set-cookie"};
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  {
+    GURL url("http://abc.com");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+    std::vector<RequestAction> actions;
+    EXPECT_EQ(
+        flat::RemoveHeaderType_cookie,
+        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_1))));
+  }
+
+  {
+    GURL url("http://example.com");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+    std::vector<RequestAction> actions;
+    EXPECT_EQ(
+        flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
+        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_2))));
+  }
+
+  {
+    GURL url("http://abc.com/example");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+    std::vector<RequestAction> actions;
+    EXPECT_EQ(
+        flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
+        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+
+    // Removal of the cookie header will be attributed to rule 1 since filter
+    // list style rules are evaluated first for efficiency reasons. (Note this
+    // is an internal implementation detail). Hence only the set-cookie header
+    // removal will be attributed to rule 2.
+    action_2.request_headers_to_remove = {};
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_1)),
+                             testing::Eq(testing::ByRef(action_2))));
   }
 }
 

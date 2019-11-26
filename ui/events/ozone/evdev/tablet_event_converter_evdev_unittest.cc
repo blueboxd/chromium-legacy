@@ -27,7 +27,7 @@
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
@@ -210,9 +210,9 @@ class TabletEventConverterEvdevTest : public testing::Test {
   void SetUp() override {
     cursor_ = std::make_unique<ui::MockTabletCursorEvdev>();
     device_manager_ = ui::CreateDeviceManagerForTest();
+    keyboard_layout_engine_ = std::make_unique<ui::StubKeyboardLayoutEngine>();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
-        cursor_.get(), device_manager_.get(),
-        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+        cursor_.get(), device_manager_.get(), keyboard_layout_engine_.get(),
         base::BindRepeating(
             &TabletEventConverterEvdevTest::DispatchEventForTest,
             base::Unretained(this)));
@@ -260,6 +260,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
  private:
   std::unique_ptr<ui::MockTabletCursorEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
+  std::unique_ptr<ui::KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
   std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
   std::unique_ptr<ui::test::ScopedEventTestTickClock> test_clock_;

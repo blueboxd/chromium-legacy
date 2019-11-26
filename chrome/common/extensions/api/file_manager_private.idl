@@ -15,6 +15,12 @@ enum VolumeType { drive, downloads, removable, archive, provided, mtp,
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };
 
+// List of connection types of drive.
+enum DriveConnectionStateType {OFFLINE, METERED, ONLINE};
+
+// List of reasons of DriveConnectionStateType.
+enum DriveOfflineReason {NOT_READY, NO_NETWORK, NO_SERVICE};
+
 // Additional data about mount, for example, that the filesystem is not
 // supported.
 enum MountCondition { unknown, unsupported };
@@ -613,10 +619,10 @@ dictionary DriveMetadataSearchResult {
 };
 
 dictionary DriveConnectionState {
-  DOMString type;
+  DriveConnectionStateType type;
 
   // Reasons of offline.
-  DOMString? reason;
+  DriveOfflineReason? reason;
 
   // Whether the device has a cellular network access or not. i.e. the |type|
   // can be 'metered' or not.

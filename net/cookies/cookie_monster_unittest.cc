@@ -841,7 +841,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
     return false;
   }
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
 };
 
 using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;

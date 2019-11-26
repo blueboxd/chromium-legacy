@@ -16,7 +16,7 @@ test(t => {
   animation.finish();
   assert_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 1000);
-  assert_equals(animation.playState, 'finished');
+  assert_equals(animation.playState, 'paused');
 }, 'Animation finished with a null timeline');
 
 // crbug.com/967507

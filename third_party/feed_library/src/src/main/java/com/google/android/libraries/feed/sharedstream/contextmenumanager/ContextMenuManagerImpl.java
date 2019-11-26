@@ -39,20 +39,20 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
     // above a card.
     private static final int FRACTION_FROM_BOTTOM_EDGE = FRACTION_FROM_EDGE - 1;
 
-    private final MenuMeasurer menuMeasurer;
-    private final Context context;
-    /*@Nullable*/ private View view;
+    private final MenuMeasurer mMenuMeasurer;
+    private final Context mContext;
+    /*@Nullable*/ private View mView;
 
-    /*@Nullable*/ private PopupWindow popupWindow;
+    /*@Nullable*/ private PopupWindow mPopupWindow;
 
     public ContextMenuManagerImpl(MenuMeasurer menuMeasurer, Context context) {
-        this.menuMeasurer = menuMeasurer;
-        this.context = context;
+        this.mMenuMeasurer = menuMeasurer;
+        this.mContext = context;
     }
 
     @Override
     public void setView(View view) {
-        this.view = view;
+        this.mView = view;
     }
 
     /**
@@ -72,15 +72,15 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
         }
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(context, R.layout.feed_simple_list_item, items);
+                new ArrayAdapter<>(mContext, R.layout.feed_simple_list_item, items);
 
-        ListView listView = createListView(adapter, context);
+        ListView listView = createListView(adapter, mContext);
 
-        Size measurements = menuMeasurer.measureAdapterContent(
+        Size measurements = mMenuMeasurer.measureAdapterContent(
                 listView, adapter, /* windowPadding= */ 0, getStreamWidth(), getStreamHeight());
 
         PopupWindowWithDimensions popupWindowWithDimensions =
-                createPopupWindow(listView, measurements, context);
+                createPopupWindow(listView, measurements, mContext);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             handler.handleClick(position);
@@ -114,7 +114,7 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
             parent.requestDisallowInterceptTouchEvent(true);
         }
 
-        this.popupWindow = popupWindowWithDimensions.getPopupWindow();
+        this.mPopupWindow = popupWindowWithDimensions.getPopupWindow();
         return true;
     }
 
@@ -259,31 +259,31 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
      * including anything below the screen.
      */
     int getStreamHeight() {
-        return checkNotNull(view).getHeight();
+        return checkNotNull(mView).getHeight();
     }
 
     /** Gets the width of the Stream. */
     private int getStreamWidth() {
-        return checkNotNull(view).getWidth();
+        return checkNotNull(mView).getWidth();
     }
 
     /** Gets the Y coordinate of the position of the Stream. */
     private int getStreamYPosition() {
-        return getYPosition(checkNotNull(view));
+        return getYPosition(checkNotNull(mView));
     }
 
     private boolean menuShowing() {
-        return popupWindow != null && popupWindow.isShowing();
+        return mPopupWindow != null && mPopupWindow.isShowing();
     }
 
     @Override
     public void dismissPopup() {
-        if (popupWindow == null) {
+        if (mPopupWindow == null) {
             return;
         }
 
-        popupWindow.dismiss();
-        popupWindow = null;
+        mPopupWindow.dismiss();
+        mPopupWindow = null;
     }
 
     private int getYPosition(View view) {
@@ -295,20 +295,20 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
 
     /** Represents a {@link PopupWindow} that accounts for padding caused by shadows. */
     private static class PopupWindowWithDimensions {
-        private final PopupWindow popupWindow;
-        private final Size size;
+        private final PopupWindow mPopupWindow;
+        private final Size mSize;
 
         PopupWindowWithDimensions(PopupWindow popupWindow, Size size) {
-            this.popupWindow = popupWindow;
-            this.size = size;
+            this.mPopupWindow = popupWindow;
+            this.mSize = size;
         }
 
         PopupWindow getPopupWindow() {
-            return popupWindow;
+            return mPopupWindow;
         }
 
         Size getDimensions() {
-            return size;
+            return mSize;
         }
     }
 }

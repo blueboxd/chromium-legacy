@@ -180,7 +180,7 @@ interface DetailsProvider {
   Discard(bool urgent) => ();
 };
 
-// Represents the momentary state of a Page CU.
+// Represents the momentary state of a Page node.
 struct PageInfo {
   int64 id;
 
@@ -189,7 +189,7 @@ struct PageInfo {
   // TODO(siggi): Estimate data.
 };
 
-// Represents the momentary state of a Frame CU.
+// Represents the momentary state of a Frame node.
 struct FrameInfo {
   int64 id;
 
@@ -199,13 +199,25 @@ struct FrameInfo {
   int64 process_id;
 };
 
-// Represents the momentary state of a Process CU.
+// Represents the momentary state of a Process node.
 struct ProcessInfo {
   int64 id;
 
   mojo_base.mojom.ProcessId pid;
   mojo_base.mojom.TimeDelta cumulative_cpu_usage;
   uint64 private_footprint_kb;
+};
+
+// Represents the momentary state of a Worker node.
+struct WorkerInfo {
+  int64 id;
+
+  url.mojom.Url url;
+  int64 process_id;
+
+  array<int64> client_frame_ids;
+  array<int64> client_worker_ids;
+  array<int64> child_worker_ids;
 };
 
 // Used to transport favicon data.
@@ -226,6 +238,8 @@ interface GraphChangeStream {
   PageCreated(PageInfo pages);
   // The |process| was created.
   ProcessCreated(ProcessInfo process);
+  // The |worker| was created.
+  WorkerCreated(WorkerInfo worker);
 
   // The |frame| changed.
   FrameChanged(FrameInfo frame);
@@ -233,6 +247,8 @@ interface GraphChangeStream {
   PageChanged(PageInfo page);
   // The |process| changed.
   ProcessChanged(ProcessInfo process);
+  // The |worker| was changed.
+  WorkerChanged(WorkerInfo worker);
 
   // A |favicon| became available, whether because the associated page changed
   // its favicon, or because an initial lookup completed.

@@ -28,23 +28,23 @@ import java.util.List;
  * unbinds, or releases.
  */
 abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAdapter<V, M> {
-    final List<ElementAdapter<? extends View, ?>> childAdapters;
-    int[] adaptersPerContent = new int[0];
+    final List<ElementAdapter<? extends View, ?>> mChildAdapters;
+    int[] mAdaptersPerContent = new int[0];
 
     /** Cached reference to the factory for convenience. */
-    private final ElementAdapterFactory factory;
+    private final ElementAdapterFactory mFactory;
 
     ElementContainerAdapter(
             Context context, AdapterParameters parameters, V view, RecyclerKey key) {
         super(context, parameters, view, key);
-        childAdapters = new ArrayList<>();
-        factory = parameters.elementAdapterFactory;
+        mChildAdapters = new ArrayList<>();
+        mFactory = parameters.mElementAdapterFactory;
     }
 
     ElementContainerAdapter(Context context, AdapterParameters parameters, V view) {
         super(context, parameters, view);
-        childAdapters = new ArrayList<>();
-        factory = parameters.elementAdapterFactory;
+        mChildAdapters = new ArrayList<>();
+        mFactory = parameters.mElementAdapterFactory;
     }
 
     @Override
@@ -62,7 +62,7 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
     /** Unbind the model and release child adapters. Be sure to call this in any overrides. */
     @Override
     void onUnbindModel() {
-        if (getRawModel() != null && !childAdapters.isEmpty()) {
+        if (getRawModel() != null && !mChildAdapters.isEmpty()) {
             unbindChildAdapters(getContentsFromModel(getModel()));
         }
 
@@ -75,19 +75,19 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
         if (containerView != null) {
             containerView.removeAllViews();
         }
-        for (ElementAdapter<?, ?> childAdapter : childAdapters) {
-            factory.releaseAdapter(childAdapter);
+        for (ElementAdapter<?, ?> childAdapter : mChildAdapters) {
+            mFactory.releaseAdapter(childAdapter);
         }
-        childAdapters.clear();
+        mChildAdapters.clear();
     }
 
     /** Creates and adds adapters for all inline Content items. */
     private void createInlineChildAdapters(List<Content> contents, FrameContext frameContext) {
-        adaptersPerContent = new int[contents.size()];
+        mAdaptersPerContent = new int[contents.size()];
 
-        checkState(childAdapters.isEmpty(),
+        checkState(mChildAdapters.isEmpty(),
                 "Child adapters is not empty (has %s elements); release adapter before creating.",
-                childAdapters.size());
+                mChildAdapters.size());
         // Could also check that getBaseView has no children, but it may have children due to
         // alignment padding elements.
 
@@ -95,17 +95,17 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
             Content content = contents.get(contentIndex);
             switch (content.getContentTypeCase()) {
                 case ELEMENT:
-                    adaptersPerContent[contentIndex] =
+                    mAdaptersPerContent[contentIndex] =
                             createAndAddElementAdapter(content.getElement(), frameContext);
                     break;
                 case TEMPLATE_INVOCATION:
-                    adaptersPerContent[contentIndex] = createAndAddTemplateAdapters(
+                    mAdaptersPerContent[contentIndex] = createAndAddTemplateAdapters(
                             content.getTemplateInvocation(), frameContext);
                     break;
                 case BOUND_ELEMENT:
                 case TEMPLATE_BINDING:
                     // Do nothing; create these adapters in the bindModel call.
-                    adaptersPerContent[contentIndex] = 0;
+                    mAdaptersPerContent[contentIndex] = 0;
                     continue;
                 default:
                     throw new PietFatalException(ErrorCode.ERR_MISSING_OR_UNHANDLED_CONTENT,
@@ -124,7 +124,7 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
      */
     private int createAndAddElementAdapter(Element element, FrameContext frameContext) {
         ElementAdapter<? extends View, ?> adapter =
-                factory.createAdapterForElement(element, frameContext);
+                mFactory.createAdapterForElement(element, frameContext);
         addChildAdapter(adapter);
         getBaseView().addView(adapter.getView());
         return 1;
@@ -146,7 +146,7 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
             TemplateAdapterModel templateModel = new TemplateAdapterModel(
                     template, templateInvocation.getBindingContexts(templateIndex));
             ElementAdapter<? extends View, ?> templateAdapter =
-                    getParameters().templateBinder.createTemplateAdapter(
+                    getParameters().mTemplateBinder.createTemplateAdapter(
                             templateModel, frameContext);
             addChildAdapter(templateAdapter);
             getBaseView().addView(templateAdapter.getView());
@@ -161,9 +161,9 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
      * dealing with views here, N should always be small (probably less than ~10).
      */
     private void bindChildAdapters(List<Content> contents, FrameContext frameContext) {
-        checkState(adaptersPerContent.length == contents.size(),
+        checkState(mAdaptersPerContent.length == contents.size(),
                 "Internal error in adapters per content (%s != %s). Adapter has not been created?",
-                adaptersPerContent.length, contents.size());
+                mAdaptersPerContent.length, contents.size());
         int adapterIndex = 0;
         int viewIndex = 0;
         for (int contentIndex = 0; contentIndex < contents.size(); contentIndex++) {
@@ -171,7 +171,7 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
             switch (content.getContentTypeCase()) {
                 case ELEMENT:
                     // An Element generates exactly one adapter+view; bind it here.
-                    childAdapters.get(adapterIndex).bindModel(content.getElement(), frameContext);
+                    mChildAdapters.get(adapterIndex).bindModel(content.getElement(), frameContext);
                     adapterIndex++;
                     viewIndex++;
                     break;
@@ -183,11 +183,11 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                     if (template == null) {
                         continue;
                     }
-                    for (int templateIndex = 0; templateIndex < adaptersPerContent[contentIndex];
+                    for (int templateIndex = 0; templateIndex < mAdaptersPerContent[contentIndex];
                             templateIndex++) {
                         ElementAdapter<? extends View, ?> templateAdapter =
-                                childAdapters.get(adapterIndex);
-                        getParameters().templateBinder.bindTemplateAdapter(templateAdapter,
+                                mChildAdapters.get(adapterIndex);
+                        getParameters().mTemplateBinder.bindTemplateAdapter(templateAdapter,
                                 new TemplateAdapterModel(template,
                                         templateInvocation.getBindingContexts(templateIndex)),
                                 frameContext);
@@ -204,11 +204,11 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                     }
                     Element element = elementBinding.getElement();
                     ElementAdapter<? extends View, ?> adapter =
-                            factory.createAdapterForElement(element, frameContext);
+                            mFactory.createAdapterForElement(element, frameContext);
                     adapter.bindModel(element, frameContext);
-                    childAdapters.add(adapterIndex++, adapter);
+                    mChildAdapters.add(adapterIndex++, adapter);
                     getBaseView().addView(adapter.getView(), viewIndex++);
-                    adaptersPerContent[contentIndex] = 1;
+                    mAdaptersPerContent[contentIndex] = 1;
                     break;
                 case TEMPLATE_BINDING:
                     // Look up the binding, then create, bind, and add template adapters.
@@ -225,7 +225,7 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                     if (boundTemplate == null) {
                         continue;
                     }
-                    adaptersPerContent[contentIndex] =
+                    mAdaptersPerContent[contentIndex] =
                             boundTemplateInvocation.getBindingContextsCount();
                     for (int templateIndex = 0;
                             templateIndex < boundTemplateInvocation.getBindingContextsCount();
@@ -233,9 +233,9 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                         TemplateAdapterModel templateModel = new TemplateAdapterModel(boundTemplate,
                                 boundTemplateInvocation.getBindingContexts(templateIndex));
                         ElementAdapter<? extends View, ?> boundTemplateAdapter =
-                                getParameters().templateBinder.createAndBindTemplateAdapter(
+                                getParameters().mTemplateBinder.createAndBindTemplateAdapter(
                                         templateModel, frameContext);
-                        childAdapters.add(adapterIndex++, boundTemplateAdapter);
+                        mChildAdapters.add(adapterIndex++, boundTemplateAdapter);
                         getBaseView().addView(boundTemplateAdapter.getView(), viewIndex++);
                     }
                     break;
@@ -259,8 +259,8 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                 case ELEMENT:
                 case TEMPLATE_INVOCATION:
                     // For inline content, just unbind to allow re-binding in the future.
-                    for (int i = 0; i < adaptersPerContent[contentIndex]; i++) {
-                        childAdapters.get(adapterIndex).unbindModel();
+                    for (int i = 0; i < mAdaptersPerContent[contentIndex]; i++) {
+                        mChildAdapters.get(adapterIndex).unbindModel();
                         adapterIndex++;
                         viewIndex++;
                     }
@@ -268,14 +268,14 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
                 case BOUND_ELEMENT:
                 case TEMPLATE_BINDING:
                     // For bound content, release, recycle, and remove adapters.
-                    for (int i = 0; i < adaptersPerContent[contentIndex]; i++) {
-                        factory.releaseAdapter(childAdapters.get(adapterIndex));
-                        childAdapters.remove(adapterIndex);
+                    for (int i = 0; i < mAdaptersPerContent[contentIndex]; i++) {
+                        mFactory.releaseAdapter(mChildAdapters.get(adapterIndex));
+                        mChildAdapters.remove(adapterIndex);
                         getBaseView().removeViewAt(viewIndex);
                         // Don't increment adapterIndex or viewIndex because we removed this
                         // adapter/view.
                     }
-                    adaptersPerContent[contentIndex] = 0;
+                    mAdaptersPerContent[contentIndex] = 0;
                     break;
                 default:
                     throw new PietFatalException(ErrorCode.ERR_MISSING_OR_UNHANDLED_CONTENT,
@@ -286,13 +286,13 @@ abstract class ElementContainerAdapter<V extends ViewGroup, M> extends ElementAd
     }
 
     void addChildAdapter(ElementAdapter<? extends View, ?> adapter) {
-        childAdapters.add(adapter);
+        mChildAdapters.add(adapter);
     }
 
     @Override
     public void triggerViewActions(View viewport, FrameContext frameContext) {
         super.triggerViewActions(viewport, frameContext);
-        for (ElementAdapter<?, ?> childAdapter : childAdapters) {
+        for (ElementAdapter<?, ?> childAdapter : mChildAdapters) {
             childAdapter.triggerViewActions(viewport, frameContext);
         }
     }

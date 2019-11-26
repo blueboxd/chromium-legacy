@@ -3,5 +3,6 @@ document
 ++++description Name='The aside tag defines some content aside from the content it is placed in.'
 ++complementary
 ++++heading Name='Aside tag'
+++++++description Name='Aside tag' IsControlElement=false
 ++++group
 ++++++description Name='The aside content should be related to the surrounding content.'

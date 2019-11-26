@@ -12,6 +12,7 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
       'getLayout',
       'isVisible',
       'observeThemeChanges',
+      'showBackgroundContextMenu',
       'showTabContextMenu',
     ]);
 
@@ -54,6 +55,10 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
   closeContainer() {
     this.methodCalled('closeContainer');
     return Promise.resolve();
+  }
+
+  showBackgroundContextMenu(locationX, locationY) {
+    this.methodCalled('showBackgroundContextMenu', [locationX, locationY]);
   }
 
   showTabContextMenu(tabId, locationX, locationY) {

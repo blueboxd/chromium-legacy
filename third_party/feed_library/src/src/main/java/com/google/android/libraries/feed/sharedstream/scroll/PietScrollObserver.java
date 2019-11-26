@@ -15,10 +15,10 @@ import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObs
 
 /** Scroll observer that triggers Piet scroll actions. */
 public class PietScrollObserver implements ScrollObserver {
-    private final FrameAdapter frameAdapter;
-    private final View viewport;
-    private final ScrollObservable scrollObservable;
-    private final FirstDrawTrigger firstDrawTrigger;
+    private final FrameAdapter mFrameAdapter;
+    private final View mViewport;
+    private final ScrollObservable mScrollObservable;
+    private final FirstDrawTrigger mFirstDrawTrigger;
 
     /**
      * Construct a PietScrollObserver.
@@ -34,11 +34,11 @@ public class PietScrollObserver implements ScrollObserver {
     @SuppressWarnings("initialization") // Doesn't like the OnAttachStateChangeListener.
     public PietScrollObserver(
             FrameAdapter frameAdapter, View viewport, ScrollObservable scrollObservable) {
-        this.frameAdapter = frameAdapter;
-        this.viewport = viewport;
-        this.scrollObservable = scrollObservable;
+        this.mFrameAdapter = frameAdapter;
+        this.mViewport = viewport;
+        this.mScrollObservable = scrollObservable;
 
-        firstDrawTrigger = new FirstDrawTrigger();
+        mFirstDrawTrigger = new FirstDrawTrigger();
 
         frameAdapter.getFrameContainer().addOnAttachStateChangeListener(
                 new OnAttachStateChangeListener() {
@@ -63,7 +63,7 @@ public class PietScrollObserver implements ScrollObserver {
         // triggering while the feed is scrolling; not sure how frequently the observer triggers
         // during scroll.
         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-            frameAdapter.triggerViewActions(viewport);
+            mFrameAdapter.triggerViewActions(mViewport);
         }
     }
 
@@ -74,14 +74,14 @@ public class PietScrollObserver implements ScrollObserver {
 
     /** Install the first-draw triggering observer. */
     public void installFirstDrawTrigger() {
-        frameAdapter.getFrameContainer().getViewTreeObserver().addOnGlobalLayoutListener(
-                firstDrawTrigger);
+        mFrameAdapter.getFrameContainer().getViewTreeObserver().addOnGlobalLayoutListener(
+                mFirstDrawTrigger);
     }
 
     /** Uninstall the first-draw triggering observer. */
     public void uninstallFirstDrawTrigger() {
-        frameAdapter.getFrameContainer().getViewTreeObserver().removeOnGlobalLayoutListener(
-                firstDrawTrigger);
+        mFrameAdapter.getFrameContainer().getViewTreeObserver().removeOnGlobalLayoutListener(
+                mFirstDrawTrigger);
     }
 
     class FirstDrawTrigger implements OnGlobalLayoutListener {
@@ -89,8 +89,8 @@ public class PietScrollObserver implements ScrollObserver {
         public void onGlobalLayout() {
             uninstallFirstDrawTrigger();
 
-            if (scrollObservable.getCurrentScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
-                frameAdapter.triggerViewActions(viewport);
+            if (mScrollObservable.getCurrentScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+                mFrameAdapter.triggerViewActions(mViewport);
             }
         }
     }

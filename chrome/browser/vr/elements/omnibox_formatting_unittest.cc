@@ -85,7 +85,8 @@ TEST_P(ElisionTest, ProperOffsetAndFading) {
   url::Parsed parsed;
   const base::string16 text = FormatUrlForVr(gurl, &parsed);
 
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);

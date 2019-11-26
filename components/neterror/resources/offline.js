@@ -86,16 +86,16 @@ function Runner(outerContainerId, opt_config) {
  * Default game width.
  * @const
  */
-var DEFAULT_WIDTH = 600;
+const DEFAULT_WIDTH = 600;
 
 /**
  * Frames per second.
  * @const
  */
-var FPS = 60;
+const FPS = 60;
 
 /** @const */
-var IS_HIDPI = window.devicePixelRatio > 1;
+const IS_HIDPI = window.devicePixelRatio > 1;
 
 /** @const */
 // iPads are returning "MacIntel" for iOS 13 (devices & simulators).
@@ -103,15 +103,15 @@ var IS_HIDPI = window.devicePixelRatio > 1;
 // but navigator.userAgent includes /Safari/.
 // TODO(crbug.com/998999): Fix navigator.userAgent such that it reliably
 // returns an agent string containing "CriOS".
-var IS_IOS = /CriOS/.test(window.navigator.userAgent) ||
+const IS_IOS = /CriOS/.test(window.navigator.userAgent) ||
     /iPad|iPhone|iPod|MacIntel/.test(window.navigator.platform) &&
         !(/Safari/.test(window.navigator.userAgent));
 
 /** @const */
-var IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;
+const IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;
 
 /** @const */
-var ARCADE_MODE_URL = 'chrome://dino/';
+const ARCADE_MODE_URL = 'chrome://dino/';
 
 /**
  * Default game configuration.
@@ -329,14 +329,14 @@ Runner.prototype = {
     if (!IS_IOS) {
       this.audioContext = new AudioContext();
 
-      var resourceTemplate =
+      const resourceTemplate =
           document.getElementById(this.config.RESOURCE_TEMPLATE_ID).content;
 
-      for (var sound in Runner.sounds) {
-        var soundSrc =
+      for (const sound in Runner.sounds) {
+        let soundSrc =
             resourceTemplate.getElementById(Runner.sounds[sound]).src;
         soundSrc = soundSrc.substr(soundSrc.indexOf(',') + 1);
-        var buffer = decodeBase64ToArrayBuffer(soundSrc);
+        const buffer = decodeBase64ToArrayBuffer(soundSrc);
 
         // Async, so no guarantee of order in array.
         this.audioContext.decodeAudioData(buffer, function(index, audioData) {
@@ -351,11 +351,11 @@ Runner.prototype = {
    * @param {number=} opt_speed
    */
   setSpeed: function(opt_speed) {
-    var speed = opt_speed || this.currentSpeed;
+    const speed = opt_speed || this.currentSpeed;
 
     // Reduce the speed on smaller mobile screens.
     if (this.dimensions.WIDTH < DEFAULT_WIDTH) {
-      var mobileSpeed = speed * this.dimensions.WIDTH / DEFAULT_WIDTH *
+      const mobileSpeed = speed * this.dimensions.WIDTH / DEFAULT_WIDTH *
           this.config.MOBILE_SPEED_COEFFICIENT;
       this.currentSpeed = mobileSpeed > speed ? speed : mobileSpeed;
     } else if (opt_speed) {
@@ -443,8 +443,8 @@ Runner.prototype = {
     clearInterval(this.resizeTimerId_);
     this.resizeTimerId_ = null;
 
-    var boxStyles = window.getComputedStyle(this.outerContainerEl);
-    var padding = Number(boxStyles.paddingLeft.substr(0,
+    const boxStyles = window.getComputedStyle(this.outerContainerEl);
+    const padding = Number(boxStyles.paddingLeft.substr(0,
         boxStyles.paddingLeft.length - 2));
 
     this.dimensions.WIDTH = this.outerContainerEl.offsetWidth - padding * 2;
@@ -495,7 +495,7 @@ Runner.prototype = {
       this.tRex.playingIntro = true;
 
       // CSS animation definition.
-      var keyframes = '@-webkit-keyframes intro { ' +
+      const keyframes = '@-webkit-keyframes intro { ' +
             'from { width:' + Trex.config.WIDTH + 'px }' +
             'to { width: ' + this.dimensions.WIDTH + 'px }' +
           '}';
@@ -560,8 +560,8 @@ Runner.prototype = {
   update: function() {
     this.updatePending = false;
 
-    var now = getTimeStamp();
-    var deltaTime = now - (this.time || now);
+    const now = getTimeStamp();
+    let deltaTime = now - (this.time || now);
 
     this.time = now;
 
@@ -573,7 +573,7 @@ Runner.prototype = {
       }
 
       this.runningTime += deltaTime;
-      var hasObstacles = this.runningTime > this.config.CLEAR_TIME;
+      const hasObstacles = this.runningTime > this.config.CLEAR_TIME;
 
       // First jump triggers the intro.
       if (this.tRex.jumpCount == 1 && !this.playingIntro) {
@@ -591,7 +591,7 @@ Runner.prototype = {
       }
 
       // Check for collisions.
-      var collision = hasObstacles &&
+      const collision = hasObstacles &&
           checkForCollision(this.horizon.obstacles[0], this.tRex);
 
       if (!collision) {
@@ -604,7 +604,7 @@ Runner.prototype = {
         this.gameOver();
       }
 
-      var playAchievementSound = this.distanceMeter.update(deltaTime,
+      const playAchievementSound = this.distanceMeter.update(deltaTime,
           Math.ceil(this.distanceRan));
 
       if (playAchievementSound) {
@@ -619,7 +619,7 @@ Runner.prototype = {
       } else if (this.invertTimer) {
         this.invertTimer += deltaTime;
       } else {
-        var actualDistance =
+        const actualDistance =
             this.distanceMeter.getActualDistance(Math.ceil(this.distanceRan));
 
         if (actualDistance > 0) {
@@ -761,8 +761,8 @@ Runner.prototype = {
    * @param {Event} e
    */
   onKeyUp: function(e) {
-    var keyCode = String(e.keyCode);
-    var isjumpKey = Runner.keycodes.JUMP[keyCode] ||
+    const keyCode = String(e.keyCode);
+    const isjumpKey = Runner.keycodes.JUMP[keyCode] ||
        e.type == Runner.events.TOUCHEND ||
        e.type == Runner.events.POINTERUP;
 
@@ -773,7 +773,7 @@ Runner.prototype = {
       this.tRex.setDuck(false);
     } else if (this.crashed) {
       // Check that enough time has elapsed before allowing jump key to restart.
-      var deltaTime = getTimeStamp() - this.time;
+      const deltaTime = getTimeStamp() - this.time;
 
       if (this.isCanvasInView() &&
           (Runner.keycodes.RESTART[keyCode] || this.isLeftClickOnCanvas(e) ||
@@ -802,7 +802,7 @@ Runner.prototype = {
    * rAF loop for gamepad polling.
    */
   pollGamepadState: function() {
-    var gamepads = navigator.getGamepads();
+    const gamepads = navigator.getGamepads();
     this.pollActiveGamepad(gamepads);
 
     this.pollingGamepads = true;
@@ -815,7 +815,7 @@ Runner.prototype = {
    * @param {!Array<Gamepad>} gamepads
    */
   pollForActiveGamepad: function(gamepads) {
-    for (var i = 0; i < gamepads.length; ++i) {
+    for (let i = 0; i < gamepads.length; ++i) {
       if (gamepads[i] && gamepads[i].buttons.length > 0 &&
           gamepads[i].buttons[0].pressed) {
         this.gamepadIndex = i;
@@ -836,7 +836,7 @@ Runner.prototype = {
       return;
     }
 
-    var gamepad = gamepads[this.gamepadIndex];
+    const gamepad = gamepads[this.gamepadIndex];
     if (!gamepad) {
       this.gamepadIndex = undefined;
       this.pollForActiveGamepad(gamepads);
@@ -863,14 +863,14 @@ Runner.prototype = {
    * @param {number} keyCode
    */
   pollGamepadButton: function(gamepad, buttonIndex, keyCode) {
-    var state = gamepad.buttons[buttonIndex].pressed;
-    var previousState = false;
+    const state = gamepad.buttons[buttonIndex].pressed;
+    let previousState = false;
     if (this.previousGamepad) {
       previousState = this.previousGamepad.buttons[buttonIndex].pressed;
     }
     // Generate key events on the rising and falling edge of a button press.
     if (state != previousState) {
-      var e = new KeyboardEvent(state ? Runner.events.KEYDOWN
+      const e = new KeyboardEvent(state ? Runner.events.KEYDOWN
                                       : Runner.events.KEYUP,
                                 { keyCode: keyCode });
       document.dispatchEvent(e);
@@ -1063,14 +1063,14 @@ Runner.prototype = {
    * Sets the scaling for arcade mode.
    */
   setArcadeModeContainerScale: function() {
-    var windowHeight = window.innerHeight;
-    var scaleHeight = windowHeight / this.dimensions.HEIGHT;
-    var scaleWidth = window.innerWidth / this.dimensions.WIDTH;
-    var scale = Math.max(1, Math.min(scaleHeight, scaleWidth));
-    var scaledCanvasHeight = this.dimensions.HEIGHT * scale;
+    const windowHeight = window.innerHeight;
+    const scaleHeight = windowHeight / this.dimensions.HEIGHT;
+    const scaleWidth = window.innerWidth / this.dimensions.WIDTH;
+    const scale = Math.max(1, Math.min(scaleHeight, scaleWidth));
+    const scaledCanvasHeight = this.dimensions.HEIGHT * scale;
     // Positions the game container at 10% of the available vertical window
     // height minus the game container height.
-    var translateY = Math.ceil(Math.max(0, (windowHeight - scaledCanvasHeight -
+    const translateY = Math.ceil(Math.max(0, (windowHeight - scaledCanvasHeight -
         Runner.config.ARCADE_MODE_INITIAL_TOP_POSITION) *
         Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT)) *
         window.devicePixelRatio;
@@ -1097,7 +1097,7 @@ Runner.prototype = {
    */
   playSound: function(soundBuffer) {
     if (soundBuffer) {
-      var sourceNode = this.audioContext.createBufferSource();
+      const sourceNode = this.audioContext.createBufferSource();
       sourceNode.buffer = soundBuffer;
       sourceNode.connect(this.audioContext.destination);
       sourceNode.start(0);
@@ -1109,7 +1109,7 @@ Runner.prototype = {
    * @param {boolean} reset Whether to reset colors.
    */
   invert: function(reset) {
-    let htmlEl = document.firstElementChild;
+    const htmlEl = document.firstElementChild;
 
     if (reset) {
       htmlEl.classList.toggle(Runner.classes.INVERTED,
@@ -1138,19 +1138,20 @@ Runner.prototype = {
  * @return {boolean} Whether the canvas was scaled.
  */
 Runner.updateCanvasScaling = function(canvas, opt_width, opt_height) {
-  var context =
+  const context =
       /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
 
   // Query the various pixel ratios
-  var devicePixelRatio = Math.floor(window.devicePixelRatio) || 1;
+  const devicePixelRatio = Math.floor(window.devicePixelRatio) || 1;
   /** @suppress {missingProperties} */
-  var backingStoreRatio = Math.floor(context.webkitBackingStorePixelRatio) || 1;
-  var ratio = devicePixelRatio / backingStoreRatio;
+  const backingStoreRatio =
+      Math.floor(context.webkitBackingStorePixelRatio) || 1;
+  const ratio = devicePixelRatio / backingStoreRatio;
 
   // Upscale the canvas if the two ratios don't match
   if (devicePixelRatio !== backingStoreRatio) {
-    var oldWidth = opt_width || canvas.width;
-    var oldHeight = opt_height || canvas.height;
+    const oldWidth = opt_width || canvas.width;
+    const oldHeight = opt_height || canvas.height;
 
     canvas.width = oldWidth * ratio;
     canvas.height = oldHeight * ratio;
@@ -1202,7 +1203,7 @@ function vibrate(duration) {
  * @return {HTMLCanvasElement}
  */
 function createCanvas(container, width, height, opt_classname) {
-  var canvas =
+  const canvas =
       /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
   canvas.className = opt_classname ? Runner.classes.CANVAS + ' ' +
       opt_classname : Runner.classes.CANVAS;
@@ -1219,12 +1220,12 @@ function createCanvas(container, width, height, opt_classname) {
  * @param {string} base64String
  */
 function decodeBase64ToArrayBuffer(base64String) {
-  var len = (base64String.length / 4) * 3;
-  var str = atob(base64String);
-  var arrayBuffer = new ArrayBuffer(len);
-  var bytes = new Uint8Array(arrayBuffer);
+  const len = (base64String.length / 4) * 3;
+  const str = atob(base64String);
+  const arrayBuffer = new ArrayBuffer(len);
+  const bytes = new Uint8Array(arrayBuffer);
 
-  for (var i = 0; i < len; i++) {
+  for (let i = 0; i < len; i++) {
     bytes[i] = str.charCodeAt(i);
   }
   return bytes.buffer;
@@ -1293,25 +1294,25 @@ GameOverPanel.prototype = {
    * Draw the panel.
    */
   draw: function() {
-    var dimensions = GameOverPanel.dimensions;
+    const dimensions = GameOverPanel.dimensions;
 
-    var centerX = this.canvasDimensions.WIDTH / 2;
+    const centerX = this.canvasDimensions.WIDTH / 2;
 
     // Game over text.
-    var textSourceX = dimensions.TEXT_X;
-    var textSourceY = dimensions.TEXT_Y;
-    var textSourceWidth = dimensions.TEXT_WIDTH;
-    var textSourceHeight = dimensions.TEXT_HEIGHT;
+    let textSourceX = dimensions.TEXT_X;
+    let textSourceY = dimensions.TEXT_Y;
+    let textSourceWidth = dimensions.TEXT_WIDTH;
+    let textSourceHeight = dimensions.TEXT_HEIGHT;
 
-    var textTargetX = Math.round(centerX - (dimensions.TEXT_WIDTH / 2));
-    var textTargetY = Math.round((this.canvasDimensions.HEIGHT - 25) / 3);
-    var textTargetWidth = dimensions.TEXT_WIDTH;
-    var textTargetHeight = dimensions.TEXT_HEIGHT;
+    const textTargetX = Math.round(centerX - (dimensions.TEXT_WIDTH / 2));
+    const textTargetY = Math.round((this.canvasDimensions.HEIGHT - 25) / 3);
+    const textTargetWidth = dimensions.TEXT_WIDTH;
+    const textTargetHeight = dimensions.TEXT_HEIGHT;
 
-    var restartSourceWidth = dimensions.RESTART_WIDTH;
-    var restartSourceHeight = dimensions.RESTART_HEIGHT;
-    var restartTargetX = centerX - (dimensions.RESTART_WIDTH / 2);
-    var restartTargetY = this.canvasDimensions.HEIGHT / 2;
+    let restartSourceWidth = dimensions.RESTART_WIDTH;
+    let restartSourceHeight = dimensions.RESTART_HEIGHT;
+    const restartTargetX = centerX - (dimensions.RESTART_WIDTH / 2);
+    const restartTargetY = this.canvasDimensions.HEIGHT / 2;
 
     if (IS_HIDPI) {
       textSourceY *= 2;
@@ -1351,17 +1352,17 @@ GameOverPanel.prototype = {
  * @return {Array<CollisionBox>|undefined}
  */
 function checkForCollision(obstacle, tRex, opt_canvasCtx) {
-  var obstacleBoxXPos = Runner.defaultDimensions.WIDTH + obstacle.xPos;
+  const obstacleBoxXPos = Runner.defaultDimensions.WIDTH + obstacle.xPos;
 
   // Adjustments are made to the bounding box as there is a 1 pixel white
   // border around the t-rex and obstacles.
-  var tRexBox = new CollisionBox(
+  const tRexBox = new CollisionBox(
       tRex.xPos + 1,
       tRex.yPos + 1,
       tRex.config.WIDTH - 2,
       tRex.config.HEIGHT - 2);
 
-  var obstacleBox = new CollisionBox(
+  const obstacleBox = new CollisionBox(
       obstacle.xPos + 1,
       obstacle.yPos + 1,
       obstacle.typeConfig.width * obstacle.size - 2,
@@ -1374,19 +1375,19 @@ function checkForCollision(obstacle, tRex, opt_canvasCtx) {
 
   // Simple outer bounds check.
   if (boxCompare(tRexBox, obstacleBox)) {
-    var collisionBoxes = obstacle.collisionBoxes;
-    var tRexCollisionBoxes = tRex.ducking ?
+    const collisionBoxes = obstacle.collisionBoxes;
+    const tRexCollisionBoxes = tRex.ducking ?
         Trex.collisionBoxes.DUCKING : Trex.collisionBoxes.RUNNING;
 
     // Detailed axis aligned box check.
-    for (var t = 0; t < tRexCollisionBoxes.length; t++) {
-      for (var i = 0; i < collisionBoxes.length; i++) {
+    for (let t = 0; t < tRexCollisionBoxes.length; t++) {
+      for (let i = 0; i < collisionBoxes.length; i++) {
         // Adjust the box to actual positions.
-        var adjTrexBox =
+        const adjTrexBox =
             createAdjustedCollisionBox(tRexCollisionBoxes[t], tRexBox);
-        var adjObstacleBox =
+        const adjObstacleBox =
             createAdjustedCollisionBox(collisionBoxes[i], obstacleBox);
-        var crashed = boxCompare(adjTrexBox, adjObstacleBox);
+        const crashed = boxCompare(adjTrexBox, adjObstacleBox);
 
         // Draw boxes for debug.
         if (opt_canvasCtx) {
@@ -1439,12 +1440,12 @@ function drawCollisionBoxes(canvasCtx, tRexBox, obstacleBox) {
  * @return {boolean} Whether the boxes intersected.
  */
 function boxCompare(tRexBox, obstacleBox) {
-  var crashed = false;
-  var tRexBoxX = tRexBox.x;
-  var tRexBoxY = tRexBox.y;
+  let crashed = false;
+  const tRexBoxX = tRexBox.x;
+  const tRexBoxY = tRexBox.y;
 
-  var obstacleBoxX = obstacleBox.x;
-  var obstacleBoxY = obstacleBox.y;
+  const obstacleBoxX = obstacleBox.x;
+  const obstacleBoxY = obstacleBox.y;
 
   // Axis-Aligned Bounding Box method.
   if (tRexBox.x < obstacleBoxX + obstacleBox.width &&
@@ -1543,7 +1544,7 @@ Obstacle.prototype = {
 
     // Check if obstacle can be positioned at various heights.
     if (Array.isArray(this.typeConfig.yPos))  {
-      var yPosConfig = IS_MOBILE ? this.typeConfig.yPosMobile :
+      const yPosConfig = IS_MOBILE ? this.typeConfig.yPosMobile :
           this.typeConfig.yPos;
       this.yPos = yPosConfig[getRandomNum(0, yPosConfig.length - 1)];
     } else {
@@ -1579,8 +1580,8 @@ Obstacle.prototype = {
    * Draw and crop based on size.
    */
   draw: function() {
-    var sourceWidth = this.typeConfig.width;
-    var sourceHeight = this.typeConfig.height;
+    let sourceWidth = this.typeConfig.width;
+    let sourceHeight = this.typeConfig.height;
 
     if (IS_HIDPI) {
       sourceWidth = sourceWidth * 2;
@@ -1588,7 +1589,7 @@ Obstacle.prototype = {
     }
 
     // X position in sprite.
-    var sourceX = (sourceWidth * this.size) * (0.5 * (this.size - 1)) +
+    let sourceX = (sourceWidth * this.size) * (0.5 * (this.size - 1)) +
         this.spritePos.x;
 
     // Animation frames.
@@ -1641,9 +1642,9 @@ Obstacle.prototype = {
    * @return {number} The gap size.
    */
   getGap: function(gapCoefficient, speed) {
-    var minGap = Math.round(this.width * speed +
+    const minGap = Math.round(this.width * speed +
           this.typeConfig.minGap * gapCoefficient);
-    var maxGap = Math.round(minGap * Obstacle.MAX_GAP_COEFFICIENT);
+    const maxGap = Math.round(minGap * Obstacle.MAX_GAP_COEFFICIENT);
     return getRandomNum(minGap, maxGap);
   },
 
@@ -1660,9 +1661,9 @@ Obstacle.prototype = {
    * obstacle type and size.
    */
   cloneCollisionBoxes: function() {
-    var collisionBoxes = this.typeConfig.collisionBoxes;
+    const collisionBoxes = this.typeConfig.collisionBoxes;
 
-    for (var i = collisionBoxes.length - 1; i >= 0; i--) {
+    for (let i = collisionBoxes.length - 1; i >= 0; i--) {
       this.collisionBoxes[i] = new CollisionBox(collisionBoxes[i].x,
           collisionBoxes[i].y, collisionBoxes[i].width,
           collisionBoxes[i].height);
@@ -1688,7 +1689,7 @@ Obstacle.prototype = {
  *   collisionBoxes: Array<CollisionBox>,
  * }}
  */
-var ObstacleType;
+let ObstacleType;
 
 /** @type {Array<ObstacleType>} */
 Obstacle.types = [
@@ -1947,12 +1948,12 @@ Trex.prototype = {
    * @param {number} y
    */
   draw: function(x, y) {
-    var sourceX = x;
-    var sourceY = y;
-    var sourceWidth = this.ducking && this.status != Trex.status.CRASHED ?
+    let sourceX = x;
+    let sourceY = y;
+    let sourceWidth = this.ducking && this.status != Trex.status.CRASHED ?
         this.config.WIDTH_DUCK : this.config.WIDTH;
-    var sourceHeight = this.config.HEIGHT;
-    var outputHeight = sourceHeight;
+    let sourceHeight = this.config.HEIGHT;
+    const outputHeight = sourceHeight;
 
     if (IS_HIDPI) {
       sourceX *= 2;
@@ -1997,7 +1998,7 @@ Trex.prototype = {
    * @param {number} time Current time in milliseconds.
    */
   blink: function(time) {
-    var deltaTime = time - this.animStartTime;
+    const deltaTime = time - this.animStartTime;
 
     if (deltaTime >= this.blinkDelay) {
       this.draw(this.currentAnimFrames[this.currentFrame], 0);
@@ -2041,8 +2042,8 @@ Trex.prototype = {
    * @param {number} deltaTime
    */
   updateJump: function(deltaTime) {
-    var msPerFrame = Trex.animFrames[this.status].msPerFrame;
-    var framesElapsed = deltaTime / msPerFrame;
+    const msPerFrame = Trex.animFrames[this.status].msPerFrame;
+    const framesElapsed = deltaTime / msPerFrame;
 
     // Speed drop makes Trex fall faster.
     if (this.speedDrop) {
@@ -2197,11 +2198,11 @@ DistanceMeter.prototype = {
    * @param {number} width Canvas width in px.
    */
   init: function(width) {
-    var maxDistanceStr = '';
+    let maxDistanceStr = '';
 
     this.calcXPos(width);
     this.maxScore = this.maxScoreUnits;
-    for (var i = 0; i < this.maxScoreUnits; i++) {
+    for (let i = 0; i < this.maxScoreUnits; i++) {
       this.draw(i, 0);
       this.defaultString += '0';
       maxDistanceStr += '9';
@@ -2226,15 +2227,15 @@ DistanceMeter.prototype = {
    * @param {boolean=} opt_highScore Whether drawing the high score.
    */
   draw: function(digitPos, value, opt_highScore) {
-    var sourceWidth = DistanceMeter.dimensions.WIDTH;
-    var sourceHeight = DistanceMeter.dimensions.HEIGHT;
-    var sourceX = DistanceMeter.dimensions.WIDTH * value;
-    var sourceY = 0;
+    let sourceWidth = DistanceMeter.dimensions.WIDTH;
+    let sourceHeight = DistanceMeter.dimensions.HEIGHT;
+    let sourceX = DistanceMeter.dimensions.WIDTH * value;
+    let sourceY = 0;
 
-    var targetX = digitPos * DistanceMeter.dimensions.DEST_WIDTH;
-    var targetY = this.y;
-    var targetWidth = DistanceMeter.dimensions.WIDTH;
-    var targetHeight = DistanceMeter.dimensions.HEIGHT;
+    const targetX = digitPos * DistanceMeter.dimensions.DEST_WIDTH;
+    const targetY = this.y;
+    const targetWidth = DistanceMeter.dimensions.WIDTH;
+    const targetHeight = DistanceMeter.dimensions.HEIGHT;
 
     // For high DPI we 2x source values.
     if (IS_HIDPI) {
@@ -2250,7 +2251,7 @@ DistanceMeter.prototype = {
 
     if (opt_highScore) {
       // Left of the current score.
-      var highScoreX = this.x - (this.maxScoreUnits * 2) *
+      const highScoreX = this.x - (this.maxScoreUnits * 2) *
           DistanceMeter.dimensions.WIDTH;
       this.canvasCtx.translate(highScoreX, this.y);
     } else {
@@ -2282,8 +2283,8 @@ DistanceMeter.prototype = {
    * @return {boolean} Whether the acheivement sound fx should be played.
    */
   update: function(deltaTime, distance) {
-    var paint = true;
-    var playSound = false;
+    let paint = true;
+    let playSound = false;
 
     if (!this.achievement) {
       distance = this.getActualDistance(distance);
@@ -2306,7 +2307,7 @@ DistanceMeter.prototype = {
         }
 
         // Create a string representation of the distance with leading 0.
-        var distanceStr = (this.defaultString +
+        const distanceStr = (this.defaultString +
             distance).substr(-this.maxScoreUnits);
         this.digits = distanceStr.split('');
       } else {
@@ -2333,7 +2334,7 @@ DistanceMeter.prototype = {
 
     // Draw the digits if not flashing.
     if (paint) {
-      for (var i = this.digits.length - 1; i >= 0; i--) {
+      for (let i = this.digits.length - 1; i >= 0; i--) {
         this.draw(i, parseInt(this.digits[i], 10));
       }
     }
@@ -2348,7 +2349,7 @@ DistanceMeter.prototype = {
   drawHighScore: function() {
     this.canvasCtx.save();
     this.canvasCtx.globalAlpha = .8;
-    for (var i = this.highScore.length - 1; i >= 0; i--) {
+    for (let i = this.highScore.length - 1; i >= 0; i--) {
       this.draw(i, parseInt(this.highScore[i], 10), true);
     }
     this.canvasCtx.restore();
@@ -2361,7 +2362,7 @@ DistanceMeter.prototype = {
    */
   setHighScore: function(distance) {
     distance = this.getActualDistance(distance);
-    var highScoreStr = (this.defaultString +
+    const highScoreStr = (this.defaultString +
         distance).substr(-this.maxScoreUnits);
 
     this.highScore = ['10', '11', ''].concat(highScoreStr.split(''));
@@ -2374,12 +2375,12 @@ DistanceMeter.prototype = {
    * @return {boolean} Whether the click was in the high score bounds.
    */
   hasClickedOnHighScore: function(e) {
-    var x = 0;
-    var y = 0;
+    let x = 0;
+    let y = 0;
 
     if (e.touches) {
       // Bounds for touch differ from pointer.
-      var canvasBounds = this.canvas.getBoundingClientRect();
+      const canvasBounds = this.canvas.getBoundingClientRect();
       x = e.touches[0].clientX - canvasBounds.left;
       y = e.touches[0].clientY - canvasBounds.top;
     } else {
@@ -2416,9 +2417,9 @@ DistanceMeter.prototype = {
    * The flashing stops following this.config.FLASH_ITERATIONS x 2 flashes.
    */
   flashHighScore: function() {
-    var now = getTimeStamp();
-    var deltaTime = now - (this.frameTimeStamp || now);
-    var paint = true;
+    const now = getTimeStamp();
+    const deltaTime = now - (this.frameTimeStamp || now);
+    let paint = true;
     this.frameTimeStamp = now;
 
     // Reached the max number of flashes.
@@ -2561,10 +2562,10 @@ Cloud.prototype = {
    */
   draw: function() {
     this.canvasCtx.save();
-    var sourceWidth = Cloud.config.WIDTH;
-    var sourceHeight = Cloud.config.HEIGHT;
-    var outputWidth = sourceWidth;
-    var outputHeight = sourceHeight;
+    let sourceWidth = Cloud.config.WIDTH;
+    let sourceHeight = Cloud.config.HEIGHT;
+    const outputWidth = sourceWidth;
+    const outputHeight = sourceHeight;
     if (IS_HIDPI) {
       sourceWidth = sourceWidth * 2;
       sourceHeight = sourceHeight * 2;
@@ -2673,7 +2674,7 @@ NightMode.prototype = {
 
       // Update stars.
       if (this.drawStars) {
-         for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+         for (let i = 0; i < NightMode.config.NUM_STARS; i++) {
             this.stars[i].x = this.updateXPos(this.stars[i].x,
                 NightMode.config.STAR_SPEED);
          }
@@ -2696,13 +2697,13 @@ NightMode.prototype = {
   },
 
   draw: function() {
-    var moonSourceWidth = this.currentPhase == 3 ? NightMode.config.WIDTH * 2 :
+    let moonSourceWidth = this.currentPhase == 3 ? NightMode.config.WIDTH * 2 :
          NightMode.config.WIDTH;
-    var moonSourceHeight = NightMode.config.HEIGHT;
-    var moonSourceX = this.spritePos.x + NightMode.phases[this.currentPhase];
-    var moonOutputWidth = moonSourceWidth;
-    var starSize = NightMode.config.STAR_SIZE;
-    var starSourceX = Runner.spriteDefinition.LDPI.STAR.x;
+    let moonSourceHeight = NightMode.config.HEIGHT;
+    let moonSourceX = this.spritePos.x + NightMode.phases[this.currentPhase];
+    const moonOutputWidth = moonSourceWidth;
+    let starSize = NightMode.config.STAR_SIZE;
+    let starSourceX = Runner.spriteDefinition.LDPI.STAR.x;
 
     if (IS_HIDPI) {
       moonSourceWidth *= 2;
@@ -2718,7 +2719,7 @@ NightMode.prototype = {
 
     // Stars.
     if (this.drawStars) {
-      for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+      for (let i = 0; i < NightMode.config.NUM_STARS; i++) {
         this.canvasCtx.drawImage(Runner.imageSprite,
             starSourceX, this.stars[i].sourceY, starSize, starSize,
             Math.round(this.stars[i].x), this.stars[i].y,
@@ -2738,10 +2739,10 @@ NightMode.prototype = {
 
   // Do star placement.
   placeStars: function() {
-    var segmentSize = Math.round(this.containerWidth /
+    const segmentSize = Math.round(this.containerWidth /
         NightMode.config.NUM_STARS);
 
-    for (var i = 0; i < NightMode.config.NUM_STARS; i++) {
+    for (let i = 0; i < NightMode.config.NUM_STARS; i++) {
       this.stars[i] = {};
       this.stars[i].x = getRandomNum(segmentSize * i, segmentSize * (i + 1));
       this.stars[i].y = getRandomNum(0, NightMode.config.STAR_MAX_Y);
@@ -2809,7 +2810,7 @@ HorizonLine.prototype = {
    */
   setSourceDimensions: function() {
 
-    for (var dimension in HorizonLine.dimensions) {
+    for (const dimension in HorizonLine.dimensions) {
       if (IS_HIDPI) {
         if (dimension != 'YPOS') {
           this.sourceDimensions[dimension] =
@@ -2856,8 +2857,8 @@ HorizonLine.prototype = {
    * @param {number} increment
    */
   updateXPos: function(pos, increment) {
-    var line1 = pos;
-    var line2 = pos == 0 ? 1 : 0;
+    const line1 = pos;
+    const line2 = pos == 0 ? 1 : 0;
 
     this.xPos[line1] -= increment;
     this.xPos[line2] = this.xPos[line1] + this.dimensions.WIDTH;
@@ -2875,7 +2876,7 @@ HorizonLine.prototype = {
    * @param {number} speed
    */
   update: function(deltaTime, speed) {
-    var increment = Math.floor(speed * (FPS / 1000) * deltaTime);
+    const increment = Math.floor(speed * (FPS / 1000) * deltaTime);
 
     if (this.xPos[0] <= 0) {
       this.updateXPos(0, increment);
@@ -2978,15 +2979,15 @@ Horizon.prototype = {
    * @param {number} speed
    */
   updateClouds: function(deltaTime, speed) {
-    var cloudSpeed = this.cloudSpeed / 1000 * deltaTime * speed;
-    var numClouds = this.clouds.length;
+    const cloudSpeed = this.cloudSpeed / 1000 * deltaTime * speed;
+    const numClouds = this.clouds.length;
 
     if (numClouds) {
-      for (var i = numClouds - 1; i >= 0; i--) {
+      for (let i = numClouds - 1; i >= 0; i--) {
         this.clouds[i].update(cloudSpeed);
       }
 
-      var lastCloud = this.clouds[numClouds - 1];
+      const lastCloud = this.clouds[numClouds - 1];
 
       // Check for adding a new cloud.
       if (numClouds < this.config.MAX_CLOUDS &&
@@ -3011,10 +3012,10 @@ Horizon.prototype = {
    */
   updateObstacles: function(deltaTime, currentSpeed) {
     // Obstacles, move to Horizon layer.
-    var updatedObstacles = this.obstacles.slice(0);
+    const updatedObstacles = this.obstacles.slice(0);
 
-    for (var i = 0; i < this.obstacles.length; i++) {
-      var obstacle = this.obstacles[i];
+    for (let i = 0; i < this.obstacles.length; i++) {
+      const obstacle = this.obstacles[i];
       obstacle.update(deltaTime, currentSpeed);
 
       // Clean up existing obstacles.
@@ -3025,7 +3026,7 @@ Horizon.prototype = {
     this.obstacles = updatedObstacles;
 
     if (this.obstacles.length > 0) {
-      var lastObstacle = this.obstacles[this.obstacles.length - 1];
+      const lastObstacle = this.obstacles[this.obstacles.length - 1];
 
       if (lastObstacle && !lastObstacle.followingObstacleCreated &&
           lastObstacle.isVisible() &&
@@ -3049,8 +3050,8 @@ Horizon.prototype = {
    * @param {number} currentSpeed
    */
   addNewObstacle: function(currentSpeed) {
-    var obstacleTypeIndex = getRandomNum(0, Obstacle.types.length - 1);
-    var obstacleType = Obstacle.types[obstacleTypeIndex];
+    const obstacleTypeIndex = getRandomNum(0, Obstacle.types.length - 1);
+    const obstacleType = Obstacle.types[obstacleTypeIndex];
 
     // Check for multiples of the same type of obstacle.
     // Also check obstacle is available at current speed.
@@ -3058,7 +3059,7 @@ Horizon.prototype = {
         currentSpeed < obstacleType.minSpeed) {
       this.addNewObstacle(currentSpeed);
     } else {
-      var obstacleSpritePos = this.spritePos[obstacleType.type];
+      const obstacleSpritePos = this.spritePos[obstacleType.type];
 
       this.obstacles.push(new Obstacle(this.canvasCtx, obstacleType,
           obstacleSpritePos, this.dimensions,
@@ -3078,9 +3079,9 @@ Horizon.prototype = {
    * @return {boolean}
    */
   duplicateObstacleCheck: function(nextObstacleType) {
-    var duplicateCount = 0;
+    let duplicateCount = 0;
 
-    for (var i = 0; i < this.obstacleHistory.length; i++) {
+    for (let i = 0; i < this.obstacleHistory.length; i++) {
       duplicateCount = this.obstacleHistory[i] == nextObstacleType ?
           duplicateCount + 1 : 0;
     }

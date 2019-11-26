@@ -135,8 +135,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       scroll_anchor_(this),
       non_composited_main_thread_scrolling_reasons_(0),
       horizontal_scrollbar_previously_was_overlay_(false),
-      vertical_scrollbar_previously_was_overlay_(false),
-      scrolling_background_display_item_client_(*this) {
+      vertical_scrollbar_previously_was_overlay_(false) {
   if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode())) {
     // We save and restore only the scrollOffset as the other scroll values are
     // recalculated.
@@ -222,6 +221,7 @@ void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollbar_manager_);
   visitor->Trace(scroll_anchor_);
   visitor->Trace(scrolling_background_display_item_client_);
+  visitor->Trace(scroll_corner_display_item_client_);
   ScrollableArea::Trace(visitor);
 }
 
@@ -2881,11 +2881,12 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
       ObjectPaintInvalidator(*resizer)
           .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
               PaintInvalidationReason::kScrollControl);
-    } else if (!box_geometry_has_been_invalidated && box.CanResize() &&
-               !HasLayerForScrollCorner()) {
+    }
+    if (!GraphicsLayerForScrollCorner()) {
       context.painting_layer->SetNeedsRepaint();
       ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
-          box, PaintInvalidationReason::kGeometry);
+          GetScrollCornerDisplayItemClient(),
+          PaintInvalidationReason::kGeometry);
     }
   }
 
@@ -3016,6 +3017,25 @@ bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
     PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   return scrollable_area_->GetLayoutBox()
       ->PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
+}
+
+IntRect PaintLayerScrollableArea::ScrollCornerDisplayItemClient::VisualRect()
+    const {
+  IntRect rect = scrollable_area_->ScrollCornerAndResizerRect();
+  rect.MoveBy(RoundedIntPoint(
+      scrollable_area_->GetLayoutBox()->FirstFragment().PaintOffset()));
+  return rect;
+}
+
+String PaintLayerScrollableArea::ScrollCornerDisplayItemClient::DebugName()
+    const {
+  return "Scroll corner of " + scrollable_area_->GetLayoutBox()->DebugName();
+}
+
+DOMNodeId PaintLayerScrollableArea::ScrollCornerDisplayItemClient::OwnerNodeId()
+    const {
+  return static_cast<const DisplayItemClient*>(scrollable_area_->GetLayoutBox())
+      ->OwnerNodeId();
 }
 
 }  // namespace blink

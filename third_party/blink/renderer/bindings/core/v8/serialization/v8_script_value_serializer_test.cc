@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -1015,7 +1015,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()));
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
   // Serialize and deserialize it.
@@ -1047,7 +1047,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()));
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
   // Serialize and deserialize it.
@@ -1283,7 +1283,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   surface->getCanvas()->clear(SK_ColorRED);
   sk_sp<SkImage> image = surface->makeImageSnapshot();
   ImageBitmap* image_bitmap =
-      ImageBitmap::Create(StaticBitmapImage::Create(image));
+      ImageBitmap::Create(UnacceleratedStaticBitmapImage::Create(image));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
   v8::Local<v8::Value> wrapper = ToV8(image_bitmap, scope.GetScriptState());

@@ -79,10 +79,28 @@ PLATFORM_EXPORT bool GetFileModificationTime(
 PLATFORM_EXPORT bool GetFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT KURL FilePathToURL(const String&);
 
+PLATFORM_EXPORT void RebindFileUtilitiesForTesting();
+
 // TODO(crbug.com/988343): Temporary conversion function. This should be
 // removed.
 inline double ToJsTimeOrNaN(base::Optional<base::Time> time) {
   return time ? time->ToJsTimeIgnoringNull() : InvalidFileTime();
+}
+
+// TODO(crbug.com/988343): Temporary conversion function. This should be
+// removed.
+inline base::Optional<base::Time> JsTimeToOptionalTime(double ms) {
+  if (!IsValidFileTime(ms))
+    return base::nullopt;
+  return base::Time::FromJsTime(ms);
+}
+
+// TODO(crbug.com/988343): Temporary conversion function. This should be
+// removed.
+inline base::Optional<base::Time> DoubleTToOptionalTime(double ms) {
+  if (!IsValidFileTime(ms))
+    return base::nullopt;
+  return base::Time::FromDoubleT(ms);
 }
 
 inline base::Optional<base::Time> NullableTimeToOptionalTime(base::Time time) {

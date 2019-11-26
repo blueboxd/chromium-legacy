@@ -629,9 +629,17 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
     </p>
     <button id="go">Go</button>
     <script>
+      var dir = 'forward';
+      var moveCount = 0;
       document.getElementById('go').addEventListener('click', function() {
+        moveCount++;
+        if (moveCount == 9) {
+          dir = 'backward';
+        }
+
         var sel = getSelection();
-        sel.modify('move', 'forward', 'character');
+
+        sel.modify('move', dir, 'character');
       }, true);
     </script>
   `,
@@ -643,41 +651,42 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
         this.listenOnce(input, 'focus', function() {
           var lineText = 'dog is a cat test mled';
           var lineOnCatText = 'dog is a cat img test mled';
-          mockFeedback
-              // This is initial output from focusing the contenteditable (which
-              // has no role).
-              .expectSpeech('dog', 'Image', ' is a ', 'cat', 'Image', ' test')
-              .expectBraille('dog img is a cat img test')
-              .clearPendingOutput()
-              .call(moveByChar)
-              // This is actually wrong; should say space.
-              .expectSpeech('dog')
-              .expectBraille(lineText, {startIndex: 3, endIndex: 3})
-              .call(moveByChar)
-              .expectSpeech('i')
-              .expectBraille(lineText, {startIndex: 4, endIndex: 4})
-              .call(moveByChar)
-              .expectSpeech('s')
-              .expectBraille(lineText, {startIndex: 5, endIndex: 5})
-              .call(moveByChar)
-              .expectSpeech(' ')
-              .expectBraille(lineText, {startIndex: 6, endIndex: 6})
-              .call(moveByChar)
-              .expectSpeech('a')
-              .expectBraille(lineText, {startIndex: 7, endIndex: 7})
-              .call(moveByChar)
-              .expectSpeech(' ')
-              .expectBraille(lineText, {startIndex: 8, endIndex: 8})
-              .clearPendingOutput()
-              .call(moveByChar)
-              .expectSpeech('cat', 'Image')
-              .expectBraille(lineOnCatText, {startIndex: 9, endIndex: 9})
 
-              // Unfortunately, the node offset being wrong here means there's
-              // no output for the next character move. Fix Once node offsets
-              // get fixed in Blink.
+          // This is initial output from focusing the contenteditable (which has
+          // no role).
+          mockFeedback.expectSpeech(
+              'dog', 'Image', ' is a ', 'cat', 'Image', ' test');
+          mockFeedback.expectBraille('dog img is a cat img test');
 
-              .replay();
+          var moves = [
+            {speech: [' '], braille: [lineText, {startIndex: 3, endIndex: 3}]},
+            {speech: ['i'], braille: [lineText, {startIndex: 4, endIndex: 4}]},
+            {speech: ['s'], braille: [lineText, {startIndex: 5, endIndex: 5}]},
+            {speech: [' '], braille: [lineText, {startIndex: 6, endIndex: 6}]},
+            {speech: ['a'], braille: [lineText, {startIndex: 7, endIndex: 7}]},
+            {speech: [' '], braille: [lineText, {startIndex: 8, endIndex: 8}]},
+            {
+              speech: ['cat', 'Image'],
+              braille: [lineOnCatText, {startIndex: 9, endIndex: 9}]
+            },
+            {speech: [' '], braille: [lineText, {startIndex: 12, endIndex: 12}]}
+          ];
+
+          for (var item of moves) {
+            mockFeedback.call(moveByChar);
+            mockFeedback.expectSpeech.apply(mockFeedback, item.speech);
+            mockFeedback.expectBraille.apply(mockFeedback, item.braille);
+          }
+
+          var backMoves = moves.reverse();
+          backMoves.shift();
+          for (var backItem of backMoves) {
+            mockFeedback.call(moveByChar);
+            mockFeedback.expectSpeech.apply(mockFeedback, backItem.speech);
+            mockFeedback.expectBraille.apply(mockFeedback, backItem.braille);
+          }
+
+          mockFeedback.replay();
         });
         input.focus();
       });

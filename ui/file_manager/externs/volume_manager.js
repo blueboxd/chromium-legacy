@@ -31,7 +31,7 @@ class VolumeManager {
 
   /**
    * Returns the drive connection state.
-   * @return {VolumeManagerCommon.DriveConnectionState} Connection state.
+   * @return {chrome.fileManagerPrivate.DriveConnectionState} Connection state.
    */
   getDriveConnectionState() {}
 

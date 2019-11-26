@@ -5,7 +5,7 @@
 cr.define('chrome.ntp_tiles_internals', function() {
   'use strict';
 
-  var initialize = function() {
+  const initialize = function() {
     $('submit-update').addEventListener('click', function(event) {
       event.preventDefault();
       chrome.send('update', [{
@@ -35,11 +35,11 @@ cr.define('chrome.ntp_tiles_internals', function() {
     chrome.send('registerForEvents');
   };
 
-  var receiveSourceInfo = function(state) {
+  const receiveSourceInfo = function(state) {
     jstProcess(new JsEvalContext(state), $('sources'));
   };
 
-  var receiveSites = function(sites) {
+  const receiveSites = function(sites) {
     jstProcess(new JsEvalContext(sites), $('sites'));
   };
 

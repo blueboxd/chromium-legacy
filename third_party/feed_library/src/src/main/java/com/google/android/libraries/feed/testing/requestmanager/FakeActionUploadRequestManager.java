@@ -16,23 +16,24 @@ import java.util.Set;
 
 /** Fake implements of {@link ActionUploadRequestManager}. */
 public final class FakeActionUploadRequestManager implements ActionUploadRequestManager {
-    private final FakeThreadUtils fakeThreadUtils;
-    private Result<ConsistencyToken> result = Result.success(ConsistencyToken.getDefaultInstance());
-    /*@Nullable*/ private Set<StreamUploadableAction> actions;
+    private final FakeThreadUtils mFakeThreadUtils;
+    private Result<ConsistencyToken> mResult =
+            Result.success(ConsistencyToken.getDefaultInstance());
+    /*@Nullable*/ private Set<StreamUploadableAction> mActions;
 
     public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
-        this.fakeThreadUtils = fakeThreadUtils;
+        this.mFakeThreadUtils = fakeThreadUtils;
     }
 
     @Override
     public void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
             Consumer<Result<ConsistencyToken>> consumer) {
-        this.actions = actions;
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        this.mActions = actions;
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         try {
-            consumer.accept(result);
+            consumer.accept(mResult);
         } finally {
-            fakeThreadUtils.enforceMainThread(policy);
+            mFakeThreadUtils.enforceMainThread(policy);
         }
     }
 
@@ -41,16 +42,16 @@ public final class FakeActionUploadRequestManager implements ActionUploadRequest
      * Result.success(ConsistencyToken.getDefaultInstance())}.
      */
     public FakeActionUploadRequestManager setResult(Result<ConsistencyToken> result) {
-        this.result = result;
+        this.mResult = result;
         return this;
     }
 
     /** Returns the last set of actions sent to triggerUploadActions. */
     public Set<StreamUploadableAction> getLatestActions() {
-        if (actions == null) {
+        if (mActions == null) {
             return new HashSet<>();
         }
 
-        return actions;
+        return mActions;
     }
 }

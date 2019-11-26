@@ -89,22 +89,22 @@ public class TaskQueue implements Dumpable {
         int BACKGROUND = 5;
     }
 
-    private final Object lock = new Object();
+    private final Object mLock = new Object();
 
     @GuardedBy("lock")
-    private final Queue<TaskWrapper> immediateTasks = new ArrayDeque<>();
+    private final Queue<TaskWrapper> mImmediateTasks = new ArrayDeque<>();
 
     @GuardedBy("lock")
-    private final Queue<TaskWrapper> userTasks = new ArrayDeque<>();
+    private final Queue<TaskWrapper> mUserTasks = new ArrayDeque<>();
 
     @GuardedBy("lock")
-    private final Queue<TaskWrapper> backgroundTasks = new ArrayDeque<>();
+    private final Queue<TaskWrapper> mBackgroundTasks = new ArrayDeque<>();
 
     @GuardedBy("lock")
-    private boolean waitingForHeadReset;
+    private boolean mWaitingForHeadReset;
 
     @GuardedBy("lock")
-    private boolean initialized;
+    private boolean mInitialized;
 
     /**
      * CancelableTask that tracks the current starvation runnable. {@liternal null} means that
@@ -112,44 +112,44 @@ public class TaskQueue implements Dumpable {
      */
     @GuardedBy("lock")
     /*@Nullable*/
-    private CancelableTask starvationCheckTask;
+    private CancelableTask mStarvationCheckTask;
 
     // Tracks the current task running on the executor
-    /*@Nullable*/ private TaskWrapper currentTask;
+    /*@Nullable*/ private TaskWrapper mCurrentTask;
 
     /** Track the time the last task finished. Used for Starvation checks. */
-    private final AtomicLong lastTaskFinished = new AtomicLong();
+    private final AtomicLong mLastTaskFinished = new AtomicLong();
 
-    private final BasicLoggingApi basicLoggingApi;
-    private final Executor executor;
-    private final Clock clock;
-    private final MainThreadRunner mainThreadRunner;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final Executor mExecutor;
+    private final Clock mClock;
+    private final MainThreadRunner mMainThreadRunner;
 
     // counters used for dump
-    protected int taskCount;
-    protected int immediateRunCount;
-    protected int delayedRunCount;
-    protected int immediateTaskCount;
-    protected int headInvalidateTaskCount;
-    protected int headResetTaskCount;
-    protected int userFacingTaskCount;
-    protected int backgroundTaskCount;
-    protected int maxImmediateTasks;
-    protected int maxUserFacingTasks;
-    protected int maxBackgroundTasks;
+    protected int mTaskCount;
+    protected int mImmediateRunCount;
+    protected int mDelayedRunCount;
+    protected int mImmediateTaskCount;
+    protected int mHeadInvalidateTaskCount;
+    protected int mHeadResetTaskCount;
+    protected int mUserFacingTaskCount;
+    protected int mBackgroundTaskCount;
+    protected int mMaxImmediateTasks;
+    protected int mMaxUserFacingTasks;
+    protected int mMaxBackgroundTasks;
 
     public TaskQueue(BasicLoggingApi basicLoggingApi, Executor executor,
             MainThreadRunner mainThreadRunner, Clock clock) {
-        this.basicLoggingApi = basicLoggingApi;
-        this.executor = executor;
-        this.mainThreadRunner = mainThreadRunner;
-        this.clock = clock;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mExecutor = executor;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mClock = clock;
     }
 
     /** Returns {@code true} if we are delaying for a request */
     public boolean isMakingRequest() {
-        synchronized (lock) {
-            return waitingForHeadReset;
+        synchronized (mLock) {
+            return mWaitingForHeadReset;
         }
     }
 
@@ -159,16 +159,16 @@ public class TaskQueue implements Dumpable {
      * removed from the Queue and not run.
      */
     public void reset() {
-        synchronized (lock) {
-            waitingForHeadReset = false;
-            initialized = false;
+        synchronized (mLock) {
+            mWaitingForHeadReset = false;
+            mInitialized = false;
 
             // clear all delayed tasks
-            Logger.i(TAG, " - Reset i: %s, u: %s, b: %s", immediateTasks.size(), userTasks.size(),
-                    backgroundTasks.size());
-            immediateTasks.clear();
-            userTasks.clear();
-            backgroundTasks.clear();
+            Logger.i(TAG, " - Reset i: %s, u: %s, b: %s", mImmediateTasks.size(), mUserTasks.size(),
+                    mBackgroundTasks.size());
+            mImmediateTasks.clear();
+            mUserTasks.clear();
+            mBackgroundTasks.clear();
 
             // Since we are delaying thing, start the starvation checker
             startStarvationCheck();
@@ -178,8 +178,8 @@ public class TaskQueue implements Dumpable {
     /** this is called post reset to clear the initialized flag. */
     public void completeReset() {
         Logger.i(TAG, "completeReset");
-        synchronized (lock) {
-            initialized = true;
+        synchronized (mLock) {
+            mInitialized = true;
         }
 
         maybeCancelStarvationCheck();
@@ -190,14 +190,14 @@ public class TaskQueue implements Dumpable {
      * other tasks are delayed until initialization finishes.
      */
     public void initialize(Runnable runnable) {
-        synchronized (lock) {
-            if (initialized) {
+        synchronized (mLock) {
+            if (mInitialized) {
                 Logger.w(TAG, " - Calling initialize on an initialized TaskQueue");
             }
         }
 
         TaskWrapper task = new InitializationTaskWrapper(runnable);
-        countTask(task.taskType);
+        countTask(task.mTaskType);
         task.runTask();
     }
 
@@ -222,27 +222,27 @@ public class TaskQueue implements Dumpable {
     }
 
     private void startStarvationCheck() {
-        synchronized (lock) {
-            if (starvationCheckTask != null) {
+        synchronized (mLock) {
+            if (mStarvationCheckTask != null) {
                 Logger.i(TAG, "Starvation Checks are already running");
                 return;
             }
 
             if (isDelayed()) {
                 Logger.i(TAG, " * Starting starvation checks");
-                starvationCheckTask = mainThreadRunner.executeWithDelay(
+                mStarvationCheckTask = mMainThreadRunner.executeWithDelay(
                         "starvationChecks", new StarvationChecker(), STARVATION_CHECK_MS);
             }
         }
     }
 
     private void maybeCancelStarvationCheck() {
-        synchronized (lock) {
-            CancelableTask localTask = starvationCheckTask;
+        synchronized (mLock) {
+            CancelableTask localTask = mStarvationCheckTask;
             if (!isDelayed() && localTask != null) {
                 Logger.i(TAG, "Cancelling starvation checks");
                 localTask.cancel();
-                starvationCheckTask = null;
+                mStarvationCheckTask = null;
             }
         }
     }
@@ -255,31 +255,31 @@ public class TaskQueue implements Dumpable {
             if (!isDelayed() && !hasBacklog()) {
                 // Quick out, we are not delaying things, this stops starvation checking
                 Logger.i(TAG, " * Starvation checks being turned off");
-                synchronized (lock) {
-                    starvationCheckTask = null;
+                synchronized (mLock) {
+                    mStarvationCheckTask = null;
                 }
                 return;
             }
-            long lastTask = lastTaskFinished.get();
+            long lastTask = mLastTaskFinished.get();
             Logger.i(TAG, " * Starvation Check, last task %s",
                     StringFormattingUtils.formatLogDate(lastTask));
-            if (clock.currentTimeMillis() >= lastTask + STARVATION_TIMEOUT_MS) {
+            if (mClock.currentTimeMillis() >= lastTask + STARVATION_TIMEOUT_MS) {
                 Logger.e(TAG, " - Starvation check failed, stopping the delay and running tasks");
-                basicLoggingApi.onInternalError(InternalFeedError.TASK_QUEUE_STARVATION);
+                mBasicLoggingApi.onInternalError(InternalFeedError.TASK_QUEUE_STARVATION);
                 // Reset the delay since things aren't being run
-                synchronized (lock) {
-                    if (waitingForHeadReset) {
-                        waitingForHeadReset = false;
+                synchronized (mLock) {
+                    if (mWaitingForHeadReset) {
+                        mWaitingForHeadReset = false;
                     }
-                    if (!initialized) {
-                        initialized = true;
+                    if (!mInitialized) {
+                        mInitialized = true;
                     }
-                    starvationCheckTask = null;
+                    mStarvationCheckTask = null;
                 }
                 executeNextTask();
             } else {
-                synchronized (lock) {
-                    starvationCheckTask = mainThreadRunner.executeWithDelay(
+                synchronized (mLock) {
+                    mStarvationCheckTask = mMainThreadRunner.executeWithDelay(
                             "StarvationChecks", this, STARVATION_CHECK_MS);
                 }
             }
@@ -288,10 +288,10 @@ public class TaskQueue implements Dumpable {
 
     private void scheduleTask(TaskWrapper taskWrapper, @TaskType int taskType) {
         if (isDelayed() || hasBacklog()) {
-            delayedRunCount++;
+            mDelayedRunCount++;
             queueTask(taskWrapper, taskType);
         } else {
-            immediateRunCount++;
+            mImmediateRunCount++;
             taskWrapper.runTask();
         }
     }
@@ -307,35 +307,35 @@ public class TaskQueue implements Dumpable {
     }
 
     private void queueTask(TaskWrapper taskWrapper, @TaskType int taskType) {
-        synchronized (lock) {
+        synchronized (mLock) {
             if (taskType == TaskType.HEAD_INVALIDATE || taskType == TaskType.HEAD_RESET
                     || taskType == TaskType.IMMEDIATE) {
                 if (taskType == TaskType.HEAD_INVALIDATE && haveHeadInvalidate()) {
                     Logger.w(TAG, " - Duplicate HeadInvalidate Task Found, ignoring new one");
                     return;
                 }
-                immediateTasks.add(taskWrapper);
-                maxImmediateTasks = Math.max(immediateTasks.size(), maxImmediateTasks);
+                mImmediateTasks.add(taskWrapper);
+                mMaxImmediateTasks = Math.max(mImmediateTasks.size(), mMaxImmediateTasks);
                 // An immediate could be created in a delayed state (invalidate head), so we check
                 // to see if we need to run tasks
-                if (initialized && (currentTask == null)) {
+                if (mInitialized && (mCurrentTask == null)) {
                     Logger.i(TAG, " - queueTask starting immediate task");
                     executeNextTask();
                 }
             } else if (taskType == TaskType.USER_FACING) {
-                userTasks.add(taskWrapper);
-                maxUserFacingTasks = Math.max(userTasks.size(), maxUserFacingTasks);
+                mUserTasks.add(taskWrapper);
+                mMaxUserFacingTasks = Math.max(mUserTasks.size(), mMaxUserFacingTasks);
             } else {
-                backgroundTasks.add(taskWrapper);
-                maxBackgroundTasks = Math.max(backgroundTasks.size(), maxBackgroundTasks);
+                mBackgroundTasks.add(taskWrapper);
+                mMaxBackgroundTasks = Math.max(mBackgroundTasks.size(), mMaxBackgroundTasks);
             }
         }
     }
 
     private boolean haveHeadInvalidate() {
-        synchronized (lock) {
-            for (TaskWrapper taskWrapper : immediateTasks) {
-                if (taskWrapper.taskType == TaskType.HEAD_INVALIDATE) {
+        synchronized (mLock) {
+            for (TaskWrapper taskWrapper : mImmediateTasks) {
+                if (taskWrapper.mTaskType == TaskType.HEAD_INVALIDATE) {
                     return true;
                 }
             }
@@ -344,62 +344,63 @@ public class TaskQueue implements Dumpable {
     }
 
     private void countTask(@TaskType int taskType) {
-        taskCount++;
+        mTaskCount++;
         if (taskType == TaskType.IMMEDIATE) {
-            immediateTaskCount++;
+            mImmediateTaskCount++;
         } else if (taskType == TaskType.HEAD_INVALIDATE) {
-            headInvalidateTaskCount++;
+            mHeadInvalidateTaskCount++;
         } else if (taskType == TaskType.HEAD_RESET) {
-            headResetTaskCount++;
+            mHeadResetTaskCount++;
         } else if (taskType == TaskType.USER_FACING) {
-            userFacingTaskCount++;
+            mUserFacingTaskCount++;
         } else if (taskType == TaskType.BACKGROUND) {
-            backgroundTaskCount++;
+            mBackgroundTaskCount++;
         }
     }
 
     /** Indicates that tasks are being delayed until a response is processed */
     public boolean isDelayed() {
-        synchronized (lock) {
-            return !initialized || waitingForHeadReset;
+        synchronized (mLock) {
+            return !mInitialized || mWaitingForHeadReset;
         }
     }
 
     /** Returns {@literal true} if no tasks are running and no tasks are enqueued. */
     public boolean isIdle() {
-        return !hasBacklog() && currentTask == null;
+        return !hasBacklog() && mCurrentTask == null;
     }
 
     /** Returns {@literal true} if there are tests enqueued to run. */
     public boolean hasBacklog() {
-        synchronized (lock) {
-            return !backgroundTasks.isEmpty() || !userTasks.isEmpty() || !immediateTasks.isEmpty();
+        synchronized (mLock) {
+            return !mBackgroundTasks.isEmpty() || !mUserTasks.isEmpty()
+                    || !mImmediateTasks.isEmpty();
         }
     }
 
     @VisibleForTesting
     boolean hasPendingStarvationCheck() {
-        synchronized (lock) {
-            return starvationCheckTask != null && !starvationCheckTask.canceled();
+        synchronized (mLock) {
+            return mStarvationCheckTask != null && !mStarvationCheckTask.canceled();
         }
     }
 
     private int backlogSize() {
-        synchronized (lock) {
-            return backgroundTasks.size() + userTasks.size() + immediateTasks.size();
+        synchronized (mLock) {
+            return mBackgroundTasks.size() + mUserTasks.size() + mImmediateTasks.size();
         }
     }
 
     private void executeNextTask() {
-        lastTaskFinished.set(clock.currentTimeMillis());
-        synchronized (lock) {
+        mLastTaskFinished.set(mClock.currentTimeMillis());
+        synchronized (mLock) {
             TaskWrapper task = null;
-            if (!immediateTasks.isEmpty()) {
-                task = immediateTasks.remove();
-            } else if (!userTasks.isEmpty() && !isDelayed()) {
-                task = userTasks.remove();
-            } else if (!backgroundTasks.isEmpty() && !isDelayed()) {
-                task = backgroundTasks.remove();
+            if (!mImmediateTasks.isEmpty()) {
+                task = mImmediateTasks.remove();
+            } else if (!mUserTasks.isEmpty() && !isDelayed()) {
+                task = mUserTasks.remove();
+            } else if (!mBackgroundTasks.isEmpty() && !isDelayed()) {
+                task = mBackgroundTasks.remove();
             }
             if (task != null) {
                 task.runTask();
@@ -413,21 +414,21 @@ public class TaskQueue implements Dumpable {
      */
     private class TaskWrapper implements Runnable {
         @Task
-        protected final int task;
-        final int taskType;
-        protected final Runnable runnable;
-        private final long queueTimeMs;
+        protected final int mTask;
+        final int mTaskType;
+        protected final Runnable mRunnable;
+        private final long mQueueTimeMs;
 
         TaskWrapper(@Task int task, @TaskType int taskType, Runnable runnable) {
-            this.task = task;
-            this.taskType = taskType;
-            this.runnable = runnable;
-            this.queueTimeMs = clock.elapsedRealtime();
+            this.mTask = task;
+            this.mTaskType = taskType;
+            this.mRunnable = runnable;
+            this.mQueueTimeMs = mClock.elapsedRealtime();
         }
 
         /** This will run the task on the {@link Executor}. */
         void runTask() {
-            executor.execute(this);
+            mExecutor.execute(this);
         }
 
         /**
@@ -437,24 +438,24 @@ public class TaskQueue implements Dumpable {
          */
         @Override
         public final void run() {
-            long startTimeMs = clock.elapsedRealtime();
+            long startTimeMs = mClock.elapsedRealtime();
             // TODO: Log task name instead of task number
-            Logger.i(TAG, "Execute task [%s - d: %s, b: %s]: %s", taskTypeToString(taskType),
-                    isDelayed(), backlogSize(), task);
+            Logger.i(TAG, "Execute task [%s - d: %s, b: %s]: %s", taskTypeToString(mTaskType),
+                    isDelayed(), backlogSize(), mTask);
             // maintain the currentTask on the stack encase we queue multiple tasks to the Executor
-            TaskWrapper saveTask = currentTask;
-            currentTask = this;
-            runnable.run();
+            TaskWrapper saveTask = mCurrentTask;
+            mCurrentTask = this;
+            mRunnable.run();
             postRunnableRun();
 
-            currentTask = saveTask;
+            mCurrentTask = saveTask;
 
-            int taskExecutionTime = (int) (clock.elapsedRealtime() - startTimeMs);
-            int taskDelayTime = (int) (startTimeMs - queueTimeMs);
+            int taskExecutionTime = (int) (mClock.elapsedRealtime() - startTimeMs);
+            int taskDelayTime = (int) (startTimeMs - mQueueTimeMs);
 
             // TODO: Log task name instead of task number
-            Logger.i(TAG, " - Finished %s, time %s ms", task, taskExecutionTime);
-            basicLoggingApi.onTaskFinished(task, taskDelayTime, taskExecutionTime);
+            Logger.i(TAG, " - Finished %s, time %s ms", mTask, taskExecutionTime);
+            mBasicLoggingApi.onTaskFinished(mTask, taskDelayTime, taskExecutionTime);
             executeNextTask();
         }
 
@@ -463,7 +464,7 @@ public class TaskQueue implements Dumpable {
     }
 
     /**
-     * Initialization will flip the {@link #initialized} state to {@code true} when the
+     * Initialization will flip the {@link #mInitialized} state to {@code true} when the
      * initialization task completes.
      */
     private final class InitializationTaskWrapper extends TaskWrapper {
@@ -473,14 +474,14 @@ public class TaskQueue implements Dumpable {
 
         @Override
         protected void postRunnableRun() {
-            synchronized (lock) {
-                initialized = true;
+            synchronized (mLock) {
+                mInitialized = true;
             }
         }
     }
 
     /**
-     * HeadReset will run a task which resets $HEAD. It clears the {@link #waitingForHeadReset}
+     * HeadReset will run a task which resets $HEAD. It clears the {@link #mWaitingForHeadReset}
      * state.
      */
     private final class HeadResetTaskWrapper extends TaskWrapper {
@@ -490,8 +491,8 @@ public class TaskQueue implements Dumpable {
 
         @Override
         protected void postRunnableRun() {
-            synchronized (lock) {
-                waitingForHeadReset = false;
+            synchronized (mLock) {
+                mWaitingForHeadReset = false;
             }
             maybeCancelStarvationCheck();
         }
@@ -500,7 +501,7 @@ public class TaskQueue implements Dumpable {
     /**
      * HeadInvalidate is a task which marks the current head as invalid. The TaskQueue will then be
      * delayed until {@link HeadResetTaskWrapper} has completed. This will set the {@link
-     * #waitingForHeadReset}. In addition starvation checks will be started.
+     * #mWaitingForHeadReset}. In addition starvation checks will be started.
      */
     private final class HeadInvalidateTaskWrapper extends TaskWrapper {
         HeadInvalidateTaskWrapper(@Task int task, @TaskType int taskType, Runnable runnable) {
@@ -509,8 +510,8 @@ public class TaskQueue implements Dumpable {
 
         @Override
         void runTask() {
-            synchronized (lock) {
-                waitingForHeadReset = true;
+            synchronized (mLock) {
+                mWaitingForHeadReset = true;
             }
             super.runTask();
         }
@@ -526,22 +527,22 @@ public class TaskQueue implements Dumpable {
      * not started before the timeout millis.
      */
     private final class TimeoutTaskWrapper extends TaskWrapper {
-        private final AtomicBoolean started = new AtomicBoolean(false);
-        private final Runnable timeoutRunnable;
-        /*@Nullable*/ private CancelableTask timeoutTask;
+        private final AtomicBoolean mStarted = new AtomicBoolean(false);
+        private final Runnable mTimeoutRunnable;
+        /*@Nullable*/ private CancelableTask mTimeoutTask;
 
         TimeoutTaskWrapper(@Task int task, @TaskType int taskType, Runnable taskRunnable,
                 Runnable timeoutRunnable) {
             super(task, taskType, taskRunnable);
-            this.timeoutRunnable = timeoutRunnable;
+            this.mTimeoutRunnable = timeoutRunnable;
         }
 
         /**
          * Start the timeout period. If we reach the timeout before the Task is run, the {@link
-         * #timeoutRunnable} will run.
+         * #mTimeoutRunnable} will run.
          */
         private TimeoutTaskWrapper startTimeout(long timeoutMillis) {
-            timeoutTask = mainThreadRunner.executeWithDelay(
+            mTimeoutTask = mMainThreadRunner.executeWithDelay(
                     "taskTimeout", this::runTimeoutCallback, timeoutMillis);
             return this;
         }
@@ -549,17 +550,17 @@ public class TaskQueue implements Dumpable {
         @Override
         void runTask() {
             // If the boolean is already set then runTimeoutCallback has run.
-            if (started.getAndSet(true)) {
-                Logger.w(TAG, " - runTimeoutCallback already ran [%s]", task);
+            if (mStarted.getAndSet(true)) {
+                Logger.w(TAG, " - runTimeoutCallback already ran [%s]", mTask);
                 executeNextTask();
                 return;
             }
 
-            CancelableTask localTask = timeoutTask;
+            CancelableTask localTask = mTimeoutTask;
             if (localTask != null) {
-                Logger.i(TAG, "Cancelling timeout [%s]", task);
+                Logger.i(TAG, "Cancelling timeout [%s]", mTask);
                 localTask.cancel();
-                timeoutTask = null;
+                mTimeoutTask = null;
             }
 
             super.runTask();
@@ -567,32 +568,32 @@ public class TaskQueue implements Dumpable {
 
         private void runTimeoutCallback() {
             // If the boolean is already set then runTask has run.
-            if (started.getAndSet(true)) {
-                Logger.w(TAG, " - runTask already ran [%s]", task);
+            if (mStarted.getAndSet(true)) {
+                Logger.w(TAG, " - runTask already ran [%s]", mTask);
                 return;
             }
 
-            Logger.w(TAG, "Execute Timeout [%s]: %s", taskType, task);
-            executor.execute(timeoutRunnable);
+            Logger.w(TAG, "Execute Timeout [%s]: %s", mTaskType, mTask);
+            mExecutor.execute(mTimeoutRunnable);
         }
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("tasks").value(taskCount);
-        dumper.forKey("immediateRun").value(immediateRunCount).compactPrevious();
-        dumper.forKey("delayedRun").value(delayedRunCount).compactPrevious();
+        dumper.forKey("tasks").value(mTaskCount);
+        dumper.forKey("immediateRun").value(mImmediateRunCount).compactPrevious();
+        dumper.forKey("delayedRun").value(mDelayedRunCount).compactPrevious();
 
-        dumper.forKey("immediateTasks").value(immediateTaskCount);
-        dumper.forKey("headInvalidateTasks").value(headInvalidateTaskCount).compactPrevious();
-        dumper.forKey("headResetTasks").value(headResetTaskCount).compactPrevious();
-        dumper.forKey("userFacingTasks").value(userFacingTaskCount).compactPrevious();
-        dumper.forKey("backgroundTasks").value(backgroundTaskCount).compactPrevious();
+        dumper.forKey("immediateTasks").value(mImmediateTaskCount);
+        dumper.forKey("headInvalidateTasks").value(mHeadInvalidateTaskCount).compactPrevious();
+        dumper.forKey("headResetTasks").value(mHeadResetTaskCount).compactPrevious();
+        dumper.forKey("userFacingTasks").value(mUserFacingTaskCount).compactPrevious();
+        dumper.forKey("backgroundTasks").value(mBackgroundTaskCount).compactPrevious();
 
-        dumper.forKey("maxImmediateQueue").value(maxImmediateTasks);
-        dumper.forKey("maxUserFacingQueue").value(maxUserFacingTasks).compactPrevious();
-        dumper.forKey("maxBackgroundQueue").value(maxBackgroundTasks).compactPrevious();
+        dumper.forKey("maxImmediateQueue").value(mMaxImmediateTasks);
+        dumper.forKey("maxUserFacingQueue").value(mMaxUserFacingTasks).compactPrevious();
+        dumper.forKey("maxBackgroundQueue").value(mMaxBackgroundTasks).compactPrevious();
     }
 
     private static String taskTypeToString(@TaskType int taskType) {

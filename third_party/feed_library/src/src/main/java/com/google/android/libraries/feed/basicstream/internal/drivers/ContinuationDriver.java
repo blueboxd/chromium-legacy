@@ -43,45 +43,45 @@ import java.util.List;
 public class ContinuationDriver extends LeafFeatureDriver
         implements OnClickListener, LoggingListener, TokenCompletedObserver {
     private static final String TAG = "ContinuationDriver";
-    private final BasicLoggingApi basicLoggingApi;
-    private final Context context;
-    private final CursorChangedListener cursorChangedListener;
-    private final ModelChild modelChild;
-    private final ModelToken modelToken;
-    private final ModelProvider modelProvider;
-    private final int position;
-    private final SnackbarApi snackbarApi;
-    private final SpinnerLogger spinnerLogger;
-    private final ThreadUtils threadUtils;
-    private final boolean consumeSyntheticTokens;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final Context mContext;
+    private final CursorChangedListener mCursorChangedListener;
+    private final ModelChild mModelChild;
+    private final ModelToken mModelToken;
+    private final ModelProvider mModelProvider;
+    private final int mPosition;
+    private final SnackbarApi mSnackbarApi;
+    private final SpinnerLogger mSpinnerLogger;
+    private final ThreadUtils mThreadUtils;
+    private final boolean mConsumeSyntheticTokens;
 
-    private boolean showSpinner;
-    private boolean initialized;
-    private boolean viewLogged;
-    private boolean destroyed;
-    private boolean tokenHandled;
-    private int failureCount;
+    private boolean mShowSpinner;
+    private boolean mInitialized;
+    private boolean mViewLogged;
+    private boolean mDestroyed;
+    private boolean mTokenHandled;
+    private int mFailureCount;
     @SpinnerType
-    private int spinnerType = SpinnerType.INFINITE_FEED;
-    /*@Nullable*/ private ContinuationViewHolder continuationViewHolder;
+    private int mSpinnerType = SpinnerType.INFINITE_FEED;
+    /*@Nullable*/ private ContinuationViewHolder mContinuationViewHolder;
 
     ContinuationDriver(BasicLoggingApi basicLoggingApi, Clock clock, Configuration configuration,
             Context context, CursorChangedListener cursorChangedListener, ModelChild modelChild,
             ModelProvider modelProvider, int position, SnackbarApi snackbarApi,
             ThreadUtils threadUtils, boolean restoring) {
-        this.basicLoggingApi = basicLoggingApi;
-        this.context = context;
-        this.cursorChangedListener = cursorChangedListener;
-        this.modelChild = modelChild;
-        this.modelProvider = modelProvider;
-        this.modelToken = modelChild.getModelToken();
-        this.position = position;
-        this.snackbarApi = snackbarApi;
-        this.spinnerLogger = createSpinnerLogger(basicLoggingApi, clock);
-        this.threadUtils = threadUtils;
-        this.showSpinner =
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mContext = context;
+        this.mCursorChangedListener = cursorChangedListener;
+        this.mModelChild = modelChild;
+        this.mModelProvider = modelProvider;
+        this.mModelToken = modelChild.getModelToken();
+        this.mPosition = position;
+        this.mSnackbarApi = snackbarApi;
+        this.mSpinnerLogger = createSpinnerLogger(basicLoggingApi, clock);
+        this.mThreadUtils = threadUtils;
+        this.mShowSpinner =
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, false);
-        this.consumeSyntheticTokens =
+        this.mConsumeSyntheticTokens =
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, false)
                 || (restoring
                         && configuration.getValueOrDefault(
@@ -89,41 +89,41 @@ public class ContinuationDriver extends LeafFeatureDriver
     }
 
     public boolean hasTokenBeenHandled() {
-        return tokenHandled;
+        return mTokenHandled;
     }
 
     public void initialize() {
-        if (initialized) {
+        if (mInitialized) {
             return;
         }
 
-        initialized = true;
-        modelToken.registerObserver(this);
-        if (modelToken.isSynthetic() && consumeSyntheticTokens) {
+        mInitialized = true;
+        mModelToken.registerObserver(this);
+        if (mModelToken.isSynthetic() && mConsumeSyntheticTokens) {
             Logger.d(TAG, "Handling synthetic token");
-            boolean tokenWillBeHandled = modelProvider.handleToken(modelToken);
+            boolean tokenWillBeHandled = mModelProvider.handleToken(mModelToken);
             if (tokenWillBeHandled) {
-                showSpinner = true;
-                spinnerType = SpinnerType.SYNTHETIC_TOKEN;
-                tokenHandled = true;
+                mShowSpinner = true;
+                mSpinnerType = SpinnerType.SYNTHETIC_TOKEN;
+                mTokenHandled = true;
             } else {
                 Logger.e(TAG, "Synthetic token was not handled");
-                basicLoggingApi.onInternalError(InternalFeedError.UNHANDLED_TOKEN);
+                mBasicLoggingApi.onInternalError(InternalFeedError.UNHANDLED_TOKEN);
             }
         }
     }
 
     @Override
     public void onDestroy() {
-        destroyed = true;
+        mDestroyed = true;
 
-        if (initialized) {
-            modelToken.unregisterObserver(this);
+        if (mInitialized) {
+            mModelToken.unregisterObserver(this);
         }
         // If the spinner was being shown, it will only be removed when the ContinuationDriver is
         // destroyed. So onSpinnerShown should be logged then.
-        if (spinnerLogger.isSpinnerActive()) {
-            spinnerLogger.spinnerDestroyedWithoutCompleting();
+        if (mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerDestroyedWithoutCompleting();
         }
     }
 
@@ -135,32 +135,32 @@ public class ContinuationDriver extends LeafFeatureDriver
             Logger.wtf(TAG, "Calling onClick before binding.");
             return;
         }
-        boolean tokenWillBeHandled = modelProvider.handleToken(modelToken);
+        boolean tokenWillBeHandled = mModelProvider.handleToken(mModelToken);
         if (tokenWillBeHandled) {
-            showSpinner = true;
-            spinnerLogger.spinnerStarted(SpinnerType.MORE_BUTTON);
-            checkNotNull(continuationViewHolder).setShowSpinner(true);
-            tokenHandled = true;
+            mShowSpinner = true;
+            mSpinnerLogger.spinnerStarted(SpinnerType.MORE_BUTTON);
+            checkNotNull(mContinuationViewHolder).setShowSpinner(true);
+            mTokenHandled = true;
         } else {
             Logger.e(TAG, "Continuation token was not handled");
-            basicLoggingApi.onInternalError(InternalFeedError.UNHANDLED_TOKEN);
+            mBasicLoggingApi.onInternalError(InternalFeedError.UNHANDLED_TOKEN);
             showErrorUi();
         }
     }
 
     @Override
     public void bind(FeedViewHolder viewHolder) {
-        checkState(initialized);
+        checkState(mInitialized);
         if (isBound()) {
             Logger.wtf(TAG, "Rebinding.");
         }
         checkState(viewHolder instanceof ContinuationViewHolder);
 
-        continuationViewHolder = (ContinuationViewHolder) viewHolder;
-        continuationViewHolder.bind(
-                /* onClickListener= */ this, /* loggingListener= */ this, showSpinner);
-        if (showSpinner && !spinnerLogger.isSpinnerActive()) {
-            spinnerLogger.spinnerStarted(spinnerType);
+        mContinuationViewHolder = (ContinuationViewHolder) viewHolder;
+        mContinuationViewHolder.bind(
+                /* onClickListener= */ this, /* loggingListener= */ this, mShowSpinner);
+        if (mShowSpinner && !mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerStarted(mSpinnerType);
         }
     }
 
@@ -171,30 +171,30 @@ public class ContinuationDriver extends LeafFeatureDriver
 
     @Override
     public void unbind() {
-        if (continuationViewHolder == null) {
+        if (mContinuationViewHolder == null) {
             return;
         }
 
-        continuationViewHolder.unbind();
-        continuationViewHolder = null;
+        mContinuationViewHolder.unbind();
+        mContinuationViewHolder = null;
     }
 
     @Override
     public void maybeRebind() {
-        if (continuationViewHolder == null) {
+        if (mContinuationViewHolder == null) {
             return;
         }
 
         // Unbinding clears the viewHolder, so storing to rebind.
-        ContinuationViewHolder localViewHolder = continuationViewHolder;
+        ContinuationViewHolder localViewHolder = mContinuationViewHolder;
         unbind();
         bind(localViewHolder);
     }
 
     @Override
     public void onTokenCompleted(TokenCompleted tokenCompleted) {
-        threadUtils.checkMainThread();
-        if (destroyed) {
+        mThreadUtils.checkMainThread();
+        if (mDestroyed) {
             // Tokens are able to send onTokenCompleted even after unregistering.  This can happen
             // due to thread switching.  This prevents tokens from being handled after the driver
             // has been destroyed and should no longer be handled.
@@ -204,8 +204,8 @@ public class ContinuationDriver extends LeafFeatureDriver
 
         // Spinner wouldn't be active if we are automatically consuming a synthetic token on
         // restore.
-        if (spinnerLogger.isSpinnerActive()) {
-            spinnerLogger.spinnerFinished();
+        if (mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerFinished();
         }
 
         ModelCursor cursor = tokenCompleted.getCursor();
@@ -214,48 +214,48 @@ public class ContinuationDriver extends LeafFeatureDriver
         // Display snackbar if there are no more cards. The snackbar should only be shown if the
         // spinner is being shown. This ensures the snackbar is only shown in the instance of the
         // Stream that triggered the pagination.
-        if (showSpinner
+        if (mShowSpinner
                 && (modelChildren.isEmpty()
                         || (modelChildren.size() == 1
                                 && modelChildren.get(0).getType() == Type.TOKEN))) {
-            snackbarApi.show(
-                    context.getResources().getString(R.string.snackbar_fetch_no_new_suggestions));
+            mSnackbarApi.show(
+                    mContext.getResources().getString(R.string.snackbar_fetch_no_new_suggestions));
         }
 
-        cursorChangedListener.onNewChildren(modelChild, modelChildren, modelToken.isSynthetic());
+        mCursorChangedListener.onNewChildren(mModelChild, modelChildren, mModelToken.isSynthetic());
     }
 
     @Override
     public void onError(ModelError modelError) {
-        basicLoggingApi.onTokenFailedToComplete(modelToken.isSynthetic(), ++failureCount);
+        mBasicLoggingApi.onTokenFailedToComplete(mModelToken.isSynthetic(), ++mFailureCount);
         showErrorUi();
-        spinnerLogger.spinnerFinished();
+        mSpinnerLogger.spinnerFinished();
     }
 
     private void showErrorUi() {
-        showSpinner = false;
+        mShowSpinner = false;
 
-        if (continuationViewHolder != null) {
-            continuationViewHolder.setShowSpinner(false);
+        if (mContinuationViewHolder != null) {
+            mContinuationViewHolder.setShowSpinner(false);
         }
 
-        snackbarApi.show(context.getString(R.string.snackbar_fetch_failed));
+        mSnackbarApi.show(mContext.getString(R.string.snackbar_fetch_failed));
     }
 
     @Override
     public void onViewVisible() {
         // Do not log a view if the spinner is being shown.
-        if (viewLogged || showSpinner) {
+        if (mViewLogged || mShowSpinner) {
             return;
         }
 
-        basicLoggingApi.onMoreButtonViewed(position);
-        viewLogged = true;
+        mBasicLoggingApi.onMoreButtonViewed(mPosition);
+        mViewLogged = true;
     }
 
     @Override
     public void onContentClicked() {
-        basicLoggingApi.onMoreButtonClicked(position);
+        mBasicLoggingApi.onMoreButtonClicked(mPosition);
     }
 
     @Override
@@ -297,7 +297,7 @@ public class ContinuationDriver extends LeafFeatureDriver
 
     @VisibleForTesting
     boolean isBound() {
-        return continuationViewHolder != null;
+        return mContinuationViewHolder != null;
     }
 
     @VisibleForTesting
@@ -309,6 +309,6 @@ public class ContinuationDriver extends LeafFeatureDriver
 
     @Override
     public String getContentId() {
-        return modelToken.getStreamToken().getContentId();
+        return mModelToken.getStreamToken().getContentId();
     }
 }

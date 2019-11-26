@@ -37,6 +37,15 @@ void ScopedAddFeatureFlags::DisableIfNotSet(const base::Feature& feature) {
   AddFeatureIfNotSet(feature, false /* enable */);
 }
 
+bool ScopedAddFeatureFlags::IsEnabled(const base::Feature& feature) {
+  const char* feature_name = feature.name;
+  if (base::Contains(disabled_features_, feature_name))
+    return false;
+  if (base::Contains(enabled_features_, feature_name))
+    return true;
+  return feature.default_state == base::FEATURE_ENABLED_BY_DEFAULT;
+}
+
 void ScopedAddFeatureFlags::AddFeatureIfNotSet(const base::Feature& feature,
                                                bool enable) {
   const char* feature_name = feature.name;

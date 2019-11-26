@@ -32,12 +32,12 @@ class VolumeManagerImpl extends cr.EventTarget {
     // TODO(hidehiko): Remove them after the migration.
     /**
      * Connection state of the Drive.
-     * @type {VolumeManagerCommon.DriveConnectionState}
+     * @type {chrome.fileManagerPrivate.DriveConnectionState}
      * @private
      */
     this.driveConnectionState_ = {
-      type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
-      reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE,
+      type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+      reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
       hasCellularNetworkAccess: false
     };
 
@@ -55,9 +55,7 @@ class VolumeManagerImpl extends cr.EventTarget {
    */
   onDriveConnectionStatusChanged_() {
     chrome.fileManagerPrivate.getDriveConnectionState(state => {
-      // TODO(crbug.com/931971): Convert private API to use enum.
-      this.driveConnectionState_ =
-          /** @type {VolumeManagerCommon.DriveConnectionState} */ (state);
+      this.driveConnectionState_ = state;
       cr.dispatchSimpleEvent(this, 'drive-connection-changed');
     });
   }

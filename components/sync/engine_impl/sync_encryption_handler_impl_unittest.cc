@@ -607,7 +607,7 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
   handler2.AddObserver(&observer2);
 
   // Just set the sensitive types (shouldn't trigger any notifications).
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   {
     WriteTransaction trans(FROM_HERE, user_share());
     encryption_handler()->MergeEncryptedTypes(encrypted_types,
@@ -730,8 +730,7 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
   nigori.set_encrypt_everything(false);
   nigori.set_encrypt_bookmarks(true);
 
-  ModelTypeSet expected_encrypted_types =
-      SyncEncryptionHandler::SensitiveTypes();
+  ModelTypeSet expected_encrypted_types = AlwaysEncryptedUserTypes();
   expected_encrypted_types.Put(BOOKMARKS);
 
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(

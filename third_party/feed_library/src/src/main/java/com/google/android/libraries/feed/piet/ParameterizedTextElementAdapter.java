@@ -57,7 +57,7 @@ class ParameterizedTextElementAdapter extends TextElementAdapter {
         }
 
         textView.setText(getTemplatedStringEvaluator().evaluate(
-                getParameters().hostProviders.getAssetProvider(), parameterizedText));
+                getParameters().mHostProviders.getAssetProvider(), parameterizedText));
     }
 
     static class KeySupplier extends TextElementKeySupplier<ParameterizedTextElementAdapter> {

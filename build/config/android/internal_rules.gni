@@ -366,15 +366,10 @@ template("write_build_config") {
       args += [ "--is-base-module" ]
     }
 
-    if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
-      _rebased_modules = rebase_path(invoker.loadable_modules, root_build_dir)
-      args += [ "--native-libs=$_rebased_modules" ]
-    }
-
-    if (defined(invoker.extra_shared_libraries)) {
-      _rebased_extra_shared_libraries =
-          rebase_path(invoker.extra_shared_libraries, root_build_dir)
-      args += [ "--native-libs=$_rebased_extra_shared_libraries" ]
+    if (defined(invoker.loadable_modules)) {
+      _rebased_loadable_modules =
+          rebase_path(invoker.loadable_modules, root_build_dir)
+      args += [ "--loadable-modules=$_rebased_loadable_modules" ]
     }
 
     if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
@@ -390,9 +385,9 @@ template("write_build_config") {
 
     if (defined(invoker.secondary_abi_loadable_modules) &&
         invoker.secondary_abi_loadable_modules != []) {
-      _rebased_secondary_abi_modules =
+      _rebased_secondary_abi_loadable_modules =
           rebase_path(invoker.secondary_abi_loadable_modules, root_build_dir)
-      args += [ "--secondary-native-libs=$_rebased_secondary_abi_modules" ]
+      args += [ "--secondary-abi-loadable-modules=$_rebased_secondary_abi_loadable_modules" ]
     }
 
     if (defined(invoker.native_lib_placeholders) &&
@@ -2557,9 +2552,9 @@ if (enable_java_templates) {
   #     (optional).
   #   secondary_native_lib_placeholders: List of placeholder filenames to add to
   #     the apk for the secondary ABI (optional).
-  #   native_libs: List of native libraries.
+  #   loadable_modules: List of native libraries.
   #   native_libs_filearg: @FileArg() of additionally native libraries.
-  #   secondary_abi_native_libs: (optional) List of native libraries for
+  #   secondary_abi_loadable_modules: (optional) List of native libraries for
   #     secondary ABI.
   #   secondary_abi_native_libs_filearg: (optional). @FileArg() of additional
   #     secondary ABI native libs.
@@ -2594,12 +2589,12 @@ if (enable_java_templates) {
         "//tools/android/md5sum",
       ]  # Used when deploying APKs
 
-      inputs = invoker.native_libs + [
-                 invoker.keystore_path,
-                 invoker.packaged_resources_path,
-                 _apksigner,
-                 _zipalign,
-               ]
+      inputs = [
+        invoker.keystore_path,
+        invoker.packaged_resources_path,
+        _apksigner,
+        _zipalign,
+      ]
 
       outputs = [
         invoker.output_apk_path,
@@ -2648,16 +2643,20 @@ if (enable_java_templates) {
         _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
         args += [ "--dex-file=$_rebased_dex_path" ]
       }
-      if (invoker.native_libs != [] || defined(invoker.native_libs_filearg) ||
+      if ((defined(invoker.loadable_modules) &&
+           invoker.loadable_modules != []) ||
+          defined(invoker.native_libs_filearg) ||
           _native_lib_placeholders != []) {
         args += [ "--android-abi=$android_app_abi" ]
       }
       if (defined(android_app_secondary_abi)) {
         args += [ "--secondary-android-abi=$android_app_secondary_abi" ]
       }
-      if (invoker.native_libs != []) {
-        _rebased_native_libs = rebase_path(invoker.native_libs, root_build_dir)
-        args += [ "--native-libs=$_rebased_native_libs" ]
+      if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
+        inputs += invoker.loadable_modules
+        _rebased_loadable_modules =
+            rebase_path(invoker.loadable_modules, root_build_dir)
+        args += [ "--native-libs=$_rebased_loadable_modules" ]
       }
       if (defined(invoker.native_libs_filearg)) {
         args += [ "--native-libs=${invoker.native_libs_filearg}" ]
@@ -2665,12 +2664,19 @@ if (enable_java_templates) {
       if (_native_lib_placeholders != []) {
         args += [ "--native-lib-placeholders=$_native_lib_placeholders" ]
       }
-      if (_secondary_native_lib_placeholders != []) {
-        args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
-      }
 
       if (defined(invoker.secondary_abi_native_libs_filearg)) {
         args += [ "--secondary-native-libs=${invoker.secondary_abi_native_libs_filearg}" ]
+      }
+      if (defined(invoker.secondary_abi_loadable_modules)) {
+        _rebased_secondary_abi_loadable_modules =
+            rebase_path(invoker.secondary_abi_loadable_modules, root_build_dir)
+        args += [
+          "--secondary-native-libs=$_rebased_secondary_abi_loadable_modules",
+        ]
+      }
+      if (_secondary_native_lib_placeholders != []) {
+        args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
       }
 
       if (defined(invoker.uncompress_shared_libraries) &&
@@ -3007,8 +3013,10 @@ if (enable_java_templates) {
   #  secondary_abi_shared_libraries_runtime_deps_file:
   #  secondary_native_lib_placeholders: Optional. List of placeholder filenames
   #    to add to the APK for the secondary ABI.
-  #  extra_shared_libraries: Optional list of extra native libraries to
+  #  loadable_modules: Optional list of extra native libraries to
   #    be stored in the APK.
+  #  secondary_abi_loadable_modules: Optional list of native libraries for
+  #    secondary ABI.
   #  uncompress_shared_libraries: Optional. True to store native shared
   #    libraries uncompressed and page-aligned.
   #  proto_resources_path: The path of an zip archive containing the APK's
@@ -3214,13 +3222,11 @@ if (enable_java_templates) {
                                "base_whitelist_rtxt_path",
                                "gradle_treat_as_prebuilt",
                                "input_jars_paths",
-                               "loadable_modules",
                                "main_class",
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_mapping_path",
                                "r_text_path",
-                               "secondary_abi_loadable_modules",
                                "type",
                              ])
       if (type == "android_apk" || type == "android_app_bundle_module") {
@@ -3229,10 +3235,11 @@ if (enable_java_templates) {
             [
               "android_manifest",
               "android_manifest_dep",
-              "extra_shared_libraries",
               "final_dex_path",
+              "loadable_modules",
               "native_lib_placeholders",
               "res_size_info_path",
+              "secondary_abi_loadable_modules",
               "secondary_abi_shared_libraries_runtime_deps_file",
               "secondary_native_lib_placeholders",
               "shared_libraries_runtime_deps_file",

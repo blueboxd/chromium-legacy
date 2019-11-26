@@ -741,12 +741,12 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 void MouseEventManager::MayUpdateHoverAfterScroll(
-    const FloatQuad& scroller_rect_in_frame) {
+    const FloatRect& scroller_rect_in_frame) {
   LocalFrameView* view = frame_->View();
   if (!view)
     return;
 
-  if (!scroller_rect_in_frame.ContainsPoint(
+  if (!scroller_rect_in_frame.Contains(
           view->ViewportToFrame(last_known_mouse_position_)))
     return;
 

@@ -78,8 +78,11 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
     // Can have a guest contents.
     kEligible,
 
-    // Would be eligible except that it is not top-level.
+    // Ineligible as it is not top-level.
     kNotTopLevel,
+
+    // Ineligible as the host's protocol is not in the HTTP family.
+    kNotHTTPFamily,
 
     // Ineligible for additional reasons.
     kIneligible,

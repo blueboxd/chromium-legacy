@@ -15,21 +15,21 @@ import java.util.List;
 
 /** This class will mutate the Content stored in the FeedStore. */
 public final class FeedContentMutation implements ContentMutation {
-    private final List<PayloadWithId> mutations = new ArrayList<>();
-    private final Committer<CommitResult, List<PayloadWithId>> committer;
+    private final List<PayloadWithId> mMutations = new ArrayList<>();
+    private final Committer<CommitResult, List<PayloadWithId>> mCommitter;
 
     FeedContentMutation(Committer<CommitResult, List<PayloadWithId>> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public ContentMutation add(String contentId, StreamPayload payload) {
-        mutations.add(new PayloadWithId(contentId, payload));
+        mMutations.add(new PayloadWithId(contentId, payload));
         return this;
     }
 
     @Override
     public CommitResult commit() {
-        return committer.commit(mutations);
+        return mCommitter.commit(mMutations);
     }
 }

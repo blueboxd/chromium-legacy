@@ -2617,7 +2617,6 @@
 <translation id="4839303808932127586">บั&amp;นทึกวิดีโอเป็น...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{อีก 1 รายการ}other{อีก # รายการ}}</translation>
 <translation id="4842976633412754305">หน้านี้พยายามโหลดสคริปต์จากแหล่งที่มาที่ไม่มีการรับรอง</translation>
-<translation id="4843488774506045600">ให้บริการเข้าสู่ระบบโดย <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">แป้นพิมพ์อื่นๆ</translation>
 <translation id="4846680374085650406">คุณทำตามคำแนะนำของผู้ดูแลระบบสำหรับการตั้งค่านี้</translation>
 <translation id="4848518990323155912">เปิดใช้การล็อกซิมการ์ด (ต้องป้อน PIN เพื่อใช้ข้อมูลเครือข่ายมือถือ)</translation>
@@ -3815,7 +3814,6 @@
 <translation id="6607831829715835317">เ&amp;ครื่องมือเพิ่มเติม</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6615455863669487791">แสดงให้ฉันเห็น</translation>
-<translation id="6617100836880592260">ความเร็วในการสแกน: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">อย่างไรก็เก็บไว้</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">เว็บไซต์ติดตามตำแหน่งของคุณได้</translation>

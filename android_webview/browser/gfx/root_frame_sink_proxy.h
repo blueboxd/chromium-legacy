@@ -17,6 +17,12 @@ struct BeginFrameArgs;
 
 namespace android_webview {
 
+class RootFrameSinkProxyClient {
+ public:
+  virtual void Invalidate() = 0;
+  virtual void ProgressFling(base::TimeTicks) = 0;
+};
+
 // Per-AwContents object. Straddles UI and Viz thread. Public methods should be
 // called on the UI thread unless otherwise specified. Mostly used for creating
 // RootFrameSink and routing calls to it.
@@ -24,7 +30,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
  public:
   RootFrameSinkProxy(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      base::RepeatingClosure invalidate_callback);
+      RootFrameSinkProxyClient* client);
   ~RootFrameSinkProxy() override;
 
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
@@ -50,7 +56,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
 
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
-  base::RepeatingClosure invalidate_callback_;
+  RootFrameSinkProxyClient* const client_;
   scoped_refptr<RootFrameSink> without_gpu_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
 

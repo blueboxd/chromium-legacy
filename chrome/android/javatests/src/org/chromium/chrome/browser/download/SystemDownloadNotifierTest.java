@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -44,7 +43,7 @@ public class SystemDownloadNotifierTest {
     }
 
     private DownloadInfo getDownloadInfo(ContentId id) {
-        return new Builder()
+        return new DownloadInfo.Builder()
                 .setFileName("foo")
                 .setBytesReceived(100)
                 .setDownloadGuid(UUID.randomUUID().toString())

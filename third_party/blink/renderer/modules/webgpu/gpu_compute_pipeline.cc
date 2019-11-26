@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
@@ -22,7 +23,9 @@ GPUComputePipeline* GPUComputePipeline::Create(
 
   WGPUComputePipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.layout = AsDawnType(webgpu_desc->layout());
+  if (webgpu_desc->hasLayout()) {
+    dawn_desc.layout = AsDawnType(webgpu_desc->layout());
+  }
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }
@@ -44,6 +47,12 @@ GPUComputePipeline::~GPUComputePipeline() {
     return;
   }
   GetProcs().computePipelineRelease(GetHandle());
+}
+
+GPUBindGroupLayout* GPUComputePipeline::getBindGroupLayout(uint32_t index) {
+  return MakeGarbageCollected<GPUBindGroupLayout>(
+      device_,
+      GetProcs().computePipelineGetBindGroupLayout(GetHandle(), index));
 }
 
 }  // namespace blink

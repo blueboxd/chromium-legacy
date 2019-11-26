@@ -25,6 +25,16 @@
           "object": "VerticalScrollbar",
           "rect": [103, 60, 15, 85],
           "reason": "scroll control"
+        },
+        {
+          "object": "Scroll corner of LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [303, 145, 15, 15],
+          "reason": "geometry"
+        },
+        {
+          "object": "Scroll corner of LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [103, 145, 15, 15],
+          "reason": "geometry"
         }
       ]
     }

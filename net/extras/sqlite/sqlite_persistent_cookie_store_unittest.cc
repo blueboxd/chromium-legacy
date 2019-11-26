@@ -217,7 +217,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
   std::unique_ptr<CookieCryptor> cookie_crypto_delegate_;
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
@@ -388,7 +388,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
   store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
                               base::Unretained(this)),
                net_log.bound());

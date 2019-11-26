@@ -172,10 +172,6 @@ class DomainReliabilityUploaderImpl
              << ", response code " << http_response_code << ", retry after "
              << retry_after;
 
-    base::UmaHistogramSparse("DomainReliability.UploadResponseCode",
-                             http_response_code);
-    base::UmaHistogramSparse("DomainReliability.UploadNetError", -net_error);
-
     UploadResult result;
     GetUploadResultFromResponseDetails(net_error,
                                        http_response_code,

@@ -25,9 +25,6 @@ class Messenger {
   virtual void AddObserver(MessengerObserver* observer) = 0;
   virtual void RemoveObserver(MessengerObserver* observer) = 0;
 
-  // Returns true iff the remote device supports the v3.1 sign-in protocol.
-  virtual bool SupportsSignIn() const = 0;
-
   // Sends an unlock event message to the remote device.
   virtual void DispatchUnlockEvent() = 0;
 

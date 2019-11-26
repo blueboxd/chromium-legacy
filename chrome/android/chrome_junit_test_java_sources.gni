@@ -86,6 +86,8 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiverTest.java",
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",
+  "junit/src/org/chromium/chrome/browser/history/HistoryAdapterAccessibilityTest.java",
+  "junit/src/org/chromium/chrome/browser/history/HistoryAdapterTest.java",
   "junit/src/org/chromium/chrome/browser/history/HistoryDeletionBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/homepage/HomepagePolicyManagerTest.java",
   "junit/src/org/chromium/chrome/browser/image_fetcher/CachedImageFetcherTest.java",

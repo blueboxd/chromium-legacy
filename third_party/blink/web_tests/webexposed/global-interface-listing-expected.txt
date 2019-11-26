@@ -11068,6 +11068,7 @@ interface XRFrame
     getter session
     method constructor
     method getHitTestResults
+    method getHitTestResultsForTransientInput
     method getPose
     method getViewerPose
 interface XRHitResult
@@ -11164,6 +11165,7 @@ interface XRSession : EventTarget
     method requestAnimationFrame
     method requestHitTest
     method requestHitTestSource
+    method requestHitTestSourceForTransientInput
     method requestReferenceSpace
     method updateRenderState
     setter onend
@@ -11177,6 +11179,14 @@ interface XRSessionEvent : Event
     getter session
     method constructor
 interface XRSpace : EventTarget
+    attribute @@toStringTag
+    method constructor
+interface XRTransientInputHitTestResult
+    attribute @@toStringTag
+    getter inputSource
+    getter results
+    method constructor
+interface XRTransientInputHitTestSource
     attribute @@toStringTag
     method constructor
 interface XRView

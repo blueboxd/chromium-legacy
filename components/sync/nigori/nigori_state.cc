@@ -190,7 +190,7 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
             *custom_passphrase_key_derivation_params);
   }
   proto.set_encrypt_everything(encrypt_everything);
-  ModelTypeSet encrypted_types = SyncEncryptionHandler::SensitiveTypes();
+  ModelTypeSet encrypted_types = AlwaysEncryptedUserTypes();
   if (encrypt_everything) {
     encrypted_types = EncryptableUserTypes();
   }

@@ -462,7 +462,8 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
     // components migration from the old web APIs.
     // After completion of the migration, we should remove this.
     // See crbug.com/911943 for detail.
-    command_line->AppendSwitchASCII("enable-blink-features", "HTMLImports");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "HTMLImports");
   }
 
   void VerifyImgRequest(std::string resource, CorbExpectations expectations) {

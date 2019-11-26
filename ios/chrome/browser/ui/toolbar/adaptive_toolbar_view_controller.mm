@@ -387,7 +387,13 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   } else if (sender == self.view.shareButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
   } else if (sender == self.view.searchButton) {
-    base::RecordAction(base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
+    if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileToolbarNewTabShortcut"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
+    }
   } else {
     NOTREACHED();
   }

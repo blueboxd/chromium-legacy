@@ -10,6 +10,7 @@
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event.h"
+#include "ui/events/test/keyboard_layout.h"
 
 namespace ui {
 namespace {
@@ -52,6 +53,8 @@ class InputMethodMinimalTest : public testing::Test {
 };
 
 TEST_F(InputMethodMinimalTest, StopPropagationTest) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   std::unique_ptr<DummyTextInputClient> client =
       std::make_unique<DummyTextInputClient>();
   input_method_minimal_->SetFocusedTextInputClient(client.get());

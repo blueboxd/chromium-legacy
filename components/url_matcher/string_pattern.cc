@@ -5,14 +5,17 @@
 #include "components/url_matcher/string_pattern.h"
 
 #include <tuple>
+#include <utility>
 
 namespace url_matcher {
 
-StringPattern::StringPattern(const std::string& pattern,
-                             StringPattern::ID id)
-    : pattern_(pattern), id_(id) {}
+StringPattern::StringPattern(std::string pattern, StringPattern::ID id)
+    : pattern_(std::move(pattern)), id_(id) {}
 
 StringPattern::~StringPattern() {}
+
+StringPattern::StringPattern(StringPattern&&) = default;
+StringPattern& StringPattern::operator=(StringPattern&&) = default;
 
 bool StringPattern::operator<(const StringPattern& rhs) const {
   return std::tie(id_, pattern_) < std::tie(rhs.id_, rhs.pattern_);

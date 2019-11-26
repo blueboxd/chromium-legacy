@@ -136,10 +136,10 @@ class OzonePlatformCast : public OzonePlatform {
         base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<StubKeyboardLayoutEngine>());
-    ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
-        ->SetCurrentLayoutByName("us");
+        keyboard_layout_engine_.get());
+
     event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         nullptr, device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
@@ -156,6 +156,7 @@ class OzonePlatformCast : public OzonePlatform {
   }
 
  private:
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<CastEglPlatform> egl_platform_;
   std::unique_ptr<SurfaceFactoryCast> surface_factory_;

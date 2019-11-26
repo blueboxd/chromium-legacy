@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CORE_INITIALIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CORE_INITIALIZER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/renderer/core/core_export.h"

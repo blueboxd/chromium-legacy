@@ -208,7 +208,7 @@ TEST(PacFileDeciderTest, CustomPacSucceeds) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_THAT(decider.Start(ProxyConfigWithAnnotation(
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
@@ -246,7 +246,7 @@ TEST(PacFileDeciderTest, CustomPacFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_THAT(decider.Start(ProxyConfigWithAnnotation(
                                 config, TRAFFIC_ANNOTATION_FOR_TESTS),
@@ -525,7 +525,7 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess2) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_THAT(decider.Start(ProxyConfigWithAnnotation(
@@ -636,7 +636,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_THAT(
       decider.Start(
@@ -679,7 +679,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_THAT(
       decider.Start(

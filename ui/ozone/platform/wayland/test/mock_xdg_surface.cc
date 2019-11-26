@@ -122,6 +122,20 @@ void GetZXdgPopupV6(struct wl_client* client,
   mock_xdg_surface->set_xdg_popup(std::move(mock_xdg_popup));
 }
 
+void SetMaxSize(wl_client* client,
+                wl_resource* resource,
+                int32_t width,
+                int32_t height) {
+  GetUserDataAs<MockXdgSurface>(resource)->SetMaxSize(width, height);
+}
+
+void SetMinSize(wl_client* client,
+                wl_resource* resource,
+                int32_t width,
+                int32_t height) {
+  GetUserDataAs<MockXdgSurface>(resource)->SetMinSize(width, height);
+}
+
 const struct xdg_surface_interface kMockXdgSurfaceImpl = {
     &DestroyResource,    // destroy
     nullptr,             // set_parent
@@ -155,8 +169,8 @@ const struct zxdg_toplevel_v6_interface kMockZxdgToplevelV6Impl = {
     nullptr,           // show_window_menu
     &Move,             // move
     &Resize,           // resize
-    nullptr,           // set_max_size
-    nullptr,           // set_min_size
+    &SetMaxSize,       // set_max_size
+    &SetMinSize,       // set_min_size
     &SetMaximized,     // set_maximized
     &UnsetMaximized,   // set_unmaximized
     &SetFullscreen,    // set_fullscreen

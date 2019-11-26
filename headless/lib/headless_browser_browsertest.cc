@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserAllowInsecureLocalhostTest,
 class HeadlessBrowserTestAppendCommandLineFlags : public HeadlessBrowserTest {
  public:
   HeadlessBrowserTestAppendCommandLineFlags() {
-    options()->append_command_line_flags_callback = base::Bind(
+    options()->append_command_line_flags_callback = base::BindRepeating(
         &HeadlessBrowserTestAppendCommandLineFlags::AppendCommandLineFlags,
         base::Unretained(this));
   }

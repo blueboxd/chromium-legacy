@@ -124,27 +124,6 @@ enum ElideBehavior {
   FADE_TAIL,    // Fade the string's end opposite of its horizontal alignment.
 };
 
-// The typesetter that will be used for text when displayed in UI. This can
-// influence things like string width in subtle ways and is necessary to help
-// transition Mac to the Harfbuzz typesetter (http://crbug.com/454835).
-enum class Typesetter {
-  // The typesetter that is used by UI parts of the browser window on this
-  // platform.
-  BROWSER,
-
-  // The Harfbuzz typesetter, which is typically used for secondary UI.
-  HARFBUZZ,
-
-  // The typesetter used for native UI such as tooltips, native menus and system
-  // notifications.
-  NATIVE,
-
-  // The typesetter used for function default arguments. The default can be used
-  // from locations that are unaffected by the Mac Harfbuzz transition. Cocoa UI
-  // on Mac must specify something else.
-  DEFAULT = HARFBUZZ
-};
-
 }  // namespace gfx
 
 #endif  // UI_GFX_TEXT_CONSTANTS_H_

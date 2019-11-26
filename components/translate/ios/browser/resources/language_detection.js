@@ -37,8 +37,8 @@ __gCrWeb.languageDetection.activeRequests = 0;
  * @return {boolean} true if translation of the page is allowed.
  */
 __gCrWeb.languageDetection['translationAllowed'] = function() {
-  var metaTags = document.getElementsByTagName('meta');
-  for (var i = 0; i < metaTags.length; ++i) {
+  const metaTags = document.getElementsByTagName('meta');
+  for (let i = 0; i < metaTags.length; ++i) {
     if (metaTags[i].name === 'google') {
       if (metaTags[i].content === 'notranslate' ||
           metaTags[i].getAttribute('value') === 'notranslate') {
@@ -57,8 +57,8 @@ __gCrWeb.languageDetection['translationAllowed'] = function() {
  * @return {string} Value of the "content" attribute of the meta tag.
  */
 __gCrWeb.languageDetection['getMetaContentByHttpEquiv'] = function(httpEquiv) {
-  var metaTags = document.getElementsByTagName('meta');
-  for (var i = 0; i < metaTags.length; ++i) {
+  const metaTags = document.getElementsByTagName('meta');
+  for (let i = 0; i < metaTags.length; ++i) {
     if (metaTags[i].httpEquiv.toLowerCase() === httpEquiv) {
       return metaTags[i].content;
     }
@@ -87,7 +87,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
     return '';
   }
 
-  var txt = '';
+  let txt = '';
   // Formatting and filtering.
   if (node.nodeType === Node.ELEMENT_NODE) {
     // Reject non-text nodes such as scripts.
@@ -97,7 +97,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
     if (node.nodeName === 'BR') {
       return '\n';
     }
-    var style = window.getComputedStyle(node);
+    const style = window.getComputedStyle(node);
     // Only proceed if the element is visible.
     if (style.display === 'none' || style.visibility === 'hidden') {
       return '';
@@ -109,7 +109,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
   }
 
   if (node.hasChildNodes()) {
-    for (var childIdx = 0;
+    for (let childIdx = 0;
          childIdx < node.childNodes.length && txt.length < maxLen;
          childIdx++) {
       txt += __gCrWeb.languageDetection.getTextContent(
@@ -140,15 +140,15 @@ __gCrWeb.languageDetection['detectLanguage'] = function() {
     // Matches desktop implementation.
     // Note: This should stay in sync with the constant in
     // js_language_detection_manager.mm .
-    var kMaxIndexChars = 65535;
-    var captureBeginTime = new Date();
+    const kMaxIndexChars = 65535;
+    const captureBeginTime = new Date();
     __gCrWeb.languageDetection.activeRequests += 1;
     __gCrWeb.languageDetection.bufferedTextContent =
         __gCrWeb.languageDetection.getTextContent(document.body,
             kMaxIndexChars);
-    var captureTextTime =
+    const captureTextTime =
         (new Date()).getMilliseconds() - captureBeginTime.getMilliseconds();
-    var httpContentLanguage =
+    const httpContentLanguage =
         __gCrWeb.languageDetection.getMetaContentByHttpEquiv(
             'content-language');
     __gCrWeb.message.invokeOnHost({
@@ -165,7 +165,7 @@ __gCrWeb.languageDetection['detectLanguage'] = function() {
  * cache.
  */
 __gCrWeb.languageDetection['retrieveBufferedTextContent'] = function() {
-  var textContent = __gCrWeb.languageDetection.bufferedTextContent;
+  const textContent = __gCrWeb.languageDetection.bufferedTextContent;
   __gCrWeb.languageDetection.activeRequests -= 1;
   if (__gCrWeb.languageDetection.activeRequests == 0) {
     __gCrWeb.languageDetection.bufferedTextContent = null;

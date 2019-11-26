@@ -18,15 +18,15 @@ import java.util.List;
  * ContentStorage}.
  */
 public final class ContentMutation {
-    private final List<ContentOperation> operations;
+    private final List<ContentOperation> mOperations;
 
     private ContentMutation(List<ContentOperation> operations) {
-        this.operations = Collections.unmodifiableList(operations);
+        this.mOperations = Collections.unmodifiableList(operations);
     }
 
     /** An unmodifiable list of operations to be committed by {@link ContentStorage}. */
     public List<ContentOperation> getOperations() {
-        return operations;
+        return mOperations;
     }
 
     /**
@@ -34,8 +34,8 @@ public final class ContentMutation {
      * {@link ContentStorage}.
      */
     public static final class Builder {
-        private final ArrayList<ContentOperation> operations = new ArrayList<>();
-        private final ContentOperationListSimplifier simplifier =
+        private final ArrayList<ContentOperation> mOperations = new ArrayList<>();
+        private final ContentOperationListSimplifier mSimplifier =
                 new ContentOperationListSimplifier();
 
         /**
@@ -45,7 +45,7 @@ public final class ContentMutation {
          * assigned multiple times, only the last value will be persisted.
          */
         public Builder upsert(String key, byte[] value) {
-            operations.add(new Upsert(key, value));
+            mOperations.add(new Upsert(key, value));
             return this;
         }
 
@@ -59,7 +59,7 @@ public final class ContentMutation {
          * operation will take effect.
          */
         public Builder delete(String key) {
-            operations.add(new Delete(key));
+            mOperations.add(new Delete(key));
             return this;
         }
 
@@ -73,13 +73,13 @@ public final class ContentMutation {
          * only the last operation will take effect.
          */
         public Builder deleteByPrefix(String prefix) {
-            operations.add(new DeleteByPrefix(prefix));
+            mOperations.add(new DeleteByPrefix(prefix));
             return this;
         }
 
         /** Deletes all values from {@link ContentStorage}. */
         public Builder deleteAll() {
-            operations.add(new DeleteAll());
+            mOperations.add(new DeleteAll());
             return this;
         }
 
@@ -88,7 +88,7 @@ public final class ContentMutation {
          * ContentMutation} the simplified list.
          */
         public ContentMutation build() {
-            return new ContentMutation(simplifier.simplify(operations));
+            return new ContentMutation(mSimplifier.simplify(mOperations));
         }
     }
 
@@ -103,11 +103,12 @@ public final class ContentMutation {
 
         ContentMutation that = (ContentMutation) o;
 
-        return operations != null ? operations.equals(that.operations) : that.operations == null;
+        return mOperations != null ? mOperations.equals(that.mOperations)
+                                   : that.mOperations == null;
     }
 
     @Override
     public int hashCode() {
-        return operations != null ? operations.hashCode() : 0;
+        return mOperations != null ? mOperations.hashCode() : 0;
     }
 }

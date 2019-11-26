@@ -274,6 +274,14 @@ constexpr ModelTypeSet AlwaysPreferredUserTypes() {
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
 }
 
+// User types which are always encrypted.
+constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
+  // If you add a new model type here that is conceptually different from a
+  // password, make sure you audit UI code that refers to these types as
+  // passwords, e.g. consumers of IsEncryptEverythingEnabled().
+  return ModelTypeSet(PASSWORDS, WIFI_CONFIGURATIONS);
+}
+
 // This is the subset of UserTypes() that have priority over other types.  These
 // types are synced before other user types and are never encrypted.
 constexpr ModelTypeSet PriorityUserTypes() {
@@ -315,7 +323,8 @@ constexpr ModelTypeSet CommitOnlyTypes() {
   return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
 }
 
-// This is the subset of UserTypes() that can be encrypted.
+// User types that can be encrypted, which is a subset of UserTypes() and a
+// superset of AlwaysEncryptedUserTypes();
 ModelTypeSet EncryptableUserTypes();
 
 // Determine a model type from the field number of its associated

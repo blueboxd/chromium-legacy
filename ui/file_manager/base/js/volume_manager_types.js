@@ -200,38 +200,6 @@ VolumeManagerCommon.VolumeError = {
 Object.freeze(VolumeManagerCommon.VolumeError);
 
 /**
- * List of connection types of drive.
- *
- * Keep this in sync with the kDriveConnectionType* constants in
- * private_api_dirve.cc.
- *
- * @enum {string}
- * @const
- */
-VolumeManagerCommon.DriveConnectionType = {
-  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
-  METERED: 'metered',  // Connection is metered. Should limit traffic.
-  ONLINE: 'online'     // Connection is online.
-};
-Object.freeze(VolumeManagerCommon.DriveConnectionType);
-
-/**
- * List of reasons of DriveConnectionType.
- *
- * Keep this in sync with the kDriveConnectionReason constants in
- * private_api_drive.cc.
- *
- * @enum {string}
- * @const
- */
-VolumeManagerCommon.DriveConnectionReason = {
-  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
-  NO_NETWORK: 'no_network',  // Network connection is unavailable.
-  NO_SERVICE: 'no_service'   // Drive service is unavailable.
-};
-Object.freeze(VolumeManagerCommon.DriveConnectionReason);
-
-/**
  * The type of each volume.
  * @enum {string}
  * @const
@@ -358,14 +326,6 @@ VolumeManagerCommon.getRootTypeFromVolumeType = volumeType => {
   }
   assertNotReached('Unknown volume type: ' + volumeType);
 };
-
-/**
- * @typedef {{
- *   type: VolumeManagerCommon.DriveConnectionType,
- *   reason: (VolumeManagerCommon.DriveConnectionReason|undefined)
- * }}
- */
-VolumeManagerCommon.DriveConnectionState;
 
 /**
  * List of media view root types.

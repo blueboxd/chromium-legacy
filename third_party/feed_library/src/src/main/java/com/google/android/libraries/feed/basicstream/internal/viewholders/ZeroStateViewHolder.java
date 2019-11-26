@@ -18,42 +18,42 @@ import com.google.android.libraries.feed.common.ui.LayoutUtils;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for zero state. */
 public class ZeroStateViewHolder extends FeedViewHolder {
-    private final View zeroStateView;
-    private final View loadingSpinner;
-    private final View actionButton;
-    private final CardConfiguration cardConfiguration;
+    private final View mZeroStateView;
+    private final View mLoadingSpinner;
+    private final View mActionButton;
+    private final CardConfiguration mCardConfiguration;
 
     public ZeroStateViewHolder(
             Context context, FrameLayout frameLayout, CardConfiguration cardConfiguration) {
         super(frameLayout);
         View view = LayoutInflater.from(context).inflate(R.layout.zero_state, frameLayout);
 
-        loadingSpinner = view.findViewById(R.id.loading_spinner);
-        zeroStateView = view.findViewById(R.id.zero_state);
-        actionButton = view.findViewById(R.id.action_button);
-        this.cardConfiguration = cardConfiguration;
+        mLoadingSpinner = view.findViewById(R.id.loading_spinner);
+        mZeroStateView = view.findViewById(R.id.zero_state);
+        mActionButton = view.findViewById(R.id.action_button);
+        this.mCardConfiguration = cardConfiguration;
     }
 
     public void bind(OnClickListener onClickListener, boolean showSpinner) {
         View noContentView = itemView.findViewById(R.id.no_content_container);
-        setCardLayout(noContentView, cardConfiguration);
+        setCardLayout(noContentView, mCardConfiguration);
 
-        actionButton.setOnClickListener(onClickListener);
+        mActionButton.setOnClickListener(onClickListener);
         showSpinner(showSpinner);
     }
 
     @Override
     public void unbind() {
         // Clear OnClickListener to null to allow for GC.
-        actionButton.setOnClickListener(null);
+        mActionButton.setOnClickListener(null);
 
         // Set clickable to false as setting OnClickListener to null sets clickable to true.
-        actionButton.setClickable(false);
+        mActionButton.setClickable(false);
     }
 
     public void showSpinner(boolean showSpinner) {
-        loadingSpinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
-        zeroStateView.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
+        mLoadingSpinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
+        mZeroStateView.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
     }
 
     private void setCardLayout(View cardView, CardConfiguration cardConfiguration) {

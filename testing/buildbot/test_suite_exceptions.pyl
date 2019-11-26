@@ -208,7 +208,7 @@
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
         'swarming': {
-          'shards': 30,
+          'shards': 40,
         },
       },
       'Mac ASan 64 Tests (1)': {
@@ -483,6 +483,12 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 12,
+        },
       },
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
@@ -1541,6 +1547,12 @@
       'ToTLinuxTSan': {
         'swarming': {
           'shards': 6,
+        },
+      },
+      # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 4,
         },
       },
       # chromium.memory

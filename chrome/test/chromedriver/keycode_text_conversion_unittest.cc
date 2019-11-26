@@ -32,11 +32,13 @@ void CheckCharToKeyCode(char character, ui::KeyboardCode key_code,
                        key_code, modifiers);
 }
 
+#if defined(OS_WIN)
 void CheckCharToKeyCode(wchar_t character, ui::KeyboardCode key_code,
                         int modifiers) {
   CheckCharToKeyCode16(base::WideToUTF16(std::wstring(1, character))[0],
                        key_code, modifiers);
 }
+#endif
 
 void CheckCantConvertChar(wchar_t character) {
   std::wstring character_string;
@@ -67,6 +69,8 @@ std::string ConvertKeyCodeToTextNoError(ui::KeyboardCode key_code,
 #endif
 
 TEST(KeycodeTextConversionTest, MAYBE_KeyCodeToText) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   EXPECT_EQ("a", ConvertKeyCodeToTextNoError(ui::VKEY_A, 0));
   EXPECT_EQ("A",
       ConvertKeyCodeToTextNoError(ui::VKEY_A, kShiftKeyModifierMask));
@@ -100,6 +104,8 @@ TEST(KeycodeTextConversionTest, MAYBE_KeyCodeToText) {
 #endif
 
 TEST(KeycodeTextConversionTest, MAYBE_CharToKeyCode) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   CheckCharToKeyCode('a', ui::VKEY_A, 0);
   CheckCharToKeyCode('A', ui::VKEY_A, kShiftKeyModifierMask);
 
@@ -116,35 +122,15 @@ TEST(KeycodeTextConversionTest, MAYBE_CharToKeyCode) {
   CheckCantConvertChar(L'\u2159');
 }
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-// Not implemented on Linux.
-// Fails if German layout is not installed on Mac.
-#define MAYBE_NonShiftModifiers DISABLED_NonShiftModifiers
-#else
-#define MAYBE_NonShiftModifiers NonShiftModifiers
-#endif
-
-TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
-  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_GERMAN);
 #if defined(OS_WIN)
+TEST(KeycodeTextConversionTest, NonShiftModifiers) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_GERMAN);
   int ctrl_and_alt = kControlKeyModifierMask | kAltKeyModifierMask;
   CheckCharToKeyCode('@', ui::VKEY_Q, ctrl_and_alt);
   EXPECT_EQ("@", ConvertKeyCodeToTextNoError(ui::VKEY_Q, ctrl_and_alt));
-#elif defined(OS_MACOSX)
-  EXPECT_EQ("@", ConvertKeyCodeToTextNoError(
-      ui::VKEY_L, kAltKeyModifierMask));
-#endif
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-// Not implemented on Linux.
-// Fails if tested layouts are not installed on Mac.
-#define MAYBE_NonEnglish DISABLED_NonEnglish
-#else
-#define MAYBE_NonEnglish NonEnglish
-#endif
-
-TEST(KeycodeTextConversionTest, MAYBE_NonEnglish) {
+TEST(KeycodeTextConversionTest, NonEnglish) {
   // For Greek and Russian keyboard layouts, which are very different from
   // QWERTY, Windows just uses virtual key codes that match the QWERTY layout,
   // and translates them to other characters.  If we wanted to test something
@@ -165,3 +151,4 @@ TEST(KeycodeTextConversionTest, MAYBE_NonEnglish) {
               ConvertKeyCodeToTextNoError(ui::VKEY_B, 0));
   }
 }
+#endif

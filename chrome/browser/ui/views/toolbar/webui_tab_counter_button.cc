@@ -11,9 +11,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -55,15 +58,21 @@ class WebUITabCounterButton : public views::Button {
   explicit WebUITabCounterButton(views::ButtonListener* listener);
   ~WebUITabCounterButton() override;
 
+  void AddLayerBeneathView(ui::Layer* new_layer) override;
+  void RemoveLayerBeneathView(ui::Layer* old_layer) override;
+
+  void OnThemeChanged() override;
+
   std::unique_ptr<TabCounterLabelUpdater> label_updater_;
+  views::InkDropContainerView* ink_drop_container_;
+  views::Label* label_;
 };
 
 }  // namespace
 
 std::unique_ptr<views::View> CreateWebUITabCounterButton(
     views::ButtonListener* listener,
-    TabStripModel* tab_strip_model,
-    const ui::ThemeProvider* theme_provider) {
+    TabStripModel* tab_strip_model) {
   auto tab_counter = std::make_unique<WebUITabCounterButton>(listener);
 
   // TODO(999557): Create a custom text style to get the correct size/weight.
@@ -79,23 +88,19 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
   tab_counter->SetPreferredSize(gfx::Size(button_height, button_height));
 
-  // TODO(999557): Install an inkdrop.
+  views::InkDropContainerView* ink_drop_container = tab_counter->AddChildView(
+      std::make_unique<views::InkDropContainerView>());
+  tab_counter->ink_drop_container_ = ink_drop_container;
+  ink_drop_container->SetBoundsRect(tab_counter->GetLocalBounds());
 
   views::Label* label =
       tab_counter->AddChildView(std::make_unique<views::Label>());
-  const SkColor contents_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  label->SetEnabledColor(contents_color);
+  tab_counter->label_ = label;
 
   constexpr int kDesiredBorderHeight = 18;
   const int inset_height = (button_height - kDesiredBorderHeight) / 2;
   label->SetBounds(inset_height, inset_height, kDesiredBorderHeight,
                    kDesiredBorderHeight);
-  label->SetBorder(views::CreateRoundedRectBorder(
-      2,
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MEDIUM),
-      contents_color));
 
   tab_counter->label_updater_ = std::make_unique<TabCounterLabelUpdater>(label);
   tab_strip_model->AddObserver(tab_counter->label_updater_.get());
@@ -108,3 +113,24 @@ WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
     : views::Button(listener) {}
 
 WebUITabCounterButton::~WebUITabCounterButton() = default;
+
+void WebUITabCounterButton::AddLayerBeneathView(ui::Layer* new_layer) {
+  ink_drop_container_->AddLayerBeneathView(new_layer);
+}
+
+void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  ink_drop_container_->RemoveLayerBeneathView(old_layer);
+}
+
+void WebUITabCounterButton::OnThemeChanged() {
+  const SkColor contents_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  label_->SetEnabledColor(contents_color);
+  label_->SetBorder(views::CreateRoundedRectBorder(
+      2,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(
+          views::EMPHASIS_MEDIUM),
+      contents_color));
+
+  ConfigureInkDropForToolbar(this);
+}

@@ -24,8 +24,10 @@ class URL_MATCHER_EXPORT StringPattern {
  public:
   typedef int ID;
 
-  StringPattern(const std::string& pattern, ID id);
+  StringPattern(std::string pattern, ID id);
   ~StringPattern();
+  StringPattern(StringPattern&&);
+  StringPattern& operator=(StringPattern&&);
   const std::string& pattern() const { return pattern_; }
   ID id() const { return id_; }
 

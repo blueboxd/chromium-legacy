@@ -192,19 +192,6 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!SetCodedSizeOnInputQueue(config.coded_size())) {
-    VLOGF(1) << "Failed to set coded size on input queue";
-    std::move(init_cb).Run(false);
-    return;
-  }
-
-  // Setup output format.
-  if (!SetupOutputFormat(config.coded_size(), config.visible_rect())) {
-    VLOGF(1) << "Failed to setup output format.";
-    std::move(init_cb).Run(false);
-    return;
-  }
-
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
     std::move(init_cb).Run(false);

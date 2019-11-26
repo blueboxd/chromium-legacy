@@ -11,10 +11,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Fake {@link Executor} that enforces a background thread. */
 public final class FakeDirectExecutor implements Executor {
-    private final AtomicBoolean currentlyExecutingTasks = new AtomicBoolean();
-    private final FakeThreadUtils fakeThreadUtils;
-    private final List<Runnable> tasksToRun = new ArrayList<>();
-    private final boolean shouldQueueTasks;
+    private final AtomicBoolean mCurrentlyExecutingTasks = new AtomicBoolean();
+    private final FakeThreadUtils mFakeThreadUtils;
+    private final List<Runnable> mTasksToRun = new ArrayList<>();
+    private final boolean mShouldQueueTasks;
 
     public static FakeDirectExecutor runTasksImmediately(FakeThreadUtils fakeThreadUtils) {
         return new FakeDirectExecutor(fakeThreadUtils, /* shouldQueueTasks= */ false);
@@ -25,36 +25,36 @@ public final class FakeDirectExecutor implements Executor {
     }
 
     private FakeDirectExecutor(FakeThreadUtils fakeThreadUtils, boolean shouldQueueTasks) {
-        this.fakeThreadUtils = fakeThreadUtils;
-        this.shouldQueueTasks = shouldQueueTasks;
+        this.mFakeThreadUtils = fakeThreadUtils;
+        this.mShouldQueueTasks = shouldQueueTasks;
     }
 
     @Override
     public void execute(Runnable command) {
-        tasksToRun.add(command);
-        if (!shouldQueueTasks) {
+        mTasksToRun.add(command);
+        if (!mShouldQueueTasks) {
             runAllTasks();
         }
     }
 
     public void runAllTasks() {
-        if (currentlyExecutingTasks.getAndSet(true)) {
+        if (mCurrentlyExecutingTasks.getAndSet(true)) {
             return;
         }
 
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         try {
-            while (!tasksToRun.isEmpty()) {
-                Runnable task = tasksToRun.remove(0);
+            while (!mTasksToRun.isEmpty()) {
+                Runnable task = mTasksToRun.remove(0);
                 task.run();
             }
         } finally {
-            fakeThreadUtils.enforceMainThread(policy);
-            currentlyExecutingTasks.set(false);
+            mFakeThreadUtils.enforceMainThread(policy);
+            mCurrentlyExecutingTasks.set(false);
         }
     }
 
     public boolean hasTasks() {
-        return !tasksToRun.isEmpty();
+        return !mTasksToRun.isEmpty();
     }
 }

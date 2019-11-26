@@ -1225,7 +1225,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   std::unique_ptr<RasterBuffer> raster_buffer =
       raster_buffer_provider_->AcquireBufferForRaster(
-          resource, resource_content_id, tile->invalidated_id());
+          resource, resource_content_id, tile->invalidated_id(),
+          has_at_raster_images);
 
   base::Optional<PlaybackImageProvider::Settings> settings;
   if (!skip_images) {

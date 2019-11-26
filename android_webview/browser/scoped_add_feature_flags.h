@@ -24,6 +24,8 @@ class ScopedAddFeatureFlags {
   // Any existing (user set) enable/disable takes precedence.
   void EnableIfNotSet(const base::Feature& feature);
   void DisableIfNotSet(const base::Feature& feature);
+  // Check if the feature is enabled from command line or functions above
+  bool IsEnabled(const base::Feature& feature);
 
  private:
   void AddFeatureIfNotSet(const base::Feature& feature, bool enable);

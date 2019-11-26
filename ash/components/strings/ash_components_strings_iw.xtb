@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> או <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">מצב סקירה כללית</translation>
 <translation id="4382340674111381977">חזרה לדף הקודם</translation>
+<translation id="4458670250301149821">העברה של סמל אפליקציה אל תיקייה או מחוץ לה בתצוגת האפליקציות</translation>
 <translation id="4472417192667361414">הגדרות תצוגה ומערכת</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> ולאחר מכן <ph name="LEFT" /> או <ph name="RIGHT" /> או <ph name="UP" /> או <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">הצגת עזרה למקשי קיצור</translation>
 <translation id="4628718545549558538">פתיחת אזור הסטטוס (האזור שבו מופיעה תמונת החשבון)</translation>
 <translation id="4642092649622328492">יצירת צילום מסך חלקי</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">מחיקת האות הבאה (מחיקה קדימה)</translation>
 <translation id="7500368597227394048">מקף</translation>
 <translation id="7611271430932669992">העברת ההדגשה אל חלונות קופצים ותיבות דו-שיח</translation>
+<translation id="7635348532214572995">הזזה של סמל אפליקציה בתצוגת האפליקציות</translation>
 <translation id="766326951329901120">הדבקת התוכן מלוח העריכה כטקסט פשוט</translation>
 <translation id="7703010453515335249">סוגר שמאלי</translation>
 <translation id="7724603315864178912">חתוך</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">הדבקת התוכן מהלוח</translation>
 <translation id="9052808072970550123">מעבר למשתמש הבא</translation>
 <translation id="906458777597946297">הגדל את החלון</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ולאחר מכן <ph name="LEFT" /> או <ph name="RIGHT" /> או <ph name="UP" /> או <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">מעבר לתחילת השורה</translation>
 <translation id="9106898733795143799">דפים ודפדפן אינטרנט</translation>
 <translation id="9162942292291287644">אין תוצאות חיפוש לגבי <ph name="QUERY" /></translation>

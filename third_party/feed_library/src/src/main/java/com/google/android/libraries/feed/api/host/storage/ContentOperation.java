@@ -24,14 +24,14 @@ public abstract class ContentOperation {
     }
 
     public @Type int getType() {
-        return type;
+        return mType;
     }
 
-    private final @Type int type;
+    private final @Type int mType;
 
     // Only the following classes may extend ContentOperation
     private ContentOperation(@Type int type) {
-        this.type = type;
+        this.mType = type;
     }
 
     /**
@@ -39,21 +39,21 @@ public abstract class ContentOperation {
      * byte[])}.
      */
     public static final class Upsert extends ContentOperation {
-        private final String key;
-        private final byte[] value;
+        private final String mKey;
+        private final byte[] mValue;
 
         Upsert(String key, byte[] value) {
             super(Type.UPSERT);
-            this.key = key;
-            this.value = value;
+            this.mKey = key;
+            this.mValue = value;
         }
 
         public String getKey() {
-            return key;
+            return mKey;
         }
 
         public byte[] getValue() {
-            return value;
+            return mValue;
         }
 
         @Override
@@ -64,7 +64,7 @@ public abstract class ContentOperation {
 
             if (o instanceof Upsert) {
                 Upsert upsert = (Upsert) o;
-                return key.equals(upsert.key) && Arrays.equals(value, upsert.value);
+                return mKey.equals(upsert.mKey) && Arrays.equals(mValue, upsert.mValue);
             } else {
                 return false;
             }
@@ -72,8 +72,8 @@ public abstract class ContentOperation {
 
         @Override
         public int hashCode() {
-            int result = key.hashCode();
-            result = 31 * result + Arrays.hashCode(value);
+            int result = mKey.hashCode();
+            result = 31 * result + Arrays.hashCode(mValue);
             return result;
         }
     }
@@ -82,15 +82,15 @@ public abstract class ContentOperation {
      * A {@link ContentOperation} created by calling {@link ContentMutation.Builder#delete(String)}.
      */
     public static final class Delete extends ContentOperation {
-        private final String key;
+        private final String mKey;
 
         Delete(String key) {
             super(Type.DELETE);
-            this.key = key;
+            this.mKey = key;
         }
 
         public String getKey() {
-            return key;
+            return mKey;
         }
 
         @Override
@@ -101,7 +101,7 @@ public abstract class ContentOperation {
 
             if (o instanceof Delete) {
                 Delete delete = (Delete) o;
-                return key.equals(delete.key);
+                return mKey.equals(delete.mKey);
             } else {
                 return false;
             }
@@ -109,7 +109,7 @@ public abstract class ContentOperation {
 
         @Override
         public int hashCode() {
-            return key.hashCode();
+            return mKey.hashCode();
         }
     }
 
@@ -118,15 +118,15 @@ public abstract class ContentOperation {
      * ContentMutation.Builder#deleteByPrefix(String)}.
      */
     public static final class DeleteByPrefix extends ContentOperation {
-        private final String prefix;
+        private final String mPrefix;
 
         DeleteByPrefix(String prefix) {
             super(Type.DELETE_BY_PREFIX);
-            this.prefix = prefix;
+            this.mPrefix = prefix;
         }
 
         public String getPrefix() {
-            return prefix;
+            return mPrefix;
         }
 
         @Override
@@ -137,7 +137,7 @@ public abstract class ContentOperation {
 
             if (o instanceof DeleteByPrefix) {
                 DeleteByPrefix that = (DeleteByPrefix) o;
-                return prefix.equals(that.prefix);
+                return mPrefix.equals(that.mPrefix);
             } else {
                 return false;
             }
@@ -145,7 +145,7 @@ public abstract class ContentOperation {
 
         @Override
         public int hashCode() {
-            return prefix.hashCode();
+            return mPrefix.hashCode();
         }
     }
 
@@ -168,11 +168,11 @@ public abstract class ContentOperation {
 
         ContentOperation operation = (ContentOperation) o;
 
-        return type == operation.type;
+        return mType == operation.mType;
     }
 
     @Override
     public int hashCode() {
-        return type;
+        return mType;
     }
 }

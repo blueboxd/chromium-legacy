@@ -574,7 +574,20 @@ void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void WaylandWindow::SizeConstraintsChanged() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  // Size constraints only make sense for normal windows.
+  if (!xdg_surface_)
+    return;
+
+  DCHECK(delegate_);
+  auto min_size = delegate_->GetMinimumSizeForWindow();
+  auto max_size = delegate_->GetMaximumSizeForWindow();
+
+  if (min_size.has_value())
+    xdg_surface_->SetMinSize(min_size->width(), min_size->height());
+  if (max_size.has_value())
+    xdg_surface_->SetMaxSize(max_size->width(), max_size->height());
+
+  connection_->ScheduleFlush();
 }
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {

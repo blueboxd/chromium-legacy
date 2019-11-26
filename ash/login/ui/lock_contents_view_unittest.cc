@@ -40,6 +40,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -697,7 +698,7 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
       true /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
       "Bluetooth adapter", false /*adb_sideloading_enabled*/);
   EXPECT_TRUE(test_api.system_info()->GetVisible());
-  EXPECT_FALSE(test_api.warning_indicator()->GetVisible());
+  EXPECT_FALSE(test_api.bottom_status_indicator()->GetVisible());
   EXPECT_TRUE(test_api.note_action()->GetVisible());
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_GE(widget_bounds.right() -
@@ -713,9 +714,9 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
                 test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
 
-  // Verify that warning indicator is invisible if adb sideloading is not
-  // enabled.
-  EXPECT_FALSE(test_api.warning_indicator()->GetVisible());
+  // Verify that bottom status indicator is invisible if neither adb sideloading
+  // is enabled nor the device is enrolled.
+  EXPECT_FALSE(test_api.bottom_status_indicator()->GetVisible());
 }
 
 // Alt-V toggles display of system information.
@@ -790,8 +791,8 @@ TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
   EXPECT_TRUE(test_api.system_info()->GetVisible());
 }
 
-// Show warning indicator only if adb sideloading is enabled.
-TEST_F(LockContentsViewUnitTest, ShowWarningIndicatorIfAdbSideloadingEnabled) {
+// Show bottom status indicator if ADB sideloading is enabled.
+TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfAdbSideloadingEnabled) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
@@ -801,12 +802,30 @@ TEST_F(LockContentsViewUnitTest, ShowWarningIndicatorIfAdbSideloadingEnabled) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi test_api(contents);
 
-  // If the system starts with ADB sideloading enabled, warning_indicator should
-  // be visible.
+  // If the system starts with ADB sideloading enabled, bottom_status_indicator
+  // should be visible.
   DataDispatcher()->SetSystemInfo(
       false /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
       "Bluetooth adapter", true /*adb_sideloading_enabled*/);
-  EXPECT_TRUE(test_api.warning_indicator()->GetVisible());
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+}
+
+// Show bottom status indicator if device is enrolled
+TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfEnrolledDevice) {
+  // If the device is enrolled, bottom_status_indicator should be visible.
+  Shell::Get()->system_tray_model()->SetEnterpriseDisplayDomain(
+      "BestCompanyEver", false);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
 }
 
 // Verifies the easy unlock tooltip is automatically displayed when requested.

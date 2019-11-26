@@ -414,6 +414,10 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   CEReactionsScope ce_reactions_scope;
   {% endif %}
 
+  {% if attribute.is_explicit_nullable %}
+  bool is_null = IsUndefinedOrNull(v8_value);
+  {% endif %}
+
   // Prepare the value to be set.
   {% if attribute.idl_type != 'EventHandler' %}
   {{v8_value_to_local_cpp_value(attribute) | trim | indent(2)}}
@@ -464,9 +468,6 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
 
   {% if attribute.is_replaceable %}
   v8::Local<v8::String> property_name = V8AtomicString(isolate, "{{attribute.name}}");
-  {% endif %}
-  {% if attribute.is_explicit_nullable %}
-  bool is_null = IsUndefinedOrNull(v8_value);
   {% endif %}
   {{attribute.cpp_setter | indent(2)}};
 

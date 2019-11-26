@@ -37,6 +37,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #if defined(OS_WIN)
 #include "base/win/atl.h"
@@ -77,6 +78,12 @@ OmniboxResultView::OmniboxResultView(
   views::SetImageFromVectorIcon(remove_suggestion_button_,
                                 vector_icons::kCloseRoundedIcon,
                                 GetColor(OmniboxPart::RESULTS_ICON));
+  remove_suggestion_focus_ring_ =
+      views::FocusRing::Install(remove_suggestion_button_);
+  remove_suggestion_focus_ring_->SetHasFocusPredicate([&](View* view) {
+    return view->GetVisible() && IsSelected() &&
+           popup_contents_view_->IsButtonSelected();
+  });
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
@@ -129,8 +136,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
                                           keyword_match->description_class);
   }
 
-  InvalidateLayout();
   Invalidate();
+  InvalidateLayout();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -156,6 +163,8 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   keyword_view_->separator()->ApplyTextColor(OmniboxPart::RESULTS_TEXT_DIMMED);
   if (suggestion_tab_switch_button_->GetVisible())
     suggestion_tab_switch_button_->UpdateBackground();
+  if (remove_suggestion_button_->GetVisible())
+    remove_suggestion_focus_ring_->SchedulePaint();
 
   // Recreate the icons in case the color needs to change.
   // Note: if this is an extension icon or favicon then this can be done in
@@ -186,6 +195,22 @@ void OmniboxResultView::Invalidate(bool force_reapply_styles) {
     keyword_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
   }
+
+  // Refresh the Remove button.
+  {
+    bool old_visibility = remove_suggestion_button_->GetVisible();
+    bool new_visibility = match_.SupportsDeletion() &&
+                          !match_.associated_keyword &&
+                          !match_.ShouldShowTabMatchButton() &&
+                          base::FeatureList::IsEnabled(
+                              omnibox::kOmniboxSuggestionTransparencyOptions) &&
+                          (IsSelected() || IsMouseHovered());
+
+    remove_suggestion_button_->SetVisible(new_visibility);
+
+    if (old_visibility != new_visibility)
+      InvalidateLayout();
+  }
 }
 
 void OmniboxResultView::OnSelected() {
@@ -207,6 +232,25 @@ void OmniboxResultView::OnSelected() {
 
 bool OmniboxResultView::IsSelected() const {
   return popup_contents_view_->IsSelectedIndex(model_index_);
+}
+
+views::Button* OmniboxResultView::GetSecondaryButton() {
+  if (suggestion_tab_switch_button_->GetVisible())
+    return suggestion_tab_switch_button_;
+
+  if (remove_suggestion_button_->GetVisible())
+    return remove_suggestion_button_;
+
+  return nullptr;
+}
+
+bool OmniboxResultView::MaybeTriggerSecondaryButton(const ui::Event& event) {
+  views::Button* button = GetSecondaryButton();
+  if (!button)
+    return false;
+
+  ButtonPressed(button, event);
+  return true;
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
@@ -280,11 +324,6 @@ void OmniboxResultView::Layout() {
   // Add buttons from right to left, shrinking the suggestion width as we go.
   // To avoid clutter, don't show either button for matches with keyword.
   // TODO(tommycli): We should probably use a layout manager here.
-  remove_suggestion_button_->SetVisible(
-      match_.SupportsDeletion() && !match_.associated_keyword &&
-      IsMouseHovered() && !match_.ShouldShowTabMatchButton() &&
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions));
   if (remove_suggestion_button_->GetVisible()) {
     const gfx::Size button_size = remove_suggestion_button_->GetPreferredSize();
     suggestion_width -=
@@ -460,7 +499,6 @@ void OmniboxResultView::SetHovered(bool hovered) {
   if (is_hovered_ != hovered) {
     is_hovered_ = hovered;
     Invalidate();
-    InvalidateLayout();
   }
 }
 

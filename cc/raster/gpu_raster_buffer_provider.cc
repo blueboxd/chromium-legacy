@@ -284,13 +284,15 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     const ResourcePool::InUsePoolResource& in_use_resource,
     GpuRasterBacking* backing,
-    bool resource_has_previous_content)
+    bool resource_has_previous_content,
+    bool depends_on_at_raster_decodes)
     : client_(client),
       backing_(backing),
       resource_size_(in_use_resource.size()),
       resource_format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       resource_has_previous_content_(resource_has_previous_content),
+      depends_on_at_raster_decodes_(depends_on_at_raster_decodes),
       before_raster_sync_token_(backing->returned_sync_token),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
@@ -338,7 +340,7 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       before_raster_sync_token_, resource_size_, resource_format_, color_space_,
       resource_has_previous_content_, raster_source, raster_full_rect,
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
-      creation_time_);
+      creation_time_, depends_on_at_raster_decodes_);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
@@ -370,7 +372,8 @@ GpuRasterBufferProvider::~GpuRasterBufferProvider() {
 std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
-    uint64_t previous_content_id) {
+    uint64_t previous_content_id,
+    bool depends_on_at_raster_decodes) {
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->worker_context_provider = worker_context_provider_;
@@ -384,7 +387,8 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
   return std::make_unique<RasterBufferImpl>(this, resource, backing,
-                                            resource_has_previous_content);
+                                            resource_has_previous_content,
+                                            depends_on_at_raster_decodes);
 }
 
 void GpuRasterBufferProvider::Flush() {
@@ -461,14 +465,15 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
-    base::TimeTicks raster_buffer_creation_time) {
+    base::TimeTicks raster_buffer_creation_time,
+    bool depends_on_at_raster_decodes) {
   PendingRasterQuery query;
   gpu::SyncToken raster_finished_token = PlaybackOnWorkerThreadInternal(
       mailbox, texture_target, texture_is_overlay_candidate, sync_token,
       resource_size, resource_format, color_space,
       resource_has_previous_content, raster_source, raster_full_rect,
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
-      &query);
+      depends_on_at_raster_decodes, &query);
 
   if (query.raster_duration_query_id) {
     if (query.raster_start_query_id)
@@ -502,6 +507,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
+    bool depends_on_at_raster_decodes,
     PendingRasterQuery* query) {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_, url.possibly_invalid_spec().c_str());
@@ -539,8 +545,11 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     // enabled because we will use this timestamp to measure raster scheduling
     // delay and we only need to collect that data to assess the impact of
     // hardware acceleration of image decodes which work only in Chrome OS with
-    // OOP-R.
-    if (enable_oop_rasterization_) {
+    // OOP-R. Furthermore, we don't count raster work that depends on at-raster
+    // image decodes. This is because we want the delay to always include
+    // image decoding and uploading time, and at-raster decodes should be
+    // relatively rare.
+    if (enable_oop_rasterization_ && !depends_on_at_raster_decodes) {
       ri->GenQueriesEXT(1, &query->raster_start_query_id);
       DCHECK_GT(query->raster_start_query_id, 0u);
       ri->QueryCounterEXT(query->raster_start_query_id,
@@ -663,8 +672,9 @@ bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
       // negative scheduling delay.
       DCHECK_GE(raster_scheduling_delay.InMicroseconds(), 0u);
       UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-          base::StringPrintf("Renderer4.%s.RasterTaskSchedulingDelay.All",
-                             client_name),
+          base::StringPrintf(
+              "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes.All",
+              client_name),
           raster_scheduling_delay);
     }
 

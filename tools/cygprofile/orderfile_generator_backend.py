@@ -364,19 +364,20 @@ class OrderfileUpdater(object):
   _CLOUD_STORAGE_BUCKET = None
   _UPLOAD_TO_CLOUD_COMMAND = 'upload_to_google_storage.py'
 
-  def __init__(self, repository_root, step_recorder, branch, netrc):
+  def __init__(self, repository_root, step_recorder, branch, netrc=None):
     """Constructor.
 
     Args:
       repository_root: (str) Root of the target repository.
       step_recorder: (StepRecorder) Step recorder, for logging.
       branch: (str) Branch to commit to.
-      netrc: (str) Path to the .netrc file to use.
+      netrc: (str) Obsolete. Specified by code in internal repo. TODO(pasko):
+          remove.
     """
+    # pylint: disable=unused-argument
     self._repository_root = repository_root
     self._step_recorder = step_recorder
     self._branch = branch
-    self._netrc = netrc
 
   def CommitStashedFileHashes(self, files):
     """Commits unpatched and patched orderfiles hashes if changed.
@@ -634,8 +635,7 @@ class OrderfileGenerator(object):
     assert issubclass(orderfile_updater_class, OrderfileUpdater)
     self._orderfile_updater = orderfile_updater_class(self._clank_dir,
                                                       self._step_recorder,
-                                                      options.branch,
-                                                      options.netrc)
+                                                      options.branch)
     assert os.path.isdir(constants.DIR_SOURCE_ROOT), 'No src directory found'
     symbol_extractor.SetArchitecture(options.arch)
 
@@ -1074,8 +1074,7 @@ class OrderfileGenerator(object):
     if self._options.new_commit_flow:
       self._orderfile_updater._GitStash()
     else:
-      if (self._options.buildbot and self._options.netrc
-          and not self._step_recorder.ErrorRecorded()):
+      if (self._options.buildbot and not self._step_recorder.ErrorRecorded()):
         unpatched_orderfile_filename = (
             self._GetUnpatchedOrderfileFilename() if profile_uploaded else None)
         orderfile_filename = (
@@ -1097,7 +1096,7 @@ class OrderfileGenerator(object):
 
     Returns: true on success.
     """
-    if not (self._options.buildbot and self._options.netrc):
+    if not self._options.buildbot:
       logging.error('Trying to commit when not running on the buildbot')
       return False
     self._orderfile_updater._CommitStashedFiles([
@@ -1135,11 +1134,10 @@ def CreateArgumentParser():
       '--skip-patch', action='store_false', dest='patch', default=True,
       help='Only generate the raw (unpatched) orderfile, don\'t patch it.')
   parser.add_argument(
-      '--netrc', action='store',
-      help='A custom .netrc file to use for git checkin. Only used on bots.')
+      '--netrc', action='store', help='Obsolete. A custom .netrc file.')
   parser.add_argument(
       '--branch', action='store', default='master',
-      help='When running on buildbot with a netrc, the branch orderfile '
+      help='When running on buildbot, the branch orderfile '
       'hashes get checked into.')
   # Obsolete (Autoninja is now used, and this argument is ignored).
   parser.add_argument(

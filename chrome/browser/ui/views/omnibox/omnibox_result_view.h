@@ -34,6 +34,11 @@ namespace gfx {
 class Image;
 }
 
+namespace views {
+class Button;
+class FocusRing;
+}  // namespace views
+
 namespace ui {
 class ThemeProvider;
 }
@@ -64,6 +69,13 @@ class OmniboxResultView : public views::View,
 
   // Whether |this| matches the model's selected index.
   bool IsSelected() const;
+
+  // Returns the visible (and keyboard-focusable) secondary button, or nullptr
+  // if none exists for this suggestion.
+  views::Button* GetSecondaryButton();
+
+  // If this view has a secondary button, triggers the action and returns true.
+  bool MaybeTriggerSecondaryButton(const ui::Event& event);
 
   OmniboxPartState GetThemeState() const;
 
@@ -154,6 +166,7 @@ class OmniboxResultView : public views::View,
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;
+  std::unique_ptr<views::FocusRing> remove_suggestion_focus_ring_;
 
   base::WeakPtrFactory<OmniboxResultView> weak_factory_{this};
 

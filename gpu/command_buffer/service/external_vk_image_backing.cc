@@ -674,23 +674,8 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     DLOG(ERROR) << "The backing is not created with GLES2 usage.";
     return nullptr;
   }
-#if defined(OS_LINUX)
-  gl::GLApi* api = gl::g_current_gl_context;
-  // Request extensions from ANGLE
-  if (!gl::g_current_gl_driver->ext.b_GL_EXT_memory_object ||
-      !gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd ||
-      !gl::g_current_gl_driver->ext.b_GL_EXT_semaphore ||
-      !gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd) {
-    api->glRequestExtensionANGLEFn("GL_EXT_memory_object");
-    api->glRequestExtensionANGLEFn("GL_EXT_memory_object_fd");
-    api->glRequestExtensionANGLEFn("GL_EXT_semaphore");
-    api->glRequestExtensionANGLEFn("GL_EXT_semaphore_fd");
-    // TODO(crbug.com/1025451): ReinitializeDynamicBindings is expensive and
-    // should be removed once eglCreateContext can be conficured to specify
-    // which extensions to enable.
-    gl::GLContext::GetCurrent()->ReinitializeDynamicBindings();
-  }
 
+#if defined(OS_LINUX)
   if (!texture_passthrough_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)

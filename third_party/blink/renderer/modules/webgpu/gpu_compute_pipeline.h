@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class GPUBindGroupLayout;
 class GPUComputePipelineDescriptor;
 
 class GPUComputePipeline : public DawnObject<WGPUComputePipeline> {
@@ -21,6 +22,8 @@ class GPUComputePipeline : public DawnObject<WGPUComputePipeline> {
   explicit GPUComputePipeline(GPUDevice* device,
                               WGPUComputePipeline compute_pipeline);
   ~GPUComputePipeline() override;
+
+  GPUBindGroupLayout* getBindGroupLayout(uint32_t index);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUComputePipeline);

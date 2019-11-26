@@ -76,7 +76,7 @@ function createTaskController(fileSelectionHandler) {
           return VolumeManagerCommon.RootType.DRIVE;
         },
         getDriveConnectionState: function() {
-          return VolumeManagerCommon.DriveConnectionType.ONLINE;
+          return 'ONLINE';
         },
         getVolumeInfo: function() {
           return {
@@ -111,6 +111,16 @@ function createTaskController(fileSelectionHandler) {
  */
 function setupFileManagerPrivate() {
   mockChrome.fileManagerPrivate = {
+    DriveConnectionStateType: {
+      ONLINE: 'ONLINE',
+      OFFLINE: 'OFFLINE',
+      METERED: 'METERED',
+    },
+    DriveOfflineReason: {
+      NOT_READY: 'NOT_READY',
+      NO_NETWORK: 'NO_NETWORK',
+      NO_SERVICE: 'NO_SERVICE',
+    },
     getFileTaskCalledCount_: 0,
     getFileTasks: function(entries, callback) {
       mockChrome.fileManagerPrivate.getFileTaskCalledCount_++;

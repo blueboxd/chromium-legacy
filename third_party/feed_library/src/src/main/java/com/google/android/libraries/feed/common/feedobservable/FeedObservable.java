@@ -13,13 +13,13 @@ import java.util.Set;
 public abstract class FeedObservable<ObserverT> implements Observable<ObserverT> {
     private static final String TAG = "FeedObservable";
 
-    protected final Set<ObserverT> observers = new HashSet<>();
+    protected final Set<ObserverT> mObservers = new HashSet<>();
 
     /** Adds given {@code observer}. No-op if the observer has already been added. */
     @Override
     public void registerObserver(ObserverT observer) {
-        synchronized (observers) {
-            if (!observers.add(observer)) {
+        synchronized (mObservers) {
+            if (!mObservers.add(observer)) {
                 Logger.w(TAG, "Registering observer: %s multiple times.", observer);
             }
         }
@@ -28,8 +28,8 @@ public abstract class FeedObservable<ObserverT> implements Observable<ObserverT>
     /** Removes given {@code observer}. No-op if the observer is not currently added. */
     @Override
     public void unregisterObserver(ObserverT observer) {
-        synchronized (observers) {
-            if (!observers.remove(observer)) {
+        synchronized (mObservers) {
+            if (!mObservers.remove(observer)) {
                 Logger.w(TAG, "Unregistering observer: %s that isn't registered.", observer);
             }
         }

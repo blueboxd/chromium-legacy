@@ -588,22 +588,26 @@ using DeclarativeNetRequestBrowserTest_Unpacked =
 #else
 #define MAYBE_BlockRequests_UrlFilter BlockRequests_UrlFilter
 #endif
-// Tests the "urlFilter" property of a declarative rule condition.
+// Tests the "urlFilter" and "regexFilter" property of a declarative rule
+// condition.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        MAYBE_BlockRequests_UrlFilter) {
   struct {
-    std::string url_filter;
+    std::string filter;
     int id;
+    bool is_regex_rule;
   } rules_data[] = {
-      {"pages_with_script/*ex", 1},
-      {"||a.b.com", 2},
-      {"|http://*.us", 3},
-      {"pages_with_script/page2.html|", 4},
-      {"|http://msn*/pages_with_script/page.html|", 5},
-      {"%20", 6},     // Block any urls with space.
-      {"%C3%A9", 7},  // Percent-encoded non-ascii character é.
+      {"pages_with_script/*ex", 1, false},
+      {"||a.b.com", 2, false},
+      {"|http://*.us", 3, false},
+      {"pages_with_script/page2.html|", 4, false},
+      {"|http://msn*/pages_with_script/page.html|", 5, false},
+      {"%20", 6, false},     // Block any urls with space.
+      {"%C3%A9", 7, false},  // Percent-encoded non-ascii character é.
       // Internationalized domain "ⱴase.com" in punycode.
-      {"|http://xn--ase-7z0b.com", 8},
+      {"|http://xn--ase-7z0b.com", 8, false},
+      {R"((http|https)://(\w+\.){1,2}com.*reg$)", 9, true},
+      {R"(\d+\.google\.com)", 10, true},
   };
 
   // Rule |i| is the rule with id |i|.
@@ -632,14 +636,26 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
        false},  // Rule 7
       {base::WideToUTF8(L"\x2c74"
                         L"ase.com"),
-       "/pages_with_script/page.html", false},  // Rule 8
+       "/pages_with_script/page.html", false},                  // Rule 8
+      {"abc.com", "/pages_with_script/page2.html?reg", false},  // Rule 9
+      {"abc.com", "/pages_with_script/page2.html?reg1", true},
+      {"w1.w2.com", "/pages_with_script/page2.html?reg", false},  // Rule 9
+      {"w1.w2.w3.com", "/pages_with_script/page2.html?reg", true},
+      {"24.google.com", "/pages_with_script/page.html", false},  // Rule 10
+      {"xyz.google.com", "/pages_with_script/page.html", true},
   };
 
   // Load the extension.
   std::vector<TestRule> rules;
   for (const auto& rule_data : rules_data) {
     TestRule rule = CreateGenericRule();
-    rule.condition->url_filter = rule_data.url_filter;
+    rule.condition->url_filter.reset();
+
+    if (rule_data.is_regex_rule)
+      rule.condition->regex_filter = rule_data.filter;
+    else
+      rule.condition->url_filter = rule_data.filter;
+
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.id = rule_data.id;
     rules.push_back(rule);

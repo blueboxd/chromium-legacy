@@ -2614,7 +2614,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4839303808932127586">Rua&amp;je videon si...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 tjetër}other{# të tjerë}}</translation>
 <translation id="4842976633412754305">Kjo faqe po përpiqet të ngarkojë skripte nga burime të paverifikuara.</translation>
-<translation id="4843488774506045600">Identifikimi ofrohet nga <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Tastiera të tjera</translation>
 <translation id="4846680374085650406">Po ndjek rekomandimin e administratorit për këtë cilësim.</translation>
 <translation id="4848518990323155912">Aktivizo kyçjen e kartës SIM (kërko kodin PIN për të përdorur të dhënat celulare)</translation>
@@ -3812,7 +3811,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6607831829715835317">Vegla të tj&amp;era</translation>
 <translation id="6612358246767739896">Përmbajtje e mbrojtur</translation>
 <translation id="6615455863669487791">Ma trego</translation>
-<translation id="6617100836880592260">Shpejtësia e skanimit: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Mbaje gjithsesi</translation>
 <translation id="6619058681307408113">Daemon-i i printerit të linjës (LPD)</translation>
 <translation id="661907246513853610">Sajti mund të gjurmojë vendndodhjen tënde</translation>

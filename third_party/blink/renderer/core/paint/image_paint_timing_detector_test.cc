@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -255,7 +255,7 @@ class ImagePaintTimingDetectorTest : public testing::Test {
     sk_sp<SkImage> image = surface->makeImageSnapshot();
     ImageResourceContent* original_image_resource =
         ImageResourceContent::CreateLoaded(
-            StaticBitmapImage::Create(image).get());
+            UnacceleratedStaticBitmapImage::Create(image).get());
     return original_image_resource;
   }
 

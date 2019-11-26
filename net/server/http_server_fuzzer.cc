@@ -95,7 +95,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
 //
 // |data| is used to create a FuzzedServerSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  net::TestNetLog test_net_log;
+  net::RecordingTestNetLog test_net_log;
   FuzzedDataProvider data_provider(data, size);
 
   std::unique_ptr<net::ServerSocket> server_socket(

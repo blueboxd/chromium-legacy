@@ -43,8 +43,7 @@ void ElideTextAndAdjustRange(const FontList& font_list,
                              Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
-  *text =
-      ElideText(*text, font_list, width, ELIDE_TAIL, gfx::Typesetter::HARFBUZZ);
+  *text = ElideText(*text, font_list, width, ELIDE_TAIL);
   if (!range->IsValid())
     return;
   if (range->start() >= text->length() ||
@@ -102,8 +101,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
                              float* width,
                              float* height,
                              int line_height,
-                             int flags,
-                             Typesetter typesetter) {
+                             int flags) {
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
@@ -119,7 +117,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
                        &strings);
     Rect rect(base::saturated_cast<int>(*width), INT_MAX);
 
-    auto render_text = RenderText::CreateFor(typesetter);
+    std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
@@ -138,7 +136,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
     *width = w;
     *height = h;
   } else {
-    auto render_text = RenderText::CreateFor(typesetter);
+    std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
     Rect rect(base::saturated_cast<int>(*width),
               base::saturated_cast<int>(*height));
@@ -165,8 +163,7 @@ void Canvas::DrawStringRectWithFlags(const base::string16& text,
 
   Rect rect(text_bounds);
 
-  // Since we're drawing into a canvas anyway, just use Harfbuzz on Mac.
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
   if (flags & MULTI_LINE) {
     WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;

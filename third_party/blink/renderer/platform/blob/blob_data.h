@@ -113,10 +113,10 @@ class PLATFORM_EXPORT BlobData {
       const String& path);
   static std::unique_ptr<BlobData> CreateForFileWithUnknownSize(
       const String& path,
-      double expected_modification_time);
+      const base::Optional<base::Time>& expected_modification_time);
   static std::unique_ptr<BlobData> CreateForFileSystemURLWithUnknownSize(
       const KURL& file_system_url,
-      double expected_modification_time);
+      const base::Optional<base::Time>& expected_modification_time);
 
   // Detaches from current thread so that it can be passed to another thread.
   void DetachFromCurrentThread();
@@ -134,17 +134,18 @@ class PLATFORM_EXPORT BlobData {
   void AppendFile(const String& path,
                   int64_t offset,
                   int64_t length,
-                  double expected_modification_time);
+                  const base::Optional<base::Time>& expected_modification_time);
 
   // The given blob must not be a file with unknown size. Please use the
   // File::appendTo instead.
   void AppendBlob(scoped_refptr<BlobDataHandle>,
                   int64_t offset,
                   int64_t length);
-  void AppendFileSystemURL(const KURL&,
-                           int64_t offset,
-                           int64_t length,
-                           double expected_modification_time);
+  void AppendFileSystemURL(
+      const KURL&,
+      int64_t offset,
+      int64_t length,
+      const base::Optional<base::Time>& expected_modification_time);
   void AppendText(const String&, bool normalize_line_endings_to_native);
 
   // The value of the size property for a Blob who has this data.

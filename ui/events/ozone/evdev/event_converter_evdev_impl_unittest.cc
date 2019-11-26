@@ -22,7 +22,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/testing/fake_cursor_delegate_evdev.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
 
 namespace ui {
@@ -70,10 +70,10 @@ class EventConverterEvdevImplTest : public testing::Test {
 
     cursor_ = std::make_unique<ui::FakeCursorDelegateEvdev>();
 
+    keyboard_layout_engine_ = std::make_unique<ui::StubKeyboardLayoutEngine>();
     device_manager_ = ui::CreateDeviceManagerForTest();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
-        cursor_.get(), device_manager_.get(),
-        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+        cursor_.get(), device_manager_.get(), keyboard_layout_engine_.get(),
         base::BindRepeating(&EventConverterEvdevImplTest::DispatchEventForTest,
                             base::Unretained(this)));
     dispatcher_ =
@@ -130,6 +130,7 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
+  std::unique_ptr<ui::KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<ui::FakeCursorDelegateEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;

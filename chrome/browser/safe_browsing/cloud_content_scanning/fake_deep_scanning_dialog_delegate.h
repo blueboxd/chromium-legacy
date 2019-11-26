@@ -51,14 +51,23 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       CompletionCallback callback);
 
   // Returns a deep scanning response that represents a successful scan.
-  static DeepScanningClientResponse SuccessfulResponse();
+  static DeepScanningClientResponse SuccessfulResponse(
+      bool include_dlp = true,
+      bool include_malware = true);
 
-  // Returns a deep scanning response with a specific malware verdict,
+  // Returns a deep scanning response with a specific malware verdict.
   static DeepScanningClientResponse MalwareResponse(
       MalwareDeepScanningVerdict::Verdict verdict);
 
-  // Returns a deep scanning response with a specific DLP verdict,
+  // Returns a deep scanning response with a specific DLP verdict.
   static DeepScanningClientResponse DlpResponse(
+      DlpDeepScanningVerdict::Status status,
+      const std::string& rule_name,
+      DlpDeepScanningVerdict::TriggeredRule::Action action);
+
+  // Returns a deep scanning response with specific malware and DLP verdicts.
+  static DeepScanningClientResponse MalwareAndDlpResponse(
+      MalwareDeepScanningVerdict::Verdict verdict,
       DlpDeepScanningVerdict::Status status,
       const std::string& rule_name,
       DlpDeepScanningVerdict::TriggeredRule::Action action);

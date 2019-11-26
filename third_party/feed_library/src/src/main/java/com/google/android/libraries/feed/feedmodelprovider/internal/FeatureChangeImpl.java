@@ -24,54 +24,57 @@ import java.util.List;
  * </ol>
  */
 public final class FeatureChangeImpl implements FeatureChange {
-    private final ModelFeature modelFeature;
-    private final ChildChangesImpl childChanges;
-    private boolean featureChanged;
+    private final ModelFeature mModelFeature;
+    private final ChildChangesImpl mChildChanges;
+    private boolean mFeatureChanged;
 
     public FeatureChangeImpl(ModelFeature modelFeature) {
-        this.modelFeature = modelFeature;
-        this.childChanges = new ChildChangesImpl();
+        this.mModelFeature = modelFeature;
+        this.mChildChanges = new ChildChangesImpl();
     }
 
     /** Returns the String ContentId of the ModelFeature which was changed. */
     @Override
     public String getContentId() {
-        return modelFeature.getStreamFeature().getContentId();
+        return mModelFeature.getStreamFeature().getContentId();
     }
 
     /** This is called to indicate the Content changed for this ModelFeature. */
     public void setFeatureChanged(boolean value) {
-        featureChanged = value;
+        mFeatureChanged = value;
     }
 
     /** Returns {@code true} if the ModelFeature changed. */
+    @Override
     public boolean isFeatureChanged() {
-        return featureChanged;
+        return mFeatureChanged;
     }
 
     /** Returns the ModelFeature that was changed. */
+    @Override
     public ModelFeature getModelFeature() {
-        return modelFeature;
+        return mModelFeature;
     }
 
     /** Returns the structural changes to the ModelFeature. */
+    @Override
     public ChildChanges getChildChanges() {
-        return childChanges;
+        return mChildChanges;
     }
 
     public ChildChangesImpl getChildChangesImpl() {
-        return childChanges;
+        return mChildChanges;
     }
 
     /** Structure used to define the children changes. */
     public static final class ChildChangesImpl implements ChildChanges {
-        private final List<ModelChild> appendChildren;
-        private final List<ModelChild> removedChildren;
+        private final List<ModelChild> mAppendChildren;
+        private final List<ModelChild> mRemovedChildren;
 
         @VisibleForTesting
         ChildChangesImpl() {
-            this.appendChildren = new ArrayList<>();
-            this.removedChildren = new ArrayList<>();
+            this.mAppendChildren = new ArrayList<>();
+            this.mRemovedChildren = new ArrayList<>();
         }
 
         /**
@@ -80,22 +83,22 @@ public final class FeatureChangeImpl implements FeatureChange {
          */
         @Override
         public List<ModelChild> getAppendedChildren() {
-            return appendChildren;
+            return mAppendChildren;
         }
 
         @Override
         public List<ModelChild> getRemovedChildren() {
-            return removedChildren;
+            return mRemovedChildren;
         }
 
         /** Add a child to be appended to the ModelFeature children List. */
         public void addAppendChild(ModelChild child) {
-            appendChildren.add(child);
+            mAppendChildren.add(child);
         }
 
         /** Remove a child from the ModelFeature children List. */
         public void removeChild(ModelChild child) {
-            removedChildren.add(child);
+            mRemovedChildren.add(child);
         }
     }
 }

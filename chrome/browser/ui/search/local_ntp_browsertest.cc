@@ -1039,7 +1039,7 @@ IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
   EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(cl_iframe));
 }
 
-INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LocalNTPDarkModeStartupTest, testing::Bool());
 
 #endif
 

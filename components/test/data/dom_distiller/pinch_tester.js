@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var pinchtest = (function() {
+const pinchtest = (function() {
   'use strict';
 
   function assertTrue(condition, message) {
@@ -24,8 +24,8 @@ var pinchtest = (function() {
 
   function isEquivalent(a, b) {
     // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
+    const aProps = Object.getOwnPropertyNames(a);
+    const bProps = Object.getOwnPropertyNames(b);
 
     // If number of properties is different,
     // objects are not equivalent
@@ -33,8 +33,8 @@ var pinchtest = (function() {
       return false;
     }
 
-    for (var i = 0; i < aProps.length; i++) {
-      var propName = aProps[i];
+    for (let i = 0; i < aProps.length; i++) {
+      const propName = aProps[i];
 
       // If values of same property are not equal,
       // objects are not equivalent
@@ -57,18 +57,18 @@ var pinchtest = (function() {
     }
   }
 
-  var touch = (function() {
+  const touch = (function() {
     'use strict';
-    var points = {};
+    const points = {};
     function lowestID() {
-      var ans = -1;
-      for(var key in points) {
+      let ans = -1;
+      for(const key in points) {
         ans = Math.max(ans, key);
       }
       return ans + 1;
     }
     function changeTouchPoint (key, x, y, offsetX, offsetY) {
-      var e = {
+      const e = {
         clientX: x,
         clientY: y,
         pageX: x,
@@ -91,8 +91,8 @@ var pinchtest = (function() {
         delete points[key];
       },
       events: function() {
-        var arr = [];
-        for(var key in points) {
+        const arr = [];
+        for(const key in points) {
           arr.push(points[key]);
         }
         return {
@@ -105,10 +105,10 @@ var pinchtest = (function() {
 
   function testZoomOut() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
     // Make sure start event doesn't change state
-    var oldState = pincher.status();
+    let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     assertEqual(oldState, pincher.status());
@@ -137,9 +137,9 @@ var pinchtest = (function() {
 
   function testZoomIn() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
-    var oldState = pincher.status();
+    let oldState = pincher.status();
     t.addTouchPoint(150, 150);
     pincher.handleTouchStart(t.events());
     assertEqual(oldState, pincher.status());
@@ -163,7 +163,7 @@ var pinchtest = (function() {
 
   function testZoomOutAndPan() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(300, 300);
@@ -186,7 +186,7 @@ var pinchtest = (function() {
 
   function testReversible() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(300, 300);
@@ -214,9 +214,9 @@ var pinchtest = (function() {
 
   function testMultitouchZoomOut() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
-    var oldState = pincher.status();
+    let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     assertEqual(oldState, pincher.status());
@@ -256,9 +256,9 @@ var pinchtest = (function() {
 
   function testZoomOutThenMulti() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
-    var oldState = pincher.status();
+    let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     assertEqual(oldState, pincher.status());
@@ -306,7 +306,7 @@ var pinchtest = (function() {
 
   function testCancel() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
@@ -317,7 +317,7 @@ var pinchtest = (function() {
     pincher.handleTouchMove(t.events());
     assertTrue(pincher.status().clampedScale < 0.9);
 
-    var oldState = pincher.status();
+    const oldState = pincher.status();
     t.releaseTouchPoint(1);
     t.releaseTouchPoint(0);
     pincher.handleTouchCancel(t.events());
@@ -335,7 +335,7 @@ var pinchtest = (function() {
 
   function testSingularity() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
@@ -353,7 +353,7 @@ var pinchtest = (function() {
 
   function testMinSpan() {
     pincher.reset();
-    var t = new touch();
+    const t = new touch();
 
     t.addTouchPoint(50, 50);
     pincher.handleTouchStart(t.events());
@@ -374,10 +374,10 @@ var pinchtest = (function() {
     useFontScaling(1.5);
     assertClose(pincher.status().clampedScale, 1.5);
 
-    var t = new touch();
+    let t = new touch();
 
     // Start touch.
-    var oldState = pincher.status();
+    let oldState = pincher.status();
     t.addTouchPoint(100, 100);
     pincher.handleTouchStart(t.events());
     t.addTouchPoint(300, 300);

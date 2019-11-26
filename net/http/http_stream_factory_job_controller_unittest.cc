@@ -321,7 +321,7 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
   void TestMainJobFailsAfterAltJobSucceeded(
       bool alt_job_retried_on_non_default_network);
 
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   TestJobFactory job_factory_;
   MockHttpStreamRequestDelegate request_delegate_;
   MockQuicContext quic_context_;

@@ -154,12 +154,13 @@ class OzonePlatformWayland : public OzonePlatform {
 
   void InitializeUI(const InitParams& args) override {
 #if BUILDFLAG(USE_XKBCOMMON)
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
+    keyboard_layout_engine_ =
+        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_);
 #else
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<StubKeyboardLayoutEngine>());
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
 #endif
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        keyboard_layout_engine_.get());
     connection_ = std::make_unique<WaylandConnection>();
     if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
@@ -225,6 +226,11 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
  private:
+#if BUILDFLAG(USE_XKBCOMMON)
+  XkbEvdevCodes xkb_evdev_code_converter_;
+#endif
+
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
   std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_;
@@ -234,10 +240,6 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<WaylandInputMethodContextFactory>
       input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
-
-#if BUILDFLAG(USE_XKBCOMMON)
-  XkbEvdevCodes xkb_evdev_code_converter_;
-#endif
 
   // Objects, which solely live in the GPU process.
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_;

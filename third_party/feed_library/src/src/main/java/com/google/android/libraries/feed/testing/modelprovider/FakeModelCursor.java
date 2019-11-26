@@ -20,12 +20,12 @@ import java.util.List;
 
 /** A fake {@link ModelCursor} for testing. */
 public class FakeModelCursor implements ModelCursor {
-    private List<ModelChild> modelChildren;
-    private int currentIndex;
+    private List<ModelChild> mModelChildren;
+    private int mCurrentIndex;
 
     public FakeModelCursor(List<ModelChild> modelChildren) {
-        currentIndex = 0;
-        this.modelChildren = modelChildren;
+        mCurrentIndex = 0;
+        this.mModelChildren = modelChildren;
     }
 
     public static FakeModelCursor emptyCursor() {
@@ -37,7 +37,7 @@ public class FakeModelCursor implements ModelCursor {
     }
 
     public void setModelChildren(List<ModelChild> modelChildren) {
-        this.modelChildren = modelChildren;
+        this.mModelChildren = modelChildren;
     }
 
     @Override
@@ -46,24 +46,24 @@ public class FakeModelCursor implements ModelCursor {
         if (isAtEnd()) {
             return null;
         }
-        return modelChildren.get(currentIndex++);
+        return mModelChildren.get(mCurrentIndex++);
     }
 
     @Override
     public boolean isAtEnd() {
-        return currentIndex >= modelChildren.size();
+        return mCurrentIndex >= mModelChildren.size();
     }
 
     public ModelChild getChildAt(int i) {
-        return modelChildren.get(i);
+        return mModelChildren.get(i);
     }
 
     public List<ModelChild> getModelChildren() {
-        return ImmutableList.copyOf(modelChildren);
+        return ImmutableList.copyOf(mModelChildren);
     }
 
     public static class Builder {
-        final List<ModelChild> cursorChildren = new ArrayList<>();
+        final List<ModelChild> mCursorChildren = new ArrayList<>();
 
         private Builder() {}
 
@@ -82,7 +82,7 @@ public class FakeModelCursor implements ModelCursor {
         }
 
         public Builder addChild(ModelChild child) {
-            cursorChildren.add(child);
+            mCursorChildren.add(child);
             return this;
         }
 
@@ -118,7 +118,7 @@ public class FakeModelCursor implements ModelCursor {
         public Builder addChildWithModelFeature(FakeModelFeature modelFeature) {
             ModelChild cardChild =
                     FakeModelChild.newBuilder().setModelFeature(modelFeature).build();
-            cursorChildren.add(cardChild);
+            mCursorChildren.add(cardChild);
             return this;
         }
 
@@ -128,7 +128,7 @@ public class FakeModelCursor implements ModelCursor {
                                            .setModelFeature(modelFeature)
                                            .setContentId(contentId)
                                            .build();
-            cursorChildren.add(cardChild);
+            mCursorChildren.add(cardChild);
             return this;
         }
 
@@ -154,7 +154,7 @@ public class FakeModelCursor implements ModelCursor {
         public Builder addToken(ModelToken token) {
             ModelChild tokenChild = FakeModelChild.newBuilder().setModelToken(token).build();
 
-            cursorChildren.add(tokenChild);
+            mCursorChildren.add(tokenChild);
 
             return this;
         }
@@ -167,7 +167,7 @@ public class FakeModelCursor implements ModelCursor {
                                                    .build())
                             .setContentId(contentId)
                             .build();
-            cursorChildren.add(tokenChild);
+            mCursorChildren.add(tokenChild);
             return this;
         }
 
@@ -176,7 +176,7 @@ public class FakeModelCursor implements ModelCursor {
         }
 
         public FakeModelCursor build() {
-            return new FakeModelCursor(cursorChildren);
+            return new FakeModelCursor(mCursorChildren);
         }
     }
 

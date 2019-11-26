@@ -240,6 +240,11 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
     return PaintInvalidationReason::kOutline;
   }
 
+  // Force full paint invalidation if the object has background-clip:text to
+  // update the background on any change in the subtree.
+  if (object_.StyleRef().BackgroundClip() == EFillBox::kText)
+    return PaintInvalidationReason::kBackground;
+
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.
   if (context_.old_visual_rect.IsEmpty())

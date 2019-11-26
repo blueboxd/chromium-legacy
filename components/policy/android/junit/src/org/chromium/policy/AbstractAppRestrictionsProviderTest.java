@@ -27,26 +27,12 @@ import org.robolectric.shadows.ShadowApplication;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
-import java.util.concurrent.Executor;
-
 /**
  * Robolectric test for AbstractAppRestrictionsProvider.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AbstractAppRestrictionsProviderTest {
-    /*
-     * Robolectric's AsyncTasks don't do anything to override the underlying executor,
-     * which means that the don't reliably run within {@link Robolectric.RunBackgroundTasks()}.
-     * Create a special task executor that is guarenteed to run when expected.
-     */
-    private class TestExecutor implements Executor {
-        @Override
-        public void execute(Runnable command) {
-            Robolectric.getBackgroundThreadScheduler().post(command);
-        }
-    }
-
     /**
      * Minimal concrete class implementing AbstractAppRestrictionsProvider.
      */

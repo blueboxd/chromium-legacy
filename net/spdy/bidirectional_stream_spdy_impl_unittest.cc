@@ -278,7 +278,7 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool>,
     session_ = CreateSpdySession(http_session_.get(), key_, net_log_.bound());
   }
 
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
   const GURL default_url_;

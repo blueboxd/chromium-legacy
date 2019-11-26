@@ -18,45 +18,45 @@ import java.util.List;
 public final class LocalActionGc {
     private static final String TAG = "LocalActionGc";
 
-    private final List<StreamLocalAction> actions;
-    private final List<String> validContentIds;
-    private final JournalStorageDirect journalStorageDirect;
-    private final TimingUtils timingUtils;
-    private final String journalName;
+    private final List<StreamLocalAction> mActions;
+    private final List<String> mValidContentIds;
+    private final JournalStorageDirect mJournalStorageDirect;
+    private final TimingUtils mTimingUtils;
+    private final String mJournalName;
 
     LocalActionGc(List<StreamLocalAction> actions, List<String> validContentIds,
             JournalStorageDirect journalStorageDirect, TimingUtils timingUtils,
             String journalName) {
-        this.actions = actions;
-        this.validContentIds = validContentIds;
-        this.journalStorageDirect = journalStorageDirect;
-        this.timingUtils = timingUtils;
-        this.journalName = journalName;
+        this.mActions = actions;
+        this.mValidContentIds = validContentIds;
+        this.mJournalStorageDirect = journalStorageDirect;
+        this.mTimingUtils = timingUtils;
+        this.mJournalName = journalName;
     }
 
     /**
-     * Cleans up the store based on {@link #actions} and {@link #validContentIds}. Any valid actions
-     * will be copied over to a new copy of the action journal.
+     * Cleans up the store based on {@link #mActions} and {@link #mValidContentIds}. Any valid
+     * actions will be copied over to a new copy of the action journal.
      */
     void gc() {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        List<StreamLocalAction> validActions = new ArrayList<>(validContentIds.size());
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        List<StreamLocalAction> validActions = new ArrayList<>(mValidContentIds.size());
 
-        for (StreamLocalAction action : actions) {
-            if (validContentIds.contains(action.getFeatureContentId())) {
+        for (StreamLocalAction action : mActions) {
+            if (mValidContentIds.contains(action.getFeatureContentId())) {
                 validActions.add(action);
             }
         }
 
-        Builder mutationBuilder = new Builder(journalName);
+        Builder mutationBuilder = new Builder(mJournalName);
         mutationBuilder.delete();
 
         for (StreamLocalAction action : validActions) {
             mutationBuilder.append(action.toByteArray());
         }
-        CommitResult result = journalStorageDirect.commit(mutationBuilder.build());
+        CommitResult result = mJournalStorageDirect.commit(mutationBuilder.build());
         if (result == CommitResult.SUCCESS) {
-            tracker.stop("gcMutation", actions.size() - validActions.size());
+            tracker.stop("gcMutation", mActions.size() - validActions.size());
         } else {
             tracker.stop("gcMutation failed");
         }

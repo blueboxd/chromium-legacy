@@ -38,6 +38,11 @@ class DiscardsGraphChangeStreamImpl {
   }
 
   /** @override */
+  workerCreated(worker) {
+    this.postMessage_('workerCreated', worker);
+  }
+
+  /** @override */
   frameChanged(frame) {
     this.postMessage_('frameChanged', frame);
   }
@@ -50,6 +55,11 @@ class DiscardsGraphChangeStreamImpl {
   /** @override */
   processChanged(process) {
     this.postMessage_('processChanged', process);
+  }
+
+  /** @override */
+  workerChanged(worker) {
+    this.postMessage_('workerChanged', worker);
   }
 
   /** @override */

@@ -22,18 +22,18 @@ import java.util.Set;
 public class StreamOfflineMonitor implements OfflineStatusListener {
     private static final String TAG = "StreamOfflineMonitor";
 
-    private final Set<String> contentToRequestStatus = new HashSet<>();
-    private final Set<String> offlineContent = new HashSet<>();
-    private final OfflineIndicatorApi offlineIndicatorApi;
+    private final Set<String> mContentToRequestStatus = new HashSet<>();
+    private final Set<String> mOfflineContent = new HashSet<>();
+    private final OfflineIndicatorApi mOfflineIndicatorApi;
 
     @VisibleForTesting
-    protected final Map<String, List<Consumer<Boolean>>> offlineStatusConsumersMap =
+    protected final Map<String, List<Consumer<Boolean>>> mOfflineStatusConsumersMap =
             new HashMap<>();
 
     @SuppressWarnings("nullness:argument.type.incompatible")
     public StreamOfflineMonitor(OfflineIndicatorApi offlineIndicatorApi) {
         offlineIndicatorApi.addOfflineStatusListener(this);
-        this.offlineIndicatorApi = offlineIndicatorApi;
+        this.mOfflineIndicatorApi = offlineIndicatorApi;
     }
 
     /**
@@ -45,10 +45,10 @@ public class StreamOfflineMonitor implements OfflineStatusListener {
      * additional offline stories. At that point, any relevant listeners will be notified.
      */
     public boolean isAvailableOffline(String url) {
-        if (offlineContent.contains(url)) {
+        if (mOfflineContent.contains(url)) {
             return true;
         }
-        contentToRequestStatus.add(url);
+        mContentToRequestStatus.add(url);
         return false;
     }
 
@@ -57,13 +57,13 @@ public class StreamOfflineMonitor implements OfflineStatusListener {
      * Only triggered on change, not immediately upon registering.
      */
     public void addOfflineStatusConsumer(String url, Consumer<Boolean> isOfflineConsumer) {
-        if (!offlineStatusConsumersMap.containsKey(url)) {
+        if (!mOfflineStatusConsumersMap.containsKey(url)) {
             // Initializing size of lists to 1 as it is unlikely that we would have more than one
             // listener per URL.
-            offlineStatusConsumersMap.put(url, new ArrayList<>(1));
+            mOfflineStatusConsumersMap.put(url, new ArrayList<>(1));
         }
 
-        offlineStatusConsumersMap.get(url).add(isOfflineConsumer);
+        mOfflineStatusConsumersMap.get(url).add(isOfflineConsumer);
     }
 
     /**
@@ -71,22 +71,22 @@ public class StreamOfflineMonitor implements OfflineStatusListener {
      * story.
      */
     public void removeOfflineStatusConsumer(String url, Consumer<Boolean> isOfflineConsumer) {
-        if (!offlineStatusConsumersMap.containsKey(url)) {
+        if (!mOfflineStatusConsumersMap.containsKey(url)) {
             Logger.w(TAG, "Removing consumer for url %s with no list of consumers", url);
             return;
         }
 
-        if (!offlineStatusConsumersMap.get(url).remove(isOfflineConsumer)) {
+        if (!mOfflineStatusConsumersMap.get(url).remove(isOfflineConsumer)) {
             Logger.w(TAG, "Removing consumer for url %s that isn't on list of consumers", url);
         }
 
-        if (offlineStatusConsumersMap.get(url).isEmpty()) {
-            offlineStatusConsumersMap.remove(url);
+        if (mOfflineStatusConsumersMap.get(url).isEmpty()) {
+            mOfflineStatusConsumersMap.remove(url);
         }
     }
 
     private void notifyConsumers(String url, boolean availableOffline) {
-        List<Consumer<Boolean>> offlineStatusConsumers = offlineStatusConsumersMap.get(url);
+        List<Consumer<Boolean>> offlineStatusConsumers = mOfflineStatusConsumersMap.get(url);
         if (offlineStatusConsumers == null) {
             return;
         }
@@ -97,37 +97,37 @@ public class StreamOfflineMonitor implements OfflineStatusListener {
     }
 
     public void requestOfflineStatusForNewContent() {
-        if (contentToRequestStatus.isEmpty()) {
+        if (mContentToRequestStatus.isEmpty()) {
             return;
         }
 
-        offlineIndicatorApi.getOfflineStatus(
-                new ArrayList<>(contentToRequestStatus), offlineUrls -> {
+        mOfflineIndicatorApi.getOfflineStatus(
+                new ArrayList<>(mContentToRequestStatus), offlineUrls -> {
                     for (String offlineUrl : offlineUrls) {
                         updateOfflineStatus(offlineUrl, true);
                     }
                 });
-        contentToRequestStatus.clear();
+        mContentToRequestStatus.clear();
     }
 
     @Override
     public void updateOfflineStatus(String url, boolean availableOffline) {
         // If the new offline status is the same as our knowledge of it, no-op.
-        if (offlineContent.contains(url) == availableOffline) {
+        if (mOfflineContent.contains(url) == availableOffline) {
             return;
         }
 
         if (availableOffline) {
-            offlineContent.add(url);
+            mOfflineContent.add(url);
         } else {
-            offlineContent.remove(url);
+            mOfflineContent.remove(url);
         }
 
         notifyConsumers(url, availableOffline);
     }
 
     public void onDestroy() {
-        offlineStatusConsumersMap.clear();
-        offlineIndicatorApi.removeOfflineStatusListener(this);
+        mOfflineStatusConsumersMap.clear();
+        mOfflineIndicatorApi.removeOfflineStatusListener(this);
     }
 }

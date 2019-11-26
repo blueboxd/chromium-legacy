@@ -363,7 +363,7 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
                url, session_.get()) != kNoPushedStreamFound;
   }
 
-  BoundTestNetLog log_;
+  RecordingBoundTestNetLog log_;
 
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.

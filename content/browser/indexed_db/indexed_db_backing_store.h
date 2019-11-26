@@ -424,7 +424,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   // Initializes the backing store. This must be called before doing any
   // operations or method calls on this object.
-  leveldb::Status Initialize(bool clean_live_blob_journal);
+  leveldb::Status Initialize(bool clean_active_blob_journal);
 
   const url::Origin& origin() const { return origin_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
@@ -518,7 +518,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       std::unique_ptr<blink::IndexedDBKey>* found_primary_key,
       bool* exists) WARN_UNUSED_RESULT;
 
-  // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
+  // Public for IndexedDBActiveBlobRegistry::MarkBlobInactive.
   virtual void ReportBlobUnused(int64_t database_id, int64_t blob_key);
 
   base::FilePath GetBlobFileName(int64_t database_id, int64_t key) const;
@@ -613,16 +613,16 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // Remove the referenced file on disk.
   virtual bool RemoveBlobFile(int64_t database_id, int64_t key) const;
 
-  // Schedule a call to CleanPrimaryJournalIgnoreReturn() via
+  // Schedule a call to CleanRecoveryJournalIgnoreReturn() via
   // an owned timer. If this object is destroyed, the timer
   // will automatically be cancelled.
   virtual void StartJournalCleaningTimer();
 
-  // Attempt to clean the primary journal. This will remove
+  // Attempt to clean the recovery journal. This will remove
   // any referenced files and delete the journal entry. If any
   // transaction is currently committing this will be deferred
   // via StartJournalCleaningTimer().
-  void CleanPrimaryJournalIgnoreReturn();
+  void CleanRecoveryJournalIgnoreReturn();
 
  private:
   leveldb::Status FindKeyInIndex(

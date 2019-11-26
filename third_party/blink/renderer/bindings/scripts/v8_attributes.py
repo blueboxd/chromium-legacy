@@ -544,7 +544,8 @@ def setter_context(interface, attribute, interfaces, context):
         'is_setter_raises_exception': is_setter_raises_exception,
         'use_common_reflection_setter': use_common_reflection_setter,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8_value', 'cpp_value'),
+            extended_attributes, 'v8_value', 'cpp_value',
+            code_generation_target='attribute_set'),
     })
 
     # setter_expression() depends on context values we set above.

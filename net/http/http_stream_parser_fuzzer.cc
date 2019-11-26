@@ -33,7 +33,7 @@
 // |data| is used to create a FuzzedSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::TestCompletionCallback callback;
-  net::BoundTestNetLog bound_test_net_log;
+  net::RecordingBoundTestNetLog bound_test_net_log;
   FuzzedDataProvider data_provider(data, size);
   net::FuzzedSocket fuzzed_socket(&data_provider,
                                   bound_test_net_log.bound().net_log());

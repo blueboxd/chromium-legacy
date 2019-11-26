@@ -51,7 +51,7 @@ void ImageWriter::Write() {
   }
 
   PostProgress(0);
-  PostTask(base::Bind(&ImageWriter::WriteChunk, AsWeakPtr()));
+  PostTask(base::BindOnce(&ImageWriter::WriteChunk, AsWeakPtr()));
 }
 
 void ImageWriter::Verify() {
@@ -60,7 +60,7 @@ void ImageWriter::Verify() {
   }
 
   PostProgress(0);
-  PostTask(base::Bind(&ImageWriter::VerifyChunk, AsWeakPtr()));
+  PostTask(base::BindOnce(&ImageWriter::VerifyChunk, AsWeakPtr()));
 }
 
 void ImageWriter::Cancel() {
@@ -74,8 +74,8 @@ const base::FilePath& ImageWriter::GetImagePath() { return image_path_; }
 
 const base::FilePath& ImageWriter::GetDevicePath() { return device_path_; }
 
-void ImageWriter::PostTask(const base::Closure& task) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+void ImageWriter::PostTask(base::OnceClosure task) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
 void ImageWriter::PostProgress(int64_t progress) {
@@ -143,7 +143,7 @@ void ImageWriter::WriteChunk() {
     bytes_processed_ += bytes_read;
     PostProgress(bytes_processed_);
 
-    PostTask(base::Bind(&ImageWriter::WriteChunk, AsWeakPtr()));
+    PostTask(base::BindOnce(&ImageWriter::WriteChunk, AsWeakPtr()));
   } else if (bytes_read == 0) {
     // End of file.
     device_file_.Flush();
@@ -189,7 +189,7 @@ void ImageWriter::VerifyChunk() {
     bytes_processed_ += bytes_read;
     PostProgress(bytes_processed_);
 
-    PostTask(base::Bind(&ImageWriter::VerifyChunk, AsWeakPtr()));
+    PostTask(base::BindOnce(&ImageWriter::VerifyChunk, AsWeakPtr()));
   } else if (bytes_read == 0) {
     // End of file.
     handler_->SendSucceeded();

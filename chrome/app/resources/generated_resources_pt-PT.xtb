@@ -2617,7 +2617,6 @@ Pretende pará-lo?</translation>
 <translation id="4839303808932127586">Guardar &amp;vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}other{Mais #}}</translation>
 <translation id="4842976633412754305">Esta página está a tentar carregar scripts de origens não autenticadas.</translation>
-<translation id="4843488774506045600">Início de sessão fornecido por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Está a seguir a recomendação do gestor para esta definição.</translation>
 <translation id="4848518990323155912">Ativar o bloqueio do cartão SIM (requer o PIN para utilizar dados móveis)</translation>
@@ -3816,7 +3815,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6607831829715835317">Mais ferrament&amp;as</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6615455863669487791">Mostrar</translation>
-<translation id="6617100836880592260">Velocidade de análise: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Manter na mesma</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">O site pode monitorizar a sua localização.</translation>

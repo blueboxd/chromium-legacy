@@ -124,6 +124,9 @@ class CONTENT_EXPORT SynchronousCompositor {
   // and if any input animation is active, it should tick now.
   virtual void OnComputeScroll(base::TimeTicks animation_time) = 0;
 
+  // Called when viz for webview enabled to drive browser-side fling
+  virtual void ProgressFling(base::TimeTicks frame_time) = 0;
+
  protected:
   virtual ~SynchronousCompositor() {}
 };

@@ -2617,7 +2617,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4839303808932127586">&amp;Gem video som ...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 anden}one{# anden}other{# andre}}</translation>
 <translation id="4842976633412754305">Denne side forsøger at indlæse scripts fra kilder, som ikke er godkendte.</translation>
-<translation id="4843488774506045600">Login leveres af <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Andre tastaturer</translation>
 <translation id="4846680374085650406">Du følger administratorens anbefaling for denne indstilling.</translation>
 <translation id="4848518990323155912">Aktivér låsning af Sim-kort (det kræver pinkode at bruge mobildata)</translation>
@@ -3816,7 +3815,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6607831829715835317">F&amp;lere værktøjer</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6615455863669487791">Vis mig</translation>
-<translation id="6617100836880592260">Scanningshastighed: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Behold alligevel</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Websitet kan spore din placering</translation>

@@ -63,7 +63,7 @@ class ProximityAuthSystem : public ScreenlockBridge::Observer {
       const AccountId& account_id) const;
 
   // Called when the user clicks the user pod and attempts to unlock/sign-in.
-  void OnAuthAttempted(const AccountId& account_id);
+  void OnAuthAttempted();
 
   // Called when the system suspends.
   void OnSuspend();

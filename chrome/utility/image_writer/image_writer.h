@@ -53,7 +53,7 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
   bool IsValidDevice();
   // Unmounts all volumes on the target device.
   // This method has OS-specific implementations.
-  void UnmountVolumes(const base::Closure& continuation);
+  void UnmountVolumes(base::OnceClosure continuation);
 
   // Return the current image path.
   const base::FilePath& GetImagePath();
@@ -62,7 +62,7 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
 
  private:
   // Convenience wrappers.
-  void PostTask(const base::Closure& task);
+  void PostTask(base::OnceClosure task);
   void PostProgress(int64_t progress);
   void Error(const std::string& message);
 

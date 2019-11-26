@@ -2618,7 +2618,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4839303808932127586">Enregistrer la &amp;vidéo sous...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
 <translation id="4842976633412754305">Cette page tente de charger des scripts provenant de sources non authentifiées.</translation>
-<translation id="4843488774506045600">Service de connexion fourni par <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Autres claviers</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
 <translation id="4848518990323155912">Activer le verrouillage de carte SIM (nécessite un NIP pour utiliser des données mobiles)</translation>
@@ -3816,7 +3815,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6607831829715835317">Autres outi&amp;ls</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6615455863669487791">Démonstration</translation>
-<translation id="6617100836880592260">Vitesse de numérisation : <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Conserver quand même</translation>
 <translation id="6619058681307408113">Protocole LPD (Line Printer Daemon)</translation>
 <translation id="661907246513853610">Le site peut effectuer le suivi de votre position</translation>

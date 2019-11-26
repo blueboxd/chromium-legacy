@@ -249,8 +249,8 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
 // opacity of the layer as the animation progress.
 class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
  public:
-  FadeOutAnimationDelegate(ShelfView* host, views::View* view)
-      : shelf_view_(host), view_(view) {}
+  FadeOutAnimationDelegate(ShelfView* host, std::unique_ptr<views::View> view)
+      : shelf_view_(host), view_(std::move(view)) {}
   ~FadeOutAnimationDelegate() override = default;
 
   // AnimationDelegate overrides:
@@ -369,8 +369,10 @@ void ShelfView::Init() {
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
     child->SetPaintToLayer();
-    view_model_->Add(child, static_cast<int>(i - items.begin()));
-    AddChildView(child);
+    int index = static_cast<int>(i - items.begin());
+    view_model_->Add(child, index);
+    // Add child view so it has the same ordering as in the |view_model_|.
+    AddChildViewAt(child, index);
   }
   overflow_button_ = new OverflowButton(this);
   ConfigureChildView(overflow_button_);
@@ -2202,12 +2204,14 @@ void ShelfView::ShelfItemAdded(int model_index) {
   }
   const ShelfItem& item(model_->items()[model_index]);
   views::View* view = CreateViewForItem(item);
-  AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
   // opacity 0 here to avoid messing with CalculateIdealBounds which touches
   // the view's visibility.
   view->layer()->SetOpacity(0);
   view_model_->Add(view, model_index);
+
+  // Add child view so it has the same ordering as in the |view_model_|.
+  AddChildViewAt(view, model_index);
 
   // When the scrollable shelf is enabled, |last_visible_index_| is always the
   // index to the last shelf item.
@@ -2249,7 +2253,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   if (old_item.id == context_menu_id_ && shelf_menu_model_adapter_)
     shelf_menu_model_adapter_->Cancel();
 
-  views::View* view = view_model_->view_at(model_index);
+  // If not moved, |view| will be deleted once out of scope.
+  std::unique_ptr<views::View> view(view_model_->view_at(model_index));
   view_model_->Remove(model_index);
 
   // When the scrollable shelf is enabled, |last_visible_index_| is always the
@@ -2272,13 +2277,16 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     UpdateOverflowRange(overflow_bubble_->bubble_view()->shelf_view());
   }
 
+  if (view.get() == shelf_->tooltip()->GetCurrentAnchorView())
+    shelf_->tooltip()->Close();
+
   if (view->GetVisible()) {
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
-    bounds_animator_->AnimateViewTo(view, view->bounds());
+    bounds_animator_->AnimateViewTo(view.get(), view->bounds());
     bounds_animator_->SetAnimationDelegate(
-        view, std::unique_ptr<gfx::AnimationDelegate>(
-                  new FadeOutAnimationDelegate(this, view)));
+        view.get(), std::unique_ptr<gfx::AnimationDelegate>(
+                        new FadeOutAnimationDelegate(this, std::move(view))));
   } else {
     // If there is no fade out animation, notify the parent view of the
     // changed size before bounds animations start.
@@ -2289,9 +2297,6 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     // item is ripped out from the shelf, its |view| is already invisible.
     AnimateToIdealBounds();
   }
-
-  if (view == shelf_->tooltip()->GetCurrentAnchorView())
-    shelf_->tooltip()->Close();
 
   if (model_->is_current_mutation_user_triggered() &&
       old_item.type == TYPE_PINNED_APP) {
@@ -2360,6 +2365,12 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
 
 void ShelfView::ShelfItemMoved(int start_index, int target_index) {
   view_model_->Move(start_index, target_index);
+
+  // Reorder the child view to be in the same order as in the |view_model_|.
+  ReorderChildView(view_model_->view_at(target_index), target_index);
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                           true /* send_native_event */);
+
   // When cancelling a drag due to a shelf item being added, the currently
   // dragged item is moved back to its initial position. AnimateToIdealBounds
   // will be called again when the new item is added to the |view_model_| but

@@ -265,7 +265,7 @@ class PopulatedAppListWithVKEnabledTest : public PopulatedAppListTest {
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
-INSTANTIATE_TEST_SUITE_P(, AppListPresenterDelegateTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AppListPresenterDelegateTest, testing::Bool());
 
 // Verifies that context menu click should not activate the search box
 // (see https://crbug.com/941428).
@@ -2538,7 +2538,7 @@ class AppListPresenterDelegateHomeLauncherTest
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateHomeLauncherTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AppListPresenterDelegateHomeLauncherTest,
                          testing::Bool());
 
@@ -3355,7 +3355,7 @@ class AppListPresenterDelegateVirtualKeyboardTest
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AppListPresenterDelegateVirtualKeyboardTest,
                          testing::Bool());
 

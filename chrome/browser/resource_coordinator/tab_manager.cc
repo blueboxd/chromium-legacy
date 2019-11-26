@@ -32,6 +32,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
+#include "chrome/browser/performance_manager/performance_manager_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
@@ -777,6 +778,11 @@ void TabManager::SchedulePerformStateTransitions(base::TimeDelta delay) {
 void TabManager::PerformStateTransitions() {
   if (!base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard))
     return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kPageFreezingFromPerformanceManager)) {
+    return;
+  }
 
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
   const base::TimeTicks now = NowTicks();

@@ -163,7 +163,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
     : client_(client),
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
-      allow_root_animate_(true),
 #if DCHECK_IS_ON()
       expect_scroll_update_end_(false),
 #endif
@@ -1094,11 +1093,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {
-  // If using synchronous animate, then only expect Animate attempts started by
-  // the synchronous system. Don't let the InputHandler try to Animate also.
-  DCHECK(!input_handler_->IsCurrentlyScrollingViewport() ||
-         allow_root_animate_);
-
   if (scroll_elasticity_controller_)
     scroll_elasticity_controller_->Animate(time);
 
@@ -1145,22 +1139,11 @@ void InputHandlerProxy::DeliverInputForHighLatencyMode() {
     DispatchQueuedInputEvents();
 }
 
-void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(
+void InputHandlerProxy::SetSynchronousInputHandler(
     SynchronousInputHandler* synchronous_input_handler) {
-  allow_root_animate_ = !synchronous_input_handler;
   synchronous_input_handler_ = synchronous_input_handler;
   if (synchronous_input_handler_)
     input_handler_->RequestUpdateForSynchronousInputHandler();
-}
-
-void InputHandlerProxy::SynchronouslyAnimate(base::TimeTicks time) {
-  // When this function is used, SetOnlySynchronouslyAnimate() should have been
-  // previously called. IOW you should either be entirely in synchronous mode or
-  // not.
-  DCHECK(synchronous_input_handler_);
-  DCHECK(!allow_root_animate_);
-  base::AutoReset<bool> reset(&allow_root_animate_, true);
-  Animate(time);
 }
 
 void InputHandlerProxy::SynchronouslySetRootScrollOffset(
@@ -1230,14 +1213,7 @@ void InputHandlerProxy::HandleOverscroll(
 }
 
 void InputHandlerProxy::RequestAnimation() {
-  // When a SynchronousInputHandler is present, root flings should go through
-  // it to allow it to control when or if the root fling is animated. Non-root
-  // flings always go through the normal InputHandler.
-  if (synchronous_input_handler_ &&
-      input_handler_->IsCurrentlyScrollingViewport())
-    synchronous_input_handler_->SetNeedsSynchronousAnimateInput();
-  else
-    input_handler_->SetNeedsAnimateInput();
+  input_handler_->SetNeedsAnimateInput();
 }
 
 void InputHandlerProxy::HandleScrollElasticityOverscroll(

@@ -2596,7 +2596,6 @@
 <translation id="4839303808932127586">ভিডিঅ' এইবুলি ছে&amp;ভ কৰক...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{আৰু ১টা}one{আৰু #টা}other{আৰু #টা}}</translation>
 <translation id="4842976633412754305">এই পৃষ্ঠাটোৱে বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ নকৰা উৎসৰ পৰা স্ক্ৰিপ্ট ল’ড কৰাৰ চেষ্টা কৰি আছে।</translation>
-<translation id="4843488774506045600">লগ ইন <ph name="EXTENSION_NAME" />এ প্ৰদান কৰিছে</translation>
 <translation id="4844333629810439236">অন্য কী’বর্ডসমূহ</translation>
 <translation id="4846680374085650406">আপুনি এই ছেটিঙৰ বাবে প্ৰশাসকৰ চুপাৰিছ ফ'ল' কৰিছে।</translation>
 <translation id="4848518990323155912">ছিম কার্ড লক কৰা সুবিধাটো সক্ষম কৰক (ম'বাইল ডেটা ব্যৱহাৰ কৰিবলৈ পিনৰ আৱশ্যক)</translation>
@@ -3785,7 +3784,6 @@
 <translation id="6607831829715835317">অধিক সঁজু&amp;লি</translation>
 <translation id="6612358246767739896">সুৰক্ষিত সমল</translation>
 <translation id="6615455863669487791">মোক দেখুৱাওক</translation>
-<translation id="6617100836880592260">স্কেন কৰা কাৰ্যৰ গতি: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">যি কি নহ’লেও ৰাখক</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">ছাইটটোৱে আপোনাৰ অৱস্থান ট্ৰেক কৰিব পাৰে</translation>

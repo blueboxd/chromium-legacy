@@ -29,7 +29,7 @@ id<GREYMatcher> PopupRowWithUrl(GURL url) {
       grey_kindOfClassName(@"OmniboxPopupRow"),
       grey_descendant(chrome_test_util::StaticTextWithAccessibilityLabel(
           base::SysUTF8ToNSString(url.GetContent()))),
-      nil);
+      grey_sufficientlyVisible(), nil);
 }
 
 // Returns the switch to open tab element for the |url|.
@@ -192,7 +192,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey loadURL:URL3];
   [ChromeEarlGrey waitForWebStateContainingText:kPage3];
 
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(URL3.host())];
+  NSString* omniboxInput =
+      [NSString stringWithFormat:@"%@:%@", base::SysUTF8ToNSString(URL3.host()),
+                                 base::SysUTF8ToNSString(URL3.port())];
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxInput];
 
   // Check that we have the switch button for the first page.
   [[EarlGrey
@@ -230,9 +233,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1025199): On smaller form factors, the desired "Switch
-// to tab" row does not fit above the fold, so this test fails.
-- (void)DISABLED_testCloseNTPWhenSwitching {
+- (void)testCloseNTPWhenSwitching {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];
@@ -240,8 +241,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Open a new tab and switch to the first tab.
   [ChromeEarlGrey openNewTab];
+  NSString* omniboxInput =
+      [NSString stringWithFormat:@"%@:%@", base::SysUTF8ToNSString(URL1.host()),
+                                 base::SysUTF8ToNSString(URL1.port())];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
-      performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
+      performAction:grey_typeText(omniboxInput)];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
@@ -318,9 +322,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that having multiple suggestions with corresponding opened tabs display
 // multiple buttons.
-// TODO(crbug.com/1025199): On smaller form factors, only one of the two "Switch
-// to tab" rows fits on screen, so this test fails.
-- (void)DISABLED_testMultiplePageOpened {
+- (void)testMultiplePageOpened {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];
@@ -334,8 +336,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Start typing url of the two opened pages in a new tab.
   [ChromeEarlGrey openNewTab];
+  NSString* omniboxInput =
+      [NSString stringWithFormat:@"%@:%@", base::SysUTF8ToNSString(URL1.host()),
+                                 base::SysUTF8ToNSString(URL1.port())];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
-      performAction:grey_typeText(@"page")];
+      performAction:grey_typeText(omniboxInput)];
 
   // Check that both elements are displayed.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]

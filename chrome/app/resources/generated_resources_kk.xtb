@@ -2614,7 +2614,6 @@
 <translation id="4839303808932127586">Бейнені басқаша сақ&amp;тау…</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Тағы 1}other{Тағы #}}</translation>
 <translation id="4842976633412754305">Бұл бет аутентификацияланбаған дереккөздерден сценарийлерді жүктеуге әрекет етуде.</translation>
-<translation id="4843488774506045600">Логин ұсынушы: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Басқа пернетақталар</translation>
 <translation id="4846680374085650406">Бұл параметр үшін әкімші ұсынысын орындаудасыз.</translation>
 <translation id="4848518990323155912">SIM картасын құлыптау (ұялы деректерді пайдалану үшін PIN коды қажет)</translation>
@@ -3812,7 +3811,6 @@
 <translation id="6607831829715835317">Қосымша құралд&amp;ар</translation>
 <translation id="6612358246767739896">Қорғалған мазмұн</translation>
 <translation id="6615455863669487791">Маған көрсету</translation>
-<translation id="6617100836880592260">Сканерлеу жылдамдығы: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Сақтала берсін</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Сайт орналасқан жеріңізді бақылай алады</translation>

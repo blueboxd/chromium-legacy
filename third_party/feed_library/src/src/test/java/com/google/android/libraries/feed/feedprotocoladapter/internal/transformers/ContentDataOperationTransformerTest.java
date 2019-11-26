@@ -30,10 +30,10 @@ public class ContentDataOperationTransformerTest {
     private static final long RESPONSE_TIME = 1000;
     private static final FeedResponseMetadata METADATA =
             FeedResponseMetadata.newBuilder().setResponseTimeMs(RESPONSE_TIME).build();
-    private ContentDataOperationTransformer contentDataOperationTransformer;
-    private DataOperation.Builder dataOperation;
-    private StreamDataOperation.Builder dataOperationBuilder;
-    private StreamFeature streamFeature;
+    private ContentDataOperationTransformer mContentDataOperationTransformer;
+    private DataOperation.Builder mDataOperation;
+    private StreamDataOperation.Builder mDataOperationBuilder;
+    private StreamFeature mStreamFeature;
 
     @Before
     public void setUp() {

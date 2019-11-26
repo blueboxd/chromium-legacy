@@ -206,8 +206,7 @@ bool UnlockManagerImpl::IsUnlockAllowed() {
           *remote_screenlock_state_ == RemoteScreenlockState::UNLOCKED &&
           is_bluetooth_connection_to_phone_active_ && proximity_monitor_ &&
           proximity_monitor_->IsUnlockAllowed() &&
-          (screenlock_type_ != ProximityAuthSystem::SIGN_IN ||
-           (GetMessenger() && GetMessenger()->SupportsSignIn())));
+          (screenlock_type_ != ProximityAuthSystem::SIGN_IN || GetMessenger()));
 }
 
 void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
@@ -551,13 +550,7 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
     SendSignInChallenge();
   } else {
-    if (GetMessenger()->SupportsSignIn()) {
-      GetMessenger()->RequestUnlock();
-    } else {
-      PA_LOG(VERBOSE)
-          << "Protocol v3.1 not supported, skipping request_unlock.";
-      GetMessenger()->DispatchUnlockEvent();
-    }
+    GetMessenger()->RequestUnlock();
   }
 }
 
@@ -651,10 +644,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   // reasonable amount of time.
   if (!is_performing_initial_scan_ && !messenger)
     return ScreenlockState::NO_PHONE;
-
-  if (screenlock_type_ == ProximityAuthSystem::SIGN_IN && messenger &&
-      !messenger->SupportsSignIn())
-    return ScreenlockState::PHONE_UNSUPPORTED;
 
   // If the RSSI is too low, then the remote device is nowhere near the local
   // device. This message should take priority over messages about screen lock

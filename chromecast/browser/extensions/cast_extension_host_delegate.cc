@@ -8,8 +8,8 @@
 #include "base/no_destructor.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/media_capture_util.h"
-#include "extensions/browser/serial_extension_host_queue.h"
 
 namespace extensions {
 
@@ -59,7 +59,7 @@ bool CastExtensionHostDelegate::CheckMediaAccessPermission(
 }
 
 ExtensionHostQueue* CastExtensionHostDelegate::GetExtensionHostQueue() const {
-  static base::NoDestructor<SerialExtensionHostQueue> queue;
+  static base::NoDestructor<ExtensionHostQueue> queue;
   return queue.get();
 }
 

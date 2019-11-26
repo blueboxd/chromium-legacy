@@ -40,7 +40,7 @@ class GridRowAdapter extends ElementContainerAdapter<GridRowView, GridRow> {
 
     private GridRowAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters,
-                createView(context, parameters.hostProviders.getAssetProvider().isRtLSupplier()),
+                createView(context, parameters.mHostProviders.getAssetProvider().isRtLSupplier()),
                 KeySupplier.SINGLETON_KEY);
     }
 
@@ -68,14 +68,14 @@ class GridRowAdapter extends ElementContainerAdapter<GridRowView, GridRow> {
         super.onBindModel(gridRow, baseElement, frameContext);
 
         int adapterIndex = 0;
-        checkState(gridRow.getCellsCount() == adaptersPerContent.length,
+        checkState(gridRow.getCellsCount() == mAdaptersPerContent.length,
                 "Mismatch between number of cells (%s) and adaptersPerContent (%s);"
                         + " problem in creation?",
-                gridRow.getCellsCount(), adaptersPerContent.length);
+                gridRow.getCellsCount(), mAdaptersPerContent.length);
         for (int contentIndex = 0; contentIndex < gridRow.getCellsCount(); contentIndex++) {
             GridCell cell = gridRow.getCells(contentIndex);
-            for (int i = 0; i < adaptersPerContent[contentIndex]; i++) {
-                setLayoutParamsOnCell(childAdapters.get(adapterIndex), cell, frameContext);
+            for (int i = 0; i < mAdaptersPerContent[contentIndex]; i++) {
+                setLayoutParamsOnCell(mChildAdapters.get(adapterIndex), cell, frameContext);
                 adapterIndex++;
             }
         }

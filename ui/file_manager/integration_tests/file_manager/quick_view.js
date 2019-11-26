@@ -460,52 +460,6 @@
   };
 
   /**
-   * Tests opening Quick View on a text document to verify that the background
-   * color of the <webview> root (html) element.
-   */
-  testcase.openQuickViewBackgroundColorText = async () => {
-    const caller = getCaller();
-
-    /**
-     * The text <webview> resides in the #quick-view shadow DOM, as a child of
-     * the #dialog element.
-     */
-    const webView = ['#quick-view', '#dialog[open] webview.text-content'];
-
-    // Open Files app on Downloads containing ENTRIES.tallText.
-    const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, [ENTRIES.tallText], []);
-
-    // Open the file in Quick View.
-    await openQuickView(appId, ENTRIES.tallText.nameText);
-
-    // Wait for the Quick View <webview> to load and display its content.
-    function checkWebViewTextLoaded(elements) {
-      let haveElements = Array.isArray(elements) && elements.length === 1;
-      if (haveElements) {
-        haveElements = elements[0].styles.display.includes('block');
-      }
-      if (!haveElements || !elements[0].attributes.src) {
-        return pending(caller, 'Waiting for <webview> to load.');
-      }
-      return;
-    }
-    await repeatUntil(async () => {
-      return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [webView, ['display']]));
-    });
-
-    // Get the <webview> root (html) element backgroundColor style.
-    const getBackgroundStyle =
-        'window.getComputedStyle(document.documentElement).backgroundColor';
-    const backgroundColor = await remoteCall.callRemoteTestUtil(
-        'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle]);
-
-    // Check: the <webview> root backgroundColor should be transparent.
-    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
-  };
-
-  /**
    * Tests opening Quick View containing a PDF document.
    */
   testcase.openQuickViewPdf = async () => {

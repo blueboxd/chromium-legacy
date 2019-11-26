@@ -541,8 +541,8 @@ enum SubscribeToHitTestResult {
 };
 
 enum EntityTypeForHitTest {
-  POINT = 0,
-  PLANE = 1,
+  POINT = 1,
+  PLANE = 2,
 };
 
 // Provides functionality for integrating environment information into an

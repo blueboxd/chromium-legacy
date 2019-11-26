@@ -47,25 +47,25 @@ public class ResponseBuilder {
                 .build();
     }
 
-    private final WireProtocolInfo wireProtocolInfo = new WireProtocolInfo();
-    private final FeedResponse.Builder feedResponseBuilder = FeedResponse.newBuilder();
-    private final List<ContentId> pietSharedStateContentIds = new ArrayList<>();
+    private final WireProtocolInfo mWireProtocolInfo = new WireProtocolInfo();
+    private final FeedResponse.Builder mFeedResponseBuilder = FeedResponse.newBuilder();
+    private final List<ContentId> mPietSharedStateContentIds = new ArrayList<>();
 
-    private int tokenId;
-    /*@Nullable*/ private ByteString token;
+    private int mTokenId;
+    /*@Nullable*/ private ByteString mToken;
 
     /** Add a CLEAR_ALL data operation to the response */
     public ResponseBuilder addClearOperation() {
-        wireProtocolInfo.hasClearOperation = true;
-        feedResponseBuilder.addDataOperation(
+        mWireProtocolInfo.hasClearOperation = true;
+        mFeedResponseBuilder.addDataOperation(
                 DataOperation.newBuilder().setOperation(Operation.CLEAR_ALL).build());
         return this;
     }
 
     public ResponseBuilder addStreamToken(int tokenId, ByteString token) {
-        this.token = token;
-        this.tokenId = tokenId;
-        wireProtocolInfo.hasToken = true;
+        this.mToken = token;
+        this.mTokenId = tokenId;
+        mWireProtocolInfo.hasToken = true;
         return this;
     }
 
@@ -74,10 +74,10 @@ public class ResponseBuilder {
     }
 
     public ResponseBuilder addPietSharedState(ContentId pietSharedStateContentId) {
-        pietSharedStateContentIds.add(pietSharedStateContentId);
+        mPietSharedStateContentIds.add(pietSharedStateContentId);
         PayloadMetadata payloadMetadata =
                 PayloadMetadata.newBuilder().setContentId(pietSharedStateContentId).build();
-        feedResponseBuilder.addDataOperation(
+        mFeedResponseBuilder.addDataOperation(
                 DataOperation.newBuilder()
                         .setOperation(Operation.UPDATE_OR_APPEND)
                         .setPietSharedState(PietSharedState.getDefaultInstance())
@@ -96,12 +96,12 @@ public class ResponseBuilder {
                 PayloadMetadata.newBuilder().setContentId(contentId).build();
         Feature feature = Feature.newBuilder().setRenderableUnit(RenderableUnit.STREAM).build();
 
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.UPDATE_OR_APPEND)
-                                                     .setFeature(feature)
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
-        wireProtocolInfo.featuresAdded.add(contentId);
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.UPDATE_OR_APPEND)
+                                                      .setFeature(feature)
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
+        mWireProtocolInfo.featuresAdded.add(contentId);
         return this;
     }
 
@@ -112,12 +112,12 @@ public class ResponseBuilder {
                                   .setRenderableUnit(RenderableUnit.CLUSTER)
                                   .setParentId(parentId)
                                   .build();
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.UPDATE_OR_APPEND)
-                                                     .setFeature(feature)
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
-        wireProtocolInfo.featuresAdded.add(contentId);
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.UPDATE_OR_APPEND)
+                                                      .setFeature(feature)
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
+        mWireProtocolInfo.featuresAdded.add(contentId);
         return this;
     }
 
@@ -129,12 +129,12 @@ public class ResponseBuilder {
                                   .setRenderableUnit(RenderableUnit.CARD)
                                   .setParentId(parentId)
                                   .build();
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.UPDATE_OR_APPEND)
-                                                     .setFeature(feature)
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
-        wireProtocolInfo.featuresAdded.add(contentId);
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.UPDATE_OR_APPEND)
+                                                      .setFeature(feature)
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
+        mWireProtocolInfo.featuresAdded.add(contentId);
 
         // Create content within the Card
         payloadMetadata =
@@ -150,16 +150,16 @@ public class ResponseBuilder {
                                           .setExtension(PietContent.pietContentExtension,
                                                   PietContent.newBuilder()
                                                           .addAllPietSharedStates(
-                                                                  pietSharedStateContentIds)
+                                                                  mPietSharedStateContentIds)
                                                           .build())
                                           .build())
                           .build();
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.UPDATE_OR_APPEND)
-                                                     .setFeature(feature)
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
-        wireProtocolInfo.featuresAdded.add(payloadMetadata.getContentId());
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.UPDATE_OR_APPEND)
+                                                      .setFeature(feature)
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
+        mWireProtocolInfo.featuresAdded.add(payloadMetadata.getContentId());
         return this;
     }
 
@@ -171,7 +171,7 @@ public class ResponseBuilder {
     }
 
     public ResponseBuilder addCardWithSemanticData(ContentId contentId, ByteString semanticData) {
-        feedResponseBuilder.addDataOperation(
+        mFeedResponseBuilder.addDataOperation(
                 DataOperation.newBuilder()
                         .setOperation(Operation.UPDATE_OR_APPEND)
                         .setFeature(Feature.newBuilder().setRenderableUnit(RenderableUnit.CARD))
@@ -181,7 +181,7 @@ public class ResponseBuilder {
                                         .setSemanticProperties(
                                                 SemanticProperties.newBuilder()
                                                         .setSemanticPropertiesData(semanticData))));
-        wireProtocolInfo.featuresAdded.add(contentId);
+        mWireProtocolInfo.featuresAdded.add(contentId);
         return this;
     }
 
@@ -192,21 +192,21 @@ public class ResponseBuilder {
                                   .setRenderableUnit(RenderableUnit.CARD)
                                   .setParentId(parentId)
                                   .build();
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.REMOVE)
-                                                     .setFeature(feature)
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
-        wireProtocolInfo.featuresAdded.add(contentId);
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.REMOVE)
+                                                      .setFeature(feature)
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
+        mWireProtocolInfo.featuresAdded.add(contentId);
         return this;
     }
 
     public Response build() {
-        if (token != null) {
-            addToken(tokenId, token);
+        if (mToken != null) {
+            addToken(mTokenId, mToken);
         }
         return Response.newBuilder()
-                .setExtension(FeedResponse.feedResponse, feedResponseBuilder.build())
+                .setExtension(FeedResponse.feedResponse, mFeedResponseBuilder.build())
                 .build();
     }
 
@@ -220,15 +220,15 @@ public class ResponseBuilder {
                                                  .setParentId(ROOT_CONTENT_ID);
         Token wireToken = Token.newBuilder().setNextPageToken(token).build();
         featureBuilder.setExtension(Token.tokenExtension, wireToken);
-        feedResponseBuilder.addDataOperation(DataOperation.newBuilder()
-                                                     .setOperation(Operation.UPDATE_OR_APPEND)
-                                                     .setFeature(featureBuilder.build())
-                                                     .setMetadata(payloadMetadata)
-                                                     .build());
+        mFeedResponseBuilder.addDataOperation(DataOperation.newBuilder()
+                                                      .setOperation(Operation.UPDATE_OR_APPEND)
+                                                      .setFeature(featureBuilder.build())
+                                                      .setMetadata(payloadMetadata)
+                                                      .build());
     }
 
     public WireProtocolInfo getWireProtocolInfo() {
-        return wireProtocolInfo;
+        return mWireProtocolInfo;
     }
 
     /** Returns a new {@link ResponseBuilder}. */

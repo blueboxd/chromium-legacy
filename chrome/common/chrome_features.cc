@@ -63,8 +63,6 @@ const base::Feature kAppNotificationStatusMessaging{
 
 #if !defined(OS_ANDROID)
 // App Service related flags. See chrome/services/app_service/README.md.
-const base::Feature kAppServiceAsh{"AppServiceAsh",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceInstanceRegistry{
     "AppServiceInstanceRegistry", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceIntentHandling{
@@ -701,9 +699,6 @@ const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
 // Enables or disables automatic setup of USB printers.
 const base::Feature kStreamlinedUsbPrinterSetup{
     "StreamlinedUsbPrinterSetup", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables the ability to add a Samba Share to the Files app
-const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using smbfs for accessing SMB file shares.
 const base::Feature kSmbFs{"SmbFs", base::FEATURE_DISABLED_BY_DEFAULT};

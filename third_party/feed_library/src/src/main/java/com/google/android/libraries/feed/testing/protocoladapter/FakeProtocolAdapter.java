@@ -21,12 +21,12 @@ import java.util.Map;
 public final class FakeProtocolAdapter implements ProtocolAdapter {
     private static final String UNMAPPED_CONTENT_ID = "unmapped_content_id";
 
-    private final Map<String, ContentId> contentIds = new HashMap<>();
-    /*@Nullable*/ private Response lastResponse;
+    private final Map<String, ContentId> mContentIds = new HashMap<>();
+    /*@Nullable*/ private Response mLastResponse;
 
     @Override
     public Result<Model> createModel(Response response) {
-        lastResponse = response;
+        mLastResponse = response;
         return Result.success(Model.empty());
     }
 
@@ -37,8 +37,8 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
 
     @Override
     public String getStreamContentId(ContentId wireContentId) {
-        for (String contentId : contentIds.keySet()) {
-            if (wireContentId.equals(contentIds.get(contentId))) {
+        for (String contentId : mContentIds.keySet()) {
+            if (wireContentId.equals(mContentIds.get(contentId))) {
                 return contentId;
             }
         }
@@ -48,7 +48,7 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
 
     @Override
     public Result<ContentId> getWireContentId(String contentId) {
-        ContentId wireContentId = contentIds.get(contentId);
+        ContentId wireContentId = mContentIds.get(contentId);
         if (wireContentId != null) {
             return Result.success(wireContentId);
         } else {
@@ -58,13 +58,13 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
 
     /** Adds a content id mapping to the {@link FakeProtocolAdapter}. */
     public FakeProtocolAdapter addContentId(String contentId, ContentId wireContentId) {
-        contentIds.put(contentId, wireContentId);
+        mContentIds.put(contentId, wireContentId);
         return this;
     }
 
     /** Returns the last response sent into {@link #createModel(Response)}. */
     /*@Nullable*/
     public Response getLastResponse() {
-        return lastResponse;
+        return mLastResponse;
     }
 }

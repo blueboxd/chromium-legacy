@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> অথবা <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">এক নজরে দেখার মোড</translation>
 <translation id="4382340674111381977">আগের পৃষ্ঠায় ফিরে যান</translation>
+<translation id="4458670250301149821">অ্যাপ গ্রিডে একটি অ্যাপ আইকন ফোল্ডারের মধ্যে/বাইরে সরান</translation>
 <translation id="4472417192667361414">সিস্টেম এবং ডিসপ্লে সেটিংস</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, তারপরে <ph name="LEFT" /> বা <ph name="RIGHT" /> অথবা <ph name="UP" /> বা <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">কীবোর্ড শর্টকাট সহায়তাকারী দেখুন</translation>
 <translation id="4628718545549558538">স্ট্যাটাস খুলুন (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়)</translation>
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">পরের অক্ষরটি মুছুন (সামনের দিকে মুছুন)</translation>
 <translation id="7500368597227394048">হাইফেন লেখার বোতাম</translation>
 <translation id="7611271430932669992">পপআপ এবং ডায়ালগগুলিতে ফোকাস সরান</translation>
+<translation id="7635348532214572995">অ্যাপ গ্রিডে একটি অ্যাপ আইকন সরান</translation>
 <translation id="766326951329901120">ক্লিপবোর্ড থেকে সাধারণ টেক্সট হিসেবে কন্টেন্ট পেস্ট করুন</translation>
 <translation id="7703010453515335249">বাঁদিকের ব্র্যাকেট দেওয়ার বোতাম</translation>
 <translation id="7724603315864178912">কাটুন</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ক্লিপবোর্ড থেকে কন্টেন্ট পেস্ট করুন</translation>
 <translation id="9052808072970550123">পরের ব্যবহারকারী বেছে নিন</translation>
 <translation id="906458777597946297">উইন্ডো বৃহদায়ন করুন</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, তারপরে <ph name="LEFT" /> বা <ph name="RIGHT" /> অথবা <ph name="UP" /> বা <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">লাইনের শুরুতে যান</translation>
 <translation id="9106898733795143799">পৃষ্ঠা এবং ওয়েব ব্রাউজার</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> এর কোনও ফলাফল পাওয়া যায়নি</translation>

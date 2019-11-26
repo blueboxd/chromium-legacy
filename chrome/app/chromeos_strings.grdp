@@ -127,6 +127,9 @@
   <message desc="Label text used to cancel zip operation in progress." name="IDS_ZIP_ARCHIVER_PACKING_CANCEL_BUTTON_LABEL">
     Cancel
   </message>
+  <message desc="Message shown when limit of open FSPs reached." name="IDS_ZIP_ARCHIVER_TOO_MANY_OPENED">
+    Too many file systems opened.
+  </message>
 
   <!-- MultiDevice setup dialog. -->
   <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow.">

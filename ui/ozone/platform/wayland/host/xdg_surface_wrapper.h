@@ -60,6 +60,12 @@ class XDGSurfaceWrapper {
   // Sets a desired window geometry once wayland requests client to do so.
   virtual void SetWindowGeometry(const gfx::Rect& bounds) = 0;
 
+  // Sets the minimum size for the top level.
+  virtual void SetMinSize(int32_t width, int32_t height) = 0;
+
+  // Sets the maximum size for the top level.
+  virtual void SetMaxSize(int32_t width, int32_t height) = 0;
+
   // Sets an app id of the native window that is shown as an application name
   // and hints the compositor that it can group application surfaces together by
   // their app id. This also helps the compositor to identify application's

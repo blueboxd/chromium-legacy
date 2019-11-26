@@ -113,7 +113,9 @@ class CertificateManagerModelTest : public testing::Test {
 
 // CertificateManagerModel correctly lists CA certificates from the platform NSS
 // Database.
-TEST_F(CertificateManagerModelTest, ListsCertsFromPlatform) {
+// TODO(https://crbug.com/787602): Re-enable this test when it is identified why
+// it was flaky.
+TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
   net::ScopedCERTCertificateList certs = CreateCERTCertificateListFromFile(
       net::GetTestCertsDirectory(), "websocket_cacert.pem",
       net::X509Certificate::FORMAT_AUTO);

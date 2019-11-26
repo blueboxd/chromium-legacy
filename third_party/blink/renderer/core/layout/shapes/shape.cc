@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -273,7 +274,7 @@ static bool ExtractImageData(Image* image,
   result.Transfer(contents);
 
   return StaticBitmapImage::CopyToByteArray(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()),
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()),
       base::span<uint8_t>(reinterpret_cast<uint8_t*>(contents.Data()),
                           contents.DataLength()),
       image_dest_rect, color_params);

@@ -25,12 +25,12 @@ import java.util.Map;
 public final class ContentStorageDirectImpl
         extends MainThreadCaller implements ContentStorageDirect {
     private static final String LOCATION = "ContentStorage.";
-    private final ContentStorage contentStorage;
+    private final ContentStorage mContentStorage;
 
     public ContentStorageDirectImpl(
             ContentStorage contentStorage, MainThreadRunner mainThreadRunner) {
         super(mainThreadRunner);
-        this.contentStorage = contentStorage;
+        this.mContentStorage = contentStorage;
     }
 
     @Override
@@ -40,24 +40,24 @@ public final class ContentStorageDirectImpl
         }
 
         return mainThreadCaller(LOCATION + "get",
-                (consumer) -> contentStorage.get(keys, consumer), Result.failure());
+                (consumer) -> mContentStorage.get(keys, consumer), Result.failure());
     }
 
     @Override
     public Result<Map<String, byte[]>> getAll(String prefix) {
         return mainThreadCaller(LOCATION + "getAll",
-                (consumer) -> contentStorage.getAll(prefix, consumer), Result.failure());
+                (consumer) -> mContentStorage.getAll(prefix, consumer), Result.failure());
     }
 
     @Override
     public CommitResult commit(ContentMutation mutation) {
         return mainThreadCaller(LOCATION + "commit",
-                (consumer) -> contentStorage.commit(mutation, consumer), CommitResult.FAILURE);
+                (consumer) -> mContentStorage.commit(mutation, consumer), CommitResult.FAILURE);
     }
 
     @Override
     public Result<List<String>> getAllKeys() {
         return mainThreadCaller(
-                LOCATION + "getAllKeys", contentStorage::getAllKeys, Result.failure());
+                LOCATION + "getAllKeys", mContentStorage::getAllKeys, Result.failure());
     }
 }

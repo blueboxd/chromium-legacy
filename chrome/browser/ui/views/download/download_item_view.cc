@@ -1090,9 +1090,8 @@ void DownloadItemView::ShowDeepScanningDialog() {
   DCHECK_EQ(mode_, NORMAL_MODE);
   SetMode(DEEP_SCANNING_MODE);
 
-  base::string16 elided_filename =
-      gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
-                         kTextWidth, gfx::Typesetter::BROWSER);
+  base::string16 elided_filename = gfx::ElideFilename(
+      model_->GetFileNameToReportUser(), font_list_, kTextWidth);
   base::string16 deep_scanning_text = l10n_util::GetStringFUTF16(
       IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
@@ -1415,8 +1414,7 @@ base::string16 DownloadItemView::GetStatusText() const {
 
 #if !defined(OS_ANDROID)
   return url_formatter::ElideUrl(model_->GetOriginalURL().GetOrigin(),
-                                 status_font_list_, kTextWidth,
-                                 gfx::Typesetter::BROWSER);
+                                 status_font_list_, kTextWidth);
 #else
   NOTREACHED();
   return base::string16();

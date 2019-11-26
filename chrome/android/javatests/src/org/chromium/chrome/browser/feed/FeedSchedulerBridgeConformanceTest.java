@@ -66,15 +66,15 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
     @Before
     public void setUp() {
         // The scheduler is declared and tested in SchedulerConformanceTest.
-        scheduler = new FeedSchedulerBridge(Profile.getLastUsedProfile());
+        mScheduler = new FeedSchedulerBridge(Profile.getLastUsedProfile());
         if (mUseRequestManager) {
-            ((FeedSchedulerBridge) scheduler).initializeFeedDependencies(mRequestManager);
+            ((FeedSchedulerBridge) mScheduler).initializeFeedDependencies(mRequestManager);
         }
     }
 
     @After
     public void tearDown() {
-        ((FeedSchedulerBridge) scheduler).destroy();
-        scheduler = null;
+        ((FeedSchedulerBridge) mScheduler).destroy();
+        mScheduler = null;
     }
 }

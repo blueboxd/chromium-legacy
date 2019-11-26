@@ -1432,117 +1432,98 @@ def gpu_fyi_linux_builder(
     *,
     name,
     execution_timeout=6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
     **kwargs):
   return gpu_fyi_builder(
       name = name,
       execution_timeout = execution_timeout,
+      goma_backend = goma_backend,
       **kwargs
   )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 32 Vk Release (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 32 dEQP Vk Release (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 Perf (Pixel 2)',
     cores = 2,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 Vk Release (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 dEQP Vk Release (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (NVIDIA Shield TV)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5X)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6P)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 9)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer GL (Nexus 5X)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer Vulkan (Pixel 2)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI dEQP Release (Nexus 5X)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Ozone Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux dEQP Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Perf Android 64 Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Linux FYI GPU TSAN Release',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -1553,6 +1534,9 @@ def gpu_fyi_linux_ci_tester(*, name, execution_timeout=6 * time.hour, **kwargs):
       name = name,
       cores = 2,
       execution_timeout = execution_timeout,
+      # Setting goma_backend for testers is a no-op, but better to be explicit
+      # here and also leave the generated configs unchanged for these testers.
+      goma_backend = None,
       **kwargs
   )
 
@@ -1903,9 +1887,15 @@ gpu_linux_ci_tester(
 )
 
 
-def linux_builder(*, name, goma_jobs=goma.jobs.MANY_JOBS_FOR_CI, **kwargs):
+def linux_builder(
+    *,
+    name,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_jobs=goma.jobs.MANY_JOBS_FOR_CI,
+    **kwargs):
   return builder(
       name = name,
+      goma_backend = goma_backend,
       goma_jobs = goma_jobs,
       mastername = 'chromium.linux',
       **kwargs
@@ -1913,19 +1903,16 @@ def linux_builder(*, name, goma_jobs=goma.jobs.MANY_JOBS_FOR_CI, **kwargs):
 
 linux_builder(
     name = 'Fuchsia x64',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'Cast Audio Linux',
-    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
 )
 
 linux_builder(
     name = 'Cast Linux',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J50,
 )
 
@@ -1933,7 +1920,6 @@ linux_builder(
     name = 'Deterministic Fuchsia (dbg)',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = None,
 )
 
@@ -1941,7 +1927,6 @@ linux_builder(
     name = 'Deterministic Linux',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1949,28 +1934,23 @@ linux_builder(
     cores = 32,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Fuchsia ARM64',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'Leak Detection Linux',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Builder (dbg)(32)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1979,19 +1959,16 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-arm64-cast',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'fuchsia-x64-cast',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'fuchsia-x64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
@@ -2002,19 +1979,16 @@ linux_builder(
 
 linux_builder(
     name = 'linux-ozone-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-trusty-rel',
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_TRUSTY,
 )
 
 linux_builder(
     name = 'linux_chromium_component_updater',
     executable = luci.recipe(name = 'findit/chromium/update_components'),
-    goma_backend = goma.backend.RBE_PROD,
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com'
 )
 

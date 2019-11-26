@@ -34,21 +34,21 @@ import java.util.List;
 public final class MockServerNetworkClient implements NetworkClient {
     private static final String TAG = "MockServerNetworkClient";
 
-    private final Context context;
-    private final Response initialResponse;
-    private final List<ConditionalResponse> conditionalResponses;
-    private final ExtensionRegistryLite extensionRegistry;
-    private final long responseDelay;
+    private final Context mContext;
+    private final Response mInitialResponse;
+    private final List<ConditionalResponse> mConditionalResponses;
+    private final ExtensionRegistryLite mExtensionRegistry;
+    private final long mResponseDelay;
 
     public MockServerNetworkClient(
             Context context, MockServer mockServer, long responseDelayMillis) {
-        this.context = context;
-        initialResponse = mockServer.getInitialResponse();
-        conditionalResponses = mockServer.getConditionalResponsesList();
+        this.mContext = context;
+        mInitialResponse = mockServer.getInitialResponse();
+        mConditionalResponses = mockServer.getConditionalResponsesList();
 
-        extensionRegistry = ExtensionRegistryLite.newInstance();
-        extensionRegistry.add(FeedRequest.feedRequest);
-        responseDelay = responseDelayMillis;
+        mExtensionRegistry = ExtensionRegistryLite.newInstance();
+        mExtensionRegistry.add(FeedRequest.feedRequest);
+        mResponseDelay = responseDelayMillis;
     }
 
     @Override
@@ -64,7 +64,7 @@ public final class MockServerNetworkClient implements NetworkClient {
                     ? request.getExtension(FeedRequest.feedRequest).getFeedQuery().getPageToken()
                     : null;
             if (requestToken != null) {
-                for (ConditionalResponse response : conditionalResponses) {
+                for (ConditionalResponse response : mConditionalResponses) {
                     if (!response.hasContinuationToken()) {
                         Logger.w(TAG, "Conditional response without a token");
                         continue;
@@ -75,7 +75,7 @@ public final class MockServerNetworkClient implements NetworkClient {
                     }
                 }
             }
-            delayedAccept(createHttpResponse(initialResponse), responseConsumer);
+            delayedAccept(createHttpResponse(mInitialResponse), responseConsumer);
         } catch (IOException e) {
             // TODO : handle errors here
             Logger.e(TAG, e.getMessage());
@@ -84,18 +84,18 @@ public final class MockServerNetworkClient implements NetworkClient {
     }
 
     private boolean isAirplaneModeOn() {
-        return Settings.System.getInt(context.getContentResolver(), Global.AIRPLANE_MODE_ON, 0)
+        return Settings.System.getInt(mContext.getContentResolver(), Global.AIRPLANE_MODE_ON, 0)
                 != 0;
     }
 
     private void delayedAccept(HttpResponse httpResponse, Consumer<HttpResponse> responseConsumer) {
-        if (responseDelay <= 0) {
+        if (mResponseDelay <= 0) {
             responseConsumer.accept(httpResponse);
             return;
         }
 
         new Handler(Looper.getMainLooper())
-                .postDelayed(() -> responseConsumer.accept(httpResponse), responseDelay);
+                .postDelayed(() -> responseConsumer.accept(httpResponse), mResponseDelay);
     }
 
     // TODO Fix nullness violation: incompatible types in argument.
@@ -112,7 +112,7 @@ public final class MockServerNetworkClient implements NetworkClient {
         } else {
             rawRequest = httpRequest.getBody();
         }
-        return Request.parseFrom(rawRequest, extensionRegistry);
+        return Request.parseFrom(rawRequest, mExtensionRegistry);
     }
 
     @Override

@@ -264,7 +264,7 @@
 <translation id="2903493209154104877">Aadressid</translation>
 <translation id="290376772003165898">Kas leht ei ole <ph name="LANGUAGE" /> keeles?</translation>
 <translation id="2904414404539560095">Vahelehe jagamise seadmete loend (täiskõrgusel avatud).</translation>
-<translation id="2905036901251765993">Lähedaste inimestega jagamiseks laske neil seda QR-koodi skannida</translation>
+<translation id="2905036901251765993">Lähedaste inimestega jagamiseks paluge neil skaneerida see QR-kood</translation>
 <translation id="2909615210195135082">Google'i märguannete platvorm</translation>
 <translation id="2910701580606108292">Küsi enne saitidel kaitstud sisu esitamise lubamist</translation>
 <translation id="2913331724188855103">Lubab saitidel salvestada küpsiseid ja lugeda küpsiste andmeid (soovitatav)</translation>
@@ -359,7 +359,7 @@
 <translation id="3632295766818638029">Parooli kuvamine</translation>
 <translation id="363596933471559332">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt kinnitust iga kord enne veebisaidile sisselogimist.</translation>
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
-<translation id="3682730288090679318">Lubage saitidel automaatselt blokeerida märguannete kuvamist. Kui sait nõuab märguandeid, kuvatakse lehe allosas teaberiba.</translation>
+<translation id="3682730288090679318">Lubage automaatne blokeerimine, mis takistab saitidel küsida, kas soovite saada neilt märguandeid. Kui sait küsib märguannete luba, kuvatakse lehe allosas teaberiba.</translation>
 <translation id="3692944402865947621">Faili <ph name="FILE_NAME" /> allalaadimine nurjus, kuna salvestuskoht ei ole saadaval.</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
 <translation id="3716182511346448902">Chrome peatas selle lehe, kuna see kasutab liiga palju mälu.</translation>
@@ -544,7 +544,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5048398596102334565">Luba saitide jaoks juurdepääs liikumisanduritele (soovitatav)</translation>
 <translation id="5063480226653192405">Kasutus</translation>
 <translation id="5087580092889165836">Lisa kaart</translation>
-<translation id="5096950519211870196">Saidid ei saa paluda teile märguandeid näidata. Kui sait nõuab märguandeid, kuvatakse lehe allosas teaberiba.</translation>
+<translation id="5096950519211870196">Saitidel blokeeritakse teile märguannete näitamise loa küsimine. Kui sait küsib märguannete luba, kuvatakse lehe allosas teaberiba.</translation>
 <translation id="5100237604440890931">Ahendatud – laiendamiseks klõpsake.</translation>
 <translation id="510275257476243843">Jäänud on 1 tund</translation>
 <translation id="5123685120097942451">Inkognito vaheleht</translation>
@@ -592,7 +592,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5414836363063783498">Kinnitamine ...</translation>
 <translation id="5423934151118863508">Teie enim külastatud lehed ilmuvad siin</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB saadaval</translation>
-<translation id="5427766642345310212">Selge. Vaikimisi ilmuvad siia uued märguandetaotlused.</translation>
+<translation id="5427766642345310212">Selge. Vaikimisi ilmuvad uued märguandetaotlused siia.</translation>
 <translation id="543338862236136125">Muuda parooli</translation>
 <translation id="5433691172869980887">Kasutajanimi on kopeeritud</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> faili allalaadimine (<ph name="MEGABYTES" />).</translation>
@@ -1024,7 +1024,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8503813439785031346">Kasutajanimi</translation>
 <translation id="8514477925623180633">Chrome'i salvestatud paroolide eksportimine</translation>
 <translation id="8514577642972634246">Inkognito režiimi sisenemine</translation>
-<translation id="8516012719330875537">Kujutise redigeerija</translation>
+<translation id="8516012719330875537">Pildiredigeerija</translation>
 <translation id="851751545965956758">Blokeeri saitidel seadmetega ühenduse loomine</translation>
 <translation id="8523928698583292556">Salvestatud parooli kustutamine</translation>
 <translation id="854522910157234410">Ava leht</translation>

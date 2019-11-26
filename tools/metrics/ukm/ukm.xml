@@ -5902,6 +5902,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay3">
+    <obsolete>
+      Removed in July 2019 in favor of InteractiveTiming.FirstInputDelay4 which
+      includes events which were previously filtered.
+    </obsolete>
     <summary>
       Measures First Input Delay, the duration between the hardware timestamp
       and the start of event processing on the main thread for the first
@@ -5923,9 +5927,6 @@ be describing additional metrics about the same event.
       and the start of event processing on the main thread for the first
       meaningful input per navigation. See https://goo.gl/tr1oTZ for a detailed
       explanation. In ms.
-
-      This metric MAY replace InteractiveTiming.FirstInputDelay3 if the
-      SkipTouchEventFilter experiment is successful.
     </summary>
     <aggregation>
       <history>
@@ -5971,6 +5972,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputTimestamp3">
+    <obsolete>
+      Removed in July 2019 in favor of InteractiveTiming.FirstInputTimestamp4
+      which includes events which were previously filtered.
+    </obsolete>
     <summary>
       The duration between navigation start and the hardware timestamp of the
       first meaningful input per navigation. See https://goo.gl/tr1oTZ for a
@@ -5982,9 +5987,6 @@ be describing additional metrics about the same event.
       The duration between navigation start and the hardware timestamp of the
       first meaningful input per navigation. See https://goo.gl/tr1oTZ for a
       detailed explanation. In ms.
-
-      This metric MAY replace InteractiveTiming.FirstInputTimestamp3 if the
-      SkipTouchEventFilter experiment is successful.
     </summary>
   </metric>
   <metric name="InteractiveTiming.LongestInputDelay">
@@ -8337,6 +8339,12 @@ be describing additional metrics about the same event.
     <summary>
       Boolean indicating that the intervention was disallowed because the tab
       currently contains text form entry.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateHasNotificationsPermission" enum="Boolean">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab
+      has the permission to use notifications.
     </summary>
   </metric>
   <metric name="FailureLiveStateIsPDF" enum="Boolean">

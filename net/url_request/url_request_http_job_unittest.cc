@@ -357,7 +357,7 @@ class URLRequestHttpJobTest : public TestWithTaskEnvironment {
 
   TestURLRequestContext context_;
   TestDelegate delegate_;
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   std::unique_ptr<URLRequest> req_;
 };
 

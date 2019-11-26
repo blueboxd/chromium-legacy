@@ -45,55 +45,55 @@ import java.util.Set;
  */
 abstract class ElementAdapter<V extends View, M> {
     private static final String TAG = "ElementAdapter";
-    private final Context context;
-    private final AdapterParameters parameters;
-    private final V view;
-    /*@Nullable*/ private M model;
-    private Element baseElement = Element.getDefaultInstance();
-    /*@Nullable*/ private RecyclerKey key;
-    private StyleProvider elementStyle;
-    /*@Nullable*/ private LogData logData;
+    private final Context mContext;
+    private final AdapterParameters mParameters;
+    private final V mView;
+    /*@Nullable*/ private M mModel;
+    private Element mBaseElement = Element.getDefaultInstance();
+    /*@Nullable*/ private RecyclerKey mKey;
+    private StyleProvider mElementStyle;
+    /*@Nullable*/ private LogData mLogData;
 
     /**
      * Set to {@code true} when {@link #createAdapter} has completed successfully; unset at the end
      * of
      * {@link #releaseAdapter}.
      */
-    private boolean created;
+    private boolean mCreated;
 
     /**
      * We only check the bound visibility when we're in the process of binding, not in {@link
      * #createAdapter}.
      */
-    private boolean checkBoundVisibility;
+    private boolean mCheckBoundVisibility;
 
-    /*@Nullable*/ private FrameLayout wrapperView;
+    /*@Nullable*/ private FrameLayout mWrapperView;
 
-    Actions actions = Actions.getDefaultInstance();
+    Actions mActions = Actions.getDefaultInstance();
     /** Set of actions that are currently active / triggered so they only get called once. */
-    private final Set<VisibilityAction> activeVisibilityActions = new HashSet<>();
+    private final Set<VisibilityAction> mActiveVisibilityActions = new HashSet<>();
 
     /**
      * Desired width of this element. {@link StyleProvider#DIMENSION_NOT_SET} indicates no explicit
      * width; let the parent view decide.
      */
-    int widthPx = DIMENSION_NOT_SET;
+    int mWidthPx = DIMENSION_NOT_SET;
     /**
      * Desired height of this element. {@link StyleProvider#DIMENSION_NOT_SET} indicates no explicit
      * height; let the parent view decide.
      */
-    int heightPx = DIMENSION_NOT_SET;
+    int mHeightPx = DIMENSION_NOT_SET;
 
     ElementAdapter(Context context, AdapterParameters parameters, V view) {
-        this.context = context;
-        this.parameters = parameters;
-        this.view = view;
-        elementStyle = parameters.defaultStyleProvider;
+        this.mContext = context;
+        this.mParameters = parameters;
+        this.mView = view;
+        mElementStyle = parameters.mDefaultStyleProvider;
     }
 
     ElementAdapter(Context context, AdapterParameters parameters, V view, RecyclerKey key) {
         this(context, parameters, view);
-        this.key = key;
+        this.mKey = key;
     }
 
     /**
@@ -101,7 +101,7 @@ abstract class ElementAdapter<V extends View, M> {
      * not a valid call until the first Model has been bound to the Adapter.
      */
     public View getView() {
-        return wrapperView != null ? wrapperView : view;
+        return mWrapperView != null ? mWrapperView : mView;
     }
 
     /**
@@ -109,7 +109,7 @@ abstract class ElementAdapter<V extends View, M> {
      * a different result than getView when there is a wrapper FrameLayout to support overlays.
      */
     protected V getBaseView() {
-        return view;
+        return mView;
     }
 
     /**
@@ -130,12 +130,12 @@ abstract class ElementAdapter<V extends View, M> {
      * #onCreateAdapter} instead.
      */
     public void createAdapter(M model, Element baseElement, FrameContext frameContext) {
-        this.model = model;
-        this.baseElement = baseElement;
+        this.mModel = model;
+        this.mBaseElement = baseElement;
 
         // Initialize the wrapper view before checking visibility - we need to have it in place
         // before the parent adds our outermost view to the hierarchy.
-        elementStyle = frameContext.makeStyleFor(getElementStyleIdsStack());
+        mElementStyle = frameContext.makeStyleFor(getElementStyleIdsStack());
         initializeWrapperViewDependentFeatures();
 
         Visibility visibility = getVisibilityForElement(baseElement, frameContext);
@@ -150,30 +150,30 @@ abstract class ElementAdapter<V extends View, M> {
 
         initializeOverflow(baseElement);
 
-        elementStyle.applyElementStyles(this);
-        created = true;
+        mElementStyle.applyElementStyles(this);
+        mCreated = true;
     }
 
     private void initializeWrapperViewDependentFeatures() {
-        if (wrapperView != null) {
+        if (mWrapperView != null) {
             // We have already initialized the wrapper view.
             return;
         }
-        if (!elementStyle.hasRoundedCorners() && !elementStyle.hasBorders()) {
+        if (!mElementStyle.hasRoundedCorners() && !mElementStyle.hasBorders()) {
             // We do not need a wrapper view.
             return;
         }
 
-        FrameLayout wrapper = elementStyle.createWrapperView(context,
-                parameters.roundedCornerMaskCache, parameters.allowLegacyRoundedCornerImpl,
-                parameters.allowOutlineRoundedCornerImpl);
+        FrameLayout wrapper = mElementStyle.createWrapperView(mContext,
+                mParameters.mRoundedCornerMaskCache, mParameters.mAllowLegacyRoundedCornerImpl,
+                mParameters.mAllowOutlineRoundedCornerImpl);
         wrapper.addView(getBaseView());
 
         if (!(wrapper instanceof RoundedCornerWrapperView)) {
-            elementStyle.addBordersWithoutRoundedCorners(wrapper, getContext());
+            mElementStyle.addBordersWithoutRoundedCorners(wrapper, getContext());
         }
 
-        wrapperView = wrapper;
+        mWrapperView = wrapper;
     }
 
     /** Performs child-class-specific adapter creation; to be overridden. */
@@ -190,11 +190,11 @@ abstract class ElementAdapter<V extends View, M> {
 
     /** Bind the model and initialize overlays. Calls child {@link #onBindModel} methods. */
     void bindModel(M model, Element baseElement, FrameContext frameContext) {
-        this.model = model;
-        this.baseElement = baseElement;
-        checkBoundVisibility = true;
+        this.mModel = model;
+        this.mBaseElement = baseElement;
+        mCheckBoundVisibility = true;
         if (getElementStyleIdsStack().hasStyleBinding()) {
-            elementStyle = frameContext.makeStyleFor(getElementStyleIdsStack());
+            mElementStyle = frameContext.makeStyleFor(getElementStyleIdsStack());
         }
 
         Visibility visibility = getVisibilityForElement(baseElement, frameContext);
@@ -202,10 +202,10 @@ abstract class ElementAdapter<V extends View, M> {
         if (visibility == Visibility.GONE) {
             return;
         }
-        if (!created) {
+        if (!mCreated) {
             createAdapter(model, baseElement, frameContext);
         }
-        if (!created) {
+        if (!mCreated) {
             // This should not happen; indicates a problem in the logic if createAdapter here runs
             // without successfully creating the adapter.
             throw new PietFatalException(ErrorCode.ERR_UNSPECIFIED,
@@ -223,7 +223,7 @@ abstract class ElementAdapter<V extends View, M> {
 
         // Reapply styles if we have style bindings
         if (getElementStyleIdsStack().hasStyleBinding()) {
-            elementStyle.applyElementStyles(this);
+            mElementStyle.applyElementStyles(this);
         }
         for (AccessibilityRole role : baseElement.getAccessibility().getRolesList()) {
             switch (role) {
@@ -267,20 +267,20 @@ abstract class ElementAdapter<V extends View, M> {
         } else {
             getBaseView().setContentDescription(null);
         }
-        LogDataCallback callback = parameters.hostProviders.getLogDataCallback();
+        LogDataCallback callback = mParameters.mHostProviders.getLogDataCallback();
         if (callback != null) {
             switch (baseElement.getLogDataValueCase()) {
                 case LOG_DATA:
-                    logData = baseElement.getLogData();
+                    mLogData = baseElement.getLogData();
                     break;
                 case LOG_DATA_REF:
                     // Get the logData from the binding in the template
-                    logData = frameContext.getLogDataFromBinding(baseElement.getLogDataRef());
+                    mLogData = frameContext.getLogDataFromBinding(baseElement.getLogDataRef());
                     break;
                 default: // No log Data
             }
-            if (logData != null) {
-                callback.onBind(logData, getView());
+            if (mLogData != null) {
+                callback.onBind(mLogData, getView());
             }
         }
     }
@@ -290,14 +290,14 @@ abstract class ElementAdapter<V extends View, M> {
         switch (accessibility.getDescriptionDataCase()) {
             case DESCRIPTION:
                 return getTemplatedStringEvaluator().evaluate(
-                        parameters.hostProviders.getAssetProvider(),
+                        mParameters.mHostProviders.getAssetProvider(),
                         accessibility.getDescription());
             case DESCRIPTION_BINDING:
                 BindingValue bindingValue = frameContext.getParameterizedTextBindingValue(
                         accessibility.getDescriptionBinding());
                 if (bindingValue.hasParameterizedText()) {
                     return getTemplatedStringEvaluator().evaluate(
-                            parameters.hostProviders.getAssetProvider(),
+                            mParameters.mHostProviders.getAssetProvider(),
                             bindingValue.getParameterizedText());
                 }
                 // fall through
@@ -316,20 +316,20 @@ abstract class ElementAdapter<V extends View, M> {
         // Set up actions. On the server, they are defined either as the actual action, or an
         // "actions_binding". That actions_binding is defined in a template, and the binding value
         // is then looked up in the template invocation.
-        switch (baseElement.getActionsDataCase()) {
+        switch (mBaseElement.getActionsDataCase()) {
             case ACTIONS:
-                actions = baseElement.getActions();
+                mActions = mBaseElement.getActions();
                 ViewUtils.setOnClickActions(
-                        actions, getBaseView(), frameContext, baseElement.getLogData());
+                        mActions, getBaseView(), frameContext, mBaseElement.getLogData());
                 break;
             case ACTIONS_BINDING:
                 // Get the actions from the actions_binding in the template
-                actions = frameContext.getActionsFromBinding(baseElement.getActionsBinding());
+                mActions = frameContext.getActionsFromBinding(mBaseElement.getActionsBinding());
                 ViewUtils.setOnClickActions(
-                        actions, getBaseView(), frameContext, baseElement.getLogData());
+                        mActions, getBaseView(), frameContext, mBaseElement.getLogData());
                 break;
             default: // No actions defined.
-                actions = Actions.getDefaultInstance();
+                mActions = Actions.getDefaultInstance();
                 ViewUtils.clearOnClickActions(getBaseView());
                 ViewUtils.clearOnLongClickActions(getBaseView());
         }
@@ -338,9 +338,9 @@ abstract class ElementAdapter<V extends View, M> {
 
     /** Intended to be called in onCreate when view is offscreen; sets hide actions to active. */
     void setHideActionsActive() {
-        activeVisibilityActions.clear();
+        mActiveVisibilityActions.clear();
         // Set all "hide" actions as active, since the view is currently off screen.
-        activeVisibilityActions.addAll(actions.getOnHideActionsList());
+        mActiveVisibilityActions.addAll(mActions.getOnHideActionsList());
     }
 
     private static void initializeOverflow(Element baseElement) {
@@ -361,15 +361,15 @@ abstract class ElementAdapter<V extends View, M> {
      * bound.
      */
     StyleProvider getElementStyle() {
-        if (model == null) {
+        if (mModel == null) {
             Logger.wtf(TAG, "getElementStyle called when adapter is not bound");
         }
-        return elementStyle;
+        return mElementStyle;
     }
 
     /** Returns any styles associated with the bound Element. */
     StyleIdsStack getElementStyleIdsStack() {
-        return baseElement.getStyleReferences();
+        return mBaseElement.getStyleReferences();
     }
 
     /**
@@ -378,17 +378,17 @@ abstract class ElementAdapter<V extends View, M> {
      */
     public void unbindModel() {
         // If the visibility was GONE, we may not have ever called onBindModel.
-        if (created) {
+        if (mCreated) {
             onUnbindModel();
         }
-        LogDataCallback callback = parameters.hostProviders.getLogDataCallback();
-        if (callback != null && logData != null) {
-            callback.onUnbind(logData, getView());
-            logData = null;
+        LogDataCallback callback = mParameters.mHostProviders.getLogDataCallback();
+        if (callback != null && mLogData != null) {
+            callback.onUnbind(mLogData, getView());
+            mLogData = null;
         }
-        model = null;
-        baseElement = Element.getDefaultInstance();
-        checkBoundVisibility = false;
+        mModel = null;
+        mBaseElement = Element.getDefaultInstance();
+        mCheckBoundVisibility = false;
 
         // Unset actions
         ViewUtils.clearOnLongClickActions(getBaseView());
@@ -403,24 +403,24 @@ abstract class ElementAdapter<V extends View, M> {
      * #onReleaseAdapter} instead.
      */
     public void releaseAdapter() {
-        if (!created) {
+        if (!mCreated) {
             return;
         }
 
         onReleaseAdapter();
 
         // Destroy overlays
-        if (wrapperView != null) {
-            wrapperView.removeAllViews();
-            wrapperView = null;
+        if (mWrapperView != null) {
+            mWrapperView.removeAllViews();
+            mWrapperView = null;
         }
 
         setVisibilityOnView(Visibility.VISIBLE);
 
-        widthPx = DIMENSION_NOT_SET;
-        heightPx = DIMENSION_NOT_SET;
+        mWidthPx = DIMENSION_NOT_SET;
+        mHeightPx = DIMENSION_NOT_SET;
 
-        created = false;
+        mCreated = false;
     }
 
     /** Performs child-adapter-specific release logic; to be overridden. */
@@ -431,14 +431,14 @@ abstract class ElementAdapter<V extends View, M> {
      * upon the Model type.
      */
     void setKey(RecyclerKey key) {
-        this.key = key;
+        this.mKey = key;
     }
 
     /** Returns a {@link RecyclerKey} which represents an instance of a Model based upon a type. */
     /*@Nullable*/
     public RecyclerKey getKey() {
         // There are Adapters which don't hold on to their views.  How do we want to mark them?
-        return key;
+        return mKey;
     }
 
     /**
@@ -446,7 +446,7 @@ abstract class ElementAdapter<V extends View, M> {
      * StyleProvider#DIMENSION_NOT_SET} which implies that the parent can choose the width.
      */
     int getComputedWidthPx() {
-        return widthPx;
+        return mWidthPx;
     }
 
     /**
@@ -454,13 +454,13 @@ abstract class ElementAdapter<V extends View, M> {
      * StyleProvider#DIMENSION_NOT_SET} which implies that the parent can choose the height.
      */
     int getComputedHeightPx() {
-        return heightPx;
+        return mHeightPx;
     }
 
     /** Sets the adapter's desired dimensions based on the style. */
     private void setDesiredDimensions() {
-        widthPx = elementStyle.getWidthSpecPx(context);
-        heightPx = elementStyle.getHeightSpecPx(context);
+        mWidthPx = mElementStyle.getWidthSpecPx(mContext);
+        mHeightPx = mElementStyle.getHeightSpecPx(mContext);
     }
 
     /** Sets the layout parameters on this adapter's view. */
@@ -482,27 +482,27 @@ abstract class ElementAdapter<V extends View, M> {
     }
 
     AdapterParameters getParameters() {
-        return parameters;
+        return mParameters;
     }
 
     Context getContext() {
-        return context;
+        return mContext;
     }
 
     /** Returns the {@code model}, but is only legal to call when the Adapter is bound to a model */
     M getModel() {
-        return checkNotNull(model);
+        return checkNotNull(mModel);
     }
 
     /** Returns the {@code model}, or null if the adapter is not bound. */
     /*@Nullable*/
     M getRawModel() {
-        return model;
+        return mModel;
     }
 
     /** Return the Element's desired vertical placement within its container. */
     int getVerticalGravity(int defaultGravity) {
-        if (model == null) {
+        if (mModel == null) {
             return defaultGravity;
         }
         return getElementStyle().getGravityVertical(defaultGravity);
@@ -510,7 +510,7 @@ abstract class ElementAdapter<V extends View, M> {
 
     /** Return the Element's desired horizontal placement within its container. */
     int getHorizontalGravity(int defaultGravity) {
-        if (model == null) {
+        if (mModel == null) {
             return defaultGravity;
         }
         return getElementStyle().getGravityHorizontal(defaultGravity);
@@ -518,20 +518,20 @@ abstract class ElementAdapter<V extends View, M> {
 
     /** Return the Element's desired horizontal and vertical placement within its container. */
     int getGravity(int defaultGravity) {
-        if (model == null) {
+        if (mModel == null) {
             return defaultGravity;
         }
         return getElementStyle().getGravity(defaultGravity);
     }
 
     ParameterizedTextEvaluator getTemplatedStringEvaluator() {
-        return parameters.templatedStringEvaluator;
+        return mParameters.mTemplatedStringEvaluator;
     }
 
     @VisibleForTesting
     Visibility getVisibilityForElement(Element element, FrameContext frameContext) {
         VisibilityState visibilityState = element.getVisibilityState();
-        if (checkBoundVisibility && visibilityState.hasOverridingBoundVisibility()) {
+        if (mCheckBoundVisibility && visibilityState.hasOverridingBoundVisibility()) {
             /*@Nullable*/
             Visibility overridingVisibility = frameContext.getVisibilityFromBinding(
                     visibilityState.getOverridingBoundVisibility());
@@ -565,12 +565,12 @@ abstract class ElementAdapter<V extends View, M> {
     }
 
     void triggerHideActions(FrameContext frameContext) {
-        ViewUtils.triggerHideActions(getView(), actions, frameContext.getActionHandler(),
-                frameContext.getFrame(), activeVisibilityActions);
+        ViewUtils.triggerHideActions(getView(), mActions, frameContext.getActionHandler(),
+                frameContext.getFrame(), mActiveVisibilityActions);
     }
 
     void triggerViewActions(View viewport, FrameContext frameContext) {
-        ViewUtils.maybeTriggerViewActions(getView(), viewport, actions,
-                frameContext.getActionHandler(), frameContext.getFrame(), activeVisibilityActions);
+        ViewUtils.maybeTriggerViewActions(getView(), viewport, mActions,
+                frameContext.getActionHandler(), frameContext.getFrame(), mActiveVisibilityActions);
     }
 }

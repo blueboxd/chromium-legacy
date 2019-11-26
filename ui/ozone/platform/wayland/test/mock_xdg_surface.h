@@ -48,6 +48,10 @@ class MockXdgSurface : public ServerObject {
   MOCK_METHOD0(UnsetFullscreen, void());
   MOCK_METHOD0(SetMinimized, void());
 
+  // These methods are for zxdg_toplevel only.
+  MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t height));
+  MOCK_METHOD2(SetMinSize, void(int32_t width, int32_t height));
+
   void set_xdg_toplevel(std::unique_ptr<MockXdgTopLevel> xdg_toplevel) {
     xdg_toplevel_ = std::move(xdg_toplevel);
   }

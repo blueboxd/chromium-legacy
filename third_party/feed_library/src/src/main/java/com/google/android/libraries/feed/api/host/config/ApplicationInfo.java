@@ -52,72 +52,72 @@ public class ApplicationInfo {
     }
 
     @AppType
-    private final int appType;
+    private final int mAppType;
     @Architecture
-    private final int architecture;
+    private final int mArchitecture;
     @BuildType
-    private final int buildType;
-    private final String versionString;
+    private final int mBuildType;
+    private final String mVersionString;
 
     private ApplicationInfo(int appType, int architecture, int buildType, String versionString) {
-        this.appType = appType;
-        this.architecture = architecture;
-        this.buildType = buildType;
-        this.versionString = versionString;
+        this.mAppType = appType;
+        this.mArchitecture = architecture;
+        this.mBuildType = buildType;
+        this.mVersionString = versionString;
     }
 
     @AppType
     public int getAppType() {
-        return appType;
+        return mAppType;
     }
 
     @Architecture
     public int getArchitecture() {
-        return architecture;
+        return mArchitecture;
     }
 
     @BuildType
     public int getBuildType() {
-        return buildType;
+        return mBuildType;
     }
 
     public String getVersionString() {
-        return versionString;
+        return mVersionString;
     }
 
     /** Builder class used to create {@link ApplicationInfo} objects. */
     public static final class Builder {
         private static final String TAG = "Builder";
 
-        private final Context context;
+        private final Context mContext;
         @AppType
-        private int appType = AppType.UNKNOWN_APP;
+        private int mAppType = AppType.UNKNOWN_APP;
         @Architecture
-        private int architecture = Architecture.UNKNOWN_ACHITECTURE;
+        private int mAchitecture = Architecture.UNKNOWN_ACHITECTURE;
         @BuildType
-        private int buildType = BuildType.UNKNOWN_BUILD_TYPE;
+        private int mBuildType = BuildType.UNKNOWN_BUILD_TYPE;
 
-        private String versionString;
+        private String mVersionString;
 
         public Builder(Context context) {
-            this.context = context;
+            this.mContext = context;
         }
 
         /** Sets the type of client application. */
         public Builder setAppType(@AppType int appType) {
-            this.appType = appType;
+            this.mAppType = appType;
             return this;
         }
 
         /** Sets the CPU architecture that the client application was built for. */
         public Builder setArchitecture(@Architecture int architecture) {
-            this.architecture = architecture;
+            this.mAchitecture = architecture;
             return this;
         }
 
         /** Sets the release stage of the build for the client application. */
         public Builder setBuildType(@BuildType int buildType) {
-            this.buildType = buildType;
+            this.mBuildType = buildType;
             return this;
         }
 
@@ -128,21 +128,21 @@ public class ApplicationInfo {
          * manifest (see https://developer.android.com/studio/publish/versioning).
          */
         public Builder setVersionString(String versionString) {
-            this.versionString = versionString;
+            this.mVersionString = versionString;
             return this;
         }
 
         public ApplicationInfo build() {
-            if (versionString == null) {
-                versionString = getDefaultVersionString();
+            if (mVersionString == null) {
+                mVersionString = getDefaultVersionString();
             }
-            return new ApplicationInfo(appType, architecture, buildType, versionString);
+            return new ApplicationInfo(mAppType, mAchitecture, mBuildType, mVersionString);
         }
 
         private String getDefaultVersionString() {
             try {
                 PackageInfo pInfo =
-                        context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+                        mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
                 return pInfo.versionName;
             } catch (NameNotFoundException e) {
                 Logger.w(TAG, e, "Cannot find package name.");

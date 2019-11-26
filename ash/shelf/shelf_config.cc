@@ -182,7 +182,15 @@ int ShelfConfig::home_button_edge_spacing() const {
 }
 
 base::TimeDelta ShelfConfig::hotseat_background_animation_duration() const {
-  return base::TimeDelta::FromMilliseconds(350);
+  // This matches the duration of the maximize/minimize animation.
+  return base::TimeDelta::FromMilliseconds(300);
+}
+
+base::TimeDelta ShelfConfig::shelf_animation_duration() const {
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    return hotseat_background_animation_duration();
+
+  return base::TimeDelta::FromMilliseconds(200);
 }
 
 int ShelfConfig::status_area_hit_region_padding() const {

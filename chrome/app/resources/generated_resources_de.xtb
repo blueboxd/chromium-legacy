@@ -2639,7 +2639,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4839303808932127586">Video &amp;speichern unter...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 mehr}other{# mehr}}</translation>
 <translation id="4842976633412754305">Diese Seite versucht, Skripts aus nicht authentifizierten Quellen zu laden.</translation>
-<translation id="4843488774506045600">Anmeldung zur Verfügung gestellt von <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Sonstige Tastaturen</translation>
 <translation id="4846680374085650406">Sie folgen der Empfehlung des Administrators für diese Einstellung.</translation>
 <translation id="4848518990323155912">Sperren der SIM-Karte aktivieren (PIN zum Zugriff auf Mobilfunknetz erforderlich)</translation>
@@ -3844,7 +3843,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6607831829715835317">Weitere Too&amp;ls</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6615455863669487791">Zeigen</translation>
-<translation id="6617100836880592260">Scangeschwindigkeit: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Die Website kann Ihren Standort verfolgen</translation>

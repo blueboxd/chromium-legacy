@@ -107,7 +107,7 @@ public class WebappDirectoryManagerTest {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
                 });
-        ShadowApplication.getInstance().runBackgroundTasks();
+        ShadowApplication.runBackgroundTasks();
     }
 
     @Test

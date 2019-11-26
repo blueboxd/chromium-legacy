@@ -5,5 +5,5 @@
 // https://github.com/samuelgoto/sms-receiver
 
 dictionary SMSReceiverOptions {
-  // TODO(b/976401): Implement abort controller.
+  AbortSignal signal;
 };

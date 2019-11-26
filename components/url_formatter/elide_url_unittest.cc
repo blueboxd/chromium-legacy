@@ -46,16 +46,15 @@ struct ParsingTestcase {
 
 #if !defined(OS_ANDROID)
 
-// Returns the width of a utf8 or utf16 string using the BROWSER typesetter and
-// default UI font, or the provided |font_list|.
+// Returns the width of a utf8 or utf16 string using default UI font, or the
+// provided |font_list|.
 float GetWidth(const std::string& utf8,
                const gfx::FontList& font_list = gfx::FontList()) {
-  return gfx::GetStringWidthF(base::UTF8ToUTF16(utf8), font_list,
-                              gfx::Typesetter::BROWSER);
+  return gfx::GetStringWidthF(base::UTF8ToUTF16(utf8), font_list);
 }
 float GetWidth(const base::string16& utf16,
                const gfx::FontList& font_list = gfx::FontList()) {
-  return gfx::GetStringWidthF(utf16, font_list, gfx::Typesetter::BROWSER);
+  return gfx::GetStringWidthF(utf16, font_list);
 }
 
 // Verify that one or more URLs passes through an explicit sequence of elided
@@ -97,8 +96,7 @@ void RunProgressiveElisionTest(
     for (size_t i = 0; i < testcase.output.size(); i++) {
       const auto& expected = testcase.output[i];
       base::string16 expected_utf16 = base::UTF8ToUTF16(expected);
-      base::string16 elided = url_formatter::ElideUrl(url, font_list, width,
-                                                      gfx::Typesetter::BROWSER);
+      base::string16 elided = url_formatter::ElideUrl(url, font_list, width);
       if (expected_utf16 != elided) {
         if (i > 0 && i < testcase.output.size() - 1 &&
             mismatches < kMaxConsecutiveMismatches) {
@@ -124,8 +122,7 @@ void RunElisionTest(const std::vector<Testcase>& testcases) {
     const GURL url(testcase.input);
     const float available_width = GetWidth(testcase.output, font_list);
     EXPECT_EQ(base::UTF8ToUTF16(testcase.output),
-              url_formatter::ElideUrl(url, font_list, available_width,
-                                      gfx::Typesetter::BROWSER));
+              url_formatter::ElideUrl(url, font_list, available_width));
   }
 }
 
@@ -237,12 +234,11 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   ASSERT_GT(GetWidth(kEllipsisStr + "/" + kEllipsisStr, font_list),
             GetWidth("d" + kEllipsisStr, font_list));
   GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
-  base::string16 expected = url_formatter::ElideUrl(
-      long_url, font_list, available_width, gfx::Typesetter::BROWSER);
+  base::string16 expected =
+      url_formatter::ElideUrl(long_url, font_list, available_width);
   // Ensure that the expected result still contains part of the directory name.
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
-  EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width,
-                                              gfx::Typesetter::BROWSER));
+  EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width));
 
   // Regression test for https://crbug.com/756717. An empty path, eliding to a
   // width in between the full domain ("www.angelfire.lycos.com") and a bit
@@ -251,8 +247,7 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   url = GURL("http://www.angelfire.lycos.com/");
   available_width = GetWidth(kEllipsisStr + "angelfire.lycos.com", font_list);
   EXPECT_EQ(base::UTF8ToUTF16(kEllipsisStr + "lycos.com"),
-            url_formatter::ElideUrl(url, font_list, available_width,
-                                    gfx::Typesetter::BROWSER));
+            url_formatter::ElideUrl(url, font_list, available_width));
 
   // More space available - elide directories, partially elide filename.
   const std::vector<Testcase> testcases = {
@@ -383,10 +378,7 @@ TEST(TextEliderTest, TestHostEliding) {
   };
 
   for (size_t i = 0; i < base::size(testcases); ++i) {
-    // Note this does not use GetWidth(), so typesetting will be done with
-    // gfx::Typesetter::DEFAULT. ElideHost() supports either typesetter on Mac.
-    const float available_width = gfx::GetStringWidthF(
-        base::UTF8ToUTF16(testcases[i].output), gfx::FontList());
+    const float available_width = GetWidth(testcases[i].output);
     EXPECT_EQ(base::UTF8ToUTF16(testcases[i].output),
               url_formatter::ElideHost(GURL(testcases[i].input),
                                        gfx::FontList(), available_width));

@@ -1767,10 +1767,6 @@ template("monochrome_public_apk_or_module_tmpl") {
       deps += [
         ":monochrome_java",
         "//android_webview:platform_service_bridge_upstream_implementation_java",
-
-        # TODO(crbug.com/951275): Clean this up once relevant internal code
-        # is upstreamed.
-        "//android_webview/glue:webview_chromium_for_q_upstream_java",
       ]
       if (webview_includes_weblayer) {
         deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]

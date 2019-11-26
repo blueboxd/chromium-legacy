@@ -353,7 +353,7 @@ XrResult OpenXrTestHelper::BeginSession() {
   RETURN_IF(session_state_ != XR_SESSION_STATE_READY,
             XR_ERROR_SESSION_NOT_READY,
             "Session is not XR_ERROR_SESSION_NOT_READY");
-  SetSessionState(XR_SESSION_STATE_SYNCHRONIZED);
+  SetSessionState(XR_SESSION_STATE_FOCUSED);
   return XR_SUCCESS;
 }
 
@@ -614,6 +614,10 @@ void OpenXrTestHelper::UpdateEventQueue() {
       data = test_hook_->WaitGetEventData();
       if (data.type == device_test::mojom::EventType::kSessionLost) {
         SetSessionState(XR_SESSION_STATE_STOPPING);
+      } else if (data.type ==
+                 device_test::mojom::EventType::kVisibilityVisibleBlurred) {
+        // WebXR Visible-Blurred map to OpenXR Visible
+        SetSessionState(XR_SESSION_STATE_VISIBLE);
       } else if (data.type == device_test::mojom::EventType::kInstanceLost) {
         XrEventDataBuffer event_data = {
             XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING};

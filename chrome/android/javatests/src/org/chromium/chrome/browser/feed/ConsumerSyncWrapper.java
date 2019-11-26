@@ -50,7 +50,7 @@ class ConsumerSyncWrapper<T> implements Consumer<T> {
      * @param operation The operation that should feed its result to the consumer.
      * @param timeoutMs The timeout in milliseconds to wait for operation to execute
      */
-    static public <T> void waitForConsumer(
+    public static <T> void waitForConsumer(
             Consumer<T> consumer, Consumer<Consumer<T>> operation, long timeoutMs) {
         ConsumerSyncWrapper<T> wrapper = new ConsumerSyncWrapper<>(consumer);
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> operation.accept(wrapper));

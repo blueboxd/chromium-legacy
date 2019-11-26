@@ -32,22 +32,22 @@ import java.util.concurrent.TimeUnit;
 
 /** Default implementation of {@link ActionManager} */
 public class FeedActionManagerImpl implements ActionManager {
-    private final FeedSessionManager feedSessionManager;
-    private final Store store;
-    private final ThreadUtils threadUtils;
-    private final TaskQueue taskQueue;
-    private final MainThreadRunner mainThreadRunner;
-    private final Clock clock;
+    private final FeedSessionManager mFeedSessionManager;
+    private final Store mStore;
+    private final ThreadUtils mThreadUtils;
+    private final TaskQueue mTaskQueue;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Clock mClock;
 
     public FeedActionManagerImpl(FeedSessionManager feedSessionManager, Store store,
             ThreadUtils threadUtils, TaskQueue taskQueue, MainThreadRunner mainThreadRunner,
             Clock clock) {
-        this.feedSessionManager = feedSessionManager;
-        this.store = store;
-        this.threadUtils = threadUtils;
-        this.taskQueue = taskQueue;
-        this.mainThreadRunner = mainThreadRunner;
-        this.clock = clock;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mStore = store;
+        this.mThreadUtils = threadUtils;
+        this.mTaskQueue = taskQueue;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mClock = clock;
     }
 
     @Override
@@ -56,8 +56,8 @@ public class FeedActionManagerImpl implements ActionManager {
             /*@Nullable*/ String sessionId) {
         executeStreamDataOperations(streamDataOperations, sessionId);
         // Store the dismissLocal actions
-        taskQueue.execute(Task.DISMISS_LOCAL, TaskType.BACKGROUND, () -> {
-            LocalActionMutation localActionMutation = store.editLocalActions();
+        mTaskQueue.execute(Task.DISMISS_LOCAL, TaskType.BACKGROUND, () -> {
+            LocalActionMutation localActionMutation = mStore.editLocalActions();
             for (String contentId : contentIds) {
                 localActionMutation.add(ActionType.DISMISS, contentId);
             }
@@ -73,25 +73,25 @@ public class FeedActionManagerImpl implements ActionManager {
 
     @Override
     public void createAndUploadAction(String contentId, ActionPayload payload) {
-        taskQueue.execute(Task.CREATE_AND_UPLOAD, TaskType.BACKGROUND, () -> {
+        mTaskQueue.execute(Task.CREATE_AND_UPLOAD, TaskType.BACKGROUND, () -> {
             HashSet<StreamUploadableAction> actionSet = new HashSet<>();
-            long currentTime = TimeUnit.MILLISECONDS.toSeconds(clock.currentTimeMillis());
+            long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
             actionSet.add(StreamUploadableAction.newBuilder()
                                   .setFeatureContentId(contentId)
                                   .setPayload(payload)
                                   .setTimestampSeconds(currentTime)
                                   .build());
-            feedSessionManager.triggerUploadActions(actionSet);
+            mFeedSessionManager.triggerUploadActions(actionSet);
         });
     }
 
     @Override
     public void uploadAllActionsAndUpdateUrl(
             String url, String consistencyTokenQueryParamName, Consumer<String> consumer) {
-        taskQueue.execute(Task.UPLOAD_ALL_ACTIONS_FOR_URL, TaskType.BACKGROUND, () -> {
+        mTaskQueue.execute(Task.UPLOAD_ALL_ACTIONS_FOR_URL, TaskType.BACKGROUND, () -> {
             // TODO: figure out spinner and/or timeout conditions
-            feedSessionManager.fetchActionsAndUpload(result -> {
-                mainThreadRunner.execute("Open url", () -> {
+            mFeedSessionManager.fetchActionsAndUpload(result -> {
+                mMainThreadRunner.execute("Open url", () -> {
                     if (result.isSuccessful()) {
                         consumer.accept(updateParam(url, consistencyTokenQueryParamName,
                                 result.getValue().toByteArray()));
@@ -112,14 +112,14 @@ public class FeedActionManagerImpl implements ActionManager {
 
     private void executeStreamDataOperations(
             List<StreamDataOperation> streamDataOperations, /*@Nullable*/ String sessionId) {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
 
         MutationContext.Builder mutationContextBuilder =
                 new MutationContext.Builder().setUserInitiated(true);
         if (sessionId != null) {
             mutationContextBuilder.setRequestingSessionId(sessionId);
         }
-        feedSessionManager.getUpdateConsumer(mutationContextBuilder.build())
+        mFeedSessionManager.getUpdateConsumer(mutationContextBuilder.build())
                 .accept(Result.success(Model.of(streamDataOperations)));
     }
 }

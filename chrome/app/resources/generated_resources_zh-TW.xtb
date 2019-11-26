@@ -2615,7 +2615,6 @@
 <translation id="4839303808932127586">將影片另存為(&amp;V)...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{還有 1 個項目}other{還有 # 個項目}}</translation>
 <translation id="4842976633412754305">這個網頁正在嘗試載入來源未經驗證的指令碼。</translation>
-<translation id="4843488774506045600">登入資訊提供者：<ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">其他鍵盤</translation>
 <translation id="4846680374085650406">你目前所採用的是管理員的建議設定。</translation>
 <translation id="4848518990323155912">啟用 SIM 卡鎖定功能 (輸入 PIN 碼才能使用行動數據)</translation>
@@ -3813,7 +3812,6 @@
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>
-<translation id="6617100836880592260">掃描速度：<ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">確定保留</translation>
 <translation id="6619058681307408113">線上印表機服務精靈 (LPD)</translation>
 <translation id="661907246513853610">網站可以追蹤你的位置</translation>

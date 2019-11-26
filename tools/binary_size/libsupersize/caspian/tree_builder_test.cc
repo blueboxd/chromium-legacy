@@ -152,6 +152,8 @@ TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
       ["children"][0];
 
   EXPECT_EQ(
+      "Mobile/chrome/android/features/start_surface/public/java/src/"
+      "org/chromium/chrome/features/start_surface/StartSurface.java/"
       "org.chromium.chrome.features.start_surface.StartSurface$"
       "OverviewModeObserver",
       class_symbol["idPath"].asString());

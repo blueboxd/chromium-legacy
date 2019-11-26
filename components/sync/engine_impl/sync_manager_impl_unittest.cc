@@ -25,6 +25,7 @@
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/engine/events/protocol_event.h"
@@ -1302,8 +1303,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(SyncEncryptionHandler::SensitiveTypes(),
-              GetEncryptedTypesWithTrans(&trans));
+    EXPECT_EQ(AlwaysEncryptedUserTypes(), GetEncryptedTypesWithTrans(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(), BOOKMARKS, false /* not encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(

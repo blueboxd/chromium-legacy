@@ -112,7 +112,7 @@ class FolderImageTest
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderImageTest);
 };
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FolderImageTest,
                          ::testing::Values(ash::AppListConfigType::kShared,
                                            ash::AppListConfigType::kLarge,

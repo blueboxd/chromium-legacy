@@ -15,13 +15,13 @@ import java.util.HashSet;
 
 /** Fake for {@link ModelFeature}. */
 public class FakeModelFeature implements ModelFeature {
-    private final StreamFeature streamFeature;
-    private final ModelCursor modelCursor;
-    private final HashSet<FeatureChangeObserver> observers = new HashSet<>();
+    private final StreamFeature mStreamFeature;
+    private final ModelCursor mModelCursor;
+    private final HashSet<FeatureChangeObserver> mObservers = new HashSet<>();
 
     private FakeModelFeature(ModelCursor modelCursor, StreamFeature streamFeature) {
-        this.modelCursor = modelCursor;
-        this.streamFeature = streamFeature;
+        this.mModelCursor = modelCursor;
+        this.mStreamFeature = streamFeature;
     }
 
     public static Builder newBuilder() {
@@ -29,23 +29,23 @@ public class FakeModelFeature implements ModelFeature {
     }
 
     public HashSet<FeatureChangeObserver> getObservers() {
-        return observers;
+        return mObservers;
     }
 
     public void triggerOnChange(FeatureChange change) {
-        for (FeatureChangeObserver observer : observers) {
+        for (FeatureChangeObserver observer : mObservers) {
             observer.onChange(change);
         }
     }
 
     @Override
     public StreamFeature getStreamFeature() {
-        return streamFeature;
+        return mStreamFeature;
     }
 
     @Override
     public ModelCursor getCursor() {
-        return modelCursor;
+        return mModelCursor;
     }
 
     @Override
@@ -56,32 +56,32 @@ public class FakeModelFeature implements ModelFeature {
 
     @Override
     public void registerObserver(FeatureChangeObserver observer) {
-        this.observers.add(observer);
+        this.mObservers.add(observer);
     }
 
     @Override
     public void unregisterObserver(FeatureChangeObserver observer) {
-        this.observers.remove(observer);
+        this.mObservers.remove(observer);
     }
 
     public static class Builder {
-        private ModelCursor modelCursor = new FakeModelCursor(new ArrayList<>());
-        private StreamFeature streamFeature = StreamFeature.getDefaultInstance();
+        private ModelCursor mModelCursor = new FakeModelCursor(new ArrayList<>());
+        private StreamFeature mStreamFeature = StreamFeature.getDefaultInstance();
 
         private Builder() {}
 
         public Builder setModelCursor(ModelCursor modelCursor) {
-            this.modelCursor = modelCursor;
+            this.mModelCursor = modelCursor;
             return this;
         }
 
         public Builder setStreamFeature(StreamFeature streamFeature) {
-            this.streamFeature = streamFeature;
+            this.mStreamFeature = streamFeature;
             return this;
         }
 
         public FakeModelFeature build() {
-            return new FakeModelFeature(modelCursor, streamFeature);
+            return new FakeModelFeature(mModelCursor, mStreamFeature);
         }
     }
 }

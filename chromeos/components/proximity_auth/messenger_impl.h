@@ -36,7 +36,6 @@ class MessengerImpl : public Messenger,
   // Messenger:
   void AddObserver(MessengerObserver* observer) override;
   void RemoveObserver(MessengerObserver* observer) override;
-  bool SupportsSignIn() const override;
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;

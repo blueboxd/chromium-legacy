@@ -140,8 +140,8 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
 
   quic::MockClock clock_;
   MockClientSocketFactory socket_factory_;
-  TestNetLog net_log_;
-  BoundTestNetLog bound_test_net_log_;
+  RecordingTestNetLog net_log_;
+  RecordingBoundTestNetLog bound_test_net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectivityProbingManagerTest);
 };

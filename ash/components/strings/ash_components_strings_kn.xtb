@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ಅಥವಾ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ಅವಲೋಕನ ಮೋಡ್‌</translation>
 <translation id="4382340674111381977">ಹಿಂದಿನ ಪುಟಕ್ಕೆ ಹಿಂತಿರುಗಿ</translation>
+<translation id="4458670250301149821">ಆ್ಯಪ್ ಐಕಾನ್ ಅನ್ನು, ಆ್ಯಪ್ ಗ್ರಿಡ್‌ನಲ್ಲಿ ಫೋಲ್ಡರ್‌ನಿಂದ ಒಳಗೆ/ಹೊರಗೆ ಸರಿಸಿ</translation>
 <translation id="4472417192667361414">ಸಿಸ್ಟಂ ಮತ್ತು ಡಿಸ್‌ಪ್ಲೇ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ನಂತರ <ph name="LEFT" /> ಅಥವಾ <ph name="RIGHT" /> ಅಥವಾ <ph name="UP" /> ಅಥವಾ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">ಕೀಬೋರ್ಡ್‌ ಶಾರ್ಟ್‌ಕಟ್‌ ಸಹಾಯಕವನ್ನು ನೋಡಿ</translation>
 <translation id="4628718545549558538">ಸ್ಥಿತಿ ಪ್ರದೇಶವನ್ನು ತೆರೆಯಿರಿ (ನಿಮ್ಮ ಖಾತೆ ಚಿತ್ರ ಗೋಚರಿಸುವಲ್ಲಿ)</translation>
 <translation id="4642092649622328492">ಭಾಗಶಃ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">ನಿಮ್ಮ ಮುಂದಿನ ಅಕ್ಷರವನ್ನು ಅಳಿಸಿ (ಫಾರ್ವಡ್ ಅಳಿಸಿ)</translation>
 <translation id="7500368597227394048">ಹೈಫನ್</translation>
 <translation id="7611271430932669992">ಫೋಕಸ್ ಅನ್ನು ಪಾಪ್‌ಅಪ್‌ಗಳಿಗೆ ಮತ್ತು ಸಂವಾದಗಳಿಗೆ ಸರಿಸಿ</translation>
+<translation id="7635348532214572995">ಒಂದು ಆ್ಯಪ್ ಐಕಾನ್ ಅನ್ನು ಆ್ಯಪ್ ಗ್ರಿಡ್‌ನ ಸುತ್ತ ಸರಿಸಿ</translation>
 <translation id="766326951329901120">ಖಾಲಿ ಪಠ್ಯದಂತೆ ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ವಿಷಯವನ್ನು ಅಂಟಿಸಿ</translation>
 <translation id="7703010453515335249">ಎಡ ಆವರಣ</translation>
 <translation id="7724603315864178912">ಕತ್ತರಿಸು</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ವಿಷಯವನ್ನು ಅಂಟಿಸಿ</translation>
 <translation id="9052808072970550123">ಮುಂದಿನ ಬಳಕೆದಾರರಿಗೆ ಬದಲಿಸಿ</translation>
 <translation id="906458777597946297">ವಿಂಡೋ ಹಿರಿದಾಗಿಸಿ</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ನಂತರ <ph name="LEFT" /> ಅಥವಾ <ph name="RIGHT" /> ಅಥವಾ <ph name="UP" /> ಅಥವಾ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ಸಾಲಿನ ಪ್ರಾರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="9106898733795143799">ಪುಟ ಮತ್ತು ವೆಬ್ ಬ್ರೌಸರ್</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> ಕುರಿತು ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ</translation>

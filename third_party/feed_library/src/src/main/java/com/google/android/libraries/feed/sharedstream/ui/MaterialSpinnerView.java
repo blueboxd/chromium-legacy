@@ -14,7 +14,7 @@ import android.view.View;
 
 /** View compatible with KitKat that shows a Material themed spinner. */
 public class MaterialSpinnerView extends AppCompatImageView {
-    private final CircularProgressDrawable spinner;
+    private final CircularProgressDrawable mSpinner;
 
     public MaterialSpinnerView(Context context) {
         this(context, null);
@@ -29,16 +29,16 @@ public class MaterialSpinnerView extends AppCompatImageView {
     @SuppressWarnings({"nullness:argument.type.incompatible", "nullness:method.invocation.invalid"})
     public MaterialSpinnerView(Context context, /*@Nullable*/ AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        spinner = new CircularProgressDrawable(context);
-        spinner.setStyle(CircularProgressDrawable.DEFAULT);
-        setImageDrawable(spinner);
+        mSpinner = new CircularProgressDrawable(context);
+        mSpinner.setStyle(CircularProgressDrawable.DEFAULT);
+        setImageDrawable(mSpinner);
         TypedValue typedValue = new TypedValue();
         Theme theme = context.getTheme();
         theme.resolveAttribute(R.attr.feedSpinnerColor, typedValue, true);
-        spinner.setColorSchemeColors(typedValue.data);
+        mSpinner.setColorSchemeColors(typedValue.data);
 
         if (getVisibility() == View.VISIBLE) {
-            spinner.start();
+            mSpinner.start();
         }
     }
 
@@ -46,10 +46,10 @@ public class MaterialSpinnerView extends AppCompatImageView {
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
 
-        if (spinner.isRunning() && getVisibility() != View.VISIBLE) {
-            spinner.stop();
-        } else if (!spinner.isRunning() && getVisibility() == View.VISIBLE) {
-            spinner.start();
+        if (mSpinner.isRunning() && getVisibility() != View.VISIBLE) {
+            mSpinner.stop();
+        } else if (!mSpinner.isRunning() && getVisibility() == View.VISIBLE) {
+            mSpinner.start();
         }
     }
 }

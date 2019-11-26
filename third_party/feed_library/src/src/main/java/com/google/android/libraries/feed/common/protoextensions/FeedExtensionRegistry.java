@@ -27,7 +27,7 @@ import com.google.search.now.wire.feed.TokenProto;
  * those provided by the host through the {@link ProtoExtensionProvider}.
  */
 public class FeedExtensionRegistry {
-    private final ExtensionRegistryLite extensionRegistry = ExtensionRegistryLite.newInstance();
+    private final ExtensionRegistryLite mExtensionRegistry = ExtensionRegistryLite.newInstance();
 
     /**
      * Creates the registry.
@@ -36,29 +36,29 @@ public class FeedExtensionRegistry {
      */
     public FeedExtensionRegistry(ProtoExtensionProvider extensionProvider) {
         // Set up all the extensions we use inside the Feed.
-        extensionRegistry.add(Card.cardExtension);
-        extensionRegistry.add(ClientBasicLoggingMetadata.clientBasicLoggingMetadata);
-        extensionRegistry.add(Content.contentExtension);
-        extensionRegistry.add(FeedAction.feedActionExtension);
-        extensionRegistry.add(FeedRequest.feedRequest);
-        extensionRegistry.add(FeedResponse.feedResponse);
-        extensionRegistry.add(FeedActionRequest.feedActionRequest);
-        extensionRegistry.add(FeedActionResponse.feedActionResponse);
-        extensionRegistry.add(OfflineExtension.offlineExtension);
-        extensionRegistry.add(PietContent.pietContentExtension);
-        extensionRegistry.add(PietFeedActionPayload.pietFeedActionPayloadExtension);
-        extensionRegistry.add(StreamStructureProto.Stream.streamExtension);
-        extensionRegistry.add(SwipeActionExtension.swipeActionExtension);
-        extensionRegistry.add(TokenProto.Token.tokenExtension);
+        mExtensionRegistry.add(Card.cardExtension);
+        mExtensionRegistry.add(ClientBasicLoggingMetadata.clientBasicLoggingMetadata);
+        mExtensionRegistry.add(Content.contentExtension);
+        mExtensionRegistry.add(FeedAction.feedActionExtension);
+        mExtensionRegistry.add(FeedRequest.feedRequest);
+        mExtensionRegistry.add(FeedResponse.feedResponse);
+        mExtensionRegistry.add(FeedActionRequest.feedActionRequest);
+        mExtensionRegistry.add(FeedActionResponse.feedActionResponse);
+        mExtensionRegistry.add(OfflineExtension.offlineExtension);
+        mExtensionRegistry.add(PietContent.pietContentExtension);
+        mExtensionRegistry.add(PietFeedActionPayload.pietFeedActionPayloadExtension);
+        mExtensionRegistry.add(StreamStructureProto.Stream.streamExtension);
+        mExtensionRegistry.add(SwipeActionExtension.swipeActionExtension);
+        mExtensionRegistry.add(TokenProto.Token.tokenExtension);
 
         // Call the host and add all the extensions it uses.
         for (GeneratedExtension<?, ?> extension : extensionProvider.getProtoExtensions()) {
-            extensionRegistry.add(extension);
+            mExtensionRegistry.add(extension);
         }
     }
 
     /** Returns the {@link ExtensionRegistryLite}. */
     public ExtensionRegistryLite getExtensionRegistry() {
-        return extensionRegistry.getUnmodifiable();
+        return mExtensionRegistry.getUnmodifiable();
     }
 }

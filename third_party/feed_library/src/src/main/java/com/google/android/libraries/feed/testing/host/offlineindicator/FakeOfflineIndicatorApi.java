@@ -15,12 +15,12 @@ import java.util.Set;
 
 /** Fake used for tests using the {@link OfflineIndicatorApi}. */
 public class FakeOfflineIndicatorApi implements OfflineIndicatorApi {
-    private final Set<String> offlineUrls;
-    private final Set<OfflineStatusListener> listeners;
+    private final Set<String> mOfflineUrls;
+    private final Set<OfflineStatusListener> mListeners;
 
     private FakeOfflineIndicatorApi(String[] urls) {
-        offlineUrls = new HashSet<>(Arrays.asList(urls));
-        listeners = new HashSet<>();
+        mOfflineUrls = new HashSet<>(Arrays.asList(urls));
+        mListeners = new HashSet<>();
     }
 
     public static FakeOfflineIndicatorApi createWithOfflineUrls(String... urls) {
@@ -34,7 +34,7 @@ public class FakeOfflineIndicatorApi implements OfflineIndicatorApi {
     @Override
     public void getOfflineStatus(
             List<String> urlsToRetrieve, Consumer<List<String>> urlListConsumer) {
-        HashSet<String> copiedHashSet = new HashSet<>(offlineUrls);
+        HashSet<String> copiedHashSet = new HashSet<>(mOfflineUrls);
         copiedHashSet.retainAll(urlsToRetrieve);
 
         urlListConsumer.accept(new ArrayList<>(copiedHashSet));
@@ -42,12 +42,12 @@ public class FakeOfflineIndicatorApi implements OfflineIndicatorApi {
 
     @Override
     public void addOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        listeners.add(offlineStatusListener);
+        mListeners.add(offlineStatusListener);
     }
 
     @Override
     public void removeOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        listeners.remove(offlineStatusListener);
+        mListeners.remove(offlineStatusListener);
     }
 
     /**
@@ -55,13 +55,13 @@ public class FakeOfflineIndicatorApi implements OfflineIndicatorApi {
      * observers.
      */
     public void setOfflineStatus(String url, boolean isAvailable) {
-        boolean statusChanged = isAvailable ? offlineUrls.add(url) : offlineUrls.remove(url);
+        boolean statusChanged = isAvailable ? mOfflineUrls.add(url) : mOfflineUrls.remove(url);
 
         if (!statusChanged) {
             return;
         }
 
-        for (OfflineStatusListener listener : listeners) {
+        for (OfflineStatusListener listener : mListeners) {
             listener.updateOfflineStatus(url, isAvailable);
         }
     }

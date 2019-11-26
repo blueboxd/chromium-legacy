@@ -181,7 +181,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
 
   std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateHarfBuzzInstance();
+      gfx::RenderText::CreateRenderText();
   gfx::Canvas canvas;
 
   FuzzedDataProvider fdp(data, size);

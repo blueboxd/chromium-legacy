@@ -45,26 +45,26 @@ import java.util.List;
 public final class FeedActionParser implements ActionParser {
     private static final String TAG = "FeedActionParser";
 
-    private final PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever;
-    private final ProtocolAdapter protocolAdapter;
-    private final Supplier</*@Nullable*/ ContentMetadata> contentMetadata;
-    private final BasicLoggingApi basicLoggingApi;
+    private final PietFeedActionPayloadRetriever mPietFeedActionPayloadRetriever;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final Supplier</*@Nullable*/ ContentMetadata> mContentMetadata;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     FeedActionParser(ProtocolAdapter protocolAdapter,
             PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever,
             Supplier</*@Nullable*/ ContentMetadata> contentMetadata,
             BasicLoggingApi basicLoggingApi) {
-        this.protocolAdapter = protocolAdapter;
-        this.pietFeedActionPayloadRetriever = pietFeedActionPayloadRetriever;
-        this.contentMetadata = contentMetadata;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mPietFeedActionPayloadRetriever = pietFeedActionPayloadRetriever;
+        this.mContentMetadata = contentMetadata;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     @Override
     public void parseAction(Action action, StreamActionApi streamActionApi, View view,
             LogData logData, @ActionSource int actionSource) {
         FeedActionPayload feedActionPayload =
-                pietFeedActionPayloadRetriever.getFeedActionPayload(action);
+                mPietFeedActionPayloadRetriever.getFeedActionPayload(action);
         if (feedActionPayload == null) {
             Logger.w(TAG, "Unable to get FeedActionPayload from PietFeedActionPayloadRetriever");
             return;
@@ -106,7 +106,7 @@ public final class FeedActionParser implements ActionParser {
                 }
 
                 Result<List<StreamDataOperation>> streamDataOperationsResult =
-                        protocolAdapter.createOperations(
+                        mProtocolAdapter.createOperations(
                                 feedActionMetadata.getDismissData().getDataOperationsList());
 
                 if (!streamDataOperationsResult.isSuccessful()) {
@@ -119,7 +119,7 @@ public final class FeedActionParser implements ActionParser {
                 }
                 // TODO: Once we start logging DISMISS via the feed action end point, DISMISS
                 // and DISMISS_LOCAL should not be handled in the exact same way.
-                streamActionApi.dismiss(protocolAdapter.getStreamContentId(
+                streamActionApi.dismiss(mProtocolAdapter.getStreamContentId(
                                                 feedActionMetadata.getDismissData().getContentId()),
                         streamDataOperationsResult.getValue(),
                         feedActionMetadata.getDismissData().getUndoAction(),
@@ -135,8 +135,9 @@ public final class FeedActionParser implements ActionParser {
                 }
 
                 Result<List<StreamDataOperation>> streamDataOperationResult =
-                        protocolAdapter.createOperations(feedActionMetadata.getNotInterestedInData()
-                                                                 .getDataOperationsList());
+                        mProtocolAdapter.createOperations(
+                                feedActionMetadata.getNotInterestedInData()
+                                        .getDataOperationsList());
 
                 if (!streamDataOperationResult.isSuccessful()) {
                     Logger.e(TAG,
@@ -156,7 +157,7 @@ public final class FeedActionParser implements ActionParser {
                     Logger.e(TAG, "Cannot download: StreamActionApi does not support it");
                     break;
                 }
-                ContentMetadata contentMetadata = this.contentMetadata.get();
+                ContentMetadata contentMetadata = this.mContentMetadata.get();
                 if (contentMetadata == null) {
                     Logger.e(TAG, " Cannot download: no ContentMetadata");
                     break;
@@ -229,7 +230,7 @@ public final class FeedActionParser implements ActionParser {
         }
 
         if (!openUrlData.hasUrl()) {
-            basicLoggingApi.onInternalError(InternalFeedError.NO_URL_FOR_OPEN);
+            mBasicLoggingApi.onInternalError(InternalFeedError.NO_URL_FOR_OPEN);
             Logger.e(TAG, "Cannot open URL action: %s, no URL available.", urlType);
             return;
         }
@@ -300,7 +301,7 @@ public final class FeedActionParser implements ActionParser {
                 // and DISMISS_LOCAL should not be handled in the exact same way.
                 return streamActionApi.canDismiss();
             case DOWNLOAD:
-                return contentMetadata.get() != null && streamActionApi.canDownloadUrl();
+                return mContentMetadata.get() != null && streamActionApi.canDownloadUrl();
             case LEARN_MORE:
                 return streamActionApi.canLearnMore();
             case NOT_INTERESTED_IN:

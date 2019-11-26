@@ -22,11 +22,11 @@ class AdapterFactory<A extends ElementAdapter<?, M>, M> {
     private static final int DEFAULT_POOL_SIZE = 100;
     private static final int DEFAULT_NUM_POOLS = 10;
 
-    private final Context context;
-    private final AdapterParameters parameters;
-    private final AdapterKeySupplier<A, M> keySupplier;
-    private final Statistics statistics;
-    private final RecyclerPool<A> recyclingPool;
+    private final Context mContext;
+    private final AdapterParameters mParameters;
+    private final AdapterKeySupplier<A, M> mKeySupplier;
+    private final Statistics mStatistics;
+    private final RecyclerPool<A> mRecyclingPool;
 
     /** Provides Adapter class level details to the factory. */
     interface AdapterKeySupplier<A extends ElementAdapter<?, M>, M> {
@@ -59,64 +59,64 @@ class AdapterFactory<A extends ElementAdapter<?, M>, M> {
     @SuppressWarnings("nullness")
     AdapterFactory(
             Context context, AdapterParameters parameters, AdapterKeySupplier<A, M> keySupplier) {
-        this.context = context;
-        this.parameters = parameters;
-        this.keySupplier = keySupplier;
-        this.statistics = new Statistics(keySupplier.getAdapterTag());
+        this.mContext = context;
+        this.mParameters = parameters;
+        this.mKeySupplier = keySupplier;
+        this.mStatistics = new Statistics(keySupplier.getAdapterTag());
         if (keySupplier instanceof SingletonKeySupplier) {
-            recyclingPool = new SingleKeyRecyclerPool<>(
+            mRecyclingPool = new SingleKeyRecyclerPool<>(
                     SingletonKeySupplier.SINGLETON_KEY, DEFAULT_POOL_SIZE);
         } else {
-            recyclingPool = new KeyedRecyclerPool<>(DEFAULT_NUM_POOLS, DEFAULT_POOL_SIZE);
+            mRecyclingPool = new KeyedRecyclerPool<>(DEFAULT_NUM_POOLS, DEFAULT_POOL_SIZE);
         }
     }
 
     /** Returns an adapter suitable for binding the given model. */
     public A get(M model, FrameContext frameContext) {
-        statistics.getCalls++;
-        A a = recyclingPool.get(keySupplier.getKey(frameContext, model));
+        mStatistics.mGetCalls++;
+        A a = mRecyclingPool.get(mKeySupplier.getKey(frameContext, model));
         if (a == null) {
-            a = keySupplier.getAdapter(context, parameters);
-            statistics.adapterCreation++;
+            a = mKeySupplier.getAdapter(mContext, mParameters);
+            mStatistics.mAdapterCreation++;
         } else {
-            statistics.poolHit++;
+            mStatistics.mPoolHit++;
         }
         return a;
     }
 
     /** Release the Adapter, releases the model and will recycle the Adapter */
     public void release(A a) {
-        statistics.releaseCalls++;
+        mStatistics.mReleaseCalls++;
         a.releaseAdapter();
         RecyclerKey key = a.getKey();
         if (key != null) {
-            recyclingPool.put(key, a);
+            mRecyclingPool.put(key, a);
         }
     }
 
     public void purgeRecyclerPool() {
-        recyclingPool.clear();
+        mRecyclingPool.clear();
     }
 
     /**
      * Basic statistics about hits, creations, etc. used to track how get/release are being used.
      */
     static class Statistics {
-        final String factoryName;
-        int adapterCreation;
-        int poolHit;
-        int releaseCalls;
-        int getCalls;
+        final String mFactoryName;
+        int mAdapterCreation;
+        int mPoolHit;
+        int mReleaseCalls;
+        int mGetCalls;
 
         public Statistics(String factoryName) {
-            this.factoryName = factoryName;
+            this.mFactoryName = factoryName;
         }
 
         @Override
         public String toString() {
             // String used to show statistics during debugging in Android Studio.
-            return "Stats: " + factoryName + ", Hits:" + poolHit + ", creations " + adapterCreation
-                    + ", Release: " + releaseCalls;
+            return "Stats: " + mFactoryName + ", Hits:" + mPoolHit + ", creations "
+                    + mAdapterCreation + ", Release: " + mReleaseCalls;
         }
     }
 }

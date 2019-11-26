@@ -16,27 +16,27 @@ import com.google.search.now.ui.piet.ImagesProto.Image;
 /** Provide Assets from the host */
 public class AssetProvider {
     @VisibleForTesting
-    final ImageLoader imageLoader;
+    final ImageLoader mImageLoader;
     @VisibleForTesting
-    final StringFormatter stringFormatter;
-    private final Supplier<Integer> defaultCornerRadiusSupplier;
-    private final Supplier<Boolean> isDarkThemeSupplier;
-    private final Supplier<Long> fadeImageThresholdMsSupplier;
-    private final Supplier<Boolean> isRtLSupplier;
+    final StringFormatter mStringFormatter;
+    private final Supplier<Integer> mDefaultCornerRadiusSupplier;
+    private final Supplier<Boolean> mIsDarkThemeSupplier;
+    private final Supplier<Long> mFadeImageThresholdMsSupplier;
+    private final Supplier<Boolean> mIsRtLSupplier;
     @VisibleForTesting
-    final TypefaceProvider typefaceProvider;
+    final TypefaceProvider mTypefaceProvider;
 
     public AssetProvider(ImageLoader imageLoader, StringFormatter stringFormatter,
             Supplier<Integer> defaultCornerRadiusSupplier,
             Supplier<Long> fadeImageThresholdMsSupplier, Supplier<Boolean> isDarkThemeSupplier,
             Supplier<Boolean> isRtLSupplier, TypefaceProvider typefaceProvider) {
-        this.imageLoader = imageLoader;
-        this.stringFormatter = stringFormatter;
-        this.defaultCornerRadiusSupplier = defaultCornerRadiusSupplier;
-        this.isDarkThemeSupplier = isDarkThemeSupplier;
-        this.fadeImageThresholdMsSupplier = fadeImageThresholdMsSupplier;
-        this.isRtLSupplier = isRtLSupplier;
-        this.typefaceProvider = typefaceProvider;
+        this.mImageLoader = imageLoader;
+        this.mStringFormatter = stringFormatter;
+        this.mDefaultCornerRadiusSupplier = defaultCornerRadiusSupplier;
+        this.mIsDarkThemeSupplier = isDarkThemeSupplier;
+        this.mFadeImageThresholdMsSupplier = fadeImageThresholdMsSupplier;
+        this.mIsRtLSupplier = isRtLSupplier;
+        this.mTypefaceProvider = typefaceProvider;
     }
 
     /**
@@ -59,29 +59,29 @@ public class AssetProvider {
      */
     public void getImage(
             Image image, int widthPx, int heightPx, Consumer</*@Nullable*/ Drawable> consumer) {
-        imageLoader.getImage(image, widthPx, heightPx, consumer);
+        mImageLoader.getImage(image, widthPx, heightPx, consumer);
     }
 
     /** Return a relative elapsed time string such as "8 minutes ago" or "1 day ago". */
     public String getRelativeElapsedString(long elapsedTimeMillis) {
-        return stringFormatter.getRelativeElapsedString(elapsedTimeMillis);
+        return mStringFormatter.getRelativeElapsedString(elapsedTimeMillis);
     }
 
     /** Returns the default corner rounding radius in pixels. */
     public int getDefaultCornerRadius() {
-        return defaultCornerRadiusSupplier.get();
+        return mDefaultCornerRadiusSupplier.get();
     }
 
     /** Returns whether the theme for the Piet rendering context is a "dark theme". */
     public boolean isDarkTheme() {
-        return isDarkThemeSupplier.get();
+        return mIsDarkThemeSupplier.get();
     }
 
     /**
      * Fade-in animation will only occur if image loading time takes more than this amount of time.
      */
     public long getFadeImageThresholdMs() {
-        return fadeImageThresholdMsSupplier.get();
+        return mFadeImageThresholdMsSupplier.get();
     }
 
     /**
@@ -96,16 +96,16 @@ public class AssetProvider {
      */
     public void getTypeface(
             String typeface, boolean isItalic, Consumer</*@Nullable*/ Typeface> consumer) {
-        typefaceProvider.getTypeface(typeface, isItalic, consumer);
+        mTypefaceProvider.getTypeface(typeface, isItalic, consumer);
     }
 
     /** Returns whether Piet should render layouts using a right-to-left orientation. */
     public boolean isRtL() {
-        return isRtLSupplier.get();
+        return mIsRtLSupplier.get();
     }
 
     /** Returns whether Piet should render layouts using a right-to-left orientation. */
     public Supplier<Boolean> isRtLSupplier() {
-        return isRtLSupplier;
+        return mIsRtLSupplier;
     }
 }

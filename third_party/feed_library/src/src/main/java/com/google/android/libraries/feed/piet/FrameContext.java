@@ -61,33 +61,33 @@ class FrameContext {
     private static final String TAG = "FrameContext";
 
     @VisibleForTesting
-    final PietStylesHelper stylesHelper;
-    private final List<PietSharedState> pietSharedStates;
-    private final DebugBehavior debugBehavior;
-    private final DebugLogger debugLogger;
-    private final ActionHandler actionHandler;
-    private final HostProviders hostProviders;
-    private final HostBindingProvider hostBindingProvider;
-    private final Map<String, Template> templates;
+    final PietStylesHelper mStyleshelper;
+    private final List<PietSharedState> mPietSharedStates;
+    private final DebugBehavior mDebugBehavior;
+    private final DebugLogger mDebugLogger;
+    private final ActionHandler mActionHandler;
+    private final HostProviders mHostProviders;
+    private final HostBindingProvider mHostBindingProvider;
+    private final Map<String, Template> mTemplates;
 
     // List of stylesheets for each Template that could be affected by media queries.
-    private final Map<Template, List<Stylesheet>> templateMediaQueryStylesheets;
+    private final Map<Template, List<Stylesheet>> mTemplateMediaQueryStylesheets;
 
     // This is the Frame which contains all the slices being processed.
-    private final Frame currentFrame;
+    private final Frame mCurrentFrame;
 
     // The Current Stylesheet as a map from style_id to Style.
-    private final Map<String, Style> stylesheet;
+    private final Map<String, Style> mStylesheet;
 
     // The in-scope bindings as a map from state_id to binding value
-    private final Map<String, BindingValue> bindingValues;
+    private final Map<String, BindingValue> mBindingValues;
 
     // The base / default style; set to default instance for Frame or childDefaultStyleId for
     // Template
-    private final Style baseStyle;
+    private final Style mBaseStyle;
 
     // The root view of this frame.
-    private final View frameView;
+    private final View mFrameView;
 
     /** Initialize a FrameContext for the first time from a top-level Frame. */
     @VisibleForTesting
@@ -98,11 +98,11 @@ class FrameContext {
                 debugBehavior, debugLogger, actionHandler, hostProviders,
                 new NoKeyOverwriteHashMap<>("Template", ERR_DUPLICATE_TEMPLATE), frameView);
 
-        stylesHelper.addSharedStateTemplatesToFrame(templates);
+        mStyleshelper.addSharedStateTemplatesToFrame(mTemplates);
         if (frame.getTemplatesCount() > 0) {
             for (Template template : frame.getTemplatesList()) {
                 if (pietStylesHelper.areMediaQueriesMet(template.getConditionsList())) {
-                    templates.put(template.getTemplateId(), template);
+                    mTemplates.put(template.getTemplateId(), template);
                 }
             }
         }
@@ -114,20 +114,20 @@ class FrameContext {
             PietStylesHelper pietStylesHelper, DebugBehavior debugBehavior, DebugLogger debugLogger,
             ActionHandler actionHandler, HostProviders hostProviders,
             Map<String, Template> templates, View frameView) {
-        currentFrame = frame;
-        this.stylesheet = stylesheet;
-        this.bindingValues = bindingValues;
-        this.baseStyle = Style.getDefaultInstance();
-        this.stylesHelper = pietStylesHelper;
-        this.pietSharedStates = pietSharedStates;
-        this.debugBehavior = debugBehavior;
-        this.debugLogger = debugLogger;
-        this.actionHandler = actionHandler;
-        this.hostProviders = hostProviders;
-        this.hostBindingProvider = hostProviders.getHostBindingProvider();
-        this.templates = templates;
-        this.frameView = frameView;
-        this.templateMediaQueryStylesheets = new HashMap<>();
+        mCurrentFrame = frame;
+        this.mStylesheet = stylesheet;
+        this.mBindingValues = bindingValues;
+        this.mBaseStyle = Style.getDefaultInstance();
+        this.mStyleshelper = pietStylesHelper;
+        this.mPietSharedStates = pietSharedStates;
+        this.mDebugBehavior = debugBehavior;
+        this.mDebugLogger = debugLogger;
+        this.mActionHandler = actionHandler;
+        this.mHostProviders = hostProviders;
+        this.mHostBindingProvider = hostProviders.getHostBindingProvider();
+        this.mTemplates = templates;
+        this.mFrameView = frameView;
+        this.mTemplateMediaQueryStylesheets = new HashMap<>();
     }
 
     /**
@@ -152,8 +152,8 @@ class FrameContext {
 
     /** Return any of the template's stylesheets that could be affected by a MediaQuery. */
     List<Stylesheet> getMediaQueryStylesheets(Template template) {
-        if (templateMediaQueryStylesheets.containsKey(template)) {
-            return templateMediaQueryStylesheets.get(template);
+        if (mTemplateMediaQueryStylesheets.containsKey(template)) {
+            return mTemplateMediaQueryStylesheets.get(template);
         }
 
         ArrayList<Stylesheet> mediaQueryStylesheets = new ArrayList<>();
@@ -164,7 +164,7 @@ class FrameContext {
             }
         }
         for (String stylesheetId : template.getStylesheets().getStylesheetIdsList()) {
-            Stylesheet stylesheet = stylesHelper.getStylesheet(stylesheetId);
+            Stylesheet stylesheet = mStyleshelper.getStylesheet(stylesheetId);
             if (stylesheet != null && stylesheet.getConditionsCount() > 0) {
                 mediaQueryStylesheets.add(stylesheet);
             }
@@ -174,7 +174,7 @@ class FrameContext {
         List<Stylesheet> mediaQueryStylesheetsImmutable =
                 Collections.unmodifiableList(mediaQueryStylesheets);
 
-        templateMediaQueryStylesheets.put(template, mediaQueryStylesheetsImmutable);
+        mTemplateMediaQueryStylesheets.put(template, mediaQueryStylesheetsImmutable);
 
         return mediaQueryStylesheetsImmutable;
     }
@@ -187,31 +187,31 @@ class FrameContext {
     FrameContext createTemplateContext(Template template, BindingContext bindingContext) {
         Map<String, BindingValue> bindingValues = createBindingValueMap(bindingContext);
         Map<String, Style> localStylesheet =
-                stylesHelper.getStylesheetMap(template.getStylesheets(), getDebugLogger());
+                mStyleshelper.getStylesheetMap(template.getStylesheets(), getDebugLogger());
 
-        return new FrameContext(currentFrame, localStylesheet, bindingValues, pietSharedStates,
-                stylesHelper, debugBehavior, debugLogger, actionHandler, hostProviders, templates,
-                frameView);
+        return new FrameContext(mCurrentFrame, localStylesheet, bindingValues, mPietSharedStates,
+                mStyleshelper, mDebugBehavior, mDebugLogger, mActionHandler, mHostProviders,
+                mTemplates, mFrameView);
     }
 
     public DebugBehavior getDebugBehavior() {
-        return debugBehavior;
+        return mDebugBehavior;
     }
 
     public DebugLogger getDebugLogger() {
-        return debugLogger;
+        return mDebugLogger;
     }
 
     public Frame getFrame() {
-        return currentFrame;
+        return mCurrentFrame;
     }
 
     public ActionHandler getActionHandler() {
-        return actionHandler;
+        return mActionHandler;
     }
 
     public Template getTemplate(String templateId) {
-        Template template = templates.get(templateId);
+        Template template = mTemplates.get(templateId);
         if (template == null) {
             throw new PietFatalException(ERR_MISSING_TEMPLATE,
                     reportMessage(MessageType.ERROR, ERR_MISSING_TEMPLATE,
@@ -221,14 +221,14 @@ class FrameContext {
     }
 
     public List<PietSharedState> getPietSharedStates() {
-        return pietSharedStates;
+        return mPietSharedStates;
     }
 
     /** Return a {@link StyleProvider} for the style. */
     public StyleProvider makeStyleFor(StyleIdsStack styles) {
         return new StyleProvider(
-                PietStylesHelper.mergeStyleIdsStack(baseStyle, styles, stylesheet, this),
-                hostProviders.getAssetProvider());
+                PietStylesHelper.mergeStyleIdsStack(mBaseStyle, styles, mStylesheet, this),
+                mHostProviders.getAssetProvider());
     }
 
     /**
@@ -237,11 +237,11 @@ class FrameContext {
      */
     /*@Nullable*/
     GridCellWidth getGridCellWidthFromBinding(GridCellWidthBindingRef binding) {
-        BindingValue bindingValue = bindingValues.get(binding.getBindingId());
+        BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         // Purposefully check for host binding and overwrite here as we want to perform the
         // hasCellWidth checks on host binding.   This allows the host to act more like the server.
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getGridCellWidthBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getGridCellWidthBindingForValue(bindingValue);
         }
         return bindingValue == null || !bindingValue.hasCellWidth() ? null
                                                                     : bindingValue.getCellWidth();
@@ -252,9 +252,9 @@ class FrameContext {
      * default instance.
      */
     Actions getActionsFromBinding(ActionsBindingRef binding) {
-        BindingValue bindingValue = bindingValues.get(binding.getBindingId());
+        BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getActionsBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getActionsBindingForValue(bindingValue);
         }
         if (bindingValue == null) {
             return Actions.getDefaultInstance();
@@ -273,7 +273,7 @@ class FrameContext {
      * default instance.
      */
     BoundStyle getStyleFromBinding(StyleBindingRef binding) {
-        return getStyleFromBinding(binding, bindingValues);
+        return getStyleFromBinding(binding, mBindingValues);
     }
 
     /**
@@ -284,7 +284,7 @@ class FrameContext {
             StyleBindingRef binding, Map<String, BindingValue> bindingValues) {
         BindingValue bindingValue = bindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getStyleBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getStyleBindingForValue(bindingValue);
         }
         if (bindingValue == null) {
             return BoundStyle.getDefaultInstance();
@@ -301,9 +301,9 @@ class FrameContext {
     /** Returns the {@link BindingValue} for the BindingRef; otherwise returns null. */
     /*@Nullable*/
     Visibility getVisibilityFromBinding(VisibilityBindingRef binding) {
-        BindingValue bindingValue = bindingValues.get(binding.getBindingId());
+        BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getVisibilityBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getVisibilityBindingForValue(bindingValue);
         }
         if (bindingValue == null) {
             return null;
@@ -321,7 +321,7 @@ class FrameContext {
     Image filterImageSourcesByMediaQueryCondition(Image image) {
         Image.Builder imageBuilder = image.toBuilder().clearSources();
         for (ImageSource source : image.getSourcesList()) {
-            if (stylesHelper.areMediaQueriesMet(source.getConditionsList())) {
+            if (mStyleshelper.areMediaQueriesMet(source.getConditionsList())) {
                 imageBuilder.addSources(source);
             }
         }
@@ -335,7 +335,7 @@ class FrameContext {
     BindingValue getTemplateInvocationBindingValue(TemplateBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getTemplateBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getTemplateBindingForValue(bindingValue);
         }
         if (!bindingValue.hasTemplateInvocation() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -354,7 +354,7 @@ class FrameContext {
     BindingValue getCustomElementBindingValue(CustomBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getCustomElementDataBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getCustomElementDataBindingForValue(bindingValue);
         }
         if (!bindingValue.hasCustomElementData() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -373,7 +373,7 @@ class FrameContext {
     BindingValue getChunkedTextBindingValue(ChunkedTextBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getChunkedTextBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getChunkedTextBindingForValue(bindingValue);
         }
         if (!bindingValue.hasChunkedText() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -392,7 +392,7 @@ class FrameContext {
     BindingValue getParameterizedTextBindingValue(ParameterizedTextBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getParameterizedTextBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getParameterizedTextBindingForValue(bindingValue);
         }
         if (!bindingValue.hasParameterizedText() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -411,7 +411,7 @@ class FrameContext {
     BindingValue getImageBindingValue(ImageBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getImageBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getImageBindingForValue(bindingValue);
         }
         if (!bindingValue.hasImage() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -430,7 +430,7 @@ class FrameContext {
     BindingValue getElementBindingValue(ElementBindingRef binding) {
         BindingValue bindingValue = getBindingValue(binding.getBindingId());
         if (bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getElementBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getElementBindingForValue(bindingValue);
         }
         if (!bindingValue.hasElement() && !binding.getIsOptional()) {
             throw new PietFatalException(ERR_MISSING_BINDING_VALUE,
@@ -448,9 +448,9 @@ class FrameContext {
      */
     /*@Nullable*/
     LogData getLogDataFromBinding(LogDataBindingRef binding) {
-        BindingValue bindingValue = bindingValues.get(binding.getBindingId());
+        BindingValue bindingValue = mBindingValues.get(binding.getBindingId());
         if (bindingValue != null && bindingValue.hasHostBindingData()) {
-            bindingValue = hostBindingProvider.getLogDataBindingForValue(bindingValue);
+            bindingValue = mHostBindingProvider.getLogDataBindingForValue(bindingValue);
         }
         if (bindingValue == null) {
             return null;
@@ -467,11 +467,11 @@ class FrameContext {
 
     /** Returns the root view of this Frame. */
     View getFrameView() {
-        return frameView;
+        return mFrameView;
     }
 
     private BindingValue getBindingValue(String bindingId) {
-        BindingValue returnValue = bindingValues.get(bindingId);
+        BindingValue returnValue = mBindingValues.get(bindingId);
         if (returnValue == null) {
             return BindingValue.getDefaultInstance();
         }
@@ -483,8 +483,8 @@ class FrameContext {
      * the site of the error.
      */
     public String reportMessage(@MessageType int messageType, String message) {
-        String e = String.format("[%s] %s", currentFrame.getTag(), message);
-        debugLogger.recordMessage(messageType, e);
+        String e = String.format("[%s] %s", mCurrentFrame.getTag(), message);
+        mDebugLogger.recordMessage(messageType, e);
         return e;
     }
 
@@ -493,8 +493,8 @@ class FrameContext {
      * the site of the error.
      */
     public String reportMessage(@MessageType int messageType, ErrorCode errorCode, String message) {
-        String e = String.format("[%s] %s", currentFrame.getTag(), message);
-        debugLogger.recordMessage(messageType, errorCode, e);
+        String e = String.format("[%s] %s", mCurrentFrame.getTag(), message);
+        mDebugLogger.recordMessage(messageType, errorCode, e);
         return e;
     }
 
@@ -504,7 +504,7 @@ class FrameContext {
         for (BindingValue bindingValue : bindingContext.getBindingValuesList()) {
             if (bindingValue.hasBindingIdFromTranscludingTemplate()) {
                 BindingValue parentBindingValue =
-                        bindingValues.get(bindingValue.getBindingIdFromTranscludingTemplate());
+                        mBindingValues.get(bindingValue.getBindingIdFromTranscludingTemplate());
                 if (parentBindingValue != null) {
                     BindingValue bindingValueForChild =
                             parentBindingValue.toBuilder()

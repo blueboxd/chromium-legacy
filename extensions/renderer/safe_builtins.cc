@@ -87,6 +87,8 @@ const char kScript[] =
     "saveBuiltin(Error,\n"
     "            [],\n"
     "            ['captureStackTrace']);\n"
+    "saveBuiltin(Promise,\n"
+    "            ['then', 'catch']);\n"
     "\n"
     "// JSON is trickier because extensions can override toJSON in\n"
     "// incompatible ways, and we need to prevent that.\n"
@@ -256,6 +258,10 @@ v8::Local<v8::Object> SafeBuiltins::GetString() const {
 
 v8::Local<v8::Object> SafeBuiltins::GetError() const {
   return Load("Error", context_->v8_context());
+}
+
+v8::Local<v8::Object> SafeBuiltins::GetPromise() const {
+  return Load("Promise", context_->v8_context());
 }
 
 }  //  namespace extensions

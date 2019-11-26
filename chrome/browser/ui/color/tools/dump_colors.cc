@@ -39,13 +39,29 @@ int main(int argc, const char* argv[]) {
   add_mixers(&light_provider, false);
   add_mixers(&dark_provider, true);
 
+  size_t longest_name = 0;
+  for (const char* name : enum_names)
+    longest_name = std::max(longest_name, strlen(name));
+  ++longest_name;  // For trailing space.
+
+  std::cout << std::setfill(' ') << std::left;
+  std::cout << std::setw(longest_name) << "ID";
+  constexpr size_t kColorColumnWidth = 1 + 8 + 1;  // '#xxxxxxxx '/'#xxxxxxxx\n'
+  std::cout << std::setw(kColorColumnWidth) << "Light";
+  std::cout << "Dark\n";
+  std::cout << std::setfill('-') << std::right;
+  std::cout << std::setw(longest_name) << ' ';
+  std::cout << std::setw(kColorColumnWidth) << ' ';
+  std::cout << std::setw(kColorColumnWidth) << '\n';
+
   for (ui::ColorId id = ui::kUiColorsStart; id < kChromeColorsEnd; ++id) {
-    std::cout << "ID: " << std::setfill(' ') << std::setw(49) << enum_names[id]
-              << " Light: "<< std::hex << std::setfill('0') << std::setw(8)
-              << light_provider.GetColor(id)
-              << " Dark: " << std::setw(8) << dark_provider.GetColor(id)
-              << '\n';
+    std::cout << std::setfill(' ') << std::left;
+    std::cout << std::setw(longest_name) << enum_names[id];
+    std::cout << std::hex << std::setfill('0') << std::right;
+    std::cout << '#' << std::setw(8) << light_provider.GetColor(id) << ' ';
+    std::cout << '#' << std::setw(8) << dark_provider.GetColor(id) << '\n';
   }
+
   std::cout.flush();
 
   return 0;

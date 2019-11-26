@@ -54,7 +54,6 @@ function getEmptyPrinter_() {
       effectiveMakeAndModel: '',
       autoconf: false,
     },
-    printerPpdReferenceResolved: false,
     printerProtocol: 'ipp',
     printerQueue: 'ipp/print',
     printerStatus: '',
@@ -272,14 +271,13 @@ Polymer({
     newPrinter.printerPpdReference.effectiveMakeAndModel =
         info.ppdRefEffectiveMakeAndModel;
     newPrinter.printerPpdReference.autoconf = info.autoconf;
-    newPrinter.printerPpdReferenceResolved = info.ppdReferenceResolved;
 
     this.newPrinter = newPrinter;
 
 
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
-    if (this.newPrinter.printerPpdReferenceResolved) {
+    if (info.ppdReferenceResolved) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .addCupsPrinter(this.newPrinter)
           .then(

@@ -12,13 +12,13 @@ import java.util.HashSet;
 
 /** Fake for {@link ModelToken}. */
 public class FakeModelToken implements ModelToken {
-    private final StreamToken streamToken;
-    private final boolean isSynthetic;
-    private final HashSet<TokenCompletedObserver> observers = new HashSet<>();
+    private final StreamToken mStreamToken;
+    private final boolean mIsSynthetic;
+    private final HashSet<TokenCompletedObserver> mObservers = new HashSet<>();
 
     private FakeModelToken(StreamToken streamToken, boolean isSynthetic) {
-        this.streamToken = streamToken;
-        this.isSynthetic = isSynthetic;
+        this.mStreamToken = streamToken;
+        this.mIsSynthetic = isSynthetic;
     }
 
     public static Builder newBuilder() {
@@ -26,47 +26,47 @@ public class FakeModelToken implements ModelToken {
     }
 
     public HashSet<TokenCompletedObserver> getObservers() {
-        return observers;
+        return mObservers;
     }
 
     @Override
     public StreamToken getStreamToken() {
-        return streamToken;
+        return mStreamToken;
     }
 
     @Override
     public void registerObserver(TokenCompletedObserver observer) {
-        observers.add(observer);
+        mObservers.add(observer);
     }
 
     @Override
     public void unregisterObserver(TokenCompletedObserver observer) {
-        observers.remove(observer);
+        mObservers.remove(observer);
     }
 
     @Override
     public boolean isSynthetic() {
-        return isSynthetic;
+        return mIsSynthetic;
     }
 
     public static class Builder {
-        private StreamToken streamToken = StreamToken.getDefaultInstance();
-        private boolean isSynthetic;
+        private StreamToken mStreamToken = StreamToken.getDefaultInstance();
+        private boolean mIsSynthetic;
 
         private Builder() {}
 
         public Builder setStreamToken(StreamToken streamToken) {
-            this.streamToken = streamToken;
+            this.mStreamToken = streamToken;
             return this;
         }
 
         public Builder setIsSynthetic(boolean isSynthetic) {
-            this.isSynthetic = isSynthetic;
+            this.mIsSynthetic = isSynthetic;
             return this;
         }
 
         public FakeModelToken build() {
-            return new FakeModelToken(streamToken, isSynthetic);
+            return new FakeModelToken(mStreamToken, mIsSynthetic);
         }
     }
 }

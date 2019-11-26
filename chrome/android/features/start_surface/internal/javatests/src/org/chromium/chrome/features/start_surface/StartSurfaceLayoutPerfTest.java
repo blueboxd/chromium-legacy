@@ -97,7 +97,7 @@ public class StartSurfaceLayoutPerfTest {
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
         mUrl = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
-        mRepeat = 3;
+        mRepeat = 1;
         mWaitingTime = 0;
         mTabNumCap = 3;
 

@@ -26,6 +26,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,7 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/log_message.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pb.h"
 
@@ -1303,6 +1305,103 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
       wait_for_stop.QuitClosure()));
 
   wait_for_stop.Run();
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOff) {
+  TRACE_EVENT_BEGIN("log", "LogMessage", [](perfetto::EventContext ctx) {
+    ADD_FAILURE() << "lambda was called when tracing was off";
+  });
+
+  TRACE_EVENT_END("log", [](perfetto::EventContext ctx) {
+    ADD_FAILURE() << "lambda was called when tracing was off";
+  });
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBegin) {
+  CreateTraceEventDataSource();
+
+  bool begin_called = false;
+
+  TRACE_EVENT_BEGIN("browser", "bar", [&](perfetto::EventContext ctx) {
+    begin_called = true;
+    ctx.event()->set_log_message()->set_body_iid(42);
+  });
+
+  EXPECT_TRUE(begin_called);
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnEnd) {
+  CreateTraceEventDataSource();
+
+  bool end_called = false;
+
+  TRACE_EVENT_END("browser", [&](perfetto::EventContext ctx) {
+    end_called = true;
+    ctx.event()->set_log_message()->set_body_iid(42);
+  });
+
+  EXPECT_TRUE(end_called);
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_END);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, kTraceEventEndName}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBeginAndEnd) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_BEGIN("browser", "bar", [&](perfetto::EventContext ctx) {
+    ctx.event()->set_log_message()->set_body_iid(42);
+  });
+  TRACE_EVENT_END("browser", [&](perfetto::EventContext ctx) {
+    ctx.event()->set_log_message()->set_body_iid(84);
+  });
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+
+  e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_END);
+
+  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 84u);
 }
 
 // TODO(eseckler): Add startup tracing unittests.

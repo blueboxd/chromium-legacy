@@ -16,35 +16,36 @@ import com.google.android.libraries.feed.common.functional.Supplier;
 
 /** Generates a linear gradient according to CSS behavior */
 class GradientShader extends ShapeDrawable.ShaderFactory {
-    private final int[] colors;
-    private final float[] stops;
+    private final int[] mColors;
+    private final float[] mStops;
     @VisibleForTesting
-    final double angleRadians;
+    final double mAngleRadians;
     @VisibleForTesting
-    final double angleRadiansSmall;
-    @VisibleForTesting /*@Nullable*/ final Supplier<Boolean> rtLSupplier;
+    final double mAngleRadiansSmall;
+    @VisibleForTesting /*@Nullable*/ final Supplier<Boolean> mRtLSupplier;
 
     GradientShader(
             int[] colors, float[] stops, int angle, /*@Nullable*/ Supplier<Boolean> rtLSupplier) {
         checkState(colors.length == stops.length, "Mismatch: got %s colors and %s stops",
                 colors.length, stops.length);
-        this.colors = colors;
-        this.stops = stops;
-        this.angleRadians = Math.toRadians(angle % 360);
-        this.angleRadiansSmall = Math.toRadians(angle % 90);
-        this.rtLSupplier = rtLSupplier;
+        this.mColors = colors;
+        this.mStops = stops;
+        this.mAngleRadians = Math.toRadians(angle % 360);
+        this.mAngleRadiansSmall = Math.toRadians(angle % 90);
+        this.mRtLSupplier = rtLSupplier;
     }
 
     @Override
     public Shader resize(int width, int height) {
-        RectF line = calculateGradientLine(width, height, angleRadians, angleRadiansSmall, isRtL());
+        RectF line =
+                calculateGradientLine(width, height, mAngleRadians, mAngleRadiansSmall, isRtL());
 
         return new android.graphics.LinearGradient(
-                line.left, line.top, line.right, line.bottom, colors, stops, TileMode.CLAMP);
+                line.left, line.top, line.right, line.bottom, mColors, mStops, TileMode.CLAMP);
     }
 
     private boolean isRtL() {
-        return rtLSupplier != null && rtLSupplier.get();
+        return mRtLSupplier != null && mRtLSupplier.get();
     }
 
     /** Returns a RectF as a shorthand for two points - start coords and end coords */

@@ -1,10 +1,10 @@
 # Mixed content Autoupgrade
 
 ## Description
-We are currently running an experiment upgrading mixed content (insecure content on secure sites) to HTTPS, as part of this, some users will see HTTP subresource URLs rewritten as HTTPS when browsing a site served over HTTPS. This is similar behavior to that if the site included the Upgrade-Insecure-Requests CSP directive.
+Chrome will now (starting on M80) attempt to upgrade some types of mixed content (HTTP on an HTTPS site) subresources. Subresources that fail to load over HTTPS will not be loaded. For more information see [the official announcement](https://blog.chromium.org/2019/10/no-more-mixed-messages-about-https.html).
 
 ## Scope
-Currently subresources loaded over HTTP and Websocket URLs are autoupgraded for users who are part of the experiment. Form submissions are not currently part of the experiment.
+Currently only audio and video subresources are autoupgraded. On a future version images will be included.
 
 ## Opt-out
-You can opt out of having mixed content autoupgraded in your site by including an HTTP header with type 'mixed-content' and value 'noupgrade', this will disable autoupgrades for subresources. Since mixed content websockets are automatically blocked, autoupgrades cannot be disabled for those.
+Users can disable autoupgrades on a per-site basis through content settings (chrome://settings/content/insecureContent).

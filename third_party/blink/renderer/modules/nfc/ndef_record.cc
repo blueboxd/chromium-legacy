@@ -213,19 +213,16 @@ static NDEFRecord* CreateExternalRecord(const String& custom_type,
                                         ExceptionState& exception_state) {
   // TODO(https://crbug.com/520391): Add support in case of |data| being an
   // NDEFMessageInit.
+
   // https://w3c.github.io/web-nfc/#dfn-map-external-data-to-ndef
-  if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
+  if (!IsBufferSource(data)) {
     exception_state.ThrowTypeError(
-        "The data for external type NDEFRecord must be an ArrayBuffer.");
+        "The data for external type NDEFRecord must be a BufferSource.");
     return nullptr;
   }
 
-  DOMArrayBuffer* array_buffer =
-      V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
-  WTF::Vector<uint8_t> bytes;
-  bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
-               array_buffer->DeprecatedByteLengthAsUnsigned());
-  return MakeGarbageCollected<NDEFRecord>(custom_type, std::move(bytes));
+  return MakeGarbageCollected<NDEFRecord>(custom_type,
+                                          GetBytesOfBufferSource(data));
 }
 
 }  // namespace

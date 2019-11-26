@@ -18,31 +18,31 @@ import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
 public class PietCustomElementProvider implements CustomElementProvider {
     private static final String TAG = "PietCustomElementPro";
 
-    private final Context context;
-    /*@Nullable*/ private final CustomElementProvider hostCustomElementProvider;
+    private final Context mContext;
+    /*@Nullable*/ private final CustomElementProvider mHostCustomElementProvider;
 
     public PietCustomElementProvider(
             Context context, /*@Nullable*/ CustomElementProvider hostCustomElementProvider) {
-        this.context = context;
-        this.hostCustomElementProvider = hostCustomElementProvider;
+        this.mContext = context;
+        this.mHostCustomElementProvider = hostCustomElementProvider;
     }
 
     @Override
     public View createCustomElement(CustomElementData customElementData) {
         // We don't currently implement any custom elements yet.  Delegate to host if there is one.
-        if (hostCustomElementProvider != null) {
-            return hostCustomElementProvider.createCustomElement(customElementData);
+        if (mHostCustomElementProvider != null) {
+            return mHostCustomElementProvider.createCustomElement(customElementData);
         }
 
         // Just return an empty view if there is not host.
         Logger.w(TAG, "Received request for unknown custom element");
-        return new View(context);
+        return new View(mContext);
     }
 
     @Override
     public void releaseCustomView(View customElementView, CustomElementData customElementData) {
-        if (hostCustomElementProvider != null) {
-            hostCustomElementProvider.releaseCustomView(customElementView, customElementData);
+        if (mHostCustomElementProvider != null) {
+            mHostCustomElementProvider.releaseCustomView(customElementView, customElementData);
             return;
         }
 

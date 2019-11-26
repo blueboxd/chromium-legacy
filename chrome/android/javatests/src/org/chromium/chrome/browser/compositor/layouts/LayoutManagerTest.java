@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
@@ -135,7 +136,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, null);
         mManager = mManagerPhone;
-        mManager.getAnimationHandler().setTestingMode(true);
+        CompositorAnimationHandler.setTestingMode(true);
         mManager.init(mTabModelSelector, null, null, container, null, null);
         initializeMotionEvent();
     }

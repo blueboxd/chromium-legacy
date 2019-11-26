@@ -142,6 +142,11 @@ void StringSourceRequest::GetRequestData(DataCallback callback) {
 
 bool DlpTriggeredRulesOK(
     const ::safe_browsing::DlpDeepScanningVerdict& verdict) {
+  // No status returns true since this function is called even when the server
+  // doesn't return a DLP scan verdict.
+  if (!verdict.has_status())
+    return true;
+
   if (verdict.status() != DlpDeepScanningVerdict::SUCCESS)
     return false;
 

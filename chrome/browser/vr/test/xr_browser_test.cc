@@ -25,6 +25,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -154,7 +155,7 @@ void XrBrowserTestBase::SetUp() {
   }
 
   for (const auto& blink_feature : enable_blink_features_) {
-    cmd_line->AppendSwitchASCII("enable-blink-features", blink_feature);
+    cmd_line->AppendSwitchASCII(switches::kEnableBlinkFeatures, blink_feature);
   }
 
   scoped_feature_list_.InitWithFeatures(enable_features_, disable_features_);

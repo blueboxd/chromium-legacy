@@ -80,96 +80,96 @@ public final class FeedModelProvider
             Collections.unmodifiableList(new ArrayList<>());
     private static final String SYNTHETIC_TOKEN_PREFIX = "_token:";
 
-    private final Object lock = new Object();
+    private final Object mLock = new Object();
 
     @GuardedBy("lock")
     /*@Nullable*/
-    private UpdatableModelChild root;
+    private UpdatableModelChild mRoot;
 
     // The tree is model as a parent with an list of children.  A container is created for every
     // ModelChild with a child.
     @GuardedBy("lock")
-    private final Map<String, ArrayList<UpdatableModelChild>> containers = new HashMap<>();
+    private final Map<String, ArrayList<UpdatableModelChild>> mContainers = new HashMap<>();
 
     @GuardedBy("lock")
-    private final Map<String, UpdatableModelChild> contents = new HashMap<>();
+    private final Map<String, UpdatableModelChild> mContents = new HashMap<>();
 
     @GuardedBy("lock")
-    private final Map<ByteString, TokenTracking> tokens = new HashMap<>();
+    private final Map<ByteString, TokenTracking> mTokens = new HashMap<>();
 
     @GuardedBy("lock")
-    private final Map<String, SyntheticTokenTracker> syntheticTokens = new HashMap<>();
+    private final Map<String, SyntheticTokenTracker> mSyntheticTokens = new HashMap<>();
 
     // TODO: Tiktok doesn't like WeakReference and will report uses as conformance errors
     @GuardedBy("lock")
-    private final List<WeakReference<ModelCursorImpl>> cursors = new ArrayList<>();
+    private final List<WeakReference<ModelCursorImpl>> mCursors = new ArrayList<>();
 
     @GuardedBy("lock")
-    private ModelState currentState = ModelState.initializing();
+    private ModelState mCurrentState = ModelState.initializing();
 
     // #dump() operation counts
-    private int removedChildrenCount;
-    private int removeScanCount;
-    private int commitCount;
-    private int commitTokenCount;
-    private int commitUpdateCount;
-    private int cursorsRemoved;
+    private int mRemovedChildrenCount;
+    private int mRemoveScanCount;
+    private int mCommitCount;
+    private int mCommitTokenCount;
+    private int mCommitUpdateCount;
+    private int mCursorsRemoved;
 
-    private final FeedSessionManager feedSessionManager;
-    private final ThreadUtils threadUtils;
-    private final TaskQueue taskQueue;
-    private final MainThreadRunner mainThreadRunner;
-    private final ModelChildBinder modelChildBinder;
-    private final TimingUtils timingUtils;
-    private final BasicLoggingApi basicLoggingApi;
+    private final FeedSessionManager mFeedSessionManager;
+    private final ThreadUtils mThreadUtils;
+    private final TaskQueue mTaskQueue;
+    private final MainThreadRunner mMainThreadRunner;
+    private final ModelChildBinder mModelChildBinder;
+    private final TimingUtils mTimingUtils;
+    private final BasicLoggingApi mBasicLoggingApi;
 
-    /*@Nullable*/ private final Predicate<StreamStructure> filterPredicate;
-    /*@Nullable*/ private RemoveTrackingFactory<?> removeTrackingFactory;
+    /*@Nullable*/ private final Predicate<StreamStructure> mFilterPredicate;
+    /*@Nullable*/ private RemoveTrackingFactory<?> mRemoveTrackingFactory;
 
-    private final int initialPageSize;
-    private final int pageSize;
-    private final int minPageSize;
+    private final int mInitialPageSize;
+    private final int mPageSize;
+    private final int mMinPageSize;
 
-    @VisibleForTesting /*@Nullable*/ String sessionId;
+    @VisibleForTesting /*@Nullable*/ String mSessionId;
 
     @GuardedBy("lock")
-    private boolean delayedTriggerRefresh;
+    private boolean mDelayedTriggerRefresh;
 
     @GuardedBy("lock")
     @RequestReason
-    private int requestReason = RequestReason.UNKNOWN;
+    private int mRequestReason = RequestReason.UNKNOWN;
 
     FeedModelProvider(FeedSessionManager feedSessionManager, ThreadUtils threadUtils,
             TimingUtils timingUtils, TaskQueue taskQueue, MainThreadRunner mainThreadRunner,
             /*@Nullable*/ Predicate<StreamStructure> filterPredicate, Configuration config,
             BasicLoggingApi basicLoggingApi) {
-        this.feedSessionManager = feedSessionManager;
-        this.threadUtils = threadUtils;
-        this.timingUtils = timingUtils;
-        this.taskQueue = taskQueue;
-        this.mainThreadRunner = mainThreadRunner;
-        this.initialPageSize =
+        this.mFeedSessionManager = feedSessionManager;
+        this.mThreadUtils = threadUtils;
+        this.mTimingUtils = timingUtils;
+        this.mTaskQueue = taskQueue;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mInitialPageSize =
                 (int) config.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0L);
-        this.pageSize = (int) config.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0L);
-        this.minPageSize = (int) config.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0L);
-        this.filterPredicate = filterPredicate;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mPageSize = (int) config.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0L);
+        this.mMinPageSize = (int) config.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0L);
+        this.mFilterPredicate = filterPredicate;
+        this.mBasicLoggingApi = basicLoggingApi;
 
         CursorProvider cursorProvider = parentId -> provideCursor(parentId);
-        modelChildBinder = new ModelChildBinder(feedSessionManager, cursorProvider, timingUtils);
+        mModelChildBinder = new ModelChildBinder(feedSessionManager, cursorProvider, timingUtils);
     }
 
     private ModelCursorImpl provideCursor(String parentId) {
-        synchronized (lock) {
-            ArrayList<UpdatableModelChild> children = containers.get(parentId);
+        synchronized (mLock) {
+            ArrayList<UpdatableModelChild> children = mContainers.get(parentId);
             if (children == null) {
                 Logger.i(TAG, "No children found for Cursor");
                 ModelCursorImpl cursor = new ModelCursorImpl(parentId, EMPTY_LIST);
-                cursors.add(new WeakReference<>(cursor));
+                mCursors.add(new WeakReference<>(cursor));
                 return cursor;
             }
             ModelCursorImpl cursor = new ModelCursorImpl(parentId, new ArrayList<>(children));
-            cursors.add(new WeakReference<>(cursor));
+            mCursors.add(new WeakReference<>(cursor));
             return cursor;
         }
     }
@@ -177,14 +177,14 @@ public final class FeedModelProvider
     @Override
     /*@Nullable*/
     public ModelFeature getRootFeature() {
-        synchronized (lock) {
-            UpdatableModelChild localRoot = root;
+        synchronized (mLock) {
+            UpdatableModelChild localRoot = mRoot;
             if (localRoot == null) {
                 Logger.i(TAG, "Found Empty Stream");
                 return null;
             }
             if (localRoot.getType() != Type.FEATURE) {
-                basicLoggingApi.onInternalError(InternalFeedError.ROOT_NOT_BOUND_TO_FEATURE);
+                mBasicLoggingApi.onInternalError(InternalFeedError.ROOT_NOT_BOUND_TO_FEATURE);
                 Logger.e(TAG, "Root is bound to the wrong type %s", localRoot.getType());
                 return null;
             }
@@ -195,15 +195,15 @@ public final class FeedModelProvider
     @Override
     /*@Nullable*/
     public ModelChild getModelChild(String contentId) {
-        synchronized (lock) {
-            return contents.get(contentId);
+        synchronized (mLock) {
+            return mContents.get(contentId);
         }
     }
 
     @Override
     /*@Nullable*/
     public StreamSharedState getSharedState(ContentId contentId) {
-        return feedSessionManager.getSharedState(contentId);
+        return mFeedSessionManager.getSharedState(contentId);
     }
 
     @Override
@@ -212,8 +212,8 @@ public final class FeedModelProvider
             UpdatableModelToken token = (UpdatableModelToken) modelToken;
             if (token.isSynthetic()) {
                 SyntheticTokenTracker tokenTracker;
-                synchronized (lock) {
-                    tokenTracker = syntheticTokens.get(token.getStreamToken().getContentId());
+                synchronized (mLock) {
+                    tokenTracker = mSyntheticTokens.get(token.getStreamToken().getContentId());
                 }
                 if (tokenTracker == null) {
                     Logger.e(TAG, "Unable to find the SyntheticTokenTracker");
@@ -222,13 +222,13 @@ public final class FeedModelProvider
                 // The nullness checker fails to understand tokenTracker can't be null in the Lambda
                 // usage
                 SyntheticTokenTracker tt = Validators.checkNotNull(tokenTracker);
-                taskQueue.execute(Task.HANDLE_SYNTHETIC_TOKEN, TaskType.USER_FACING,
+                mTaskQueue.execute(Task.HANDLE_SYNTHETIC_TOKEN, TaskType.USER_FACING,
                         () -> tt.handleSyntheticToken(token));
                 return true;
             }
         }
-        String sessionId = Validators.checkNotNull(this.sessionId);
-        feedSessionManager.handleToken(sessionId, modelToken.getStreamToken());
+        String sessionId = Validators.checkNotNull(this.mSessionId);
+        mFeedSessionManager.handleToken(sessionId, modelToken.getStreamToken());
         return true;
     }
 
@@ -239,65 +239,65 @@ public final class FeedModelProvider
 
     @Override
     public void triggerRefresh(@RequestReason int requestReason, UiContext uiContext) {
-        threadUtils.checkMainThread();
-        if (sessionId == null) {
-            synchronized (lock) {
-                delayedTriggerRefresh = true;
-                this.requestReason = requestReason;
+        mThreadUtils.checkMainThread();
+        if (mSessionId == null) {
+            synchronized (mLock) {
+                mDelayedTriggerRefresh = true;
+                this.mRequestReason = requestReason;
             }
             return;
         }
-        feedSessionManager.triggerRefresh(sessionId, requestReason, uiContext);
+        mFeedSessionManager.triggerRefresh(mSessionId, requestReason, uiContext);
     }
 
     @Override
     public void registerObserver(ModelProviderObserver observer) {
         super.registerObserver(observer);
-        synchronized (lock) {
+        synchronized (mLock) {
             // If we are in the ready state, then call the Observer to inform it things are ready.
-            if (currentState.isReady()) {
-                observer.onSessionStart(currentState.uiContext);
-            } else if (currentState.isInvalidated()) {
-                observer.onSessionFinished(currentState.uiContext);
+            if (mCurrentState.isReady()) {
+                observer.onSessionStart(mCurrentState.mUiContext);
+            } else if (mCurrentState.isInvalidated()) {
+                observer.onSessionFinished(mCurrentState.mUiContext);
             }
         }
     }
 
     @Override
     public @State int getCurrentState() {
-        synchronized (lock) {
-            return currentState.getState();
+        synchronized (mLock) {
+            return mCurrentState.getState();
         }
     }
 
     @Override
     /*@Nullable*/
     public String getSessionId() {
-        if (sessionId == null) {
+        if (mSessionId == null) {
             Logger.w(TAG, "sessionId is null, this should have been set during population");
         }
-        return sessionId;
+        return mSessionId;
     }
 
     @Override
     public List<ModelChild> getAllRootChildren() {
-        synchronized (lock) {
-            if (root == null) {
+        synchronized (mLock) {
+            if (mRoot == null) {
                 return Collections.emptyList();
             }
-            List<UpdatableModelChild> rootChildren = containers.get(root.getContentId());
+            List<UpdatableModelChild> rootChildren = mContainers.get(mRoot.getContentId());
             return (rootChildren != null) ? new ArrayList<>(rootChildren) : Collections.emptyList();
         }
     }
 
     @Override
     public void enableRemoveTracking(RemoveTrackingFactory<?> removeTrackingFactory) {
-        this.removeTrackingFactory = removeTrackingFactory;
+        this.mRemoveTrackingFactory = removeTrackingFactory;
     }
 
     @Override
     public ModelMutation edit() {
-        return new ModelMutationImpl(committer);
+        return new ModelMutationImpl(mCommitter);
     }
 
     @Override
@@ -309,7 +309,7 @@ public final class FeedModelProvider
         String sessionId = getSessionId();
         if (sessionId != null) {
             Logger.i(TAG, "Detach the current ModelProvider: session %s", sessionId);
-            feedSessionManager.detachSession(sessionId);
+            mFeedSessionManager.detachSession(sessionId);
         }
     }
 
@@ -327,11 +327,11 @@ public final class FeedModelProvider
         String sessionId = getSessionId();
         if (sessionId != null) {
             Logger.i(TAG, "Invalidating the current ModelProvider: session %s", sessionId);
-            feedSessionManager.invalidateSession(sessionId);
+            mFeedSessionManager.invalidateSession(sessionId);
         }
 
         // Always run the observers on the UI Thread
-        mainThreadRunner.execute(TAG + " onSessionFinished", () -> {
+        mMainThreadRunner.execute(TAG + " onSessionFinished", () -> {
             List<ModelProviderObserver> observerList = getObserversToNotify();
             for (ModelProviderObserver observer : observerList) {
                 observer.onSessionFinished(uiContext);
@@ -340,25 +340,25 @@ public final class FeedModelProvider
     }
 
     private boolean moveToInvalidateState(UiContext uiContext) {
-        synchronized (lock) {
-            if (currentState.isInvalidated()) {
+        synchronized (mLock) {
+            if (mCurrentState.isInvalidated()) {
                 Logger.i(TAG, "Invalidated an already invalid ModelProvider");
                 return false;
             }
             Logger.i(TAG, "Moving %s to INVALIDATED",
-                    sessionId != null ? sessionId : "No sessionId");
-            currentState = ModelState.invalidated(uiContext);
-            for (WeakReference<ModelCursorImpl> cursorRef : cursors) {
+                    mSessionId != null ? mSessionId : "No sessionId");
+            mCurrentState = ModelState.invalidated(uiContext);
+            for (WeakReference<ModelCursorImpl> cursorRef : mCursors) {
                 ModelCursorImpl cursor = cursorRef.get();
                 if (cursor != null) {
                     cursor.release();
                     cursorRef.clear();
                 }
             }
-            cursors.clear();
-            tokens.clear();
-            syntheticTokens.clear();
-            containers.clear();
+            mCursors.clear();
+            mTokens.clear();
+            mSyntheticTokens.clear();
+            mContainers.clear();
         }
         return true;
     }
@@ -366,7 +366,7 @@ public final class FeedModelProvider
     @Override
     public void raiseError(ModelError error) {
         if (error.getErrorType() == ErrorType.NO_CARDS_ERROR) {
-            mainThreadRunner.execute(TAG + " onError", () -> {
+            mMainThreadRunner.execute(TAG + " onError", () -> {
                 List<ModelProviderObserver> observerList = getObserversToNotify();
                 for (ModelProviderObserver observer : observerList) {
                     observer.onError(error);
@@ -375,11 +375,11 @@ public final class FeedModelProvider
         } else if (error.getErrorType() == ErrorType.PAGINATION_ERROR) {
             Logger.i(TAG, "handling Pagination error");
             TokenTracking token;
-            synchronized (lock) {
-                token = tokens.get(error.getContinuationToken());
+            synchronized (mLock) {
+                token = mTokens.get(error.getContinuationToken());
             }
             if (token != null) {
-                raiseErrorOnToken(error, token.tokenChild);
+                raiseErrorOnToken(error, token.mTokenChild);
             } else {
                 Logger.e(TAG, "The Token Observer was not found during pagination error");
             }
@@ -387,7 +387,7 @@ public final class FeedModelProvider
     }
 
     private void raiseErrorOnToken(ModelError error, UpdatableModelToken token) {
-        mainThreadRunner.execute(TAG + " onTokenChange", () -> {
+        mMainThreadRunner.execute(TAG + " onTokenChange", () -> {
             List<TokenCompletedObserver> observerList = token.getObserversToNotify();
             for (TokenCompletedObserver observer : observerList) {
                 observer.onError(error);
@@ -408,12 +408,12 @@ public final class FeedModelProvider
             @Override
             public /*@Nullable*/ String getChildViewDepth() {
                 String cid = Validators.checkNotNull(delegate).getChildViewDepth();
-                synchronized (lock) {
-                    if (cid == null || root == null) {
+                synchronized (mLock) {
+                    if (cid == null || mRoot == null) {
                         return null;
                     }
-                    String rootId = root.getContentId();
-                    UpdatableModelChild child = contents.get(cid);
+                    String rootId = mRoot.getContentId();
+                    UpdatableModelChild child = mContents.get(cid);
                     while (child != null) {
                         if (child.getParentId() == null) {
                             return null;
@@ -421,7 +421,7 @@ public final class FeedModelProvider
                         if (rootId.equals(child.getParentId())) {
                             return child.getContentId();
                         }
-                        child = contents.get(child.getParentId());
+                        child = mContents.get(child.getParentId());
                     }
                 }
                 return null;
@@ -431,22 +431,22 @@ public final class FeedModelProvider
 
     @Override
     public void dump(Dumper dumper) {
-        synchronized (lock) {
+        synchronized (mLock) {
             dumper.title(TAG);
-            dumper.forKey("currentState").value(currentState.getState());
-            dumper.forKey("contentCount").value(contents.size()).compactPrevious();
-            dumper.forKey("containers").value(containers.size()).compactPrevious();
-            dumper.forKey("tokens").value(tokens.size()).compactPrevious();
-            dumper.forKey("syntheticTokens").value(syntheticTokens.size()).compactPrevious();
-            dumper.forKey("observers").value(observers.size()).compactPrevious();
-            dumper.forKey("commitCount").value(commitCount);
-            dumper.forKey("commitTokenCount").value(commitTokenCount).compactPrevious();
-            dumper.forKey("commitUpdateCount").value(commitUpdateCount).compactPrevious();
-            dumper.forKey("removeCount").value(removedChildrenCount);
-            dumper.forKey("removeScanCount").value(removeScanCount).compactPrevious();
-            if (root != null) {
+            dumper.forKey("currentState").value(mCurrentState.getState());
+            dumper.forKey("contentCount").value(mContents.size()).compactPrevious();
+            dumper.forKey("containers").value(mContainers.size()).compactPrevious();
+            dumper.forKey("tokens").value(mTokens.size()).compactPrevious();
+            dumper.forKey("syntheticTokens").value(mSyntheticTokens.size()).compactPrevious();
+            dumper.forKey("observers").value(mObservers.size()).compactPrevious();
+            dumper.forKey("commitCount").value(mCommitCount);
+            dumper.forKey("commitTokenCount").value(mCommitTokenCount).compactPrevious();
+            dumper.forKey("commitUpdateCount").value(mCommitUpdateCount).compactPrevious();
+            dumper.forKey("removeCount").value(mRemovedChildrenCount);
+            dumper.forKey("removeScanCount").value(mRemoveScanCount).compactPrevious();
+            if (mRoot != null) {
                 // This is here to satisfy the nullness checker.
-                UpdatableModelChild nonNullRoot = Validators.checkNotNull(root);
+                UpdatableModelChild nonNullRoot = Validators.checkNotNull(mRoot);
                 if (nonNullRoot.getType() != Type.FEATURE) {
                     dumper.forKey("root").value("[ROOT NOT A FEATURE]");
                     dumper.forKey("type").value(nonNullRoot.getType()).compactPrevious();
@@ -463,7 +463,7 @@ public final class FeedModelProvider
             int singleChild = 0;
             Dumper childDumper = dumper.getChildDumper();
             childDumper.title("Containers With Multiple Children");
-            for (Entry<String, ArrayList<UpdatableModelChild>> entry : containers.entrySet()) {
+            for (Entry<String, ArrayList<UpdatableModelChild>> entry : mContainers.entrySet()) {
                 if (entry.getValue().size() > 1) {
                     childDumper.forKey("Container").value(entry.getKey());
                     childDumper.forKey("childrenCount")
@@ -474,10 +474,10 @@ public final class FeedModelProvider
                 }
             }
             dumper.forKey("singleChildContainers").value(singleChild);
-            dumper.forKey("cursors").value(cursors.size());
+            dumper.forKey("cursors").value(mCursors.size());
             int atEnd = 0;
             int cursorEmptyRefs = 0;
-            for (WeakReference<ModelCursorImpl> cursorRef : cursors) {
+            for (WeakReference<ModelCursorImpl> cursorRef : mCursors) {
                 ModelCursorImpl cursor = cursorRef.get();
                 if (cursor == null) {
                     cursorEmptyRefs++;
@@ -485,11 +485,11 @@ public final class FeedModelProvider
                     atEnd++;
                 }
             }
-            dumper.forKey("cursorsRemoved").value(cursorsRemoved).compactPrevious();
+            dumper.forKey("cursorsRemoved").value(mCursorsRemoved).compactPrevious();
             dumper.forKey("reclaimedWeakReferences").value(cursorEmptyRefs).compactPrevious();
             dumper.forKey("cursorsAtEnd").value(atEnd).compactPrevious();
 
-            for (WeakReference<ModelCursorImpl> cursorRef : cursors) {
+            for (WeakReference<ModelCursorImpl> cursorRef : mCursors) {
                 ModelCursorImpl cursor = cursorRef.get();
                 if (cursor != null && !cursor.isAtEnd()) {
                     dumper.dump(cursor);
@@ -503,8 +503,8 @@ public final class FeedModelProvider
         // Make a copy of the observers, so the observers are not mutated while invoking callbacks.
         // mObservers is locked when adding or removing observers. Also, release the lock before
         // invoking callbacks to avoid deadlocks. ([INTERNAL LINK])
-        synchronized (observers) {
-            return new ArrayList<>(observers);
+        synchronized (mObservers) {
+            return new ArrayList<>(mObservers);
         }
     }
 
@@ -537,24 +537,24 @@ public final class FeedModelProvider
     }
 
     /** This is the {@code ModelMutatorCommitter} which updates the model. */
-    private final Committer<Void, Change> committer = new Committer<Void, Change>() {
+    private final Committer<Void, Change> mCommitter = new Committer<Void, Change>() {
         @Override
         public Void commit(Change change) {
             Logger.i(TAG, "FeedModelProvider - committer, structure changes %s, update changes %s",
-                    change.structureChanges.size(), change.updateChanges.size());
-            threadUtils.checkNotMainThread();
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
-            commitCount++;
+                    change.mStructureChanges.size(), change.mUpdateChanges.size());
+            mThreadUtils.checkNotMainThread();
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
+            mCommitCount++;
 
-            if (change.sessionId != null) {
-                sessionId = change.sessionId;
-                synchronized (lock) {
-                    if (delayedTriggerRefresh) {
-                        delayedTriggerRefresh = false;
-                        final @RequestReason int requestReasonForTrigger = requestReason;
-                        mainThreadRunner.execute(TAG + " TriggerRefresh",
+            if (change.mSessionId != null) {
+                mSessionId = change.mSessionId;
+                synchronized (mLock) {
+                    if (mDelayedTriggerRefresh) {
+                        mDelayedTriggerRefresh = false;
+                        final @RequestReason int requestReasonForTrigger = mRequestReason;
+                        mMainThreadRunner.execute(TAG + " TriggerRefresh",
                                 () -> triggerRefresh(requestReasonForTrigger));
-                        requestReason = RequestReason.UNKNOWN;
+                        mRequestReason = RequestReason.UNKNOWN;
                     }
                 }
             }
@@ -564,8 +564,8 @@ public final class FeedModelProvider
             Map<String, UpdatableModelChild> appendedChildren = new HashMap<>();
             List<UpdatableModelChild> childrenToBind = new ArrayList<>();
             boolean removedChildren = false;
-            for (StreamStructure structureChange : change.structureChanges) {
-                if (filterPredicate != null && !filterPredicate.test(structureChange)) {
+            for (StreamStructure structureChange : change.mStructureChanges) {
+                if (mFilterPredicate != null && !mFilterPredicate.test(structureChange)) {
                     continue;
                 }
                 if (structureChange.getOperation() == Operation.UPDATE_OR_APPEND) {
@@ -580,15 +580,15 @@ public final class FeedModelProvider
             }
 
             RemoveTracking<?> removeTracking = null;
-            if (removeTrackingFactory != null && change.mutationContext != null
+            if (mRemoveTrackingFactory != null && change.mMutationContext != null
                     && removedChildren) {
-                removeTracking = removeTrackingFactory.create(change.mutationContext);
+                removeTracking = mRemoveTrackingFactory.create(change.mMutationContext);
             }
 
-            synchronized (lock) {
+            synchronized (mLock) {
                 // Add the updates to the childrenToBind
-                for (StreamStructure updatedChild : change.updateChanges) {
-                    UpdatableModelChild child = contents.get(updatedChild.getContentId());
+                for (StreamStructure updatedChild : change.mUpdateChanges) {
+                    UpdatableModelChild child = mContents.get(updatedChild.getContentId());
                     if (child != null) {
                         childrenToBind.add(child);
                     } else {
@@ -600,29 +600,29 @@ public final class FeedModelProvider
 
             // Mutate the Model
             MutationHandler mutationHandler =
-                    getMutationHandler(change.updateChanges, change.mutationContext);
-            processMutation(mutationHandler, change.structureChanges, appendedChildren,
-                    removeTracking, change.mutationContext);
+                    getMutationHandler(change.mUpdateChanges, change.mMutationContext);
+            processMutation(mutationHandler, change.mStructureChanges, appendedChildren,
+                    removeTracking, change.mMutationContext);
 
             if (removeTracking != null) {
                 // Update the UI on the main thread.
-                mainThreadRunner.execute(
+                mMainThreadRunner.execute(
                         TAG + " removeTracking", removeTracking::triggerConsumerUpdate);
             }
 
             // Determine where to start binding children.
             int tokenStart = 0;
-            synchronized (lock) {
-                if (root != null) {
-                    tokenStart = findFirstUnboundChild(containers.get(root.getContentId()));
+            synchronized (mLock) {
+                if (mRoot != null) {
+                    tokenStart = findFirstUnboundChild(mContainers.get(mRoot.getContentId()));
                 }
             }
-            int tokenPageSize = tokenStart < initialPageSize ? initialPageSize : pageSize;
+            int tokenPageSize = tokenStart < mInitialPageSize ? mInitialPageSize : mPageSize;
 
-            synchronized (lock) {
+            synchronized (mLock) {
                 if (shouldInsertSyntheticToken()) {
                     SyntheticTokenTracker tokenTracker = new SyntheticTokenTracker(
-                            Validators.checkNotNull(root), tokenStart, tokenPageSize);
+                            Validators.checkNotNull(mRoot), tokenStart, tokenPageSize);
                     childrenToBind = tokenTracker.insertToken();
                 }
             }
@@ -635,13 +635,13 @@ public final class FeedModelProvider
                 invalidate();
             }
             timeTracker.stop("", "modelProviderCommit");
-            StreamToken token = (change.mutationContext != null)
-                    ? change.mutationContext.getContinuationToken()
+            StreamToken token = (change.mMutationContext != null)
+                    ? change.mMutationContext.getContinuationToken()
                     : null;
             Logger.i(TAG,
                     "ModelProvider Mutation committed - structure changes %s, childrenToBind %s, "
                             + "removedChildren %s, Token %s",
-                    change.structureChanges.size(), childrenToBind.size(), removedChildren,
+                    change.mStructureChanges.size(), childrenToBind.size(), removedChildren,
                     token != null);
             return null;
         }
@@ -663,11 +663,11 @@ public final class FeedModelProvider
         /** Returns a MutationHandler for processing the mutation */
         private MutationHandler getMutationHandler(List<StreamStructure> updatedChildren,
                 /*@Nullable*/ MutationContext mutationContext) {
-            synchronized (lock) {
+            synchronized (mLock) {
                 StreamToken mutationSourceToken =
                         mutationContext != null ? mutationContext.getContinuationToken() : null;
                 MutationHandler mutationHandler;
-                if (currentState.isInitializing()) {
+                if (mCurrentState.isInitializing()) {
                     Validators.checkState(mutationSourceToken == null,
                             "Initializing the Model Provider from a Continuation Token");
 
@@ -676,10 +676,10 @@ public final class FeedModelProvider
                     mutationHandler = new InitializeModel(uiContext);
                 } else if (mutationSourceToken != null) {
                     mutationHandler = new TokenMutation(mutationSourceToken);
-                    commitTokenCount++;
+                    mCommitTokenCount++;
                 } else {
                     mutationHandler = new UpdateMutation(updatedChildren);
-                    commitUpdateCount++;
+                    mCommitUpdateCount++;
                 }
                 return mutationHandler;
             }
@@ -691,10 +691,10 @@ public final class FeedModelProvider
                 Map<String, UpdatableModelChild> appendedChildren,
                 /*@Nullable*/ RemoveTracking<?> removeTracking,
                 /*@Nullable*/ MutationContext mutationContext) {
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
             int appends = 0;
             int removes = 0;
-            synchronized (lock) {
+            synchronized (mLock) {
                 // Processing before the structural mutation
                 mutationHandler.preMutation();
 
@@ -714,13 +714,13 @@ public final class FeedModelProvider
                             if (!createRoot(modelChild)) {
                                 Logger.e(TAG, "Root update failed, invalidating model");
                                 Logger.i(TAG, "Moving %s to INVALIDATED",
-                                        sessionId != null ? sessionId : "No sessionId");
+                                        mSessionId != null ? mSessionId : "No sessionId");
 
                                 UiContext uiContext = mutationContext == null
                                         ? UiContext.getDefaultInstance()
                                         : mutationContext.getUiContext();
-                                currentState = ModelState.invalidated(uiContext);
-                                mainThreadRunner.execute(TAG + " multipleRootInvalidation", () -> {
+                                mCurrentState = ModelState.invalidated(uiContext);
+                                mMainThreadRunner.execute(TAG + " multipleRootInvalidation", () -> {
                                     List<ModelProviderObserver> observerList =
                                             getObserversToNotify();
                                     for (ModelProviderObserver observer : observerList) {
@@ -729,7 +729,7 @@ public final class FeedModelProvider
                                 });
                                 return;
                             }
-                            contents.put(modelChild.getContentId(), modelChild);
+                            mContents.put(modelChild.getContentId(), modelChild);
                             appends++;
                             continue;
                         }
@@ -744,14 +744,14 @@ public final class FeedModelProvider
                             continue;
                         }
                         childrenList.add(modelChild);
-                        contents.put(modelChild.getContentId(), modelChild);
+                        mContents.put(modelChild.getContentId(), modelChild);
                         appends++;
 
                         mutationHandler.appendChild(parentKey, modelChild);
                     } else if (structure.getOperation() == Operation.REMOVE) {
                         handleRemoveOperation(mutationHandler, structure, removeTracking);
                         removes++;
-                        contents.remove(structure.getContentId());
+                        mContents.remove(structure.getContentId());
                     }
                 }
             }
@@ -761,9 +761,9 @@ public final class FeedModelProvider
 
     private boolean bindChildrenAndTokens(List<UpdatableModelChild> childrenToBind) {
         // Bind the unbound children
-        boolean success = modelChildBinder.bindChildren(childrenToBind);
+        boolean success = mModelChildBinder.bindChildren(childrenToBind);
 
-        synchronized (lock) {
+        synchronized (mLock) {
             // Track any tokens we added to the tree
             for (UpdatableModelChild child : childrenToBind) {
                 if (child.getType() == Type.TOKEN) {
@@ -776,7 +776,7 @@ public final class FeedModelProvider
                     ArrayList<UpdatableModelChild> childrenList = getChildList(parent);
                     TokenTracking tokenTracking =
                             new TokenTracking(child.getUpdatableModelToken(), parent, childrenList);
-                    tokens.put(child.getModelToken().getStreamToken().getNextPageToken(),
+                    mTokens.put(child.getModelToken().getStreamToken().getNextPageToken(),
                             tokenTracking);
                 }
             }
@@ -786,34 +786,34 @@ public final class FeedModelProvider
     }
 
     private boolean shouldInsertSyntheticToken() {
-        synchronized (lock) {
-            return (root != null && initialPageSize > 0);
+        synchronized (mLock) {
+            return (mRoot != null && mInitialPageSize > 0);
         }
     }
 
     /** Class which handles Synthetic tokens within the root children list. */
     @VisibleForTesting
     final class SyntheticTokenTracker {
-        private final List<UpdatableModelChild> childrenToBind = new ArrayList<>();
-        private final UpdatableModelChild pagingChild;
-        private final int startingPosition;
-        private final int endPosition;
-        private final boolean insertToken;
+        private final List<UpdatableModelChild> mChildrenToBind = new ArrayList<>();
+        private final UpdatableModelChild mPagingChild;
+        private final int mStartingPosition;
+        private final int mEndPosition;
+        private final boolean mInsertToken;
 
-        private UpdatableModelChild tokenChild;
+        private UpdatableModelChild mTokenChild;
 
         SyntheticTokenTracker(UpdatableModelChild pagingChild, int startingPosition, int pageSize) {
-            this.pagingChild = pagingChild;
+            this.mPagingChild = pagingChild;
 
             if (startingPosition < 0) {
                 startingPosition = 0;
             }
-            List<UpdatableModelChild> children = containers.get(pagingChild.getContentId());
+            List<UpdatableModelChild> children = mContainers.get(pagingChild.getContentId());
             if (children == null) {
                 Logger.e(TAG, "Paging child doesn't not have children");
-                this.startingPosition = 0;
-                this.endPosition = 0;
-                this.insertToken = false;
+                this.mStartingPosition = 0;
+                this.mEndPosition = 0;
+                this.mInsertToken = false;
                 return;
             }
             int start = startingPosition;
@@ -827,44 +827,44 @@ public final class FeedModelProvider
                 start = 0;
                 end = children.size();
             } else if (start + pageSize > children.size()
-                    || start + pageSize + minPageSize > children.size()) {
+                    || start + pageSize + mMinPageSize > children.size()) {
                 end = children.size();
             }
-            this.startingPosition = start;
-            this.endPosition = end;
-            this.insertToken = end < children.size();
-            Logger.i(TAG, "SyntheticTokenTracker: %d, %d, %d, %b", this.startingPosition,
-                    this.endPosition, children.size(), this.insertToken);
+            this.mStartingPosition = start;
+            this.mEndPosition = end;
+            this.mInsertToken = end < children.size();
+            Logger.i(TAG, "SyntheticTokenTracker: %d, %d, %d, %b", this.mStartingPosition,
+                    this.mEndPosition, children.size(), this.mInsertToken);
         }
 
         /**
          * Returns the UpdatableModelChild which represents the synthetic token added to the model.
          */
         UpdatableModelChild getTokenChild() {
-            return tokenChild;
+            return mTokenChild;
         }
 
         /** Insert a synthetic token into the tree. */
         List<UpdatableModelChild> insertToken() {
-            ElapsedTimeTracker tt = timingUtils.getElapsedTimeTracker(TAG);
-            traverse(pagingChild, startingPosition, endPosition);
-            if (insertToken) {
-                synchronized (lock) {
+            ElapsedTimeTracker tt = mTimingUtils.getElapsedTimeTracker(TAG);
+            traverse(mPagingChild, mStartingPosition, mEndPosition);
+            if (mInsertToken) {
+                synchronized (mLock) {
                     ArrayList<UpdatableModelChild> rootChildren =
-                            containers.get(pagingChild.getContentId());
+                            mContainers.get(mPagingChild.getContentId());
                     if (rootChildren != null) {
-                        tokenChild = getSyntheticToken();
-                        rootChildren.add(endPosition, tokenChild);
-                        syntheticTokens.put(tokenChild.getContentId(), this);
+                        mTokenChild = getSyntheticToken();
+                        rootChildren.add(mEndPosition, mTokenChild);
+                        mSyntheticTokens.put(mTokenChild.getContentId(), this);
                         Logger.i(TAG, "Inserting a Synthetic Token %s at %s",
-                                tokenChild.getContentId(), endPosition);
+                                mTokenChild.getContentId(), mEndPosition);
                     } else {
                         Logger.e(TAG, "Unable to find paging node's children");
                     }
                 }
             }
             tt.stop("", "syntheticTokens");
-            return childrenToBind;
+            return mChildrenToBind;
         }
 
         /** Handle the synthetic token */
@@ -875,14 +875,14 @@ public final class FeedModelProvider
             UpdatableModelChild currentRoot = null;
             List<UpdatableModelChild> rootChildren = null;
             int pos = -1;
-            synchronized (lock) {
-                tracker = syntheticTokens.get(streamToken.getContentId());
+            synchronized (mLock) {
+                tracker = mSyntheticTokens.get(streamToken.getContentId());
                 if (tracker != null) {
                     tokenChild = tracker.getTokenChild();
                 }
-                currentRoot = root;
+                currentRoot = mRoot;
                 if (tokenChild != null && currentRoot != null) {
-                    rootChildren = containers.get(currentRoot.getContentId());
+                    rootChildren = mContainers.get(currentRoot.getContentId());
                 }
                 if (rootChildren != null) {
                     pos = rootChildren.indexOf(tokenChild);
@@ -900,12 +900,12 @@ public final class FeedModelProvider
             }
 
             // Process the synthetic token.
-            synchronized (lock) {
-                syntheticTokens.remove(streamToken.getContentId());
+            synchronized (mLock) {
+                mSyntheticTokens.remove(streamToken.getContentId());
             }
             rootChildren.remove(pos);
             SyntheticTokenTracker tokenTracker =
-                    new SyntheticTokenTracker(currentRoot, pos, pageSize);
+                    new SyntheticTokenTracker(currentRoot, pos, mPageSize);
             List<UpdatableModelChild> childrenToBind = tokenTracker.insertToken();
             List<UpdatableModelChild> cursorSublist =
                     rootChildren.subList(pos, rootChildren.size());
@@ -917,7 +917,7 @@ public final class FeedModelProvider
 
             ModelCursorImpl cursor = new ModelCursorImpl(streamToken.getParentId(), cursorSublist);
             TokenCompleted tokenCompleted = new TokenCompleted(cursor);
-            mainThreadRunner.execute(TAG + " onTokenChange", () -> {
+            mMainThreadRunner.execute(TAG + " onTokenChange", () -> {
                 List<TokenCompletedObserver> observerList = token.getObserversToNotify();
                 for (TokenCompletedObserver observer : observerList) {
                     observer.onTokenCompleted(tokenCompleted);
@@ -926,12 +926,12 @@ public final class FeedModelProvider
         }
 
         private void traverse(UpdatableModelChild node, int start, int end) {
-            synchronized (lock) {
+            synchronized (mLock) {
                 if (node.getType() == Type.UNBOUND) {
-                    childrenToBind.add(node);
+                    mChildrenToBind.add(node);
                 }
                 String nodeId = node.getContentId();
-                List<UpdatableModelChild> children = containers.get(nodeId);
+                List<UpdatableModelChild> children = mContainers.get(nodeId);
                 if (children != null && !children.isEmpty()) {
                     int maxChildren = Math.min(end, children.size());
                     for (int i = start; i < maxChildren; i++) {
@@ -943,8 +943,8 @@ public final class FeedModelProvider
         }
 
         private UpdatableModelChild getSyntheticToken() {
-            synchronized (lock) {
-                UpdatableModelChild r = Validators.checkNotNull(root);
+            synchronized (mLock) {
+                UpdatableModelChild r = Validators.checkNotNull(mRoot);
                 String contentId = SYNTHETIC_TOKEN_PREFIX + UUID.randomUUID();
                 StreamToken streamToken = StreamToken.newBuilder().setContentId(contentId).build();
                 UpdatableModelChild modelChild =
@@ -964,8 +964,8 @@ public final class FeedModelProvider
         }
 
         if (removeTracking != null) {
-            synchronized (lock) {
-                UpdatableModelChild child = contents.get(removeChild.getContentId());
+            synchronized (mLock) {
+                UpdatableModelChild child = mContents.get(removeChild.getContentId());
                 if (child != null) {
                     traverseNode(child, removeTracking);
                 } else {
@@ -974,9 +974,9 @@ public final class FeedModelProvider
                 }
             }
         }
-        synchronized (lock) {
+        synchronized (mLock) {
             String parentKey = removeChild.getParentContentId();
-            List<UpdatableModelChild> childList = containers.get(parentKey);
+            List<UpdatableModelChild> childList = mContainers.get(parentKey);
             if (childList == null) {
                 if (!removeChild.hasParentContentId()) {
                     Logger.w(TAG, "Remove of root is not yet supported");
@@ -989,15 +989,15 @@ public final class FeedModelProvider
             // For FEATURE children, add the remove to the mutation handler to create the
             // StreamFeatureChange.  We skip this for TOKENS.
             String childKey = removeChild.getContentId();
-            UpdatableModelChild targetChild = contents.get(childKey);
+            UpdatableModelChild targetChild = mContents.get(childKey);
             if (targetChild == null) {
                 if (childKey.startsWith(SYNTHETIC_TOKEN_PREFIX)) {
                     Logger.i(TAG, "Remove Synthetic Token");
-                    SyntheticTokenTracker token = syntheticTokens.get(childKey);
+                    SyntheticTokenTracker token = mSyntheticTokens.get(childKey);
                     if (token != null) {
                         targetChild = token.getTokenChild();
                         mutationHandler.removeChild(parentKey, targetChild);
-                        syntheticTokens.remove(childKey);
+                        mSyntheticTokens.remove(childKey);
                     } else {
                         Logger.e(TAG, "Unable to find synthetic token %s", childKey);
                         return;
@@ -1019,7 +1019,7 @@ public final class FeedModelProvider
             ListIterator<UpdatableModelChild> li = childList.listIterator(childList.size());
             UpdatableModelChild removed = null;
             while (li.hasPrevious()) {
-                removeScanCount++;
+                mRemoveScanCount++;
                 UpdatableModelChild child = li.previous();
                 if (child.getContentId().equals(childKey)) {
                     removed = child;
@@ -1029,7 +1029,7 @@ public final class FeedModelProvider
 
             if (removed != null) {
                 childList.remove(removed);
-                removedChildrenCount++;
+                mRemovedChildrenCount++;
             } else {
                 Logger.w(TAG, "Child to be removed was not found");
             }
@@ -1042,22 +1042,22 @@ public final class FeedModelProvider
      */
     @VisibleForTesting
     final class InitializeModel extends MutationHandler {
-        private final UiContext uiContext;
+        private final UiContext mUiContext;
 
         InitializeModel(UiContext uiContext) {
-            this.uiContext = uiContext;
+            this.mUiContext = uiContext;
         }
 
         @Override
         public void postMutation() {
-            Logger.i(TAG, "Moving %s to READY", sessionId != null ? sessionId : "No sessionId");
-            synchronized (lock) {
-                currentState = ModelState.ready(uiContext);
+            Logger.i(TAG, "Moving %s to READY", mSessionId != null ? mSessionId : "No sessionId");
+            synchronized (mLock) {
+                mCurrentState = ModelState.ready(mUiContext);
             }
-            mainThreadRunner.execute(TAG + " onSessionStart", () -> {
+            mMainThreadRunner.execute(TAG + " onSessionStart", () -> {
                 List<ModelProviderObserver> observerList = getObserversToNotify();
                 for (ModelProviderObserver observer : observerList) {
-                    observer.onSessionStart(uiContext);
+                    observer.onSessionStart(mUiContext);
                 }
             });
         }
@@ -1070,47 +1070,48 @@ public final class FeedModelProvider
      */
     @VisibleForTesting
     final class TokenMutation extends MutationHandler {
-        private final StreamToken mutationSourceToken;
-        /*@Nullable*/ TokenTracking token = null;
-        int newCursorStart = -1;
+        private final StreamToken mMutationSourceToken;
+        /*@Nullable*/ TokenTracking mToken;
+        int mNewCursorStart = -1;
 
         TokenMutation(StreamToken mutationSourceToken) {
-            this.mutationSourceToken = mutationSourceToken;
+            this.mMutationSourceToken = mutationSourceToken;
         }
 
         @VisibleForTesting
         TokenTracking getTokenTrackingForTest() {
-            synchronized (lock) {
-                return Validators.checkNotNull(tokens.get(mutationSourceToken.getNextPageToken()));
+            synchronized (mLock) {
+                return Validators.checkNotNull(
+                        mTokens.get(mMutationSourceToken.getNextPageToken()));
             }
         }
 
         @Override
         public void preMutation() {
-            synchronized (lock) {
-                token = tokens.remove(mutationSourceToken.getNextPageToken());
-                if (token == null) {
+            synchronized (mLock) {
+                mToken = mTokens.remove(mMutationSourceToken.getNextPageToken());
+                if (mToken == null) {
                     Logger.e(TAG, "Token was not found, positioning to end of list");
                     return;
                 }
                 // adjust the location because we will remove the token
-                newCursorStart = token.location.size() - 1;
+                mNewCursorStart = mToken.mLocation.size() - 1;
             }
         }
 
         @Override
         public void postMutation() {
-            if (token == null) {
+            if (mToken == null) {
                 Logger.e(TAG, "Token was not found, mutation is being ignored");
                 return;
             }
-            ModelCursorImpl cursor = new ModelCursorImpl(token.parentContentId,
-                    token.location.subList(newCursorStart, token.location.size()));
+            ModelCursorImpl cursor = new ModelCursorImpl(mToken.mParentContentId,
+                    mToken.mLocation.subList(mNewCursorStart, mToken.mLocation.size()));
             TokenCompleted tokenCompleted = new TokenCompleted(cursor);
-            mainThreadRunner.execute(TAG + " onTokenChange", () -> {
-                if (token != null) {
+            mMainThreadRunner.execute(TAG + " onTokenChange", () -> {
+                if (mToken != null) {
                     List<TokenCompletedObserver> observerList =
-                            token.tokenChild.getObserversToNotify();
+                            mToken.mTokenChild.getObserversToNotify();
                     for (TokenCompletedObserver observer : observerList) {
                         observer.onTokenCompleted(tokenCompleted);
                     }
@@ -1126,19 +1127,19 @@ public final class FeedModelProvider
      */
     @VisibleForTesting
     final class UpdateMutation extends MutationHandler {
-        private final List<StreamStructure> updates;
-        private final Map<String, FeatureChangeImpl> changes = new HashMap<>();
-        private final Set<String> newParents = new HashSet<>();
+        private final List<StreamStructure> mUpdates;
+        private final Map<String, FeatureChangeImpl> mChanges = new HashMap<>();
+        private final Set<String> mNewParents = new HashSet<>();
 
         UpdateMutation(List<StreamStructure> updates) {
-            this.updates = updates;
+            this.mUpdates = updates;
         }
 
         @Override
         public void preMutation() {
-            Logger.i(TAG, "Updating %s items", updates.size());
+            Logger.i(TAG, "Updating %s items", mUpdates.size());
             // Walk all the updates and update the values, creating changes to track these
-            for (StreamStructure update : updates) {
+            for (StreamStructure update : mUpdates) {
                 FeatureChangeImpl change = getChange(update.getContentId());
                 if (change != null) {
                     change.setFeatureChanged(true);
@@ -1159,14 +1160,14 @@ public final class FeedModelProvider
             // Is this a child of a node that is new to the model?  We only report changes
             // to existing ModelFeatures.
             String childKey = child.getContentId();
-            if (newParents.contains(parentKey)) {
+            if (mNewParents.contains(parentKey)) {
                 // Don't create a change the child of a new child
-                newParents.add(childKey);
+                mNewParents.add(childKey);
                 return;
             }
 
             // TODO: this logic assumes that parents are passed before children.
-            newParents.add(childKey);
+            mNewParents.add(childKey);
             FeatureChangeImpl change = getChange(parentKey);
             if (change != null) {
                 change.getChildChangesImpl().addAppendChild(child);
@@ -1175,13 +1176,13 @@ public final class FeedModelProvider
 
         @Override
         public void postMutation() {
-            synchronized (lock) {
+            synchronized (mLock) {
                 // Update the cursors before we notify the UI
                 List<WeakReference<ModelCursorImpl>> removeList = new ArrayList<>();
-                for (WeakReference<ModelCursorImpl> cursorRef : cursors) {
+                for (WeakReference<ModelCursorImpl> cursorRef : mCursors) {
                     ModelCursorImpl cursor = cursorRef.get();
                     if (cursor != null) {
-                        FeatureChange change = changes.get(cursor.getParentContentId());
+                        FeatureChange change = mChanges.get(cursor.getParentContentId());
                         if (change != null) {
                             cursor.updateIterator(change);
                         }
@@ -1189,13 +1190,13 @@ public final class FeedModelProvider
                         removeList.add(cursorRef);
                     }
                 }
-                cursorsRemoved += removeList.size();
-                cursors.removeAll(removeList);
+                mCursorsRemoved += removeList.size();
+                mCursors.removeAll(removeList);
             }
 
             // Update the Observers on the UI Thread
-            mainThreadRunner.execute(TAG + " onFeatureChange", () -> {
-                for (FeatureChangeImpl change : changes.values()) {
+            mMainThreadRunner.execute(TAG + " onFeatureChange", () -> {
+                for (FeatureChangeImpl change : mChanges.values()) {
                     List<FeatureChangeObserver> observerList =
                             ((UpdatableModelFeature) change.getModelFeature())
                                     .getObserversToNotify();
@@ -1208,11 +1209,11 @@ public final class FeedModelProvider
 
         /*@Nullable*/
         private FeatureChangeImpl getChange(String contentIdKey) {
-            FeatureChangeImpl change = changes.get(contentIdKey);
+            FeatureChangeImpl change = mChanges.get(contentIdKey);
             if (change == null) {
                 UpdatableModelChild modelChild;
-                synchronized (lock) {
-                    modelChild = contents.get(contentIdKey);
+                synchronized (mLock) {
+                    modelChild = mContents.get(contentIdKey);
                 }
                 if (modelChild == null) {
                     Logger.e(TAG, "Didn't find '%s' in content", contentIdKey);
@@ -1224,7 +1225,7 @@ public final class FeedModelProvider
                     return null;
                 }
                 change = new FeatureChangeImpl(modelChild.getModelFeature());
-                changes.put(contentIdKey, change);
+                mChanges.put(contentIdKey, change);
             }
             return change;
         }
@@ -1232,25 +1233,26 @@ public final class FeedModelProvider
 
     // This method will return true if it sets/updates root
     private boolean createRoot(UpdatableModelChild child) {
-        synchronized (lock) {
+        synchronized (mLock) {
             // this must be a root
             if (child.getType() == Type.FEATURE || child.getType() == Type.UNBOUND) {
-                if (root != null) {
+                if (mRoot != null) {
                     // For multiple roots, check to see if they have the same content id, if so then
                     // ignore the new root.  Otherwise, invalidate the model because we don't
                     // support multiple roots
-                    if (root.getContentId().equals(child.getContentId())) {
+                    if (mRoot.getContentId().equals(child.getContentId())) {
                         Logger.w(TAG, "Multiple Roots - duplicate root is ignored");
                         return true;
                     } else {
                         Logger.e(TAG,
                                 "Found multiple roots [%s, %s] which is not supported."
                                         + "  Invalidating model",
-                                Validators.checkNotNull(root).getContentId(), child.getContentId());
+                                Validators.checkNotNull(mRoot).getContentId(),
+                                child.getContentId());
                         return false;
                     }
                 }
-                root = child;
+                mRoot = child;
             } else {
                 // continuation tokens can not be roots.
                 Logger.e(TAG, "Invalid Root, type %s", child.getType());
@@ -1262,19 +1264,19 @@ public final class FeedModelProvider
 
     // Lazy creation of containers
     private ArrayList<UpdatableModelChild> getChildList(String parentKey) {
-        synchronized (lock) {
-            if (!containers.containsKey(parentKey)) {
-                containers.put(parentKey, new ArrayList<>());
+        synchronized (mLock) {
+            if (!mContainers.containsKey(parentKey)) {
+                mContainers.put(parentKey, new ArrayList<>());
             }
-            return containers.get(parentKey);
+            return mContainers.get(parentKey);
         }
     }
 
     private void traverseNode(UpdatableModelChild node, RemoveTracking<?> removeTracking) {
         if (node.getType() == Type.FEATURE) {
             removeTracking.filterStreamFeature(node.getModelFeature().getStreamFeature());
-            synchronized (lock) {
-                List<UpdatableModelChild> children = containers.get(node.getContentId());
+            synchronized (mLock) {
+                List<UpdatableModelChild> children = mContainers.get(node.getContentId());
                 if (children != null) {
                     for (UpdatableModelChild child : children) {
                         traverseNode(child, removeTracking);
@@ -1287,60 +1289,60 @@ public final class FeedModelProvider
     /** Track the continuation token location and model */
     @VisibleForTesting
     static final class TokenTracking {
-        final UpdatableModelToken tokenChild;
-        final String parentContentId;
-        final ArrayList<UpdatableModelChild> location;
+        final UpdatableModelToken mTokenChild;
+        final String mParentContentId;
+        final ArrayList<UpdatableModelChild> mLocation;
 
         TokenTracking(UpdatableModelToken tokenChild, String parentContentId,
                 ArrayList<UpdatableModelChild> location) {
-            this.tokenChild = tokenChild;
-            this.parentContentId = parentContentId;
-            this.location = location;
+            this.mTokenChild = tokenChild;
+            this.mParentContentId = parentContentId;
+            this.mLocation = location;
         }
     }
 
     // test only method for returning a copy of the tokens map
     @VisibleForTesting
     Map<ByteString, TokenTracking> getTokensForTest() {
-        synchronized (lock) {
-            return new HashMap<>(tokens);
+        synchronized (mLock) {
+            return new HashMap<>(mTokens);
         }
     }
 
     @VisibleForTesting
     boolean getDelayedTriggerRefreshForTest() {
-        synchronized (lock) {
-            return delayedTriggerRefresh;
+        synchronized (mLock) {
+            return mDelayedTriggerRefresh;
         }
     }
 
     @VisibleForTesting
     @RequestReason
     int getRequestReasonForTest() {
-        synchronized (lock) {
-            return requestReason;
+        synchronized (mLock) {
+            return mRequestReason;
         }
     }
 
     @VisibleForTesting
     void clearRootChildrenForTest() {
-        synchronized (lock) {
-            if (root == null) {
+        synchronized (mLock) {
+            if (mRoot == null) {
                 return;
             }
 
-            containers.remove(root.getContentId());
+            mContainers.remove(mRoot.getContentId());
         }
     }
 
     private static final class ModelState {
-        final UiContext uiContext;
+        final UiContext mUiContext;
         @State
-        final int state;
+        final int mState;
 
         private ModelState(UiContext uiContext, @State int state) {
-            this.uiContext = uiContext;
-            this.state = state;
+            this.mUiContext = uiContext;
+            this.mState = state;
         }
 
         static ModelState initializing() {
@@ -1356,20 +1358,20 @@ public final class FeedModelProvider
         }
 
         public boolean isReady() {
-            return state == State.READY;
+            return mState == State.READY;
         }
 
         public boolean isInvalidated() {
-            return state == State.INVALIDATED;
+            return mState == State.INVALIDATED;
         }
 
         public boolean isInitializing() {
-            return state == State.INITIALIZING;
+            return mState == State.INITIALIZING;
         }
 
         @State
         public int getState() {
-            return state;
+            return mState;
         }
     }
 }

@@ -11,16 +11,12 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace views {
-class ImageButton;
-}  // namespace views
-
 namespace ash {
 
 class AssistantViewDelegate;
 class ProactiveSuggestions;
 
-// The view for proactive suggestions which serves as the feature's entry point.
+// Base entry point for the proactive suggestions feature.
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
     : public views::Button,
       public views::ButtonListener,
@@ -29,20 +25,21 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
       public display::DisplayObserver,
       public KeyboardControllerObserver {
  public:
-  explicit ProactiveSuggestionsView(AssistantViewDelegate* delegate);
   ~ProactiveSuggestionsView() override;
+
+  // Invoked to initialize the view. This method should be called immediately
+  // following construction to ready the view for display.
+  void Init();
 
   // views::Button:
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void PreferredSizeChanged() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -63,8 +60,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
     return proactive_suggestions_.get();
   }
 
+ protected:
+  explicit ProactiveSuggestionsView(AssistantViewDelegate* delegate);
+
+  // Invoked during the Init() sequence to initialize layout.
+  virtual void InitLayout() {}
+
+  AssistantViewDelegate* delegate() { return delegate_; }
+
  private:
-  void InitLayout();
   void InitWidget();
   void InitWindow();
   void UpdateBounds();
@@ -73,8 +77,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
 
   // The set of proactive suggestions associated with this view.
   scoped_refptr<const ProactiveSuggestions> proactive_suggestions_;
-
-  views::ImageButton* close_button_;  // Owned by view hierarchy.
 
   // Cached bounds of workspace occluded by the keyboard for determining usable
   // work area in which to lay out this view's widget.

@@ -3,15 +3,23 @@ document Name='Table example - focusable thead, tbody, tfoot'
 ++++group
 ++++++row
 ++++++++columnheader Name='Sum' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
+++++++++++description Name='Sum' IsControlElement=false
 ++++++++columnheader Name='Subtraction' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=0 GridItem.RowSpan=1
+++++++++++description Name='Subtraction' IsControlElement=false
 ++++group
 ++++++row
 ++++++++gridcell Name='10' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1
+++++++++++description Name='10' IsControlElement=false
 ++++++++gridcell Name='7' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=1 GridItem.RowSpan=1
+++++++++++description Name='7' IsControlElement=false
 ++++++row
 ++++++++gridcell Name='2' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1
+++++++++++description Name='2' IsControlElement=false
 ++++++++gridcell Name='4' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=2 GridItem.RowSpan=1
+++++++++++description Name='4' IsControlElement=false
 ++++group
 ++++++row
 ++++++++gridcell Name='12' GridItem.Column=0 GridItem.ColumnSpan=1 GridItem.Row=3 GridItem.RowSpan=1
+++++++++++description Name='12' IsControlElement=false
 ++++++++gridcell Name='3' GridItem.Column=1 GridItem.ColumnSpan=1 GridItem.Row=3 GridItem.RowSpan=1
+++++++++++description Name='3' IsControlElement=false

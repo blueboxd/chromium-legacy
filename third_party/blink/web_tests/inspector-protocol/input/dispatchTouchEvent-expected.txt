@@ -509,3 +509,95 @@ Dispatching event:
 type: touchcancel
 ----Touches----
 
+------- Sequence ------
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 100
+        }
+        [1] : {
+            id : <number>
+            x : 150
+            y : 100
+        }
+    ]
+    type : touchStart
+}
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 150
+pageY: 100
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+
+Dispatching event:
+{
+    touchPoints : [
+        [0] : {
+            id : <number>
+            x : 100
+            y : 150
+        }
+        [1] : {
+            id : <number>
+            x : 150
+            y : 150
+        }
+    ]
+    type : touchMove
+}
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 100
+pageY: 150
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 150
+pageY: 150
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+

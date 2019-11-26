@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -122,7 +123,7 @@ ImageBitmap* CreateBitmap() {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(8, 4);
   surface->getCanvas()->clear(SK_ColorRED);
   return ImageBitmap::Create(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()));
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
 }
 
 TEST(BlinkTransferableMessageStructTraitsTest,

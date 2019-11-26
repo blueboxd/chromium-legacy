@@ -9,16 +9,12 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 325],
-      "bounds": [305, 15]
+      "bounds": [320, 15]
     },
     {
       "name": "VerticalScrollbar",
       "position": [305, 0],
       "bounds": [15, 325]
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='scroller'",
-      "bounds": [320, 340]
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='column'",

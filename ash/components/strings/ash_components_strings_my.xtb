@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> သို့မဟုတ် <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ခြုံကြည့်သည့်မုဒ်</translation>
 <translation id="4382340674111381977">ယခင်စာမျက်နှာသို့ ပြန်သွားရန်</translation>
+<translation id="4458670250301149821">အက်ပ်ဇယားကွက်မျဉ်းတွင် အက်ပ်သင်္ကေတကို ဖိုင်တွဲတစ်ခု၏ အတွင်း/အပြင်သို့ ရွှေ့ရန်</translation>
 <translation id="4472417192667361414">စနစ်နှင့် မျက်နှာပြင်ပြသမှု ဆက်တင်များ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />၊ ထို့နောက် <ph name="LEFT" /> သို့မဟုတ် <ph name="RIGHT" /> သို့မဟုတ် <ph name="UP" /> သို့မဟုတ် <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">ကီးဘုတ်ဖြတ်လမ်းလင့်ခ် အထောက်အကူပြုကိရိယာကို ကြည့်ရန်</translation>
 <translation id="4628718545549558538">အခြေအနေပြ နေရာကို ဖွင့်ရန် (သင့်အကောင့်ပုံ ပေါ်မည့်နေရာ)</translation>
 <translation id="4642092649622328492">ဖန်သားပြင်ဓာတ်ပုံကို တစ်စိတ်တစ်ပိုင်းသာ ရိုက်ရန်</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">လာမည့်စာလုံးကို ဖျက်ရန် (ရှေ့ဘက်သို့ ဖျက်ခြင်း)</translation>
 <translation id="7500368597227394048">မျဉ်းတုံးတို</translation>
 <translation id="7611271430932669992">ပေါ့အပ်နှင့် ဒိုင်ယာလော့များကို ဖွင့်ရန်</translation>
+<translation id="7635348532214572995">အက်ပ်သင်္ကေတကို ဇယားကွက်မျဉ်းပတ်ပတ်လည် ရွှေ့ရန်</translation>
 <translation id="766326951329901120">ကလစ်ဘုတ်ပေါ်ရှိ အကြောင်းအရာကို စာသားသီးသန့်အဖြစ် ကူးထည့်ရန်</translation>
 <translation id="7703010453515335249">ဘယ်ဘက်ကွင်း</translation>
 <translation id="7724603315864178912">ဖြတ်တောက်</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ကလစ်ဘုတ်မှ အကြောင်းအရာကို ကူးထည့်ပါ</translation>
 <translation id="9052808072970550123">နောက်အသုံးပြုသူသို့ ပြောင်းပါ</translation>
 <translation id="906458777597946297">ဝင်ဒိုးကို အကြီးဆုံး လုပ်ရန်</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />၊ ထို့နောက် <ph name="LEFT" /> သို့မဟုတ် <ph name="RIGHT" /> သို့မဟုတ် <ph name="UP" /> သို့မဟုတ် <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">စာကြောင်းအစသို့ သွားသည်</translation>
 <translation id="9106898733795143799">စာမျက်နှာနှင့် ဝဘ်ဘရောင်ဇာ</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> အတွက် ရှာဖွေမှု ရလဒ် မရှိပါ</translation>

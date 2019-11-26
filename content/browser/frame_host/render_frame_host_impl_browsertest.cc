@@ -2757,6 +2757,33 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
   EXPECT_NE(console_observer.messages()[1], console_observer.messages()[2]);
 }
 
+// Test that the SameSite-by-default console warnings are not emitted
+// if the cookie would have been rejected for other reasons.
+// Regression test for https://crbug.com/1027318.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
+                       NoMessagesIfCookieWouldBeRejectedForOtherReasons) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ConsoleObserverDelegate console_observer(web_contents, "*");
+  web_contents->SetDelegate(&console_observer);
+
+  GURL url = embedded_test_server()->GetURL(
+      "x.com", "/set-cookie?cookiewithpath=1;path=/set-cookie");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  url = embedded_test_server()->GetURL("sub.x.com",
+                                       "/set-cookie?cookieforsubdomain=1");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  ASSERT_EQ(0u, console_observer.messages().size());
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(x())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // No messages appear even though x.com is accessed in a cross-site
+  // context, because the cookies would have been rejected for mismatching path
+  // or domain anyway.
+  EXPECT_EQ(0u, console_observer.messages().size());
+}
+
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        SchedulerTrackedFeatures) {
   EXPECT_TRUE(

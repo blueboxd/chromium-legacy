@@ -10,7 +10,7 @@ function $(id) {
 
 document.addEventListener('DOMContentLoaded', function() {
   if (cr.isChromeOS) {
-    var keyboardUtils = document.createElement('script');
+    const keyboardUtils = document.createElement('script');
     keyboardUtils.src = 'chrome://credits/keyboard_utils.js';
     document.body.appendChild(keyboardUtils);
   }

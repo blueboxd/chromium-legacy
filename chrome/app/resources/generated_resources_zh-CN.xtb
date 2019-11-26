@@ -2612,7 +2612,6 @@
 <translation id="4839303808932127586">视频另存为(&amp;V)...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{另外 1 项内容}other{另外 # 项内容}}</translation>
 <translation id="4842976633412754305">此网页正试图从未经验证的来源加载脚本。</translation>
-<translation id="4843488774506045600">登录服务提供方：<ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">其他键盘布局</translation>
 <translation id="4846680374085650406">您目前所采用的是管理员的建议设置。</translation>
 <translation id="4848518990323155912">启用 SIM 卡锁定功能（需要输入 PIN 码才能使用移动数据网络）</translation>
@@ -3810,7 +3809,6 @@
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6615455863669487791">显示图标</translation>
-<translation id="6617100836880592260">扫描速度：<ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">仍然保留</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">该网站可能会跟踪您的位置</translation>

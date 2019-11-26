@@ -919,8 +919,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
                           weak_factory_.GetWeakPtr(), origin),
       context_->TaskRunner());
   status = backing_store->Initialize(
-      /*cleanup_live_journal=*/(!is_incognito_and_in_memory &&
-                                first_open_since_startup));
+      /*cleanup_active_journal=*/(!is_incognito_and_in_memory &&
+                                  first_open_since_startup));
 
   if (UNLIKELY(!status.ok()))
     return {nullptr, status, IndexedDBDataLossInfo(), /*is_disk_full=*/false};

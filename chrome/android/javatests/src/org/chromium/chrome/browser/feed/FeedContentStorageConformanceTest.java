@@ -76,14 +76,14 @@ public final class FeedContentStorageConformanceTest extends ContentStorageConfo
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // storage is declared and tested in ContentStorageConformanceTest.
-            storage = new ContentStorageWrapper(Profile.getLastUsedProfile());
+            mStorage = new ContentStorageWrapper(Profile.getLastUsedProfile());
         });
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { ((ContentStorageWrapper) storage).destroy(); });
-        storage = null;
+                () -> { ((ContentStorageWrapper) mStorage).destroy(); });
+        mStorage = null;
     }
 }

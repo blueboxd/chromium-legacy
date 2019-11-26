@@ -23,7 +23,7 @@ ExtensionErrorUI* CreateDefaultExtensionErrorUI(
 
 ExtensionErrorController::UICreateMethod g_create_ui =
     CreateDefaultExtensionErrorUI;
-}
+}  // namespace
 
 ExtensionErrorController::ExtensionErrorController(
     content::BrowserContext* context,

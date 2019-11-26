@@ -15,11 +15,6 @@
           "object": "Scrolling background of LayoutNGBlockFlow DIV id='scroller'",
           "rect": [0, 0, 185, 552],
           "reason": "background"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 516, 79, 19],
-          "reason": "chunk disappeared"
         }
       ],
       "transform": 2
@@ -27,7 +22,14 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 185],
-      "bounds": [185, 15],
+      "bounds": [200, 15],
+      "paintInvalidations": [
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 0, 185, 15],
+          "reason": "scroll control"
+        }
+      ],
       "transform": 1
     },
     {
@@ -35,31 +37,6 @@
       "position": [185, 0],
       "bounds": [15, 185],
       "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV id='scroller'",
-      "bounds": [200, 200],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "background"
-        }
-      ],
-      "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV id='scroller'",
-      "position": [0, 516],
-      "bounds": [79, 19],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 79, 19],
-          "reason": "full layer"
-        }
-      ],
-      "transform": 2
     }
   ],
   "transforms": [

@@ -78,18 +78,6 @@ using google_apis::DriveApiUrlGenerator;
 namespace extensions {
 namespace {
 
-// List of connection types of drive.
-// Keep this in sync with the DriveConnectionType in common/js/util.js.
-const char kDriveConnectionTypeOffline[] = "offline";
-const char kDriveConnectionTypeMetered[] = "metered";
-const char kDriveConnectionTypeOnline[] = "online";
-
-// List of reasons of kDriveConnectionType*.
-// Keep this in sync with the DriveConnectionReason in common/js/util.js.
-const char kDriveConnectionReasonNotReady[] = "not_ready";
-const char kDriveConnectionReasonNoNetwork[] = "no_network";
-const char kDriveConnectionReasonNoService[] = "no_service";
-
 constexpr char kAvailableOfflinePropertyName[] = "availableOffline";
 
 // Thresholds for logging slow operations.
@@ -974,25 +962,29 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
   switch (drive::util::GetDriveConnectionStatus(
       Profile::FromBrowserContext(browser_context()))) {
     case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
-      result.type = kDriveConnectionTypeOffline;
+      result.type =
+          api::file_manager_private::DRIVE_CONNECTION_STATE_TYPE_OFFLINE;
       result.reason =
-          std::make_unique<std::string>(kDriveConnectionReasonNoService);
+          api::file_manager_private::DRIVE_OFFLINE_REASON_NO_SERVICE;
       break;
     case drive::util::DRIVE_DISCONNECTED_NONETWORK:
-      result.type = kDriveConnectionTypeOffline;
+      result.type =
+          api::file_manager_private::DRIVE_CONNECTION_STATE_TYPE_OFFLINE;
       result.reason =
-          std::make_unique<std::string>(kDriveConnectionReasonNoNetwork);
+          api::file_manager_private::DRIVE_OFFLINE_REASON_NO_NETWORK;
       break;
     case drive::util::DRIVE_DISCONNECTED_NOTREADY:
-      result.type = kDriveConnectionTypeOffline;
-      result.reason =
-          std::make_unique<std::string>(kDriveConnectionReasonNotReady);
+      result.type =
+          api::file_manager_private::DRIVE_CONNECTION_STATE_TYPE_OFFLINE;
+      result.reason = api::file_manager_private::DRIVE_OFFLINE_REASON_NOT_READY;
       break;
     case drive::util::DRIVE_CONNECTED_METERED:
-      result.type = kDriveConnectionTypeMetered;
+      result.type =
+          api::file_manager_private::DRIVE_CONNECTION_STATE_TYPE_METERED;
       break;
     case drive::util::DRIVE_CONNECTED:
-      result.type = kDriveConnectionTypeOnline;
+      result.type =
+          api::file_manager_private::DRIVE_CONNECTION_STATE_TYPE_ONLINE;
       break;
   }
 

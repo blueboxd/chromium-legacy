@@ -35,19 +35,19 @@ import java.util.concurrent.TimeUnit;
 public final class FeedSessionManagerFactory {
     private static final long DEFAULT_LIFETIME_MS = TimeUnit.HOURS.toMillis(1L);
 
-    private final TaskQueue taskQueue;
-    private final Store store;
-    private final TimingUtils timingUtils;
-    private final ThreadUtils threadUtils;
-    private final ProtocolAdapter protocolAdapter;
-    private final FeedRequestManager feedRequestManager;
-    private final ActionUploadRequestManager actionUploadRequestManager;
-    private final SchedulerApi schedulerApi;
-    private final Configuration configuration;
-    private final Clock clock;
-    private final FeedObservable<FeedLifecycleListener> lifecycleListenerObservable;
-    private final MainThreadRunner mainThreadRunner;
-    private final BasicLoggingApi basicLoggingApi;
+    private final TaskQueue mTaskQueue;
+    private final Store mStore;
+    private final TimingUtils mTimingUtils;
+    private final ThreadUtils mThreadUtils;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final FeedRequestManager mFeedRequestManager;
+    private final ActionUploadRequestManager mActionUploadRequestManager;
+    private final SchedulerApi mSchedulerApi;
+    private final Configuration mConfiguration;
+    private final Clock mClock;
+    private final FeedObservable<FeedLifecycleListener> mLifecycleListenerObservable;
+    private final MainThreadRunner mMainThreadRunner;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     public FeedSessionManagerFactory(TaskQueue taskQueue, Store store, TimingUtils timingUtils,
             ThreadUtils threadUtils, ProtocolAdapter protocolAdapter,
@@ -56,38 +56,38 @@ public final class FeedSessionManagerFactory {
             Configuration configuration, Clock clock,
             FeedObservable<FeedLifecycleListener> lifecycleListenerObservable,
             MainThreadRunner mainThreadRunner, BasicLoggingApi basicLoggingApi) {
-        this.taskQueue = taskQueue;
-        this.store = store;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.protocolAdapter = protocolAdapter;
-        this.feedRequestManager = feedRequestManager;
-        this.actionUploadRequestManager = actionUploadRequestManager;
-        this.schedulerApi = schedulerApi;
-        this.configuration = configuration;
-        this.clock = clock;
-        this.lifecycleListenerObservable = lifecycleListenerObservable;
-        this.mainThreadRunner = mainThreadRunner;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mTaskQueue = taskQueue;
+        this.mStore = store;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mFeedRequestManager = feedRequestManager;
+        this.mActionUploadRequestManager = actionUploadRequestManager;
+        this.mSchedulerApi = schedulerApi;
+        this.mConfiguration = configuration;
+        this.mClock = clock;
+        this.mLifecycleListenerObservable = lifecycleListenerObservable;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     /** Creates a new FeedSessionManager and initializes it */
     public FeedSessionManagerImpl create() {
-        long lifetimeMs =
-                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, DEFAULT_LIFETIME_MS);
+        long lifetimeMs = mConfiguration.getValueOrDefault(
+                ConfigKey.SESSION_LIFETIME_MS, DEFAULT_LIFETIME_MS);
         SessionFactory sessionFactory =
-                new SessionFactory(store, taskQueue, timingUtils, threadUtils, configuration);
+                new SessionFactory(mStore, mTaskQueue, mTimingUtils, mThreadUtils, mConfiguration);
         SessionCache sessionCache = new SessionCache(
-                store, taskQueue, sessionFactory, lifetimeMs, timingUtils, threadUtils, clock);
+                mStore, mTaskQueue, sessionFactory, lifetimeMs, mTimingUtils, mThreadUtils, mClock);
         ContentCache contentCache = new ContentCache();
-        SessionManagerMutation sessionManagerMutation = new SessionManagerMutation(store,
-                sessionCache, contentCache, taskQueue, schedulerApi, threadUtils, timingUtils,
-                clock, mainThreadRunner, basicLoggingApi);
+        SessionManagerMutation sessionManagerMutation = new SessionManagerMutation(mStore,
+                sessionCache, contentCache, mTaskQueue, mSchedulerApi, mThreadUtils, mTimingUtils,
+                mClock, mMainThreadRunner, mBasicLoggingApi);
 
-        return new FeedSessionManagerImpl(taskQueue, sessionFactory, sessionCache,
-                sessionManagerMutation, contentCache, store, timingUtils, threadUtils,
-                protocolAdapter, feedRequestManager, actionUploadRequestManager, schedulerApi,
-                configuration, clock, lifecycleListenerObservable, mainThreadRunner,
-                basicLoggingApi);
+        return new FeedSessionManagerImpl(mTaskQueue, sessionFactory, sessionCache,
+                sessionManagerMutation, contentCache, mStore, mTimingUtils, mThreadUtils,
+                mProtocolAdapter, mFeedRequestManager, mActionUploadRequestManager, mSchedulerApi,
+                mConfiguration, mClock, mLifecycleListenerObservable, mMainThreadRunner,
+                mBasicLoggingApi);
     }
 }

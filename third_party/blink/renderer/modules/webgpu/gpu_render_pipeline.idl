@@ -7,4 +7,5 @@
 [
     Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPURenderPipeline {
+    GPUBindGroupLayout getBindGroupLayout(unsigned long index);
 };

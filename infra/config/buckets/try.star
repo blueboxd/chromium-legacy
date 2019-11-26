@@ -761,73 +761,61 @@ gpu_android_builder(
 def gpu_linux_builder(*, name, **kwargs):
   return gpu_builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.linux',
       **kwargs
   )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-dqp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-exp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-skv',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-dqp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-exp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-skv',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-tsn',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-try-linux-nvidia-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-try-linux-nvidia-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'linux_optional_gpu_tests_rel',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
@@ -1050,28 +1038,26 @@ gpu_win_builder(
 )
 
 
-def linux_builder(*, name, **kwargs):
+def linux_builder(*, name, goma_backend = goma.backend.RBE_PROD, **kwargs):
   return try_builder(
       name = name,
+      goma_backend = goma_backend,
       mastername = 'tryserver.chromium.linux',
       **kwargs
   )
 
 linux_builder(
     name = 'cast_shell_audio_linux',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'cast_shell_linux',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'closure_compilation',
     executable = luci.recipe(name = 'closure_compilation'),
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/closure_compiler/.+',
@@ -1081,7 +1067,6 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-arm64-cast',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chromecast/.+',
@@ -1091,7 +1076,6 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-compile-x64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -1099,22 +1083,18 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-fyi-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'fuchsia-fyi-x64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'fuchsia-fyi-x64-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'fuchsia-x64-cast',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chromecast/.+',
@@ -1124,58 +1104,48 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia_arm64',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'fuchsia_x64',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'layout_test_leak_detection',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'leak_detection_linux',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-annotator-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-blink-heap-concurrent-marking-tsan-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-blink-heap-verification-try',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-clang-tidy-dbg',
     executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux-clang-tidy-rel',
     executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux-dcheck-off-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1186,52 +1156,43 @@ linux_builder(
 linux_builder(
     name = 'linux-libfuzzer-asan-rel',
     executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'linux-ozone-rel',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'linux-trusty-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     os = os.LINUX_TRUSTY,
 )
 
 linux_builder(
     name = 'linux-viz-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-webkit-msan-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_arm',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 linux_builder(
     name = 'linux_chromium_analysis',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_archive_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_asan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     ssd = True,
     tryjob = tryjob(),
@@ -1240,18 +1201,15 @@ linux_builder(
 linux_builder(
     name = 'linux_chromium_cfi_rel_ng',
     cores = 32,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_chromeos_asan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux_chromium_chromeos_msan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -1259,17 +1217,14 @@ linux_builder(
     name = 'linux_chromium_clobber_deterministic',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_clobber_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_compile_dbg_32_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1280,14 +1235,12 @@ linux_builder(
             path = 'linux_debug',
         ),
     ],
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'linux_chromium_compile_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1298,7 +1251,6 @@ linux_builder(
             path = 'linux_debug',
         ),
     ],
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/build/.*check_gn_headers.*',
@@ -1308,25 +1260,21 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_msan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux_chromium_tsan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
 
 linux_builder(
     name = 'linux_chromium_ubsan_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_layout_tests_composite_after_paint',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/blink/renderer/core/paint/.+',
@@ -1340,7 +1288,6 @@ linux_builder(
 
 linux_builder(
     name = 'linux_layout_tests_layout_ng_disabled',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/blink/renderer/core/editing/.+',
@@ -1356,22 +1303,18 @@ linux_builder(
 
 linux_builder(
     name = 'linux-layout-tests-fragment-item',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-layout-tests-fragment-paint',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_mojo',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_mojo_chromeos',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1385,7 +1328,6 @@ linux_builder(
 
 linux_builder(
     name = 'linux_vr',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
@@ -1396,7 +1338,6 @@ linux_builder(
 linux_builder(
     name = 'tricium-metrics-analysis',
     executable = luci.recipe(name = 'tricium_metrics'),
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 

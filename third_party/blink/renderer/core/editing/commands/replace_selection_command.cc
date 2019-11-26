@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -856,7 +857,7 @@ static void RemoveHeadContents(ReplacementFragment& fragment) {
   for (Node* node = fragment.FirstChild(); node; node = next) {
     if (IsA<HTMLBaseElement>(*node) || IsHTMLLinkElement(*node) ||
         IsA<HTMLMetaElement>(*node) || IsA<HTMLStyleElement>(*node) ||
-        IsA<HTMLTitleElement>(*node)) {
+        IsA<HTMLTitleElement>(*node) || IsA<SVGStyleElement>(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
       fragment.RemoveNode(node);
     } else {

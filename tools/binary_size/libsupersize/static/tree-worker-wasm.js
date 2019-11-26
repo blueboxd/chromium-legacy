@@ -65,63 +65,12 @@ class DataFetcher {
   }
 
   /**
-   * Yields binary chunks as Uint8Arrays. After a complete run, the bytes are
-   * cached and future calls will yield the cached Uint8Array instead.
-   */
-  async *arrayBufferStream() {
-    if (this._cache) {
-      yield this._cache;
-      return;
-    }
-
-    const response = await this.fetch(this._input);
-    let result;
-    // Use streams, if supported, so that we can show in-progress data instead
-    // of waiting for the entire data file to download. The file can be >100 MB,
-    // so streams ensure slow connections still see some data.
-    if (response.body) {
-      const reader = response.body.getReader();
-
-      /** @type {Uint8Array[]} Store received bytes to merge later */
-      let buffer = [];
-      /** Total size of received bytes */
-      let byteSize = 0;
-      while (true) {
-        // Read values from the stream
-        const {done, value} = await reader.read();
-        if (done) break;
-
-        const chunk = new Uint8Array(value, 0, value.length);
-        yield chunk;
-        buffer.push(chunk);
-        byteSize += chunk.length;
-      }
-
-      // We just cache a single typed array to save some memory and make future
-      // runs consistent with the no streams mode.
-      result = new Uint8Array(byteSize);
-      let i = 0;
-      for (const chunk of buffer) {
-        result.set(chunk, i);
-        i += chunk.length;
-      }
-    } else {
-      // In-memory version for browsers without stream support
-      yield result;
-    }
-
-    this._cache = result;
-  }
-
-  /**
    * Outputs a single UInt8Array containing the entire input .size file.
    */
   async loadSizeBuffer() {
-    // Flush cache.
-    for await (const bytes of this.arrayBufferStream()) {
-      if (this._controller.signal.aborted) {
-        throw new DOMException('Request was aborted', 'AbortError');
-      }
+    if (!this._cache) {
+      const response = await this.fetch(this._input);
+      this._cache = new Uint8Array(await response.arrayBuffer());
     }
     return this._cache;
   }

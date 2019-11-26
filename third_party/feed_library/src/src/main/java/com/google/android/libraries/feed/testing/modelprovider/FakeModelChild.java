@@ -13,11 +13,11 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelToken;
 
 /** Fake for {@link com.google.android.libraries.feed.api.internal.modelprovider.ModelChild}. */
 public class FakeModelChild implements ModelChild {
-    private final String contentId;
+    private final String mContentId;
 
-    private final /*@Nullable*/ ModelFeature modelFeature;
-    private final /*@Nullable*/ ModelToken modelToken;
-    private final /*@Nullable*/ String parentId;
+    private final /*@Nullable*/ ModelFeature mModelFeature;
+    private final /*@Nullable*/ ModelToken mModelToken;
+    private final /*@Nullable*/ String mParentId;
 
     public static Builder newBuilder() {
         return new Builder();
@@ -29,19 +29,19 @@ public class FakeModelChild implements ModelChild {
             /*@Nullable*/ String parentId) {
         // A ModelChild can't represent both a ModelFeature and a ModelToken.
         checkState(modelFeature == null || modelToken == null);
-        this.contentId = contentId;
-        this.modelFeature = modelFeature;
-        this.modelToken = modelToken;
-        this.parentId = parentId;
+        this.mContentId = contentId;
+        this.mModelFeature = modelFeature;
+        this.mModelToken = modelToken;
+        this.mParentId = parentId;
     }
 
     @Override
     public @Type int getType() {
-        if (modelFeature != null) {
+        if (mModelFeature != null) {
             return Type.FEATURE;
         }
 
-        if (modelToken != null) {
+        if (mModelToken != null) {
             return Type.TOKEN;
         }
 
@@ -50,69 +50,69 @@ public class FakeModelChild implements ModelChild {
 
     @Override
     public String getContentId() {
-        return contentId;
+        return mContentId;
     }
 
     @Override
     public boolean hasParentId() {
-        return parentId != null;
+        return mParentId != null;
     }
 
     @Override
     public /*@Nullable*/ String getParentId() {
-        return parentId;
+        return mParentId;
     }
 
     @Override
     public ModelFeature getModelFeature() {
-        checkState(modelFeature != null,
+        checkState(mModelFeature != null,
                 "Must call setModelFeature on builder to have a ModelFeature");
 
         // checkNotNull for nullness checker, if modelFeature is null, the checkState above will
         // fail.
-        return checkNotNull(modelFeature);
+        return checkNotNull(mModelFeature);
     }
 
     @Override
     public ModelToken getModelToken() {
-        checkState(modelToken != null, "Must call setModelToken on builder to have a ModelToken");
+        checkState(mModelToken != null, "Must call setModelToken on builder to have a ModelToken");
 
         // checkNotNull for nullness checker, if modelToken is null, the checkState above will fail.
-        return checkNotNull(modelToken);
+        return checkNotNull(mModelToken);
     }
 
     public static class Builder {
-        private String contentId = "";
-        private /*@Nullable*/ ModelFeature modelFeature;
-        private /*@Nullable*/ ModelToken modelToken;
-        private /*@Nullable*/ String parentId;
+        private String mContentId = "";
+        private /*@Nullable*/ ModelFeature mModelFeature;
+        private /*@Nullable*/ ModelToken mModelToken;
+        private /*@Nullable*/ String mParentId;
 
         private Builder() {}
 
         public Builder setContentId(String contentId) {
-            this.contentId = contentId;
+            this.mContentId = contentId;
             return this;
         }
 
         public Builder setParentId(/*@Nullable*/ String parentId) {
-            this.parentId = parentId;
+            this.mParentId = parentId;
             return this;
         }
 
         public Builder setModelFeature(ModelFeature modelFeature) {
-            checkState(modelToken == null);
-            this.modelFeature = modelFeature;
+            checkState(mModelToken == null);
+            this.mModelFeature = modelFeature;
             return this;
         }
 
         public Builder setModelToken(ModelToken modelToken) {
-            checkState(modelFeature == null);
-            this.modelToken = modelToken;
+            checkState(mModelFeature == null);
+            this.mModelToken = modelToken;
             return this;
         }
 
         public FakeModelChild build() {
-            return new FakeModelChild(contentId, modelFeature, modelToken, parentId);
+            return new FakeModelChild(mContentId, mModelFeature, mModelToken, mParentId);
         }
     }
 }

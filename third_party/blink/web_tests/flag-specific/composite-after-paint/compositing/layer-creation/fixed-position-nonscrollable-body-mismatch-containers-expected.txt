@@ -11,18 +11,13 @@ Even though the fixed-position element's container is nonscrollable, it should s
     {
       "name": "HorizontalScrollbar",
       "position": [1, 286],
-      "bounds": [285, 15],
+      "bounds": [300, 15],
       "transform": 1
     },
     {
       "name": "VerticalScrollbar",
       "position": [286, 1],
       "bounds": [15, 285],
-      "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV class='scrollable bigBox'",
-      "bounds": [302, 302],
       "transform": 1
     },
     {

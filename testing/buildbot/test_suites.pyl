@@ -5927,8 +5927,6 @@
 
     'mojo_android_gtests': [
       'network_service_android_gtests',
-      'weblayer_android_gtests',
-      'weblayer_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
@@ -5942,14 +5940,12 @@
     'mojo_linux_gtests': [
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
-      'weblayer_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
-      'weblayer_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [

@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
+#include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -322,28 +323,36 @@ void BoxPainter::RecordScrollHitTestData(
   if (layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  // Only create scroll hit test data for objects that scroll.
-  if (!layout_box_.GetScrollableArea() ||
-      !layout_box_.GetScrollableArea()->ScrollsOverflow()) {
+  if (!layout_box_.GetScrollableArea())
     return;
-  }
 
   const auto* fragment = paint_info.FragmentToPaint(layout_box_);
-  const auto* properties = fragment ? fragment->PaintProperties() : nullptr;
+  if (!fragment)
+    return;
 
-  // If there is an associated scroll node, emit a scroll hit test display item.
-  if (properties && properties->Scroll()) {
-    DCHECK(properties->ScrollTranslation());
-    // The local border box properties are used instead of the contents
-    // properties so that the scroll hit test is not clipped or scrolled.
-    ScopedPaintChunkProperties scroll_hit_test_properties(
-        paint_info.context.GetPaintController(),
-        fragment->LocalBorderBoxProperties(), background_client,
-        DisplayItem::kScrollHitTest);
-    ScrollHitTestDisplayItem::Record(
-        paint_info.context, background_client, DisplayItem::kScrollHitTest,
-        properties->ScrollTranslation(), fragment->VisualRect());
+  // Only create scroll hit test data for objects that scroll.
+  if (layout_box_.GetScrollableArea()->ScrollsOverflow()) {
+    const auto* properties = fragment->PaintProperties();
+
+    // If there is an associated scroll node, emit a scroll hit test display
+    // item.
+    if (properties && properties->Scroll()) {
+      DCHECK(properties->ScrollTranslation());
+      // The local border box properties are used instead of the contents
+      // properties so that the scroll hit test is not clipped or scrolled.
+      ScopedPaintChunkProperties scroll_hit_test_properties(
+          paint_info.context.GetPaintController(),
+          fragment->LocalBorderBoxProperties(), background_client,
+          DisplayItem::kScrollHitTest);
+      ScrollHitTestDisplayItem::Record(
+          paint_info.context, background_client, DisplayItem::kScrollHitTest,
+          properties->ScrollTranslation(), fragment->VisualRect());
+    }
   }
+
+  ScrollableAreaPainter(*layout_box_.GetScrollableArea())
+      .RecordResizerScrollHitTestData(
+          paint_info.context, fragment->PaintOffset(), background_client);
 }
 
 }  // namespace blink

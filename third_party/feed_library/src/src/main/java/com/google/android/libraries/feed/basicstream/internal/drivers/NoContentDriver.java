@@ -16,7 +16,7 @@ import com.google.android.libraries.feed.common.logging.Logger;
 /** {@link FeatureDriver} for NoContent card. */
 public class NoContentDriver extends LeafFeatureDriver {
     private static final String TAG = "NoContentDriver";
-    /*@Nullable*/ private NoContentViewHolder noContentViewHolder;
+    /*@Nullable*/ private NoContentViewHolder mNoContentViewHolder;
 
     @Override
     public void bind(FeedViewHolder viewHolder) {
@@ -25,8 +25,8 @@ public class NoContentDriver extends LeafFeatureDriver {
         }
 
         checkState(viewHolder instanceof NoContentViewHolder);
-        noContentViewHolder = (NoContentViewHolder) viewHolder;
-        noContentViewHolder.bind();
+        mNoContentViewHolder = (NoContentViewHolder) viewHolder;
+        mNoContentViewHolder.bind();
     }
 
     @Override
@@ -36,29 +36,29 @@ public class NoContentDriver extends LeafFeatureDriver {
 
     @Override
     public void unbind() {
-        if (noContentViewHolder == null) {
+        if (mNoContentViewHolder == null) {
             return;
         }
 
-        noContentViewHolder.unbind();
-        noContentViewHolder = null;
+        mNoContentViewHolder.unbind();
+        mNoContentViewHolder = null;
     }
 
     @Override
     public void maybeRebind() {
-        if (noContentViewHolder == null) {
+        if (mNoContentViewHolder == null) {
             return;
         }
 
         // Unbinding clears the viewHolder, so storing to rebind.
-        NoContentViewHolder localViewHolder = noContentViewHolder;
+        NoContentViewHolder localViewHolder = mNoContentViewHolder;
         unbind();
         bind(localViewHolder);
     }
 
     @VisibleForTesting
     boolean isBound() {
-        return noContentViewHolder != null;
+        return mNoContentViewHolder != null;
     }
 
     @Override

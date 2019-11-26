@@ -55,23 +55,23 @@ import java.util.List;
 public final class SessionManagerMutation implements Dumpable {
     private static final String TAG = "SessionManagerMutation";
 
-    private final Store store;
-    private final SessionCache sessionCache;
-    private final ContentCache contentCache;
-    private final TaskQueue taskQueue;
-    private final SchedulerApi schedulerApi;
-    private final ThreadUtils threadUtils;
-    private final TimingUtils timingUtils;
-    private final Clock clock;
-    private final MainThreadRunner mainThreadRunner;
-    private final BasicLoggingApi basicLoggingApi;
+    private final Store mStore;
+    private final SessionCache mSessionCache;
+    private final ContentCache mContentCache;
+    private final TaskQueue mTaskQueue;
+    private final SchedulerApi mSchedulerApi;
+    private final ThreadUtils mThreadUtils;
+    private final TimingUtils mTimingUtils;
+    private final Clock mClock;
+    private final MainThreadRunner mMainThreadRunner;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     // operation counts for the dumper
-    private int createCount;
-    private int commitCount;
-    private int errorCount;
-    private int contentCommitErrorCount;
-    private int semanticPropertiesCommitErrorCount;
+    private int mCreateCount;
+    private int mCommitCount;
+    private int mErrorCount;
+    private int mContentCommitErrorCount;
+    private int mSemanticPropertiesCommitErrorCount;
 
     /** Listens for errors which need to be reported to a ModelProvider. */
     public interface ModelErrorObserver {
@@ -82,16 +82,16 @@ public final class SessionManagerMutation implements Dumpable {
             TaskQueue taskQueue, SchedulerApi schedulerApi, ThreadUtils threadUtils,
             TimingUtils timingUtils, Clock clock, MainThreadRunner mainThreadRunner,
             BasicLoggingApi basicLoggingApi) {
-        this.store = store;
-        this.sessionCache = sessionCache;
-        this.contentCache = contentCache;
-        this.taskQueue = taskQueue;
-        this.schedulerApi = schedulerApi;
-        this.threadUtils = threadUtils;
-        this.timingUtils = timingUtils;
-        this.clock = clock;
-        this.mainThreadRunner = mainThreadRunner;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mStore = store;
+        this.mSessionCache = sessionCache;
+        this.mContentCache = contentCache;
+        this.mTaskQueue = taskQueue;
+        this.mSchedulerApi = schedulerApi;
+        this.mThreadUtils = threadUtils;
+        this.mTimingUtils = timingUtils;
+        this.mClock = clock;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     /**
@@ -101,14 +101,14 @@ public final class SessionManagerMutation implements Dumpable {
     public Consumer<Result<Model>> createCommitter(String task, MutationContext mutationContext,
             ModelErrorObserver modelErrorObserver,
             KnownContent./*@Nullable*/ Listener knownContentListener) {
-        createCount++;
+        mCreateCount++;
         return new MutationCommitter(task, mutationContext, modelErrorObserver,
-                knownContentListener, mainThreadRunner, basicLoggingApi);
+                knownContentListener, mMainThreadRunner, mBasicLoggingApi);
     }
 
     public void resetHead() {
         HeadMutationCommitter mutation = new HeadMutationCommitter();
-        taskQueue.execute(
+        mTaskQueue.execute(
                 Task.INVALIDATE_HEAD, TaskType.HEAD_INVALIDATE, () -> mutation.resetHead(null));
     }
 
@@ -120,12 +120,12 @@ public final class SessionManagerMutation implements Dumpable {
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("mutationsCreated").value(createCount);
-        dumper.forKey("commitCount").value(commitCount).compactPrevious();
-        dumper.forKey("errorCount").value(errorCount).compactPrevious();
-        dumper.forKey("contentCommitErrorCount").value(contentCommitErrorCount).compactPrevious();
+        dumper.forKey("mutationsCreated").value(mCreateCount);
+        dumper.forKey("commitCount").value(mCommitCount).compactPrevious();
+        dumper.forKey("errorCount").value(mErrorCount).compactPrevious();
+        dumper.forKey("contentCommitErrorCount").value(mContentCommitErrorCount).compactPrevious();
         dumper.forKey("semanticPropertiesCommitErrorCount")
-                .value(semanticPropertiesCommitErrorCount)
+                .value(mSemanticPropertiesCommitErrorCount)
                 .compactPrevious();
     }
 
@@ -149,13 +149,13 @@ public final class SessionManagerMutation implements Dumpable {
          */
         @VisibleForTesting
         void resetHead(/*@Nullable*/ String mutationSessionId) {
-            threadUtils.checkNotMainThread();
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
-            Collection<Session> attachedSessions = sessionCache.getAttachedSessions();
+            mThreadUtils.checkNotMainThread();
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
+            Collection<Session> attachedSessions = mSessionCache.getAttachedSessions();
 
             // If we have old sessions and we received a clear head, let's invalidate the session
             // that initiated the clear.
-            store.clearHead();
+            mStore.clearHead();
             for (Session session : attachedSessions) {
                 ModelProvider modelProvider = session.getModelProvider();
                 if (modelProvider != null && session.invalidateOnResetHead()
@@ -195,7 +195,7 @@ public final class SessionManagerMutation implements Dumpable {
         }
 
         private void invalidateSession(ModelProvider modelProvider, Session session) {
-            threadUtils.checkNotMainThread();
+            mThreadUtils.checkNotMainThread();
             Logger.i(TAG, "Invalidate session %s", session.getSessionId());
             modelProvider.invalidate();
         }
@@ -203,46 +203,46 @@ public final class SessionManagerMutation implements Dumpable {
 
     @VisibleForTesting
     class MutationCommitter extends HeadMutationCommitter implements Consumer<Result<Model>> {
-        private final String task;
-        private final MutationContext mutationContext;
-        private final ModelErrorObserver modelErrorObserver;
-        private final KnownContent./*@Nullable*/ Listener knownContentListener;
+        private final String mTask;
+        private final MutationContext mMutationContext;
+        private final ModelErrorObserver mModelErrorObserver;
+        private final KnownContent./*@Nullable*/ Listener mKnownContentListener;
 
-        private final List<StreamStructure> streamStructures = new ArrayList<>();
-        private final MainThreadRunner mainThreadRunner;
-        private final BasicLoggingApi basicLoggingApi;
+        private final List<StreamStructure> mStreamStructures = new ArrayList<>();
+        private final MainThreadRunner mMainThreadRunner;
+        private final BasicLoggingApi mBasicLoggingApi;
 
         @VisibleForTesting
-        boolean clearedHead = false;
-        private Model model;
+        boolean mClearedHead;
+        private Model mModel;
 
         private MutationCommitter(String task, MutationContext mutationContext,
                 ModelErrorObserver modelErrorObserver,
                 KnownContent./*@Nullable*/ Listener knownContentListener,
                 MainThreadRunner mainThreadRunner, BasicLoggingApi basicLoggingApi) {
-            this.task = task;
-            this.mutationContext = mutationContext;
-            this.modelErrorObserver = modelErrorObserver;
-            this.knownContentListener = knownContentListener;
-            this.mainThreadRunner = mainThreadRunner;
-            this.basicLoggingApi = basicLoggingApi;
+            this.mTask = task;
+            this.mMutationContext = mutationContext;
+            this.mModelErrorObserver = modelErrorObserver;
+            this.mKnownContentListener = knownContentListener;
+            this.mMainThreadRunner = mainThreadRunner;
+            this.mBasicLoggingApi = basicLoggingApi;
         }
 
         @Override
         public void accept(Result<Model> updateResults) {
             if (!updateResults.isSuccessful()) {
-                errorCount++;
+                mErrorCount++;
                 Session session = null;
-                String sessionId = mutationContext.getRequestingSessionId();
+                String sessionId = mMutationContext.getRequestingSessionId();
                 if (sessionId != null) {
-                    session = sessionCache.getAttached(sessionId);
+                    session = mSessionCache.getAttached(sessionId);
                 }
-                if (mutationContext.getContinuationToken() != null) {
-                    StreamToken streamToken = mutationContext.getContinuationToken();
+                if (mMutationContext.getContinuationToken() != null) {
+                    StreamToken streamToken = mMutationContext.getContinuationToken();
                     if (session != null && streamToken != null) {
                         Logger.e(TAG, "Error found with a token request %s",
                                 streamToken.getContentId());
-                        modelErrorObserver.onError(session,
+                        mModelErrorObserver.onError(session,
                                 new ModelError(ErrorType.PAGINATION_ERROR,
                                         streamToken.getNextPageToken()));
                     } else {
@@ -250,57 +250,57 @@ public final class SessionManagerMutation implements Dumpable {
                     }
                 } else {
                     Logger.e(TAG, "Update error, the update is being ignored");
-                    modelErrorObserver.onError(
+                    mModelErrorObserver.onError(
                             session, new ModelError(ErrorType.NO_CARDS_ERROR, null));
-                    taskQueue.execute(Task.REQUEST_FAILURE, TaskType.HEAD_RESET, () -> {});
+                    mTaskQueue.execute(Task.REQUEST_FAILURE, TaskType.HEAD_RESET, () -> {});
                 }
                 return;
             }
-            model = updateResults.getValue();
-            for (StreamDataOperation operation : model.streamDataOperations) {
+            mModel = updateResults.getValue();
+            for (StreamDataOperation operation : mModel.streamDataOperations) {
                 if (operation.getStreamStructure().getOperation() == Operation.CLEAR_ALL) {
-                    clearedHead = true;
+                    mClearedHead = true;
                     break;
                 }
             }
             int taskType;
-            if (mutationContext != null && mutationContext.isUserInitiated()) {
+            if (mMutationContext != null && mMutationContext.isUserInitiated()) {
                 taskType = TaskType.IMMEDIATE;
             } else {
-                taskType = clearedHead ? TaskType.HEAD_RESET : TaskType.USER_FACING;
+                taskType = mClearedHead ? TaskType.HEAD_RESET : TaskType.USER_FACING;
             }
-            taskQueue.execute(Task.COMMIT_TASK, taskType, this::commitTask);
+            mTaskQueue.execute(Task.COMMIT_TASK, taskType, this::commitTask);
         }
 
         private void commitTask() {
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
             commitContent();
             commitSessionUpdates();
-            commitCount++;
-            timeTracker.stop("task", "sessionMutation.commitTask:" + task, "mutations",
-                    streamStructures.size(), "userInitiated",
-                    mutationContext != null ? mutationContext.isUserInitiated()
-                                            : "No MutationContext");
+            mCommitCount++;
+            timeTracker.stop("task", "sessionMutation.commitTask:" + mTask, "mutations",
+                    mStreamStructures.size(), "userInitiated",
+                    mMutationContext != null ? mMutationContext.isUserInitiated()
+                                             : "No MutationContext");
         }
 
         private void commitContent() {
-            threadUtils.checkNotMainThread();
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+            mThreadUtils.checkNotMainThread();
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-            contentCache.startMutation();
-            ContentMutation contentMutation = store.editContent();
-            SemanticPropertiesMutation semanticPropertiesMutation = store.editSemanticProperties();
-            for (StreamDataOperation dataOperation : model.streamDataOperations) {
+            mContentCache.startMutation();
+            ContentMutation contentMutation = mStore.editContent();
+            SemanticPropertiesMutation semanticPropertiesMutation = mStore.editSemanticProperties();
+            for (StreamDataOperation dataOperation : mModel.streamDataOperations) {
                 Operation operation = dataOperation.getStreamStructure().getOperation();
                 if (operation == Operation.CLEAR_ALL) {
-                    streamStructures.add(dataOperation.getStreamStructure());
-                    resetHead(mutationContext.getRequestingSessionId());
+                    mStreamStructures.add(dataOperation.getStreamStructure());
+                    resetHead(mMutationContext.getRequestingSessionId());
                     continue;
                 }
 
                 if (operation == Operation.UPDATE_OR_APPEND) {
                     if (!validDataOperation(dataOperation)) {
-                        errorCount++;
+                        mErrorCount++;
                         continue;
                     }
                     String contentId = dataOperation.getStreamStructure().getContentId();
@@ -309,9 +309,9 @@ public final class SessionManagerMutation implements Dumpable {
                         // don't add StreamSharedState to the metadata list stored for sessions
                         contentMutation.add(contentId, payload);
                     } else if (payload.hasStreamFeature() || payload.hasStreamToken()) {
-                        contentCache.put(contentId, payload);
+                        mContentCache.put(contentId, payload);
                         contentMutation.add(contentId, payload);
-                        streamStructures.add(dataOperation.getStreamStructure());
+                        mStreamStructures.add(dataOperation.getStreamStructure());
                     } else if (dataOperation.getStreamPayload().hasSemanticData()) {
                         semanticPropertiesMutation.add(
                                 contentId, dataOperation.getStreamPayload().getSemanticData());
@@ -324,84 +324,84 @@ public final class SessionManagerMutation implements Dumpable {
                 if (operation == Operation.REMOVE) {
                     // We don't update the content for REMOVED items, content will be garbage
                     // collected.
-                    streamStructures.add(dataOperation.getStreamStructure());
+                    mStreamStructures.add(dataOperation.getStreamStructure());
                     continue;
                 }
 
                 if (operation == Operation.REQUIRED_CONTENT) {
-                    streamStructures.add(dataOperation.getStreamStructure());
+                    mStreamStructures.add(dataOperation.getStreamStructure());
                     continue;
                 }
 
-                errorCount++;
+                mErrorCount++;
                 Logger.e(TAG, "Unsupported Mutation: %s",
                         dataOperation.getStreamStructure().getOperation());
             }
-            taskQueue.execute(Task.PERSIST_MUTATION, TaskType.BACKGROUND, () -> {
+            mTaskQueue.execute(Task.PERSIST_MUTATION, TaskType.BACKGROUND, () -> {
                 if (contentMutation.commit().getResult() == CommitResult.Result.FAILURE) {
-                    contentCommitErrorCount++;
+                    mContentCommitErrorCount++;
                     Logger.e(TAG, "contentMutation failed");
-                    mainThreadRunner.execute("CONTENT_MUTATION_FAILED", () -> {
-                        basicLoggingApi.onInternalError(InternalFeedError.CONTENT_MUTATION_FAILED);
+                    mMainThreadRunner.execute("CONTENT_MUTATION_FAILED", () -> {
+                        mBasicLoggingApi.onInternalError(InternalFeedError.CONTENT_MUTATION_FAILED);
                     });
                 }
                 if (semanticPropertiesMutation.commit().getResult()
                         == CommitResult.Result.FAILURE) {
-                    semanticPropertiesCommitErrorCount++;
+                    mSemanticPropertiesCommitErrorCount++;
                     Logger.e(TAG, "semanticPropertiesMutation failed");
                 }
-                contentCache.finishMutation();
+                mContentCache.finishMutation();
             });
-            timeTracker.stop("", "contentUpdate", "items", model.streamDataOperations.size());
+            timeTracker.stop("", "contentUpdate", "items", mModel.streamDataOperations.size());
         }
 
         private void commitSessionUpdates() {
-            threadUtils.checkNotMainThread();
-            ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+            mThreadUtils.checkNotMainThread();
+            ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
             StreamDataProto.StreamToken mutationSourceToken =
-                    (mutationContext != null) ? mutationContext.getContinuationToken() : null;
+                    (mMutationContext != null) ? mMutationContext.getContinuationToken() : null;
             // For sessions we want to add the remove operation if the mutation source was a
             // continuation token.
             if (mutationSourceToken != null) {
                 StreamStructure removeOperation = addTokenRemoveOperation(mutationSourceToken);
                 if (removeOperation != null) {
-                    streamStructures.add(0, removeOperation);
+                    mStreamStructures.add(0, removeOperation);
                 }
             }
-            Collection<Session> updates = sessionCache.getAllSessions();
+            Collection<Session> updates = mSessionCache.getAllSessions();
 
-            HeadSessionImpl head = sessionCache.getHead();
+            HeadSessionImpl head = mSessionCache.getHead();
             for (Session session : updates) {
                 ModelProvider modelProvider = session.getModelProvider();
                 if (modelProvider != null && modelProvider.getCurrentState() == State.INVALIDATED) {
                     Logger.w(TAG, "Removing an invalidate session");
                     // Remove all invalidated sessions
-                    sessionCache.removeAttached(session.getSessionId());
+                    mSessionCache.removeAttached(session.getSessionId());
                     continue;
                 }
                 if (session == head) {
-                    long updateTime = clock.currentTimeMillis();
-                    if (clearedHead) {
-                        session.updateSession(clearedHead, streamStructures, model.schemaVersion,
-                                mutationContext);
-                        sessionCache.updateHeadMetadata(updateTime, model.schemaVersion);
-                        schedulerApi.onReceiveNewContent(updateTime);
-                        if (knownContentListener != null) {
-                            knownContentListener.onNewContentReceived(
+                    long updateTime = mClock.currentTimeMillis();
+                    if (mClearedHead) {
+                        session.updateSession(mClearedHead, mStreamStructures, mModel.schemaVersion,
+                                mMutationContext);
+                        mSessionCache.updateHeadMetadata(updateTime, mModel.schemaVersion);
+                        mSchedulerApi.onReceiveNewContent(updateTime);
+                        if (mKnownContentListener != null) {
+                            mKnownContentListener.onNewContentReceived(
                                     /* isNewRefresh */ true, updateTime);
                         }
                         Logger.i(TAG, "Cleared Head, new creation time %s",
                                 StringFormattingUtils.formatLogDate(updateTime));
                         continue;
-                    } else if (knownContentListener != null) {
-                        knownContentListener.onNewContentReceived(
+                    } else if (mKnownContentListener != null) {
+                        mKnownContentListener.onNewContentReceived(
                                 /* isNewRefresh */ false, updateTime);
                     }
                 }
                 Logger.i(TAG, "Update Session %s", session.getSessionId());
                 session.updateSession(
-                        clearedHead, streamStructures, model.schemaVersion, mutationContext);
+                        mClearedHead, mStreamStructures, mModel.schemaVersion, mMutationContext);
             }
             timeTracker.stop("", "sessionUpdate", "sessions", updates.size());
         }

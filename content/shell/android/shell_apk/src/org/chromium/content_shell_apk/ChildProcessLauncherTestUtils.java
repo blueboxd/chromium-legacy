@@ -35,7 +35,7 @@ public final class ChildProcessLauncherTestUtils {
         done.acquireUninterruptibly();
     }
 
-    public static <R> R runOnLauncherAndGetResult(Callable<R> callable) {
+    public static <T> T runOnLauncherAndGetResult(Callable<T> callable) {
         if (LauncherThread.runningOnLauncherThread()) {
             try {
                 return callable.call();
@@ -44,7 +44,7 @@ public final class ChildProcessLauncherTestUtils {
             }
         }
         try {
-            FutureTask<R> task = new FutureTask<R>(callable);
+            FutureTask<T> task = new FutureTask<T>(callable);
             LauncherThread.post(task);
             return task.get();
         } catch (Exception e) {

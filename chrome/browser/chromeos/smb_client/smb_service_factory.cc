@@ -22,10 +22,6 @@ namespace smb_client {
 
 namespace {
 
-bool IsEnabledByFlag() {
-  return base::FeatureList::IsEnabled(features::kNativeSmb);
-}
-
 bool IsAllowedByPolicy(const Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kNetworkFileSharesAllowed);
 }
@@ -70,8 +66,8 @@ KeyedService* SmbServiceFactory::BuildServiceInstanceFor(
   // a user. Lockscreen is the example of a profile that doesn't have a user -
   // in this case smb service is not needed.
   Profile* const profile = Profile::FromBrowserContext(context);
-  bool service_should_run = IsEnabledByFlag() && IsAllowedByPolicy(profile) &&
-                            DoesProfileHaveUser(profile);
+  bool service_should_run =
+      IsAllowedByPolicy(profile) && DoesProfileHaveUser(profile);
   if (!service_should_run)
     return nullptr;
   return new SmbService(profile, std::make_unique<base::DefaultTickClock>());

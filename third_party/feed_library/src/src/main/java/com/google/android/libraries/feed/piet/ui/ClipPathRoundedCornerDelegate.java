@@ -18,7 +18,7 @@ import android.view.ViewGroup;
  * delegate.
  */
 class ClipPathRoundedCornerDelegate extends RoundedCornerDelegate {
-    private final Path clipPath = new Path();
+    private final Path mClipPath = new Path();
 
     /**
      * Turns off clipping to the outline.
@@ -38,14 +38,14 @@ class ClipPathRoundedCornerDelegate extends RoundedCornerDelegate {
     @Override
     public void onSizeChanged(int radius, int width, int height, int bitmask, boolean isRtL) {
         float[] radii = RoundedCornerViewHelper.createRoundedCornerBitMask(radius, bitmask, isRtL);
-        clipPath.addRoundRect(new RectF(0, 0, width, height), radii, Path.Direction.CW);
+        mClipPath.addRoundRect(new RectF(0, 0, width, height), radii, Path.Direction.CW);
     }
 
     /** Clips the path that was created in onSizeChanged(). */
     @Override
     public void dispatchDraw(Canvas canvas) {
-        if (clipPath != null) {
-            canvas.clipPath(clipPath);
+        if (mClipPath != null) {
+            canvas.clipPath(mClipPath);
         }
     }
 }

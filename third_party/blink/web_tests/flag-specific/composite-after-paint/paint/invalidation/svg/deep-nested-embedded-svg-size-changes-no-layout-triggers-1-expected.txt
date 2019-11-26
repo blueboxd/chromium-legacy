@@ -12,11 +12,6 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 300, 150],
-          "reason": "chunk disappeared"
-        },
-        {
           "object": "HorizontalScrollbar",
           "rect": [1, 136, 285, 15],
           "reason": "chunk disappeared"
@@ -44,6 +39,11 @@
         {
           "object": "VerticalScrollbar",
           "rect": [286, 1, 15, 135],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "Scroll corner of LayoutView #document",
+          "rect": [286, 136, 15, 15],
           "reason": "chunk disappeared"
         }
       ]

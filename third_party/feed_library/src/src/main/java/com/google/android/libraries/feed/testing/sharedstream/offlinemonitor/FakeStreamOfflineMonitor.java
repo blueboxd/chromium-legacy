@@ -9,8 +9,8 @@ import com.google.android.libraries.feed.testing.host.offlineindicator.FakeOffli
 
 /** Fake used for tests using the {@link StreamOfflineMonitor}. */
 public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
-    private final FakeOfflineIndicatorApi fakeIndicatorApi;
-    private boolean offlineStatusRequested;
+    private final FakeOfflineIndicatorApi mFakeIndicatorApi;
+    private boolean mOfflineStatusRequested;
 
     /**
      * Creates a {@link FakeStreamOfflineMonitor} with the given {@link FakeOfflineIndicatorApi}.
@@ -29,7 +29,7 @@ public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
 
     private FakeStreamOfflineMonitor(FakeOfflineIndicatorApi offlineIndicatorApi) {
         super(offlineIndicatorApi);
-        this.fakeIndicatorApi = offlineIndicatorApi;
+        this.mFakeIndicatorApi = offlineIndicatorApi;
     }
 
     /** Sets the offline status for the given {@code url}. */
@@ -39,7 +39,7 @@ public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
         isAvailableOffline(url);
 
         // Sets the status of the url with the api, which is the source of truth.
-        fakeIndicatorApi.setOfflineStatus(url, isAvailable);
+        mFakeIndicatorApi.setOfflineStatus(url, isAvailable);
 
         // Triggers notification to any current listeners, namely the superclass of this fake.
         requestOfflineStatusForNewContent();
@@ -47,16 +47,16 @@ public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
 
     /** Returns the count of how many observers there are for offline status. */
     public int getOfflineStatusConsumerCount() {
-        return offlineStatusConsumersMap.size();
+        return mOfflineStatusConsumersMap.size();
     }
 
     @Override
     public void requestOfflineStatusForNewContent() {
-        offlineStatusRequested = true;
+        mOfflineStatusRequested = true;
         super.requestOfflineStatusForNewContent();
     }
 
     public boolean isOfflineStatusRequested() {
-        return offlineStatusRequested;
+        return mOfflineStatusRequested;
     }
 }

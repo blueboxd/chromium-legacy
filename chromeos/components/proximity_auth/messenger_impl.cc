@@ -78,10 +78,6 @@ void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool MessengerImpl::SupportsSignIn() const {
-  return true;
-}
-
 void MessengerImpl::DispatchUnlockEvent() {
   base::DictionaryValue message;
   message.SetString(kTypeKey, kMessageTypeLocalEvent);
@@ -91,14 +87,6 @@ void MessengerImpl::DispatchUnlockEvent() {
 }
 
 void MessengerImpl::RequestDecryption(const std::string& challenge) {
-  if (!SupportsSignIn()) {
-    PA_LOG(WARNING) << "Dropping decryption request, as remote device "
-                    << "does not support protocol v3.1.";
-    for (auto& observer : observers_)
-      observer.OnDecryptResponse(std::string());
-    return;
-  }
-
   const std::string encrypted_message_data = challenge;
   std::string encrypted_message_data_base64;
   base::Base64UrlEncode(encrypted_message_data,
@@ -113,14 +101,6 @@ void MessengerImpl::RequestDecryption(const std::string& challenge) {
 }
 
 void MessengerImpl::RequestUnlock() {
-  if (!SupportsSignIn()) {
-    PA_LOG(WARNING) << "Dropping unlock request, as remote device does not "
-                    << "support protocol v3.1.";
-    for (auto& observer : observers_)
-      observer.OnUnlockResponse(false);
-    return;
-  }
-
   base::DictionaryValue message;
   message.SetString(kTypeKey, kMessageTypeUnlockRequest);
   queued_messages_.push_back(PendingMessage(message));

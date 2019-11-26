@@ -19,12 +19,8 @@ cr.define('settings', function() {
     DISABLED: 'disabled',
   };
 
-  /** @const {string} */
-  SmartLockSignInEnabledPrefName = 'proximity_auth.is_chromeos_login_enabled';
-
   return {
     SignInEnabledState: SignInEnabledState,
-        SmartLockSignInEnabledPrefName: SmartLockSignInEnabledPrefName,
   };
 });
 

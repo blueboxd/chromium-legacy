@@ -12,7 +12,9 @@
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -196,6 +198,25 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 };
 
 IN_PROC_BROWSER_TEST_P(FilesAppBrowserTest, Test) {
+  StartTest();
+}
+
+// A version of the FilesAppBrowserTest that supports spanning browser restart
+// to allow testing prefs and other things.
+class ExtendedFilesAppBrowserTest : public FilesAppBrowserTest {
+ public:
+  ExtendedFilesAppBrowserTest() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtendedFilesAppBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, PRE_Test) {
+  profile()->GetPrefs()->SetBoolean(prefs::kNetworkFileSharesAllowed,
+                                    GetEnableNativeSmb());
+}
+
+IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
   StartTest();
 }
 
@@ -420,7 +441,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewSniffedText"),
         TestCase("openQuickViewScrollText"),
         TestCase("openQuickViewScrollHtml"),
-        TestCase("openQuickViewBackgroundColorText"),
         TestCase("openQuickViewBackgroundColorHtml"),
         TestCase("openQuickViewDrive"),
         TestCase("openQuickViewAndroid"),
@@ -692,7 +712,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Providers, /* providers.js */
-    FilesAppBrowserTest,
+    ExtendedFilesAppBrowserTest,
     ::testing::Values(TestCase("requestMount"),
                       TestCase("requestMount").DisableNativeSmb(),
                       TestCase("requestMountMultipleMounts"),

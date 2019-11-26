@@ -56,7 +56,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   gfx::FontList font_list;
   gfx::Rect field(field_width, font_list.GetHeight());
 
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(horizontal_alignment);
   render_text->SetDirectionalityMode(directionality_mode);

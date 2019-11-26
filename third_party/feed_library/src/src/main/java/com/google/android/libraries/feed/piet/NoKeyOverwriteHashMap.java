@@ -11,21 +11,21 @@ import java.util.HashMap;
 /** Map that throws if you try to insert a second key with the same value. */
 public class NoKeyOverwriteHashMap<K, V> extends HashMap<K, V> {
     /** A term for the items this map contains (ex. "Style" or "Template"); used in debug logs. */
-    private final String termForContentValue;
+    private final String mTermForContentValue;
 
-    private final ErrorCode errorCodeForDuplicate;
+    private final ErrorCode mErrorCodeForDuplicate;
 
     NoKeyOverwriteHashMap(String termForContentValue, ErrorCode errorCodeForDuplicate) {
-        this.termForContentValue = termForContentValue;
-        this.errorCodeForDuplicate = errorCodeForDuplicate;
+        this.mTermForContentValue = termForContentValue;
+        this.mErrorCodeForDuplicate = errorCodeForDuplicate;
     }
 
     @Override
     /*@Nullable*/
     public V put(K key, V value) {
         if (containsKey(key)) {
-            throw new PietFatalException(errorCodeForDuplicate,
-                    String.format("%s key '%s' already defined", termForContentValue, key));
+            throw new PietFatalException(mErrorCodeForDuplicate,
+                    String.format("%s key '%s' already defined", mTermForContentValue, key));
         }
         return super.put(key, value);
     }

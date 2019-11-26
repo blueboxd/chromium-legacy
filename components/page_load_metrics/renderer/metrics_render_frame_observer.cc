@@ -278,7 +278,17 @@ void MetricsRenderFrameObserver::MaybeSetCompletedBeforeFCP(int request_id) {
   const blink::WebPerformance& perf =
       render_frame()->GetWebFrame()->Performance();
 
-  DCHECK_GT(base::Time::Now(), base::Time::FromDoubleT(perf.NavigationStart()));
+  // Blink returns 0 if the performance metrics are unavailable. Check that
+  // navigation start is set to determine if performance metrics are
+  // available.
+  if (perf.NavigationStart() == 0)
+    return;
+
+  // This should not be possible, but none the less occasionally fails in edge
+  // case tests. Since we don't expect this to be valid, throw out this entry.
+  // See crbug.com/1027535.
+  if (base::Time::Now() < base::Time::FromDoubleT(perf.NavigationStart()))
+    return;
 
   if (perf.FirstContentfulPaint() == 0)
     before_fcp_request_ids_.insert(request_id);

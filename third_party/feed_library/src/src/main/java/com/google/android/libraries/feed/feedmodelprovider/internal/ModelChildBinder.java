@@ -27,19 +27,19 @@ import java.util.Map;
 public final class ModelChildBinder {
     private static final String TAG = "ModelChildBinder";
 
-    private final FeedSessionManager feedSessionManager;
-    private final CursorProvider cursorProvider;
-    private final TimingUtils timingUtils;
+    private final FeedSessionManager mFeedSessionManager;
+    private final CursorProvider mCursorProvider;
+    private final TimingUtils mTimingUtils;
 
     public ModelChildBinder(FeedSessionManager feedSessionManager, CursorProvider cursorProvider,
             TimingUtils timingUtils) {
-        this.feedSessionManager = feedSessionManager;
-        this.cursorProvider = cursorProvider;
-        this.timingUtils = timingUtils;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mCursorProvider = cursorProvider;
+        this.mTimingUtils = timingUtils;
     }
 
     public boolean bindChildren(List<UpdatableModelChild> childrenToBind) {
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Map<String, UpdatableModelChild> bindingChildren = new HashMap<>();
         List<String> contentIds = new ArrayList<>();
         for (UpdatableModelChild child : childrenToBind) {
@@ -48,7 +48,7 @@ public final class ModelChildBinder {
             bindingChildren.put(key, child);
         }
 
-        Result<List<PayloadWithId>> results = feedSessionManager.getStreamFeatures(contentIds);
+        Result<List<PayloadWithId>> results = mFeedSessionManager.getStreamFeatures(contentIds);
         if (!results.isSuccessful()) {
             // If we failed, it's likely that this ModelProvider will soon be invalidated by the
             // FeedSessionManager
@@ -68,7 +68,7 @@ public final class ModelChildBinder {
                 if (child.getType() == Type.UNBOUND) {
                     if (payload.hasStreamFeature()) {
                         child.bindFeature(new UpdatableModelFeature(
-                                payload.getStreamFeature(), cursorProvider));
+                                payload.getStreamFeature(), mCursorProvider));
                     } else if (payload.hasStreamToken()) {
                         child.bindToken(new UpdatableModelToken(payload.getStreamToken(), false));
                         continue;

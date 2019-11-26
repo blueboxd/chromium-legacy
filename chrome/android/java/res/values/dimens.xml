@@ -312,6 +312,7 @@
     <dimen name="sei_location_bar_icon_end_padding_focused">16dp</dimen>
     <dimen name="sei_location_bar_verbose_start_padding_verbose_text">4dp</dimen>
     <dimen name="sei_location_bar_status_extra_padding_width">4dp</dimen>
+    <dimen name="sei_google_g_size">20dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>

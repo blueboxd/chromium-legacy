@@ -25,6 +25,7 @@ constexpr double kMinScore = 0.0;
 constexpr double kMaxScore = 1.0;
 constexpr double kFirstCharacterMatchPenalty = 0.2;
 constexpr double kPrefixMatchPenalty = 0.1;
+constexpr double kPartialMatchPenaltyRate = 0.9;
 
 // Returns sorted tokens from a TokenizedString.
 std::vector<base::string16> ProcessAndSort(const ash::TokenizedString& text) {
@@ -184,12 +185,27 @@ double FuzzyTokenizedStringMatch::PartialRatio(const base::string16& query,
             ? block.pos_second_string - block.pos_first_string
             : 0;
 
+    // Penalizes the match if it is not close to the beginning of a token.
+    const double partial_match_penalty_rate =
+        base::GetFieldTrialParamByFeatureAsDouble(
+            app_list_features::kEnableFuzzyAppSearch,
+            "paritial_match_penalty_rate", kPartialMatchPenaltyRate);
+    int current = long_start - 1;
+    while (current >= 0 &&
+           !base::EqualsCaseInsensitiveASCII(longer.substr(current, 1),
+                                             base::UTF8ToUTF16(" "))) {
+      current--;
+    }
+    const double penalty =
+        std::pow(partial_match_penalty_rate, long_start - current - 1);
     // TODO(crbug/990684): currently this part re-calculate the ratio for every
     // pair. Improve this to reduce latency.
     partial_ratio = std::max(
         partial_ratio,
         SequenceMatcher(shorter, longer.substr(long_start, shorter.size()))
-            .Ratio());
+                .Ratio() *
+            penalty);
+
     if (partial_ratio > 0.995) {
       return kMaxScore;
     }

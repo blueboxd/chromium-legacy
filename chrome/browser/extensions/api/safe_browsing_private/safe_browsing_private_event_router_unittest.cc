@@ -736,7 +736,7 @@ TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest, CheckRealtimeReport) {
     Mock::VerifyAndClearExpectations(client_);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SafeBrowsingIsRealtimeReportingEnabledTest,
                          testing::Combine(testing::Bool(),
                                           testing::Bool(),

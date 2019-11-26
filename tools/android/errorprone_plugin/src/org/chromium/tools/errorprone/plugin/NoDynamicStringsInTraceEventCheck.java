@@ -30,7 +30,7 @@ import javax.lang.model.element.Modifier;
  * Triggers an error for {@link org.chromium.base.TraceEvent} usages with non string literals.
  */
 @AutoService(BugChecker.class)
-@BugPattern(name = "NoDynamicStringsInTraceEventCheck", category = BugPattern.Category.JDK,
+@BugPattern(name = "NoDynamicStringsInTraceEventCheck",
         summary = "Only use of string literals are allowed in trace events.",
         severity = BugPattern.SeverityLevel.ERROR, linkType = BugPattern.LinkType.CUSTOM,
         link = "https://crbug.com/984827")

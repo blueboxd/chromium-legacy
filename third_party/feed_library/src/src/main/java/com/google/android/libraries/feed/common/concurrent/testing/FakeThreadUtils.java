@@ -8,21 +8,21 @@ import com.google.android.libraries.feed.api.internal.common.ThreadUtils;
 
 /** Fake implements of {@link ThreadUtils} that allows callers to control the thread policy. */
 public final class FakeThreadUtils extends ThreadUtils {
-    private boolean isMainThread = true;
-    private boolean enforceThreadChecks = true;
+    private boolean mIsMainThread = true;
+    private boolean mEnforceThreadChecks = true;
 
     private FakeThreadUtils(boolean enforceThreadChecks) {
-        this.enforceThreadChecks = enforceThreadChecks;
+        this.mEnforceThreadChecks = enforceThreadChecks;
     }
 
     @Override
     public boolean isMainThread() {
-        return isMainThread;
+        return mIsMainThread;
     }
 
     @Override
     protected void check(boolean condition, String message) {
-        if (enforceThreadChecks) {
+        if (mEnforceThreadChecks) {
             super.check(condition, message);
         }
     }
@@ -32,8 +32,8 @@ public final class FakeThreadUtils extends ThreadUtils {
      * existing thread policy.
      */
     public boolean enforceMainThread(boolean enforceMainThread) {
-        boolean result = isMainThread;
-        isMainThread = enforceMainThread;
+        boolean result = mIsMainThread;
+        mIsMainThread = enforceMainThread;
         return result;
     }
 

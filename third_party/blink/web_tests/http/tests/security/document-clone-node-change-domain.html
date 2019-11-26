@@ -14,20 +14,10 @@
 
                 document.domain = 'example.test';
                 assert_equals(document.domain, 'example.test');
-                assert_equals(doc.domain, 'subdomain.example.test');
+                assert_equals(doc.domain, 'example.test');
 
                 document.domain = 'subdomain.example.test';
-            }, "Cloned documents do not share the underlying domain after the clone.");
-
-            test(function () {
-                assert_equals(document.domain, 'subdomain.example.test');
-
-                document.domain = 'example.test';
-                var doc = document.cloneNode(true);
-
-                assert_equals(document.domain, 'example.test');
-                assert_equals(doc.domain, 'example.test');
-            }, "Cloned documents inherit the underlying domain.");
+            }, "Cloned documents share the underlying domain after the clone.");
         }
     </script>
 </head>

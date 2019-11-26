@@ -260,7 +260,7 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
                                bottom_radius, bottom_radius};
 
     SkPath path;
-    path.addRoundRect(gfx::RectToSkRect(bounds), radii, SkPath::kCW_Direction);
+    path.addRoundRect(gfx::RectToSkRect(bounds), radii, SkPathDirection::kCW);
     canvas->ClipPath(path, true);
   }
 

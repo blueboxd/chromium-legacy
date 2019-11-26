@@ -88,7 +88,6 @@ jumbo_static_library("rest_of_sync") {
     "engine/sync_backend_registrar.h",
     "engine/sync_credentials.cc",
     "engine/sync_credentials.h",
-    "engine/sync_encryption_handler.cc",
     "engine/sync_encryption_handler.h",
     "engine/sync_engine.cc",
     "engine/sync_engine.h",

@@ -1160,30 +1160,13 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
   }
 
-  status.AddExclusionReasonsAndWarningIfAny(
-      cc->IsSetPermittedInContext(options, GetAccessSemanticsForCookie(*cc)));
-
   if (!IsCookieableScheme(scheme_lower)) {
     status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }
 
-  // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
-  // are enabled, non-SameSite cookies without the Secure attribute will be
-  // rejected. A warning for this would have been added by
-  // IsSetPermittedInContext().
-  if (GetAccessSemanticsForCookie(*cc) != CookieAccessSemantics::LEGACY &&
-      cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
-      cc->SameSite() == CookieSameSite::NO_RESTRICTION && !cc->IsSecure()) {
-    DVLOG(net::cookie_util::kVlogSetCookies)
-        << "SetCookie() rejecting insecure cookie with SameSite=None.";
-    status.AddExclusionReason(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE);
-  }
-  // Log whether a SameSite=None cookie is Secure or not.
-  if (cc->SameSite() == CookieSameSite::NO_RESTRICTION) {
-    UMA_HISTOGRAM_BOOLEAN("Cookie.SameSiteNoneIsSecure", cc->IsSecure());
-  }
+  cc->IsSetPermittedInContext(options, GetAccessSemanticsForCookie(*cc),
+                              &status);
 
   const std::string key(GetKey(cc->Domain()));
 

@@ -45,9 +45,9 @@
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -115,7 +115,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   sk_sp<SkImage> image = surface->makeImageSnapshot();
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(image).get());
+          UnacceleratedStaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(original_image_resource);
 
   base::Optional<IntRect> crop_rect =
@@ -186,7 +186,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   sk_sp<SkImage> raster_image = raster_surface->makeImageSnapshot();
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(raster_image).get());
+          UnacceleratedStaticBitmapImage::Create(raster_image).get());
   image->SetImageForTest(original_image_resource);
 
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
@@ -202,7 +202,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
           .GetSkImage());
 
   ImageResourceContent* new_image_resource = ImageResourceContent::CreateLoaded(
-      StaticBitmapImage::Create(image2_).get());
+      UnacceleratedStaticBitmapImage::Create(image2_).get());
   image->SetImageForTest(new_image_resource);
 
   {
@@ -332,7 +332,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
 
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(source_image).get());
+          UnacceleratedStaticBitmapImage::Create(source_image).get());
   image_element->SetImageForTest(original_image_resource);
 
   base::Optional<IntRect> crop_rect =
@@ -405,7 +405,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
       ColorCorrectionTestUtils::ColorSpaceConversionToString(
           kColorSpaceConversion_Preserve));
   ImageBitmap* source_image_bitmap = ImageBitmap::Create(
-      StaticBitmapImage::Create(source_image), crop_rect, options);
+      UnacceleratedStaticBitmapImage::Create(source_image), crop_rect, options);
   ASSERT_TRUE(source_image_bitmap);
 
   for (int conversion_iterator = kColorSpaceConversion_Default;
@@ -478,7 +478,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap = ImageBitmap::Create(
-        StaticBitmapImage::Create(source_image), crop_rect, options);
+        UnacceleratedStaticBitmapImage::Create(source_image), crop_rect,
+        options);
     ASSERT_TRUE(image_bitmap);
     sk_sp<SkImage> converted_image =
         image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
@@ -586,7 +587,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   sk_sp<SkSurface> surface(SkSurface::MakeRaster(info));
   sk_sp<SkImage> sk_image = surface->makeImageSnapshot();
   scoped_refptr<StaticBitmapImage> bitmap_image =
-      StaticBitmapImage::Create(sk_image);
+      UnacceleratedStaticBitmapImage::Create(sk_image);
 
   // source: uint8, bitmap pixel format: default
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
@@ -620,7 +621,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   sk_sp<SkSurface> surface_f16(SkSurface::MakeRaster(info_f16));
   sk_sp<SkImage> sk_image_f16 = surface_f16->makeImageSnapshot();
   scoped_refptr<StaticBitmapImage> bitmap_image_f16 =
-      StaticBitmapImage::Create(sk_image_f16);
+      UnacceleratedStaticBitmapImage::Create(sk_image_f16);
 
   // source: f16, bitmap pixel format: default
   ImageBitmapOptions* options_f16 = ImageBitmapOptions::Create();

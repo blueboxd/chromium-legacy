@@ -578,7 +578,7 @@ void OverlayAgentViews::OnPaintLayer(const ui::PaintContext& context) {
   flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
 
   if (!render_text_)
-    render_text_ = gfx::RenderText::CreateHarfBuzzInstance();
+    render_text_ = gfx::RenderText::CreateRenderText();
   DrawRulers(screen_bounds, canvas, render_text_.get());
 
   // Display guide lines if |highlight_rect_config_| is NO_DRAW.

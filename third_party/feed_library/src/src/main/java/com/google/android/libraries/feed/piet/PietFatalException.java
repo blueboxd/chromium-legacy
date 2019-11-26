@@ -8,14 +8,14 @@ import com.google.search.now.ui.piet.ErrorsProto.ErrorCode;
 
 /** Exception that carries a Piet error code */
 class PietFatalException extends IllegalArgumentException {
-    private final ErrorCode errorCode;
+    private final ErrorCode mErrorCode;
 
     PietFatalException(ErrorCode errorCode, String message) {
         super(message);
-        this.errorCode = errorCode;
+        this.mErrorCode = errorCode;
     }
 
     ErrorCode getErrorCode() {
-        return errorCode;
+        return mErrorCode;
     }
 }

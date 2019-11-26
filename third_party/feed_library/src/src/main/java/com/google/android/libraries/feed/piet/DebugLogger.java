@@ -42,17 +42,17 @@ class DebugLogger {
         int WARNING = 2;
     }
 
-    private final SparseArray<List<ErrorCodeAndMessage>> messages;
-    private final SparseIntArray backgroundColors;
+    private final SparseArray<List<ErrorCodeAndMessage>> mMessages;
+    private final SparseIntArray mBackgroundColors;
 
     DebugLogger() {
-        messages = new SparseArray<>();
-        messages.put(MessageType.ERROR, new ArrayList<>());
-        messages.put(MessageType.WARNING, new ArrayList<>());
+        mMessages = new SparseArray<>();
+        mMessages.put(MessageType.ERROR, new ArrayList<>());
+        mMessages.put(MessageType.WARNING, new ArrayList<>());
 
-        backgroundColors = new SparseIntArray();
-        backgroundColors.put(MessageType.ERROR, ERROR_BACKGROUND_COLOR);
-        backgroundColors.put(MessageType.WARNING, WARNING_BACKGROUND_COLOR);
+        mBackgroundColors = new SparseIntArray();
+        mBackgroundColors.put(MessageType.ERROR, ERROR_BACKGROUND_COLOR);
+        mBackgroundColors.put(MessageType.WARNING, WARNING_BACKGROUND_COLOR);
     }
 
     // TODO: Deprecate this version to reduce the use of ERR_UNSPECIFIED.
@@ -61,7 +61,7 @@ class DebugLogger {
     }
 
     void recordMessage(@MessageType int messageType, ErrorCode errorCode, String error) {
-        messages.get(messageType).add(new ErrorCodeAndMessage(errorCode, error));
+        mMessages.get(messageType).add(new ErrorCodeAndMessage(errorCode, error));
     }
 
     /**
@@ -69,7 +69,7 @@ class DebugLogger {
      */
     /*@Nullable*/
     View getReportView(@MessageType int messageType, Context context) {
-        List<ErrorCodeAndMessage> errors = this.messages.get(messageType);
+        List<ErrorCodeAndMessage> errors = this.mMessages.get(messageType);
         if (errors.isEmpty()) {
             return null;
         }
@@ -78,24 +78,24 @@ class DebugLogger {
         LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         view.setLayoutParams(layoutParams);
-        view.setBackgroundColor(backgroundColors.get(messageType));
+        view.setBackgroundColor(mBackgroundColors.get(messageType));
         view.addView(getDivider(context));
         for (ErrorCodeAndMessage error : errors) {
-            view.addView(getMessageTextView(error.message, context));
+            view.addView(getMessageTextView(error.mMessage, context));
         }
         return view;
     }
 
     @VisibleForTesting
     List<ErrorCodeAndMessage> getMessages(@MessageType int messageType) {
-        return messages.get(messageType);
+        return mMessages.get(messageType);
     }
 
     List<ErrorCode> getErrorCodes() {
         ArrayList<ErrorCode> errorCodes = new ArrayList<>();
-        for (int i = 0; i < messages.size(); i++) {
-            for (ErrorCodeAndMessage errorCodeAndMessage : messages.valueAt(i)) {
-                errorCodes.add(errorCodeAndMessage.errorCode);
+        for (int i = 0; i < mMessages.size(); i++) {
+            for (ErrorCodeAndMessage errorCodeAndMessage : mMessages.valueAt(i)) {
+                errorCodes.add(errorCodeAndMessage.mErrorCode);
             }
         }
         errorCodes.trimToSize();
@@ -124,12 +124,12 @@ class DebugLogger {
 
     /** Simple class to hold an error code and message pair. */
     static class ErrorCodeAndMessage {
-        final ErrorCode errorCode;
-        final String message;
+        final ErrorCode mErrorCode;
+        final String mMessage;
 
         ErrorCodeAndMessage(ErrorCode errorCode, String message) {
-            this.errorCode = errorCode;
-            this.message = message;
+            this.mErrorCode = errorCode;
+            this.mMessage = message;
         }
 
         @Override
@@ -143,16 +143,16 @@ class DebugLogger {
 
             ErrorCodeAndMessage that = (ErrorCodeAndMessage) o;
 
-            if (errorCode != that.errorCode) {
+            if (mErrorCode != that.mErrorCode) {
                 return false;
             }
-            return message.equals(that.message);
+            return mMessage.equals(that.mMessage);
         }
 
         @Override
         public int hashCode() {
-            int result = errorCode.hashCode();
-            result = 31 * result + message.hashCode();
+            int result = mErrorCode.hashCode();
+            result = 31 * result + mMessage.hashCode();
             return result;
         }
     }

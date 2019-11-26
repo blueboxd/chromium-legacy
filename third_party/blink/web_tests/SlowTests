@@ -640,16 +640,6 @@ crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/
 crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 crbug.com/980804 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Slow ]
 
-crbug.com/980804 fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Slow ]
-
-crbug.com/980804 fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Slow ]
-crbug.com/980804 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Slow ]
-
 crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 [ Mac Debug ] fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]

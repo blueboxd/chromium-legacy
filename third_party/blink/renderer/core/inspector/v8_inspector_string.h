@@ -113,8 +113,8 @@ class CORE_EXPORT Binary {
 
   Binary() = default;
 
-  const uint8_t* data() const { return impl_->data(); }
-  size_t size() const { return impl_->size(); }
+  const uint8_t* data() const { return impl_ ? impl_->data() : nullptr; }
+  size_t size() const { return impl_ ? impl_->size() : 0; }
 
   String toBase64() const;
   static Binary fromBase64(const String& base64, bool* success);

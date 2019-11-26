@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.view.KeyEvent;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 
 /**
@@ -24,12 +28,19 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
         extends ChromeActivity<C> {
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
+    protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
     // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
     // change the package name.
     protected boolean mShouldOverridePackage;
+
+    /**
+     * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
+     */
+    @VisibleForTesting
+    public abstract BrowserServicesIntentDataProvider getIntentDataProvider();
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
@@ -69,6 +80,25 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     }
 
     @Override
+    public int getActivityThemeColor() {
+        if (getIntentDataProvider().isOpenedByChrome()) {
+            return TabState.UNSPECIFIED_THEME_COLOR;
+        }
+
+        return getIntentDataProvider().getToolbarColor();
+    }
+
+    @Override
+    public int getBaseStatusBarColor() {
+        return mStatusBarColorProvider.getBaseStatusBarColor(super.getBaseStatusBarColor());
+    }
+
+    @Override
+    public boolean isStatusBarDefaultThemeColor() {
+        return mStatusBarColorProvider.isStatusBarDefaultThemeColor(
+                super.isStatusBarDefaultThemeColor());
+    }
+
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(
                 event, this, mToolbarCoordinator.toolbarIsInitialized());

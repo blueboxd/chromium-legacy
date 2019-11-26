@@ -13,6 +13,10 @@
 
 class GURL;
 
+namespace net {
+class NetworkIsolationKey;
+}
+
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -30,6 +34,7 @@ class ProxyLookupClientImpl : public network::mojom::ProxyLookupClient {
   // Starts the proxy lookup for |url|. |callback| is called when the proxy
   // lookup is completed or when an error occurs.
   ProxyLookupClientImpl(const GURL& url,
+                        const net::NetworkIsolationKey& network_isolation_key,
                         ProxyLookupCallback callback,
                         network::mojom::NetworkContext* network_context);
   // Cancels the request if it hasn't been completed yet.

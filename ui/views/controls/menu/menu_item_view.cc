@@ -1073,7 +1073,8 @@ void MenuItemView::PaintMinorIconAndText(
       max_minor_text_width, available_height);
   minor_text_bounds.set_x(GetMirroredXForRect(minor_text_bounds));
 
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   if (!minor_text.empty()) {
     render_text->SetText(minor_text);
     render_text->SetFontList(style.font_list);

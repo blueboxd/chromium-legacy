@@ -505,6 +505,10 @@ jumbo_static_library("test_support") {
       "//ui/gfx/x",
     ]
   }
+
+  if (use_ozone) {
+    deps += [ "//ui/events/ozone/layout" ]
+  }
 }
 
 if (!is_ios) {
@@ -625,7 +629,10 @@ if (!is_ios) {
     }
 
     if (use_ozone) {
-      deps += [ "//ui/events/ozone:unittests" ]
+      deps += [
+        "//ui/events/ozone:unittests",
+        "//ui/events/ozone/layout",
+      ]
     }
 
     if (use_aura) {

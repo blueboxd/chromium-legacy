@@ -108,17 +108,19 @@ void OpenXrDevice::RequestSession(
       base::BindOnce(&OpenXrDevice::OnRequestSessionResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
+  auto on_visibility_state_changed = base::BindRepeating(
+      &OpenXrDevice::OnVisibilityStateChanged, weak_ptr_factory_.GetWeakPtr());
+
   // OpenXr doesn't need to handle anything when presentation has ended, but
   // the mojo interface to call to XRCompositorCommon::RequestSession requires
   // a method and cannot take nullptr, so passing in base::DoNothing::Once()
   // for on_presentation_ended
   render_loop_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&XRCompositorCommon::RequestSession,
-                     base::Unretained(render_loop_.get()),
-                     base::DoNothing::Once(),
-                     base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
-                     std::move(options), std::move(my_callback)));
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
+                                base::Unretained(render_loop_.get()),
+                                base::DoNothing::Once(),
+                                std::move(on_visibility_state_changed),
+                                std::move(options), std::move(my_callback)));
 }
 
 void OpenXrDevice::OnRequestSessionResult(

@@ -118,11 +118,6 @@
     "expiry_milestone": 81
   },
   {
-    "name": "app-service-ash",
-    "owners": [ "//chrome/services/app_service/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "app-service-instance-registry",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
     "expiry_milestone": 85

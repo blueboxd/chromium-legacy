@@ -93,8 +93,10 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   const int index = model->Add(item);
   ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
       .RunMessageLoopUntilAnimationsDone();
-  // Note: There's no easy way to correlate shelf a model index/id to its view.
-  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
+
+  // The index of a ShelfItem in the model should be the same as its index
+  // within the |shelf_view_|'s list of children.
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().at(index));
   EXPECT_TRUE(IsTimerRunning());
 
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.

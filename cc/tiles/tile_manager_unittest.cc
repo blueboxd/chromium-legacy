@@ -1531,7 +1531,8 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     if (!resource.software_backing()) {
       auto backing = std::make_unique<TestSoftwareBacking>();
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
@@ -1969,7 +1970,8 @@ class VerifyResourceContentIdRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     EXPECT_EQ(expected_content_id_, resource_content_id);
     return nullptr;
   }
@@ -2167,7 +2169,8 @@ class InvalidResourceRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     if (!resource.gpu_backing()) {
       auto backing = std::make_unique<StubGpuBacking>();
       // Don't set a mailbox to signal invalid resource.
@@ -2263,7 +2266,8 @@ class MockReadyToDrawRasterBufferProviderImpl
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     if (!resource.software_backing())
       resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
     return std::make_unique<FakeRasterBuffer>();
@@ -3251,7 +3255,8 @@ class VerifyImageProviderRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     buffer_count_++;
     return std::make_unique<VerifyImageProviderRasterBuffer>();
   }

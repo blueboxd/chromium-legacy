@@ -291,8 +291,8 @@ TEST_F(NavigatorTest, BeginNavigation) {
   // First party for cookies url should be that of the main frame.
   EXPECT_EQ(kUrl1, subframe_loader->request_info()->site_for_cookies);
 
-  url::Origin origin = url::Origin::Create(kUrl1);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(kUrl1),
+                                     url::Origin::Create(kUrl2)),
             subframe_loader->request_info()->network_isolation_key);
   EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
   EXPECT_TRUE(subframe_loader->request_info()->parent_is_main_frame);

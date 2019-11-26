@@ -63,4 +63,11 @@ To run instrumentation tests:
 $ autoninja -C out/Default weblayer_instrumentation_test_apk
 $ out/Default/bin/run_weblayer_instrumentation_test_apk
 
+Note: this may not work on some versions of Android. If you see an error setting
+the WebView provider when running instrumentation tests, try running the tests
+using the WebLayer support APK which uses a different loading path:
+
+$ autoninja -C out/Default weblayer_support_instrumentation_test_apk
+$ out/Default/bin/run_weblayer_support_instrumentation_test_apk
+
 The test script will build and install all necessary APKs.

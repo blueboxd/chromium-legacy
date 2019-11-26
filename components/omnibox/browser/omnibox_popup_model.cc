@@ -185,12 +185,8 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   GURL current_destination(match.destination_url);
   DCHECK((state != KEYWORD) || match.associated_keyword.get());
 
-  if (state == BUTTON_FOCUSED) {
-    // TODO(orinj): If in-suggestion Pedals are kept, refactor a bit
-    // so that button presence doesn't always assume tab switching use case.
-    DCHECK(match.has_tab_match || match.pedal);
+  if (state == BUTTON_FOCUSED)
     old_focused_url_ = current_destination;
-  }
 
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
@@ -322,11 +318,6 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
                                              vector_icon_color);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
-
-bool OmniboxPopupModel::SelectedLineHasTabMatch() {
-  return selected_line_ != kNoMatch &&
-         result().match_at(selected_line_).ShouldShowTabMatchButton();
-}
 
 bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
   return selected_line_ != kNoMatch &&

@@ -91,7 +91,7 @@ class TransportClientSocketTest
  protected:
   base::RunLoop connect_loop_;
   uint16_t listen_port_;
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   ClientSocketFactory* const socket_factory_;
   std::unique_ptr<StreamSocket> sock_;
   std::unique_ptr<StreamSocket> connected_sock_;

@@ -44,7 +44,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   // Extend 1dp to make sure it's fully opaque.
   rect.fBottom += 1;
   SkPath path;
-  path.addRoundRect(rect, radii, SkPath::kCW_Direction);
+  path.addRoundRect(rect, radii, SkPathDirection::kCW);
   canvas->DrawPath(path, flags);
 }
 

@@ -421,7 +421,9 @@ const char* Tab::GetClassName() const {
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
+  if ((event.key_code() == ui::VKEY_SPACE ||
+       event.key_code() == ui::VKEY_RETURN) &&
+      !IsSelected()) {
     controller_->SelectTab(this, event);
     return true;
   }

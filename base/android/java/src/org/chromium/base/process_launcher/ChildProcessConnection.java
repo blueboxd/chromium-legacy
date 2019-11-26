@@ -161,9 +161,13 @@ public class ChildProcessConnection {
         public void updateGroupImportance(int group, int importanceInGroup) {
             assert isBound();
             if (BindService.supportVariableConnections()) {
-                ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
-                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
-                        mExecutor, mInstanceName);
+                try {
+                    ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
+                    BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
+                            mExecutor, mInstanceName);
+                } catch (IllegalArgumentException e) {
+                    // TODO(crbug.com/1026626): Stop ignoring this exception.
+                }
             }
         }
 

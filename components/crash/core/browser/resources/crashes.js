@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /* Id for tracking automatic refresh of crash list.  */
-var refreshCrashListId = undefined;
+let refreshCrashListId = undefined;
 
 /**
  * Requests the list of crashes from the backend.
@@ -29,7 +29,7 @@ function updateCrashList(
       loadTimeData.getStringF('crashCountFormat',
                               crashes.length.toLocaleString());
 
-  var crashSection = $('crashList');
+  const crashSection = $('crashList');
 
   $('disabledMode').hidden = enabled;
   $('crashUploadStatus').hidden = !enabled || !dynamicBackend;
@@ -40,21 +40,21 @@ function updateCrashList(
   // Clear any previous list.
   crashSection.textContent = '';
 
-  var productName = loadTimeData.getString('shortProductName');
+  const productName = loadTimeData.getString('shortProductName');
 
-  for (var i = 0; i < crashes.length; i++) {
-    var crash = crashes[i];
+  for (let i = 0; i < crashes.length; i++) {
+    const crash = crashes[i];
     if (crash.local_id == '') {
       crash.local_id = productName;
     }
 
-    var crashBlock = document.createElement('div');
+    const crashBlock = document.createElement('div');
     if (crash.state != 'uploaded') {
       crashBlock.className = 'notUploaded';
     }
 
-    var title = document.createElement('h3');
-    var uploaded = crash.state == 'uploaded';
+    const title = document.createElement('h3');
+    const uploaded = crash.state == 'uploaded';
     if (uploaded) {
       const crashHeaderText = loadTimeData.getString('crashHeaderFormat');
       const pieces = loadTimeData
@@ -80,7 +80,7 @@ function updateCrashList(
     crashBlock.appendChild(title);
 
     if (uploaded) {
-      var date = document.createElement('p');
+      const date = document.createElement('p');
       date.textContent = '';
       if (crash.capture_time) {
         date.textContent += loadTimeData.getStringF(
@@ -92,9 +92,9 @@ function updateCrashList(
       }
       crashBlock.appendChild(date);
 
-      var linkBlock = document.createElement('p');
-      var link = document.createElement('a');
-      var commentLines = [
+      const linkBlock = document.createElement('p');
+      const link = document.createElement('a');
+      const commentLines = [
         'IMPORTANT: Your crash has already been automatically reported ' +
         'to our crash system. Please file this bug only if you can provide ' +
         'more information about it.',
@@ -114,7 +114,7 @@ function updateCrashList(
         '****DO NOT CHANGE BELOW THIS LINE****',
         'Crash ID: crash/' + crash.id
       ];
-      var params = {
+      const params = {
         template: 'Crash Report',
         comment: commentLines.join('\n'),
         // TODO(scottmg): Use add_labels to add 'User-Submitted' rather than
@@ -122,8 +122,8 @@ function updateCrashList(
         // https://bugs.chromium.org/p/monorail/issues/detail?id=1488 is done.
         labels: 'Restrict-View-EditIssue,Stability-Crash,User-Submitted',
       };
-      var href = 'https://code.google.com/p/chromium/issues/entry';
-      for (var param in params) {
+      let href = 'https://code.google.com/p/chromium/issues/entry';
+      for (const param in params) {
         href = appendParam(href, param, params[param]);
       }
       link.href = href;
@@ -132,23 +132,24 @@ function updateCrashList(
       linkBlock.appendChild(link);
       crashBlock.appendChild(linkBlock);
     } else {
+      let textContentKey;
       if (crash.state == 'pending_user_requested') {
-        var textContentKey = 'crashUserRequested';
+        textContentKey = 'crashUserRequested';
       } else if (crash.state == 'pending') {
-        var textContentKey = 'crashPending';
+        textContentKey = 'crashPending';
       } else if (crash.state == 'not_uploaded') {
-        var textContentKey = 'crashNotUploaded';
+        textContentKey = 'crashNotUploaded';
       } else {
         continue;
       }
 
-      var crashText = document.createElement('p');
+      const crashText = document.createElement('p');
       crashText.textContent = loadTimeData.getStringF(textContentKey,
                                                       crash.capture_time);
       crashBlock.appendChild(crashText);
 
       if (crash.file_size != '') {
-        var crashSizeText =  document.createElement('p');
+        const crashSizeText =  document.createElement('p');
         crashSizeText.textContent = loadTimeData.getStringF('crashSizeMessage',
                                                             crash.file_size);
         crashBlock.appendChild(crashSizeText);
@@ -156,8 +157,8 @@ function updateCrashList(
 
       // Do not show "Send now" link for already requested crashes.
       if (crash.state != 'pending_user_requested' && manualUploads) {
-        var uploadNowLinkBlock = document.createElement('p');
-        var link = document.createElement('a');
+        const uploadNowLinkBlock = document.createElement('p');
+        const link = document.createElement('a');
         link.href = '';
         link.textContent = loadTimeData.getString('uploadNowLinkText');
         link.local_id = crash.local_id;

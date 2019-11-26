@@ -23,33 +23,33 @@ import java.util.Set;
 
 // A class that creates an ActionsRequest for uploading actions
 final class UploadableActionsRequestBuilder {
-    private Set<StreamUploadableAction> uploadableActions;
-    private ConsistencyToken token;
-    private final ProtocolAdapter protocolAdapter;
-    private final HashMap<String, byte[]> semanticPropertiesMap = new HashMap<>();
+    private Set<StreamUploadableAction> mUploadableActions;
+    private ConsistencyToken mToken;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final HashMap<String, byte[]> mSemanticPropertiesMap = new HashMap<>();
 
     UploadableActionsRequestBuilder(ProtocolAdapter protocolAdapter) {
-        this.protocolAdapter = protocolAdapter;
+        this.mProtocolAdapter = protocolAdapter;
     }
 
     UploadableActionsRequestBuilder setConsistencyToken(ConsistencyToken token) {
-        this.token = token;
+        this.mToken = token;
         return this;
     }
 
     boolean hasConsistencyToken() {
-        return token != null;
+        return mToken != null;
     }
 
     UploadableActionsRequestBuilder setActions(Set<StreamUploadableAction> uploadableActions) {
-        this.uploadableActions = uploadableActions;
+        this.mUploadableActions = uploadableActions;
         return this;
     }
 
     UploadableActionsRequestBuilder setSemanticProperties(
             List<SemanticPropertiesWithId> semanticPropertiesList) {
         for (SemanticPropertiesWithId semanticProperties : semanticPropertiesList) {
-            semanticPropertiesMap.put(
+            mSemanticPropertiesMap.put(
                     semanticProperties.contentId, semanticProperties.semanticData);
         }
         return this;
@@ -59,8 +59,8 @@ final class UploadableActionsRequestBuilder {
         ActionRequest.Builder requestBuilder = ActionRequest.newBuilder().setRequestVersion(
                 ActionRequest.RequestVersion.FEED_UPLOAD_ACTION);
         FeedActionRequest.Builder feedActionRequestBuilder = FeedActionRequest.newBuilder();
-        if (uploadableActions != null) {
-            for (StreamUploadableAction action : uploadableActions) {
+        if (mUploadableActions != null) {
+            for (StreamUploadableAction action : mUploadableActions) {
                 String contentId = action.getFeatureContentId();
                 ActionPayload payload = action.getPayload();
                 FeedAction.Builder feedAction =
@@ -68,12 +68,12 @@ final class UploadableActionsRequestBuilder {
                                 FeedAction.ClientData.newBuilder()
                                         .setTimestampSeconds(action.getTimestampSeconds())
                                         .build());
-                if (semanticPropertiesMap.containsKey(contentId)) {
+                if (mSemanticPropertiesMap.containsKey(contentId)) {
                     feedAction.setSemanticProperties(
                             SemanticProperties.newBuilder().setSemanticPropertiesData(
-                                    ByteString.copyFrom(semanticPropertiesMap.get(contentId))));
+                                    ByteString.copyFrom(mSemanticPropertiesMap.get(contentId))));
                 }
-                Result<ContentId> contentIdResult = protocolAdapter.getWireContentId(contentId);
+                Result<ContentId> contentIdResult = mProtocolAdapter.getWireContentId(contentId);
                 if (contentIdResult.isSuccessful()) {
                     feedAction.setContentId(contentIdResult.getValue());
                 }
@@ -81,7 +81,7 @@ final class UploadableActionsRequestBuilder {
             }
         }
         if (hasConsistencyToken()) {
-            feedActionRequestBuilder.setConsistencyToken(token);
+            feedActionRequestBuilder.setConsistencyToken(mToken);
         }
         requestBuilder.setExtension(
                 FeedActionRequest.feedActionRequest, feedActionRequestBuilder.build());

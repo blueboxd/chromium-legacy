@@ -125,8 +125,9 @@ class OzonePlatformScenic
   void InitializeUI(const InitParams& params) override {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = std::make_unique<ScenicPlatformEventSource>();
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<StubKeyboardLayoutEngine>());
+        keyboard_layout_engine_.get());
 
     window_manager_ = std::make_unique<ScenicWindowManager>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
@@ -193,6 +194,7 @@ class OzonePlatformScenic
 
   std::unique_ptr<ScenicWindowManager> window_manager_;
 
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<PlatformEventSource> platform_event_source_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<InputController> input_controller_;

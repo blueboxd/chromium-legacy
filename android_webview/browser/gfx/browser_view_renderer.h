@@ -13,6 +13,7 @@
 #include "android_webview/browser/gfx/child_frame.h"
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
+#include "android_webview/browser/gfx/root_frame_sink_proxy.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -44,7 +45,8 @@ class RootFrameSinkProxy;
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
 class BrowserViewRenderer : public content::SynchronousCompositorClient,
-                            public CompositorFrameProducer {
+                            public CompositorFrameProducer,
+                            public RootFrameSinkProxyClient {
  public:
   static void CalculateTileMemoryPolicy();
   static BrowserViewRenderer* FromWebContents(
@@ -160,6 +162,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void SetActiveFrameSinkId(const viz::FrameSinkId& frame_sink_id);
 
+  // RootFrameSinkProxy overrides
+  void Invalidate() override;
+  void ProgressFling(base::TimeTicks frame_time) override;
+
   // Visible for testing.
   content::SynchronousCompositor* GetActiveCompositorForTesting() const {
     return compositor_;
@@ -182,7 +188,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
   bool DoUpdateParentDrawData();
-  void Invalidate();
 
   gfx::Vector2d max_scroll_offset() const;
 

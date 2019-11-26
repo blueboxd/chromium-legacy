@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/app_list/search/search_utils/sequence_matcher.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,4 +101,37 @@ TEST_F(SequenceMatcherTest, TestGetMatchingBlocks) {
   }
 }
 
+TEST_F(SequenceMatcherTest, TestSequenceMatcherRatio) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableFuzzyAppSearch,
+        {{"use_edit_distance", "false"}}}},
+      {});
+
+  ASSERT_EQ(
+      SequenceMatcher(base::UTF8ToUTF16("abcd"), base::UTF8ToUTF16("adbc"))
+          .Ratio(),
+      0.75);
+  ASSERT_EQ(SequenceMatcher(base::UTF8ToUTF16("white cats"),
+                            base::UTF8ToUTF16("cats white"))
+                .Ratio(),
+            0.5);
+}
+
+TEST_F(SequenceMatcherTest, TestEditDistanceRatio) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableFuzzyAppSearch,
+        {{"use_edit_distance", "true"}}}},
+      {});
+
+  ASSERT_EQ(
+      SequenceMatcher(base::UTF8ToUTF16("abcd"), base::UTF8ToUTF16("adbc"))
+          .Ratio(),
+      0.5);
+  EXPECT_NEAR(SequenceMatcher(base::UTF8ToUTF16("white cats"),
+                              base::UTF8ToUTF16("cats white"))
+                  .Ratio(),
+              0.2, 0.01);
+}
 }  // namespace app_list

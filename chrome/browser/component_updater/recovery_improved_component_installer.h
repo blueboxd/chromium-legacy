@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_IMPROVED_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_IMPROVED_COMPONENT_INSTALLER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -52,22 +52,19 @@ class RecoveryImprovedInstallerPolicy : public ComponentInstallerPolicy {
 
   PrefService* prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(RecoveryImprovedInstallerPolicy);
+  RecoveryImprovedInstallerPolicy(const RecoveryImprovedInstallerPolicy&) =
+      delete;
+  RecoveryImprovedInstallerPolicy& operator=(
+      const RecoveryImprovedInstallerPolicy&) = delete;
 };
 
 void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
                                        PrefService* prefs);
 
 // Registers user preferences related to the recovery component.
-void RegisterPrefsForRecoveryImprovedComponent(PrefRegistrySimple* registry);
-
-// Returns a tuple containing the result of running the recovery component
-// elevated: (bool succeeded, int error_code, int extra_code1).
-std::tuple<bool, int, int> RunRecoveryCRXElevated(
-    const base::FilePath& crx_path,
-    const std::string& browser_appid,
-    const std::string& browser_version,
-    const std::string& session_id);
+// TODO(sorin): consider removing the function. crbug.com/1027159
+inline void RegisterPrefsForRecoveryImprovedComponent(
+    PrefRegistrySimple* registry) {}
 
 }  // namespace component_updater
 

@@ -43,13 +43,18 @@ FakeDeepScanningDialogDelegate::Create(base::RepeatingClosure delete_closure,
 }
 
 // static
-DeepScanningClientResponse
-FakeDeepScanningDialogDelegate::SuccessfulResponse() {
+DeepScanningClientResponse FakeDeepScanningDialogDelegate::SuccessfulResponse(
+    bool include_dlp,
+    bool include_malware) {
   DeepScanningClientResponse response;
-  response.mutable_dlp_scan_verdict()->set_status(
-      DlpDeepScanningVerdict::SUCCESS);
-  response.mutable_malware_scan_verdict()->set_verdict(
-      MalwareDeepScanningVerdict::CLEAN);
+  if (include_dlp) {
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
+  }
+  if (include_malware) {
+    response.mutable_malware_scan_verdict()->set_verdict(
+        MalwareDeepScanningVerdict::CLEAN);
+  }
   return response;
 }
 
@@ -57,8 +62,6 @@ FakeDeepScanningDialogDelegate::SuccessfulResponse() {
 DeepScanningClientResponse FakeDeepScanningDialogDelegate::MalwareResponse(
     MalwareDeepScanningVerdict::Verdict verdict) {
   DeepScanningClientResponse response;
-  response.mutable_dlp_scan_verdict()->set_status(
-      DlpDeepScanningVerdict::SUCCESS);
   response.mutable_malware_scan_verdict()->set_verdict(verdict);
   return response;
 }
@@ -70,8 +73,6 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::DlpResponse(
     DlpDeepScanningVerdict::TriggeredRule::Action action) {
   DeepScanningClientResponse response;
   response.mutable_dlp_scan_verdict()->set_status(status);
-  response.mutable_malware_scan_verdict()->set_verdict(
-      MalwareDeepScanningVerdict::CLEAN);
 
   if (!rule_name.empty()) {
     DlpDeepScanningVerdict::TriggeredRule* rule =
@@ -83,18 +84,33 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::DlpResponse(
   return response;
 }
 
+// static
+DeepScanningClientResponse
+FakeDeepScanningDialogDelegate::MalwareAndDlpResponse(
+    MalwareDeepScanningVerdict::Verdict verdict,
+    DlpDeepScanningVerdict::Status status,
+    const std::string& rule_name,
+    DlpDeepScanningVerdict::TriggeredRule::Action action) {
+  DeepScanningClientResponse response;
+  *response.mutable_malware_scan_verdict() =
+      FakeDeepScanningDialogDelegate::MalwareResponse(verdict)
+          .malware_scan_verdict();
+  *response.mutable_dlp_scan_verdict() =
+      FakeDeepScanningDialogDelegate::DlpResponse(status, rule_name, action)
+          .dlp_scan_verdict();
+  return response;
+}
+
 void FakeDeepScanningDialogDelegate::Response(
     base::FilePath path,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DeepScanningClientResponse response = status_callback_.is_null()
                                             ? DeepScanningClientResponse()
                                             : status_callback_.Run(path);
-
-  if (path.empty()) {
+  if (path.empty())
     StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);
-  } else {
+  else
     FileRequestCallback(path, BinaryUploadService::Result::SUCCESS, response);
-  }
 }
 
 void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
@@ -115,9 +131,6 @@ void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK(!path.empty());
-  DCHECK_EQ(
-      DlpDeepScanningClientRequest::FILE_UPLOAD,
-      request->deep_scanning_request().dlp_scan_request().content_source());
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 
   // Simulate a response.

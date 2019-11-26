@@ -137,7 +137,7 @@ TEST(HttpAuthControllerTest, PermanentErrors) {
 // Verify that the controller logs appropriate lifetime events.
 TEST(HttpAuthControllerTest, Logging) {
   base::test::TaskEnvironment task_environment;
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
 
   RunSingleRoundAuthTest(RUN_HANDLER_SYNC, OK, OK, SCHEME_IS_ENABLED,
                          net_log.bound());

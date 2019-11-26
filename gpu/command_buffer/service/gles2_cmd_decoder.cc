@@ -5363,7 +5363,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       srgb_converter_.reset();
     }
 
-    clear_framebuffer_blit_.reset();
+    if (clear_framebuffer_blit_.get()) {
+      clear_framebuffer_blit_->Destroy();
+      clear_framebuffer_blit_.reset();
+    }
 
     if (state_.current_program.get()) {
       program_manager()->UnuseProgram(shader_manager(),

@@ -2613,7 +2613,6 @@
 <translation id="4839303808932127586">વીડિયોને આ રૂપે સા&amp;ચવો...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 વધુ}one{# વધુ}other{# વધુ}}</translation>
 <translation id="4842976633412754305">આ પૃષ્ઠ અનધિકૃત સ્રોતોમાંથી સ્ક્રિપ્ટ્સ લોડ કરવાનો પ્રયાસ કરી રહ્યું છે.</translation>
-<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> દ્વારા આપવામાં આવેલું લૉગ ઇન</translation>
 <translation id="4844333629810439236">અન્ય કીબોર્ડ્સ</translation>
 <translation id="4846680374085650406">તમે આ સેટિંગ માટે વ્ય્વસ્થાપકની ભલામણને અનુસરી રહ્યાં છો.</translation>
 <translation id="4848518990323155912">SIM કાર્ડ લૉક કરવું ચાલુ કરો (મોબાઇલ ડેટાનો ઉપયોગ કરવા માટે પિન જરૂરી છે)</translation>
@@ -3813,7 +3812,6 @@ USB ડિવાઇસ</translation>
 <translation id="6607831829715835317">વધુ સા&amp;ધનો</translation>
 <translation id="6612358246767739896">સુરક્ષિત કન્ટેન્ટ</translation>
 <translation id="6615455863669487791">મને બતાવો</translation>
-<translation id="6617100836880592260">સ્કૅન કરવાની ઝડપ: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">તો પણ રાખો</translation>
 <translation id="6619058681307408113">લાઇન પ્રિન્ટર ડેમન (LPD)</translation>
 <translation id="661907246513853610">સાઇટ તમારા સ્થાનને ટ્રૅક કરી શકે છે</translation>

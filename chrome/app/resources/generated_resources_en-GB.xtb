@@ -2643,7 +2643,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4839303808932127586">Sa&amp;ve video as...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{One more}other{# more}}</translation>
 <translation id="4842976633412754305">This page is trying to load scripts from unauthenticated sources.</translation>
-<translation id="4843488774506045600">Login provided by <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Other keyboards</translation>
 <translation id="4846680374085650406">You are following the administrator's recommendation for this setting.</translation>
 <translation id="4848518990323155912">Enable SIM card locking (require PIN to use mobile data)</translation>
@@ -3848,7 +3847,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6607831829715835317">More too&amp;ls</translation>
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6615455863669487791">Show me</translation>
-<translation id="6617100836880592260">Scanning speed: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Keep Anyway</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Site can track your location</translation>

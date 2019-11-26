@@ -28,7 +28,6 @@
 class AppListModelUpdater;
 class AppServiceAppModelBuilder;
 class ChromeAppListItem;
-class ExtensionAppModelBuilder;
 class Profile;
 
 namespace extensions {
@@ -318,9 +317,6 @@ class AppListSyncableService : public syncer::SyncableService,
   std::unique_ptr<ModelUpdaterObserver> model_updater_observer_;
 
   std::unique_ptr<AppServiceAppModelBuilder> app_service_apps_builder_;
-  // TODO(crbug.com/826982): delete all the other FooModelBuilder's, after
-  // folding them into the App Service.
-  std::unique_ptr<ExtensionAppModelBuilder> ext_apps_builder_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
@@ -330,7 +326,6 @@ class AppListSyncableService : public syncer::SyncableService,
   syncer::SyncableService::StartSyncFlare flare_;
   bool initial_sync_data_processed_;
   bool first_app_list_sync_;
-  const bool is_app_service_enabled_;
   std::string oem_folder_name_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
 

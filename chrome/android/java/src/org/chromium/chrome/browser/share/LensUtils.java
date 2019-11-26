@@ -27,6 +27,8 @@ public class LensUtils {
     private static final String ACCOUNT_NAME_URI_KEY = "AccountNameUriKey";
     private static final String INCOGNITO_URI_KEY = "IncognitoUriKey";
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
+    private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
+            "useSearchByImageText";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
@@ -177,5 +179,11 @@ public class LensUtils {
         intent.setPackage(IntentHandler.PACKAGE_GSA);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         return intent;
+    }
+
+    public static boolean useLensWithSearchByImageText() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME, false);
     }
 }

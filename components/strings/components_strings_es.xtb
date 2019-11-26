@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">Se ha detectado la presencia de atacantes en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> que podrían instalar aplicaciones peligrosas que dañen tu dispositivo, añadir cargos ocultos a tu factura del móvil o robar tu información personal. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Sin conexión a Internet</translation>
 <translation id="2230458221926704099">Soluciona los problemas de tu conexión con la <ph name="BEGIN_LINK" />aplicación de diagnóstico<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Para ti</translation>
 <translation id="2239100178324503013">Enviar ahora</translation>
 <translation id="2248949050832152960">Usar WebAuthn</translation>
 <translation id="2250931979407627383">Grapado en el borde izquierdo</translation>
@@ -374,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Advertencia de seguridad</translation>
 <translation id="2699302886720511147">Tarjetas aceptadas</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
 <translation id="2704283930420550640">El valor no coincide con el formato.</translation>
@@ -476,6 +478,7 @@
 <translation id="3207960819495026254">Añadido a marcadores</translation>
 <translation id="3209034400446768650">La página puede cobrarte dinero</translation>
 <translation id="3209080785413271048">Usa Windows Hello para verificar tus métodos de pago guardados.</translation>
+<translation id="3212581601480735796">Se está vigilando tu actividad en <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">No se ha podido usar WebAuthn</translation>
 <translation id="3225919329040284222">El servidor ha mostrado un certificado que no coincide con lo que se esperaba. Algunos sitios web tienen un alto nivel de seguridad para garantizar tu protección y esperan ciertas características de los certificados.</translation>
 <translation id="3226128629678568754">Pulsa el botón de actualización de página para que se vuelvan a enviar los datos necesarios para cargar la página.</translation>
@@ -534,6 +537,7 @@
 <translation id="3528485271872257980">Marrón oscuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Al menos 1 elemento en dispositivos sincronizados}=1{1 elemento (y otros en dispositivos sincronizados)}other{# elementos (y otros en dispositivos sincronizados)}}</translation>
 <translation id="3539171420378717834">Guardar una copia de la tarjeta en este dispositivo</translation>
+<translation id="3553513561058684206">Para ti</translation>
 <translation id="3566021033012934673">La conexión no es privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Una página insertada en <ph name="SITE" /> dice</translation>
@@ -764,6 +768,7 @@
 <translation id="4594403342090139922">&amp;Deshacer eliminación</translation>
 <translation id="4597348597567598915">Tamaño 8</translation>
 <translation id="4600854749408232102">C6/C5 (sobre)</translation>
+<translation id="4613966523036881546">Google Chrome no confía en el certificado de esta conexión porque tiene constancia de que se ha usado para interceptar y vigilar redes.</translation>
 <translation id="4635654612248442824">El sitio web <ph name="ORIGIN" /> ha solicitado que se aplique una política de origen
     a todas sus solicitudes, pero esta política no se puede aplicar actualmente.</translation>
 <translation id="464342062220857295">Funciones de búsqueda</translation>
@@ -1469,6 +1474,7 @@ Más información:
 <translation id="8103161714697287722">Método de pago</translation>
 <translation id="8105368624971345109">Desactivar</translation>
 <translation id="8118489163946903409">Método de pago</translation>
+<translation id="8124023448510659215">Chromium no confía en el certificado de esta conexión porque tiene constancia de que se ha usado para interceptar y vigilar redes.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" no se ha instalado correctamente en tu ordenador o red. Ponte en contacto con el administrador de TI para resolver el problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">El ordenador se ha suspendido.</translation>
@@ -1611,6 +1617,8 @@ Más información:
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8962950042226115166">Sitio web sospechoso</translation>
 <translation id="8968766641738584599">Guardar tarjeta</translation>
+<translation id="8969267497192857913">Se está vigilando todo lo que escribes, las páginas que visitas y cualquier otra actividad que realices en Internet, y es posible que se modifique el contenido de los sitios web sin que lo sepas.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">El certificado del servidor ha caducado.</translation>
 <translation id="8975012916872825179">Incluye información como números de teléfono, direcciones de correo electrónico y direcciones de envío</translation>
 <translation id="8975263830901772334">Nombres de los archivos que imprimes</translation>

@@ -3175,10 +3175,6 @@ const char kAllowDisableMouseAccelerationName[] =
 const char kAllowDisableMouseAccelerationDescription[] =
     "Shows a setting to disable mouse acceleration.";
 
-const char kAppServiceAshName[] = "App Service Ash";
-const char kAppServiceAshDescription[] =
-    "Use the App Service to provide data to the Ash UI, such as the app list.";
-
 const char kAppServiceInstanceRegistryName[] = "App Service Instance Registry";
 const char kAppServiceInstanceRegistryDescription[] =
     "Use the App Service to provide app instance information, such as the "

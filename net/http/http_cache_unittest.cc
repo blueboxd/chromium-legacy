@@ -709,13 +709,13 @@ bool ShouldIgnoreLogEntry(const NetLogEntry& entry) {
 // Gets the entries from |net_log| created by the cache layer and asserted on in
 // these tests.
 std::vector<NetLogEntry> GetFilteredNetLogEntries(
-    const BoundTestNetLog& net_log) {
+    const RecordingBoundTestNetLog& net_log) {
   auto entries = net_log.GetEntries();
   base::EraseIf(entries, ShouldIgnoreLogEntry);
   return entries;
 }
 
-bool LogContainsEventType(const BoundTestNetLog& log,
+bool LogContainsEventType(const RecordingBoundTestNetLog& log,
                           NetLogEventType expected) {
   return !log.GetEntriesWithType(expected).empty();
 }
@@ -806,7 +806,7 @@ TEST_F(HttpCacheTest, GetBackend) {
 
 TEST_F(HttpCacheTest, SimpleGET) {
   MockHttpCache cache;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -872,7 +872,7 @@ TEST_F(HttpCacheTest, SimpleGETNoDiskCache) {
 
   cache.disk_cache()->set_fail_requests(true);
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Read from the network, and don't use the cache.
@@ -1040,7 +1040,7 @@ TEST_F(HttpCacheTest, SimpleGETWithDiskFailures3) {
 TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
   MockHttpCache cache;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -1204,7 +1204,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadPreferringCache_VaryMismatch) {
   // the network again.
   transaction.load_flags |= LOAD_SKIP_CACHE_VALIDATION;
   transaction.request_headers = "Foo: none\r\n";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -1231,7 +1231,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadSkipCacheValidation_VaryStar) {
   // Attempt to read from the cache... we will still load it from network,
   // since Vary: * doesn't match.
   transaction.load_flags |= LOAD_SKIP_CACHE_VALIDATION;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -1373,7 +1373,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadBypassCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.load_flags |= LOAD_BYPASS_CACHE;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -1455,7 +1455,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadValidateCache) {
   transaction.load_flags |= LOAD_VALIDATE_CACHE;
 
   HttpResponseInfo response_info;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), transaction, &response_info, log.bound(),
@@ -1497,7 +1497,7 @@ TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetch) {
   // A normal load does not have |unused_since_prefetch| set.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.unused_since_prefetch);
   EXPECT_FALSE(response_info.was_cached);
 
@@ -1506,28 +1506,28 @@ TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetch) {
   prefetch_transaction.load_flags |= LOAD_PREFETCH;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), prefetch_transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.unused_since_prefetch);
   EXPECT_TRUE(response_info.was_cached);
 
   // A duplicated prefetch has |unused_since_prefetch| set.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), prefetch_transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.unused_since_prefetch);
   EXPECT_TRUE(response_info.was_cached);
 
   // |unused_since_prefetch| is still true after two prefetches in a row.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.unused_since_prefetch);
   EXPECT_TRUE(response_info.was_cached);
 
   // The resource has now been used, back to normal behavior.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.unused_since_prefetch);
   EXPECT_TRUE(response_info.was_cached);
 }
@@ -1543,7 +1543,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
   // A normal load does not have |restricted_prefetch| set.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kTypicalGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.restricted_prefetch);
   EXPECT_FALSE(response_info.was_cached);
   EXPECT_TRUE(response_info.network_accessed);
@@ -1554,7 +1554,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
   prefetch_transaction.load_flags |= LOAD_RESTRICTED_PREFETCH;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), prefetch_transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.restricted_prefetch);
   EXPECT_FALSE(response_info.was_cached);
   EXPECT_TRUE(response_info.network_accessed);
@@ -1568,7 +1568,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
       LOAD_CAN_USE_RESTRICTED_PREFETCH;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), can_use_restricted_prefetch_transaction,
-      &response_info, BoundTestNetLog().bound(), nullptr);
+      &response_info, RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.restricted_prefetch);
   EXPECT_TRUE(response_info.was_cached);
   EXPECT_FALSE(response_info.network_accessed);
@@ -1576,7 +1576,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
   // Later reuse is still no longer marked restricted.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.restricted_prefetch);
   EXPECT_TRUE(response_info.was_cached);
   EXPECT_FALSE(response_info.network_accessed);
@@ -1592,7 +1592,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchReuseIsLimited) {
   prefetch_transaction.load_flags |= LOAD_RESTRICTED_PREFETCH;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), prefetch_transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.restricted_prefetch);
   EXPECT_FALSE(response_info.was_cached);
   EXPECT_TRUE(response_info.network_accessed);
@@ -1602,7 +1602,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchReuseIsLimited) {
   // |restricted_prefetch|.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.restricted_prefetch);
   EXPECT_FALSE(response_info.was_cached);
   EXPECT_TRUE(response_info.network_accessed);
@@ -1612,7 +1612,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchReuseIsLimited) {
   // an unrestricted one.
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_FALSE(response_info.restricted_prefetch);
   EXPECT_TRUE(response_info.was_cached);
   EXPECT_FALSE(response_info.network_accessed);
@@ -1627,7 +1627,7 @@ TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetchWriteError) {
   prefetch_transaction.load_flags |= LOAD_PREFETCH;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), prefetch_transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
   EXPECT_TRUE(response_info.unused_since_prefetch);
   EXPECT_FALSE(response_info.was_cached);
 
@@ -1635,7 +1635,7 @@ TEST_F(HttpCacheTest, SimpleGET_UnusedSincePrefetchWriteError) {
   cache.disk_cache()->set_soft_failures_mask(MockDiskEntry::FAIL_WRITE);
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &response_info,
-      BoundTestNetLog().bound(), nullptr);
+      RecordingBoundTestNetLog().bound(), nullptr);
 }
 
 static void PreserveRequestHeaders_Handler(const HttpRequestInfo* request,
@@ -5133,7 +5133,7 @@ TEST_F(HttpCacheTest, TypicalGET_ConditionalRequest) {
 
   // Get the same URL again, but this time we expect it to result
   // in a conditional request.
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), kTypicalGET_Transaction,
                                  log.bound(), &load_timing_info);
@@ -5171,7 +5171,7 @@ TEST_F(HttpCacheTest, ETagGET_ConditionalRequest_304) {
   // in a conditional request.
   transaction.load_flags = LOAD_VALIDATE_CACHE;
   transaction.handler = ETagGet_ConditionalRequest_Handler;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   IPEndPoint remote_endpoint;
   RunTransactionTestAndGetTimingAndConnectedSocketAddress(
@@ -5249,7 +5249,7 @@ TEST_F(HttpCacheTest, GET_ValidateCache_VaryMatch) {
   // Read from the cache.
   RevalidationServer server;
   transaction.handler = server.Handler;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -5283,7 +5283,7 @@ TEST_F(HttpCacheTest, GET_ValidateCache_VaryMismatch) {
   RevalidationServer server;
   transaction.handler = server.Handler;
   transaction.request_headers = "Foo: none\r\n";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -5315,7 +5315,7 @@ TEST_F(HttpCacheTest, GET_ValidateCache_VaryMismatchStar) {
   // Read from the cache and revalidate the entry.
   RevalidationServer server;
   transaction.handler = server.Handler;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -5348,7 +5348,7 @@ TEST_F(HttpCacheTest, GET_DontValidateCache_VaryMismatch) {
   RevalidationServer server;
   transaction.handler = server.Handler;
   transaction.request_headers = "Foo: none\r\n";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -7054,7 +7054,7 @@ TEST_F(HttpCacheTest, RangeGET_SkipsCache2) {
 TEST_F(HttpCacheTest, SimpleGET_DoesntLogHeaders) {
   MockHttpCache cache;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kSimpleGET_Transaction,
                             log.bound());
 
@@ -7065,7 +7065,7 @@ TEST_F(HttpCacheTest, SimpleGET_DoesntLogHeaders) {
 TEST_F(HttpCacheTest, RangeGET_LogsHeaders) {
   MockHttpCache cache;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kRangeGET_Transaction,
                             log.bound());
 
@@ -7076,7 +7076,7 @@ TEST_F(HttpCacheTest, RangeGET_LogsHeaders) {
 TEST_F(HttpCacheTest, ExternalValidation_LogsHeaders) {
   MockHttpCache cache;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.request_headers = "If-None-Match: foo\r\n" EXTRA_HEADER;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
@@ -7088,7 +7088,7 @@ TEST_F(HttpCacheTest, ExternalValidation_LogsHeaders) {
 TEST_F(HttpCacheTest, SpecialHeaders_LogsHeaders) {
   MockHttpCache cache;
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.request_headers = "cache-control: no-cache\r\n" EXTRA_HEADER;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
@@ -7205,7 +7205,7 @@ TEST_F(HttpCacheTest, RangeGET_NoValidation_LogsRestart) {
   RunTransactionTest(cache.http_cache(), transaction);
 
   // Now verify that the cached data is not used.
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kRangeGET_TransactionOK,
                             log.bound());
 
@@ -7382,7 +7382,7 @@ TEST_F(HttpCacheTest, RangeGET_OK) {
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
   transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -7473,7 +7473,7 @@ TEST_F(HttpCacheTest, RangeGET_SyncOK) {
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
   transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -7540,7 +7540,7 @@ TEST_F(HttpCacheTest, RangeGET_Revalidate1) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Read from the cache (40-49).
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -8039,7 +8039,7 @@ TEST_F(HttpCacheTest, GET_Previous206) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
   std::string headers;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Write to the cache (40-49).
@@ -8078,7 +8078,7 @@ TEST_F(HttpCacheTest, GET_Previous206_NotModified) {
   MockTransaction transaction(kRangeGET_TransactionOK);
   AddMockTransaction(&transaction);
   std::string headers;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
 
   // Write to the cache (0-9).
@@ -8148,7 +8148,7 @@ TEST_F(HttpCacheTest, GET_Previous206_NewContent) {
   transaction2.data = "Not a range";
   RangeTransactionServer handler;
   handler.set_modified(true);
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction2, &headers, log.bound(),
@@ -8195,7 +8195,7 @@ TEST_F(HttpCacheTest, GET_Previous206_NotSparse) {
 
   // Now see that we don't use the stored entry.
   std::string headers;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &headers, log.bound(),
@@ -8806,7 +8806,7 @@ TEST_F(HttpCacheTest, RangeGET_FastFlakyServer) {
   RangeTransactionServer handler;
   handler.set_bad_200(true);
   transaction.data = "Not a range";
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());

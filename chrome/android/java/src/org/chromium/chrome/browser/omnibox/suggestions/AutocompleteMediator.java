@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -111,6 +113,9 @@ class AutocompleteMediator
     private final EntitySuggestionProcessor mEntitySuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
+    private OverviewModeBehavior mOverviewModeBehavior;
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
@@ -187,6 +192,10 @@ class AutocompleteMediator
         if (mImageFetcher != null) {
             mImageFetcher.destroy();
             mImageFetcher = null;
+        }
+        if (mOverviewModeObserver != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeObserver = null;
         }
     }
 
@@ -289,6 +298,25 @@ class AutocompleteMediator
      */
     void setToolbarDataProvider(ToolbarDataProvider provider) {
         mDataProvider = provider;
+    }
+
+    /**
+     * @param overviewModeBehavior A means of accessing the current OverviewModeState and a way to
+     *         listen to state changes.
+     */
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                if (mDataProvider.shouldShowLocationBarInOverviewMode()) {
+                    AutocompleteControllerJni.get().prefetchZeroSuggestResults();
+                }
+            }
+        };
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     /** Set the WindowAndroid instance associated with the containing Activity. */
@@ -775,7 +803,9 @@ class AutocompleteMediator
                 boolean preventAutocomplete = !mUrlBarEditingTextProvider.shouldAutocomplete();
                 mRequestSuggestions = null;
 
-                if (!mDataProvider.hasTab()) {
+                // There may be no tabs when searching form omnibox in overview mode. In that case,
+                // ToolbarDataProvider.getCurrentUrl() returns NTP url.
+                if (!mDataProvider.hasTab() && !mDataProvider.isInOverviewAndShowingOmnibox()) {
                     // crbug.com/764749
                     Log.w(TAG, "onTextChangedForAutocomplete: no tab");
                     return;
@@ -1003,14 +1033,16 @@ class AutocompleteMediator
      * Make a zero suggest request if:
      * - Native is loaded.
      * - The URL bar has focus.
-     * - The current tab is not incognito.
+     * - The the tab/overview is not incognito.
      */
     private void startZeroSuggest() {
         // Reset "edited" state in the omnibox if zero suggest is triggered -- new edits
         // now count as a new session.
         mHasStartedNewOmniboxEditSession = false;
         mNewOmniboxEditSessionTimestamp = -1;
-        if (mNativeInitialized && mDelegate.isUrlBarFocused() && mDataProvider.hasTab()) {
+
+        if (mNativeInitialized && mDelegate.isUrlBarFocused()
+                && (mDataProvider.hasTab() || mDataProvider.isInOverviewAndShowingOmnibox())) {
             int pageClassification =
                     mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
             mAutocomplete.startZeroSuggest(mDataProvider.getProfile(),

@@ -27,6 +27,8 @@ class MockPlatformWindowDelegate : public PlatformWindowDelegate {
                void(gfx::AcceleratedWidget widget));
   MOCK_METHOD0(OnAcceleratedWidgetDestroyed, void());
   MOCK_METHOD1(OnActivationChanged, void(bool active));
+  MOCK_METHOD0(GetMinimumSizeForWindow, base::Optional<gfx::Size>());
+  MOCK_METHOD0(GetMaximumSizeForWindow, base::Optional<gfx::Size>());
   MOCK_METHOD0(OnMouseEnter, void());
 
  private:

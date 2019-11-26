@@ -712,7 +712,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
 # FIXME: this function should be refactored, as this takes too many flags.
 def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, declare_variable=True,
-                                isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False):
+                                isolate='info.GetIsolate()', bailout_return_value=None, use_exception_state=False,
+                                code_generation_target=None):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
@@ -761,6 +762,13 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
     # Types that don't need error handling, and simply assign a value to the
     # local variable.
+
+    if (idl_type.is_explicit_nullable
+            and code_generation_target == 'attribute_set'):
+        assign_expression = (
+            "is_null "
+            "? {cpp_type}() "
+            ": {expr}".format(cpp_type=this_cpp_type, expr=assign_expression))
 
     return {
         'assign_expression': assign_expression,

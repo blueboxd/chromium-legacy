@@ -8,7 +8,6 @@ import static com.google.common.truth.Fact.fact;
 import static com.google.common.truth.Fact.simpleFact;
 import static com.google.common.truth.Truth.assertAbout;
 
-import com.google.android.libraries.feed.common.testing.RunnableSubject.ThrowingRunnable;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.ThrowableSubject;
@@ -25,11 +24,11 @@ public final class RunnableSubject extends Subject {
         return RUNNABLE_SUBJECT_FACTORY;
     }
 
-    private final ThrowingRunnable actual;
+    private final ThrowingRunnable mActual;
 
     public RunnableSubject(FailureMetadata failureMetadata, ThrowingRunnable runnable) {
         super(failureMetadata, runnable);
-        this.actual = runnable;
+        this.mActual = runnable;
     }
 
     /**
@@ -53,14 +52,14 @@ public final class RunnableSubject extends Subject {
 
     @SuppressWarnings("unchecked")
     private <E extends Throwable> E runAndCaptureOrFail(Class<E> clazz) {
-        if (actual == null) {
+        if (mActual == null) {
             failWithoutActual(fact("expected to throw", clazz.getName()),
                     simpleFact("but didn't run because it's null"));
             return null;
         }
 
         try {
-            actual.run();
+            mActual.run();
         } catch (Throwable ex) {
             if (!clazz.isInstance(ex)) {
                 check("thrownException()").that(ex).isInstanceOf(clazz); // fails
@@ -70,7 +69,7 @@ public final class RunnableSubject extends Subject {
         }
 
         failWithoutActual(fact("expected to throw", clazz.getName()),
-                simpleFact("but ran to completion"), fact("runnable was", actual));
+                simpleFact("but ran to completion"), fact("runnable was", mActual));
         return null;
     }
 
@@ -83,28 +82,28 @@ public final class RunnableSubject extends Subject {
      * exception.
      */
     public class ThrowsThenClause<E extends Throwable> {
-        private final E throwable;
-        private final String description;
+        private final E mThrowable;
+        private final String mDescription;
 
         private ThrowsThenClause(E throwable, String description) {
-            this.throwable = throwable;
-            this.description = description;
+            this.mThrowable = throwable;
+            this.mDescription = description;
         }
 
         public ThrowableSubject that() {
-            return check(description).that(throwable);
+            return check(mDescription).that(mThrowable);
         }
 
         public <C extends Throwable> ThrowsThenClause<C> causedByAnExceptionOfType(Class<C> clazz) {
-            if (!clazz.isInstance(throwable.getCause())) {
+            if (!clazz.isInstance(mThrowable.getCause())) {
                 that().hasCauseThat().isInstanceOf(clazz); // fails
                 return null;
             }
 
             @SuppressWarnings("unchecked")
-            C cause = (C) throwable.getCause();
+            C cause = (C) mThrowable.getCause();
 
-            return new ThrowsThenClause<>(cause, description + ".getCause()");
+            return new ThrowsThenClause<>(cause, mDescription + ".getCause()");
         }
 
         public void causedBy(Throwable cause) {
@@ -112,7 +111,7 @@ public final class RunnableSubject extends Subject {
         }
 
         public E getCaught() {
-            return throwable;
+            return mThrowable;
         }
     }
 

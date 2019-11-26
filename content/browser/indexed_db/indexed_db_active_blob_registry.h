@@ -21,10 +21,10 @@
 
 namespace content {
 
-// Keeps track of blobs that have been sent to the renderer as database
-// responses, and determines when the file should be deleted. The database entry
-// that the blob files live in could be deleted in the database, but the file
-// would need to stay alive while it is still used in the renderer.
+// Keeps track of blobs that have been sent to clients as database responses,
+// and determines when Blob files can be deleted. The database entry that links
+// to the blob file can be deleted in the database, but the blob file still
+// needs to stay alive while it is still active (i.e. referenced by a client).
 // This class must be used on a single sequence, and will call the given
 // callbacks back on the same sequence it is constructed on.
 class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
@@ -32,7 +32,7 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   using ReportOutstandingBlobsCallback = base::RepeatingCallback<void(bool)>;
   using ReportUnusedBlobCallback =
       base::RepeatingCallback<void(int64_t /*database_id*/,
-                                   int64_t /*blob_key*/)>;
+                                   int64_t /*blob_number*/)>;
 
   explicit IndexedDBActiveBlobRegistry(
       ReportOutstandingBlobsCallback report_outstanding_blobs,
@@ -40,48 +40,61 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   ~IndexedDBActiveBlobRegistry();
 
   // Most methods of this class, and the closure returned by
-  // GetAddBlobRefCallback, should only be called on the backing_store's task
-  // runner.  The exception is the closure returned by GetFinalReleaseCallback,
-  // which just calls ReleaseBlobRefThreadSafe.
+  // GetMarkBlobActiveCallback, should only be called on the backing_store's
+  // task runner.  The exception is the closure returned by
+  // GetFinalReleaseCallback, which just calls MarkBlobInactiveThreadSafe.
 
-  // Marks a given blob or a while database as deleted by a transaction, and
-  // returns if the given blob key (or database) was previously used.
-  // Use DatabaseMetaDataKey::AllBlobsKey for "the whole database".
-  bool MarkDeletedCheckIfUsed(int64_t database_id, int64_t blob_key);
+  // Called when the given database is deleted (and all blob infos inside of
+  // it). Returns true if any of the deleted blobs are active (i.e. referenced
+  // by a client).
+  bool MarkDatabaseDeletedAndCheckIfReferenced(int64_t database_id);
 
+  // Called when the given blob handle is deleted by a transaction, and returns
+  // if the blob file has one or more external references.
+  bool MarkBlobInfoDeletedAndCheckIfReferenced(int64_t database_id,
+                                               int64_t blob_number);
+
+  // When called, the returned callback will mark the given blob entry as
+  // inactive (i.e. no longer referenced by a client).
   IndexedDBBlobInfo::ReleaseCallback GetFinalReleaseCallback(
       int64_t database_id,
-      int64_t blob_key);
-  // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry,
-  // and may not be called after it is deleted.
-  base::RepeatingClosure GetAddBlobRefCallback(int64_t database_id,
-                                               int64_t blob_key);
+      int64_t blob_number);
+
+  // When called, the returned closure will mark the given blob entry as active
+  // (i.e. referenced by the client). Calling this multiple times does nothing.
+  // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry, and
+  // may not be called after it is deleted.
+  base::RepeatingClosure GetMarkBlobActiveCallback(int64_t database_id,
+                                                   int64_t blob_number);
   // Call this to force the registry to drop its use counts, permitting the
   // factory to drop any blob-related refcount for the backing store.
   // This will also turn any outstanding callbacks into no-ops.
   void ForceShutdown();
 
  private:
-  enum class BlobState { kAlive, kDeleted };
-  // Maps blob_key -> BlobState; if the record's absent, it's not in active use
-  // and we don't care if it's deleted.
+  enum class BlobState { kLinked, kUnlinked };
+  // Maps blob_number -> BlobState; if the record's absent, it's not in active
+  // use and we don't care if it's deleted.
   typedef std::map<int64_t, BlobState> SingleDBMap;
 
-  void AddBlobRef(int64_t database_id, int64_t blob_key);
+  void MarkBlobActive(int64_t database_id, int64_t blob_number);
 
   // Removes a reference to the given blob.
-  void ReleaseBlobRef(int64_t database_id, int64_t blob_key);
-  static void ReleaseBlobRefThreadSafe(
+  void MarkBlobInactive(int64_t database_id, int64_t blob_number);
+  static void MarkBlobInactiveThreadSafe(
       scoped_refptr<base::TaskRunner> task_runner,
       base::WeakPtr<IndexedDBActiveBlobRegistry> weak_ptr,
       int64_t database_id,
-      int64_t blob_key,
+      int64_t blob_number,
       const base::FilePath& unused);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::map<int64_t, SingleDBMap> use_tracker_;
-  // Databases that have been marked as deleted by MarkDeletedCheckIfUsed.
+  // This stores, for every database, the blobs that are currently being used in
+  // that database.
+  std::map<int64_t, SingleDBMap> blob_reference_tracker_;
+  // Databases that have been marked as deleted by
+  // MarkDatabaseDeletedAndCheckIfReferenced.
   std::set<int64_t> deleted_dbs_;
   ReportOutstandingBlobsCallback report_outstanding_blobs_;
   ReportUnusedBlobCallback report_unused_blob_;

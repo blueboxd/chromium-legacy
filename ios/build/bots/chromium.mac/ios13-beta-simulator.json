@@ -127,6 +127,14 @@
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
+    },
+    {
+      "app": "crashpad_tests",
+      "device type": "iPhone X",
+      "os": "12.4",
+      "xcode build version": "11b53",
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"	
     }
   ]
 }

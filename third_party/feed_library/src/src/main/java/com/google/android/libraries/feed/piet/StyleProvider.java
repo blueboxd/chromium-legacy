@@ -52,52 +52,52 @@ class StyleProvider {
     // For borders with no rounded corners.
     private static final float[] ZERO_RADIUS = new float[] {0, 0, 0, 0, 0, 0, 0, 0};
 
-    private final Style style;
-    private final AssetProvider assetProvider;
+    private final Style mStyle;
+    private final AssetProvider mAssetProvider;
 
     StyleProvider(AssetProvider assetProvider) {
-        this.style = Style.getDefaultInstance();
-        this.assetProvider = assetProvider;
+        this.mStyle = Style.getDefaultInstance();
+        this.mAssetProvider = assetProvider;
     }
 
     StyleProvider(Style style, AssetProvider assetProvider) {
-        this.style = style;
-        this.assetProvider = assetProvider;
+        this.mStyle = style;
+        this.mAssetProvider = assetProvider;
     }
 
     /** Default font or foreground color */
     public int getColor() {
-        return style.getColor();
+        return mStyle.getColor();
     }
 
     /** Whether a color is explicitly specified */
     public boolean hasColor() {
-        return style.hasColor();
+        return mStyle.hasColor();
     }
 
     /** This style's background */
     public Fill getBackground() {
-        return style.getBackground();
+        return mStyle.getBackground();
     }
 
     /** The pre-load fill for this style */
     public Fill getPreLoadFill() {
-        return style.getImageLoadingSettings().getPreLoadFill();
+        return mStyle.getImageLoadingSettings().getPreLoadFill();
     }
 
     /** Whether the style has a pre-load fill */
     public boolean hasPreLoadFill() {
-        return style.getImageLoadingSettings().hasPreLoadFill();
+        return mStyle.getImageLoadingSettings().hasPreLoadFill();
     }
 
     /** Whether to fade in the image after it's loaded */
     public boolean getFadeInImageOnLoad() {
-        return style.getImageLoadingSettings().getFadeInImageOnLoad();
+        return mStyle.getImageLoadingSettings().getFadeInImageOnLoad();
     }
 
     /** Image scale type on this style */
     public ImageView.ScaleType getScaleType() {
-        switch (style.getScaleType()) {
+        switch (mStyle.getScaleType()) {
             case CENTER_CROP:
                 return ScaleType.CENTER_CROP;
             case CENTER_INSIDE:
@@ -105,59 +105,59 @@ class StyleProvider {
                 return ScaleType.FIT_CENTER;
         }
         throw new PietFatalException(ErrorCode.ERR_MISSING_OR_UNHANDLED_CONTENT,
-                String.format("Unsupported ScaleType: %s", style.getScaleType()));
+                String.format("Unsupported ScaleType: %s", mStyle.getScaleType()));
     }
 
     /** The {@link RoundedCorners} to be used with the background color. */
     public RoundedCorners getRoundedCorners() {
-        return style.getRoundedCorners();
+        return mStyle.getRoundedCorners();
     }
 
     /** Whether rounded corners are explicitly specified */
     public boolean hasRoundedCorners() {
-        if (!style.hasRoundedCorners()) {
+        if (!mStyle.hasRoundedCorners()) {
             return false;
         }
-        RoundedCorners roundedCorners = style.getRoundedCorners();
+        RoundedCorners roundedCorners = mStyle.getRoundedCorners();
         int radiusOverride = roundedCorners.getUseHostRadiusOverride()
-                ? assetProvider.getDefaultCornerRadius()
+                ? mAssetProvider.getDefaultCornerRadius()
                 : 0;
         return RoundedCornerViewHelper.hasValidRoundedCorners(roundedCorners, radiusOverride);
     }
 
     /** The font for this style */
     public Font getFont() {
-        return style.getFont();
+        return mStyle.getFont();
     }
 
     /** This style's padding */
     public EdgeWidths getPadding() {
-        return style.getPadding();
+        return mStyle.getPadding();
     }
 
     /** This style's margins */
     public EdgeWidths getMargins() {
-        return style.getMargins();
+        return mStyle.getMargins();
     }
 
     /** Whether this style has borders */
     public boolean hasBorders() {
-        return style.getBorders().getWidth() > 0;
+        return mStyle.getBorders().getWidth() > 0;
     }
 
     /** This style's borders */
     public Borders getBorders() {
-        return style.getBorders();
+        return mStyle.getBorders();
     }
 
     /** The max_lines for a TextView */
     public int getMaxLines() {
-        return style.getMaxLines();
+        return mStyle.getMaxLines();
     }
 
     /** The min_height for a view */
     public int getMinHeight() {
-        return style.getMinHeight();
+        return mStyle.getMinHeight();
     }
 
     /**
@@ -165,11 +165,11 @@ class StyleProvider {
      * LayoutParams#MATCH_PARENT}, or {@link StyleProvider#DIMENSION_NOT_SET} when not defined.
      */
     public int getHeightSpecPx(Context context) {
-        switch (style.getHeightSpecCase()) {
+        switch (mStyle.getHeightSpecCase()) {
             case HEIGHT:
-                return (int) LayoutUtils.dpToPx(style.getHeight(), context);
+                return (int) LayoutUtils.dpToPx(mStyle.getHeight(), context);
             case RELATIVE_HEIGHT:
-                switch (style.getRelativeHeight()) {
+                switch (mStyle.getRelativeHeight()) {
                     case FILL_PARENT:
                         return LayoutParams.MATCH_PARENT;
                     case FIT_CONTENT:
@@ -189,11 +189,11 @@ class StyleProvider {
      * LayoutParams#MATCH_PARENT}, or {@link StyleProvider#DIMENSION_NOT_SET} when not defined.
      */
     public int getWidthSpecPx(Context context) {
-        switch (style.getWidthSpecCase()) {
+        switch (mStyle.getWidthSpecCase()) {
             case WIDTH:
-                return (int) LayoutUtils.dpToPx(style.getWidth(), context);
+                return (int) LayoutUtils.dpToPx(mStyle.getWidth(), context);
             case RELATIVE_WIDTH:
-                switch (style.getRelativeWidth()) {
+                switch (mStyle.getRelativeWidth()) {
                     case FILL_PARENT:
                         return LayoutParams.MATCH_PARENT;
                     case FIT_CONTENT:
@@ -210,22 +210,22 @@ class StyleProvider {
 
     /** Whether a height is explicitly specified */
     public boolean hasHeight() {
-        return style.getHeightSpecCase() != HeightSpecCase.HEIGHTSPEC_NOT_SET;
+        return mStyle.getHeightSpecCase() != HeightSpecCase.HEIGHTSPEC_NOT_SET;
     }
 
     /** Whether a width is explicitly specified */
     public boolean hasWidth() {
-        return style.getHeightSpecCase() != HeightSpecCase.HEIGHTSPEC_NOT_SET;
+        return mStyle.getHeightSpecCase() != HeightSpecCase.HEIGHTSPEC_NOT_SET;
     }
 
     /** Whether the style has a horizontal gravity specified */
     public boolean hasGravityHorizontal() {
-        return style.hasGravityHorizontal();
+        return mStyle.hasGravityHorizontal();
     }
 
     /** Horizontal gravity specified on the style */
     public int getGravityHorizontal(int defaultGravity) {
-        switch (style.getGravityHorizontal()) {
+        switch (mStyle.getGravityHorizontal()) {
             case GRAVITY_START:
                 return Gravity.START;
             case GRAVITY_CENTER:
@@ -240,12 +240,12 @@ class StyleProvider {
 
     /** Whether the style has a vertical gravity specified */
     public boolean hasGravityVertical() {
-        return style.hasGravityVertical();
+        return mStyle.hasGravityVertical();
     }
 
     /** Vertical gravity specified on the style */
     public int getGravityVertical(int defaultGravity) {
-        switch (style.getGravityVertical()) {
+        switch (mStyle.getGravityVertical()) {
             case GRAVITY_TOP:
                 return Gravity.TOP;
             case GRAVITY_MIDDLE:
@@ -268,7 +268,7 @@ class StyleProvider {
         int horizontalGravity;
         int verticalGravity;
 
-        switch (style.getTextAlignmentHorizontal()) {
+        switch (mStyle.getTextAlignmentHorizontal()) {
             case TEXT_ALIGNMENT_CENTER:
                 horizontalGravity = Gravity.CENTER_HORIZONTAL;
                 break;
@@ -280,7 +280,7 @@ class StyleProvider {
                 horizontalGravity = Gravity.START;
         }
 
-        switch (style.getTextAlignmentVertical()) {
+        switch (mStyle.getTextAlignmentVertical()) {
             case TEXT_ALIGNMENT_MIDDLE:
                 verticalGravity = Gravity.CENTER_VERTICAL;
                 break;
@@ -322,8 +322,8 @@ class StyleProvider {
 
         // Apply appearance styles
         baseView.setBackground(createBackground());
-        if (style.getShadow().hasElevationShadow()) {
-            ViewCompat.setElevation(view, style.getShadow().getElevationShadow().getElevation());
+        if (mStyle.getShadow().hasElevationShadow()) {
+            ViewCompat.setElevation(view, mStyle.getShadow().getElevationShadow().getElevation());
         } else {
             ViewCompat.setElevation(view, 0.0f);
         }
@@ -331,7 +331,7 @@ class StyleProvider {
             ViewCompat.setElevation(baseView, 0.0f);
         }
 
-        baseView.setAlpha(style.getOpacity());
+        baseView.setAlpha(mStyle.getOpacity());
     }
 
     /**
@@ -351,8 +351,8 @@ class StyleProvider {
                                     padding.getBottom() + getBorderWidth(Edges.BOTTOM), context)
                 + extraLineHeight.bottomPaddingPx();
 
-        view.setPadding(assetProvider.isRtL() ? endPadding : startPadding, topPadding,
-                assetProvider.isRtL() ? startPadding : endPadding, bottomPadding);
+        view.setPadding(mAssetProvider.isRtL() ? endPadding : startPadding, topPadding,
+                mAssetProvider.isRtL() ? startPadding : endPadding, bottomPadding);
     }
 
     private int getBorderWidth(Borders.Edges edge) {
@@ -373,7 +373,7 @@ class StyleProvider {
 
         // Create a drawable to stroke the border
         BorderDrawable borderDrawable =
-                new BorderDrawable(context, getBorders(), ZERO_RADIUS, assetProvider.isRtL());
+                new BorderDrawable(context, getBorders(), ZERO_RADIUS, mAssetProvider.isRtL());
         view.setForeground(borderDrawable);
     }
 
@@ -402,11 +402,11 @@ class StyleProvider {
             return view;
         }
         int radiusOverride = getRoundedCorners().getUseHostRadiusOverride()
-                ? assetProvider.getDefaultCornerRadius()
+                ? mAssetProvider.getDefaultCornerRadius()
                 : 0;
 
         return new RoundedCornerWrapperView(context, getRoundedCorners(), maskCache,
-                assetProvider.isRtLSupplier(), radiusOverride, getBorders(), allowClipPathRounding,
+                mAssetProvider.isRtLSupplier(), radiusOverride, getBorders(), allowClipPathRounding,
                 allowOutlineRounding);
     }
 
@@ -439,7 +439,7 @@ class StyleProvider {
                 return new ColorDrawable(background.getColor());
             case LINEAR_GRADIENT:
                 return new GradientDrawable(
-                        background.getLinearGradient(), assetProvider.isRtLSupplier());
+                        background.getLinearGradient(), mAssetProvider.isRtLSupplier());
             default:
                 return null;
         }
@@ -456,11 +456,11 @@ class StyleProvider {
 
         StyleProvider that = (StyleProvider) o;
 
-        return style.equals(that.style) && assetProvider.equals(that.assetProvider);
+        return mStyle.equals(that.mStyle) && mAssetProvider.equals(that.mAssetProvider);
     }
 
     @Override
     public int hashCode() {
-        return style.hashCode();
+        return mStyle.hashCode();
     }
 }

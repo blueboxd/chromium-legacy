@@ -2,8 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
+import("//ui/base/ui_features.gni")
+
+buildflag_header("color_buildflags") {
+  header = "color_buildflags.h"
+
+  flags = [ "USE_COLOR_PIPELINE=$use_color_pipeline" ]
+}
 
 jumbo_component("color") {
   sources = [
@@ -23,6 +31,7 @@ jumbo_component("color") {
   defines = [ "IS_COLOR_IMPL" ]
 
   public_deps = [
+    ":color_buildflags",
     "//base",
     "//skia",
     "//ui/gfx:color_utils",

@@ -7,10 +7,11 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "extensions/browser/api/declarative_net_request/regex_rules_matcher.h"
+#include "url/gurl.h"
 #include "url/origin.h"
-
-class GURL;
 
 namespace extensions {
 struct WebRequestInfo;
@@ -35,6 +36,14 @@ struct RequestParams {
   // A map from RulesetMatchers to whether it has a matching allow rule. Used as
   // a cache to prevent additional calls to GetAllowAction.
   mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
+
+  // Lower cased url, used for regex matching. Cached for performance.
+  mutable base::Optional<std::string> lower_cased_url_spec;
+
+  // Map from RegexRulesMatcher to a vector of potential matches for this
+  // request. Cached for performance.
+  mutable base::flat_map<const RegexRulesMatcher*, std::vector<RegexRuleInfo>>
+      potential_regex_matches;
 
   // Pointer to the corresponding WebRequestInfo object. Outlives this struct.
   // Can be null for some unit tests.

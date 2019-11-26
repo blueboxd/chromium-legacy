@@ -114,6 +114,7 @@
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/udp_socket_test_util.h"
+#include "test_mojo_proxy_resolver_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -300,6 +301,74 @@ std::unique_ptr<net::test_server::HttpResponse> CustomProxyResponse(
   return std::move(response);
 }
 
+// proxy_resolver::mojom::ProxyResolverFactory that captures the most recent PAC
+// script passed to it, and the most recent URL/NetworkIsolationKey passed to
+// the GetProxyForUrl() method of proxy_resolver::mojom::ProxyResolver it
+// returns.
+class CapturingMojoProxyResolverFactory
+    : public proxy_resolver::mojom::ProxyResolverFactory,
+      public proxy_resolver::mojom::ProxyResolver {
+ public:
+  CapturingMojoProxyResolverFactory() {}
+  ~CapturingMojoProxyResolverFactory() override {}
+
+  mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+  CreateFactoryRemote() {
+    return proxy_factory_receiver_.BindNewPipeAndPassRemote();
+  }
+
+  // proxy_resolver::mojom::ProxyResolverFactory:
+  void CreateResolver(
+      const std::string& pac_script,
+      mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+      mojo::PendingRemote<
+          proxy_resolver::mojom::ProxyResolverFactoryRequestClient> client)
+      override {
+    pac_script_ = pac_script;
+
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+        factory_request_client(std::move(client));
+    proxy_resolver_receiver_.Bind(std::move(receiver));
+    factory_request_client->ReportResult(net::OK);
+  }
+
+  // proxy_resolver::mojom::ProxyResolver:
+  void GetProxyForUrl(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient>
+          client) override {
+    url_ = url;
+    network_isolation_key_ = network_isolation_key;
+
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient>
+        resolver_request_client(std::move(client));
+    net::ProxyInfo proxy_info;
+    proxy_info.UseDirect();
+    resolver_request_client->ReportResult(net::OK, proxy_info);
+  }
+
+  const std::string& pac_script() const { return pac_script_; }
+
+  // Return the GURL and NetworkIsolationKey passed to the most recent
+  // GetProxyForUrl() call.
+  const GURL& url() const { return url_; }
+  const net::NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
+ private:
+  mojo::Receiver<ProxyResolverFactory> proxy_factory_receiver_{this};
+  mojo::Receiver<ProxyResolver> proxy_resolver_receiver_{this};
+
+  std::string pac_script_;
+
+  GURL url_;
+  net::NetworkIsolationKey network_isolation_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(CapturingMojoProxyResolverFactory);
+};
+
 // ProxyLookupClient that drives proxy lookups and can wait for the responses to
 // be received.
 class TestProxyLookupClient : public mojom::ProxyLookupClient {
@@ -307,12 +376,14 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   TestProxyLookupClient() = default;
   ~TestProxyLookupClient() override = default;
 
-  void StartLookUpProxyForURL(const GURL& url,
-                              mojom::NetworkContext* network_context) {
+  void StartLookUpProxyForURL(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojom::NetworkContext* network_context) {
     // Make sure this method is called at most once.
     EXPECT_FALSE(receiver_.is_bound());
 
-    network_context->LookUpProxyForURL(url,
+    network_context->LookUpProxyForURL(url, network_isolation_key,
                                        receiver_.BindNewPipeAndPassRemote());
   }
 
@@ -2205,16 +2276,16 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     // ProxyService doesn't start updating its config until it's first used.
     // This also gives some test coverage of LookUpProxyForURL.
     TestProxyLookupClient http_proxy_lookup_client;
-    http_proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo"),
-                                                    network_context.get());
+    http_proxy_lookup_client.StartLookUpProxyForURL(
+        GURL("http://foo"), net::NetworkIsolationKey(), network_context.get());
     http_proxy_lookup_client.WaitForResult();
     ASSERT_TRUE(http_proxy_lookup_client.proxy_info());
     EXPECT_EQ(initial_proxy_config_set.http_proxy_info.ToPacString(),
               http_proxy_lookup_client.proxy_info()->ToPacString());
 
     TestProxyLookupClient ftp_proxy_lookup_client;
-    ftp_proxy_lookup_client.StartLookUpProxyForURL(GURL("ftp://foo"),
-                                                   network_context.get());
+    ftp_proxy_lookup_client.StartLookUpProxyForURL(
+        GURL("ftp://foo"), net::NetworkIsolationKey(), network_context.get());
     ftp_proxy_lookup_client.WaitForResult();
     ASSERT_TRUE(ftp_proxy_lookup_client.proxy_info());
     EXPECT_EQ(initial_proxy_config_set.ftp_proxy_info.ToPacString(),
@@ -2233,16 +2304,17 @@ TEST_F(NetworkContextTest, ProxyConfig) {
       task_environment_.RunUntilIdle();
 
       TestProxyLookupClient http_proxy_lookup_client2;
-      http_proxy_lookup_client2.StartLookUpProxyForURL(GURL("http://foo"),
-                                                       network_context.get());
+      http_proxy_lookup_client2.StartLookUpProxyForURL(
+          GURL("http://foo"), net::NetworkIsolationKey(),
+          network_context.get());
       http_proxy_lookup_client2.WaitForResult();
       ASSERT_TRUE(http_proxy_lookup_client2.proxy_info());
       EXPECT_EQ(proxy_config_set.http_proxy_info.ToPacString(),
                 http_proxy_lookup_client2.proxy_info()->ToPacString());
 
       TestProxyLookupClient ftp_proxy_lookup_client2;
-      ftp_proxy_lookup_client2.StartLookUpProxyForURL(GURL("ftp://foo"),
-                                                      network_context.get());
+      ftp_proxy_lookup_client2.StartLookUpProxyForURL(
+          GURL("ftp://foo"), net::NetworkIsolationKey(), network_context.get());
       ftp_proxy_lookup_client2.WaitForResult();
       ASSERT_TRUE(ftp_proxy_lookup_client2.proxy_info());
       EXPECT_EQ(proxy_config_set.ftp_proxy_info.ToPacString(),
@@ -2293,11 +2365,11 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   // Create two lookups, to make sure two simultaneous lookups can be handled at
   // once.
   TestProxyLookupClient http_proxy_lookup_client;
-  http_proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo/"),
-                                                  network_context.get());
+  http_proxy_lookup_client.StartLookUpProxyForURL(
+      GURL("http://foo/"), net::NetworkIsolationKey(), network_context.get());
   TestProxyLookupClient ftp_proxy_lookup_client;
-  ftp_proxy_lookup_client.StartLookUpProxyForURL(GURL("ftp://foo/"),
-                                                 network_context.get());
+  ftp_proxy_lookup_client.StartLookUpProxyForURL(
+      GURL("ftp://foo/"), net::NetworkIsolationKey(), network_context.get());
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(proxy_resolution_service->config());
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
@@ -2334,8 +2406,8 @@ TEST_F(NetworkContextTest, DestroyedWithoutProxyConfig) {
 
   // Proxy requests should hang.
   TestProxyLookupClient proxy_lookup_client;
-  proxy_lookup_client.StartLookUpProxyForURL(GURL("http://foo/"),
-                                             network_context.get());
+  proxy_lookup_client.StartLookUpProxyForURL(
+      GURL("http://foo/"), net::NetworkIsolationKey(), network_context.get());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
   EXPECT_FALSE(proxy_lookup_client.is_done());
@@ -2361,8 +2433,8 @@ TEST_F(NetworkContextTest, CancelPendingProxyLookup) {
   // Proxy requests should hang.
   std::unique_ptr<TestProxyLookupClient> proxy_lookup_client =
       std::make_unique<TestProxyLookupClient>();
-  proxy_lookup_client->StartLookUpProxyForURL(GURL("http://foo/"),
-                                              network_context.get());
+  proxy_lookup_client->StartLookUpProxyForURL(
+      GURL("http://foo/"), net::NetworkIsolationKey(), network_context.get());
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(proxy_lookup_client->is_done());
   EXPECT_EQ(1u, network_context->pending_proxy_lookup_requests_for_testing());
@@ -2373,6 +2445,50 @@ TEST_F(NetworkContextTest, CancelPendingProxyLookup) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0u, network_context->pending_proxy_lookup_requests_for_testing());
+}
+
+// Test to make sure the NetworkIsolationKey passed to LookUpProxyForURL() makes
+// it to the proxy resolver.
+TEST_F(NetworkContextTest, ProxyLookupWithNetworkIsolationKey) {
+  const GURL kUrl("http://bar.test/");
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  // Pac scripts must contain this string to be passed to the
+  // ProxyResolverFactory.
+  const std::string kPacScript("FindProxyForURL");
+
+  // Create a NetworkContext without an initial proxy configuration.
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  CapturingMojoProxyResolverFactory proxy_resolver_factory;
+  context_params->proxy_resolver_factory =
+      proxy_resolver_factory.CreateFactoryRemote();
+  context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+      net::ProxyConfig::CreateFromCustomPacURL(GURL("data:," + kPacScript)),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  mojo::Remote<mojom::ProxyConfigClient> config_client;
+  context_params->proxy_config_client_receiver =
+      config_client.BindNewPipeAndPassReceiver();
+
+#if defined(OS_CHROMEOS)
+  context_params->dhcp_wpad_url_client =
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string());
+#endif  // defined(OS_CHROMEOS)
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  TestProxyLookupClient proxy_lookup_client;
+  proxy_lookup_client.StartLookUpProxyForURL(kUrl, kNetworkIsolationKey,
+                                             network_context.get());
+  proxy_lookup_client.WaitForResult();
+  ASSERT_TRUE(proxy_lookup_client.proxy_info());
+  EXPECT_TRUE(proxy_lookup_client.proxy_info()->is_direct_only());
+
+  EXPECT_EQ(kPacScript, proxy_resolver_factory.pac_script());
+  EXPECT_EQ(kUrl, proxy_resolver_factory.url());
+  EXPECT_EQ(kNetworkIsolationKey,
+            proxy_resolver_factory.network_isolation_key());
 }
 
 TEST_F(NetworkContextTest, PacQuickCheck) {

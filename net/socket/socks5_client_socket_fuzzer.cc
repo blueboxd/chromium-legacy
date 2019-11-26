@@ -26,7 +26,7 @@
 // class for details.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
-  net::TestNetLog test_net_log;
+  net::RecordingTestNetLog test_net_log;
 
   FuzzedDataProvider data_provider(data, size);
 

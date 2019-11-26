@@ -20,25 +20,25 @@ import java.util.List;
 public class MediaQueryHelper {
     private static final String TAG = "MediaQueryHelper";
 
-    private final int frameWidthPx;
-    private final int deviceOrientation;
-    private final boolean isDarkTheme;
-    private final Context context;
+    private final int mFrameWidthPx;
+    private final int mDeviceOrientation;
+    private final boolean mIsDarkTheme;
+    private final Context mContext;
 
     MediaQueryHelper(int frameWidthPx, AssetProvider assetProvider, Context context) {
-        this.frameWidthPx = frameWidthPx;
-        this.deviceOrientation = context.getResources().getConfiguration().orientation;
-        this.isDarkTheme = assetProvider.isDarkTheme();
-        this.context = context;
+        this.mFrameWidthPx = frameWidthPx;
+        this.mDeviceOrientation = context.getResources().getConfiguration().orientation;
+        this.mIsDarkTheme = assetProvider.isDarkTheme();
+        this.mContext = context;
     }
 
     @VisibleForTesting
     MediaQueryHelper(
             int frameWidthPx, int deviceOrientation, boolean isDarkTheme, Context context) {
-        this.frameWidthPx = frameWidthPx;
-        this.deviceOrientation = deviceOrientation;
-        this.isDarkTheme = isDarkTheme;
-        this.context = context;
+        this.mFrameWidthPx = frameWidthPx;
+        this.mDeviceOrientation = deviceOrientation;
+        this.mIsDarkTheme = isDarkTheme;
+        this.mContext = context;
     }
 
     boolean areMediaQueriesMet(List<MediaQueryCondition> conditions) {
@@ -56,50 +56,47 @@ public class MediaQueryHelper {
         switch (condition.getConditionCase()) {
             case FRAME_WIDTH:
                 int targetWidth =
-                        (int) LayoutUtils.dpToPx(condition.getFrameWidth().getWidth(), context);
+                        (int) LayoutUtils.dpToPx(condition.getFrameWidth().getWidth(), mContext);
                 switch (condition.getFrameWidth().getCondition()) {
                     case EQUALS:
-                        return frameWidthPx == targetWidth;
+                        return mFrameWidthPx == targetWidth;
                     case GREATER_THAN:
-                        return frameWidthPx > targetWidth;
+                        return mFrameWidthPx > targetWidth;
                     case LESS_THAN:
-                        return frameWidthPx < targetWidth;
+                        return mFrameWidthPx < targetWidth;
                     case NOT_EQUALS:
-                        return frameWidthPx != targetWidth;
-                    default:
-                        throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
-                                String.format("Unhandled ComparisonCondition: %s",
-                                        condition.getFrameWidth().getCondition().name()));
+                        return mFrameWidthPx != targetWidth;
                 }
+                throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
+                        String.format("Unhandled ComparisonCondition: %s",
+                                condition.getFrameWidth().getCondition().name()));
             case ORIENTATION:
                 switch (condition.getOrientation().getOrientation()) {
                     case LANDSCAPE:
-                        return deviceOrientation == Configuration.ORIENTATION_LANDSCAPE;
+                        return mDeviceOrientation == Configuration.ORIENTATION_LANDSCAPE;
                     case UNSPECIFIED:
                         Logger.w(TAG, "Got UNSPECIFIED orientation; defaulting to PORTRAIT");
                         // fall through
                     case PORTRAIT:
-                        return deviceOrientation == Configuration.ORIENTATION_PORTRAIT
-                                || deviceOrientation == Configuration.ORIENTATION_SQUARE;
-                    default:
-                        throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
-                                String.format("Unhandled Orientation: %s",
-                                        condition.getOrientation().getOrientation()));
+                        return mDeviceOrientation == Configuration.ORIENTATION_PORTRAIT
+                                || mDeviceOrientation == Configuration.ORIENTATION_SQUARE;
                 }
+                throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
+                        String.format("Unhandled Orientation: %s",
+                                condition.getOrientation().getOrientation()));
             case DARK_LIGHT:
                 switch (condition.getDarkLight().getMode()) {
                     case DARK:
-                        return isDarkTheme;
+                        return mIsDarkTheme;
                     case UNSPECIFIED:
                         Logger.w(TAG, "Got UNSPECIFIED DarkLightMode; defaulting to LIGHT");
                         // fall through
                     case LIGHT:
-                        return !isDarkTheme;
-                    default:
-                        throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
-                                String.format("Unhandled DarkLightMode: %s",
-                                        condition.getDarkLight().getMode()));
+                        return !mIsDarkTheme;
                 }
+                throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
+                        String.format(
+                                "Unhandled DarkLightMode: %s", condition.getDarkLight().getMode()));
             default:
                 throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
                         String.format(
@@ -116,16 +113,16 @@ public class MediaQueryHelper {
             return false;
         }
         MediaQueryHelper that = (MediaQueryHelper) o;
-        return frameWidthPx == that.frameWidthPx && deviceOrientation == that.deviceOrientation
-                && isDarkTheme == that.isDarkTheme && context.equals(that.context);
+        return mFrameWidthPx == that.mFrameWidthPx && mDeviceOrientation == that.mDeviceOrientation
+                && mIsDarkTheme == that.mIsDarkTheme && mContext.equals(that.mContext);
     }
 
     @Override
     public int hashCode() {
-        int result = frameWidthPx;
-        result = 31 * result + deviceOrientation;
-        result = 31 * result + (isDarkTheme ? 1 : 0);
-        result = 31 * result + context.hashCode();
+        int result = mFrameWidthPx;
+        result = 31 * result + mDeviceOrientation;
+        result = 31 * result + (mIsDarkTheme ? 1 : 0);
+        result = 31 * result + mContext.hashCode();
         return result;
     }
 }

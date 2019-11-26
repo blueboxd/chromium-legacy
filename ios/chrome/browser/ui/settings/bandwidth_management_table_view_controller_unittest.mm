@@ -66,7 +66,7 @@ class BandwidthManagementTableViewControllerTest
   }
 
   web::WebTaskEnvironment task_environment_;
-  net::TestNetLog net_log_;
+  net::RecordingTestNetLog net_log_;
   IOSChromeScopedTestingLocalState local_state_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

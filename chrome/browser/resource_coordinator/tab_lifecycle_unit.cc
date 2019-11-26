@@ -16,6 +16,8 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
@@ -187,6 +189,7 @@ struct FeatureUsageEntry {
 
 void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
                        DecisionDetails* details) {
+  // TODO(sebmarchand): Remove the notification heuristic from this list.
   const FeatureUsageEntry features[] = {
       {reader->UsesAudioInBackground(), DecisionFailureReason::HEURISTIC_AUDIO},
       {reader->UpdatesFaviconInBackground(),
@@ -228,9 +231,10 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
   if (!URLShouldBeStoredInLocalDatabase(web_contents->GetLastCommittedURL()))
     return;
 
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   SiteCharacteristicsDataStore* data_store =
-      LocalSiteCharacteristicsDataStoreFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      LocalSiteCharacteristicsDataStoreFactory::GetForProfile(profile);
   if (!data_store)
     return;
 
@@ -240,6 +244,14 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
   // TODO(sebmarchand): Add a failure reason for when the data isn't ready yet.
 
   CheckFeatureUsage(reader.get(), details);
+
+  auto notif_permission = PermissionManager::Get(profile)->GetPermissionStatus(
+      ContentSettingsType::NOTIFICATIONS, web_contents->GetLastCommittedURL(),
+      web_contents->GetLastCommittedURL());
+  if (notif_permission.content_setting == CONTENT_SETTING_ALLOW) {
+    details->AddReason(
+        DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION);
+  }
 }
 
 }  // namespace

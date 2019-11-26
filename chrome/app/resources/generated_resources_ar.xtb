@@ -2614,7 +2614,6 @@
 <translation id="4839303808932127586">حف&amp;ظ الفيديو باسم...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{عنصر واحد آخر}zero{# عنصر آخر}two{عنصران (#) آخران}few{# عناصر أخرى}many{# عنصرًا آخر}other{# عنصر آخر}}</translation>
 <translation id="4842976633412754305">تحاول هذه الصفحة تحميل نصوص برمجية من مصادر غير مصادقة.</translation>
-<translation id="4843488774506045600">تقدم الإضافة <ph name="EXTENSION_NAME" /> تسجيل الدخول</translation>
 <translation id="4844333629810439236">لوحات مفاتيح أخرى</translation>
 <translation id="4846680374085650406">أنت تتبع توصية المشرف لهذا الإعداد.</translation>
 <translation id="4848518990323155912">‏تفعيل قفل شريحة SIM (مطلوب رقم التعريف الشخصي لاستخدام بيانات الجوّال)</translation>
@@ -3813,7 +3812,6 @@
 <translation id="6607831829715835317">المزيد من &amp;الأدوات</translation>
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="6615455863669487791">عرضه</translation>
-<translation id="6617100836880592260">سرعة المسح: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">الاحتفاظ به على أيّ حال</translation>
 <translation id="6619058681307408113">‏بروتوكول تلقّي الملفات للطباعة (LPD)</translation>
 <translation id="661907246513853610">يمكن لموقع الويب تتبّع موقعك الجغرافي.</translation>

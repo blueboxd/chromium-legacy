@@ -52,8 +52,8 @@ class SyncEncryptionHandler {
   // on the sync thread.
   class Observer {
    public:
-    Observer();
-    virtual ~Observer();
+    Observer() = default;
+    virtual ~Observer() = default;
 
     // Called when user interaction is required to obtain a valid passphrase.
     // - If the passphrase is required for encryption, |reason| will be
@@ -103,12 +103,12 @@ class SyncEncryptionHandler {
     // sent (see below).
     //
     // |encrypted_types| will always be a superset of
-    // Cryptographer::SensitiveTypes().  If |encrypt_everything| is
+    // AlwaysEncryptedUserTypes().  If |encrypt_everything| is
     // true, |encrypted_types| will be the set of all known types.
     //
     // Until this function is called, observers can assume that the
-    // set of encrypted types is Cryptographer::SensitiveTypes() and
-    // that the encrypt everything flag is false.
+    // set of encrypted types is AlwaysEncryptedUserTypes() and that the
+    // encrypt everything flag is false.
     virtual void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                          bool encrypt_everything) = 0;
 
@@ -135,8 +135,8 @@ class SyncEncryptionHandler {
         const sync_pb::NigoriSpecifics& specifics) {}
   };
 
-  SyncEncryptionHandler();
-  virtual ~SyncEncryptionHandler();
+  SyncEncryptionHandler() = default;
+  virtual ~SyncEncryptionHandler() = default;
 
   // Add/Remove SyncEncryptionHandler::Observers.
   virtual void AddObserver(Observer* observer) = 0;
@@ -194,9 +194,6 @@ class SyncEncryptionHandler {
   // Returns the last known keystore key or an empty string if none available.
   // TODO(crbug.com/1012226): Remove API when VAPID migration is over.
   virtual std::string GetLastKeystoreKey() const = 0;
-
-  // The set of types that are always encrypted.
-  static ModelTypeSet SensitiveTypes();
 };
 
 }  // namespace syncer

@@ -1037,7 +1037,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
-            if (FeatureUtilities.isGridTabSwitcherEnabled()) {
+            if (FeatureUtilities.isGridTabSwitcherEnabled() && !isTablet()) {
                 assert !getCurrentTabModel().isIncognito();
                 mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());

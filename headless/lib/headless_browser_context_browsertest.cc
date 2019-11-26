@@ -68,8 +68,9 @@ class HeadlessBrowserContextIsolationTest
   void RunDevTooledTest() override {
     load_observer_.reset(new LoadObserver(
         devtools_client_.get(),
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstLoadComplete,
-                   base::Unretained(this))));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnFirstLoadComplete,
+            base::Unretained(this))));
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -78,8 +79,9 @@ class HeadlessBrowserContextIsolationTest
     EXPECT_TRUE(load_observer_->navigation_succeeded());
     load_observer_.reset(new LoadObserver(
         devtools_client2_.get(),
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnSecondLoadComplete,
-                   base::Unretained(this))));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnSecondLoadComplete,
+            base::Unretained(this))));
     devtools_client2_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -244,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextWebPreferences) {
       browser()
           ->CreateBrowserContextBuilder()
           .SetOverrideWebPreferencesCallback(
-              base::Bind([](WebPreferences* preferences) {
+              base::BindRepeating([](WebPreferences* preferences) {
                 preferences->hide_scrollbars = true;
               }))
           .Build();

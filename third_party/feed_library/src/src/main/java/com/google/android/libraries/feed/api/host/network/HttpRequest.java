@@ -31,31 +31,31 @@ public final class HttpRequest {
         String DELETE = "DELETE";
     }
 
-    private final Uri uri;
-    private final byte[] body;
-    private final @HttpMethod String method;
-    private final List<HttpHeader> headers;
+    private final Uri mUri;
+    private final byte[] mBody;
+    private final @HttpMethod String mMethod;
+    private final List<HttpHeader> mHeaders;
 
     public HttpRequest(Uri uri, @HttpMethod String method, List<HttpHeader> headers, byte[] body) {
-        this.uri = uri;
-        this.body = body;
-        this.method = method;
-        this.headers = Collections.unmodifiableList(new ArrayList<>(headers));
+        this.mUri = uri;
+        this.mBody = body;
+        this.mMethod = method;
+        this.mHeaders = Collections.unmodifiableList(new ArrayList<>(headers));
     }
 
     public Uri getUri() {
-        return uri;
+        return mUri;
     }
 
     public byte[] getBody() {
-        return body;
+        return mBody;
     }
 
     public @HttpMethod String getMethod() {
-        return method;
+        return mMethod;
     }
 
     public List<HttpHeader> getHeaders() {
-        return headers;
+        return mHeaders;
     }
 }

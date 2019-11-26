@@ -293,12 +293,16 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     CheckForWaitingLoop();
   }
 
-  void OnProxyLookupFinished(const GURL& url, bool success) override {
-    GURL origin = url.GetOrigin();
+  void OnProxyLookupFinished(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      bool success) override {
+    ResolveProxyRequestInfo resolve_info{url::Origin::Create(url),
+                                         network_isolation_key};
     if (success)
-      successful_proxy_lookups_.insert(origin);
+      successful_proxy_lookups_.insert(resolve_info);
     else
-      unsuccessful_proxy_lookups_.insert(origin);
+      unsuccessful_proxy_lookups_.insert(resolve_info);
     CheckForWaitingLoop();
   }
 
@@ -309,10 +313,13 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     Wait();
   }
 
-  void WaitUntilProxyLookedUp(const GURL& url) {
+  void WaitUntilProxyLookedUp(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key) {
     wait_event_ = WaitEvent::kProxy;
-    DCHECK(waiting_on_proxy_.is_empty());
-    waiting_on_proxy_ = url;
+    DCHECK(waiting_on_proxy_.IsEmpty());
+    waiting_on_proxy_ = ResolveProxyRequestInfo{url::Origin::Create(url),
+                                                network_isolation_key};
     Wait();
   }
 
@@ -330,17 +337,39 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     return base::Contains(successful_dns_lookups_, host);
   }
 
-  bool HasProxyBeenLookedUp(const GURL& url) {
-    return base::Contains(successful_proxy_lookups_, url.GetOrigin()) ||
-           base::Contains(unsuccessful_proxy_lookups_, url.GetOrigin());
-  }
-
-  bool ProxyFound(const GURL& url) {
-    return base::Contains(successful_proxy_lookups_, url.GetOrigin());
+  bool ProxyFound(const GURL& url,
+                  const net::NetworkIsolationKey& network_isolation_key) {
+    return base::Contains(successful_proxy_lookups_,
+                          ResolveProxyRequestInfo{url::Origin::Create(url),
+                                                  network_isolation_key});
   }
 
  private:
   enum class WaitEvent { kNone, kDns, kProxy };
+
+  struct ResolveProxyRequestInfo {
+    bool operator<(const ResolveProxyRequestInfo& other) const {
+      return std::tie(origin, network_isolation_key) <
+             std::tie(other.origin, other.network_isolation_key);
+    }
+
+    bool operator==(const ResolveProxyRequestInfo& other) const {
+      return std::tie(origin, network_isolation_key) ==
+             std::tie(other.origin, other.network_isolation_key);
+    }
+
+    bool IsEmpty() const {
+      return origin.opaque() && network_isolation_key.IsEmpty();
+    }
+
+    url::Origin origin;
+    net::NetworkIsolationKey network_isolation_key;
+  };
+
+  bool HasProxyBeenLookedUp(const ResolveProxyRequestInfo& resolve_proxy_info) {
+    return base::Contains(successful_proxy_lookups_, resolve_proxy_info) ||
+           base::Contains(unsuccessful_proxy_lookups_, resolve_proxy_info);
+  }
 
   void Wait() {
     base::RunLoop run_loop;
@@ -362,7 +391,7 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
       case WaitEvent::kProxy:
         if (!HasProxyBeenLookedUp(waiting_on_proxy_))
           return;
-        waiting_on_proxy_ = GURL();
+        waiting_on_proxy_ = ResolveProxyRequestInfo();
         break;
     }
     DCHECK(run_loop_);
@@ -378,9 +407,9 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
   std::set<std::string> successful_dns_lookups_;
   std::set<std::string> unsuccessful_dns_lookups_;
 
-  GURL waiting_on_proxy_;
-  std::set<GURL> successful_proxy_lookups_;
-  std::set<GURL> unsuccessful_proxy_lookups_;
+  ResolveProxyRequestInfo waiting_on_proxy_;
+  std::set<ResolveProxyRequestInfo> successful_proxy_lookups_;
+  std::set<ResolveProxyRequestInfo> unsuccessful_proxy_lookups_;
 
   std::set<GURL> preconnect_url_attempts_;
 };
@@ -1367,14 +1396,18 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
   ResetPredictorState();
 
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
-  preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
-  EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));
+  preconnect_manager_observer()->WaitUntilProxyLookedUp(url,
+                                                        network_isolation_key);
+  EXPECT_TRUE(
+      preconnect_manager_observer()->ProxyFound(url, network_isolation_key));
   // We should preconnect only 2 sockets for the main frame host.
   const size_t expected_connections = 2;
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
@@ -1391,6 +1424,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
@@ -1398,8 +1433,10 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
   EXPECT_TRUE(observer->WaitForRequestStart());
   for (auto* const host : kHtmlSubresourcesHosts) {
     GURL url = embedded_test_server()->GetURL(host, "/");
-    preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
-    EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));
+    preconnect_manager_observer()->WaitUntilProxyLookedUp(
+        url, network_isolation_key);
+    EXPECT_TRUE(
+        preconnect_manager_observer()->ProxyFound(url, network_isolation_key));
   }
   // 2 connections to the main frame host + 1 connection per host for others.
   const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;

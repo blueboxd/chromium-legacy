@@ -62,14 +62,10 @@ class TracingUmaTracker {
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
 
   void StopAndRecord() {
-    StopButNotRecord();
-    UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
-  }
-
-  void StopButNotRecord() {
     TRACE_EVENT_ASYNC_END0(
         kTracingCategory, metric_name_,
         TRACE_ID_WITH_SCOPE("UmaTracker", TRACE_ID_LOCAL(id_)));
+    UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
   }
 
  private:
@@ -96,13 +92,11 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
     RenderWidgetHostViewBase* in_view,
     bool in_should_query_view,
     base::Optional<gfx::PointF> in_location,
-    bool in_latched_target,
-    bool in_should_verify_result)
+    bool in_latched_target)
     : view(in_view),
       should_query_view(in_should_query_view),
       target_location(in_location),
-      latched_target(in_latched_target),
-      should_verify_result(in_should_verify_result) {}
+      latched_target(in_latched_target) {}
 
 RenderWidgetTargetResult::~RenderWidgetTargetResult() = default;
 
@@ -178,16 +172,6 @@ RenderWidgetHostViewBase* RenderWidgetTargeter::TargetingRequest::GetRootView()
 
 gfx::PointF RenderWidgetTargeter::TargetingRequest::GetLocation() const {
   return location;
-}
-
-viz::FrameSinkId
-RenderWidgetTargeter::TargetingRequest::GetExpectedFrameSinkId() const {
-  return expected_frame_sink_id;
-}
-
-void RenderWidgetTargeter::TargetingRequest::SetExpectedFrameSinkId(
-    const viz::FrameSinkId& id) {
-  expected_frame_sink_id = id;
 }
 
 const ui::LatencyInfo& RenderWidgetTargeter::TargetingRequest::GetLatency()
@@ -279,12 +263,6 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
   } else {
     FoundTarget(target, result.target_location, result.latched_target,
                 &request);
-    // Verify the event targeting results from surface layer viz hit testing if
-    // --use-viz-hit-test-surface-layer is enabled.
-    if (result.should_verify_result && !target->IsRenderWidgetHostViewGuest()) {
-      request.SetExpectedFrameSinkId(target->GetFrameSinkId());
-      QueryAndVerifyClient(std::move(request));
-    }
   }
 }
 
@@ -315,12 +293,6 @@ void RenderWidgetTargeter::QueryClientInternal(
     RenderWidgetHostViewBase* last_request_target,
     const gfx::PointF& last_target_location,
     TargetingRequest request) {
-  // Async event targeting and verifying use two different queues, so they don't
-  // block each other.
-  bool is_verifying = request.GetExpectedFrameSinkId().is_valid();
-  DCHECK((!is_verifying && !request_in_flight_) ||
-         (is_verifying && !verify_request_in_flight_));
-
   auto* target_client = target->host()->input_target_client();
   // |target_client| may not be set yet for this |target| on Mac, need to
   // understand why this happens. https://crbug.com/859492.
@@ -330,21 +302,16 @@ void RenderWidgetTargeter::QueryClientInternal(
     return;
   }
 
-  if (is_verifying) {
-    verify_request_in_flight_ = std::move(request);
-  } else {
     request_in_flight_ = std::move(request);
     async_depth_++;
-  }
+
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime");
-  auto& hit_test_timeout =
-      is_verifying ? async_verify_hit_test_timeout_ : async_hit_test_timeout_;
-  hit_test_timeout.reset(new OneShotTimeoutMonitor(
+  async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
       base::BindOnce(
           &RenderWidgetTargeter::AsyncHitTestTimedOut,
           weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(), target_location,
           last_request_target ? last_request_target->GetWeakPtr() : nullptr,
-          last_target_location, is_verifying),
+          last_target_location),
       async_hit_test_timeout_delay_));
 
   TRACE_EVENT_WITH_FLOW2(
@@ -354,11 +321,9 @@ void RenderWidgetTargeter::QueryClientInternal(
 
   target_client->FrameSinkIdAt(
       target_location, trace_id_,
-      base::BindOnce(
-          &RenderWidgetTargeter::FoundFrameSinkId,
-          weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(),
-          is_verifying ? ++last_verify_request_id_ : ++last_request_id_,
-          target_location, std::move(tracker), is_verifying));
+      base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
+                     weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(),
+                     ++last_request_id_, target_location, std::move(tracker)));
 }
 
 void RenderWidgetTargeter::QueryClient(TargetingRequest request) {
@@ -368,44 +333,25 @@ void RenderWidgetTargeter::QueryClient(TargetingRequest request) {
                       std::move(request));
 }
 
-void RenderWidgetTargeter::QueryAndVerifyClient(TargetingRequest request) {
-  if (verify_request_in_flight_) {
-    verify_requests_.push(std::move(request));
-    return;
-  }
-  auto* target = request.GetRootView();
-  auto target_location = request.GetLocation();
-  QueryClientInternal(target, target_location, nullptr, gfx::PointF(),
-                      std::move(request));
-}
-
-void RenderWidgetTargeter::FlushEventQueue(bool is_verifying) {
+void RenderWidgetTargeter::FlushEventQueue() {
   bool events_being_flushed = false;
-  base::Optional<TargetingRequest>& request_in_flight =
-      is_verifying ? verify_request_in_flight_ : request_in_flight_;
-  auto* requests = is_verifying ? &verify_requests_ : &requests_;
-  while (!request_in_flight && !requests->empty()) {
-    auto request = std::move(requests->front());
-    requests->pop();
+  while (!request_in_flight_ && !requests_.empty()) {
+    auto request = std::move(requests_.front());
+    requests_.pop();
     // The root-view has gone away. Ignore this event, and try to process the
     // next event.
-    if (!request.GetRootView()) {
+    if (!request.GetRootView())
       continue;
-    }
+
     request.StopQueueingTimeTracker();
     // Only notify the delegate once that the current event queue is being
     // flushed. Once all the events are flushed, notify the delegate again.
-    if (!is_verifying && !events_being_flushed) {
+    if (!events_being_flushed) {
       delegate_->SetEventsBeingFlushed(true);
       events_being_flushed = true;
     }
-    if (is_verifying) {
-      QueryAndVerifyClient(std::move(request));
-    } else {
       ResolveTargetingRequest(std::move(request));
-    }
   }
-  if (!is_verifying)
     delegate_->SetEventsBeingFlushed(false);
 }
 
@@ -414,20 +360,12 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     uint32_t request_id,
     const gfx::PointF& target_location,
     TracingUmaTracker tracker,
-    const bool is_verification_request,
     const viz::FrameSinkId& frame_sink_id,
     const gfx::PointF& transformed_location) {
-  if (is_verification_request) {
-    tracker.StopButNotRecord();
-  } else {
-    tracker.StopAndRecord();
-  }
+  tracker.StopAndRecord();
 
-  uint32_t last_id =
-      is_verification_request ? last_verify_request_id_ : last_request_id_;
-  bool in_flight = is_verification_request
-                       ? verify_request_in_flight_.has_value()
-                       : request_in_flight_.has_value();
+  uint32_t last_id = last_request_id_;
+  bool in_flight = request_in_flight_.has_value();
   if (request_id != last_id || !in_flight) {
     // This is a response to a request that already timed out, so the event
     // should have already been dispatched. Mark the renderer as responsive
@@ -436,23 +374,16 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     return;
   }
 
-  TargetingRequest request = is_verification_request
-                                 ? std::move(verify_request_in_flight_.value())
-                                 : std::move(request_in_flight_.value());
+  TargetingRequest request = std::move(request_in_flight_.value());
 
-  if (request.GetExpectedFrameSinkId().is_valid()) {
-    verify_request_in_flight_.reset();
-    async_verify_hit_test_timeout_.reset(nullptr);
-  } else {
-    request_in_flight_.reset();
-    async_hit_test_timeout_.reset(nullptr);
+  request_in_flight_.reset();
+  async_hit_test_timeout_.reset(nullptr);
 
-    if (is_viz_hit_testing_debug_enabled_ && request.IsWebInputEventRequest() &&
-        request.GetEvent().GetType() ==
-            blink::WebInputEvent::Type::kMouseDown) {
-      hit_test_async_queried_debug_queue_.push_back(target->GetFrameSinkId());
-    }
+  if (is_viz_hit_testing_debug_enabled_ && request.IsWebInputEventRequest() &&
+      request.GetEvent().GetType() == blink::WebInputEvent::Type::kMouseDown) {
+    hit_test_async_queried_debug_queue_.push_back(target->GetFrameSinkId());
   }
+
   auto* view = delegate_->FindViewFromFrameSinkId(frame_sink_id);
   if (!view)
     view = target.get();
@@ -472,7 +403,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
 
     if (request.IsWebInputEventRequest() &&
         IsMouseMiddleClick(request.GetEvent())) {
-      middle_click_result_ = {view, false, transformed_location, false, false};
+      middle_click_result_ = {view, false, transformed_location, false};
     }
 
     FoundTarget(view, transformed_location, false, &request);
@@ -490,7 +421,7 @@ void RenderWidgetTargeter::FoundTarget(
   DCHECK(request);
 
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      !latched_target && !request->GetExpectedFrameSinkId().is_valid()) {
+      !latched_target) {
     UMA_HISTOGRAM_COUNTS_100("Event.AsyncTargeting.AsyncClientDepth",
                              async_depth_);
   }
@@ -508,17 +439,6 @@ void RenderWidgetTargeter::FoundTarget(
     hit_test_async_queried_debug_queue_.clear();
   }
 
-  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
-      request->GetExpectedFrameSinkId().is_valid()) {
-    static const char* kResultsMatchHistogramName =
-        "Event.VizHitTestSurfaceLayer.ResultsMatch";
-    HitTestResultsMatch bucket = GetHitTestResultsMatchBucket(target, request);
-    UMA_HISTOGRAM_ENUMERATION(kResultsMatchHistogramName, bucket,
-                              HitTestResultsMatch::kMaxValue);
-    FlushEventQueue(true);
-    return;
-  }
-
   if (request->IsWebInputEventRequest()) {
     delegate_->DispatchEventToTarget(request->GetRootView(), target,
                                      request->GetEvent(), request->GetLatency(),
@@ -527,29 +447,18 @@ void RenderWidgetTargeter::FoundTarget(
     request->RunCallback(target, target_location);
   }
 
-  FlushEventQueue(false);
+  FlushEventQueue();
 }
 
 void RenderWidgetTargeter::AsyncHitTestTimedOut(
     base::WeakPtr<RenderWidgetHostViewBase> current_request_target,
     const gfx::PointF& current_target_location,
     base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
-    const gfx::PointF& last_target_location,
-    const bool is_verification_request) {
-  DCHECK(request_in_flight_ || verify_request_in_flight_);
+    const gfx::PointF& last_target_location) {
+  DCHECK(request_in_flight_);
 
-  TargetingRequest request = is_verification_request
-                                 ? std::move(verify_request_in_flight_.value())
-                                 : std::move(request_in_flight_.value());
-
-  // If we time out during a verification, we early out to avoid dispatching
-  // event to root frame.
-  if (request.GetExpectedFrameSinkId().is_valid()) {
-    verify_request_in_flight_.reset();
-    return;
-  } else {
-    request_in_flight_.reset();
-  }
+  TargetingRequest request = std::move(request_in_flight_.value());
+  request_in_flight_.reset();
 
   if (!request.GetRootView())
     return;
@@ -568,49 +477,6 @@ void RenderWidgetTargeter::AsyncHitTestTimedOut(
     FoundTarget(last_request_target.get(), last_target_location, false,
                 &request);
   }
-}
-
-RenderWidgetTargeter::HitTestResultsMatch
-RenderWidgetTargeter::GetHitTestResultsMatchBucket(
-    RenderWidgetHostViewBase* target,
-    TargetingRequest* request) const {
-  if (target->GetFrameSinkId() == request->GetExpectedFrameSinkId())
-    return HitTestResultsMatch::kMatch;
-
-  // If the target was not active, i.e. it had not submitted its hit test
-  // data during HitTestAggregator::AppendRegion, the viz hit test data may
-  // be outdated upon hit testing and verification.
-  bool target_was_active = true;
-  const auto& display_hit_test_query_map =
-      GetHostFrameSinkManager()->display_hit_test_query();
-  const auto iter = display_hit_test_query_map.find(
-      request->GetRootView()->GetRootFrameSinkId());
-  // When a root frame sink id is invalidated, e.g. when the window is closed,
-  // the corresponding entry will be removed from the map.
-  if (iter != display_hit_test_query_map.end()) {
-    const auto* hit_test_query = iter->second.get();
-    target_was_active =
-        hit_test_query->ContainsActiveFrameSinkId(target->GetFrameSinkId());
-  }
-  if (!target_was_active)
-    return HitTestResultsMatch::kHitTestDataOutdated;
-
-  // If the results do not match, it is possible that the hit test data
-  // changed during verification. We do synchronous hit test again to make
-  // sure the result is reliable.
-  RenderWidgetTargetResult result =
-      request->IsWebInputEventRequest()
-          ? delegate_->FindTargetSynchronously(request->GetRootView(),
-                                               request->GetEvent())
-          : delegate_->FindTargetSynchronouslyAtPoint(request->GetRootView(),
-                                                      request->GetLocation());
-  if (result.should_query_view || !result.view ||
-      request->GetExpectedFrameSinkId() != result.view->GetFrameSinkId()) {
-    // Hit test data changed, so the result is no longer reliable.
-    return HitTestResultsMatch::kHitTestResultChanged;
-  }
-
-  return HitTestResultsMatch::kDoNotMatch;
 }
 
 }  // namespace content

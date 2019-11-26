@@ -18,6 +18,6 @@ public class ResettableOneShotVisibilityLoggingListener extends OneShotVisibilit
      * re-logged as visible once it is visible.
      */
     public void reset() {
-        viewLogged = false;
+        mViewLogged = false;
     }
 }

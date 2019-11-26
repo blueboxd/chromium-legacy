@@ -11,15 +11,15 @@ public class Suppliers {
      * classes for each lambda.
      */
     private static class InstancesSupplier<T> implements Supplier<T> {
-        private final T instance;
+        private final T mInstance;
 
         InstancesSupplier(T instance) {
-            this.instance = instance;
+            this.mInstance = instance;
         }
 
         @Override
         public T get() {
-            return instance;
+            return mInstance;
         }
     }
 

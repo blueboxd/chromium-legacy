@@ -29,22 +29,22 @@ public final class ModelError {
         int SYNTHETIC_TOKEN_ERROR = 3;
     }
 
-    private final @ErrorType int errorType;
-    /*@Nullable*/ private final ByteString continuationToken;
+    private final @ErrorType int mErrorType;
+    /*@Nullable*/ private final ByteString mContinuationToken;
 
     public ModelError(@ErrorType int errorType, /*@Nullable*/ ByteString continuationToken) {
-        this.errorType = errorType;
-        this.continuationToken = continuationToken;
+        this.mErrorType = errorType;
+        this.mContinuationToken = continuationToken;
     }
 
     /** Returns the ErrorType assocated with the error. */
     public @ErrorType int getErrorType() {
-        return errorType;
+        return mErrorType;
     }
 
     /** This should be non-null if the ErrorType is PAGINATION_ERROR. */
     /*@Nullable*/
     public ByteString getContinuationToken() {
-        return continuationToken;
+        return mContinuationToken;
     }
 }

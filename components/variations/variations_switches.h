@@ -16,6 +16,7 @@ extern const char kEnableBenchmarking[];
 extern const char kFakeVariationsChannel[];
 extern const char kForceFieldTrialParams[];
 extern const char kForceVariationIds[];
+extern const char kForceDisableVariationIds[];
 extern const char kVariationsOverrideCountry[];
 extern const char kVariationsServerURL[];
 extern const char kVariationsInsecureServerURL[];

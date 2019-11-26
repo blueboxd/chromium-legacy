@@ -29,13 +29,11 @@ GFX_EXPORT base::string16 RemoveAcceleratorChar(const base::string16& s,
 // |text| with |font_list|. |typesetter| indicates where the text will be
 // displayed.
 GFX_EXPORT int GetStringWidth(const base::string16& text,
-                              const FontList& font_list,
-                              Typesetter Typesetter = Typesetter::DEFAULT);
+                              const FontList& font_list);
 
 // This is same as GetStringWidth except that fractional width is returned.
 GFX_EXPORT float GetStringWidthF(const base::string16& text,
-                                 const FontList& font_list,
-                                 Typesetter Typesetter = Typesetter::DEFAULT);
+                                 const FontList& font_list);
 
 // Returns a valid cut boundary at or before |index|. The surrogate pair and
 // combining characters should not be separated.

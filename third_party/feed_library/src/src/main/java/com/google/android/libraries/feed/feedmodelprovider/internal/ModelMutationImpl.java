@@ -20,59 +20,59 @@ import java.util.List;
 public final class ModelMutationImpl implements ModelMutation {
     /** The data representing the Change to the model. */
     public static final class Change {
-        public final List<StreamStructure> structureChanges = new ArrayList<>();
-        public final List<StreamStructure> updateChanges = new ArrayList<>();
-        /*@Nullable*/ public MutationContext mutationContext;
-        /*@Nullable*/ public String sessionId;
-        public boolean cachedBindings;
+        public final List<StreamStructure> mStructureChanges = new ArrayList<>();
+        public final List<StreamStructure> mUpdateChanges = new ArrayList<>();
+        /*@Nullable*/ public MutationContext mMutationContext;
+        /*@Nullable*/ public String mSessionId;
+        public boolean mCachedBindings;
     }
 
-    private final Committer<Void, Change> committer;
+    private final Committer<Void, Change> mCommitter;
     @VisibleForTesting
-    final Change change = new Change();
+    final Change mChange = new Change();
 
     public ModelMutationImpl(Committer<Void, Change> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public ModelMutation addChild(StreamStructure streamStructure) {
-        change.structureChanges.add(streamStructure);
+        mChange.mStructureChanges.add(streamStructure);
         return this;
     }
 
     @Override
     public ModelMutation removeChild(StreamStructure streamStructure) {
-        change.structureChanges.add(streamStructure);
+        mChange.mStructureChanges.add(streamStructure);
         return this;
     }
 
     @Override
     public ModelMutation updateChild(StreamStructure updateChild) {
-        change.updateChanges.add(updateChild);
+        mChange.mUpdateChanges.add(updateChild);
         return this;
     }
 
     @Override
     public ModelMutation setMutationContext(MutationContext mutationContext) {
-        change.mutationContext = mutationContext;
+        mChange.mMutationContext = mutationContext;
         return this;
     }
 
     @Override
     public ModelMutation setSessionId(String sessionId) {
-        change.sessionId = sessionId;
+        mChange.mSessionId = sessionId;
         return this;
     }
 
     @Override
     public ModelMutation hasCachedBindings(boolean cachedBindings) {
-        change.cachedBindings = cachedBindings;
+        mChange.mCachedBindings = cachedBindings;
         return this;
     }
 
     @Override
     public void commit() {
-        committer.commit(change);
+        mCommitter.commit(mChange);
     }
 }

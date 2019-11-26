@@ -20,6 +20,8 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -155,5 +157,24 @@ public class AwContentsRenderTest {
         invisibleBitmap = GraphicsTestUtils.drawAwContentsOnUiThread(mAwContents, width, height);
         Assert.assertNotNull(invisibleBitmap);
         Assert.assertTrue(invisibleBitmap.sameAs(visibleBitmap));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSoftwareCanvas() throws Throwable {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.setLayerType(View.LAYER_TYPE_SOFTWARE, null));
+
+        String testFile = "android_webview/test/data/green_canvas.html";
+        String url = UrlUtils.getIsolatedTestFileUrl(testFile);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        mActivityTestRule.waitForVisualStateCallback(mAwContents);
+
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Bitmap bitmap = GraphicsTestUtils.drawAwContentsOnUiThread(mAwContents, 500, 500);
+            return Color.GREEN == bitmap.getPixel(250, 250);
+        });
     }
 }

@@ -27,7 +27,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
@@ -622,28 +622,29 @@ bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
-LocalRTCStatsRequest::LocalRTCStatsRequest(blink::WebRTCStatsRequest impl)
+LocalRTCStatsRequest::LocalRTCStatsRequest(RTCStatsRequest* impl)
     : impl_(impl) {}
 
 LocalRTCStatsRequest::LocalRTCStatsRequest() {}
 LocalRTCStatsRequest::~LocalRTCStatsRequest() {}
 
 bool LocalRTCStatsRequest::hasSelector() const {
-  return impl_.HasSelector();
+  return impl_->HasSelector();
 }
 
 blink::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
-  return impl_.Component();
+  return impl_->Component();
 }
 
 scoped_refptr<LocalRTCStatsResponse> LocalRTCStatsRequest::createResponse() {
   return scoped_refptr<LocalRTCStatsResponse>(
-      new rtc::RefCountedObject<LocalRTCStatsResponse>(impl_.CreateResponse()));
+      new rtc::RefCountedObject<LocalRTCStatsResponse>(
+          impl_->CreateResponse()));
 }
 
 void LocalRTCStatsRequest::requestSucceeded(
     const LocalRTCStatsResponse* response) {
-  impl_.RequestSucceeded(response->webKitStatsResponse());
+  impl_->RequestSucceeded(response->webKitStatsResponse());
 }
 
 // Implementation of LocalRTCStatsResponse.
@@ -1629,8 +1630,7 @@ void RTCPeerConnectionHandler::GetStandardStatsForTracker(
   native_peer_connection_->GetStats(observer.get());
 }
 
-void RTCPeerConnectionHandler::GetStats(
-    const blink::WebRTCStatsRequest& request) {
+void RTCPeerConnectionHandler::GetStats(RTCStatsRequest* request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<LocalRTCStatsRequest> inner_request(
       new rtc::RefCountedObject<LocalRTCStatsRequest>(request));
@@ -2051,7 +2051,7 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(const String& output) {
 
 scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
     const blink::WebString& label,
-    const blink::WebRTCDataChannelInit& init) {
+    const RTCDataChannelInitPlatform& init) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
   DVLOG(1) << "createDataChannel label " << label.Utf8();

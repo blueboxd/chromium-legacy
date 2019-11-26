@@ -1004,7 +1004,7 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
     cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
   }
 
-  TestNetLog log_;
+  RecordingTestNetLog log_;
   ClientSocketFactory* socket_factory_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
@@ -1596,7 +1596,7 @@ TEST_P(SSLClientSocketVersionTest, Connect) {
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   std::unique_ptr<StreamSocket> transport(
       new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -2490,7 +2490,7 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
 
   TestCompletionCallback callback;
-  TestNetLog log;
+  RecordingTestNetLog log;
   log.SetObserverCaptureMode(NetLogCaptureMode::kEverything);
   std::unique_ptr<StreamSocket> transport(
       new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
@@ -5473,7 +5473,7 @@ TEST_F(SSLClientSocketTest, Tag) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, SSLServerConfig()));
 
-  TestNetLog log;
+  RecordingTestNetLog log;
   std::unique_ptr<StreamSocket> transport(
       new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
 

@@ -8,11 +8,14 @@
 
 namespace cc {
 
-ImageDecodeCache::TaskResult::TaskResult(bool need_unref)
-    : need_unref(need_unref) {}
+ImageDecodeCache::TaskResult::TaskResult(bool need_unref,
+                                         bool is_at_raster_decode)
+    : need_unref(need_unref), is_at_raster_decode(is_at_raster_decode) {}
 
 ImageDecodeCache::TaskResult::TaskResult(scoped_refptr<TileTask> task)
-    : task(std::move(task)), need_unref(true) {}
+    : task(std::move(task)), need_unref(true), is_at_raster_decode(false) {
+  DCHECK(this->task);
+}
 
 ImageDecodeCache::TaskResult::TaskResult(const TaskResult& result) = default;
 

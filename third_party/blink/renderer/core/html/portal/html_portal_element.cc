@@ -106,6 +106,9 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
   if (!is_top_level)
     return GuestContentsEligibility::kNotTopLevel;
 
+  if (!GetDocument().Url().ProtocolIsInHTTPFamily())
+    return GuestContentsEligibility::kNotHTTPFamily;
+
   return GuestContentsEligibility::kEligible;
 }
 
@@ -277,6 +280,13 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
           mojom::ConsoleMessageSource::kRendering,
           mojom::ConsoleMessageLevel::kWarning,
           "Cannot use <portal> in a nested browsing context."));
+      return result;
+
+    case GuestContentsEligibility::kNotHTTPFamily:
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kWarning,
+          "<portal> use is restricted to the HTTP family."));
       return result;
 
     case GuestContentsEligibility::kEligible:

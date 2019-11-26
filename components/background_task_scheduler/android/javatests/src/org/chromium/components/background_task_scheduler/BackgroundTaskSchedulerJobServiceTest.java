@@ -6,7 +6,6 @@ package org.chromium.components.background_task_scheduler;
 
 import android.annotation.TargetApi;
 import android.app.job.JobInfo;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -30,22 +29,6 @@ import java.util.concurrent.TimeUnit;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
 public class BackgroundTaskSchedulerJobServiceTest {
-    private static class TestBackgroundTask implements BackgroundTask {
-        @Override
-        public boolean onStartTask(
-                Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-            return false;
-        }
-
-        @Override
-        public boolean onStopTask(Context context, TaskParameters taskParameters) {
-            return false;
-        }
-
-        @Override
-        public void reschedule(Context context) {}
-    }
-
     private static final long CLOCK_TIME_MS = 1415926535000L;
     private static final long TIME_50_MIN_TO_MS = TimeUnit.MINUTES.toMillis(50);
     private static final long TIME_100_MIN_TO_MS = TimeUnit.MINUTES.toMillis(100);

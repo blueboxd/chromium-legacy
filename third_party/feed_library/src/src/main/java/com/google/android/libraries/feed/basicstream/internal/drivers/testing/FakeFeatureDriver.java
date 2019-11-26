@@ -11,13 +11,13 @@ import com.google.android.libraries.feed.testing.modelprovider.FakeModelFeature;
 
 /** Fake for {@link FeatureDriver}. */
 public class FakeFeatureDriver implements FeatureDriver {
-    /*@Nullable*/ private final LeafFeatureDriver leafFeatureDriver;
-    private final ModelFeature modelFeature;
+    /*@Nullable*/ private final LeafFeatureDriver mLeafFeatureDriver;
+    private final ModelFeature mModelFeature;
 
     private FakeFeatureDriver(
             /*@Nullable*/ LeafFeatureDriver leafFeatureDriver, ModelFeature modelFeature) {
-        this.leafFeatureDriver = leafFeatureDriver;
-        this.modelFeature = modelFeature;
+        this.mLeafFeatureDriver = leafFeatureDriver;
+        this.mModelFeature = modelFeature;
     }
 
     @Override
@@ -26,31 +26,31 @@ public class FakeFeatureDriver implements FeatureDriver {
     @Override
     /*@Nullable*/
     public LeafFeatureDriver getLeafFeatureDriver() {
-        return leafFeatureDriver;
+        return mLeafFeatureDriver;
     }
 
     public ModelFeature getModelFeature() {
-        return modelFeature;
+        return mModelFeature;
     }
 
     public static class Builder {
         /*@Nullable*/
-        private LeafFeatureDriver leafFeatureDriver = new FakeLeafFeatureDriver.Builder().build();
+        private LeafFeatureDriver mLeafFeatureDriver = new FakeLeafFeatureDriver.Builder().build();
 
-        private ModelFeature modelFeature = FakeModelFeature.newBuilder().build();
+        private ModelFeature mModelFeature = FakeModelFeature.newBuilder().build();
 
         public Builder setLeafFeatureDriver(/*@Nullable*/ LeafFeatureDriver contentModel) {
-            this.leafFeatureDriver = contentModel;
+            this.mLeafFeatureDriver = contentModel;
             return this;
         }
 
         public Builder setModelFeature(ModelFeature modelFeature) {
-            this.modelFeature = modelFeature;
+            this.mModelFeature = modelFeature;
             return this;
         }
 
         public FakeFeatureDriver build() {
-            return new FakeFeatureDriver(leafFeatureDriver, modelFeature);
+            return new FakeFeatureDriver(mLeafFeatureDriver, mModelFeature);
         }
     }
 }

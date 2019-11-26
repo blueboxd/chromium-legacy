@@ -15,54 +15,54 @@ import java.util.List;
 public class DeepestContentTracker implements ViewDepthProvider {
     private static final String TAG = "DeepestContentTracker";
 
-    private final List</*@Nullable*/ String> contentIds = new ArrayList<>();
+    private final List</*@Nullable*/ String> mContentIds = new ArrayList<>();
 
     public void updateDeepestContentTracker(int contentPosition, /*@Nullable*/ String contentId) {
         // Fill content ids to size of content position. This is needed in-case we programmatically
         // set scroll position of the recycler view. Add one to contentPosition size in order to
         // more easily perform a set below.
-        while (contentIds.size() < contentPosition + 1) {
-            contentIds.add(null);
+        while (mContentIds.size() < contentPosition + 1) {
+            mContentIds.add(null);
         }
 
         // Just update the content id of the item in the list.
-        contentIds.set(contentPosition, contentId);
+        mContentIds.set(contentPosition, contentId);
     }
 
     public void removeContentId(int contentPosition) {
-        if (contentPosition >= contentIds.size()) {
+        if (contentPosition >= mContentIds.size()) {
             return;
         }
 
-        contentIds.remove(contentPosition);
+        mContentIds.remove(contentPosition);
     }
 
     @VisibleForTesting
     /*@Nullable*/
     String getContentItAtPosition(int position) {
-        if (position >= contentIds.size() || position < 0) {
+        if (position >= mContentIds.size() || position < 0) {
             return null;
         }
 
-        return contentIds.get(position);
+        return mContentIds.get(position);
     }
 
     public void reset() {
-        contentIds.clear();
+        mContentIds.clear();
     }
 
     @Override
     /*@Nullable*/
     public String getChildViewDepth() {
-        if (contentIds.isEmpty()) {
+        if (mContentIds.isEmpty()) {
             return null;
         }
 
-        int i = contentIds.size() - 1;
-        while (contentIds.get(i) == null && i > 0) {
+        int i = mContentIds.size() - 1;
+        while (mContentIds.get(i) == null && i > 0) {
             i--;
         }
 
-        return contentIds.get(i);
+        return mContentIds.get(i);
     }
 }

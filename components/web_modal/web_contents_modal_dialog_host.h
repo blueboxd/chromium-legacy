@@ -6,6 +6,7 @@
 #define COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_HOST_H_
 
 #include "components/web_modal/modal_dialog_host.h"
+#include "components/web_modal/web_modal_export.h"
 
 namespace gfx {
 class Size;
@@ -17,7 +18,7 @@ namespace web_modal {
 // to draw outside the browser window. WebContentsModalDialogHost adds a
 // GetMaximumDialogSize method in order for positioning code to be able to take
 // this into account.
-class WebContentsModalDialogHost : public ModalDialogHost {
+class WEB_MODAL_EXPORT WebContentsModalDialogHost : public ModalDialogHost {
  public:
   ~WebContentsModalDialogHost() override;
 

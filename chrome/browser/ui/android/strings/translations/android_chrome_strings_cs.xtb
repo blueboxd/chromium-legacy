@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Seznam zařízení, se kterými se má karta sdílet, otevřený na plnou výšku.</translation>
+<translation id="2905036901251765993">Chcete-li obsah sdílet s lidmi z okolí, nechte je naskenovat tento QR kód</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
 <translation id="2910701580606108292">Před povolením spuštění chráněného obsahu na webu se zeptat</translation>
 <translation id="2913331724188855103">Povolit webům ukládat a číst data souborů cookie (doporučeno)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Zrušit maskování hesla</translation>
 <translation id="363596933471559332">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o ověření.</translation>
 <translation id="3658159451045945436">Resetováním vymažete historii úspory dat, včetně seznamu navštívených webů.</translation>
+<translation id="3682730288090679318">Zapnutím této možnosti webům automaticky zakážete žádosti o zobrazení oznámení. Pokud web požádá o oznámení, v dolní části stránky se zobrazí informační panel.</translation>
 <translation id="3692944402865947621">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo, protože umístění úložiště není dostupné.</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
@@ -542,6 +544,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5048398596102334565">Povolit webům přístup k senzorům pohybu (doporučeno)</translation>
 <translation id="5063480226653192405">Použití</translation>
 <translation id="5087580092889165836">Přidat kartu</translation>
+<translation id="5096950519211870196">Weby nebudou moci žádat o zobrazování oznámení. Pokud web požádá o oznámení, v dolní části stránky se zobrazí informační panel.</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="510275257476243843">Zbývá: 1 h</translation>
 <translation id="5123685120097942451">Anonymní karta</translation>
@@ -589,6 +592,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5414836363063783498">Ověřování…</translation>
 <translation id="5423934151118863508">Zde se zobrazí vaše nejnavštěvovanější stránky.</translation>
 <translation id="5424588387303617268">K dispozici: <ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">Rozumím. Ve výchozím nastavení se nové žádosti o povolení oznámení budou zobrazovat zde.</translation>
 <translation id="543338862236136125">Upravit heslo</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
 <translation id="543509235395288790">Stahování <ph name="COUNT" /> souborů (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
 <translation id="6111020039983847643">využitá data</translation>
 <translation id="6112702117600201073">Obnovování stránky</translation>
+<translation id="6113400363611269907">Zobrazovat výzvy tiše</translation>
 <translation id="6127379762771434464">Položka byla odstraněna</translation>
 <translation id="6140912465461743537">Země/Region</translation>
 <translation id="614940544461990577">Zkuste:</translation>
@@ -1019,6 +1024,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8514477925623180633">Exportovat hesla uložená v Chromu</translation>
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
+<translation id="8516012719330875537">Editor obrázků</translation>
 <translation id="851751545965956758">Bránit webům v připojení k zařízením</translation>
 <translation id="8523928698583292556">Vymazat uložené heslo</translation>
 <translation id="854522910157234410">Otevřít tuto stránku</translation>

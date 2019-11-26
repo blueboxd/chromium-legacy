@@ -84,11 +84,11 @@ public class PackageMetrics {
         PackageMetricsData data = getPackageStatsForAndroidO();
         if (data != null) {
             RecordHistogram.recordCustomCountHistogram("Android.PackageStats.DataSize",
-                    Math.round(ConversionUtils.bytesToMegabytes(data.dataSize)), 1, 10000, 50);
+                    (int) ConversionUtils.bytesToMegabytes(data.dataSize), 1, 10000, 50);
             RecordHistogram.recordCustomCountHistogram("Android.PackageStats.CacheSize",
-                    Math.round(ConversionUtils.bytesToMegabytes(data.cacheSize)), 1, 10000, 50);
+                    (int) ConversionUtils.bytesToMegabytes(data.cacheSize), 1, 10000, 50);
             RecordHistogram.recordSparseHistogram("Android.PackageStats.CodeSize",
-                    Math.round(ConversionUtils.bytesToMegabytes(data.codeSize)));
+                    (int) ConversionUtils.bytesToMegabytes(data.codeSize));
         }
     }
 }

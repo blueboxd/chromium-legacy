@@ -2643,7 +2643,6 @@
 <translation id="4839303808932127586">За&amp;чувај видео како...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Уште 1}one{Уште #}other{Уште #}}</translation>
 <translation id="4842976633412754305">Страницата се обидува да вчита скрипти од непроверени извори.</translation>
-<translation id="4843488774506045600">Најавувањето е обезбедено од <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Други тастатури</translation>
 <translation id="4846680374085650406">Ги следите препораките на администраторот за оваа поставка.</translation>
 <translation id="4848518990323155912">Овозможете заклучување на SIM-картичка (барај PIN за користење мобилен интернет)</translation>
@@ -3848,7 +3847,6 @@
 <translation id="6607831829715835317">Повеќе алат&amp;ки</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
 <translation id="6615455863669487791">Покажи ми</translation>
-<translation id="6617100836880592260">Брзина на скенирање: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Сепак задржи</translation>
 <translation id="6619058681307408113">Линиски печатач Daemon (LPD)</translation>
 <translation id="661907246513853610">Сајтот може да ја следи вашата локација</translation>

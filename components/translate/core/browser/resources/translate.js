@@ -7,6 +7,7 @@
 // language to another.
 // It should be included in the page before the Translate Element script.
 
+// eslint-disable-next-line no-var
 var cr = cr || {};
 
 /**
@@ -18,20 +19,20 @@ cr.googleTranslate = (function() {
    * The Translate Element library's instance.
    * @type {object}
    */
-  var lib;
+  let lib;
 
   /**
    * A flag representing if the Translate Element library is initialized.
    * @type {boolean}
    */
-  var libReady = false;
+  let libReady = false;
 
   /**
    * Error definitions for |errorCode|. See chrome/common/translate_errors.h
    * to modify the definition.
    * @const
    */
-  var ERROR = {
+  const ERROR = {
     'NONE': 0,
     'INITIALIZATION_ERROR': 2,
     'UNSUPPORTED_LANGUAGE': 4,
@@ -47,7 +48,7 @@ cr.googleTranslate = (function() {
    * See also go/dom_translator.js in google3.
    * @const
    */
-  var TRANSLATE_ERROR_TO_ERROR_CODE_MAP = {
+  const TRANSLATE_ERROR_TO_ERROR_CODE_MAP = {
     0: ERROR['NONE'],
     1: ERROR['TRANSLATION_ERROR'],
     2: ERROR['UNSUPPORTED_LANGUAGE']
@@ -56,51 +57,51 @@ cr.googleTranslate = (function() {
   /**
    * An error code happened in translate.js and the Translate Element library.
    */
-  var errorCode = ERROR['NONE'];
+  let errorCode = ERROR['NONE'];
 
   /**
    * A flag representing if the Translate Element has finished a translation.
    * @type {boolean}
    */
-  var finished = false;
+  let finished = false;
 
   /**
    * Counts how many times the checkLibReady function is called. The function
    * is called in every 100 msec and counted up to 6.
    * @type {number}
    */
-  var checkReadyCount = 0;
+  let checkReadyCount = 0;
 
   /**
    * Time in msec when this script is injected.
    * @type {number}
    */
-  var injectedTime = performance.now();
+  const injectedTime = performance.now();
 
   /**
    * Time in msec when the Translate Element library is loaded completely.
    * @type {number}
    */
-  var loadedTime = 0.0;
+  let loadedTime = 0.0;
 
   /**
    * Time in msec when the Translate Element library is initialized and ready
    * for performing translation.
    * @type {number}
    */
-  var readyTime = 0.0;
+  let readyTime = 0.0;
 
   /**
    * Time in msec when the Translate Element library starts a translation.
    * @type {number}
    */
-  var startTime = 0.0;
+  let startTime = 0.0;
 
   /**
    * Time in msec when the Translate Element library ends a translation.
    * @type {number}
    */
-  var endTime = 0.0;
+  let endTime = 0.0;
 
   /**
    * Callback invoked when Translate Element's ready state is known.
@@ -109,7 +110,7 @@ cr.googleTranslate = (function() {
    * Only used on iOS.
    * @type {function}
    */
-  var readyCallback;
+  let readyCallback;
 
   /**
    * Callback invoked when Translate Element's translation result is known.
@@ -118,14 +119,14 @@ cr.googleTranslate = (function() {
    * Only used on iOS.
    * @type {function}
    */
-  var resultCallback;
+  let resultCallback;
 
   /**
    * Callback invoked when Translate Element requests load of javascript files.
    * Currently main.js and element_main.js are expected to be loaded.
    * @type {function(string)}
    */
-  var loadJavascriptCallback;
+  let loadJavascriptCallback;
 
   function checkLibReady() {
     if (lib.isAvailable()) {
@@ -384,7 +385,7 @@ cr.googleTranslate = (function() {
      * @param {string} url URL of an external CSS resource to load.
      */
     onLoadCSS: function(url) {
-      var element = document.createElement('link');
+      const element = document.createElement('link');
       element.type = 'text/css';
       element.rel = 'stylesheet';
       element.charset = 'UTF-8';
@@ -410,7 +411,7 @@ cr.googleTranslate = (function() {
         return;
       }
 
-      var xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
         if (this.readyState != this.DONE) {

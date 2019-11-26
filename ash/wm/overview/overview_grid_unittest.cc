@@ -15,6 +15,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -228,7 +229,7 @@ TEST_F(OverviewGridTest, PartiallyOffscreenWindow) {
   // Position |window2|'s destination to be partially offscreen. Tests that it
   // still animates because the onscreen portion is not occluded by |window1|.
   std::vector<gfx::RectF> target_bounds = {
-      gfx::RectF(100.f, 100.f), gfx::RectF(350.f, 350.f, 100.f, 100.f)};
+      gfx::RectF(100.f, 100.f), gfx::RectF(350.f, 100.f, 100.f, 100.f)};
   CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
                        {true, true}, {true, true});
 

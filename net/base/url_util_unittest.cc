@@ -383,7 +383,7 @@ TEST_P(UrlUtilNonUniqueNameTest, IsHostnameNonUnique) {
   EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          UrlUtilNonUniqueNameTest,
                          testing::ValuesIn(kNonUniqueNameTestData));
 

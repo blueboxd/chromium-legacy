@@ -52,40 +52,40 @@ public interface PietManager {
                 Suppliers.of(Long.MAX_VALUE);
         private static final TypefaceProvider NULL_TYPEFACE_PROVIDER = new NullTypefaceProvider();
 
-        private ImageLoader imageLoader = BLANK_IMAGE_LOADER;
-        private StringFormatter stringFormatter = EMPTY_STRING_FORMATTER;
-        private Supplier<Integer> defaultCornerRadiusSupplier = CORNER_RADIUS_DEFAULT;
-        private Supplier<Boolean> isDarkThemeSupplier = DARK_THEME_DEFAULT;
-        private Supplier<Long> fadeImageThresholdMsSupplier = FADE_IMAGE_THRESHOLD_DEFAULT;
-        private TypefaceProvider typefaceProvider = NULL_TYPEFACE_PROVIDER;
-        private Supplier<Boolean> isRtLSupplier = LayoutUtils::isDefaultLocaleRtl;
+        private ImageLoader mImageLoader = BLANK_IMAGE_LOADER;
+        private StringFormatter mStringFormatter = EMPTY_STRING_FORMATTER;
+        private Supplier<Integer> mDefaultCornerRadiusSupplier = CORNER_RADIUS_DEFAULT;
+        private Supplier<Boolean> mIsDarkThemeSupplier = DARK_THEME_DEFAULT;
+        private Supplier<Long> mFadeImageThresholdMsSupplier = FADE_IMAGE_THRESHOLD_DEFAULT;
+        private TypefaceProvider mTypefaceProvider = NULL_TYPEFACE_PROVIDER;
+        private Supplier<Boolean> mIsRtLSupplier = LayoutUtils::isDefaultLocaleRtl;
 
-        private DebugBehavior debugBehavior = DebugBehavior.SILENT;
-        /*@MonotonicNonNull*/ private CustomElementProvider customElementProvider;
-        /*@MonotonicNonNull*/ private HostBindingProvider hostBindingProvider;
-        /*@MonotonicNonNull*/ private Clock clock;
-        private boolean allowLegacyRoundedCornerImpl;
-        private boolean allowOutlineRoundedCornerImpl;
+        private DebugBehavior mDebugBehavior = DebugBehavior.SILENT;
+        /*@MonotonicNonNull*/ private CustomElementProvider mCustomElementProvider;
+        /*@MonotonicNonNull*/ private HostBindingProvider mHostBindingProvider;
+        /*@MonotonicNonNull*/ private Clock mClock;
+        private boolean mAllowLegacyRoundedCornerImpl;
+        private boolean mAllowOutlineRoundedCornerImpl;
 
         private Builder() {}
 
         public Builder setDebugBehavior(DebugBehavior debugBehavior) {
-            this.debugBehavior = debugBehavior;
+            this.mDebugBehavior = debugBehavior;
             return this;
         }
 
         public Builder setCustomElementProvider(CustomElementProvider customElementProvider) {
-            this.customElementProvider = customElementProvider;
+            this.mCustomElementProvider = customElementProvider;
             return this;
         }
 
         public Builder setHostBindingProvider(HostBindingProvider hostBindingProvider) {
-            this.hostBindingProvider = hostBindingProvider;
+            this.mHostBindingProvider = hostBindingProvider;
             return this;
         }
 
         public Builder setClock(Clock clock) {
-            this.clock = clock;
+            this.mClock = clock;
             return this;
         }
 
@@ -94,7 +94,7 @@ public interface PietManager {
          * antialiasing.
          */
         public Builder setAllowLegacyRoundedCornerImpl(boolean allowLegacyRoundedCornerImpl) {
-            this.allowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
+            this.mAllowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
             return this;
         }
 
@@ -103,62 +103,62 @@ public interface PietManager {
          * rounded for better performance.
          */
         public Builder setAllowOutlineRoundedCornerImpl(boolean allowOutlineRoundedCornerImpl) {
-            this.allowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
+            this.mAllowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
             return this;
         }
 
         // AssetProvider-related setters
         public Builder setImageLoader(ImageLoader imageLoader) {
-            this.imageLoader = imageLoader;
+            this.mImageLoader = imageLoader;
             return this;
         }
 
         public Builder setStringFormatter(StringFormatter stringFormatter) {
-            this.stringFormatter = stringFormatter;
+            this.mStringFormatter = stringFormatter;
             return this;
         }
 
         public Builder setDefaultCornerRadius(Supplier<Integer> defaultCornerRadiusSupplier) {
-            this.defaultCornerRadiusSupplier = defaultCornerRadiusSupplier;
+            this.mDefaultCornerRadiusSupplier = defaultCornerRadiusSupplier;
             return this;
         }
 
         public Builder setFadeImageThresholdMs(Supplier<Long> fadeImageThresholdMsSupplier) {
-            this.fadeImageThresholdMsSupplier = fadeImageThresholdMsSupplier;
+            this.mFadeImageThresholdMsSupplier = fadeImageThresholdMsSupplier;
             return this;
         }
 
         public Builder setIsDarkTheme(Supplier<Boolean> isDarkThemeSupplier) {
-            this.isDarkThemeSupplier = isDarkThemeSupplier;
+            this.mIsDarkThemeSupplier = isDarkThemeSupplier;
             return this;
         }
 
         public Builder setIsRtL(Supplier<Boolean> isRtLSupplier) {
-            this.isRtLSupplier = isRtLSupplier;
+            this.mIsRtLSupplier = isRtLSupplier;
             return this;
         }
 
         public Builder setTypefaceProvider(TypefaceProvider typefaceProvider) {
-            this.typefaceProvider = typefaceProvider;
+            this.mTypefaceProvider = typefaceProvider;
             return this;
         }
         // End AssetProvider-related setters
 
         public PietManager build() {
-            customElementProvider = customElementProvider == null
+            mCustomElementProvider = mCustomElementProvider == null
                     ? new ThrowingCustomElementProvider()
-                    : customElementProvider;
-            hostBindingProvider =
-                    hostBindingProvider == null ? new HostBindingProvider() : hostBindingProvider;
-            clock = clock == null ? new SystemClockImpl() : clock;
+                    : mCustomElementProvider;
+            mHostBindingProvider =
+                    mHostBindingProvider == null ? new HostBindingProvider() : mHostBindingProvider;
+            mClock = mClock == null ? new SystemClockImpl() : mClock;
 
-            AssetProvider assetProvider = new AssetProvider(imageLoader, stringFormatter,
-                    defaultCornerRadiusSupplier, fadeImageThresholdMsSupplier, isDarkThemeSupplier,
-                    isRtLSupplier, typefaceProvider);
+            AssetProvider assetProvider = new AssetProvider(mImageLoader, mStringFormatter,
+                    mDefaultCornerRadiusSupplier, mFadeImageThresholdMsSupplier,
+                    mIsDarkThemeSupplier, mIsRtLSupplier, mTypefaceProvider);
 
-            return new PietManagerImpl(debugBehavior, assetProvider, customElementProvider,
-                    hostBindingProvider, clock, allowLegacyRoundedCornerImpl,
-                    allowOutlineRoundedCornerImpl);
+            return new PietManagerImpl(mDebugBehavior, assetProvider, mCustomElementProvider,
+                    mHostBindingProvider, mClock, mAllowLegacyRoundedCornerImpl,
+                    mAllowOutlineRoundedCornerImpl);
         }
     }
 }

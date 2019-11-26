@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit;
 /** Helper class to format templated strings when rendering cards. */
 public class ParameterizedTextEvaluator {
     private static final String TAG = "ParameterizedTextEvalua";
-    private final Clock clock;
+    private final Clock mClock;
 
     ParameterizedTextEvaluator(Clock clock) {
-        this.clock = clock;
+        this.mClock = clock;
     }
 
     /** Evaluates the given parameterized string, respecting the HTML setting */
@@ -86,7 +86,7 @@ public class ParameterizedTextEvaluator {
     /*@Nullable*/
     private String evaluateParam(AssetProvider assetProvider, ParameterizedText.Parameter param) {
         if (param.hasTimestampSeconds()) {
-            long elapsedTimeMillis = clock.currentTimeMillis()
+            long elapsedTimeMillis = mClock.currentTimeMillis()
                     - TimeUnit.SECONDS.toMillis(param.getTimestampSeconds());
             return assetProvider.getRelativeElapsedString(elapsedTimeMillis);
         }

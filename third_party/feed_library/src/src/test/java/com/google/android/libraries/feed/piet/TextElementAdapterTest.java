@@ -67,22 +67,22 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class TextElementAdapterTest {
     @Mock
-    private FrameContext frameContext;
+    private FrameContext mFrameContext;
     @Mock
-    private StyleProvider mockStyleProvider;
+    private StyleProvider mMockStyleProvider;
     @Mock
-    private HostProviders mockHostProviders;
+    private HostProviders mMockHostProviders;
     @Mock
-    private AssetProvider mockAssetProvider;
+    private AssetProvider mMockAssetProvider;
     @Mock
-    private TypefaceProvider mockTypefaceProvider;
+    private TypefaceProvider mMockTypefaceProvider;
 
-    private AdapterParameters adapterParameters;
+    private AdapterParameters mAdapterParameters;
 
-    private Context context;
+    private Context mContext;
 
-    private TextElementAdapter adapter;
-    private int emptyTextElementLineHeight;
+    private TextElementAdapter mAdapter;
+    private int mEmptyTextElementLineHeight;
 
     @Before
     public void setUp() {

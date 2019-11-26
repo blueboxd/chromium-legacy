@@ -2352,7 +2352,7 @@ TEST_F(HostResolverManagerTest, IsIPv6Reachable) {
       nullptr /* net_log */);
 
   // Verify that two consecutive calls return the same value.
-  TestNetLog test_net_log;
+  RecordingTestNetLog test_net_log;
   NetLogWithSource net_log =
       NetLogWithSource::Make(&test_net_log, NetLogSourceType::NONE);
   bool result1 = IsIPv6Reachable(net_log);

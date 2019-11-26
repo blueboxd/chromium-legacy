@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -248,7 +249,8 @@ void XRWebGLDrawingBuffer::SetMirrorClient(scoped_refptr<MirrorClient> client) {
     // it has content to show.
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(1, 1);
     mirror_client_->OnMirrorImageAvailable(
-        StaticBitmapImage::Create(surface->makeImageSnapshot()), nullptr);
+        UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()),
+        nullptr);
   }
 }
 
@@ -653,7 +655,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
     // context gets lost.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
-    return StaticBitmapImage::Create(surface->makeImageSnapshot());
+    return UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
   }
 
   // This holds a ref on the XRWebGLDrawingBuffer that will keep it alive

@@ -18,59 +18,59 @@ import java.util.List;
  * interfaces.
  */
 public class DelegatingJournalStorage implements JournalStorage, JournalStorageDirect {
-    private final JournalStorageDirect delegate;
+    private final JournalStorageDirect mDelegate;
 
     public DelegatingJournalStorage(JournalStorageDirect delegate) {
-        this.delegate = delegate;
+        this.mDelegate = delegate;
     }
 
     @Override
     public void read(String journalName, Consumer<Result<List<byte[]>>> consumer) {
-        consumer.accept(delegate.read(journalName));
+        consumer.accept(mDelegate.read(journalName));
     }
 
     @Override
     public Result<List<byte[]>> read(String journalName) {
-        return delegate.read(journalName);
+        return mDelegate.read(journalName);
     }
 
     @Override
     public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
-        consumer.accept(delegate.commit(mutation));
+        consumer.accept(mDelegate.commit(mutation));
     }
 
     @Override
     public CommitResult commit(JournalMutation mutation) {
-        return delegate.commit(mutation);
+        return mDelegate.commit(mutation);
     }
 
     @Override
     public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
-        consumer.accept(delegate.exists(journalName));
+        consumer.accept(mDelegate.exists(journalName));
     }
 
     @Override
     public Result<Boolean> exists(String journalName) {
-        return delegate.exists(journalName);
+        return mDelegate.exists(journalName);
     }
 
     @Override
     public void getAllJournals(Consumer<Result<List<String>>> consumer) {
-        consumer.accept(delegate.getAllJournals());
+        consumer.accept(mDelegate.getAllJournals());
     }
 
     @Override
     public Result<List<String>> getAllJournals() {
-        return delegate.getAllJournals();
+        return mDelegate.getAllJournals();
     }
 
     @Override
     public void deleteAll(Consumer<CommitResult> consumer) {
-        consumer.accept(delegate.deleteAll());
+        consumer.accept(mDelegate.deleteAll());
     }
 
     @Override
     public CommitResult deleteAll() {
-        return delegate.deleteAll();
+        return mDelegate.deleteAll();
     }
 }

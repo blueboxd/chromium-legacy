@@ -194,6 +194,10 @@ void OmniboxPopupContentsView::UnselectButton() {
   model_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
+OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
+  return static_cast<OmniboxResultView*>(children()[i]);
+}
+
 bool OmniboxPopupContentsView::InExplicitExperimentalKeywordMode() {
   return model_->edit_model()->InExplicitExperimentalKeywordMode();
 }
@@ -391,10 +395,6 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
       return i;
   }
   return OmniboxPopupModel::kNoMatch;
-}
-
-OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
-  return static_cast<OmniboxResultView*>(children()[i]);
 }
 
 void OmniboxPopupContentsView::GetAccessibleNodeData(

@@ -9,9 +9,10 @@
 
 // TODO(pkasting): Add the rest of the colors.
 
+// clang-format off
 #define CHROME_COLOR_IDS \
   /* Omnibox output colors. */ \
-  E(kColorOmniboxBackground, ui::kUiColorsEnd), \
+  E(kColorOmniboxBackground, kChromeColorsStart), \
   E(kColorOmniboxBackgroundHovered), \
   E(kColorOmniboxBubbleOutline), \
   E(kColorOmniboxBubbleOutlineExperimentalKeywordMode), \
@@ -31,11 +32,14 @@
   E(kColorOmniboxSelectedKeyword), \
   E(kColorOmniboxText), \
   E(kColorOmniboxTextDimmed), \
+  \
   E(kColorToolbar)
+// clang-format on
 
 #include "ui/color/color_id_macros.inc"
 
 enum ChromeColorIds : ui::ColorId {
+  kChromeColorsStart = ui::kUiColorsEnd,
 
   CHROME_COLOR_IDS,
 

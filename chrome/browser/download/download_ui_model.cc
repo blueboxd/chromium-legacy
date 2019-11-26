@@ -237,14 +237,14 @@ base::string16 DownloadUIModel::GetStatusText() const {
 
 base::string16 DownloadUIModel::GetTooltipText(const gfx::FontList& font_list,
                                                int max_width) const {
-  base::string16 tooltip = gfx::ElideFilename(
-      GetFileNameToReportUser(), font_list, max_width, gfx::Typesetter::NATIVE);
+  base::string16 tooltip =
+      gfx::ElideFilename(GetFileNameToReportUser(), font_list, max_width);
   if (GetState() == DownloadItem::INTERRUPTED &&
       GetLastFailState() != FailState::USER_CANCELED) {
     tooltip += base::ASCIIToUTF16("\n");
     tooltip += gfx::ElideText(
         OfflineItemUtils::GetFailStateMessage(GetLastFailState()), font_list,
-        max_width, gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
+        max_width, gfx::ELIDE_TAIL);
   }
   return tooltip;
 }
@@ -254,8 +254,7 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
   base::string16 elided_filename =
-      gfx::ElideFilename(GetFileNameToReportUser(), font_list, base_width,
-                         gfx::Typesetter::BROWSER);
+      gfx::ElideFilename(GetFileNameToReportUser(), font_list, base_width);
 
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {

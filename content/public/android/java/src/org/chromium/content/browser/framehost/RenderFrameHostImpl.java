@@ -91,6 +91,13 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
+    public boolean isPaymentFeaturePolicyEnabled() {
+        return mNativeRenderFrameHostAndroid != 0
+                && RenderFrameHostImplJni.get().isPaymentFeaturePolicyEnabled(
+                        mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
+    }
+
+    @Override
     public InterfaceProvider getRemoteInterfaces() {
         return mInterfaceProvider;
     }
@@ -140,6 +147,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid,
                 RenderFrameHostImpl caller, Callback<String> callback);
+        boolean isPaymentFeaturePolicyEnabled(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         UnguessableToken getAndroidOverlayRoutingToken(
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         void notifyUserActivation(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);

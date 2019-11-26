@@ -14,36 +14,36 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public abstract class PoolInternerBase<T> implements Interner<T> {
-    private final Pool<T> pool;
+    private final Pool<T> mPool;
 
     PoolInternerBase(Pool<T> pool) {
-        this.pool = Validators.checkNotNull(pool);
+        this.mPool = Validators.checkNotNull(pool);
     }
 
     @Override
     public T intern(T input) {
-        synchronized (pool) {
-            T output = pool.get(input);
+        synchronized (mPool) {
+            T output = mPool.get(input);
             if (output != null) {
                 return output;
             }
 
-            pool.put(input);
+            mPool.put(input);
             return input;
         }
     }
 
     @Override
     public void clear() {
-        synchronized (pool) {
-            pool.clear();
+        synchronized (mPool) {
+            mPool.clear();
         }
     }
 
     @Override
     public int size() {
-        synchronized (pool) {
-            return pool.size();
+        synchronized (mPool) {
+            return mPool.size();
         }
     }
 

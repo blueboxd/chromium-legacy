@@ -4,6 +4,7 @@
 
 #include "components/sync/test/fake_sync_encryption_handler.h"
 
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/syncable/nigori_util.h"
@@ -11,7 +12,7 @@
 namespace syncer {
 
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
-    : encrypted_types_(SensitiveTypes()),
+    : encrypted_types_(AlwaysEncryptedUserTypes()),
       encrypt_everything_(false),
       passphrase_type_(PassphraseType::kImplicitPassphrase) {}
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}

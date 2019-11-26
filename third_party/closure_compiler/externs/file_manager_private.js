@@ -34,6 +34,24 @@ chrome.fileManagerPrivate.DeviceType = {
   UNKNOWN: 'unknown',
 };
 
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.DriveConnectionStateType = {
+  OFFLINE: 'OFFLINE',
+  METERED: 'METERED',
+  ONLINE: 'ONLINE',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.DriveOfflineReason = {
+  NOT_READY: 'NOT_READY',
+  NO_NETWORK: 'NO_NETWORK',
+  NO_SERVICE: 'NO_SERVICE',
+};
+
 /** @enum {string} */
 chrome.fileManagerPrivate.MountCondition = {
   UNKNOWN: 'unknown',
@@ -447,8 +465,8 @@ chrome.fileManagerPrivate.DriveMetadataSearchResult;
 
 /**
  * @typedef {{
- *   type: string,
- *   reason: (string|undefined),
+ *   type: !chrome.fileManagerPrivate.DriveConnectionStateType,
+ *   reason: (!chrome.fileManagerPrivate.DriveOfflineReason|undefined),
  *   hasCellularNetworkAccess: boolean
  * }}
  */

@@ -94,6 +94,16 @@ function setUp() {
       getCustomActions: null,
       executeCustomAction: null,
       pinDriveFile: null,
+      DriveConnectionStateType: {
+        ONLINE: 'ONLINE',
+        OFFLINE: 'OFFLINE',
+        METERED: 'METERED',
+      },
+      DriveOfflineReason: {
+        NOT_READY: 'NOT_READY',
+        NO_NETWORK: 'NO_NETWORK',
+        NO_SERVICE: 'NO_SERVICE',
+      },
     },
   };
   installMockChrome(mockChrome);
@@ -147,7 +157,8 @@ function testDriveDirectoryEntry(callback) {
             const shareAction = actions[ActionsModel.CommonActionId.SHARE];
             assertTrue(!!shareAction);
             volumeManager.driveConnectionState = {
-              type: VolumeManagerCommon.DriveConnectionType.OFFLINE
+              type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+              hasCellularNetworkAccess: false,
             };
             assertFalse(shareAction.canExecute());
 
@@ -473,7 +484,8 @@ function testProvidedEntry(callback) {
         // Sharing on FSP is possible even if Drive is offline. Custom actions
         // are always executable, as we don't know the actions implementation.
         volumeManager.driveConnectionState = {
-          type: VolumeManagerCommon.DriveConnectionType.OFFLINE
+          type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+          hasCellularNetworkAccess: false,
         };
         assertTrue(shareAction.canExecute());
         assertEquals('Share it!', shareAction.getTitle());

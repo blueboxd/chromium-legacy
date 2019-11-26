@@ -90,7 +90,7 @@ See `download_file_types.proto` for all fields.
 
   * `platform_settings`: (repeated) Zero or more settings to differentiate
      behavior by platform. Keep them sorted by platform. At build time,
-     this list will be filtered to contain exactly one setting by chosing
+     this list will be filtered to contain exactly one setting by choosing
      as follows before writing out the binary proto.
 
        1. If there's an entry matching the built platform,
@@ -100,6 +100,12 @@ See `download_file_types.proto` for all fields.
        that will be used. Otherwise,
 
        3. The `default_file_type`'s settings will be filled in.
+
+    **Warning**: When specifying a new `platform_settings` for a file type, be
+    sure to specify values for all necessary settings. The `platform_settings`
+    will override all of the `default_file_type`'s settings, and this may result
+    in a change in behavior for `platform_settings` left unspecified. For
+    example, see [crbug.com/946558](https://crbug.com/956558#c5).
 
   * `platform_settings.danger_level`: (required) Controls how files should be
     handled by the UI in the absence of a better signal from the Safe Browsing
@@ -154,6 +160,10 @@ See `download_file_types.proto` for all fields.
       potentially dangerous changes in behavior for other programs. We
       allow automatically opening these file types, but always warn when
       they are downloaded.
+  * `platform_settings.max_file_size_to_analyze`: (optional).
+      Size in bytes of the largest file that the analyzer is willing to inspect;
+      for instance, a zip file larger than the threshold will not be unpacked
+      to allow scanning of the files within.
 
   * TODO(nparker): Support this: `platform_settings.unpacker`:
      optional. Specifies which archive unpacker internal to Chrome

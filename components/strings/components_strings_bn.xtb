@@ -275,6 +275,7 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-এ যে আক্রমণকারীরা এই মুহূর্তে সক্রিয় আছে, তারা এমন বিপজ্জনক অ্যাপ ইনস্টল করে দিতে পারে যেগুলি আপনার ডিভাইসের ক্ষতি করতে, আপনার মোবাইলের বিলে লুকানো চার্জ যোগ করতে বা আপনার ব্যক্তিগত তথ্য চুরি করতে পারে৷ <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ইন্টারনেট কানেকশন নেই</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ডায়াগনস্টিক অ্যাপ্লিকেশান<ph name="END_LINK" /> ব্যবহার করে আপনার সংযোগ ঠিক করুন</translation>
+<translation id="22320125457191592">আপনার জন্য</translation>
 <translation id="2239100178324503013">এখনই পাঠান</translation>
 <translation id="2248949050832152960">WebAuthn ব্যবহার করুন</translation>
 <translation id="2250931979407627383">বাঁদিকে ধারের দিকে সেলাই</translation>
@@ -375,6 +376,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">নিরাপত্তা সম্পর্কিত সতর্কতা</translation>
 <translation id="2699302886720511147">এই কার্ডগুলি গ্রহণ করা হয়</translation>
 <translation id="2702801445560668637">পড়ার তালিকা</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
@@ -477,6 +479,7 @@
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
 <translation id="3209034400446768650">পৃষ্ঠাটির মাধ্যমে টাকা চার্জ করা হতে পারে</translation>
 <translation id="3209080785413271048">Windows Hello ব্যবহার করে আপনার ডিভাইসে সেভ করা পেমেন্টের পদ্ধতি যাচাই করে নিন।</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" />-এ আপনার অ্যাক্টিভিটি মনিটর করা হচ্ছে</translation>
 <translation id="3215092763954878852">WebAuthn ব্যবহার করা যায়নি</translation>
 <translation id="3225919329040284222">সার্ভারটি এমন একটি সার্টিফিকেট উপস্থাপনা করেছে যা বিল্ট-ইন প্রত্যাশাগুলির সাথে মেলে না৷ এই প্রত্যাশাগুলি আপনাকে সুরক্ষিত করতে কিছু নিশ্চিত, উচ্চ সুরক্ষার ওয়েবসাইটের জন্য অন্তর্ভুক্ত৷</translation>
 <translation id="3226128629678568754">পৃষ্ঠা লোড করার জন্য প্রয়োজনীয় ডেটা আবার জমা দিতে রিলোড বোতামটি টিপুন৷</translation>
@@ -535,6 +538,7 @@
 <translation id="3528485271872257980">গাঢ় বাদামি</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{সিঙ্ক করা ডিভাইসে কমপক্ষে ১টি আইটেম}=1{১টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}one{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}other{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}}</translation>
 <translation id="3539171420378717834">এই ডিভাইসে কার্ডটির একটি কপি রাখুন</translation>
+<translation id="3553513561058684206">আপনার জন্য</translation>
 <translation id="3566021033012934673">আপনার সংযোগ ব্যক্তিগত নয়</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> এ এম্বেডেড করা পৃষ্ঠায় এটি দেখানো হচ্ছে</translation>
@@ -765,6 +769,7 @@
 <translation id="4594403342090139922">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4597348597567598915">সাইজ ৮</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">এই কানেকশনের সার্টিফিকেট Google Chrome বিশ্বাস করে না, কারণ এটি ব্যবহার করে নেটওয়ার্ক ইন্টারসেপ্ট ও মনিটর করা হয়।</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> সাইট থেকে অনুরোধ করা হয়েছে যে এর সব অনুরোধের ক্ষেত্রে
     একটি 'অরিজিন নীতি' প্রয়োগ করা হবে, কিন্তু এখনই এই নীতি কার্যকর করা যাবে না।</translation>
 <translation id="464342062220857295">সার্চের ফিচার</translation>
@@ -1469,6 +1474,7 @@
 <translation id="8103161714697287722">পেমেন্টের পদ্ধতি</translation>
 <translation id="8105368624971345109">বন্ধ করুন</translation>
 <translation id="8118489163946903409">পেমেন্টের পদ্ধতি</translation>
+<translation id="8124023448510659215">এই কানেকশনের সার্টিফিকেট Chromium বিশ্বাস করে না, কারণ এটি ব্যবহার করে নেটওয়ার্ক ইন্টারসেপ্ট ও মনিটর করা হয়।</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" আপনার কম্পিউটার বা নেটওয়ার্কে সঠিক ভাবে ইনস্টল করা হয়নি। আপনার IT প্রশাসককে এই সমস্যাটি সমাধান করতে বলুন।</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
 <translation id="8149426793427495338">আপনার কম্পিউটারটি নিদ্রা মোডে গিয়েছে।</translation>
@@ -1611,6 +1617,8 @@
 <translation id="8957210676456822347">ক্যাপটিভ পোর্টাল অনুমোদন</translation>
 <translation id="8962950042226115166">সন্দেহজনক সাইট</translation>
 <translation id="8968766641738584599">কার্ড সেভ করুন</translation>
+<translation id="8969267497192857913">আপনি যা লিখছেন, যে পৃষ্ঠাগুলি দেখছেন বা ওয়েবে আপনার অন্যান্য অ্যাক্টিভিটির উপর নজর রাখা হচ্ছে। আপনাকে না জানিয়ে সাইটের কন্টেন্টে পরিবর্তন করা হতে পারে।
+    <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">সার্ভারের সার্টিফিকেটের মেয়াদ ফুরিয়েছে৷</translation>
 <translation id="8975012916872825179">ফোন নম্বর, ইমেল আইডি এবং শিপিং ঠিকানার মতো তথ্য এতে আছে</translation>
 <translation id="8975263830901772334">আপনার প্রিন্ট করা ফাইলগুলির নাম</translation>

@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/network_isolation_key.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -83,9 +84,11 @@ bool ResolveProxyMsgHelper::SendRequestToNetworkService(
   // Fail the request if there's no such RenderProcessHost;
   if (!render_process_host)
     return false;
+  // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
   render_process_host->GetStoragePartition()
       ->GetNetworkContext()
-      ->LookUpProxyForURL(url, std::move(proxy_lookup_client));
+      ->LookUpProxyForURL(url, net::NetworkIsolationKey::Todo(),
+                          std::move(proxy_lookup_client));
   return true;
 }
 

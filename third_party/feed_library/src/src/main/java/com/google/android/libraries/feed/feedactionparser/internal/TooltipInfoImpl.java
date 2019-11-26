@@ -12,19 +12,19 @@ import com.google.search.now.ui.action.FeedActionProto.TooltipData;
  * TooltipInfo}.
  */
 public class TooltipInfoImpl implements TooltipInfo {
-    private final String label;
-    private final String accessibilityLabel;
+    private final String mLabel;
+    private final String mAccessibilityLabel;
     @FeatureName
-    private final String featureName;
-    private final int topInset;
-    private final int bottomInset;
+    private final String mFeatureName;
+    private final int mTopInset;
+    private final int mBottomInset;
 
     public TooltipInfoImpl(TooltipData tooltipData) {
-        this.label = tooltipData.getLabel();
-        this.accessibilityLabel = tooltipData.getAccessibilityLabel();
-        this.featureName = convert(tooltipData.getFeatureName());
-        this.topInset = tooltipData.getInsets().getTop();
-        this.bottomInset = tooltipData.getInsets().getBottom();
+        this.mLabel = tooltipData.getLabel();
+        this.mAccessibilityLabel = tooltipData.getAccessibilityLabel();
+        this.mFeatureName = convert(tooltipData.getFeatureName());
+        this.mTopInset = tooltipData.getInsets().getTop();
+        this.mBottomInset = tooltipData.getInsets().getBottom();
     }
 
     /** Converts the type in {@link TooltipData#FeatureName} to {@link TooltipInfo#FeatureName}. */
@@ -36,27 +36,27 @@ public class TooltipInfoImpl implements TooltipInfo {
 
     @Override
     public String getLabel() {
-        return label;
+        return mLabel;
     }
 
     @Override
     public String getAccessibilityLabel() {
-        return accessibilityLabel;
+        return mAccessibilityLabel;
     }
 
     @Override
     @FeatureName
     public String getFeatureName() {
-        return featureName;
+        return mFeatureName;
     }
 
     @Override
     public int getTopInset() {
-        return topInset;
+        return mTopInset;
     }
 
     @Override
     public int getBottomInset() {
-        return bottomInset;
+        return mBottomInset;
     }
 }

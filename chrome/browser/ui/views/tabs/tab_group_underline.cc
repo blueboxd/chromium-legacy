@@ -92,10 +92,10 @@ SkPath TabGroupUnderline::GetPath() const {
 
   path.moveTo(0, kStrokeThickness);
   path.arcTo(kStrokeThickness, kStrokeThickness, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCW_Direction, kStrokeThickness, 0);
+             SkPathDirection::kCW, kStrokeThickness, 0);
   path.lineTo(width() - kStrokeThickness, 0);
   path.arcTo(kStrokeThickness, kStrokeThickness, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCW_Direction, width(), kStrokeThickness);
+             SkPathDirection::kCW, width(), kStrokeThickness);
   path.close();
 
   return path;

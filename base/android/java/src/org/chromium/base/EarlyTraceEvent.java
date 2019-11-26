@@ -143,7 +143,7 @@ public class EarlyTraceEvent {
                 shouldEnable = true;
             } else {
                 try {
-                    shouldEnable = (new File(TRACE_CONFIG_FILENAME)).exists();
+                    shouldEnable = new File(TRACE_CONFIG_FILENAME).exists();
                 } catch (SecurityException e) {
                     // Access denied, not enabled.
                 }

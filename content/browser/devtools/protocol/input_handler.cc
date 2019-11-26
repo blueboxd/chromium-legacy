@@ -776,11 +776,6 @@ void InputHandler::DispatchWebTouchEvent(
         "TouchEnd and TouchCancel must not have any touch points."));
     return;
   }
-  if (type == blink::WebInputEvent::kTouchStart && !touch_points_.empty()) {
-    callback->sendFailure(Response::InvalidParams(
-        "Must have no prior active touch points to start a new touch."));
-    return;
-  }
   if (type != blink::WebInputEvent::kTouchStart && touch_points_.empty()) {
     callback->sendFailure(Response::InvalidParams(
         "Must send a TouchStart first to start a new touch."));
@@ -814,24 +809,18 @@ void InputHandler::DispatchWebTouchEvent(
   std::vector<blink::WebTouchEvent> events;
   bool ok = true;
   for (auto& id_point : points) {
-    if (touch_points_.find(id_point.first) != touch_points_.end())
-      continue;
-    events.emplace_back(type, modifiers, timestamp);
-    ok &= GenerateTouchPoints(&events.back(), blink::WebInputEvent::kUndefined,
-                              touch_points_, id_point.second);
-    touch_points_.insert(id_point);
-  }
-  for (auto& id_point : points) {
-    DCHECK(touch_points_.find(id_point.first) != touch_points_.end());
-    if (touch_points_[id_point.first].PositionInWidget() ==
-        id_point.second.PositionInWidget()) {
+    if (touch_points_.find(id_point.first) != touch_points_.end() &&
+        touch_points_[id_point.first].PositionInWidget() ==
+            id_point.second.PositionInWidget()) {
       continue;
     }
+
     events.emplace_back(type, modifiers, timestamp);
     ok &= GenerateTouchPoints(&events.back(), blink::WebInputEvent::kUndefined,
                               touch_points_, id_point.second);
     touch_points_[id_point.first] = id_point.second;
   }
+
   if (type != blink::WebInputEvent::kTouchCancel)
     type = blink::WebInputEvent::kTouchEnd;
   for (auto it = touch_points_.begin(); it != touch_points_.end();) {

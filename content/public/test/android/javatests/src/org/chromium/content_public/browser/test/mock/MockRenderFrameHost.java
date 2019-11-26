@@ -27,6 +27,11 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public void getCanonicalUrlForSharing(Callback<String> callback) {}
 
     @Override
+    public boolean isPaymentFeaturePolicyEnabled() {
+        return false;
+    }
+
+    @Override
     public InterfaceProvider getRemoteInterfaces() {
         return null;
     }

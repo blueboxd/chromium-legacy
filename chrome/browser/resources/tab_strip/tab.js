@@ -211,6 +211,7 @@ export class TabElement extends CustomElement {
 
     this.embedderApi_.showTabContextMenu(
         this.tab_.id, event.clientX, event.clientY);
+    event.stopPropagation();
   }
 
   /**

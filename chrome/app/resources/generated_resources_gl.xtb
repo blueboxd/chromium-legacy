@@ -2616,7 +2616,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4839303808932127586">Gardar &amp;vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{ 1 máis}other{# máis}}</translation>
 <translation id="4842976633412754305">Está páxina está tentando cargar scripts de fontes non autenticadas.</translation>
-<translation id="4843488774506045600">Inicio de sesión proporcionado por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Estás seguindo a recomendación do administrador para esta configuración.</translation>
 <translation id="4848518990323155912">Activar bloqueo da tarxeta SIM (precísase o PIN para usar os datos móbiles)</translation>
@@ -3814,7 +3813,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6607831829715835317">Máis &amp;ferramentas</translation>
 <translation id="6612358246767739896">Contido protexido</translation>
 <translation id="6615455863669487791">Mostrar</translation>
-<translation id="6617100836880592260">Velocidade de exploración: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Conservar igualmente</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">O sitio pode facer un seguimento da túa localización</translation>

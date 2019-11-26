@@ -30,20 +30,20 @@ import java.util.Map.Entry;
 public final class InMemoryJournalStorage implements JournalStorageDirect, Dumpable {
     private static final String TAG = "InMemoryJournalStorage";
 
-    private final Map<String, List<byte[]>> journals;
-    private int readCount;
-    private int appendCount;
-    private int copyCount;
-    private int deleteCount;
+    private final Map<String, List<byte[]>> mJournals;
+    private int mReadCount;
+    private int mAppendCount;
+    private int mCopyCount;
+    private int mDeleteCount;
 
     public InMemoryJournalStorage() {
-        journals = new HashMap<>();
+        mJournals = new HashMap<>();
     }
 
     @Override
     public Result<List<byte[]>> read(String journalName) {
-        readCount++;
-        List<byte[]> journal = journals.get(journalName);
+        mReadCount++;
+        List<byte[]> journal = mJournals.get(journalName);
         if (journal == null) {
             journal = new ArrayList<>();
         }
@@ -77,65 +77,65 @@ public final class InMemoryJournalStorage implements JournalStorageDirect, Dumpa
 
     @Override
     public Result<Boolean> exists(String journalName) {
-        return Result.success(journals.containsKey(journalName));
+        return Result.success(mJournals.containsKey(journalName));
     }
 
     @Override
     public Result<List<String>> getAllJournals() {
-        return Result.success(new ArrayList<>(journals.keySet()));
+        return Result.success(new ArrayList<>(mJournals.keySet()));
     }
 
     @Override
     public CommitResult deleteAll() {
-        journals.clear();
+        mJournals.clear();
         return CommitResult.SUCCESS;
     }
 
     private boolean append(byte[] value, String journalName) {
-        List<byte[]> journal = journals.get(journalName);
+        List<byte[]> journal = mJournals.get(journalName);
         if (value == null) {
             Logger.e(TAG, "Journal not found: %s", journalName);
             return false;
         }
         if (journal == null) {
             journal = new ArrayList<>();
-            journals.put(journalName, journal);
+            mJournals.put(journalName, journal);
         }
-        appendCount++;
+        mAppendCount++;
         journal.add(value);
         return true;
     }
 
     private boolean copy(String fromJournalName, String toJournalName) {
-        copyCount++;
-        List<byte[]> toJournal = journals.get(toJournalName);
+        mCopyCount++;
+        List<byte[]> toJournal = mJournals.get(toJournalName);
         if (toJournal != null) {
             Logger.e(TAG, "Copy destination journal already present: %s", toJournalName);
             return false;
         }
-        List<byte[]> journal = journals.get(fromJournalName);
+        List<byte[]> journal = mJournals.get(fromJournalName);
         if (journal != null) {
             // TODO: Compact before copying?
-            journals.put(toJournalName, new ArrayList<>(journal));
+            mJournals.put(toJournalName, new ArrayList<>(journal));
         }
         return true;
     }
 
     private boolean delete(String journalName) {
-        deleteCount++;
-        journals.remove(journalName);
+        mDeleteCount++;
+        mJournals.remove(journalName);
         return true;
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("readCount").value(readCount);
-        dumper.forKey("appendCount").value(appendCount).compactPrevious();
-        dumper.forKey("copyCount").value(copyCount).compactPrevious();
-        dumper.forKey("deleteCount").value(deleteCount).compactPrevious();
-        dumper.forKey("sessions").value(journals.size());
-        for (Entry<String, List<byte[]>> entry : journals.entrySet()) {
+        dumper.forKey("readCount").value(mReadCount);
+        dumper.forKey("appendCount").value(mAppendCount).compactPrevious();
+        dumper.forKey("copyCount").value(mCopyCount).compactPrevious();
+        dumper.forKey("deleteCount").value(mDeleteCount).compactPrevious();
+        dumper.forKey("sessions").value(mJournals.size());
+        for (Entry<String, List<byte[]>> entry : mJournals.entrySet()) {
             Dumper childDumper = dumper.getChildDumper();
             childDumper.title("Session");
             childDumper.forKey("name").value(entry.getKey());

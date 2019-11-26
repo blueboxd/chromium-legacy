@@ -570,6 +570,9 @@ _CONFIG = [
             # Devtools binary protocol uses std::vector<uint8_t> for serialized
             # objects.
             'std::vector',
+            # [C]h[R]ome [D]ev[T]ools [P]rotocol implementation support library
+            # (see third_party/inspector_protocol/crdtp).
+            'crdtp::.+',
         ],
     },
     {

@@ -370,10 +370,13 @@ Empty if only a single ABI is supported.
 A boolean indicating whether native libraries are stored uncompressed in the
 APK.
 
-* `native['extra_shared_libraries']`
+* `native['loadable_modules']`
 A list of native libraries to store within the APK, in addition to those from
 `native['libraries']`. These correspond to things like the Chromium linker
 or instrumentation libraries.
+
+* `native['secondary_abi_loadable_modules']`
+Secondary ABI version of loadable_modules
 
 * `assets`
 A list of assets stored compressed in the APK. Each entry has the format
@@ -881,19 +884,21 @@ def main(argv):
   parser.add_option('--shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for shared '
                          'libraries.')
-  parser.add_option('--native-libs',
-                    action='append',
-                    help='GN-list of native libraries for primary '
-                         'android-abi. Can be specified multiple times.',
-                    default=[])
+  parser.add_option(
+      '--loadable-modules',
+      action='append',
+      help='GN-list of native libraries for primary '
+      'android-abi. Can be specified multiple times.',
+      default=[])
   parser.add_option('--secondary-abi-shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for secondary '
                          'abi shared libraries.')
-  parser.add_option('--secondary-native-libs',
-                    action='append',
-                    help='GN-list of native libraries for secondary '
-                         'android-abi. Can be specified multiple times.',
-                    default=[])
+  parser.add_option(
+      '--secondary-abi-loadable-modules',
+      action='append',
+      help='GN-list of native libraries for secondary '
+      'android-abi. Can be specified multiple times.',
+      default=[])
   parser.add_option(
       '--native-lib-placeholders',
       action='append',
@@ -1669,16 +1674,15 @@ def main(argv):
           options.secondary_abi_shared_libraries_runtime_deps)
       all_inputs.append(options.secondary_abi_shared_libraries_runtime_deps)
 
-    secondary_abi_library_paths.extend(
-        build_utils.ParseGnList(options.secondary_native_libs))
-
     native_library_placeholder_paths = build_utils.ParseGnList(
         options.native_lib_placeholders)
 
     secondary_native_library_placeholder_paths = build_utils.ParseGnList(
         options.secondary_native_lib_placeholders)
 
-    extra_shared_libraries = build_utils.ParseGnList(options.native_libs)
+    loadable_modules = build_utils.ParseGnList(options.loadable_modules)
+    secondary_abi_loadable_modules = build_utils.ParseGnList(
+        options.secondary_abi_loadable_modules)
 
     config['native'] = {
         'libraries':
@@ -1693,8 +1697,10 @@ def main(argv):
         java_libraries_list,
         'uncompress_shared_libraries':
         options.uncompress_shared_libraries,
-        'extra_shared_libraries':
-        extra_shared_libraries,
+        'loadable_modules':
+        loadable_modules,
+        'secondary_abi_loadable_modules':
+        secondary_abi_loadable_modules,
     }
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))

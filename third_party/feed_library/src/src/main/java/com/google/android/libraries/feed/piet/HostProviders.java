@@ -11,34 +11,34 @@ import com.google.android.libraries.feed.piet.host.LogDataCallback;
 
 /** Wrapper class to hold all host-related objects. */
 public class HostProviders {
-    private final AssetProvider assetProvider;
-    private final CustomElementProvider customElementProvider;
-    private final HostBindingProvider hostBindingProvider;
-    /*@Nullable*/ private final LogDataCallback logDataCallback;
+    private final AssetProvider mAssetProvider;
+    private final CustomElementProvider mCustomElementProvider;
+    private final HostBindingProvider mHostBindingProvider;
+    /*@Nullable*/ private final LogDataCallback mLogDataCallback;
 
     public HostProviders(AssetProvider assetProvider, CustomElementProvider customElementProvider,
             HostBindingProvider hostBindingProvider,
             /*@Nullable*/ LogDataCallback logDataCallback) {
-        this.assetProvider = assetProvider;
-        this.customElementProvider = customElementProvider;
-        this.hostBindingProvider = hostBindingProvider;
-        this.logDataCallback = logDataCallback;
+        this.mAssetProvider = assetProvider;
+        this.mCustomElementProvider = customElementProvider;
+        this.mHostBindingProvider = hostBindingProvider;
+        this.mLogDataCallback = logDataCallback;
     }
 
     public AssetProvider getAssetProvider() {
-        return assetProvider;
+        return mAssetProvider;
     }
 
     public CustomElementProvider getCustomElementProvider() {
-        return customElementProvider;
+        return mCustomElementProvider;
     }
 
     public HostBindingProvider getHostBindingProvider() {
-        return hostBindingProvider;
+        return mHostBindingProvider;
     }
 
     /*@Nullable*/
     public LogDataCallback getLogDataCallback() {
-        return logDataCallback;
+        return mLogDataCallback;
     }
 }

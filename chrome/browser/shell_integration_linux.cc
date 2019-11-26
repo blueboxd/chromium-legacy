@@ -540,8 +540,25 @@ std::string GetDesktopFileContentsForCommand(
   }
   g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
 
+  base::CommandLine modified_command_line(command_line);
+
+  // Set the "MimeType" key.
+  if (!mime_type.empty() && mime_type.find("\n") == std::string::npos &&
+      mime_type.find("\r") == std::string::npos) {
+    g_key_file_set_string(key_file, kDesktopEntry, "MimeType",
+                          mime_type.c_str());
+
+    // Some Linux Desktop Environments don't show file handlers unless they
+    // specify where to place file arguments.
+    // Note: We only include this parameter if the application is actually able
+    // to handle files, to prevent it showing up in the list of all applications
+    // which can handle files.
+    modified_command_line.AppendArg("%F");
+  }
+
   // Set the "Exec" key.
-  std::string final_path = QuoteCommandLineForDesktopFileExec(command_line);
+  std::string final_path =
+      QuoteCommandLineForDesktopFileExec(modified_command_line);
   g_key_file_set_string(key_file, kDesktopEntry, "Exec", final_path.c_str());
 
   // Set the "Icon" key.
@@ -556,13 +573,6 @@ std::string GetDesktopFileContentsForCommand(
   if (!categories.empty()) {
     g_key_file_set_string(
         key_file, kDesktopEntry, "Categories", categories.c_str());
-  }
-
-  // Set the "MimeType" key.
-  if (!mime_type.empty() && mime_type.find("\n") == std::string::npos &&
-      mime_type.find("\r") == std::string::npos) {
-    g_key_file_set_string(key_file, kDesktopEntry, "MimeType",
-                          mime_type.c_str());
   }
 
   // Set the "NoDisplay" key.

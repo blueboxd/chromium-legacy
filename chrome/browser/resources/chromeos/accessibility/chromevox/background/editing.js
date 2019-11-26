@@ -408,6 +408,19 @@ AutomationRichEditableText.prototype = {
       // Intra-line changes.
 
       if (cur.hasTextSelection()) {
+        if (!prev.hasTextSelection() && cur.hasCollapsedSelection() &&
+            cur.startOffset > prev.startOffset) {
+          // EditableTextBase cannot handle this state transition (moving
+          // forward from rich text to a caret in plain text). Fall back to
+          // simply reading the character to the right of the caret. We achieve
+          // this by updating the indices first, then sending the new change.
+
+          // These members come from EditableTextBase.
+          this.start = cur.endOffset > 0 ? cur.endOffset - 1 : 0;
+          this.end = this.start;
+        }
+        // Delegate to EditableTextBase (via |changed|), which handles plain
+        // text state output.
         var text = cur.text;
         if (text == '\n') {
           text = '';
@@ -423,6 +436,10 @@ AutomationRichEditableText.prototype = {
             .go();
       }
       this.brailleCurrentRichLine_();
+
+      // Be careful to update state in EditableTextBase since we don't
+      // explicitly call through to it here.
+      this.updateIntraLineState_(cur);
 
       // Finally, queue up any text markers/styles at bounds.
       var container = cur.startContainer_;

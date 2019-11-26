@@ -18,10 +18,10 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public abstract class ProtoStringInternerBase<P extends MessageLite> implements Interner<P> {
-    private final Interner<String> interner;
+    private final Interner<String> mInterner;
 
     protected ProtoStringInternerBase(Interner<String> interner) {
-        this.interner = interner;
+        this.mInterner = interner;
     }
 
     protected interface SingleStringFieldGetter<T extends GeneratedMessageLite<T, ?>> {
@@ -39,7 +39,7 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
             /*@Nullable*/ B builder, SingleStringFieldGetter<T> singleStringFieldGetter,
             SingleStringFieldSetter<B> singleStringFieldSetter) {
         String orig = singleStringFieldGetter.getField(input);
-        String interned = interner.intern(orig);
+        String interned = mInterner.intern(orig);
         if (interned != orig) {
             builder = ensureBuilder(input, builder);
             singleStringFieldSetter.setField(builder, interned);
@@ -69,7 +69,7 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
         boolean modified = false;
         List<String> internedValues = new ArrayList<>();
         for (String orig : repeatedStringFieldGetter.getField(input)) {
-            String interned = interner.intern(orig);
+            String interned = mInterner.intern(orig);
             internedValues.add(interned);
             if (interned != orig) {
                 modified = true;
@@ -93,11 +93,11 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
 
     @Override
     public void clear() {
-        interner.clear();
+        mInterner.clear();
     }
 
     @Override
     public int size() {
-        return interner.size();
+        return mInterner.size();
     }
 }

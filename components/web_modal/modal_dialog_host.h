@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_WEB_MODAL_MODAL_DIALOG_HOST_H_
 #define COMPONENTS_WEB_MODAL_MODAL_DIALOG_HOST_H_
 
+#include "components/web_modal/web_modal_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -16,7 +17,7 @@ namespace web_modal {
 
 // Observer to be implemented to update modal dialogs when the host indicates
 // their position needs to be changed.
-class ModalDialogHostObserver {
+class WEB_MODAL_EXPORT ModalDialogHostObserver {
  public:
   virtual ~ModalDialogHostObserver();
 
@@ -25,7 +26,7 @@ class ModalDialogHostObserver {
 };
 
 // Interface for supporting positioning of modal dialogs over a window/widget.
-class ModalDialogHost {
+class WEB_MODAL_EXPORT ModalDialogHost {
  public:
   virtual ~ModalDialogHost();
 

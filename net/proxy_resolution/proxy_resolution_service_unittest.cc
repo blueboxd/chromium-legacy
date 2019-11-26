@@ -397,7 +397,7 @@ TEST_F(ProxyResolutionServiceTest, Direct) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   std::unique_ptr<ProxyResolutionService::Request> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
@@ -436,7 +436,7 @@ TEST_F(ProxyResolutionServiceTest, OnResolveProxyCallbackAddProxy) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   // First, warm up the ProxyResolutionService and fake an error to mark the
   // first server as bad.
@@ -502,7 +502,7 @@ TEST_F(ProxyResolutionServiceTest, OnResolveProxyCallbackRemoveProxy) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   // First, warm up the ProxyResolutionService.
   std::unique_ptr<ProxyResolutionService::Request> request;
@@ -808,7 +808,7 @@ TEST_F(ProxyResolutionServiceTest, ProxyServiceDeletedBeforeRequest) {
   ProxyInfo info;
   TestCompletionCallback callback;
   std::unique_ptr<ProxyResolutionService::Request> request;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   int rv;
   {
@@ -898,7 +898,7 @@ TEST_F(ProxyResolutionServiceTest, PAC) {
   ProxyInfo info;
   TestCompletionCallback callback;
   std::unique_ptr<ProxyResolutionService::Request> request;
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
@@ -2472,7 +2472,7 @@ TEST_F(ProxyResolutionServiceTest, CancelWhilePACFetching) {
   ProxyInfo info1;
   TestCompletionCallback callback1;
   std::unique_ptr<ProxyResolutionService::Request> request1;
-  BoundTestNetLog log1;
+  RecordingBoundTestNetLog log1;
   int rv = service.ResolveProxy(GURL("http://request1"), std::string(),
                                 NetworkIsolationKey(), &info1,
                                 callback1.callback(), &request1, log1.bound());
@@ -2977,7 +2977,7 @@ TEST_F(ProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), &log);

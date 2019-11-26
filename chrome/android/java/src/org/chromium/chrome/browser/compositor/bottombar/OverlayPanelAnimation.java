@@ -32,7 +32,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
     public static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
 
     /** The minimum animation duration in milliseconds. */
-    private static final long MINIMUM_ANIMATION_DURATION_MS = Math.round(7 * 1000 / 60);
+    private static final long MINIMUM_ANIMATION_DURATION_MS = 7 * 1000 / 60;
 
     /** Average animation velocity in dps per second. */
     private static final float INITIAL_ANIMATION_VELOCITY_DP_PER_SECOND = 1750f;

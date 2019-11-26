@@ -45,9 +45,7 @@ const char kOverrideModelDefaultValue[] = "default";
 
 // Params for Translate Desktop UI experiment
 const char kTranslateUIBubbleKey[] = "translate_ui_bubble_style";
-const char kTranslateUIBubbleButtonValue[] = "button";
 const char kTranslateUIBubbleTabValue[] = "tab";
-const char kTranslateUIBubbleButtonGM2Value[] = "button_gm2";
 
 OverrideLanguageModel GetOverrideLanguageModel() {
   std::map<std::string, std::string> params;
@@ -115,14 +113,8 @@ TranslateUIBubbleModel GetTranslateUiBubbleModel() {
   if (base::GetFieldTrialParamsByFeature(language::kUseButtonTranslateBubbleUi,
                                          &params)) {
     if (params[language::kTranslateUIBubbleKey] ==
-        language::kTranslateUIBubbleButtonValue) {
-      return language::TranslateUIBubbleModel::BUTTON;
-    } else if (params[language::kTranslateUIBubbleKey] ==
-               language::kTranslateUIBubbleTabValue) {
+        language::kTranslateUIBubbleTabValue) {
       return language::TranslateUIBubbleModel::TAB;
-    } else if (params[language::kTranslateUIBubbleKey] ==
-               language::kTranslateUIBubbleButtonGM2Value) {
-      return language::TranslateUIBubbleModel::BUTTON_GM2;
     } else {
       return language::TranslateUIBubbleModel::DEFAULT;
     }

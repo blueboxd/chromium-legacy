@@ -2617,7 +2617,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4839303808932127586">I-sa&amp;ve ang video bilang...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 pa}one{# pa}other{# pa}}</translation>
 <translation id="4842976633412754305">Sinusubukan ng page na ito na mag-load ng mga script mula sa mga hindi napatunayang pinagmulan.</translation>
-<translation id="4843488774506045600">Pag-log in na ibinigay ng <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Iba pang mga keyboard</translation>
 <translation id="4846680374085650406">Sinusunod mo ang rekomendasyon ng administrator para sa setting na ito.</translation>
 <translation id="4848518990323155912">I-enable ang pagla-lock ng SIM card (kailangan ang PIN upang magamit ang mobile data)</translation>
@@ -3815,7 +3814,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6607831829715835317">Higit pang mga too&amp;l</translation>
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6615455863669487791">Ipakita sa akin</translation>
-<translation id="6617100836880592260">Bilis ng pag-scan: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Panatilihin pa rin</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Maaaring subaybayan ng site ang iyong lokasyon</translation>

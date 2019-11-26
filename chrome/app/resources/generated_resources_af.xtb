@@ -2643,7 +2643,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4839303808932127586">Stoor video as …</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{nog 1}other{nog #}}</translation>
 <translation id="4842976633412754305">Hierdie bladsy probeer tans skripte van ongestaafde bronne aflaai.</translation>
-<translation id="4843488774506045600">Aanmelding is verskaf deur <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Ander sleutelborde</translation>
 <translation id="4846680374085650406">Jy volg tans die administrateur se aanbeveling vir hierdie instelling.</translation>
 <translation id="4848518990323155912">Aktiveer SIM-kaartsluiting (vereis PIN om mobiele data te gebruik)</translation>
@@ -3849,7 +3848,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6607831829715835317">Meer nutsgoed</translation>
 <translation id="6612358246767739896">Beskermde inhoud</translation>
 <translation id="6615455863669487791">Wys my</translation>
-<translation id="6617100836880592260">Skandeerspoed: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Hou in elk geval</translation>
 <translation id="6619058681307408113">Lyndrukkerdaemoon (LPD)</translation>
 <translation id="661907246513853610">Werf kan jou ligging naspoor</translation>

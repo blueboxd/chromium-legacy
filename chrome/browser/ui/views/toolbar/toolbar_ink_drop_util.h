@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace views {
+class Button;
 class InkDropHighlight;
 class InkDropHostView;
 class View;
@@ -38,5 +39,7 @@ views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(
 
 // Installs a highlight path generator that matches the toolbar button style.
 void InstallToolbarButtonHighlightPathGenerator(views::View* host);
+
+void ConfigureInkDropForToolbar(views::Button* host);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_INK_DROP_UTIL_H_

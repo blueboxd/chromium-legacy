@@ -27,37 +27,37 @@ import java.util.Set;
 public class HeadSessionImpl implements Session, Dumpable {
     private static final String TAG = "HeadSessionImpl";
 
-    private final Store store;
-    private final TimingUtils timingUtils;
-    private final SessionContentTracker sessionContentTracker =
+    private final Store mStore;
+    private final TimingUtils mTimingUtils;
+    private final SessionContentTracker mSessionContentTracker =
             new SessionContentTracker(/* supportsClearAll= */ true);
-    private final boolean limitPageUpdatesInHead;
+    private final boolean mLimitPageUpdatesInHead;
 
-    private int schemaVersion;
+    private int mSchemaVersion;
 
     // operation counts for the dumper
-    private int updateCount;
-    private int storeMutationFailures;
+    private int mUpdateCount;
+    private int mStoreMutationFailures;
 
     HeadSessionImpl(Store store, TimingUtils timingUtils, boolean limitPageUpdatesInHead) {
-        this.store = store;
-        this.timingUtils = timingUtils;
-        this.limitPageUpdatesInHead = limitPageUpdatesInHead;
+        this.mStore = store;
+        this.mTimingUtils = timingUtils;
+        this.mLimitPageUpdatesInHead = limitPageUpdatesInHead;
     }
 
     /** Initialize head from the stored stream structures. */
     void initializeSession(List<StreamStructure> streamStructures, int schemaVersion) {
         Logger.i(TAG, "Initialize HEAD %s items", streamStructures.size());
-        this.schemaVersion = schemaVersion;
-        sessionContentTracker.update(streamStructures);
+        this.mSchemaVersion = schemaVersion;
+        mSessionContentTracker.update(streamStructures);
     }
 
     void reset() {
-        sessionContentTracker.clear();
+        mSessionContentTracker.clear();
     }
 
     public int getSchemaVersion() {
-        return schemaVersion;
+        return mSchemaVersion;
     }
 
     @Override
@@ -70,25 +70,25 @@ public class HeadSessionImpl implements Session, Dumpable {
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
             int schemaVersion,
             /*@Nullable*/ MutationContext mutationContext) {
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
-        updateCount++;
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        mUpdateCount++;
 
         if (clearHead) {
-            this.schemaVersion = schemaVersion;
+            this.mSchemaVersion = schemaVersion;
         }
 
         StreamToken mutationSourceToken =
                 mutationContext != null ? mutationContext.getContinuationToken() : null;
         if (mutationSourceToken != null) {
             String contentId = mutationSourceToken.getContentId();
-            if (mutationSourceToken.hasContentId() && !sessionContentTracker.contains(contentId)) {
+            if (mutationSourceToken.hasContentId() && !mSessionContentTracker.contains(contentId)) {
                 // Make sure that mutationSourceToken is a token in this session, if not, we don't
                 // update the session.
                 timeTracker.stop(
                         "updateSessionIgnored", getSessionId(), "Token Not Found", contentId);
                 Logger.i(TAG, "Token %s not found in session, ignoring update", contentId);
                 return;
-            } else if (limitPageUpdatesInHead) {
+            } else if (mLimitPageUpdatesInHead) {
                 timeTracker.stop("updateSessionIgnored", getSessionId());
                 Logger.i(TAG, "Limited paging updates in HEAD");
                 return;
@@ -99,12 +99,12 @@ public class HeadSessionImpl implements Session, Dumpable {
         int addFeatureCnt = 0;
         int requiredContentCnt = 0;
         boolean cleared = false;
-        SessionMutation sessionMutation = store.editSession(getSessionId());
+        SessionMutation sessionMutation = mStore.editSession(getSessionId());
         for (StreamStructure streamStructure : streamStructures) {
             String contentId = streamStructure.getContentId();
             switch (streamStructure.getOperation()) {
                 case UPDATE_OR_APPEND:
-                    if (sessionContentTracker.contains(contentId)) {
+                    if (mSessionContentTracker.contains(contentId)) {
                         // this is an update operation so we can ignore it
                         updateCnt++;
                     } else {
@@ -114,7 +114,7 @@ public class HeadSessionImpl implements Session, Dumpable {
                     break;
                 case REMOVE:
                     Logger.i(TAG, "Removing Item %s from $HEAD", contentId);
-                    if (sessionContentTracker.contains(contentId)) {
+                    if (mSessionContentTracker.contains(contentId)) {
                         sessionMutation.add(streamStructure);
                     } else {
                         Logger.w(TAG, "Remove operation content not found in $HEAD");
@@ -124,7 +124,7 @@ public class HeadSessionImpl implements Session, Dumpable {
                     cleared = true;
                     break;
                 case REQUIRED_CONTENT:
-                    if (!sessionContentTracker.contains(contentId)) {
+                    if (!mSessionContentTracker.contains(contentId)) {
                         sessionMutation.add(streamStructure);
                         requiredContentCnt++;
                     }
@@ -133,7 +133,7 @@ public class HeadSessionImpl implements Session, Dumpable {
                     Logger.e(
                             TAG, "Unknown operation, ignoring: %s", streamStructure.getOperation());
             }
-            sessionContentTracker.update(streamStructure);
+            mSessionContentTracker.update(streamStructure);
         }
         boolean success = sessionMutation.commit();
         if (success) {
@@ -141,9 +141,9 @@ public class HeadSessionImpl implements Session, Dumpable {
                     addFeatureCnt, "updates", updateCnt, "requiredContent", requiredContentCnt);
         } else {
             timeTracker.stop("updateSessionFailure", getSessionId());
-            storeMutationFailures++;
+            mStoreMutationFailures++;
             Logger.e(TAG, "$HEAD session mutation failed");
-            store.switchToEphemeralMode();
+            mStore.switchToEphemeralMode();
         }
     }
 
@@ -160,19 +160,19 @@ public class HeadSessionImpl implements Session, Dumpable {
 
     @Override
     public Set<String> getContentInSession() {
-        return sessionContentTracker.getContentIds();
+        return mSessionContentTracker.getContentIds();
     }
 
     public boolean isHeadEmpty() {
-        return sessionContentTracker.isEmpty();
+        return mSessionContentTracker.isEmpty();
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
         dumper.forKey("sessionName").value(getSessionId());
-        dumper.forKey("updateCount").value(updateCount).compactPrevious();
-        dumper.forKey("storeMutationFailures").value(storeMutationFailures).compactPrevious();
-        dumper.dump(sessionContentTracker);
+        dumper.forKey("updateCount").value(mUpdateCount).compactPrevious();
+        dumper.forKey("storeMutationFailures").value(mStoreMutationFailures).compactPrevious();
+        dumper.dump(mSessionContentTracker);
     }
 }

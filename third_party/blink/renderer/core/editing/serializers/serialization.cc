@@ -800,12 +800,15 @@ String SanitizeMarkupWithContext(const String& raw_markup,
   staging_document->UpdateStyleAndLayout();
 
   // This sanitizes stylesheets in the markup into element inline styles
-  return CreateMarkup(Position::FirstPositionInNode(*body),
-                      Position::LastPositionInNode(*body),
-                      CreateMarkupOptions::Builder()
-                          .SetShouldAnnotateForInterchange(true)
-                          .SetIsForMarkupSanitization(true)
-                          .Build());
+  String result = CreateMarkup(Position::FirstPositionInNode(*body),
+                               Position::LastPositionInNode(*body),
+                               CreateMarkupOptions::Builder()
+                                   .SetShouldAnnotateForInterchange(true)
+                                   .SetIsForMarkupSanitization(true)
+                                   .Build());
+
+  staging_document->GetPage()->WillBeDestroyed();
+  return result;
 }
 
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;

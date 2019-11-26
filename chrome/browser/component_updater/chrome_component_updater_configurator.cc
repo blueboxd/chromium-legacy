@@ -257,13 +257,11 @@ ChromeConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
 }
 
+// TODO(sorin): remove the members related to elevation, action runners, and
+// recovery component. crbug.com/1027395
 update_client::RecoveryCRXElevator ChromeConfigurator::GetRecoveryCRXElevator()
     const {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
-  return base::BindOnce(&RunRecoveryCRXElevated);
-#else
-  return {};
-#endif
+  return configurator_impl_.GetRecoveryCRXElevator();
 }
 
 }  // namespace

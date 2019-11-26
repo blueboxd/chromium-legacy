@@ -32,20 +32,20 @@ import java.util.Map.Entry;
 public final class InMemoryContentStorage implements ContentStorageDirect, Dumpable {
     private static final String TAG = "InMemoryContentStorage";
 
-    private final Map<String, byte[]> store = new HashMap<>();
+    private final Map<String, byte[]> mStore = new HashMap<>();
 
-    private int getCount;
-    private int getAllCount;
-    private int insertCount;
-    private int updateCount;
+    private int mGetCount;
+    private int mGetAllCount;
+    private int mInsertCount;
+    private int mUpdateCount;
 
     @Override
     public Result<Map<String, byte[]>> get(List<String> keys) {
-        getCount++;
+        mGetCount++;
 
         Map<String, byte[]> valueMap = new HashMap<>(keys.size());
         for (String key : keys) {
-            byte[] value = store.get(key);
+            byte[] value = mStore.get(key);
             if (value == null || value.length == 0) {
                 Logger.w(TAG, "Didn't find value for %s, not adding to map", key);
             } else {
@@ -57,9 +57,9 @@ public final class InMemoryContentStorage implements ContentStorageDirect, Dumpa
 
     @Override
     public Result<Map<String, byte[]>> getAll(String prefix) {
-        getAllCount++;
+        mGetAllCount++;
         Map<String, byte[]> results = new HashMap<>();
-        for (Entry<String, byte[]> entry : store.entrySet()) {
+        for (Entry<String, byte[]> entry : mStore.entrySet()) {
             if (entry.getKey().startsWith(prefix)) {
                 results.put(entry.getKey(), entry.getValue());
             }
@@ -98,27 +98,27 @@ public final class InMemoryContentStorage implements ContentStorageDirect, Dumpa
 
     @Override
     public Result<List<String>> getAllKeys() {
-        return Result.success(new ArrayList<>(store.keySet()));
+        return Result.success(new ArrayList<>(mStore.keySet()));
     }
 
     private boolean deleteAll() {
-        store.clear();
+        mStore.clear();
         return true;
     }
 
     private boolean deleteByPrefix(DeleteByPrefix operation) {
         List<String> keysToRemove = new ArrayList<>();
-        for (String key : store.keySet()) {
+        for (String key : mStore.keySet()) {
             if (key.startsWith(operation.getPrefix())) {
                 keysToRemove.add(key);
             }
         }
-        store.keySet().removeAll(keysToRemove);
+        mStore.keySet().removeAll(keysToRemove);
         return true;
     }
 
     private boolean delete(Delete operation) {
-        store.remove(operation.getKey());
+        mStore.remove(operation.getKey());
         return true;
     }
 
@@ -138,11 +138,11 @@ public final class InMemoryContentStorage implements ContentStorageDirect, Dumpa
             Logger.e(TAG, "Invalid ContentMutation: empty value");
             return false;
         }
-        byte[] currentValue = store.put(key, value);
+        byte[] currentValue = mStore.put(key, value);
         if (currentValue == null) {
-            insertCount++;
+            mInsertCount++;
         } else {
-            updateCount++;
+            mUpdateCount++;
         }
         return true;
     }
@@ -150,10 +150,10 @@ public final class InMemoryContentStorage implements ContentStorageDirect, Dumpa
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("contentItems").value(store.size());
-        dumper.forKey("getCount").value(getCount);
-        dumper.forKey("getAllCount").value(getAllCount).compactPrevious();
-        dumper.forKey("insertCount").value(insertCount).compactPrevious();
-        dumper.forKey("updateCount").value(updateCount).compactPrevious();
+        dumper.forKey("contentItems").value(mStore.size());
+        dumper.forKey("getCount").value(mGetCount);
+        dumper.forKey("getAllCount").value(mGetAllCount).compactPrevious();
+        dumper.forKey("insertCount").value(mInsertCount).compactPrevious();
+        dumper.forKey("updateCount").value(mUpdateCount).compactPrevious();
     }
 }

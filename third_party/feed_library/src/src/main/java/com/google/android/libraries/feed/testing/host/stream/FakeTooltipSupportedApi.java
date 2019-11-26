@@ -13,24 +13,24 @@ import java.util.ArrayList;
 
 /** Fake implementation of {@link TooltipSupportedApi}. */
 public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
-    private final ArrayList<String> unsupportedFeatures = new ArrayList<>();
-    private final ThreadUtils threadUtils;
-    /*@Nullable*/ private String lastFeatureName;
+    private final ArrayList<String> mUnsupportedFeatures = new ArrayList<>();
+    private final ThreadUtils mThreadUtils;
+    /*@Nullable*/ private String mLastFeatureName;
 
     public FakeTooltipSupportedApi(ThreadUtils threadUtils) {
-        this.threadUtils = threadUtils;
+        this.mThreadUtils = threadUtils;
     }
 
     @Override
     public void wouldTriggerHelpUi(@FeatureName String featureName, Consumer<Boolean> consumer) {
-        threadUtils.checkMainThread();
-        lastFeatureName = featureName;
-        consumer.accept(!unsupportedFeatures.contains(featureName));
+        mThreadUtils.checkMainThread();
+        mLastFeatureName = featureName;
+        consumer.accept(!mUnsupportedFeatures.contains(featureName));
     }
 
     /** Adds an unsupported feature. */
     public FakeTooltipSupportedApi addUnsupportedFeature(String featureName) {
-        unsupportedFeatures.add(featureName);
+        mUnsupportedFeatures.add(featureName);
         return this;
     }
 
@@ -40,6 +40,6 @@ public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
      */
     /*@Nullable*/
     public String getLatestFeatureName() {
-        return lastFeatureName;
+        return mLastFeatureName;
     }
 }

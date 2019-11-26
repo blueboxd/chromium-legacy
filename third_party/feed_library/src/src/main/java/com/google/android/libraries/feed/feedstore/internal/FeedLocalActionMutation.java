@@ -18,27 +18,27 @@ import java.util.Map;
 public final class FeedLocalActionMutation implements LocalActionMutation {
     private static final String TAG = "FeedLocalActionMutation";
 
-    private final Map<Integer, List<String>> actions = new HashMap<>();
-    private final Committer<CommitResult, Map<Integer, List<String>>> committer;
+    private final Map<Integer, List<String>> mActions = new HashMap<>();
+    private final Committer<CommitResult, Map<Integer, List<String>>> mCommitter;
 
     FeedLocalActionMutation(Committer<CommitResult, Map<Integer, List<String>>> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public LocalActionMutation add(int action, String contentId) {
-        /*@Nullable*/ List<String> actionsForType = actions.get(action);
+        /*@Nullable*/ List<String> actionsForType = mActions.get(action);
         if (actionsForType == null) {
             actionsForType = new ArrayList<>();
         }
         actionsForType.add(contentId);
-        actions.put(action, actionsForType);
+        mActions.put(action, actionsForType);
         Logger.i(TAG, "Added action %d with content id %s", action, contentId);
         return this;
     }
 
     @Override
     public CommitResult commit() {
-        return committer.commit(actions);
+        return mCommitter.commit(mActions);
     }
 }

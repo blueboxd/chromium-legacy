@@ -286,15 +286,16 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
-   *     state.
+   * @return {chrome.fileManagerPrivate.DriveConnectionState} Current drive
+   *     connection state.
    */
   getDriveConnectionState() {
     if (!this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE) ||
         !this.volumeManager_) {
       return {
-        type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
-        reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE
+        type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+        reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
+        hasCellularNetworkAccess: false,
       };
     }
 

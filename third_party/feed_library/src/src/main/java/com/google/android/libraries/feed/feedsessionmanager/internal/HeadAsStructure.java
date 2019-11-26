@@ -34,46 +34,46 @@ import javax.annotation.concurrent.GuardedBy;
 public final class HeadAsStructure {
     private static final String TAG = "HeadFilter";
 
-    private final Store store;
-    private final TimingUtils timingUtils;
-    private final ThreadUtils threadUtils;
-    private final Object lock = new Object();
+    private final Store mStore;
+    private final TimingUtils mTimingUtils;
+    private final ThreadUtils mThreadUtils;
+    private final Object mLock = new Object();
     @VisibleForTesting
-    final Map<String, List<TreeNode>> tree = new HashMap<>();
+    final Map<String, List<TreeNode>> mTree = new HashMap<>();
     @VisibleForTesting
-    final Map<String, TreeNode> content = new HashMap<>();
+    final Map<String, TreeNode> mContent = new HashMap<>();
 
     @GuardedBy("lock")
-    private boolean initalized;
+    private boolean mInitalized;
 
     @VisibleForTesting
-    TreeNode root;
+    TreeNode mRoot;
 
     /**
      * Define a Node within the tree formed by $HEAD. This contains both the structure and content.
      * Allowing filtering of either the structure or content.
      */
     public static final class TreeNode {
-        final StreamStructure streamStructure;
-        StreamPayload streamPayload;
+        final StreamStructure mStreamStructure;
+        StreamPayload mStreamPayload;
 
         TreeNode(StreamStructure streamStructure) {
-            this.streamStructure = streamStructure;
+            this.mStreamStructure = streamStructure;
         }
 
         public StreamStructure getStreamStructure() {
-            return streamStructure;
+            return mStreamStructure;
         }
 
         public StreamPayload getStreamPayload() {
-            return streamPayload;
+            return mStreamPayload;
         }
     }
 
     public HeadAsStructure(Store store, TimingUtils timingUtils, ThreadUtils threadUtils) {
-        this.store = store;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
+        this.mStore = store;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
     }
 
     /**
@@ -83,11 +83,11 @@ public final class HeadAsStructure {
      */
     public void initialize(Consumer<Result<Void>> consumer) {
         Logger.i(TAG, "initialize HeadFilter");
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        synchronized (lock) {
-            if (initalized) {
+        synchronized (mLock) {
+            if (mInitalized) {
                 consumer.accept(Result.failure());
                 return;
             }
@@ -101,10 +101,10 @@ public final class HeadAsStructure {
                 consumer.accept(Result.failure());
                 return;
             }
-            initalized = true;
+            mInitalized = true;
         }
 
-        timeTracker.stop("task", "HeadFilter.initialize", "content", content.size());
+        timeTracker.stop("task", "HeadFilter.initialize", "content", mContent.size());
         consumer.accept(Result.success(null));
     }
 
@@ -113,7 +113,7 @@ public final class HeadAsStructure {
      * {@code T}. The {@code filterPredicate} will filter and transform the node. If {@code
      * filterPredicate} returns null, the value will be skipped.
      *
-     * <p>This method must be called after {@link #initalized}. This method may run on the main
+     * <p>This method must be called after {@link #mInitalized}. This method may run on the main
      * thread.
      */
     // The Nullness checker requires specifying the Nullable vs. NonNull state explicitly since it
@@ -121,14 +121,14 @@ public final class HeadAsStructure {
     public <T> Result<List</*@NonNull*/ T>> filter(
             Function<TreeNode, /*@Nullable*/ T> filterPredicate) {
         Logger.i(TAG, "filterHead");
-        synchronized (lock) {
-            if (!initalized) {
+        synchronized (mLock) {
+            if (!mInitalized) {
                 Logger.e(TAG, "HeadFilter has not been initialized");
                 return Result.failure();
             }
         }
 
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List</*@NonNull*/ T> filteredList = new ArrayList<>();
         traverseHead(filterPredicate, filteredList);
         Logger.i(TAG, "filterList size %s", filteredList.size());
@@ -138,21 +138,21 @@ public final class HeadAsStructure {
 
     private <T> void traverseHead(
             Function<TreeNode, /*@Nullable*/ T> filterPredicate, List</*@NonNull*/ T> results) {
-        TreeNode r = Validators.checkNotNull(root);
+        TreeNode r = Validators.checkNotNull(mRoot);
         traverseNode(r, filterPredicate, results);
     }
 
     private <T> void traverseNode(TreeNode node,
             Function<TreeNode, /*@Nullable*/ T> filterPredicate, List</*@NonNull*/ T> results) {
-        if (node.streamPayload == null) {
-            Logger.w(TAG, "Found unbound node %s", node.streamStructure.getContentId());
+        if (node.mStreamPayload == null) {
+            Logger.w(TAG, "Found unbound node %s", node.mStreamStructure.getContentId());
             return;
         }
         T data = filterPredicate.apply(node);
         if (data != null) {
             results.add(data);
         }
-        List<TreeNode> children = tree.get(node.streamStructure.getContentId());
+        List<TreeNode> children = mTree.get(node.mStreamStructure.getContentId());
         if (children != null) {
             for (TreeNode child : children) {
                 traverseNode(child, filterPredicate, results);
@@ -162,25 +162,26 @@ public final class HeadAsStructure {
 
     private boolean bindChildren() {
         Result<List<PayloadWithId>> payloadResult =
-                store.getPayloads(new ArrayList<>(content.keySet()));
+                mStore.getPayloads(new ArrayList<>(mContent.keySet()));
         if (!payloadResult.isSuccessful()) {
             Logger.e(TAG, "Unable to get payloads");
             return false;
         }
         for (PayloadWithId payloadWithId : payloadResult.getValue()) {
-            TreeNode node = content.get(payloadWithId.contentId);
+            TreeNode node = mContent.get(payloadWithId.contentId);
             if (node == null) {
                 // This shouldn't happen
                 Logger.w(TAG, "Unable to find tree content for %s", payloadWithId.contentId);
                 continue;
             }
-            node.streamPayload = payloadWithId.payload;
+            node.mStreamPayload = payloadWithId.payload;
         }
         return true;
     }
 
     private boolean buildTree() {
-        Result<List<StreamStructure>> headResult = store.getStreamStructures(Store.HEAD_SESSION_ID);
+        Result<List<StreamStructure>> headResult =
+                mStore.getStreamStructures(Store.HEAD_SESSION_ID);
         if (!headResult.isSuccessful()) {
             Logger.e(TAG, "Unable to load $HEAD");
             return false;
@@ -202,7 +203,7 @@ public final class HeadAsStructure {
                     break;
             }
         }
-        if (root == null) {
+        if (mRoot == null) {
             Logger.e(TAG, "Root was not found");
             return false;
         }
@@ -211,19 +212,19 @@ public final class HeadAsStructure {
 
     private void updateOrAppend(StreamStructure structure) {
         String contentId = structure.getContentId();
-        if (content.containsKey(contentId)) {
+        if (mContent.containsKey(contentId)) {
             // this is an update, ignore it
             return;
         }
         TreeNode node = new TreeNode(structure);
-        content.put(contentId, node);
+        mContent.put(contentId, node);
         updateTreeStructure(contentId);
         if (!structure.hasParentContentId()) {
             // this is the root
-            if (root != null) {
+            if (mRoot != null) {
                 Logger.e(TAG, "Found Multiple roots");
             }
-            root = node;
+            mRoot = node;
             return;
         }
 
@@ -235,7 +236,7 @@ public final class HeadAsStructure {
     private void remove(StreamStructure structure) {
         String contentId = structure.getContentId();
         String parentId = structure.hasParentContentId() ? structure.getParentContentId() : null;
-        TreeNode node = content.get(contentId);
+        TreeNode node = mContent.get(contentId);
         if (node == null) {
             Logger.w(TAG, "Unable to find StreamStructure %s to remove", contentId);
             return;
@@ -246,21 +247,21 @@ public final class HeadAsStructure {
             Logger.w(TAG, "Removing Root is not supported, unable to remove %s", contentId);
             return;
         }
-        List<TreeNode> parentChildren = tree.get(parentId);
+        List<TreeNode> parentChildren = mTree.get(parentId);
         if (parentChildren == null) {
             Logger.w(TAG, "Parent %s not found, unable to remove", parentId, contentId);
         } else if (!parentChildren.remove(node)) {
             Logger.w(TAG, "Removing %s, not found in parent %s", contentId, parentId);
         }
-        tree.remove(contentId);
-        content.remove(contentId);
+        mTree.remove(contentId);
+        mContent.remove(contentId);
     }
 
     private List<TreeNode> updateTreeStructure(String contentId) {
-        List<TreeNode> children = tree.get(contentId);
+        List<TreeNode> children = mTree.get(contentId);
         if (children == null) {
             children = new ArrayList<>();
-            tree.put(contentId, children);
+            mTree.put(contentId, children);
         }
         return children;
     }

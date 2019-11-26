@@ -62,7 +62,6 @@ struct SyncCompositorCommonRendererParams {
   float page_scale_factor = 0.f;
   float min_page_scale_factor = 0.f;
   float max_page_scale_factor = 0.f;
-  bool need_animate_scroll = false;
   uint32_t need_invalidate_count = 0u;
   bool invalidate_needs_draw = true;
   uint32_t did_activate_pending_tree_count = 0u;
@@ -92,7 +91,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonRendererParams)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(min_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(max_page_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(need_animate_scroll)
   IPC_STRUCT_TRAITS_MEMBER(need_invalidate_count)
   IPC_STRUCT_TRAITS_MEMBER(invalidate_needs_draw)
   IPC_STRUCT_TRAITS_MEMBER(did_activate_pending_tree_count)

@@ -21,11 +21,11 @@ import java.util.List;
  * without regard to the anchor view.
  */
 public class FloatingContextMenuManager implements ContextMenuManager {
-    private final Context context;
-    /*@Nullable*/ private AlertDialog alertDialog;
+    private final Context mContext;
+    /*@Nullable*/ private AlertDialog mAlertDialog;
 
     public FloatingContextMenuManager(Context context) {
-        this.context = context;
+        this.mContext = context;
     }
 
     @Override
@@ -36,10 +36,10 @@ public class FloatingContextMenuManager implements ContextMenuManager {
         }
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(context, R.layout.feed_simple_list_item, items);
+                new ArrayAdapter<>(mContext, R.layout.feed_simple_list_item, items);
 
-        ListView listView = createListView(adapter, context);
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        ListView listView = createListView(adapter, mContext);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
 
         dialogBuilder.setView(listView);
         AlertDialog alertDialog = dialogBuilder.create();
@@ -54,7 +54,7 @@ public class FloatingContextMenuManager implements ContextMenuManager {
         }
         alertDialog.show();
 
-        this.alertDialog = alertDialog;
+        this.mAlertDialog = alertDialog;
         return true;
     }
 
@@ -77,9 +77,9 @@ public class FloatingContextMenuManager implements ContextMenuManager {
 
     @Override
     public void dismissPopup() {
-        if (alertDialog != null) {
-            alertDialog.dismiss();
-            alertDialog = null;
+        if (mAlertDialog != null) {
+            mAlertDialog.dismiss();
+            mAlertDialog = null;
         }
     }
 
@@ -89,6 +89,6 @@ public class FloatingContextMenuManager implements ContextMenuManager {
     }
 
     private boolean menuShowing() {
-        return alertDialog != null && alertDialog.isShowing();
+        return mAlertDialog != null && mAlertDialog.isShowing();
     }
 }

@@ -603,10 +603,10 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ActivationStateComputingNavigationThrottleTest,
                          ::testing::Values(true, false));
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ActivationStateComputingThrottleSubFrameTest,
                          ::testing::Values(true, false));
 

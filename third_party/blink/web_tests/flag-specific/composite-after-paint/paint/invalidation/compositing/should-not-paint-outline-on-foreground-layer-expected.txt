@@ -19,7 +19,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='container'",
+      "name": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
       "position": [-10, -10],
       "bounds": [320, 320],
       "paintInvalidations": [
@@ -27,6 +27,16 @@
           "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [0, 0, 320, 320],
           "reason": "chunk appeared"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
+          "rect": [295, 295, 15, 15],
+          "reason": "paint property change"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow DIV id='container'",
+          "rect": [0, 0, 15, 15],
+          "reason": "paint property change"
         }
       ],
       "transform": 1

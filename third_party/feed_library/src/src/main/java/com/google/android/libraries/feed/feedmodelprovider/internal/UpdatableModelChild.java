@@ -16,52 +16,52 @@ import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
 public final class UpdatableModelChild implements ModelChild {
     private static final String TAG = "UpdatableModelChild";
 
-    private final String contentId;
-    /*@Nullable*/ private final String parentContentId;
+    private final String mContentId;
+    /*@Nullable*/ private final String mParentContentId;
 
-    private @Type int type = Type.UNBOUND;
-    private UpdatableModelFeature modelFeature;
-    private UpdatableModelToken modelToken;
+    private @Type int mType = Type.UNBOUND;
+    private UpdatableModelFeature mModelFeature;
+    private UpdatableModelToken mModelToken;
 
     public UpdatableModelChild(String contentId, /*@Nullable*/ String parentContentId) {
-        this.contentId = contentId;
-        this.parentContentId = parentContentId;
+        this.mContentId = contentId;
+        this.mParentContentId = parentContentId;
     }
 
     void bindFeature(UpdatableModelFeature modelFeature) {
         validateType(Type.UNBOUND);
-        this.modelFeature = modelFeature;
-        type = Type.FEATURE;
+        this.mModelFeature = modelFeature;
+        mType = Type.FEATURE;
     }
 
     public void bindToken(UpdatableModelToken modelToken) {
         validateType(Type.UNBOUND);
-        this.modelToken = modelToken;
-        type = Type.TOKEN;
+        this.mModelToken = modelToken;
+        mType = Type.TOKEN;
     }
 
     @Override
     public ModelFeature getModelFeature() {
         validateType(Type.FEATURE);
-        return modelFeature;
+        return mModelFeature;
     }
 
     @Override
     public ModelToken getModelToken() {
         validateType(Type.TOKEN);
-        return modelToken;
+        return mModelToken;
     }
 
     public UpdatableModelToken getUpdatableModelToken() {
         validateType(Type.TOKEN);
-        return modelToken;
+        return mModelToken;
     }
 
     void updateFeature(StreamPayload payload) {
-        switch (type) {
+        switch (mType) {
             case Type.FEATURE:
                 if (payload.hasStreamFeature()) {
-                    modelFeature.setFeatureValue(payload.getStreamFeature());
+                    mModelFeature.setFeatureValue(payload.getStreamFeature());
                 } else {
                     Logger.e(
                             TAG, "Attempting to update a ModelFeature without providing a feature");
@@ -74,35 +74,35 @@ public final class UpdatableModelChild implements ModelChild {
                 Logger.e(TAG, "updateFeature called on UNBOUND child");
                 break;
             default:
-                Logger.e(TAG, "Update called for unsupported type: %s", type);
+                Logger.e(TAG, "Update called for unsupported type: %s", mType);
         }
     }
 
     @Override
     public @Type int getType() {
-        return type;
+        return mType;
     }
 
     @Override
     public String getContentId() {
-        return contentId;
+        return mContentId;
     }
 
     /*@Nullable*/
     @Override
     public String getParentId() {
-        return parentContentId;
+        return mParentContentId;
     }
 
     @Override
     public boolean hasParentId() {
-        return !TextUtils.isEmpty(parentContentId);
+        return !TextUtils.isEmpty(mParentContentId);
     }
 
     private void validateType(@Type int type) {
-        if (this.type != type) {
-            throw new IllegalStateException(
-                    String.format("ModelChild type error - Type %s, expected %s", this.type, type));
+        if (this.mType != type) {
+            throw new IllegalStateException(String.format(
+                    "ModelChild type error - Type %s, expected %s", this.mType, type));
         }
     }
 }

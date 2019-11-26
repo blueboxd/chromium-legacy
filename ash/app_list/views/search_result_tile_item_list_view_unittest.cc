@@ -282,9 +282,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
     view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
         &node_data);
     EXPECT_EQ(ax::mojom::Role::kListBoxOption, node_data.role);
-    EXPECT_EQ("InstalledApp " + base::NumberToString(i) + ", " +
-                  l10n_util::GetStringUTF8(
-                      IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT),
+    EXPECT_EQ(l10n_util::GetStringFUTF8(
+                  IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT,
+                  base::UTF8ToUTF16("InstalledApp " + base::NumberToString(i))),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
@@ -298,12 +298,13 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->children()[first_child + (i + kInstalledApps) * child_step]
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kListBoxOption, node_data.role);
-    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i) + ", " +
-                  l10n_util::GetStringUTF8(
-                      IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT) +
-                  ", Star rating " + base::NumberToString(i + 1) +
-                  ".0, Price " + base::NumberToString(i),
-              node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
+    EXPECT_EQ(
+        l10n_util::GetStringFUTF8(
+            IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT,
+            base::UTF8ToUTF16("PlayStoreApp " + base::NumberToString(i))) +
+            ", Star rating " + base::NumberToString(i + 1) + ".0, Price " +
+            base::NumberToString(i),
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   // Recommendations.
@@ -314,9 +315,12 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->children()[first_child + (i + start_index) * child_step]
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kListBoxOption, node_data.role);
-    EXPECT_EQ("RecommendedApp " + base::NumberToString(i) + ", Star rating " +
-                  base::NumberToString(i + 1) + ".0, App recommendation",
-              node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
+    EXPECT_EQ(
+        l10n_util::GetStringFUTF8(
+            IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC,
+            base::UTF8ToUTF16("RecommendedApp " + base::NumberToString(i))) +
+            ", Star rating " + base::NumberToString(i + 1) + ".0",
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   ResetOpenResultCount();
@@ -355,9 +359,12 @@ TEST_P(SearchResultTileItemListViewTest, TestRecommendations) {
     view()->children()[first_index + i * child_step]->GetAccessibleNodeData(
         &node_data);
     EXPECT_EQ(ax::mojom::Role::kListBoxOption, node_data.role);
-    EXPECT_EQ("RecommendedApp " + base::NumberToString(i) + ", Star rating " +
-                  base::NumberToString(i + 1) + ".0, App recommendation",
-              node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
+    EXPECT_EQ(
+        l10n_util::GetStringFUTF8(
+            IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC,
+            base::UTF8ToUTF16("RecommendedApp " + base::NumberToString(i))) +
+            ", Star rating " + base::NumberToString(i + 1) + ".0",
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 }
 

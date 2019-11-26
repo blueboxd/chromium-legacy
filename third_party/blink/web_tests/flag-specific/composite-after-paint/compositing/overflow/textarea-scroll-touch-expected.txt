@@ -9,6 +9,11 @@
     },
     {
       "name": "LayoutTextControl TEXTAREA",
+      "bounds": [206, 126],
+      "transform": 1
+    },
+    {
+      "name": "LayoutTextControl TEXTAREA",
       "position": [1, 1],
       "bounds": [189, 328],
       "backgroundColor": "#CCCCCC",
@@ -23,13 +28,7 @@
     {
       "name": "LayoutTextControl TEXTAREA",
       "bounds": [206, 126],
-      "transform": 1
-    },
-    {
-      "name": "LayoutTextControl TEXTAREA",
-      "position": [3, 3],
-      "bounds": [187, 324],
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutTextControl TEXTAREA",
@@ -43,17 +42,6 @@
       "position": [190, 1],
       "bounds": [15, 109],
       "transform": 3
-    },
-    {
-      "name": "LayoutTextControl TEXTAREA",
-      "bounds": [206, 126],
-      "transform": 3
-    },
-    {
-      "name": "LayoutTextControl TEXTAREA",
-      "position": [3, 3],
-      "bounds": [187, 324],
-      "transform": 4
     }
   ],
   "transforms": [

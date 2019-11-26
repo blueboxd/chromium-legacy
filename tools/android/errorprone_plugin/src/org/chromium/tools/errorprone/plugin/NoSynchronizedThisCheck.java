@@ -21,7 +21,7 @@ import javax.lang.model.element.Modifier;
  * This class detects the synchronized method.
  */
 @AutoService(BugChecker.class)
-@BugPattern(name = "NoSynchronizedThisCheck", category = BugPattern.Category.JDK,
+@BugPattern(name = "NoSynchronizedThisCheck",
         summary = "Do not synchronized on 'this' in public classes",
         severity = BugPattern.SeverityLevel.ERROR, linkType = BugPattern.LinkType.CUSTOM,
         link = "https://stackoverflow.com/questions/442564/avoid-synchronizedthis-in-java")

@@ -18,8 +18,9 @@
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     }
   ],
   "transforms": [

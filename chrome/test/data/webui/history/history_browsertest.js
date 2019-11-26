@@ -210,7 +210,13 @@ HistorySupervisedUserTest.prototype = {
   ]),
 };
 
-TEST_F('HistorySupervisedUserTest', 'All', function() {
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_AllTest DISABLED_AllTest');
+GEN('#else');
+GEN('#define MAYBE_AllTest AllTest');
+GEN('#endif');
+
+TEST_F('HistorySupervisedUserTest', 'MAYBE_AllTest', function() {
   mocha.run();
 });
 

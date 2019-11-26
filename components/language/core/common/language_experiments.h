@@ -38,9 +38,7 @@ extern const base::Feature kUseButtonTranslateBubbleUi;
 
 // These feature params controls what translate bubble UI to display.
 extern const char kTranslateUIBubbleKey[];
-extern const char kTranslateUIBubbleButtonValue[];
 extern const char kTranslateUIBubbleTabValue[];
-extern const char kTranslateUIBubbleButtonGM2Value[];
 
 enum class OverrideLanguageModel {
   DEFAULT,
@@ -52,9 +50,7 @@ enum class OverrideLanguageModel {
 // Options for the translate desktop UI experiment.
 enum class TranslateUIBubbleModel {
   DEFAULT,
-  BUTTON,
   TAB,
-  BUTTON_GM2,
 };
 
 // Returns which language model to use depending on the state of all Language

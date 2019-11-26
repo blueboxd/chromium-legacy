@@ -2841,14 +2841,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ComPtr<IRawElementProviderSimple> link_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
+  ComPtr<IRawElementProviderSimple> static_text_node_raw1 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_node1);
   ComPtr<IRawElementProviderSimple> inline_text_node_raw1 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node1);
   ComPtr<IRawElementProviderSimple> inline_text_node_raw2 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node2);
 
   // Test GetEnclosingElement for the two leaves text nodes. The enclosing
-  // element of the first one should be itself and the enclosing element for the
-  // text node that is grandchild of the link node should return the link node.
+  // element of the first one should be its static text parent (because inline
+  // text boxes shouldn't be exposed) and the enclosing element for the text
+  // node that is grandchild of the link node should return the link node.
   ComPtr<ITextProvider> text_provider;
   EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw1->GetPatternProvider(
       UIA_TextPatternId, &text_provider));
@@ -2860,7 +2863,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<IRawElementProviderSimple> enclosing_element;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetEnclosingElement(&enclosing_element));
-  EXPECT_EQ(inline_text_node_raw1.Get(), enclosing_element.Get());
+  EXPECT_EQ(static_text_node_raw1.Get(), enclosing_element.Get());
 
   EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw2->GetPatternProvider(
       UIA_TextPatternId, &text_provider));

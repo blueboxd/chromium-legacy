@@ -61,35 +61,36 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     private static final String ASTERISK = "_ATK_";
     private static final int MAX_BYTE_SIZE = 1000000;
 
-    private final Context context;
-    private final ThreadUtils threadUtils;
-    private final Executor executor;
-    /*@Nullable*/ private final String persistenceDir;
-    private File journalDir;
+    private final Context mContext;
+    private final ThreadUtils mThreadUtils;
+    private final Executor mExecutor;
+    /*@Nullable*/ private final String mPersistenceDir;
+    private File mJournalDir;
 
     /**
      * The schema of existing content. If this does not match {@code SCHEMA_VERSION}, all existing
      * content will be wiped so there are no version mismatches where data cannot be read / written
      * correctly.
      */
-    private int existingSchema;
+    private int mExistingSchema;
 
     public PersistentJournalStorage(Context context, Executor executorService,
             ThreadUtils threadUtils,
             /*@Nullable*/ String persistenceDir) {
-        this.context = context;
-        this.executor = executorService;
-        this.threadUtils = threadUtils;
+        this.mContext = context;
+        this.mExecutor = executorService;
+        this.mThreadUtils = threadUtils;
         // TODO: See https://goto.google.com/tiktok-conformance-violations/SHARED_PREFS
-        this.existingSchema = context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE)
-                                      .getInt(SCHEMA_KEY, 0);
-        this.persistenceDir = persistenceDir;
+        this.mExistingSchema =
+                context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE)
+                        .getInt(SCHEMA_KEY, 0);
+        this.mPersistenceDir = persistenceDir;
     }
 
     @Override
     public void read(String journalName, Consumer<Result<List<byte[]>>> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(read(journalName)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(read(journalName)));
     }
 
     @Override
@@ -98,7 +99,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
         String sanitizedJournalName = sanitize(journalName);
         if (!sanitizedJournalName.isEmpty()) {
-            File journal = new File(journalDir, sanitizedJournalName);
+            File journal = new File(mJournalDir, sanitizedJournalName);
             try {
                 return Result.success(getJournalContents(journal));
             } catch (IOException e) {
@@ -110,7 +111,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     }
 
     private List<byte[]> getJournalContents(File journal) throws IOException {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         List<byte[]> journalContents = new ArrayList<>();
         if (journal.exists()) {
@@ -148,8 +149,8 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
     @Override
     public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(commit(mutation)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(commit(mutation)));
     }
 
     @Override
@@ -158,7 +159,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
         String sanitizedJournalName = sanitize(mutation.getJournalName());
         if (!sanitizedJournalName.isEmpty()) {
-            File journal = new File(journalDir, sanitizedJournalName);
+            File journal = new File(mJournalDir, sanitizedJournalName);
 
             for (JournalOperation operation : mutation.getOperations()) {
                 if (operation.getType() == APPEND) {
@@ -185,9 +186,9 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
     @Override
     public void deleteAll(Consumer<CommitResult> consumer) {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
 
-        executor.execute(() -> consumer.accept(deleteAllInitialized()));
+        mExecutor.execute(() -> consumer.accept(deleteAllInitialized()));
     }
 
     @Override
@@ -199,7 +200,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     private CommitResult deleteAllInitialized() {
         boolean success = true;
 
-        File[] files = journalDir.listFiles();
+        File[] files = mJournalDir.listFiles();
         if (files != null) {
             // Delete all files in the journal directory
             for (File file : files) {
@@ -210,12 +211,12 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
                 }
             }
         }
-        success &= journalDir.delete();
+        success &= mJournalDir.delete();
         return success ? CommitResult.SUCCESS : CommitResult.FAILURE;
     }
 
     private boolean delete(File journal) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         if (!journal.exists()) {
             // If the file doesn't exist, let's call it deleted.
@@ -229,7 +230,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     }
 
     private boolean copy(Copy operation, File journal) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         try {
             if (!journal.exists()) {
@@ -256,7 +257,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
-            File destination = new File(journalDir, destinationFileName);
+            File destination = new File(mJournalDir, destinationFileName);
             inputStream = new FileInputStream(journal);
             outputStream = new FileOutputStream(destination);
             byte[] bytes = new byte[512];
@@ -275,7 +276,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
     }
 
     private boolean append(Append operation, File journal) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         if (!journal.exists()) {
             try {
@@ -308,8 +309,8 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
     @Override
     public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(exists(journalName)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(exists(journalName)));
     }
 
     @Override
@@ -318,7 +319,7 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
         String sanitizedJournalName = sanitize(journalName);
         if (!sanitizedJournalName.isEmpty()) {
-            File journal = new File(journalDir, sanitizedJournalName);
+            File journal = new File(mJournalDir, sanitizedJournalName);
             return Result.success(journal.exists());
         }
         return Result.failure();
@@ -326,15 +327,15 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
     @Override
     public void getAllJournals(Consumer<Result<List<String>>> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(getAllJournals()));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(getAllJournals()));
     }
 
     @Override
     public Result<List<String>> getAllJournals() {
         initializeJournalDir();
 
-        File[] files = journalDir.listFiles();
+        File[] files = mJournalDir.listFiles();
         List<String> journals = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
@@ -349,9 +350,9 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
 
     private void initializeJournalDir() {
         // if we've set the journalDir then just verify that it exists
-        if (journalDir != null) {
-            if (!journalDir.exists()) {
-                if (!journalDir.mkdir()) {
+        if (mJournalDir != null) {
+            if (!mJournalDir.exists()) {
+                if (!mJournalDir.mkdir()) {
                     Logger.w(TAG, "Jardin journal directory already exists");
                 }
             }
@@ -359,30 +360,30 @@ public final class PersistentJournalStorage implements JournalStorage, JournalSt
         }
 
         // Create the root directory persistent files
-        if (persistenceDir != null) {
-            File persistenceRoot = context.getDir(persistenceDir, Context.MODE_PRIVATE);
+        if (mPersistenceDir != null) {
+            File persistenceRoot = mContext.getDir(mPersistenceDir, Context.MODE_PRIVATE);
             if (!persistenceRoot.exists()) {
                 if (!persistenceRoot.mkdir()) {
                     Logger.w(TAG, "persistenceDir directory already exists");
                 }
             }
-            journalDir = new File(persistenceRoot, JOURNAL_DIR);
+            mJournalDir = new File(persistenceRoot, JOURNAL_DIR);
         } else {
-            journalDir = context.getDir(JOURNAL_DIR, Context.MODE_PRIVATE);
+            mJournalDir = mContext.getDir(JOURNAL_DIR, Context.MODE_PRIVATE);
         }
-        if (existingSchema != SCHEMA_VERSION) {
+        if (mExistingSchema != SCHEMA_VERSION) {
             // For schema mismatch, delete everything.
             CommitResult result = deleteAllInitialized();
             if (result == CommitResult.SUCCESS
-                    && context.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE)
+                    && mContext.getSharedPreferences(SHARED_PREFERENCES, Context.MODE_PRIVATE)
                                .edit()
                                .putInt(SCHEMA_KEY, SCHEMA_VERSION)
                                .commit()) {
-                existingSchema = SCHEMA_VERSION;
+                mExistingSchema = SCHEMA_VERSION;
             }
         }
-        if (!journalDir.exists()) {
-            if (!journalDir.mkdir()) {
+        if (!mJournalDir.exists()) {
+            if (!mJournalDir.mkdir()) {
                 Logger.w(TAG, "journal directory already exists");
             }
         }

@@ -145,6 +145,7 @@ struct WebScrollIntoViewParams;
 
 namespace mojom {
 class CacheStorage;
+class GeolocationService;
 class WebUsbService;
 }
 }  // namespace blink
@@ -1080,6 +1081,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetFileSystemManager(
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
+
+  void GetGeolocationService(
+      mojo::PendingReceiver<blink::mojom::GeolocationService> receiver);
 
   void GetNativeFileSystemManager(
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);

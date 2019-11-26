@@ -14,13 +14,13 @@ public final class ContentMetadata {
 
     private static final String TAG = "ContentMetadata";
 
-    private final String url;
-    private final String title;
-    private final long timePublished;
-    /*@Nullable*/ private final String imageUrl;
-    /*@Nullable*/ private final String publisher;
-    /*@Nullable*/ private final String faviconUrl;
-    /*@Nullable*/ private final String snippet;
+    private final String mUrl;
+    private final String mTitle;
+    private final long mTimePublished;
+    /*@Nullable*/ private final String mImageUrl;
+    /*@Nullable*/ private final String mPublisher;
+    /*@Nullable*/ private final String mFaviconUrl;
+    /*@Nullable*/ private final String mSnippet;
 
     /*@Nullable*/
     public static ContentMetadata maybeCreateContentMetadata(
@@ -53,33 +53,33 @@ public final class ContentMetadata {
             /*@Nullable*/ String publisher,
             /*@Nullable*/ String faviconUrl,
             /*@Nullable*/ String snippet) {
-        this.url = url;
-        this.title = title;
-        this.imageUrl = imageUrl;
-        this.publisher = publisher;
-        this.faviconUrl = faviconUrl;
-        this.snippet = snippet;
-        this.timePublished = timePublished;
+        this.mUrl = url;
+        this.mTitle = title;
+        this.mImageUrl = imageUrl;
+        this.mPublisher = publisher;
+        this.mFaviconUrl = faviconUrl;
+        this.mSnippet = snippet;
+        this.mTimePublished = timePublished;
     }
 
     public String getUrl() {
-        return url;
+        return mUrl;
     }
 
     /** Title for the content. */
     public String getTitle() {
-        return title;
+        return mTitle;
     }
 
     /*@Nullable*/
     public String getImageUrl() {
-        return imageUrl;
+        return mImageUrl;
     }
 
     /** {@link String} representation of the publisher. */
     /*@Nullable*/
     public String getPublisher() {
-        return publisher;
+        return mPublisher;
     }
 
     /**
@@ -87,17 +87,17 @@ public final class ContentMetadata {
      * UNKNOWN_TIME_PUBLISHED} if unknown.
      */
     public long getTimePublished() {
-        return timePublished;
+        return mTimePublished;
     }
 
     /*@Nullable*/
     public String getFaviconUrl() {
-        return faviconUrl;
+        return mFaviconUrl;
     }
 
     /** A {@link String} that can be displayed that is part of the content, typically the start. */
     /*@Nullable*/
     public String getSnippet() {
-        return snippet;
+        return mSnippet;
     }
 }

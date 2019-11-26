@@ -248,7 +248,6 @@ public class FeedJournalStorageTest {
     @Test
     @SmallTest
     public void getAllJournalsFailureTest() {
-        List<String> answerStrings = new ArrayList<String>();
         Answer<Void> answer = createFailureAnswer();
         doAnswer(answer).when(mBridge).loadAllJournalKeys(
                 mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());

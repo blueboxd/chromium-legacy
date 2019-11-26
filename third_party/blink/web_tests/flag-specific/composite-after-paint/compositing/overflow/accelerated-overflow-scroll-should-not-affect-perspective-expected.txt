@@ -9,18 +9,13 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 185],
-      "bounds": [185, 15],
+      "bounds": [200, 15],
       "transform": 1
     },
     {
       "name": "VerticalScrollbar",
       "position": [185, 0],
       "bounds": [15, 185],
-      "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "bounds": [200, 200],
       "transform": 1
     },
     {

@@ -304,8 +304,8 @@ void PaintPath(Canvas* canvas,
         SkScalar y = arg(6);
         SkPath::ArcSize arc_size =
             large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize;
-        SkPath::Direction direction =
-            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction;
+        SkPathDirection direction =
+            arc_sweep_flag ? SkPathDirection::kCW : SkPathDirection::kCCW;
 
         if (command_type == ARC_TO)
           path.arcTo(rx, ry, angle, arc_size, direction, x, y);

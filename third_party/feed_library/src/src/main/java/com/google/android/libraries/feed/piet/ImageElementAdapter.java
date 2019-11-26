@@ -26,7 +26,7 @@ import com.google.search.now.ui.piet.ImagesProto.ImageSource;
 class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, ImageElement> {
     private static final String TAG = "ImageElementAdapter";
 
-    /*@Nullable*/ private LoadImageCallback currentlyLoadingImage;
+    /*@Nullable*/ private LoadImageCallback mCurrentlyLoadingImage;
 
     @VisibleForTesting
     ImageElementAdapter(Context context, AdapterParameters parameters) {
@@ -47,14 +47,14 @@ class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, Im
         StyleProvider style = getElementStyle();
         Context context = getContext();
 
-        widthPx = style.getWidthSpecPx(context);
+        mWidthPx = style.getWidthSpecPx(context);
 
         if (style.hasHeight()) {
-            heightPx = style.getHeightSpecPx(context);
+            mHeightPx = style.getHeightSpecPx(context);
         } else {
             // Defaults to a square when only the width is defined.
             // TODO: This is not cross-platform standard; should probably get rid of this.
-            heightPx = widthPx > 0 ? widthPx : StyleProvider.DIMENSION_NOT_SET;
+            mHeightPx = mWidthPx > 0 ? mWidthPx : StyleProvider.DIMENSION_NOT_SET;
         }
     }
 
@@ -93,13 +93,14 @@ class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, Im
 
         getBaseView().setDefaultAspectRatio(getAspectRatio(image));
 
-        checkState(currentlyLoadingImage == null, "An image loading callback exists; unbind first");
+        checkState(
+                mCurrentlyLoadingImage == null, "An image loading callback exists; unbind first");
         Integer overlayColor = getElementStyle().hasColor() ? getElementStyle().getColor() : null;
         LoadImageCallback loadImageCallback = createLoadImageCallback(
                 getElementStyle().getScaleType(), overlayColor, frameContext);
-        currentlyLoadingImage = loadImageCallback;
-        getParameters().hostProviders.getAssetProvider().getImage(image,
-                convertDimensionForImageLoader(widthPx), convertDimensionForImageLoader(heightPx),
+        mCurrentlyLoadingImage = loadImageCallback;
+        getParameters().mHostProviders.getAssetProvider().getImage(image,
+                convertDimensionForImageLoader(mWidthPx), convertDimensionForImageLoader(mHeightPx),
                 loadImageCallback);
     }
 
@@ -119,9 +120,9 @@ class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, Im
 
     @Override
     void onUnbindModel() {
-        if (currentlyLoadingImage != null) {
-            currentlyLoadingImage.cancel();
-            currentlyLoadingImage = null;
+        if (mCurrentlyLoadingImage != null) {
+            mCurrentlyLoadingImage.cancel();
+            mCurrentlyLoadingImage = null;
         }
         ImageView imageView = getBaseView();
         if (imageView != null) {

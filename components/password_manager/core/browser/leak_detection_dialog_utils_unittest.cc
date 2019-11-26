@@ -37,21 +37,21 @@ const struct {
 } kLeakTypesTestCases[] = {
     {CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)), IDS_OK,
      IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
-     IDS_CREDENTIAL_LEAK_TITLE, false, false},
+     IDS_CREDENTIAL_LEAK_TITLE_CHANGE, false, false},
     {CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(true)), IDS_OK,
      IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
-     IDS_CREDENTIAL_LEAK_TITLE, false, false},
+     IDS_CREDENTIAL_LEAK_TITLE_CHANGE, false, false},
     {CreateLeakType(IsSaved(false), IsReused(true), IsSyncing(true)),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
      IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE,
-     IDS_CREDENTIAL_LEAK_TITLE, true, true},
+     IDS_CREDENTIAL_LEAK_TITLE_CHECK, true, true},
     {CreateLeakType(IsSaved(true), IsReused(false), IsSyncing(true)), IDS_OK,
      IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
-     IDS_CREDENTIAL_LEAK_TITLE, false, false},
+     IDS_CREDENTIAL_LEAK_TITLE_CHANGE, false, false},
     {CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(true)),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
-     IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE, IDS_CREDENTIAL_LEAK_TITLE,
-     true, true}};
+     IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE,
+     IDS_CREDENTIAL_LEAK_TITLE_CHECK, true, true}};
 }  // namespace
 
 TEST(CredentialLeakDialogUtilsTest, GetAcceptButtonLabel) {

@@ -32,50 +32,50 @@ import java.util.Set;
 public final class ContentGc {
     private static final String TAG = "ContentGc";
 
-    private final Supplier<Set<String>> accessibleContentSupplier;
-    private final Set<String> reservedContentIds;
-    private final Supplier<Set<StreamLocalAction>> actionsSupplier;
-    private final ContentStorageDirect contentStorageDirect;
-    private final TimingUtils timingUtils;
-    private final TaskQueue taskQueue;
-    private final boolean keepSharedStates;
-    private final long maxAllowedGcAttempts;
+    private final Supplier<Set<String>> mAccessibleContentSupplier;
+    private final Set<String> mReservedContentIds;
+    private final Supplier<Set<StreamLocalAction>> mActionsSupplier;
+    private final ContentStorageDirect mContentStorageDirect;
+    private final TimingUtils mTimingUtils;
+    private final TaskQueue mTaskQueue;
+    private final boolean mKeepSharedStates;
+    private final long mMaxAllowedGcAttempts;
 
-    private int contentGcAttempts;
+    private int mContentGcAttempts;
 
     ContentGc(Configuration configuration, Supplier<Set<String>> accessibleContentSupplier,
             Set<String> reservedContentIds, Supplier<Set<StreamLocalAction>> actionsSupplier,
             ContentStorageDirect contentStorageDirect, TaskQueue taskQueue, TimingUtils timingUtils,
             boolean keepSharedStates) {
-        this.accessibleContentSupplier = accessibleContentSupplier;
-        this.reservedContentIds = reservedContentIds;
-        this.actionsSupplier = actionsSupplier;
-        this.contentStorageDirect = contentStorageDirect;
-        this.taskQueue = taskQueue;
-        this.timingUtils = timingUtils;
-        this.keepSharedStates = keepSharedStates;
-        maxAllowedGcAttempts = configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 10L);
+        this.mAccessibleContentSupplier = accessibleContentSupplier;
+        this.mReservedContentIds = reservedContentIds;
+        this.mActionsSupplier = actionsSupplier;
+        this.mContentStorageDirect = contentStorageDirect;
+        this.mTaskQueue = taskQueue;
+        this.mTimingUtils = timingUtils;
+        this.mKeepSharedStates = keepSharedStates;
+        mMaxAllowedGcAttempts = configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 10L);
     }
 
     void gc() {
-        if (taskQueue.hasBacklog() && contentGcAttempts < maxAllowedGcAttempts) {
-            Logger.i(TAG, "Re-enqueuing triggerContentGc; attempts(%d)", contentGcAttempts);
-            contentGcAttempts++;
-            taskQueue.execute(Task.GARBAGE_COLLECT_CONTENT, TaskType.BACKGROUND, this::gc);
+        if (mTaskQueue.hasBacklog() && mContentGcAttempts < mMaxAllowedGcAttempts) {
+            Logger.i(TAG, "Re-enqueuing triggerContentGc; attempts(%d)", mContentGcAttempts);
+            mContentGcAttempts++;
+            mTaskQueue.execute(Task.GARBAGE_COLLECT_CONTENT, TaskType.BACKGROUND, this::gc);
             return;
         }
 
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Set<String> population = getPopulation();
         // remove the items in the population that are accessible, reserved, or semantic properties
         // either accessible or associated with an action
         Set<String> accessibleContent = getAccessible();
         population.removeAll(accessibleContent);
-        population.removeAll(reservedContentIds);
+        population.removeAll(mReservedContentIds);
         population.removeAll(getAccessibleSemanticProperties(accessibleContent));
         population.removeAll(getLocalActionSemanticProperties(getLocalActions()));
         filterUploadableActions(population);
-        if (keepSharedStates) {
+        if (mKeepSharedStates) {
             filterSharedStates(population);
         } else {
             population.removeAll(getAccessibleSharedStates(accessibleContent));
@@ -87,13 +87,13 @@ public final class ContentGc {
     }
 
     private void removeUnAccessible(Set<String> unAccessible) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         ContentMutation.Builder mutationBuilder = new ContentMutation.Builder();
         for (String key : unAccessible) {
             Logger.i(TAG, "Removing %s", key);
             mutationBuilder.delete(key);
         }
-        CommitResult result = contentStorageDirect.commit(mutationBuilder.build());
+        CommitResult result = mContentStorageDirect.commit(mutationBuilder.build());
         if (result == CommitResult.FAILURE) {
             Logger.e(TAG, "Content Modification failed removing unaccessible items.");
         }
@@ -110,7 +110,7 @@ public final class ContentGc {
 
     private void filterPrefix(Set<String> population, String prefix) {
         int size = population.size();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Iterator<String> i = population.iterator();
         while (i.hasNext()) {
             String key = i.next();
@@ -122,23 +122,23 @@ public final class ContentGc {
     }
 
     private Set<String> getAccessible() {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        Set<String> accessibleContent = accessibleContentSupplier.get();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        Set<String> accessibleContent = mAccessibleContentSupplier.get();
         tracker.stop("", "getAccessible", "accessableContent", accessibleContent.size());
         return accessibleContent;
     }
 
     private Set<StreamLocalAction> getLocalActions() {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        Set<StreamLocalAction> actions = actionsSupplier.get();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        Set<StreamLocalAction> actions = mActionsSupplier.get();
         tracker.stop("", "getLocalActions", "actionCount", actions.size());
         return actions;
     }
 
     private Set<String> getPopulation() {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Set<String> population = new HashSet<>();
-        Result<List<String>> result = contentStorageDirect.getAllKeys();
+        Result<List<String>> result = mContentStorageDirect.getAllKeys();
         if (result.isSuccessful()) {
             population.addAll(result.getValue());
         } else {
@@ -149,7 +149,7 @@ public final class ContentGc {
     }
 
     private Set<String> getAccessibleSemanticProperties(Set<String> accessibleContent) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Set<String> semanticPropertiesKeys = new HashSet<>();
         for (String accessibleContentId : accessibleContent) {
             String semanticPropertyKey = SEMANTIC_PROPERTIES_PREFIX + accessibleContentId;
@@ -161,7 +161,7 @@ public final class ContentGc {
     }
 
     private Set<String> getAccessibleSharedStates(Set<String> accessibleContent) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Set<String> sharedStateKeys = new HashSet<>();
         for (String accessibleContentId : accessibleContent) {
             String sharedStateKey = SHARED_STATE_PREFIX + accessibleContentId;
@@ -173,7 +173,7 @@ public final class ContentGc {
     }
 
     private Set<String> getLocalActionSemanticProperties(Set<StreamLocalAction> actions) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Set<String> semanticPropertiesKeys = new HashSet<>();
         for (StreamLocalAction action : actions) {
             String semanticPropertyKey = SEMANTIC_PROPERTIES_PREFIX + action.getFeatureContentId();

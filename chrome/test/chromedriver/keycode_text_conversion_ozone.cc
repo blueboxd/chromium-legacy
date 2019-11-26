@@ -11,8 +11,11 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+
+#if defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#endif
 
 #if defined(USE_X11)
 bool ConvertKeyCodeToTextOzone
@@ -23,8 +26,13 @@ bool ConvertKeyCodeToText
      int modifiers,
      std::string* text,
      std::string* error_msg) {
+#if defined(USE_OZONE)
   ui::KeyboardLayoutEngine* keyboard_layout_engine =
       ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
+#else
+  auto keyboard_layout_engine =
+      std::make_unique<ui::StubKeyboardLayoutEngine>();
+#endif
   ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
   int event_flags = ui::EF_NONE;
 

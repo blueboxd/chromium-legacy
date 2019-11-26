@@ -18,7 +18,9 @@ source_set("flatbuffers") {
   ]
 
   if (is_win) {
-    data_deps = [ "//build/win:runtime_libs" ]
+    data_deps = [
+      "//build/win:runtime_libs",
+    ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -39,6 +41,7 @@ source_set("compiler_files") {
     "src/grpc/src/compiler/go_generator.h",
     "src/grpc/src/compiler/java_generator.cc",
     "src/grpc/src/compiler/java_generator.h",
+    "src/grpc/src/compiler/python_generator.cc",
     "src/grpc/src/compiler/schema_interface.h",
     "src/include/flatbuffers/code_generators.h",
     "src/include/flatbuffers/flatbuffers.h",
@@ -55,13 +58,15 @@ source_set("compiler_files") {
     "src/src/code_generators.cpp",
     "src/src/flatc.cpp",
     "src/src/idl_gen_cpp.cpp",
+    "src/src/idl_gen_csharp.cpp",
     "src/src/idl_gen_dart.cpp",
     "src/src/idl_gen_fbs.cpp",
-    "src/src/idl_gen_general.cpp",
     "src/src/idl_gen_go.cpp",
     "src/src/idl_gen_grpc.cpp",
+    "src/src/idl_gen_java.cpp",
     "src/src/idl_gen_js_ts.cpp",
     "src/src/idl_gen_json_schema.cpp",
+    "src/src/idl_gen_kotlin.cpp",
     "src/src/idl_gen_lobster.cpp",
     "src/src/idl_gen_lua.cpp",
     "src/src/idl_gen_php.cpp",
@@ -106,6 +111,7 @@ flatbuffer("flatbuffers_samplebuffer") {
 
 test("flatbuffers_unittests") {
   sources = [
+    "src/tests/native_type_test_impl.cpp",
     "src/tests/test.cpp",
     "src/tests/test_assert.cpp",
     "src/tests/test_builder.cpp",
@@ -131,4 +137,6 @@ test("flatbuffers_unittests") {
     "FLATBUFFERS_TEST_PATH_PREFIX=" +
         rebase_path("//third_party/flatbuffers/src/", root_build_dir),
   ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 }

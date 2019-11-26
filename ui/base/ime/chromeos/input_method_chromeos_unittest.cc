@@ -31,6 +31,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/geometry/rect.h"
 
 using base::UTF8ToUTF16;
@@ -999,6 +1000,8 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
 }
 
 TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   // Preparation
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);

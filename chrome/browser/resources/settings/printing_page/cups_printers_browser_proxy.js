@@ -24,7 +24,6 @@
  *     effectiveMakeAndModel: string,
  *     autoconf: boolean,
  *   },
- *   printerPpdReferenceResolved: boolean,
  *   printerProtocol: string,
  *   printerQueue: string,
  *   printerStatus: string,

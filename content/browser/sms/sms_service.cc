@@ -69,6 +69,13 @@ void SmsService::Receive(ReceiveCallback callback) {
 
   callback_ = std::move(callback);
 
+  // |sms_| and prompt are still present from the previous request so a new
+  // subscription is unnecessary.
+  if (prompt_open_) {
+    // TODO(crbug.com/1024598): Add UMA histogram.
+    return;
+  }
+
   fetcher_->Subscribe(origin_, this);
 }
 
@@ -87,10 +94,17 @@ void SmsService::OnReceive(const std::string& one_time_code,
   OpenInfoBar(one_time_code);
 }
 
+void SmsService::Abort() {
+  DCHECK(callback_);
+
+  Process(SmsStatus::kAborted, base::nullopt);
+}
+
 void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
 
+  prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(
       render_frame_host(), origin_, one_time_code,
       base::BindOnce(&SmsService::OnConfirm, weak_ptr_factory_.GetWeakPtr()),
@@ -115,7 +129,10 @@ void SmsService::OnConfirm() {
   DCHECK(!receive_time_.is_null());
   RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
-  Process(SmsStatus::kSuccess, sms_);
+  prompt_open_ = false;
+
+  if (callback_)
+    Process(SmsStatus::kSuccess, sms_);
 }
 
 void SmsService::OnCancel() {
@@ -125,14 +142,22 @@ void SmsService::OnCancel() {
   DCHECK(!receive_time_.is_null());
   RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
-  Process(SmsStatus::kCancelled, base::nullopt);
+  prompt_open_ = false;
+
+  if (callback_)
+    Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::CleanUp() {
-  callback_.Reset();
-  sms_.reset();
+  // Skip resetting |sms_| and |receive_time_| while prompt is still open
+  // in case it needs to be returned to the next incoming request upon prompt
+  // confirmation.
+  if (!prompt_open_) {
+    sms_.reset();
+    receive_time_ = base::TimeTicks();
+  }
   start_time_ = base::TimeTicks();
-  receive_time_ = base::TimeTicks();
+  callback_.Reset();
   fetcher_->Unsubscribe(origin_, this);
 }
 

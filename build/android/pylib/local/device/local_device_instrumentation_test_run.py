@@ -561,6 +561,7 @@ class LocalDeviceInstrumentationTestRun(
     with ui_capture_dir:
       with self._env.output_manager.ArchivedTempfile(
           stream_name, 'logcat') as logcat_file:
+        logmon = None
         try:
           with logcat_monitor.LogcatMonitor(
               device.adb,
@@ -575,7 +576,8 @@ class LocalDeviceInstrumentationTestRun(
                 output = device.StartInstrumentation(
                     target, raw=True, extras=extras, timeout=timeout, retries=0)
         finally:
-          logmon.Close()
+          if logmon:
+            logmon.Close()
 
       if logcat_file.Link():
         logging.info('Logcat saved to %s', logcat_file.Link())

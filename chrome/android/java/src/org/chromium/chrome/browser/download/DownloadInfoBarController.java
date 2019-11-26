@@ -940,7 +940,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 DownloadUtils.openItem(
                         itemId, mIsIncognito, DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR);
             } else {
-                DownloadManagerService.getDownloadManagerService().openDownloadsPage(
+                DownloadManagerService.openDownloadsPage(
                         getContext(), DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR);
             }
             recordLinkClicked(itemId != null);

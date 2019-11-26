@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -23,7 +24,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebAppControllerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features", "Badging");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures, "Badging");
   }
 
   void SetUpOnMainThread() override {

@@ -564,6 +564,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
     return scrolling_background_display_item_client_;
   }
+  const DisplayItemClient& GetScrollCornerDisplayItemClient() const {
+    return scroll_corner_display_item_client_;
+  }
 
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
@@ -735,8 +738,27 @@ class CORE_EXPORT PaintLayerScrollableArea final
     Member<const PaintLayerScrollableArea> scrollable_area_;
   };
 
+  class ScrollCornerDisplayItemClient final : public DisplayItemClient {
+    DISALLOW_NEW();
+
+   public:
+    ScrollCornerDisplayItemClient(
+        const PaintLayerScrollableArea& scrollable_area)
+        : scrollable_area_(&scrollable_area) {}
+
+    void Trace(Visitor* visitor) { visitor->Trace(scrollable_area_); }
+
+   private:
+    IntRect VisualRect() const final;
+    String DebugName() const final;
+    DOMNodeId OwnerNodeId() const final;
+
+    Member<const PaintLayerScrollableArea> scrollable_area_;
+  };
+
   ScrollingBackgroundDisplayItemClient
-      scrolling_background_display_item_client_;
+      scrolling_background_display_item_client_{*this};
+  ScrollCornerDisplayItemClient scroll_corner_display_item_client_{*this};
 };
 
 DEFINE_TYPE_CASTS(PaintLayerScrollableArea,

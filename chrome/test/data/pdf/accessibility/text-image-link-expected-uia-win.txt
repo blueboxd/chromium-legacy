@@ -2,14 +2,19 @@ group
 ++document Name='PDF document containing 2 pages'
 ++++region Name='Page 1'
 ++++++heading
+++++++++description Name='Link Annotations - Page 1<newline>' IsControlElement=false
 ++++++heading
 ++++++++link Name='Link with destination to second page<newline>'
+++++++++++description Name='Link with destination to second page<newline>' IsControlElement=false
 ++++++group
 ++++++++link Name='PDF Reference, Version 1.7,'
+++++++++++description Name='PDF Reference, Version 1.7,' IsControlElement=false
 ++++++++description Name=' Section 8.4.5 defines Annotations<newline>3. Hello World<newline>'
 ++++++++link Name='https://pdfium.googlesource.com/pdfium'
+++++++++++description Name='https://pdfium.googlesource.com/pdfium' IsControlElement=false
 ++++++++description Name=' is link in plain text, not link annotation. These are referred to<newline>as '
 ++++++++link Name='WebLinks in PDFium'
+++++++++++description Name='WebLinks in PDFium' IsControlElement=false
 ++++++++description Name='.'
 ++++++++link
 ++++++++img Name='Image 1'

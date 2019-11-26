@@ -2643,7 +2643,6 @@
 <translation id="4839303808932127586">Αποθήκευση&amp; βίντεο ως...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ακόμη}other{# ακόμη}}</translation>
 <translation id="4842976633412754305">Αυτή η σελίδα προσπαθεί να φορτώσει σενάρια από μη εξουσιοδοτημένες πηγές.</translation>
-<translation id="4843488774506045600">Η σύνδεση παρέχεται από την επέκταση <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Άλλα πληκτρολόγια</translation>
 <translation id="4846680374085650406">Ακολουθείτε την πρόταση του διαχειριστή για αυτήν τη ρύθμιση.</translation>
 <translation id="4848518990323155912">Ενεργοποίηση κάρτας SIM (απαιτείται το PIN για χρήση δεδομένων κινητής συσκευής)</translation>
@@ -3849,7 +3848,6 @@
 <translation id="6607831829715835317">Περισσότερα εργαλεία</translation>
 <translation id="6612358246767739896">Προστατ. περιεχ.</translation>
 <translation id="6615455863669487791">Εμφάνιση</translation>
-<translation id="6617100836880592260">Ταχύτητα σάρωσης: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Διατήρηση</translation>
 <translation id="6619058681307408113">Daemon εκτυπωτή γραμμής (LPD)</translation>
 <translation id="661907246513853610">Ο ιστότοπος μπορεί να παρακολουθεί την τοποθεσία σας</translation>

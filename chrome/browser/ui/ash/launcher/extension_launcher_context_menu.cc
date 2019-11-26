@@ -68,12 +68,6 @@ ExtensionLauncherContextMenu::~ExtensionLauncherContextMenu() = default;
 
 void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(std::move(menu_model), std::move(callback));
-}
-
-void ExtensionLauncherContextMenu::BuildMenu(
-    std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback) {
   Profile* profile = controller()->profile();
   const std::string app_id = item().id.app_id;
 

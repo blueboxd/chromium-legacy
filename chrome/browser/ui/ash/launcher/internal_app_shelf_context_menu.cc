@@ -24,12 +24,6 @@ InternalAppShelfContextMenu::InternalAppShelfContextMenu(
 
 void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(std::move(menu_model), std::move(callback));
-}
-
-void InternalAppShelfContextMenu::BuildMenu(
-    std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback) {
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
     AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,

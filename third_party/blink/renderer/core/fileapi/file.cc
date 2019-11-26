@@ -95,13 +95,11 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithMetadata(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileWithUnknownSize(
-        metadata.platform_path,
-        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
+        metadata.platform_path, metadata.modification_time);
   } else {
     blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFile(
-        metadata.platform_path, 0, metadata.length,
-        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
+    blob_data->AppendFile(metadata.platform_path, 0, metadata.length,
+                          metadata.modification_time);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_name, File::kWellKnownContentTypes));
@@ -114,13 +112,11 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileSystemURLWithUnknownSize(
-        file_system_url,
-        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
+        file_system_url, metadata.modification_time);
   } else {
     blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFileSystemURL(
-        file_system_url, 0, metadata.length,
-        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
+    blob_data->AppendFileSystemURL(file_system_url, 0, metadata.length,
+                                   metadata.modification_time);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_url.GetPath(), File::kWellKnownContentTypes));
@@ -364,24 +360,25 @@ Blob* File::slice(int64_t start,
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
   uint64_t size;
-  double modification_time_ms;
-  CaptureSnapshot(size, modification_time_ms);
+  base::Optional<base::Time> modification_time;
+  CaptureSnapshot(size, modification_time);
   ClampSliceOffsets(size, start, end);
 
   uint64_t length = end - start;
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
-  blob_data->AppendFile(path_, start, length,
-                        modification_time_ms / kMsPerSecond);
+  blob_data->AppendFile(path_, start, length, modification_time);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void File::CaptureSnapshot(uint64_t& snapshot_size,
-                           double& snapshot_modification_time_ms) const {
+void File::CaptureSnapshot(
+    uint64_t& snapshot_size,
+    base::Optional<base::Time>& snapshot_modification_time) const {
   if (HasValidSnapshotMetadata()) {
     snapshot_size = *snapshot_size_;
-    snapshot_modification_time_ms = snapshot_modification_time_ms_;
+    snapshot_modification_time =
+        JsTimeToOptionalTime(snapshot_modification_time_ms_);
     return;
   }
 
@@ -392,12 +389,12 @@ void File::CaptureSnapshot(uint64_t& snapshot_size,
   FileMetadata metadata;
   if (!HasBackingFile() || !GetFileMetadata(path_, metadata)) {
     snapshot_size = 0;
-    snapshot_modification_time_ms = InvalidFileTime();
+    snapshot_modification_time = base::nullopt;
     return;
   }
 
   snapshot_size = static_cast<uint64_t>(metadata.length);
-  snapshot_modification_time_ms = ToJsTimeOrNaN(metadata.modification_time);
+  snapshot_modification_time = metadata.modification_time;
 }
 
 void File::AppendTo(BlobData& blob_data) const {
@@ -409,10 +406,10 @@ void File::AppendTo(BlobData& blob_data) const {
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
   uint64_t size;
-  double modification_time_ms;
-  CaptureSnapshot(size, modification_time_ms);
+  base::Optional<base::Time> modification_time;
+  CaptureSnapshot(size, modification_time);
   DCHECK(!path_.IsEmpty());
-  blob_data.AppendFile(path_, 0, size, modification_time_ms / kMsPerSecond);
+  blob_data.AppendFile(path_, 0, size, modification_time);
 }
 
 bool File::HasSameSource(const File& other) const {

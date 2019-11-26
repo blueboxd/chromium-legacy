@@ -134,7 +134,7 @@ dependencies {
     buildCompile "com.google.auto.service:auto-service-annotations:1.0-rc6"
     buildCompile "com.google.auto.service:auto-service:1.0-rc6"
 
-    buildCompile "com.google.errorprone:error_prone_core:2.3.1"
+    buildCompile "com.google.errorprone:error_prone_core:2.3.3"
 
     // testCompile targets have test_only = true.
     testCompile "androidx.test:core:1.0.0"

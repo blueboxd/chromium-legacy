@@ -23,39 +23,39 @@ import com.google.android.libraries.feed.sharedstream.scroll.ScrollRestoreHelper
 public class ScrollRestorer {
     private static final String TAG = "ScrollRestorer";
 
-    private final Configuration configuration;
-    private final RecyclerView recyclerView;
-    private final ScrollListenerNotifier scrollListenerNotifier;
-    private final int scrollPosition;
-    private final int scrollOffset;
+    private final Configuration mConfiguration;
+    private final RecyclerView mRecyclerView;
+    private final ScrollListenerNotifier mScrollListenerNotifier;
+    private final int mScrollPosition;
+    private final int mScrollOffset;
 
-    private boolean canRestore;
+    private boolean mCanRestore;
 
     public ScrollRestorer(Configuration configuration, RecyclerView recyclerView,
             ScrollListenerNotifier scrollListenerNotifier,
             /*@Nullable*/ ScrollState scrollState) {
-        this.configuration = configuration;
-        this.recyclerView = recyclerView;
-        this.scrollListenerNotifier = scrollListenerNotifier;
+        this.mConfiguration = configuration;
+        this.mRecyclerView = recyclerView;
+        this.mScrollListenerNotifier = scrollListenerNotifier;
 
         if (scrollState != null) {
-            canRestore = true;
-            scrollPosition = scrollState.getPosition();
-            scrollOffset = scrollState.getOffset();
+            mCanRestore = true;
+            mScrollPosition = scrollState.getPosition();
+            mScrollOffset = scrollState.getOffset();
         } else {
-            this.scrollPosition = 0;
-            this.scrollOffset = 0;
+            this.mScrollPosition = 0;
+            this.mScrollOffset = 0;
         }
     }
 
     private ScrollRestorer(Configuration configuration, RecyclerView recyclerView,
             ScrollListenerNotifier scrollListenerNotifier) {
-        canRestore = false;
-        this.configuration = configuration;
-        this.recyclerView = recyclerView;
-        this.scrollListenerNotifier = scrollListenerNotifier;
-        scrollPosition = 0;
-        scrollOffset = 0;
+        mCanRestore = false;
+        this.mConfiguration = configuration;
+        this.mRecyclerView = recyclerView;
+        this.mScrollListenerNotifier = scrollListenerNotifier;
+        mScrollPosition = 0;
+        mScrollOffset = 0;
     }
 
     /**
@@ -73,7 +73,7 @@ public class ScrollRestorer {
      * if the restoring session is no longer valid.
      */
     public void abandonRestoringScroll() {
-        canRestore = false;
+        mCanRestore = false;
     }
 
     /**
@@ -81,13 +81,13 @@ public class ScrollRestorer {
      * restored, then this method will no-op.
      */
     public void maybeRestoreScroll() {
-        if (!canRestore) {
+        if (!mCanRestore) {
             return;
         }
         Logger.d(TAG, "Restoring scroll");
-        getLayoutManager().scrollToPositionWithOffset(scrollPosition, scrollOffset);
-        scrollListenerNotifier.onProgrammaticScroll(recyclerView);
-        canRestore = false;
+        getLayoutManager().scrollToPositionWithOffset(mScrollPosition, mScrollOffset);
+        mScrollListenerNotifier.onProgrammaticScroll(mRecyclerView);
+        mCanRestore = false;
     }
 
     /**
@@ -98,12 +98,12 @@ public class ScrollRestorer {
     /*@Nullable*/
     public ScrollState getScrollStateForScrollRestore(int currentHeaderCount) {
         return ScrollRestoreHelper.getScrollStateForScrollRestore(
-                getLayoutManager(), configuration, currentHeaderCount);
+                getLayoutManager(), mConfiguration, currentHeaderCount);
     }
 
     private LinearLayoutManager getLayoutManager() {
-        checkState(recyclerView.getLayoutManager() instanceof LinearLayoutManager,
+        checkState(mRecyclerView.getLayoutManager() instanceof LinearLayoutManager,
                 "Scroll state can only be restored when using a LinearLayoutManager.");
-        return checkNotNull((LinearLayoutManager) recyclerView.getLayoutManager());
+        return checkNotNull((LinearLayoutManager) mRecyclerView.getLayoutManager());
     }
 }

@@ -72,20 +72,20 @@ import java.util.Map;
 public final class FeedRequestManagerImpl implements FeedRequestManager {
     private static final String TAG = "FeedRequestManagerImpl";
 
-    private final Configuration configuration;
-    private final NetworkClient networkClient;
-    private final ProtocolAdapter protocolAdapter;
-    private final FeedExtensionRegistry extensionRegistry;
-    private final SchedulerApi scheduler;
-    private final TaskQueue taskQueue;
-    private final TimingUtils timingUtils;
-    private final ThreadUtils threadUtils;
-    private final ActionReader actionReader;
-    private final Context context;
-    private final MainThreadRunner mainThreadRunner;
-    private final BasicLoggingApi basicLoggingApi;
-    private final TooltipSupportedApi tooltipSupportedApi;
-    private final ApplicationInfo applicationInfo;
+    private final Configuration mConfiguration;
+    private final NetworkClient mNetworkClient;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final FeedExtensionRegistry mExtensionRegistry;
+    private final SchedulerApi mScheduler;
+    private final TaskQueue mTaskQueue;
+    private final TimingUtils mTimingUtils;
+    private final ThreadUtils mThreadUtils;
+    private final ActionReader mActionReader;
+    private final Context mContext;
+    private final MainThreadRunner mMainThreadRunner;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final TooltipSupportedApi mTooltipSupportedApi;
+    private final ApplicationInfo mApplicationInfo;
 
     public FeedRequestManagerImpl(Configuration configuration, NetworkClient networkClient,
             ProtocolAdapter protocolAdapter, FeedExtensionRegistry extensionRegistry,
@@ -93,29 +93,29 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             ThreadUtils threadUtils, ActionReader actionReader, Context context,
             ApplicationInfo applicationInfo, MainThreadRunner mainThreadRunner,
             BasicLoggingApi basicLoggingApi, TooltipSupportedApi tooltipSupportedApi) {
-        this.configuration = configuration;
-        this.networkClient = networkClient;
-        this.protocolAdapter = protocolAdapter;
-        this.extensionRegistry = extensionRegistry;
-        this.scheduler = scheduler;
-        this.taskQueue = taskQueue;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.actionReader = actionReader;
-        this.context = context;
-        this.applicationInfo = applicationInfo;
-        this.mainThreadRunner = mainThreadRunner;
-        this.basicLoggingApi = basicLoggingApi;
-        this.tooltipSupportedApi = tooltipSupportedApi;
+        this.mConfiguration = configuration;
+        this.mNetworkClient = networkClient;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mExtensionRegistry = extensionRegistry;
+        this.mScheduler = scheduler;
+        this.mTaskQueue = taskQueue;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mActionReader = actionReader;
+        this.mContext = context;
+        this.mApplicationInfo = applicationInfo;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mTooltipSupportedApi = tooltipSupportedApi;
     }
 
     @Override
     public void loadMore(
             StreamToken streamToken, ConsistencyToken token, Consumer<Result<Model>> consumer) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         Logger.i(TAG, "Task: FeedRequestManagerImpl LoadMore");
-        ElapsedTimeTracker timeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker timeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         RequestBuilder request = newDefaultRequest(RequestReason.MANUAL_CONTINUATION)
                                          .setPageToken(streamToken.getNextPageToken())
                                          .setConsistencyToken(token);
@@ -135,10 +135,10 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
         Logger.i(TAG, "trigger refresh %s", reason);
         RequestBuilder request = newDefaultRequest(reason).setConsistencyToken(token);
 
-        if (threadUtils.isMainThread()) {
+        if (mThreadUtils.isMainThread()) {
             // This will make a new request, it should invalidate the existing head to delay
             // everything until the response is obtained.
-            taskQueue.execute(Task.REQUEST_MANAGER_TRIGGER_REFRESH, TaskType.HEAD_INVALIDATE,
+            mTaskQueue.execute(Task.REQUEST_MANAGER_TRIGGER_REFRESH, TaskType.HEAD_INVALIDATE,
                     () -> executeRequest(request, consumer));
         } else {
             executeRequest(request, consumer);
@@ -146,7 +146,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
     }
 
     private RequestBuilder newDefaultRequest(@RequestReason int requestReason) {
-        return new RequestBuilder(context, applicationInfo, configuration, requestReason);
+        return new RequestBuilder(mContext, mApplicationInfo, mConfiguration, requestReason);
     }
 
     private static FeedQuery.RequestReason getWireRequestReason(@RequestReason int requestReason) {
@@ -175,9 +175,9 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
     }
 
     private void executeRequest(RequestBuilder requestBuilder, Consumer<Result<Model>> consumer) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         Result<List<DismissActionWithSemanticProperties>> dismissActionsResult =
-                actionReader.getDismissActionsWithSemanticProperties();
+                mActionReader.getDismissActionsWithSemanticProperties();
         if (dismissActionsResult.isSuccessful()) {
             requestBuilder.setActions(dismissActionsResult.getValue());
             for (DismissActionWithSemanticProperties dismiss : dismissActionsResult.getValue()) {
@@ -187,13 +187,13 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             Logger.e(TAG, "Error fetching dismiss actions");
         }
 
-        if (configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, false)) {
+        if (mConfiguration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, false)) {
             // We need use the main thread to call the {@link
             // TooltipSupportedApi#wouldTriggerHelpUi}.
-            mainThreadRunner.execute("Check Tooltips", () -> {
-                tooltipSupportedApi.wouldTriggerHelpUi(
+            mMainThreadRunner.execute("Check Tooltips", () -> {
+                mTooltipSupportedApi.wouldTriggerHelpUi(
                         FeatureName.CARD_MENU_TOOLTIP, (wouldTrigger) -> {
-                            taskQueue.execute(Task.SEND_REQUEST, TaskType.IMMEDIATE, () -> {
+                            mTaskQueue.execute(Task.SEND_REQUEST, TaskType.IMMEDIATE, () -> {
                                 requestBuilder.setCardMenuTooltipWouldTrigger(wouldTrigger);
                                 sendRequest(requestBuilder, consumer);
                             });
@@ -205,19 +205,19 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
     }
 
     private void sendRequest(RequestBuilder requestBuilder, Consumer<Result<Model>> consumer) {
-        threadUtils.checkNotMainThread();
-        String endpoint = configuration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, "");
+        mThreadUtils.checkNotMainThread();
+        String endpoint = mConfiguration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, "");
         @HttpMethod
         String httpMethod =
-                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, HttpMethod.GET);
+                mConfiguration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, HttpMethod.GET);
 
         HttpRequest httpRequest =
                 RequestHelper.buildHttpRequest(httpMethod, requestBuilder.build().toByteArray(),
-                        endpoint, LocaleUtils.getLanguageTag(context));
+                        endpoint, LocaleUtils.getLanguageTag(mContext));
 
         Logger.i(TAG, "Making Request: %s", httpRequest.getUri().getPath());
-        networkClient.send(httpRequest, input -> {
-            basicLoggingApi.onServerRequest(requestBuilder.clientLoggingRequestReason);
+        mNetworkClient.send(httpRequest, input -> {
+            mBasicLoggingApi.onServerRequest(requestBuilder.mClientLoggingRequestReason);
             Logger.i(TAG, "Request: %s completed with response code: %s",
                     httpRequest.getUri().getPath(), input.getResponseCode());
             if (input.getResponseCode() != 200) {
@@ -230,7 +230,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
                 Logger.e(TAG, "errorCode: %d", input.getResponseCode());
                 Logger.e(TAG, "errorResponse: %s", errorBody);
                 if (!requestBuilder.hasPageToken()) {
-                    scheduler.onRequestError(input.getResponseCode());
+                    mScheduler.onRequestError(input.getResponseCode());
                 }
                 consumer.accept(Result.failure());
                 return;
@@ -241,44 +241,44 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
 
     private void handleResponseBytes(
             final byte[] responseBytes, final Consumer<Result<Model>> consumer) {
-        taskQueue.execute(Task.HANDLE_RESPONSE_BYTES, TaskType.IMMEDIATE, () -> {
+        mTaskQueue.execute(Task.HANDLE_RESPONSE_BYTES, TaskType.IMMEDIATE, () -> {
             Response response;
-            boolean isLengthPrefixed = configuration.getValueOrDefault(
+            boolean isLengthPrefixed = mConfiguration.getValueOrDefault(
                     ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, true);
             try {
                 response = Response.parseFrom(isLengthPrefixed
                                 ? RequestHelper.getLengthPrefixedValue(responseBytes)
                                 : responseBytes,
-                        extensionRegistry.getExtensionRegistry());
+                        mExtensionRegistry.getExtensionRegistry());
             } catch (IOException e) {
                 Logger.e(TAG, e, "Response parse failed");
                 consumer.accept(Result.failure());
                 return;
             }
-            mainThreadRunner.execute("FeedRequestManagerImpl consumer",
-                    () -> consumer.accept(protocolAdapter.createModel(response)));
+            mMainThreadRunner.execute("FeedRequestManagerImpl consumer",
+                    () -> consumer.accept(mProtocolAdapter.createModel(response)));
         });
     }
 
     private static final class RequestBuilder {
-        private ByteString token;
-        private ConsistencyToken consistencyToken;
-        private List<DismissActionWithSemanticProperties> dismissActionsWithSemanticProperties;
-        private final Context context;
-        private final ApplicationInfo applicationInfo;
-        private final Configuration configuration;
-        private final FeedQuery.RequestReason requestReason;
+        private ByteString mToken;
+        private ConsistencyToken mConsistencyToken;
+        private List<DismissActionWithSemanticProperties> mDismissActionWithSemanticProperties;
+        private final Context mContext;
+        private final ApplicationInfo mApplicationInfo;
+        private final Configuration mConfiguration;
+        private final FeedQuery.RequestReason mRequestReason;
         @RequestReason
-        private final int clientLoggingRequestReason;
-        private boolean cardMenuTooltipWouldTrigger;
+        private final int mClientLoggingRequestReason;
+        private boolean mCardMenuTooltipWouldTrigger;
 
         RequestBuilder(Context context, ApplicationInfo applicationInfo,
                 Configuration configuration, @RequestReason int requestReason) {
-            this.context = context;
-            this.applicationInfo = applicationInfo;
-            this.configuration = configuration;
-            this.clientLoggingRequestReason = requestReason;
-            this.requestReason = getWireRequestReason(requestReason);
+            this.mContext = context;
+            this.mApplicationInfo = applicationInfo;
+            this.mConfiguration = configuration;
+            this.mClientLoggingRequestReason = requestReason;
+            this.mRequestReason = getWireRequestReason(requestReason);
         }
 
         /**
@@ -287,12 +287,12 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
          * @param token the token copied from FeedResponse.next_page_token.
          */
         RequestBuilder setPageToken(ByteString token) {
-            this.token = token;
+            this.mToken = token;
             return this;
         }
 
         boolean hasPageToken() {
-            return token != null;
+            return mToken != null;
         }
         /**
          * Sets the token used to tell the server which storage version to read/write to.
@@ -300,18 +300,18 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
          * @param token the token used to maintain read/write consistency.
          */
         RequestBuilder setConsistencyToken(ConsistencyToken token) {
-            this.consistencyToken = token;
+            this.mConsistencyToken = token;
             return this;
         }
 
         RequestBuilder setActions(
                 List<DismissActionWithSemanticProperties> dismissActionsWithSemanticProperties) {
-            this.dismissActionsWithSemanticProperties = dismissActionsWithSemanticProperties;
+            this.mDismissActionWithSemanticProperties = dismissActionsWithSemanticProperties;
             return this;
         }
 
         RequestBuilder setCardMenuTooltipWouldTrigger(boolean wouldTrigger) {
-            cardMenuTooltipWouldTrigger = wouldTrigger;
+            mCardMenuTooltipWouldTrigger = wouldTrigger;
             return this;
         }
 
@@ -319,17 +319,17 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             Request.Builder requestBuilder =
                     Request.newBuilder().setRequestVersion(RequestVersion.FEED_QUERY);
 
-            FeedQuery.Builder feedQuery = FeedQuery.newBuilder().setReason(requestReason);
-            if (token != null) {
-                feedQuery.setPageToken(token);
+            FeedQuery.Builder feedQuery = FeedQuery.newBuilder().setReason(mRequestReason);
+            if (mToken != null) {
+                feedQuery.setPageToken(mToken);
             }
             Builder feedRequestBuilder = FeedRequest.newBuilder().setFeedQuery(feedQuery);
-            if (consistencyToken != null) {
-                feedRequestBuilder.setConsistencyToken(consistencyToken);
-                Logger.i(TAG, "Consistency Token: %s", consistencyToken);
+            if (mConsistencyToken != null) {
+                feedRequestBuilder.setConsistencyToken(mConsistencyToken);
+                Logger.i(TAG, "Consistency Token: %s", mConsistencyToken);
             }
-            if (dismissActionsWithSemanticProperties != null
-                    && !dismissActionsWithSemanticProperties.isEmpty()) {
+            if (mDismissActionWithSemanticProperties != null
+                    && !mDismissActionWithSemanticProperties.isEmpty()) {
                 feedRequestBuilder.addFeedActionQueryData(buildFeedActionQueryData());
             }
             feedRequestBuilder.setClientInfo(buildClientInfo());
@@ -348,7 +348,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
                     Capability.MANAGE_INTERESTS);
             addCapabilityIfConfigEnabled(
                     feedRequestBuilder, ConfigKey.ENABLE_CAROUSELS, Capability.CAROUSELS);
-            if (cardMenuTooltipWouldTrigger) {
+            if (mCardMenuTooltipWouldTrigger) {
                 addCapabilityIfConfigEnabled(feedRequestBuilder,
                         ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, Capability.CARD_MENU_TOOLTIP);
             }
@@ -365,25 +365,25 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
 
         private void addCapabilityIfConfigEnabled(
                 Builder feedRequestBuilder, String configKey, Capability capability) {
-            if (configuration.getValueOrDefault(configKey, false)) {
+            if (mConfiguration.getValueOrDefault(configKey, false)) {
                 feedRequestBuilder.addClientCapability(capability);
             }
         }
 
         private FeedActionQueryData buildFeedActionQueryData() {
             Map<Long, Integer> ids =
-                    new LinkedHashMap<>(dismissActionsWithSemanticProperties.size());
+                    new LinkedHashMap<>(mDismissActionWithSemanticProperties.size());
             Map<String, Integer> tables =
-                    new LinkedHashMap<>(dismissActionsWithSemanticProperties.size());
+                    new LinkedHashMap<>(mDismissActionWithSemanticProperties.size());
             Map<String, Integer> contentDomains =
-                    new LinkedHashMap<>(dismissActionsWithSemanticProperties.size());
+                    new LinkedHashMap<>(mDismissActionWithSemanticProperties.size());
             Map<SemanticProperties, Integer> semanticProperties =
-                    new LinkedHashMap<>(dismissActionsWithSemanticProperties.size());
+                    new LinkedHashMap<>(mDismissActionWithSemanticProperties.size());
             ArrayList<FeedActionQueryDataItem> actionDataItems =
-                    new ArrayList<>(dismissActionsWithSemanticProperties.size());
+                    new ArrayList<>(mDismissActionWithSemanticProperties.size());
 
             for (DismissActionWithSemanticProperties action :
-                    dismissActionsWithSemanticProperties) {
+                    mDismissActionWithSemanticProperties) {
                 ContentId contentId = action.getContentId();
                 byte /*@Nullable*/[] semanticPropertiesBytes = action.getSemanticProperties();
 
@@ -428,12 +428,12 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
 
         private ClientInfo buildClientInfo() {
             ClientInfo.Builder clientInfoBuilder = ClientInfo.newBuilder();
-            clientInfoBuilder.setPlatformType(PlatformType.ANDROID);
+            clientInfoBuilder.setPlatformType(PlatformType.ANDROID_ID);
             clientInfoBuilder.setPlatformVersion(getPlatformVersion());
-            clientInfoBuilder.setLocale(LocaleUtils.getLanguageTag(context));
-            clientInfoBuilder.setAppType(Utils.convertAppType(applicationInfo.getAppType()));
+            clientInfoBuilder.setLocale(LocaleUtils.getLanguageTag(mContext));
+            clientInfoBuilder.setAppType(Utils.convertAppType(mApplicationInfo.getAppType()));
             clientInfoBuilder.setAppVersion(getAppVersion());
-            DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+            DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
             clientInfoBuilder.addDisplayInfo(
                     DisplayInfo.newBuilder()
                             .setScreenDensity(metrics.density)
@@ -471,9 +471,9 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
 
         private Version getAppVersion() {
             Version.Builder builder = Version.newBuilder();
-            Utils.fillVersionsFromString(builder, applicationInfo.getVersionString());
-            builder.setArchitecture(Utils.convertArchitecture(applicationInfo.getArchitecture()));
-            builder.setBuildType(Utils.convertBuildType(applicationInfo.getBuildType()));
+            Utils.fillVersionsFromString(builder, mApplicationInfo.getVersionString());
+            builder.setArchitecture(Utils.convertArchitecture(mApplicationInfo.getArchitecture()));
+            builder.setBuildType(Utils.convertBuildType(mApplicationInfo.getBuildType()));
             return builder.build();
         }
     }

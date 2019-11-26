@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
@@ -66,7 +67,8 @@ class LocalSyncTest : public InProcessBrowserTest {
 };
 
 // The local sync backend is currently only supported on Windows.
-#if defined(OS_WIN)
+// TODO(crbug.com/1028113) Fix in Chrome-branded builds.
+#if defined(OS_WIN) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
@@ -84,6 +86,6 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
             SharingServiceFactory::GetForBrowserContext(browser()->profile())
                 ->GetStateForTesting());
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace

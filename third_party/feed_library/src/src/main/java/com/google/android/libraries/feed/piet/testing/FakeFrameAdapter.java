@@ -25,86 +25,87 @@ import java.util.List;
 
 /** Fake for {@link FrameAdapter}. */
 public class FakeFrameAdapter implements FrameAdapter {
-    private final List<Action> viewActions;
-    private final List<Action> hideActions;
-    private final LinearLayout frameContainer;
-    private final ActionHandler actionHandler;
+    private final List<Action> mViewActions;
+    private final List<Action> mHideActions;
+    private final LinearLayout mFrameContainer;
+    private final ActionHandler mActionHandler;
 
-    public boolean isBound;
-    private boolean viewActionsTriggered;
-    /*@Nullable*/ private Frame frame;
+    public boolean mIsBound;
+    private boolean mViewActionsTriggered;
+    /*@Nullable*/ private Frame mFrame;
 
     private FakeFrameAdapter(Context context, List<Action> viewActions, List<Action> hideActions,
             ActionHandler actionHandler) {
-        this.viewActions = viewActions;
-        this.frameContainer = new LinearLayout(context);
-        this.actionHandler = actionHandler;
-        this.hideActions = hideActions;
+        this.mViewActions = viewActions;
+        this.mFrameContainer = new LinearLayout(context);
+        this.mActionHandler = actionHandler;
+        this.mHideActions = hideActions;
     }
 
     @Override
     public void bindModel(Frame frame, int frameWidthPx,
             PietAndroidSupport./*@Nullable*/ ShardingControl shardingControl,
             List<PietSharedState> pietSharedStates) {
-        checkState(!isBound);
-        this.frame = frame;
-        isBound = true;
+        checkState(!mIsBound);
+        this.mFrame = frame;
+        mIsBound = true;
     }
 
     @Override
     public void unbindModel() {
-        checkState(isBound);
+        checkState(mIsBound);
         triggerHideActions();
-        frame = null;
-        isBound = false;
-        viewActionsTriggered = false;
+        mFrame = null;
+        mIsBound = false;
+        mViewActionsTriggered = false;
     }
 
     @Override
     public LinearLayout getFrameContainer() {
-        return frameContainer;
+        return mFrameContainer;
     }
 
     @Override
     public void triggerHideActions() {
-        if (!viewActionsTriggered) {
+        if (!mViewActionsTriggered) {
             return;
         }
 
-        if (!isBound) {
+        if (!mIsBound) {
             return;
         }
 
-        for (Action action : hideActions) {
-            actionHandler.handleAction(action, ActionType.VIEW, checkNotNull(frame), frameContainer,
-                    LogData.getDefaultInstance());
+        for (Action action : mHideActions) {
+            mActionHandler.handleAction(action, ActionType.VIEW, checkNotNull(mFrame),
+                    mFrameContainer, LogData.getDefaultInstance());
         }
 
-        viewActionsTriggered = false;
+        mViewActionsTriggered = false;
     }
 
     @Override
     public void triggerViewActions(View viewport) {
-        if (viewActionsTriggered) {
+        if (mViewActionsTriggered) {
             return;
         }
 
-        if (!isBound) {
+        if (!mIsBound) {
             return;
         }
 
         // Assume all view actions are fired when triggerViewActions is called.
-        for (Action action : viewActions) {
-            actionHandler.handleAction(action, ActionType.VIEW, checkNotNull(frame), frameContainer,
+        for (Action action : mViewActions) {
+            mActionHandler.handleAction(action, ActionType.VIEW, checkNotNull(mFrame),
+                    mFrameContainer,
                     /* logData= */ LogData.getDefaultInstance());
         }
 
-        viewActionsTriggered = true;
+        mViewActionsTriggered = true;
     }
 
     /** Returns whether the {@link FrameAdapter} is bound. */
     public boolean isBound() {
-        return isBound;
+        return mIsBound;
     }
 
     /** Returns a new builder for a {@link FakeFrameAdapter} */
@@ -114,26 +115,26 @@ public class FakeFrameAdapter implements FrameAdapter {
 
     /** Builder for {@link FakeFrameAdapter}. */
     public static final class Builder {
-        private final Context context;
-        private final List<Action> viewActions;
-        private final List<Action> hideActions;
+        private final Context mContext;
+        private final List<Action> mViewActions;
+        private final List<Action> mHideActions;
 
-        private ActionHandler actionHandler;
+        private ActionHandler mActionHandler;
 
         private Builder(Context context) {
-            this.context = context;
-            viewActions = new ArrayList<>();
-            hideActions = new ArrayList<>();
-            actionHandler = new NoOpActionHandler();
+            this.mContext = context;
+            mViewActions = new ArrayList<>();
+            mHideActions = new ArrayList<>();
+            mActionHandler = new NoOpActionHandler();
         }
 
         public Builder addViewAction(Action viewAction) {
-            viewActions.add(viewAction);
+            mViewActions.add(viewAction);
             return this;
         }
 
         public Builder addHideAction(Action hideAction) {
-            hideActions.add(hideAction);
+            mHideActions.add(hideAction);
             return this;
         }
 
@@ -142,12 +143,12 @@ public class FakeFrameAdapter implements FrameAdapter {
          * will no-op.
          */
         public Builder setActionHandler(ActionHandler actionHandler) {
-            this.actionHandler = actionHandler;
+            this.mActionHandler = actionHandler;
             return this;
         }
 
         public FakeFrameAdapter build() {
-            return new FakeFrameAdapter(context, viewActions, hideActions, actionHandler);
+            return new FakeFrameAdapter(mContext, mViewActions, mHideActions, mActionHandler);
         }
     }
 

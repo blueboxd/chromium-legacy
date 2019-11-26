@@ -14,47 +14,47 @@ import java.util.List;
 
 /** Fake to be used to test {@link ContextMenuManager}. */
 public class FakeContextMenuManager implements ContextMenuManager {
-    private boolean isMenuOpened;
-    /*@Nullable*/ private List<String> items;
-    /*@Nullable*/ private ContextMenuClickHandler handler;
+    private boolean mIsMenuOpened;
+    /*@Nullable*/ private List<String> mItems;
+    /*@Nullable*/ private ContextMenuClickHandler mHandler;
 
     @Override
     public boolean openContextMenu(
             View anchorView, List<String> items, ContextMenuClickHandler handler) {
-        if (isMenuOpened) {
+        if (mIsMenuOpened) {
             return false;
         }
 
-        isMenuOpened = true;
-        this.items = items;
-        this.handler = handler;
+        mIsMenuOpened = true;
+        this.mItems = items;
+        this.mHandler = handler;
 
         return true;
     }
 
     @Override
     public void dismissPopup() {
-        isMenuOpened = false;
-        items = null;
-        handler = null;
+        mIsMenuOpened = false;
+        mItems = null;
+        mHandler = null;
     }
 
     @Override
     public void setView(View view) {}
 
     public void performClick(int position) {
-        if (!isMenuOpened) {
+        if (!mIsMenuOpened) {
             throw new IllegalStateException("Cannot perform click with no menu opened.");
         }
 
-        checkNotNull(handler).handleClick(position);
+        checkNotNull(mHandler).handleClick(position);
     }
 
     public List<String> getMenuOptions() {
-        if (!isMenuOpened) {
+        if (!mIsMenuOpened) {
             throw new IllegalStateException("No menu open.");
         }
 
-        return checkNotNull(items);
+        return checkNotNull(mItems);
     }
 }

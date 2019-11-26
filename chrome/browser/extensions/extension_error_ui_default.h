@@ -27,6 +27,8 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
   void ShowExtensions() override;
   void Close() override;
 
+  GlobalErrorWithStandardBubble* GetErrorForTesting();
+
  private:
   // The profile associated with this error.
   Profile* profile_ = nullptr;

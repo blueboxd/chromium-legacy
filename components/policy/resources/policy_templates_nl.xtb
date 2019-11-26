@@ -3759,11 +3759,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
-<translation id="7049373494483449255">Hiermee kan <ph name="PRODUCT_NAME" /> documenten verzenden naar <ph name="CLOUD_PRINT_NAME" /> voor afdrukken. OPMERKING: dit is alleen van invloed op ondersteuning voor <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />. Hiermee wordt niet voorkomen dat gebruikers afdruktaken verzenden via websites.
-
-      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken naar <ph name="CLOUD_PRINT_NAME" /> via het dialoogvenster voor afdrukken van <ph name="PRODUCT_NAME" />.
-
-      Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken naar <ph name="CLOUD_PRINT_NAME" /> via het dialoogvenster voor afdrukken van <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Indien ingeschakeld, wordt met dit beleid afgedwongen dat bladwijzers worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd.

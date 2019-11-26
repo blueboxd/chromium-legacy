@@ -71,7 +71,7 @@ bool ImageWriter::OpenDevice() {
   return device_file_.IsValid();
 }
 
-void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
+void ImageWriter::UnmountVolumes(base::OnceClosure continuation) {
   if (!InitializeFiles()) {
     return;
   }
@@ -194,7 +194,7 @@ void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
   }
 
   if (success)
-    continuation.Run();
+    std::move(continuation).Run();
 }
 
 }  // namespace image_writer

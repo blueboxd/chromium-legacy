@@ -437,10 +437,10 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
        "Terminal=false\n"
        "Type=Application\n"
        "Name=Paint\n"
-       "Exec=/opt/google/chrome/google-chrome --app=https://paint.app/\n"
+       "MimeType=image/png;image/jpg\n"
+       "Exec=/opt/google/chrome/google-chrome --app=https://paint.app/ %F\n"
        "Icon=chrome-https__paint.app\n"
        "Categories=Image\n"
-       "MimeType=image/png;image/jpg\n"
        "StartupWMClass=paint.app\n"},
 
       // Test evil mime type.

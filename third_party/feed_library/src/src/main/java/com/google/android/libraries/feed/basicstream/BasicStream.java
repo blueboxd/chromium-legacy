@@ -97,58 +97,58 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     private static final long DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS = 500L;
     private static final long DEFAULT_SPINNER_DELAY_TIME_MS = 500L;
 
-    private final CardConfiguration cardConfiguration;
-    private final Clock clock;
-    private final Context context;
-    private final ThreadUtils threadUtils;
-    private final PietManager pietManager;
-    private final ModelProviderFactory modelProviderFactory;
-    private final ActionParserFactory actionParserFactory;
-    private final ActionApi actionApi;
-    private final ActionManager actionManager;
-    private final Configuration configuration;
-    private final SnackbarApi snackbarApi;
-    private final StreamContentChangedListener streamContentChangedListener;
-    private final DeepestContentTracker deepestContentTracker;
-    private final BasicLoggingApi basicLoggingApi;
-    private final long immediateContentThreshold;
-    private final StreamOfflineMonitor streamOfflineMonitor;
-    private final MainThreadRunner mainThreadRunner;
-    private final FeedKnownContent feedKnownContent;
-    private final ViewLoggingUpdater viewLoggingUpdater;
-    private final TooltipApi tooltipApi;
-    private final UiSessionRequestLogger uiSessionRequestLogger;
-    private final StreamConfiguration streamConfiguration;
-    private final BasicStreamScrollMonitor scrollMonitor;
-    private final long minimumSpinnerShowTime;
-    private final long spinnerDelayTime;
+    private final CardConfiguration mCardConfiguration;
+    private final Clock mClock;
+    private final Context mContext;
+    private final ThreadUtils mThreadUtils;
+    private final PietManager mPietManager;
+    private final ModelProviderFactory mModelProviderFactory;
+    private final ActionParserFactory mActionParserFactory;
+    private final ActionApi mActionApi;
+    private final ActionManager mActionManager;
+    private final Configuration mConfiguration;
+    private final SnackbarApi mSnackbarApi;
+    private final StreamContentChangedListener mStreamContentChangedListener;
+    private final DeepestContentTracker mDeepestContentTracker;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final long mImmediateContentThreshold;
+    private final StreamOfflineMonitor mStreamOfflineMonitor;
+    private final MainThreadRunner mMainThreadRunner;
+    private final FeedKnownContent mFeedKnownContent;
+    private final ViewLoggingUpdater mViewLoggingUpdater;
+    private final TooltipApi mTooltipApi;
+    private final UiSessionRequestLogger mUiSessionRequestLogger;
+    private final StreamConfiguration mStreamConfiguration;
+    private final BasicStreamScrollMonitor mScrollMonitor;
+    private final long mMinimumSpinnerShowTime;
+    private final long mSpinnerDelayTime;
 
-    private RecyclerView recyclerView;
-    private ContextMenuManager contextMenuManager;
-    private List<Header> headers;
-    private StreamRecyclerViewAdapter adapter;
-    private ScrollListenerNotifier scrollListenerNotifier;
-    private ScrollRestorer scrollRestorer;
-    private long sessionStartTimestamp;
-    private long initialLoadingSpinnerStartTime;
-    private boolean isInitialLoad = true;
-    private boolean isRestoring;
-    private boolean isDestroyed;
-    private boolean isStreamContentVisible = true;
+    private RecyclerView mRecyclerView;
+    private ContextMenuManager mContextMenuManager;
+    private List<Header> mHeaders;
+    private StreamRecyclerViewAdapter mAdapter;
+    private ScrollListenerNotifier mScrollListenerNotifier;
+    private ScrollRestorer mScrollRestorer;
+    private long mSessionStartTimestamp;
+    private long mInitialLoadingSpinnerStartTime;
+    private boolean mIsInitialLoad = true;
+    private boolean mIsRestoring;
+    private boolean mIsDestroyed;
+    private boolean mIsStreamContentVisible = true;
 
     @LoggingState
-    private int loggingState = LoggingState.STARTING;
+    private int mLoggingState = LoggingState.STARTING;
 
-    /*@MonotonicNonNull*/ private ModelProvider modelProvider;
-    /*@MonotonicNonNull*/ private StreamDriver streamDriver;
+    /*@MonotonicNonNull*/ private ModelProvider mModelProvider;
+    /*@MonotonicNonNull*/ private StreamDriver mStreamDriver;
 
-    /*@Nullable*/ private String savedSessionId;
-    /*@Nullable*/ private CancelableTask cancellableShowSpinnerRunnable;
+    /*@Nullable*/ private String mSavedSessionId;
+    /*@Nullable*/ private CancelableTask mCancellableShowSpinnerRunnable;
 
     // TODO: instead of using a nullable field, pipe UiContext through the creation of
     // ModelProviders to onSessionStart().
-    private UiRefreshReason uiRefreshReason = UiRefreshReason.getDefaultInstance();
-    private StreamItemAnimator itemAnimator;
+    private UiRefreshReason mUiRefreshReason = UiRefreshReason.getDefaultInstance();
+    private StreamItemAnimator mItemAnimator;
 
     public BasicStream(Context context, StreamConfiguration streamConfiguration,
             CardConfiguration cardConfiguration, ImageLoaderApi imageLoaderApi,
@@ -160,38 +160,38 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             Configuration configuration, SnackbarApi snackbarApi, BasicLoggingApi basicLoggingApi,
             OfflineIndicatorApi offlineIndicatorApi, MainThreadRunner mainThreadRunner,
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi, boolean isBackgroundDark) {
-        this.cardConfiguration = cardConfiguration;
-        this.clock = clock;
-        this.threadUtils = threadUtils;
-        this.streamOfflineMonitor = new StreamOfflineMonitor(offlineIndicatorApi);
-        this.headers = headers;
-        this.modelProviderFactory = modelProviderFactory;
-        this.streamConfiguration = streamConfiguration;
-        this.actionParserFactory = actionParserFactory;
-        this.actionApi = actionApi;
-        this.actionManager = actionManager;
-        this.configuration = configuration;
-        this.snackbarApi = snackbarApi;
-        this.mainThreadRunner = mainThreadRunner;
-        this.streamContentChangedListener = createStreamContentChangedListener();
-        this.deepestContentTracker = new DeepestContentTracker();
-        this.basicLoggingApi = basicLoggingApi;
-        this.immediateContentThreshold =
+        this.mCardConfiguration = cardConfiguration;
+        this.mClock = clock;
+        this.mThreadUtils = threadUtils;
+        this.mStreamOfflineMonitor = new StreamOfflineMonitor(offlineIndicatorApi);
+        this.mHeaders = headers;
+        this.mModelProviderFactory = modelProviderFactory;
+        this.mStreamConfiguration = streamConfiguration;
+        this.mActionParserFactory = actionParserFactory;
+        this.mActionApi = actionApi;
+        this.mActionManager = actionManager;
+        this.mConfiguration = configuration;
+        this.mSnackbarApi = snackbarApi;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mStreamContentChangedListener = createStreamContentChangedListener();
+        this.mDeepestContentTracker = new DeepestContentTracker();
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mImmediateContentThreshold =
                 configuration.getValueOrDefault(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
                         DEFAULT_LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS);
-        this.feedKnownContent = feedKnownContent;
-        viewLoggingUpdater = createViewLoggingUpdater();
-        this.uiSessionRequestLogger = new UiSessionRequestLogger(clock, basicLoggingApi);
-        this.tooltipApi = tooltipApi;
-        this.pietManager = createPietManager(context, cardConfiguration, imageLoaderApi,
+        this.mFeedKnownContent = feedKnownContent;
+        mViewLoggingUpdater = createViewLoggingUpdater();
+        this.mUiSessionRequestLogger = new UiSessionRequestLogger(clock, basicLoggingApi);
+        this.mTooltipApi = tooltipApi;
+        this.mPietManager = createPietManager(context, cardConfiguration, imageLoaderApi,
                 customElementProvider, debugBehavior, clock, hostBindingProvider,
-                streamOfflineMonitor, configuration, isBackgroundDark);
-        this.context =
+                mStreamOfflineMonitor, configuration, isBackgroundDark);
+        this.mContext =
                 new ContextThemeWrapper(context, (isBackgroundDark ? R.style.Dark : R.style.Light));
-        this.scrollMonitor = new BasicStreamScrollMonitor(clock);
-        this.minimumSpinnerShowTime = configuration.getValueOrDefault(
+        this.mScrollMonitor = new BasicStreamScrollMonitor(clock);
+        this.mMinimumSpinnerShowTime = configuration.getValueOrDefault(
                 ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS);
-        this.spinnerDelayTime = configuration.getValueOrDefault(
+        this.mSpinnerDelayTime = configuration.getValueOrDefault(
                 ConfigKey.SPINNER_DELAY_MS, DEFAULT_SPINNER_DELAY_TIME_MS);
     }
 
@@ -232,12 +232,12 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public void onCreate(/*@Nullable*/ String savedInstanceState) {
-        checkState(recyclerView == null, "Can't call onCreate() multiple times.");
+        checkState(mRecyclerView == null, "Can't call onCreate() multiple times.");
         setupRecyclerView();
 
         if (savedInstanceState == null) {
-            scrollRestorer =
-                    createScrollRestorer(configuration, recyclerView, scrollListenerNotifier, null);
+            mScrollRestorer = createScrollRestorer(
+                    mConfiguration, mRecyclerView, mScrollListenerNotifier, null);
             return;
         }
 
@@ -246,34 +246,34 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                     Base64.decode(savedInstanceState, Base64.DEFAULT));
 
             if (streamSavedInstanceState.hasSessionId()) {
-                savedSessionId = streamSavedInstanceState.getSessionId();
+                mSavedSessionId = streamSavedInstanceState.getSessionId();
             }
 
-            scrollRestorer = createScrollRestorer(configuration, recyclerView,
-                    scrollListenerNotifier, streamSavedInstanceState.getScrollState());
+            mScrollRestorer = createScrollRestorer(mConfiguration, mRecyclerView,
+                    mScrollListenerNotifier, streamSavedInstanceState.getScrollState());
         } catch (IllegalArgumentException | InvalidProtocolBufferException e) {
             Logger.wtf(TAG, "Could not parse saved instance state String.");
-            scrollRestorer =
-                    createScrollRestorer(configuration, recyclerView, scrollListenerNotifier, null);
+            mScrollRestorer = createScrollRestorer(
+                    mConfiguration, mRecyclerView, mScrollListenerNotifier, null);
         }
     }
 
     @Override
     public void onShow() {
         // Only create model provider if Stream content is visible.
-        if (isStreamContentVisible) {
+        if (mIsStreamContentVisible) {
             createModelProviderAndStreamDriver();
         } else {
-            if (loggingState == LoggingState.STARTING) {
-                basicLoggingApi.onOpenedWithNoContent();
-                loggingState = LoggingState.LOGGED_NO_CONTENT;
+            if (mLoggingState == LoggingState.STARTING) {
+                mBasicLoggingApi.onOpenedWithNoContent();
+                mLoggingState = LoggingState.LOGGED_NO_CONTENT;
             }
 
             // If Stream content is not visible, we will not create the StreamDriver and restore the
             // scroll position automatically. So we try to restore the scroll position before.
-            scrollRestorer.maybeRestoreScroll();
+            mScrollRestorer.maybeRestoreScroll();
         }
-        adapter.setShown(true);
+        mAdapter.setShown(true);
     }
 
     @Override
@@ -284,28 +284,28 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public void onHide() {
-        adapter.setShown(false);
-        contextMenuManager.dismissPopup();
+        mAdapter.setShown(false);
+        mContextMenuManager.dismissPopup();
     }
 
     @Override
     public void onDestroy() {
-        if (isDestroyed) {
+        if (mIsDestroyed) {
             Logger.e(TAG, "onDestroy() called multiple times.");
             return;
         }
-        adapter.onDestroy();
-        recyclerView.removeOnLayoutChangeListener(this);
-        if (modelProvider != null) {
-            modelProvider.unregisterObserver(this);
-            modelProvider.detachModelProvider();
+        mAdapter.onDestroy();
+        mRecyclerView.removeOnLayoutChangeListener(this);
+        if (mModelProvider != null) {
+            mModelProvider.unregisterObserver(this);
+            mModelProvider.detachModelProvider();
         }
-        if (streamDriver != null) {
-            streamDriver.onDestroy();
+        if (mStreamDriver != null) {
+            mStreamDriver.onDestroy();
         }
-        streamOfflineMonitor.onDestroy();
-        uiSessionRequestLogger.onDestroy();
-        isDestroyed = true;
+        mStreamOfflineMonitor.onDestroy();
+        mUiSessionRequestLogger.onDestroy();
+        mIsDestroyed = true;
     }
 
     @Override
@@ -318,12 +318,12 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     @Override
     public String getSavedInstanceStateString() {
         StreamSavedInstanceState.Builder builder = StreamSavedInstanceState.newBuilder();
-        if (modelProvider != null && modelProvider.getSessionId() != null) {
-            builder.setSessionId(checkNotNull(modelProvider.getSessionId()));
+        if (mModelProvider != null && mModelProvider.getSessionId() != null) {
+            builder.setSessionId(checkNotNull(mModelProvider.getSessionId()));
         }
 
         ScrollState scrollState =
-                scrollRestorer.getScrollStateForScrollRestore(adapter.getHeaderCount());
+                mScrollRestorer.getScrollStateForScrollRestore(mAdapter.getHeaderCount());
         if (scrollState != null) {
             builder.setScrollState(scrollState);
         }
@@ -333,56 +333,56 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public View getView() {
-        checkState(recyclerView != null, "Must call onCreate() before getView()");
-        return recyclerView;
+        checkState(mRecyclerView != null, "Must call onCreate() before getView()");
+        return mRecyclerView;
     }
 
     @VisibleForTesting
     StreamRecyclerViewAdapter getAdapter() {
-        return adapter;
+        return mAdapter;
     }
 
     @Override
     public void setHeaderViews(List<Header> headers) {
         Logger.i(TAG, "Setting %s header views, currently have %s headers", headers.size(),
-                this.headers.size());
+                this.mHeaders.size());
 
-        this.headers = headers;
-        adapter.setHeaders(headers);
+        this.mHeaders = headers;
+        mAdapter.setHeaders(headers);
     }
 
     @Override
     public void setStreamContentVisibility(boolean visible) {
-        checkNotNull(adapter, "onCreate must be called before setStreamContentVisibility");
+        checkNotNull(mAdapter, "onCreate must be called before setStreamContentVisibility");
 
-        if (visible == isStreamContentVisible) {
+        if (visible == mIsStreamContentVisible) {
             return;
         }
 
-        isStreamContentVisible = visible;
+        mIsStreamContentVisible = visible;
 
-        if (isStreamContentVisible) {
-            viewLoggingUpdater.resetViewTracking();
+        if (mIsStreamContentVisible) {
+            mViewLoggingUpdater.resetViewTracking();
         }
 
         // If Stream content was previously not visible, ModelProvider might need to be created.
-        if (isStreamContentVisible && modelProvider == null) {
+        if (mIsStreamContentVisible && mModelProvider == null) {
             createModelProviderAndStreamDriver();
         }
 
-        itemAnimator.setStreamVisibility(isStreamContentVisible);
-        adapter.setStreamContentVisible(isStreamContentVisible);
+        mItemAnimator.setStreamVisibility(mIsStreamContentVisible);
+        mAdapter.setStreamContentVisible(mIsStreamContentVisible);
     }
 
     @Override
     public void trim() {
-        pietManager.purgeRecyclerPools();
-        recyclerView.getRecycledViewPool().clear();
+        mPietManager.purgeRecyclerPools();
+        mRecyclerView.getRecycledViewPool().clear();
     }
 
     @Override
     public void smoothScrollBy(int dx, int dy) {
-        recyclerView.smoothScrollBy(dx, dy);
+        mRecyclerView.smoothScrollBy(dx, dy);
     }
 
     @Override
@@ -391,7 +391,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             return POSITION_NOT_KNOWN;
         }
 
-        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         if (layoutManager == null) {
             return POSITION_NOT_KNOWN;
         }
@@ -406,7 +406,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public boolean isChildAtPositionVisible(int position) {
-        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         if (layoutManager == null) {
             return false;
         }
@@ -423,121 +423,121 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public void addScrollListener(ScrollListener listener) {
-        scrollListenerNotifier.addScrollListener(listener);
+        mScrollListenerNotifier.addScrollListener(listener);
     }
 
     @Override
     public void removeScrollListener(ScrollListener listener) {
-        scrollListenerNotifier.removeScrollListener(listener);
+        mScrollListenerNotifier.removeScrollListener(listener);
     }
 
     @Override
     public void addOnContentChangedListener(ContentChangedListener listener) {
-        streamContentChangedListener.addContentChangedListener(listener);
+        mStreamContentChangedListener.addContentChangedListener(listener);
     }
 
     @Override
     public void removeOnContentChangedListener(ContentChangedListener listener) {
-        streamContentChangedListener.removeContentChangedListener(listener);
+        mStreamContentChangedListener.removeContentChangedListener(listener);
     }
 
     @Override
     public void triggerRefresh() {
-        if (streamDriver == null || modelProvider == null) {
+        if (mStreamDriver == null || mModelProvider == null) {
             Logger.w(TAG,
                     "Refresh requested before Stream was shown.  Scheduler should be used instead "
                             + "in this instance.");
             return;
         }
 
-        // This invalidates the modelProvider, which results in onSessionFinished() then
+        // This invalidates the mModelProvider, which results in onSessionFinished() then
         // onSessionStart() being called, leading to recreating the entire stream.
-        streamDriver.showSpinner();
-        modelProvider.triggerRefresh(RequestReason.HOST_REQUESTED);
+        mStreamDriver.showSpinner();
+        mModelProvider.triggerRefresh(RequestReason.HOST_REQUESTED);
     }
 
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
         if ((oldLeft != 0 && left != oldLeft) || (oldRight != 0 && right != oldRight)) {
-            checkNotNull(adapter, "onCreate must be called before so that adapter is set.")
+            checkNotNull(mAdapter, "onCreate must be called before so that adapter is set.")
                     .rebind();
         }
 
-        contextMenuManager.dismissPopup();
+        mContextMenuManager.dismissPopup();
     }
 
     private void setupRecyclerView() {
-        recyclerView = new RecyclerView(context);
-        scrollListenerNotifier = createScrollListenerNotifier(
-                streamContentChangedListener, scrollMonitor, mainThreadRunner);
-        recyclerView.addOnScrollListener(scrollMonitor);
-        adapter = createRecyclerViewAdapter(context, cardConfiguration, pietManager,
-                deepestContentTracker, streamContentChangedListener, scrollMonitor, configuration,
-                new PietEventLogger(basicLoggingApi));
-        adapter.setHeaders(headers);
-        recyclerView.setId(R.id.feed_stream_recycler_view);
-        recyclerView.setLayoutManager(createRecyclerViewLayoutManager(context));
-        contextMenuManager = createContextMenuManager(recyclerView, new MenuMeasurer(context));
-        new ItemTouchHelper(new StreamItemTouchCallbacks()).attachToRecyclerView(recyclerView);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setClipToPadding(false);
+        mRecyclerView = new RecyclerView(mContext);
+        mScrollListenerNotifier = createScrollListenerNotifier(
+                mStreamContentChangedListener, mScrollMonitor, mMainThreadRunner);
+        mRecyclerView.addOnScrollListener(mScrollMonitor);
+        mAdapter = createRecyclerViewAdapter(mContext, mCardConfiguration, mPietManager,
+                mDeepestContentTracker, mStreamContentChangedListener, mScrollMonitor,
+                mConfiguration, new PietEventLogger(mBasicLoggingApi));
+        mAdapter.setHeaders(mHeaders);
+        mRecyclerView.setId(R.id.feed_stream_recycler_view);
+        mRecyclerView.setLayoutManager(createRecyclerViewLayoutManager(mContext));
+        mContextMenuManager = createContextMenuManager(mRecyclerView, new MenuMeasurer(mContext));
+        new ItemTouchHelper(new StreamItemTouchCallbacks()).attachToRecyclerView(mRecyclerView);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setClipToPadding(false);
         if (VERSION.SDK_INT > VERSION_CODES.JELLY_BEAN) {
-            recyclerView.setPaddingRelative(streamConfiguration.getPaddingStart(),
-                    streamConfiguration.getPaddingTop(), streamConfiguration.getPaddingEnd(),
-                    streamConfiguration.getPaddingBottom());
+            mRecyclerView.setPaddingRelative(mStreamConfiguration.getPaddingStart(),
+                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
+                    mStreamConfiguration.getPaddingBottom());
         } else {
-            recyclerView.setPadding(streamConfiguration.getPaddingStart(),
-                    streamConfiguration.getPaddingTop(), streamConfiguration.getPaddingEnd(),
-                    streamConfiguration.getPaddingBottom());
+            mRecyclerView.setPadding(mStreamConfiguration.getPaddingStart(),
+                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
+                    mStreamConfiguration.getPaddingBottom());
         }
 
-        itemAnimator = new StreamItemAnimator(streamContentChangedListener);
-        itemAnimator.setStreamVisibility(isStreamContentVisible);
+        mItemAnimator = new StreamItemAnimator(mStreamContentChangedListener);
+        mItemAnimator.setStreamVisibility(mIsStreamContentVisible);
 
-        recyclerView.setItemAnimator(itemAnimator);
-        recyclerView.addOnLayoutChangeListener(this);
+        mRecyclerView.setItemAnimator(mItemAnimator);
+        mRecyclerView.addOnLayoutChangeListener(this);
     }
 
     private void updateAdapterAfterSessionStart(ModelProvider modelProvider) {
-        StreamDriver newStreamDriver = createStreamDriver(actionApi, actionManager,
-                actionParserFactory, modelProvider, threadUtils, clock, configuration, context,
-                snackbarApi, streamContentChangedListener, scrollRestorer, basicLoggingApi,
-                streamOfflineMonitor, feedKnownContent, contextMenuManager, isRestoring,
-                /* isInitialLoad= */ false, mainThreadRunner, tooltipApi, uiRefreshReason,
-                scrollListenerNotifier);
+        StreamDriver newStreamDriver = createStreamDriver(mActionApi, mActionManager,
+                mActionParserFactory, modelProvider, mThreadUtils, mClock, mConfiguration, mContext,
+                mSnackbarApi, mStreamContentChangedListener, mScrollRestorer, mBasicLoggingApi,
+                mStreamOfflineMonitor, mFeedKnownContent, mContextMenuManager, mIsRestoring,
+                /* isInitialLoad= */ false, mMainThreadRunner, mTooltipApi, mUiRefreshReason,
+                mScrollListenerNotifier);
 
-        uiRefreshReason = UiRefreshReason.getDefaultInstance();
+        mUiRefreshReason = UiRefreshReason.getDefaultInstance();
 
         // If after starting a new session the Stream is still empty, we should show the zero state.
         if (newStreamDriver.getLeafFeatureDrivers().isEmpty()) {
             newStreamDriver.showZeroState(ZeroStateShowReason.NO_CONTENT);
         }
-        if (loggingState == LoggingState.STARTING && modelProvider.getCurrentState() == State.READY
+        if (mLoggingState == LoggingState.STARTING && modelProvider.getCurrentState() == State.READY
                 && modelProvider.getRootFeature() == null) {
-            basicLoggingApi.onOpenedWithNoContent();
-            loggingState = LoggingState.LOGGED_NO_CONTENT;
+            mBasicLoggingApi.onOpenedWithNoContent();
+            mLoggingState = LoggingState.LOGGED_NO_CONTENT;
         }
 
         // If old and new stream driver are both showing the zero state, do not replace the old
         // stream driver. This prevents the zero state flashing if the old and new stream drivers
         // are both displaying the same content. The old stream driver will be updated with the new
         // model provider.
-        if (streamDriver != null && streamDriver.isZeroStateBeingShown()
+        if (mStreamDriver != null && mStreamDriver.isZeroStateBeingShown()
                 && newStreamDriver.isZeroStateBeingShown()) {
-            streamDriver.setModelProviderForZeroState(modelProvider);
+            mStreamDriver.setModelProviderForZeroState(modelProvider);
             newStreamDriver.onDestroy();
             return;
         }
-        if (streamDriver != null) {
-            streamDriver.onDestroy();
+        if (mStreamDriver != null) {
+            mStreamDriver.onDestroy();
         }
-        streamDriver = newStreamDriver;
-        adapter.setDriver(newStreamDriver);
-        deepestContentTracker.reset();
+        mStreamDriver = newStreamDriver;
+        mAdapter.setDriver(newStreamDriver);
+        mDeepestContentTracker.reset();
 
-        if (streamDriver.hasContent()) {
-            isInitialLoad = false;
+        if (mStreamDriver.hasContent()) {
+            mIsInitialLoad = false;
         }
 
         logContent();
@@ -545,33 +545,33 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     @Override
     public void onSessionStart(UiContext uiContext) {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
 
-        if (cancellableShowSpinnerRunnable != null) {
-            cancellableShowSpinnerRunnable.cancel();
-            cancellableShowSpinnerRunnable = null;
+        if (mCancellableShowSpinnerRunnable != null) {
+            mCancellableShowSpinnerRunnable.cancel();
+            mCancellableShowSpinnerRunnable = null;
         }
 
         ModelProvider localModelProvider =
-                checkNotNull(modelProvider, "Model Provider must be set if a session is active");
+                checkNotNull(mModelProvider, "Model Provider must be set if a session is active");
         // On initial load, if a loading spinner is currently being shown, the spinner must be shown
         // for at least the time specified in MINIMUM_SPINNER_SHOW_TIME.
-        if (isInitialLoad && initialLoadingSpinnerStartTime != 0L) {
-            long spinnerDisplayTime = clock.currentTimeMillis() - initialLoadingSpinnerStartTime;
+        if (mIsInitialLoad && mInitialLoadingSpinnerStartTime != 0L) {
+            long spinnerDisplayTime = mClock.currentTimeMillis() - mInitialLoadingSpinnerStartTime;
             // If MINIMUM_SPINNER_SHOW_TIME has elapsed, the new content can be shown immediately.
-            if (spinnerDisplayTime >= minimumSpinnerShowTime) {
+            if (spinnerDisplayTime >= mMinimumSpinnerShowTime) {
                 updateAdapterAfterSessionStart(localModelProvider);
             } else {
                 // If MINIMUM_SPINNER_SHOW_TIME has not elapsed, the new content should only be
                 // shown once the remaining time has been fulfilled.
-                mainThreadRunner.executeWithDelay(TAG + " onSessionStart", () -> {
+                mMainThreadRunner.executeWithDelay(TAG + " onSessionStart", () -> {
                     // Only show content if model providers are the same. If they are different,
                     // this indicates that the session finished before the spinner show time
                     // elapsed.
-                    if (modelProvider == localModelProvider) {
+                    if (mModelProvider == localModelProvider) {
                         updateAdapterAfterSessionStart(localModelProvider);
                     }
-                }, minimumSpinnerShowTime - spinnerDisplayTime);
+                }, mMinimumSpinnerShowTime - spinnerDisplayTime);
             }
         } else {
             updateAdapterAfterSessionStart(localModelProvider);
@@ -579,27 +579,27 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     }
 
     private void logContent() {
-        if (loggingState == LoggingState.STARTING) {
-            long timeToPopulateMs = clock.currentTimeMillis() - sessionStartTimestamp;
-            if (timeToPopulateMs > immediateContentThreshold) {
-                basicLoggingApi.onOpenedWithNoImmediateContent();
+        if (mLoggingState == LoggingState.STARTING) {
+            long timeToPopulateMs = mClock.currentTimeMillis() - mSessionStartTimestamp;
+            if (timeToPopulateMs > mImmediateContentThreshold) {
+                mBasicLoggingApi.onOpenedWithNoImmediateContent();
             }
 
-            if (checkNotNull(streamDriver).hasContent()) {
-                basicLoggingApi.onOpenedWithContent((int) timeToPopulateMs,
-                        checkNotNull(streamDriver).getLeafFeatureDrivers().size());
+            if (checkNotNull(mStreamDriver).hasContent()) {
+                mBasicLoggingApi.onOpenedWithContent((int) timeToPopulateMs,
+                        checkNotNull(mStreamDriver).getLeafFeatureDrivers().size());
                 // onOpenedWithContent should only be logged the first time the Stream is opened up.
-                loggingState = LoggingState.LOGGED_CONTENT_SHOWN;
+                mLoggingState = LoggingState.LOGGED_CONTENT_SHOWN;
             } else {
-                basicLoggingApi.onOpenedWithNoContent();
-                loggingState = LoggingState.LOGGED_NO_CONTENT;
+                mBasicLoggingApi.onOpenedWithNoContent();
+                mLoggingState = LoggingState.LOGGED_NO_CONTENT;
             }
         }
     }
 
     @Override
     public void onSessionFinished(UiContext uiContext) {
-        if (isDestroyed) {
+        if (mIsDestroyed) {
             // This seems to be getting called after onDestroy(), resulting in unregistering from
             // the ModelProvider twice, which causes a crash.
             Logger.e(TAG, "onSessionFinished called after onDestroy()");
@@ -611,29 +611,29 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         // scroll it would be to a card which is no longer present.  For simplicity just abandon
         // scroll restoring for now.  We can improve logic if this doesn't prove to be sufficient
         // enough.
-        scrollRestorer.abandonRestoringScroll();
+        mScrollRestorer.abandonRestoringScroll();
 
         // At this point, the StreamDriver shouldn't be null. However, the
-        // cancellableShowSpinnerRunnable could be null or not, depending on whether this spinner is
-        // finishing because a failed restore or because the session started. If a spinner is queued
-        // to show, we want to show that one with its delay, otherwise we show a new one with a new
-        // delay.
-        if (streamDriver != null && cancellableShowSpinnerRunnable == null) {
+        // mCancellableShowSpinnerRunnable could be null or not, depending on whether this spinner
+        // is finishing because a failed restore or because the session started. If a spinner is
+        // queued to show, we want to show that one with its delay, otherwise we show a new one with
+        // a new delay.
+        if (mStreamDriver != null && mCancellableShowSpinnerRunnable == null) {
             showSpinnerWithDelay();
         }
 
-        isRestoring = false;
+        mIsRestoring = false;
 
-        if (modelProvider != null) {
-            modelProvider.unregisterObserver(this);
+        if (mModelProvider != null) {
+            mModelProvider.unregisterObserver(this);
         }
-        uiRefreshReason = uiContext.getExtension(UiRefreshReason.uiRefreshReasonExtension);
+        mUiRefreshReason = uiContext.getExtension(UiRefreshReason.uiRefreshReasonExtension);
 
         // TODO: Instead of setting the refresh reseason, pipe the UiContext through here.
-        modelProvider = modelProviderFactory.createNew(
-                deepestContentTracker, UiContext.getDefaultInstance());
+        mModelProvider = mModelProviderFactory.createNew(
+                mDeepestContentTracker, UiContext.getDefaultInstance());
 
-        registerObserversOnModelProvider(modelProvider);
+        registerObserversOnModelProvider(mModelProvider);
     }
 
     @Override
@@ -642,26 +642,26 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             Logger.wtf(TAG, "Not expecting non NO_CARDS_ERROR type.");
         }
 
-        if (loggingState == LoggingState.STARTING) {
-            basicLoggingApi.onOpenedWithNoContent();
-            loggingState = LoggingState.LOGGED_NO_CONTENT;
+        if (mLoggingState == LoggingState.STARTING) {
+            mBasicLoggingApi.onOpenedWithNoContent();
+            mLoggingState = LoggingState.LOGGED_NO_CONTENT;
         }
 
-        scrollRestorer.abandonRestoringScroll();
-        if (streamDriver != null) {
-            streamDriver.showZeroState(ZeroStateShowReason.ERROR);
+        mScrollRestorer.abandonRestoringScroll();
+        if (mStreamDriver != null) {
+            mStreamDriver.showZeroState(ZeroStateShowReason.ERROR);
         }
     }
 
     private void createModelProviderAndStreamDriver() {
-        if (modelProvider == null) {
+        if (mModelProvider == null) {
             // For nullness checker
             ModelProvider localModelProvider = null;
-            String localSavedSessionId = savedSessionId;
+            String localSavedSessionId = mSavedSessionId;
             if (localSavedSessionId != null) {
-                isRestoring = true;
+                mIsRestoring = true;
                 Logger.d(TAG, "Attempting to restoring session with id: %s.", localSavedSessionId);
-                localModelProvider = modelProviderFactory.create(
+                localModelProvider = mModelProviderFactory.create(
                         localSavedSessionId, UiContext.getDefaultInstance());
             }
 
@@ -669,40 +669,40 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                 // If a session is no longer valid then a ModelProvider will not have been created
                 // above.
                 Logger.d(TAG, "Creating new session for showing.");
-                localModelProvider = modelProviderFactory.createNew(
-                        deepestContentTracker, UiContext.getDefaultInstance());
+                localModelProvider = mModelProviderFactory.createNew(
+                        mDeepestContentTracker, UiContext.getDefaultInstance());
             }
 
-            sessionStartTimestamp = clock.currentTimeMillis();
-            modelProvider = localModelProvider;
+            mSessionStartTimestamp = mClock.currentTimeMillis();
+            mModelProvider = localModelProvider;
 
-            registerObserversOnModelProvider(modelProvider);
+            registerObserversOnModelProvider(mModelProvider);
         }
 
-        if (streamDriver == null) {
+        if (mStreamDriver == null) {
             // If the ModelProvider is not ready we don't want to restore the Stream at all. Instead
             // we need to wait for it to become active and we can reset the StreamDriver with the
             // correct scroll restorer in order to finally restore scroll position.
-            ScrollRestorer initialScrollRestorer = modelProvider.getCurrentState() == State.READY
-                    ? scrollRestorer
+            ScrollRestorer initialScrollRestorer = mModelProvider.getCurrentState() == State.READY
+                    ? mScrollRestorer
                     : createNonRestoringScrollRestorer(
-                            configuration, recyclerView, scrollListenerNotifier);
+                            mConfiguration, mRecyclerView, mScrollListenerNotifier);
 
-            streamDriver = createStreamDriver(actionApi, actionManager, actionParserFactory,
-                    modelProvider, threadUtils, clock, configuration, context, snackbarApi,
-                    streamContentChangedListener, initialScrollRestorer, basicLoggingApi,
-                    streamOfflineMonitor, feedKnownContent, contextMenuManager, isRestoring,
-                    isInitialLoad, mainThreadRunner, tooltipApi,
-                    UiRefreshReason.getDefaultInstance(), scrollListenerNotifier);
+            mStreamDriver = createStreamDriver(mActionApi, mActionManager, mActionParserFactory,
+                    mModelProvider, mThreadUtils, mClock, mConfiguration, mContext, mSnackbarApi,
+                    mStreamContentChangedListener, initialScrollRestorer, mBasicLoggingApi,
+                    mStreamOfflineMonitor, mFeedKnownContent, mContextMenuManager, mIsRestoring,
+                    mIsInitialLoad, mMainThreadRunner, mTooltipApi,
+                    UiRefreshReason.getDefaultInstance(), mScrollListenerNotifier);
 
             showSpinnerWithDelay();
-            adapter.setDriver(streamDriver);
+            mAdapter.setDriver(mStreamDriver);
         }
     }
 
     private void showSpinnerWithDelay() {
-        cancellableShowSpinnerRunnable = mainThreadRunner.executeWithDelay(
-                TAG + " onShow", new ShowSpinnerRunnable(), spinnerDelayTime);
+        mCancellableShowSpinnerRunnable = mMainThreadRunner.executeWithDelay(
+                TAG + " onShow", new ShowSpinnerRunnable(), mSpinnerDelayTime);
     }
 
     private String convertStreamSavedInstanceStateToString(
@@ -712,7 +712,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     private void registerObserversOnModelProvider(ModelProvider modelProvider) {
         modelProvider.registerObserver(this);
-        uiSessionRequestLogger.onSessionRequested(modelProvider);
+        mUiSessionRequestLogger.onSessionRequested(modelProvider);
     }
 
     @VisibleForTesting
@@ -728,8 +728,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         return new StreamDriver(actionApi, actionManager, actionParserFactory, modelProvider,
                 threadUtils, clock, configuration, context, snackbarApi, contentChangedListener,
                 scrollRestorer, basicLoggingApi, streamOfflineMonitor, feedKnownContent,
-                contextMenuManager, restoring, isInitialLoad, mainThreadRunner, viewLoggingUpdater,
-                tooltipApi, uiRefreshReason, scrollMonitor);
+                contextMenuManager, restoring, isInitialLoad, mainThreadRunner, mViewLoggingUpdater,
+                tooltipApi, uiRefreshReason, mScrollMonitor);
     }
 
     @VisibleForTesting
@@ -739,7 +739,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             StreamContentChangedListener streamContentChangedListener,
             ScrollObservable scrollObservable, Configuration configuration,
             PietEventLogger pietEventLogger) {
-        return new StreamRecyclerViewAdapter(context, recyclerView, cardConfiguration, pietManager,
+        return new StreamRecyclerViewAdapter(context, mRecyclerView, cardConfiguration, pietManager,
                 deepestContentTracker, streamContentChangedListener, scrollObservable,
                 configuration, pietEventLogger);
     }
@@ -781,9 +781,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             RecyclerView recyclerView, MenuMeasurer menuMeasurer) {
         ContextMenuManager manager;
         if (VERSION.SDK_INT > VERSION_CODES.M) {
-            manager = new ContextMenuManagerImpl(menuMeasurer, context);
+            manager = new ContextMenuManagerImpl(menuMeasurer, mContext);
         } else {
-            manager = new FloatingContextMenuManager(context);
+            manager = new FloatingContextMenuManager(mContext);
         }
         manager.setView(recyclerView);
         return manager;
@@ -805,9 +805,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     private final class ShowSpinnerRunnable implements Runnable {
         @Override
         public void run() {
-            checkNotNull(streamDriver).showSpinner();
-            initialLoadingSpinnerStartTime = clock.currentTimeMillis();
-            BasicStream.this.cancellableShowSpinnerRunnable = null;
+            checkNotNull(mStreamDriver).showSpinner();
+            mInitialLoadingSpinnerStartTime = mClock.currentTimeMillis();
+            BasicStream.this.mCancellableShowSpinnerRunnable = null;
         }
     }
 }

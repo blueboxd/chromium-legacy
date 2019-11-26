@@ -1038,10 +1038,16 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeElementWhichHasNonCustomResizer) {
   Vector<RasterInvalidationInfo> invalidations;
   // This is for DisplayItem::kResizerScrollHitTest.
   invalidations.push_back(RasterInvalidationInfo{
-      object, object->DebugName(), IntRect(0, 0, 200, 100),
+      object, object->DebugName(), IntRect(100, 0, 100, 100),
+      PaintInvalidationReason::kIncremental});
+  const auto& scroll_corner = ToLayoutBoxModelObject(object)
+                                  ->GetScrollableArea()
+                                  ->GetScrollCornerDisplayItemClient();
+  invalidations.push_back(RasterInvalidationInfo{
+      &scroll_corner, scroll_corner.DebugName(), IntRect(93, 93, 7, 7),
       PaintInvalidationReason::kGeometry});
   invalidations.push_back(RasterInvalidationInfo{
-      object, object->DebugName(), IntRect(0, 0, 200, 100),
+      &scroll_corner, scroll_corner.DebugName(), IntRect(193, 93, 7, 7),
       PaintInvalidationReason::kGeometry});
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAreArray(invalidations));

@@ -443,7 +443,6 @@ TEST_F(NotificationListTest, HasPopupsWithSystemPriority) {
   notification_list_->MarkSinglePopupAsShown(normal_id, false);
   notification_list_->MarkSinglePopupAsShown(system_id, false);
 
-  notification_list_->SetNotificationsShown(blockers_, nullptr);
   EXPECT_EQ(1u, GetPopupCounts());
 
   // Mark as read -- emulation of mouse click.

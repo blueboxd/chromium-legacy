@@ -1104,7 +1104,7 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_core_java") {
   jar_path =
-      "libs/com_google_errorprone_error_prone_core/error_prone_core-2.3.1.jar"
+      "libs/com_google_errorprone_error_prone_core/error_prone_core-2.3.3.jar"
   output_name = "com_google_errorprone_error_prone_core"
   enable_bytecode_rewriter = false
   deps = [
@@ -1118,6 +1118,7 @@ java_prebuilt("com_google_errorprone_error_prone_core_java") {
     ":com_google_errorprone_error_prone_type_annotations_java",
     ":com_google_errorprone_javac_java",
     ":com_google_guava_guava_java",
+    ":com_google_protobuf_protobuf_java_java",
     ":org_checkerframework_dataflow_java",
     ":org_pcollections_pcollections_java",
   ]
@@ -1876,7 +1877,7 @@ java_prebuilt("com_google_dagger_dagger_spi_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_annotation_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_annotation/error_prone_annotation-2.3.1.jar"
+  jar_path = "libs/com_google_errorprone_error_prone_annotation/error_prone_annotation-2.3.3.jar"
   output_name = "com_google_errorprone_error_prone_annotation"
   enable_bytecode_rewriter = false
 
@@ -1890,7 +1891,7 @@ java_prebuilt("com_google_errorprone_error_prone_annotation_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_annotations/error_prone_annotations-2.3.1.jar"
+  jar_path = "libs/com_google_errorprone_error_prone_annotations/error_prone_annotations-2.3.3.jar"
   output_name = "com_google_errorprone_error_prone_annotations"
   enable_bytecode_rewriter = false
 
@@ -1901,7 +1902,7 @@ java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_check_api_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_check_api/error_prone_check_api-2.3.1.jar"
+  jar_path = "libs/com_google_errorprone_error_prone_check_api/error_prone_check_api-2.3.3.jar"
   output_name = "com_google_errorprone_error_prone_check_api"
   enable_bytecode_rewriter = false
 
@@ -1921,7 +1922,7 @@ java_prebuilt("com_google_errorprone_error_prone_check_api_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_type_annotations_java") {
-  jar_path = "libs/com_google_errorprone_error_prone_type_annotations/error_prone_type_annotations-2.3.1.jar"
+  jar_path = "libs/com_google_errorprone_error_prone_type_annotations/error_prone_type_annotations-2.3.3.jar"
   output_name = "com_google_errorprone_error_prone_type_annotations"
   enable_bytecode_rewriter = false
 
@@ -1992,6 +1993,17 @@ java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_google_protobuf_protobuf_java_java") {
+  jar_path = "libs/com_google_protobuf_protobuf_java/protobuf-java-3.4.0.jar"
+  output_name = "com_google_protobuf_protobuf_java"
+  enable_bytecode_rewriter = false
+
+  # To remove visibility constraint, add this dependency to
+  # //tools/android/roll/android_deps/build.gradle.
+  visibility = [ ":*" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_googlecode_java_diff_utils_diffutils_java") {
   jar_path = "libs/com_googlecode_java_diff_utils_diffutils/diffutils-1.3.0.jar"
   output_name = "com_googlecode_java_diff_utils_diffutils"
@@ -2030,7 +2042,7 @@ java_prebuilt("org_checkerframework_checker_compat_qual_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_checkerframework_checker_qual_java") {
-  jar_path = "libs/org_checkerframework_checker_qual/checker-qual-2.5.2.jar"
+  jar_path = "libs/org_checkerframework_checker_qual/checker-qual-2.5.3.jar"
   output_name = "org_checkerframework_checker_qual"
   enable_bytecode_rewriter = false
 
@@ -2041,7 +2053,7 @@ java_prebuilt("org_checkerframework_checker_qual_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_checkerframework_dataflow_java") {
-  jar_path = "libs/org_checkerframework_dataflow/dataflow-2.5.0.jar"
+  jar_path = "libs/org_checkerframework_dataflow/dataflow-2.5.3.jar"
   output_name = "org_checkerframework_dataflow"
   enable_bytecode_rewriter = false
 
@@ -2056,7 +2068,7 @@ java_prebuilt("org_checkerframework_dataflow_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_checkerframework_javacutil_java") {
-  jar_path = "libs/org_checkerframework_javacutil/javacutil-2.5.0.jar"
+  jar_path = "libs/org_checkerframework_javacutil/javacutil-2.5.3.jar"
   output_name = "org_checkerframework_javacutil"
   enable_bytecode_rewriter = false
 

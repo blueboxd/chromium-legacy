@@ -50,6 +50,8 @@ TEST(EventTest, NativeEvent) {
 }
 
 TEST(EventTest, GetCharacter) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   // Check if Control+Enter returns 10.
   KeyEvent keyev1(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
   EXPECT_EQ(10, keyev1.GetCharacter());
@@ -194,6 +196,8 @@ TEST(EventTest, SingleClickRightLeft) {
 }
 
 TEST(EventTest, KeyEvent) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   static const struct {
     KeyboardCode key_code;
     int flags;

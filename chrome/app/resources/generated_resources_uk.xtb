@@ -2643,7 +2643,6 @@
 <translation id="4839303808932127586">Збере&amp;гти відео як...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Ще 1}one{Ще #}few{Ще #}many{Ще #}other{Ще #}}</translation>
 <translation id="4842976633412754305">Ця сторінка намагається завантажити сценарії з неперевірених джерел.</translation>
-<translation id="4843488774506045600">Автентифікація на платформі <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Інші клавіатури</translation>
 <translation id="4846680374085650406">Ви дотримуєтеся рекомендації адміністратора щодо цього налаштування.</translation>
 <translation id="4848518990323155912">Увімкнути блокування SIM-карти (потрібен PIN-код для використання мобільного трафіку)</translation>
@@ -3848,7 +3847,6 @@
 <translation id="6607831829715835317">Інші інстру&amp;менти</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6615455863669487791">Показати</translation>
-<translation id="6617100836880592260">Швидкість сканування: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Усе одно завантажити</translation>
 <translation id="6619058681307408113">Диспетчер лінійного принтера (LPD)</translation>
 <translation id="661907246513853610">Сайт може відстежувати місцезнаходження</translation>

@@ -1581,22 +1581,6 @@ void LayoutObject::InvalidatePaint(
   ObjectPaintInvalidatorWithContext(*this, context).InvalidatePaint();
 }
 
-void LayoutObject::AdjustVisualRectForCompositedScrolling(
-    LayoutRect& rect,
-    const LayoutBoxModelObject& paint_invalidation_container) const {
-  if (CompositedScrollsWithRespectTo(paint_invalidation_container)) {
-    rect.Move(
-        -ToLayoutBox(paint_invalidation_container).ScrolledContentOffset());
-  }
-}
-
-LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
-    const LayoutBoxModelObject& paint_invalidation_container) const {
-  LayoutRect rect(VisualRect());
-  AdjustVisualRectForCompositedScrolling(rect, paint_invalidation_container);
-  return rect;
-}
-
 void LayoutObject::ClearPreviousVisualRects() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 

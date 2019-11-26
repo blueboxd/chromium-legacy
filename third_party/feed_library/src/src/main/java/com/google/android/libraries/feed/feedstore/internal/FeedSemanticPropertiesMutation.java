@@ -14,21 +14,21 @@ import java.util.Map;
 
 /** Implementation of the {@link SemanticPropertiesMutation}. */
 public final class FeedSemanticPropertiesMutation implements SemanticPropertiesMutation {
-    private final Map<String, ByteString> semanticPropertiesMap = new HashMap<>();
-    private final Committer<CommitResult, Map<String, ByteString>> committer;
+    private final Map<String, ByteString> mSemanticPropertiesMap = new HashMap<>();
+    private final Committer<CommitResult, Map<String, ByteString>> mCommitter;
 
     FeedSemanticPropertiesMutation(Committer<CommitResult, Map<String, ByteString>> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public SemanticPropertiesMutation add(String contentId, ByteString semanticData) {
-        semanticPropertiesMap.put(contentId, semanticData);
+        mSemanticPropertiesMap.put(contentId, semanticData);
         return this;
     }
 
     @Override
     public CommitResult commit() {
-        return committer.commit(semanticPropertiesMap);
+        return mCommitter.commit(mSemanticPropertiesMap);
     }
 }

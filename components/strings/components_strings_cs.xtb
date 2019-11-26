@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">Útočníci, kteří na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> aktuálně působí, by vám do zařízení mohli nainstalovat nebezpečné aplikace, které jej poškodí, přidat skryté poplatky na účet za mobilní služby nebo odcizit osobní údaje. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nejste připojeni k internetu</translation>
 <translation id="2230458221926704099">Opravte připojení pomocí <ph name="BEGIN_LINK" />diagnostické aplikace<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Pro vás</translation>
 <translation id="2239100178324503013">Odeslat</translation>
 <translation id="2248949050832152960">Použít WebAuthn</translation>
 <translation id="2250931979407627383">Sešití na levém okraji</translation>
@@ -366,6 +367,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Odejít</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Bezpečnostní upozornění</translation>
 <translation id="2699302886720511147">Přijímané karty</translation>
 <translation id="2702801445560668637">Seznam četby</translation>
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
@@ -463,6 +465,7 @@
 <translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="3209034400446768650">Stránka může účtovat poplatky</translation>
 <translation id="3209080785413271048">Ověřte své uložené platební metody pomocí služby Windows Hello.</translation>
+<translation id="3212581601480735796">Vaše aktivita na webu <ph name="HOSTNAME" /> je sledována</translation>
 <translation id="3215092763954878852">Ověření WebAuthn nebylo možné použít</translation>
 <translation id="3225919329040284222">Server se prokázal certifikátem, který neodpovídá integrovaným očekáváním. Tato očekávaní jsou zahrnuta u určitých webových stránek s vysokou úrovní zabezpečení kvůli vaší ochraně.</translation>
 <translation id="3226128629678568754">Klikněte na tlačítko Načíst znovu. Tím znovu odešlete údaje potřebné k načtení stránky.</translation>
@@ -521,6 +524,7 @@
 <translation id="3528485271872257980">Tmavě hnědá</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Alespoň jedna položka v synchronizovaných zařízeních}=1{1 položka (a další v synchronizovaných zařízeních)}few{# položky (a další v synchronizovaných zařízeních)}many{# položky (a další v synchronizovaných zařízeních)}other{# položek (a další v synchronizovaných zařízeních)}}</translation>
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>
+<translation id="3553513561058684206">Pro vás</translation>
 <translation id="3566021033012934673">Vaše připojení není soukromé</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Vložená stránka na webu <ph name="SITE" /> říká</translation>
@@ -745,6 +749,7 @@
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
 <translation id="4597348597567598915">Velikost 8</translation>
 <translation id="4600854749408232102">C6/C5 (obálka)</translation>
+<translation id="4613966523036881546">Google Chrome certifikátu tohoto připojení nedůvěřuje, protože je o něm známo, že je používán k zachytávání a sledování síťového provozu.</translation>
 <translation id="4635654612248442824">Web <ph name="ORIGIN" /> požádal, aby se na všechny jeho požadavky uplatňovaly zásady ohledně původu, ale tyto zásady momentálně nelze použít.</translation>
 <translation id="464342062220857295">Funkce vyhledávání</translation>
 <translation id="4646534391647090355">Zobrazit</translation>
@@ -1447,6 +1452,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8103161714697287722">Platební metoda</translation>
 <translation id="8105368624971345109">Vypnout</translation>
 <translation id="8118489163946903409">Platební metoda</translation>
+<translation id="8124023448510659215">Prohlížeč Chromium certifikátu tohoto připojení nedůvěřuje, protože je o něm známo, že je používán k zachytávání a sledování síťového provozu.</translation>
 <translation id="8127301229239896662">Software <ph name="SOFTWARE_NAME" /> na počítači nebo v síti nebyl nainstalován správně. Požádejte administrátora IT o vyřešení tohoto problému.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8149426793427495338">Počítač přešel do režimu spánku.</translation>
@@ -1590,6 +1596,8 @@ Další podrobnosti:
 <translation id="8957210676456822347">Autorizace captive portálu</translation>
 <translation id="8962950042226115166">Podezřelý web</translation>
 <translation id="8968766641738584599">Uložit kartu</translation>
+<translation id="8969267497192857913">Všechno, co zadáváte, všechny zobrazované stránky a veškerá další aktivita na webu jsou sledovány a obsah na webech může být bez vašeho vědomí změněn.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Platnost certifikátu serveru vypršela.</translation>
 <translation id="8975012916872825179">Zahrnuje informace jako telefonní čísla, e-mailové adresy a dodací adresy</translation>
 <translation id="8975263830901772334">Názvy souborů, které tisknete</translation>

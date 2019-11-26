@@ -1034,7 +1034,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
                "GpuImageDecodeCache::GetTaskForImageAndRef");
 
   if (SkipImage(draw_image))
-    return TaskResult(false);
+    return TaskResult(false /* need_unref */, false /* is_at_raster_decode */);
 
   base::AutoLock lock(lock_);
   const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
@@ -1052,7 +1052,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     image_data = new_data.get();
   } else if (image_data->decode.decode_failure) {
     // We have already tried and failed to decode this image, so just return.
-    return TaskResult(false);
+    return TaskResult(false /* need_unref */, false /* is_at_raster_decode */);
   } else if (task_type == DecodeTaskType::kPartOfUploadTask &&
              image_data->upload.task) {
     // We had an existing upload task, ref the image and return the task.
@@ -1071,7 +1071,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   // not already budgeted.
   if (!image_data->is_budgeted && !EnsureCapacity(image_data->size)) {
     // Image will not fit, do an at-raster decode.
-    return TaskResult(false);
+    return TaskResult(false /* need_unref */, true /* is_at_raster_decode */);
   }
 
   // If we had to create new image data, add it to our map now that we know it
@@ -1088,7 +1088,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   DCHECK(image_data->is_budgeted);
   if (image_data->HasUploadedData() &&
       TryLockImage(HaveContextLock::kNo, draw_image, image_data)) {
-    return TaskResult(true);
+    return TaskResult(true /* need_unref */, false /* is_at_raster_decode */);
   }
 
   scoped_refptr<TileTask> task;

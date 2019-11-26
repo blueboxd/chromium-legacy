@@ -203,6 +203,8 @@ MixerInputConnection::MixerInputConnection(
   pcm_completion_task_ =
       base::BindRepeating(&MixerInputConnection::PostPcmCompletion, weak_this_);
   eos_task_ = base::BindRepeating(&MixerInputConnection::PostEos, weak_this_);
+  ready_for_playback_task_ = base::BindRepeating(
+      &MixerInputConnection::PostAudioReadyForPlayback, weak_this_);
 
   CreateBufferPool(fill_size_);
   mixer_->AddInput(this);
@@ -523,7 +525,9 @@ int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
   if (frames == 0) {
     LOG(INFO) << "End of stream for " << this;
     state_ = State::kGotEos;
-    ready_for_playback_ = true;
+    if (!started_) {
+      io_task_runner_->PostTask(FROM_HERE, ready_for_playback_task_);
+    }
   } else if (started_ ||
              GetTimestamp(data.get()) +
                      SamplesToMicroseconds(frames, input_samples_per_second_) >=
@@ -531,9 +535,9 @@ int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
     queued_frames_ += frames;
     queue_.push_back(std::move(data));
 
-    if (!ready_for_playback_ && queued_frames_ >= start_threshold_frames_ &&
+    if (!started_ && queued_frames_ >= start_threshold_frames_ &&
         mixer_rendering_delay_.timestamp_microseconds != INT64_MIN) {
-      ready_for_playback_ = true;
+      io_task_runner_->PostTask(FROM_HERE, ready_for_playback_task_);
     }
   }
   // Otherwise, drop |data| since it is before the start PTS.
@@ -907,25 +911,12 @@ int MixerInputConnection::FillAudio(int num_frames, float* const* channels) {
 
 void MixerInputConnection::PostPcmCompletion() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  bool send_ready_for_playback = false;
-  int64_t mixer_delay = 0;
 
   mixer_service::Generic message;
   auto* push_result = message.mutable_push_result();
   {
     base::AutoLock lock(lock_);
     push_result->set_next_playback_timestamp(next_playback_timestamp_);
-    if (!audio_ready_for_playback_fired_ && ready_for_playback_) {
-      send_ready_for_playback = true;
-      mixer_delay = mixer_rendering_delay_.delay_microseconds;
-    }
-  }
-
-  if (send_ready_for_playback) {
-    LOG(INFO) << this << " ready for playback";
-    audio_ready_for_playback_fired_ = true;
-    auto* ready_for_playback = message.mutable_ready_for_playback();
-    ready_for_playback->set_delay_microseconds(mixer_delay);
   }
   socket_->SendProto(message);
 }
@@ -935,6 +926,25 @@ void MixerInputConnection::PostEos() {
   mixer_service::Generic message;
   message.mutable_eos_played_out();
   socket_->SendProto(message);
+}
+
+void MixerInputConnection::PostAudioReadyForPlayback() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+
+  if (audio_ready_for_playback_fired_) {
+    return;
+  }
+  LOG(INFO) << this << " ready for playback";
+
+  mixer_service::Generic message;
+  auto* ready_for_playback = message.mutable_ready_for_playback();
+  {
+    base::AutoLock lock(lock_);
+    ready_for_playback->set_delay_microseconds(
+        mixer_rendering_delay_.delay_microseconds);
+  }
+  socket_->SendProto(message);
+  audio_ready_for_playback_fired_ = true;
 }
 
 void MixerInputConnection::OnAudioPlaybackError(MixerError error) {

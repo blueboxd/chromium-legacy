@@ -80,6 +80,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let xrViewerSpace = null;
       let xrOffsetSpace = null;
       let xrViewerSpaceHitTestSource = null;
+      let xrTransientInputHitTestSource = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -163,6 +164,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         session.addEventListener('select', onSelect);
         session.addEventListener('inputsourceschange', onInputSourcesChange);
 
+        session.requestHitTestSourceForTransientInput({
+          profile : "generic-touchscreen"
+        }).then(transient_input_hit_test_source => {
+          console.debug("Hit test source for generic touchscreen created!");
+          xrTransientInputHitTestSource = transient_input_hit_test_source;
+        });
+
         if (!gl) {
           gl = createWebGLContext({
             xrCompatible: true
@@ -245,33 +253,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let rayDirection = vec3.create();
 
       function onSelect(event) {
-        if (useReticle.checked && arObject.visible) {
+        if (arObject.visible) {
           // If we're using the reticle then we've already got a mesh positioned
           // at the latest hit point and we should just use its matrix to save
           // an unnecessary requestHitTest call.
           addARObjectAt(arObject.matrix);
-        } else {
-          // Otherwise we'll use the target ray from the input source that generated
-          // this event to fire off a new hit test.
-          let inputPose = event.frame.getPose(event.inputSource.targetRaySpace, xrRefSpace);
-          if (inputPose) {
-            let targetRay = new XRRay(inputPose.transform);
-            vec3.set(rayOrigin,
-                targetRay.origin.x,
-                targetRay.origin.y,
-                targetRay.origin.z);
-            vec3.set(rayDirection,
-                targetRay.direction.x,
-                targetRay.direction.y,
-                targetRay.direction.z);
-
-            let ray = new XRRay(DOMPointFromVec3(rayOrigin), DOMPointFromVec3(rayDirection));
-            event.frame.session.requestHitTest(ray, xrRefSpace).then((results) => {
-              if (results.length) {
-                addARObjectAt(results[0].hitMatrix);
-              }
-            });
-          }
         }
       }
 
@@ -305,6 +291,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             arObject.visible = false;
           }
 
+        } else if (!useReticle.checked && xrTransientInputHitTestSource) {
+          let results_by_input_source = frame.getHitTestResultsForTransientInput(xrTransientInputHitTestSource);
+
+          if(results_by_input_source.length && results_by_input_source[0].results.length) {
+            let hitResult = results_by_input_source[0].results[0];
+            arObject.visible = true;
+            arObject.matrix = hitResult.getPose(xrRefSpace).transform.matrix;
+          } else {
+            arObject.visible = false;
+          }
         } else {
           arObject.visible = false;
         }

@@ -5,8 +5,8 @@
 cr.define('gcmInternals', function() {
   'use strict';
 
-  var isRecording = false;
-  var keyPressState = 0;
+  let isRecording = false;
+  let keyPressState = 0;
 
   /**
    * If the info dictionary has property prop, then set the text content of
@@ -16,7 +16,7 @@ cr.define('gcmInternals', function() {
    * @param {string} elementId The id of a HTML element.
    */
   function setIfExists(info, prop, elementId) {
-    var element = $(elementId);
+    const element = $(elementId);
     if (!element) {
       return;
     }
@@ -64,17 +64,17 @@ cr.define('gcmInternals', function() {
    * @param {!Object} list A list of list of item.
    */
   function addRows(table, list) {
-    for (var i = 0; i < list.length; ++i) {
-      var row = document.createElement('tr');
+    for (let i = 0; i < list.length; ++i) {
+      const row = document.createElement('tr');
 
       // The first element is always a timestamp.
-      var cell = document.createElement('td');
-      var d = new Date(list[i][0]);
+      let cell = document.createElement('td');
+      const d = new Date(list[i][0]);
       cell.textContent = d;
       row.appendChild(cell);
 
-      for (var j = 1; j < list[i].length; ++j) {
-        var cell = document.createElement('td');
+      for (let j = 1; j < list[i].length; ++j) {
+        cell = document.createElement('td');
         cell.textContent = list[i][j];
         row.appendChild(cell);
       }
@@ -126,7 +126,7 @@ cr.define('gcmInternals', function() {
    * @param {!Event} event The keypress event handler.
    */
   function handleKeyPress(event) {
-    var PHRASE = 'secret';
+    const PHRASE = 'secret';
     if (PHRASE.charCodeAt(keyPressState) === event.keyCode) {
       if (++keyPressState < PHRASE.length) {
         return;
@@ -145,7 +145,7 @@ cr.define('gcmInternals', function() {
    * @param {!Object} data A list of list of data items.
    */
   function refreshLogTable(tableId, data) {
-    var element = $(tableId);
+    const element = $(tableId);
     if (!element) {
       return;
     }

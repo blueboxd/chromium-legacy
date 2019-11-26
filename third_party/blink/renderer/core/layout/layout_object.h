@@ -2055,11 +2055,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsRelayoutBoundary() const;
 
-  // The visual rect, in the the space of the paint invalidation container
-  // (*not* the graphics layer that paints this object).
-  LayoutRect VisualRectIncludingCompositedScrolling(
-      const LayoutBoxModelObject& paint_invalidation_container) const;
-
   // Called when the previous visual rect(s) is no longer valid.
   virtual void ClearPreviousVisualRects();
 
@@ -2683,13 +2678,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   const ComputedStyle* FirstLineStyleWithoutFallback() const;
 
  private:
-  // Adjusts a visual rect in the space of |visual_rect| to be in the space of
-  // the |paint_invalidation_container|, if needed. They can be different only
-  // if |paint_invalidation_container| is a composited scroller.
-  void AdjustVisualRectForCompositedScrolling(
-      LayoutRect& visual_rect,
-      const LayoutBoxModelObject& paint_invalidation_container) const;
-
   FloatQuad LocalToAncestorQuadInternal(const FloatQuad&,
                                         const LayoutBoxModelObject* ancestor,
                                         MapCoordinatesFlags = 0) const;

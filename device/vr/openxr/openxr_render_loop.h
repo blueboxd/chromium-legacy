@@ -51,6 +51,9 @@ class OpenXrRenderLoop : public XRCompositorCommon {
       on_display_info_changed_;
   mojom::VRDisplayInfoPtr current_display_info_;
 
+  // This must be the last member
+  base::WeakPtrFactory<OpenXrRenderLoop> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(OpenXrRenderLoop);
 };
 

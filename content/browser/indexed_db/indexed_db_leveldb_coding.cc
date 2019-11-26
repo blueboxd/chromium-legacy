@@ -63,8 +63,8 @@ constexpr unsigned char kBlobEntryIndexId = 3;
 constexpr unsigned char kSchemaVersionTypeByte = 0;
 constexpr unsigned char kMaxDatabaseIdTypeByte = 1;
 constexpr unsigned char kDataVersionTypeByte = 2;
-constexpr unsigned char kBlobJournalTypeByte = 3;
-constexpr unsigned char kLiveBlobJournalTypeByte = 4;
+constexpr unsigned char kRecoveryBlobJournalTypeByte = 3;
+constexpr unsigned char kActiveBlobJournalTypeByte = 4;
 constexpr unsigned char kEarliestSweepTimeTypeByte = 5;
 constexpr unsigned char kMaxSimpleGlobalMetaDataTypeByte =
     6;  // Insert before this and increment.
@@ -1013,11 +1013,11 @@ std::string IndexedDBKeyToDebugString(base::StringPiece key) {
         case kDataVersionTypeByte:
           result << "kDataVersionTypeByte";
           break;
-        case kBlobJournalTypeByte:
-          result << "kBlobJournalTypeByte";
+        case kRecoveryBlobJournalTypeByte:
+          result << "kRecoveryBlobJournalTypeByte";
           break;
-        case kLiveBlobJournalTypeByte:
-          result << "kLiveBlobJournalTypeByte";
+        case kActiveBlobJournalTypeByte:
+          result << "kActiveBlobJournalTypeByte";
           break;
         case kEarliestSweepTimeTypeByte:
           result << "kEarliestSweepTimeTypeByte";
@@ -1444,15 +1444,15 @@ std::string DataVersionKey::Encode() {
   return ret;
 }
 
-std::string BlobJournalKey::Encode() {
+std::string RecoveryBlobJournalKey::Encode() {
   std::string ret = KeyPrefix::EncodeEmpty();
-  ret.push_back(kBlobJournalTypeByte);
+  ret.push_back(kRecoveryBlobJournalTypeByte);
   return ret;
 }
 
-std::string LiveBlobJournalKey::Encode() {
+std::string ActiveBlobJournalKey::Encode() {
   std::string ret = KeyPrefix::EncodeEmpty();
-  ret.push_back(kLiveBlobJournalTypeByte);
+  ret.push_back(kActiveBlobJournalTypeByte);
   return ret;
 }
 

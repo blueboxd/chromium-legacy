@@ -4,31 +4,27 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.annotation.TargetApi;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.tab.TabTestUtils;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.chrome.test.util.browser.ThemeTestUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for splash screens with EXTRA_THEME_COLOR specified in the Intent.
@@ -39,55 +35,41 @@ public class WebappSplashScreenThemeColorTest {
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    @Before
-    public void setUp() {
-        mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
-                mActivityTestRule
-                        .createIntent()
-                        // This is setting Color.Magenta with 50% opacity.
-                        .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, 0x80FF00FFL));
-    }
-
     @Test
-    @DisabledTest
     @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // Customizing status bar color is disallowed for tablets.
     @Feature({"Webapps"})
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testThemeColorWhenSpecified() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+        // This is Color.Magenta with 50% opacity.
+        final int intentThemeColor = Color.argb(0x80, 0xFF, 0, 0xFF);
+        Intent intent = mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_THEME_COLOR, (long) intentThemeColor);
+        mActivityTestRule.startWebappActivity(intent);
 
-        Assert.assertEquals(ColorUtils.getDarkenedColorForStatusBar(Color.MAGENTA),
-                mActivityTestRule.getActivity().getWindow().getStatusBarColor());
+        final int expectedThemeColor = Color.MAGENTA;
+        ThemeTestUtils.assertStatusBarColor(mActivityTestRule.getActivity(), expectedThemeColor);
     }
 
     @Test
     @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // Customizing status bar color is disallowed for tablets.
     @Feature({"Webapps"})
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testThemeColorNotUsedIfPagesHasOne() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+    public void testThemeColorNotUsedIfPagesHasOne() throws ExecutionException, TimeoutException {
+        final int intentThemeColor = Color.MAGENTA;
+        final int pageThemeColor = Color.RED;
+        String pageWithThemeColorUrl = mActivityTestRule.getTestServer().getURL(
+                "/chrome/test/data/android/theme_color_test.html");
+        Intent intent =
+                mActivityTestRule.createIntent()
+                        .putExtra(ShortcutHelper.EXTRA_URL, pageWithThemeColorUrl)
+                        .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) intentThemeColor);
+        mActivityTestRule.startWebappActivity(intent);
 
-        // Depending on the Android version, the status bar color will either be the same as the
-        // theme color or darker.
-        final int baseColor = Color.GREEN;
-        final int finalColor;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            finalColor = Color.GREEN;
-        } else {
-            finalColor = ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
-        }
-
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> TabTestUtils.simulateChangeThemeColor(
-                                mActivityTestRule.getActivity().getActivityTab(), baseColor));
-
-        // Waits for theme-color to change so the test doesn't rely on system timing.
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(finalColor, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mActivityTestRule.getActivity().getWindow().getStatusBarColor();
-                    }
-                }));
+        ThemeTestUtils.waitForThemeColor(mActivityTestRule.getActivity(), pageThemeColor);
+        ThemeTestUtils.assertStatusBarColor(mActivityTestRule.getActivity(), pageThemeColor);
     }
 }

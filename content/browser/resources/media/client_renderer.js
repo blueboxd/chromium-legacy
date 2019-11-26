@@ -484,7 +484,7 @@ var ClientRenderer = (function() {
         var valueCell = row.insertCell(-1);
 
         keyCell.appendChild(document.createTextNode(key));
-        valueCell.appendChild(document.createTextNode(value));
+        valueCell.appendChild(document.createTextNode(JSON.stringify(value)));
       }
     },
 
@@ -497,7 +497,8 @@ var ClientRenderer = (function() {
         timestampCell.appendChild(
             document.createTextNode(util.millisecondsToString(event.time)));
         row.insertCell(-1).appendChild(document.createTextNode(event.key));
-        row.insertCell(-1).appendChild(document.createTextNode(event.value));
+        row.insertCell(-1).appendChild(
+            document.createTextNode(JSON.stringify(event.value)));
       }
     },
 

@@ -19,14 +19,14 @@ HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
   HeapVector<Member<XRHitTestResult>> results;
 
   for (const auto& result : last_frame_results_) {
-    results.emplace_back(MakeGarbageCollected<XRHitTestResult>(this, *result));
+    results.emplace_back(MakeGarbageCollected<XRHitTestResult>(*result));
   }
 
   return results;
 }
 
 void XRHitTestSource::Update(
-    const WTF::Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results) {
+    const Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results) {
   last_frame_results_.clear();
 
   for (auto& result : hit_test_results) {

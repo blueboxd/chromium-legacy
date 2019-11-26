@@ -24,22 +24,22 @@ import com.google.android.libraries.feed.sharedstream.logging.VisibilityMonitor;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for the more button. */
 public class ContinuationViewHolder extends FeedViewHolder {
-    private final View actionButton;
-    private final View spinner;
-    private final VisibilityMonitor visibilityMonitor;
-    private final CardConfiguration cardConfiguration;
-    private final Context context;
+    private final View mActionButton;
+    private final View mSpinner;
+    private final VisibilityMonitor mVisibilityMonitor;
+    private final CardConfiguration mCardConfiguration;
+    private final Context mContext;
 
     public ContinuationViewHolder(Configuration configuration, Context context,
             FrameLayout frameLayout, CardConfiguration cardConfiguration) {
         super(frameLayout);
         View containerView =
                 LayoutInflater.from(context).inflate(R.layout.feed_more_button, frameLayout);
-        actionButton = checkNotNull(frameLayout.findViewById(R.id.action_button));
-        spinner = checkNotNull(frameLayout.findViewById(R.id.loading_spinner));
-        visibilityMonitor = createVisibilityMonitor(containerView, configuration);
-        this.cardConfiguration = cardConfiguration;
-        this.context = context;
+        mActionButton = checkNotNull(frameLayout.findViewById(R.id.action_button));
+        mSpinner = checkNotNull(frameLayout.findViewById(R.id.loading_spinner));
+        mVisibilityMonitor = createVisibilityMonitor(containerView, configuration);
+        this.mCardConfiguration = cardConfiguration;
+        this.mContext = context;
     }
 
     public void bind(
@@ -53,27 +53,27 @@ public class ContinuationViewHolder extends FeedViewHolder {
             itemView.setLayoutParams(layoutParams);
         }
         LayoutUtils.setMarginsRelative((MarginLayoutParams) layoutParams,
-                cardConfiguration.getCardStartMargin(),
-                (int) context.getResources().getDimension(
+                mCardConfiguration.getCardStartMargin(),
+                (int) mContext.getResources().getDimension(
                         R.dimen.feed_more_button_container_top_margins),
-                cardConfiguration.getCardEndMargin(), cardConfiguration.getCardBottomMargin());
+                mCardConfiguration.getCardEndMargin(), mCardConfiguration.getCardBottomMargin());
 
-        actionButton.setOnClickListener(v -> {
+        mActionButton.setOnClickListener(v -> {
             onClickListener.onClick(v);
             loggingListener.onContentClicked();
         });
-        visibilityMonitor.setListener(loggingListener);
+        mVisibilityMonitor.setListener(loggingListener);
         setButtonSpinnerVisibility(showSpinner);
     }
 
     @Override
     public void unbind() {
         // Clear OnClickListener to null to allow for GC.
-        actionButton.setOnClickListener(null);
-        visibilityMonitor.setListener(null);
+        mActionButton.setOnClickListener(null);
+        mVisibilityMonitor.setListener(null);
 
         // Set clickable to false as setting OnClickListener to null sets clickable to true.
-        actionButton.setClickable(false);
+        mActionButton.setClickable(false);
     }
 
     public void setShowSpinner(boolean showSpinner) {
@@ -81,8 +81,8 @@ public class ContinuationViewHolder extends FeedViewHolder {
     }
 
     private void setButtonSpinnerVisibility(boolean showSpinner) {
-        actionButton.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
-        spinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
+        mActionButton.setVisibility(showSpinner ? View.GONE : View.VISIBLE);
+        mSpinner.setVisibility(showSpinner ? View.VISIBLE : View.GONE);
     }
 
     @VisibleForTesting

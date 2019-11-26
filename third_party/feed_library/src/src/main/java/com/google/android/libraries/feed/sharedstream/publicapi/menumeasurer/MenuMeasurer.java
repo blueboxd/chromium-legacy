@@ -21,10 +21,10 @@ public class MenuMeasurer {
     public static final int NO_MAX_WIDTH = Integer.MAX_VALUE;
     private static final String TAG = "MenuMeasurer";
 
-    private final Context context;
+    private final Context mContext;
 
     public MenuMeasurer(Context context) {
-        this.context = context;
+        this.mContext = context;
     }
 
     // TODO: Test measureAdapterContent fully instead of just calculateSize.
@@ -59,7 +59,7 @@ public class MenuMeasurer {
             }
         }
 
-        int widthUnit = context.getResources().getDimensionPixelSize(R.dimen.menu_width_multiple);
+        int widthUnit = mContext.getResources().getDimensionPixelSize(R.dimen.menu_width_multiple);
 
         int width = Math.min(roundLargestPopupContentWidth(largestWidth, widthUnit),
                 maxWidth - windowPadding - windowPadding);

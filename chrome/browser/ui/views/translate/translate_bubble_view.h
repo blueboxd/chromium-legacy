@@ -254,9 +254,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewErrorNoTitle(
       std::unique_ptr<views::Button> advanced_button);
 
-  // Creates the 'error' view for Tab and Button_GM2 UI.
+  // Creates the 'error' view for Tab UI.
   std::unique_ptr<views::View> CreateViewErrorTab();
-  std::unique_ptr<views::View> CreateViewErrorGM2();
 
   // Creates the 'advanced' view. Caller takes ownership of the returned view.
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
@@ -270,23 +269,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Tab UI present the same view for before/during/after translate state.
   bool TabUiIsEquivalentState(TranslateBubbleModel::ViewState view_state);
-
-  // Creates the skeleton view for GM2 UI.
-  std::unique_ptr<views::View> GM2CreateView(
-      std::unique_ptr<views::Button> action_button,
-      std::unique_ptr<views::View> status_indicator,
-      bool active_option_button,
-      std::unique_ptr<views::Label> source_language_label,
-      std::unique_ptr<views::Label> target_language_label);
-
-  // Creates the 'before translate' view for Button_GM2 UI.
-  std::unique_ptr<views::View> GM2CreateViewBeforeTranslate();
-
-  // Creates the 'translating' view for Button_GM2 UI.
-  std::unique_ptr<views::View> GM2CreateViewTranslating();
-
-  // Creates the 'after translate' view for Button_GM2 UI.
-  std::unique_ptr<views::View> GM2CreateViewAfterTranslate();
 
   // Creates the 'advanced' view to show source/target language combobox under
   // TAB UI. Caller takes ownership of the returned view.
@@ -346,11 +328,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::Checkbox* before_always_translate_checkbox_ = nullptr;
   views::Checkbox* advanced_always_translate_checkbox_ = nullptr;
   views::TabbedPane* tabbed_pane_ = nullptr;
-
-  // Button_GM2 UI source/target language label class variable to be updated
-  // based on user selction in
-  views::Label* gm2_source_language_label_ = nullptr;
-  views::Label* gm2_target_language_label_ = nullptr;
 
   views::LabelButton* advanced_cancel_button_ = nullptr;
   views::LabelButton* advanced_done_button_ = nullptr;

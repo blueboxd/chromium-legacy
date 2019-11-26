@@ -19,7 +19,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "name": "Scroll corner of LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [200, 200],
       "paintInvalidations": [
         {

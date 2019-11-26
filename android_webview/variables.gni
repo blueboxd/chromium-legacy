@@ -18,10 +18,6 @@ trichrome_webview_64_32_android_manifest = "$root_gen_dir/android_webview/trichr
 upstream_only_webview_deps = [
   "//android_webview:platform_service_bridge_upstream_implementation_java",
   "//android_webview/nonembedded:icon_resources",
-
-  # TODO(crbug.com/951275): Clean this up once relevant internal code
-  # is upstreamed.
-  "//android_webview/glue:webview_chromium_for_q_upstream_java",
 ]
 
 if (webview_includes_weblayer) {

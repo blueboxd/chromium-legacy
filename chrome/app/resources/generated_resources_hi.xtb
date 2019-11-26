@@ -2616,7 +2616,6 @@
 <translation id="4839303808932127586">इस रूप में वीडियो स&amp;हेजें...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 और}one{# और}other{# और}}</translation>
 <translation id="4842976633412754305">यह पृष्‍ठ अप्रमाणीकृत स्रोतों से स्‍क्रिप्‍ट लोड करने का प्रयास कर रहा है.</translation>
-<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> ने लॉगिन की सुविधा दी है</translation>
 <translation id="4844333629810439236">अन्य कीबोर्ड</translation>
 <translation id="4846680374085650406">आप इस सेटिंग के लिए व्यवस्थापक की अनुशंसा का अनुसरण कर रहे हैं.</translation>
 <translation id="4848518990323155912">SIM कार्ड लॉक करना चालू करें (मोबाइल डेटा का इस्तेमाल करने के लिए पिन ज़रूरी है)</translation>
@@ -3814,7 +3813,6 @@
 <translation id="6607831829715835317">ज़्यादा टू&amp;ल</translation>
 <translation id="6612358246767739896">सुरक्षित सामग्री</translation>
 <translation id="6615455863669487791">मुझे दिखाएं</translation>
-<translation id="6617100836880592260">स्कैन करने की गति: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">फिर भी रखें</translation>
 <translation id="6619058681307408113">लाइन प्रिंटर डेमन (LPD)</translation>
 <translation id="661907246513853610">साइट आपकी जगह को ट्रैक कर सकती है</translation>

@@ -53,8 +53,6 @@ extern const base::Feature kAppNotificationStatusMessaging;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAppServiceAsh;
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceInstanceRegistry;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceIntentHandling;
@@ -423,7 +421,6 @@ extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kStreamlinedUsbPrinterSetup;
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNativeSmb;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmbFs;
 #endif
 

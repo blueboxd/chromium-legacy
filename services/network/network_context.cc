@@ -1099,11 +1099,12 @@ void NetworkContext::CreateProxyResolvingSocketFactory(
 
 void NetworkContext::LookUpProxyForURL(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<mojom::ProxyLookupClient> proxy_lookup_client) {
   DCHECK(proxy_lookup_client);
   std::unique_ptr<ProxyLookupRequest> proxy_lookup_request(
-      std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client),
-                                           this));
+      std::make_unique<ProxyLookupRequest>(std::move(proxy_lookup_client), this,
+                                           network_isolation_key));
   ProxyLookupRequest* proxy_lookup_request_ptr = proxy_lookup_request.get();
   proxy_lookup_requests_.insert(std::move(proxy_lookup_request));
   proxy_lookup_request_ptr->Start(url);

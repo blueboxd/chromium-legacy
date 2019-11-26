@@ -22,10 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Helper class providing validation method for a ModelProvider. */
 public class ModelProviderValidator {
-    private final ProtocolAdapter protocolAdapter;
+    private final ProtocolAdapter mProtocolAdapter;
 
     public ModelProviderValidator(ProtocolAdapter protocolAdapter) {
-        this.protocolAdapter = protocolAdapter;
+        this.mProtocolAdapter = protocolAdapter;
     }
 
     public void assertRoot(ModelProvider modelProvider) {
@@ -39,7 +39,7 @@ public class ModelProviderValidator {
         assertThat(modelFeature).isNotNull();
         assertThat(modelFeature.getStreamFeature()).isNotNull();
         assertStreamContentId(modelFeature.getStreamFeature().getContentId(),
-                protocolAdapter.getStreamContentId(contentId));
+                mProtocolAdapter.getStreamContentId(contentId));
     }
 
     public void assertStreamContentId(String contentId, String expectedContentId) {
@@ -47,12 +47,12 @@ public class ModelProviderValidator {
     }
 
     public void assertStreamContentId(String contentId, ContentId expectedContentId) {
-        assertThat(contentId).isEqualTo(protocolAdapter.getStreamContentId(expectedContentId));
+        assertThat(contentId).isEqualTo(mProtocolAdapter.getStreamContentId(expectedContentId));
     }
 
     public void verifyContent(ModelProvider modelProvider, List<ContentId> features) {
         for (ContentId contentId : features) {
-            String streamContentId = protocolAdapter.getStreamContentId(contentId);
+            String streamContentId = mProtocolAdapter.getStreamContentId(contentId);
             if (modelProvider.getModelChild(streamContentId) == null) {
                 fail("Feature was not found for " + streamContentId);
             }

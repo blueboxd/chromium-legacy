@@ -1068,7 +1068,7 @@ class FileTransferController {
     const missingFileContents =
         volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE &&
         this.volumeManager_.getDriveConnectionState().type ===
-            VolumeManagerCommon.DriveConnectionType.OFFLINE;
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
 
     this.appendCutOrCopyInfo_(
         clipboardData, effectAllowed, volumeInfo, [entry], missingFileContents);

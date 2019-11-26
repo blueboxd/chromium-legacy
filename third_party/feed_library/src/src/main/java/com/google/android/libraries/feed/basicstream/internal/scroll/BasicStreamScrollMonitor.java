@@ -11,8 +11,8 @@ import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObs
 import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObserver;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Monitors and dispatches scroll events to the registered listeners.
@@ -22,33 +22,33 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BasicStreamScrollMonitor
         extends RecyclerView.OnScrollListener implements ScrollObservable {
-    private final Set<ScrollObserver> scrollObservers;
-    private final Clock clock;
+    private final Set<ScrollObserver> mScrollObservers;
+    private final Clock mClock;
 
-    private int currentScrollState = RecyclerView.SCROLL_STATE_IDLE;
+    private int mCurrentScrollState = RecyclerView.SCROLL_STATE_IDLE;
 
     public BasicStreamScrollMonitor(Clock clock) {
-        this.clock = clock;
-        scrollObservers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        this.mClock = clock;
+        mScrollObservers = Collections.newSetFromMap(Collections.synchronizedMap(new HashMap<>()));
     }
 
     @Override
     public void addScrollObserver(ScrollObserver scrollObserver) {
-        scrollObservers.add(scrollObserver);
+        mScrollObservers.add(scrollObserver);
     }
 
     @Override
     public void removeScrollObserver(ScrollObserver scrollObserver) {
-        scrollObservers.remove(scrollObserver);
+        mScrollObservers.remove(scrollObserver);
     }
 
     @Override
     public int getCurrentScrollState() {
-        return currentScrollState;
+        return mCurrentScrollState;
     }
 
     public int getObserverCount() {
-        return scrollObservers.size();
+        return mScrollObservers.size();
     }
 
     /**
@@ -56,16 +56,16 @@ public class BasicStreamScrollMonitor
      */
     @Override
     public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-        currentScrollState = newState;
-        for (ScrollObserver observer : scrollObservers) {
-            observer.onScrollStateChanged(recyclerView, "", newState, clock.currentTimeMillis());
+        mCurrentScrollState = newState;
+        for (ScrollObserver observer : mScrollObservers) {
+            observer.onScrollStateChanged(recyclerView, "", newState, mClock.currentTimeMillis());
         }
     }
 
     /** Notify the monitor of a scroll event that should be dispatched to its observers. */
     @Override
     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-        for (ScrollObserver observer : scrollObservers) {
+        for (ScrollObserver observer : mScrollObservers) {
             observer.onScroll(recyclerView, "", dx, dy);
         }
     }

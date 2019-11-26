@@ -3766,11 +3766,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika ayarlanmadan bırakılırsa raf varsayılan olarak ekranın alt tarafında konumlandırılır ve kullanıcı rafın yerini değiştirebilir.</translation>
 <translation id="7040229947030068419">Örnek değer:</translation>
 <translation id="7044883996351280650">Android yedekleme ve geri yükleme hizmetini kontrol etme</translation>
-<translation id="7049373494483449255"><ph name="PRODUCT_NAME" /> ürününün dokümanları yazdırmak üzere <ph name="CLOUD_PRINT_NAME" /> öğesine gönderebilmesini sağlar.  NOT: Bu yalnızca <ph name="PRODUCT_NAME" /> içindeki <ph name="CLOUD_PRINT_NAME" /> desteğini etkiler. Kullanıcıların web sitelerinden yazdırma işleri göndermelerini önlemez.
-
-      Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar <ph name="PRODUCT_NAME" /> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> öğesine yazdırma işlemi gerçekleştirebilir.
-
-      Bu ayar devre dışı bırakılırsa, kullanıcılar <ph name="PRODUCT_NAME" /> yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> öğesine yazdırma işlemi gerçekleştiremez</translation>
 <translation id="7053678646221257043">Bu politika, etkinleştirilirse yer işaretlerinin geçerli varsayılan tarayıcıdan içe aktarılmasını zorlar. Etkinleştirilirse, bu politika içe aktarma iletişim kutusunu da etkiler.
 
       Devre dışı bırakılırsa, hiçbir yer işareti içe aktarılmaz.

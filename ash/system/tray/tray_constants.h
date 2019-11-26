@@ -135,6 +135,12 @@ constexpr gfx::Insets kStackedNotificationIconsContainerPadding(1, 16, 0, 8);
 constexpr int kStackedNotificationBarMaxIcons = 3;
 constexpr int kStackedNotificationBarIconSpacing = 6;
 constexpr int kStackedNotificationIconSize = 18;
+constexpr int kNotificationIconAnimationLowPosition = 7;
+constexpr int kNotificationIconAnimationHighPosition = -3;
+constexpr double kNotificationIconAnimationScaleFactor = 0.77;
+constexpr int kNotificationIconAnimationUpDurationMs = 50;
+constexpr int kNotificationIconAnimationDownDurationMs = 17;
+constexpr int kNotificationIconAnimationOutDurationMs = 67;
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);

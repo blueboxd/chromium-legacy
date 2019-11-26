@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -205,7 +206,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
         default_command_line, switches::kDisableComponentUpdate, command_line);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     command_line->AppendSwitchASCII(
-        "enable-blink-features",
+        switches::kEnableBlinkFeatures,
         "EncryptedMediaEncryptionSchemeQuery,"
         "EncryptedMediaPersistentUsageRecordSession");
   }

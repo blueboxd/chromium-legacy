@@ -295,8 +295,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       // theme should be used.
       ui::NativeTheme* fallback_theme =
           color_utils::IsDark(GetBgColor(""))
-              ? ui::NativeTheme::GetInstanceForNativeUi()
-              : ui::NativeThemeDarkAura::instance();
+              ? ui::NativeThemeDarkAura::instance()
+              : ui::NativeTheme::GetInstanceForNativeUi();
       return fallback_theme->GetSystemColor(color_id);
     }
 

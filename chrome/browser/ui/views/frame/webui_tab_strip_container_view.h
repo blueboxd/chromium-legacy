@@ -62,6 +62,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // through to its target.
   bool EventShouldPropagate(const ui::Event& event);
 
+  // Passed to the AutoCloser to handle closing.
+  void CloseForEventOutsideTabStrip();
+
   // TabStripUI::Embedder:
   const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;
@@ -85,6 +88,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // views::ViewObserver:
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
+
+  // views::AccessiblePaneView
+  bool SetPaneFocusAndFocusDefault() override;
 
   Browser* const browser_;
   views::WebView* const web_view_;

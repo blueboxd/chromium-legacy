@@ -2617,7 +2617,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4839303808932127586">S&amp;para video som...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 till}other{# till}}</translation>
 <translation id="4842976633412754305">Sidan försöker att läsa in skript från overifierade källor.</translation>
-<translation id="4843488774506045600">Inloggning tillhandahålls av <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Övriga tangentbord</translation>
 <translation id="4846680374085650406">Du följer administratörens rekommendation för den här inställningen.</translation>
 <translation id="4848518990323155912">Aktivera SIM-kortslåsning (kräv pinkod för att använda mobildata)</translation>
@@ -3815,7 +3814,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6607831829715835317">Fler verkt&amp;yg</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6615455863669487791">Visa mig</translation>
-<translation id="6617100836880592260">Genomsökningshastighet: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Behåll ändå</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Webbplatsen kan spåra din plats</translation>

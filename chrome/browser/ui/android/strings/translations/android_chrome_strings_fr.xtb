@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Adresses</translation>
 <translation id="290376772003165898">La page n'est pas en <ph name="LANGUAGE" /> ?</translation>
 <translation id="2904414404539560095">La liste des appareils avec lesquels vous pouvez partager un onglet est ouverte à hauteur maximale.</translation>
+<translation id="2905036901251765993">Pour partager avec des personnes à proximité, laissez-les scanner ce code QR</translation>
 <translation id="2909615210195135082">Plate-forme de notifications Google</translation>
 <translation id="2910701580606108292">Demander avant d'autoriser les sites à lire les contenus protégés</translation>
 <translation id="2913331724188855103">Autoriser les sites à enregistrer et à lire les données des cookies (recommandé)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Afficher le mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
+<translation id="3682730288090679318">Empêcher automatiquement les sites de demander à afficher des notifications. Si un site demande à afficher des notifications, une barre d'informations s'affiche au bas de la page.</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
 <translation id="3716182511346448902">Cette page utilise trop de mémoire, Chrome a donc interrompu son chargement.</translation>
@@ -542,6 +544,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvement (recommandé)</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5087580092889165836">Ajouter une carte</translation>
+<translation id="5096950519211870196">Les sites ne pourront pas afficher de notifications. Si un site demande à afficher des notifications, une barre d'informations s'affiche au bas de la page.</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="510275257476243843">1 heure restante</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
@@ -589,6 +592,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5414836363063783498">Validation en cours…</translation>
 <translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>
 <translation id="5424588387303617268">Espace disponible : <ph name="GIGABYTES" /> Go</translation>
+<translation id="5427766642345310212">OK. Par défaut, les nouvelles demandes de notification s'afficheront ici.</translation>
 <translation id="543338862236136125">Modifier le mot de passe</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="543509235395288790">Téléchargement de <ph name="COUNT" /> fichiers (<ph name="MEGABYTES" />)…</translation>
@@ -687,6 +691,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6111020039983847643">de données utilisées</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
+<translation id="6113400363611269907">Afficher les invites en mode silencieux</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
 <translation id="6140912465461743537">Pays/Région</translation>
 <translation id="614940544461990577">Voici quelques conseils :</translation>
@@ -1019,6 +1024,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8514477925623180633">Exporter les mots de passe enregistrés dans Chrome</translation>
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
+<translation id="8516012719330875537">Éditeur d'image</translation>
 <translation id="851751545965956758">Interdire à tous les sites de se connecter à des appareils</translation>
 <translation id="8523928698583292556">Supprimer le mot de passe enregistré</translation>
 <translation id="854522910157234410">Ouvrir cette page</translation>

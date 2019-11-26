@@ -28,22 +28,22 @@ import java.util.Queue;
  * then returned as a {@link Result} to the {@link Consumer}.
  */
 public class FakeFeedRequestManager implements FeedRequestManager {
-    private final FakeThreadUtils fakeThreadUtils;
-    private final MainThreadRunner mainThreadRunner;
-    private final ProtocolAdapter protocolAdapter;
-    private final Queue<ResponseWithDelay> responses = new ArrayDeque<>();
-    private final TaskQueue taskQueue;
-    /*@Nullable*/ private StreamToken latestStreamToken;
+    private final FakeThreadUtils mFakeThreadUtils;
+    private final MainThreadRunner mMainThreadRunner;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final Queue<ResponseWithDelay> mResponses = new ArrayDeque<>();
+    private final TaskQueue mTaskQueue;
+    /*@Nullable*/ private StreamToken mLatestStreamToken;
     @RequestReason
-    private int latestRequestReason = RequestReason.UNKNOWN;
+    private int mLatestRequestReason = RequestReason.UNKNOWN;
 
     public FakeFeedRequestManager(FakeThreadUtils fakeThreadUtils,
             MainThreadRunner mainThreadRunner, ProtocolAdapter protocolAdapter,
             TaskQueue taskQueue) {
-        this.fakeThreadUtils = fakeThreadUtils;
-        this.mainThreadRunner = mainThreadRunner;
-        this.protocolAdapter = protocolAdapter;
-        this.taskQueue = taskQueue;
+        this.mFakeThreadUtils = fakeThreadUtils;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mTaskQueue = taskQueue;
     }
 
     // TODO: queue responses for action uploads
@@ -54,7 +54,7 @@ public class FakeFeedRequestManager implements FeedRequestManager {
 
     /** Adds a Response to the queue with a delay. */
     public FakeFeedRequestManager queueResponse(Response response, long delayMs) {
-        responses.add(new ResponseWithDelay(response, delayMs));
+        mResponses.add(new ResponseWithDelay(response, delayMs));
         return this;
     }
 
@@ -65,16 +65,16 @@ public class FakeFeedRequestManager implements FeedRequestManager {
 
     /** Adds an error to the queue with a delay. */
     public FakeFeedRequestManager queueError(long delayMs) {
-        responses.add(new ResponseWithDelay(delayMs));
+        mResponses.add(new ResponseWithDelay(delayMs));
         return this;
     }
 
     @Override
     public void loadMore(
             StreamToken streamToken, ConsistencyToken token, Consumer<Result<Model>> consumer) {
-        fakeThreadUtils.checkNotMainThread();
-        latestStreamToken = streamToken;
-        handleResponseWithDelay(responses.remove(), consumer);
+        mFakeThreadUtils.checkNotMainThread();
+        mLatestStreamToken = streamToken;
+        handleResponseWithDelay(mResponses.remove(), consumer);
     }
 
     @Override
@@ -85,18 +85,18 @@ public class FakeFeedRequestManager implements FeedRequestManager {
     @Override
     public void triggerRefresh(
             @RequestReason int reason, ConsistencyToken token, Consumer<Result<Model>> consumer) {
-        latestRequestReason = reason;
-        ResponseWithDelay responseWithDelay = responses.remove();
-        taskQueue.execute(Task.UNKNOWN, TaskType.HEAD_INVALIDATE,
+        mLatestRequestReason = reason;
+        ResponseWithDelay responseWithDelay = mResponses.remove();
+        mTaskQueue.execute(Task.UNKNOWN, TaskType.HEAD_INVALIDATE,
                 () -> { handleResponseWithDelay(responseWithDelay, consumer); });
     }
 
     private void handleResponseWithDelay(
             ResponseWithDelay responseWithDelay, Consumer<Result<Model>> consumer) {
-        if (responseWithDelay.delayMs > 0) {
-            mainThreadRunner.executeWithDelay("FakeFeedRequestManager#consumer", () -> {
+        if (responseWithDelay.mDelayMs > 0) {
+            mMainThreadRunner.executeWithDelay("FakeFeedRequestManager#consumer", () -> {
                 invokeConsumer(responseWithDelay, consumer);
-            }, responseWithDelay.delayMs);
+            }, responseWithDelay.mDelayMs);
         } else {
             invokeConsumer(responseWithDelay, consumer);
         }
@@ -104,19 +104,19 @@ public class FakeFeedRequestManager implements FeedRequestManager {
 
     private void invokeConsumer(
             ResponseWithDelay responseWithDelay, Consumer<Result<Model>> consumer) {
-        boolean policy = fakeThreadUtils.enforceMainThread(true);
-        if (responseWithDelay.isError) {
+        boolean policy = mFakeThreadUtils.enforceMainThread(true);
+        if (responseWithDelay.mIsError) {
             consumer.accept(Result.failure());
         } else {
-            consumer.accept(protocolAdapter.createModel(responseWithDelay.response));
+            consumer.accept(mProtocolAdapter.createModel(responseWithDelay.mResponse));
         }
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
     }
 
     /** Returns the latest {@link StreamToken} passed in to the {@link FeedRequestManager}. */
     /*@Nullable*/
     public StreamToken getLatestStreamToken() {
-        return latestStreamToken;
+        return mLatestStreamToken;
     }
 
     /**
@@ -125,24 +125,24 @@ public class FakeFeedRequestManager implements FeedRequestManager {
      */
     @RequestReason
     public int getLatestRequestReason() {
-        return latestRequestReason;
+        return mLatestRequestReason;
     }
 
     private static final class ResponseWithDelay {
-        private final Response response;
-        private final boolean isError;
-        private final long delayMs;
+        private final Response mResponse;
+        private final boolean mIsError;
+        private final long mDelayMs;
 
         private ResponseWithDelay(Response response, long delayMs) {
-            this.response = response;
-            this.delayMs = delayMs;
-            isError = false;
+            this.mResponse = response;
+            this.mDelayMs = delayMs;
+            mIsError = false;
         }
 
         private ResponseWithDelay(long delayMs) {
-            this.response = Response.getDefaultInstance();
-            this.delayMs = delayMs;
-            isError = true;
+            this.mResponse = Response.getDefaultInstance();
+            this.mDelayMs = delayMs;
+            mIsError = true;
         }
     }
 }

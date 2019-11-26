@@ -23,13 +23,13 @@ import java.util.List;
  * layouts as a unit. Release and recycling is handled by the ElementAdapterFactory.
  */
 class TemplateBinder {
-    private final KeyedRecyclerPool<ElementAdapter<? extends View, ?>> templateRecyclerPool;
-    private final ElementAdapterFactory adapterFactory;
+    private final KeyedRecyclerPool<ElementAdapter<? extends View, ?>> mTemplateRecyclerPool;
+    private final ElementAdapterFactory mAdapterFactory;
 
-    TemplateBinder(KeyedRecyclerPool<ElementAdapter<? extends View, ?>> templateRecyclerPool,
+    TemplateBinder(KeyedRecyclerPool<ElementAdapter<? extends View, ?>> mTemplateRecyclerPool,
             ElementAdapterFactory adapterFactory) {
-        this.templateRecyclerPool = templateRecyclerPool;
-        this.adapterFactory = adapterFactory;
+        this.mTemplateRecyclerPool = mTemplateRecyclerPool;
+        this.mAdapterFactory = adapterFactory;
     }
 
     /** Higher-performance method that creates and binds an adapter for a template all at once. */
@@ -42,11 +42,11 @@ class TemplateBinder {
                 frameContext.createTemplateContext(model.getTemplate(), model.getBindingContext());
 
         TemplateKey templateKey = makeTemplateKey(model, frameContext);
-        ElementAdapter<? extends View, ?> adapter = templateRecyclerPool.get(templateKey);
+        ElementAdapter<? extends View, ?> adapter = mTemplateRecyclerPool.get(templateKey);
 
         if (adapter == null) {
             // Create new adapter
-            adapter = adapterFactory.createAdapterForElement(
+            adapter = mAdapterFactory.createAdapterForElement(
                     model.getTemplate().getElement(), templateContext);
 
             adapter.setKey(templateKey);
@@ -60,7 +60,7 @@ class TemplateBinder {
     ElementAdapter<? extends View, ?> createTemplateAdapter(
             TemplateAdapterModel model, FrameContext frameContext) {
         TemplateKey templateKey = makeTemplateKey(model, frameContext);
-        ElementAdapter<? extends View, ?> adapter = templateRecyclerPool.get(templateKey);
+        ElementAdapter<? extends View, ?> adapter = mTemplateRecyclerPool.get(templateKey);
 
         if (adapter == null) {
             // Make new FrameContext here
@@ -68,7 +68,7 @@ class TemplateBinder {
                     model.getTemplate(), model.getBindingContext());
 
             // Create new adapter
-            adapter = adapterFactory.createAdapterForElement(
+            adapter = mAdapterFactory.createAdapterForElement(
                     model.getTemplate().getElement(), templateContext);
 
             adapter.setKey(templateKey);
@@ -116,19 +116,19 @@ class TemplateBinder {
 
     /** Wrap the Template proto object as the recycler key. */
     static class TemplateKey extends RecyclerKey {
-        private final Template template;
-        /*@Nullable*/ private final List<PietSharedState> pietSharedStates;
+        private final Template mTemplate;
+        /*@Nullable*/ private final List<PietSharedState> mPietSharedStates;
 
         // If the Template references Stylesheets that have MediaQueryConditions on them, they need
         // to be part of the key.
-        private final List<Stylesheet> mediaQueryBasedStylesheets;
+        private final List<Stylesheet> mMediaQueryBasedStylesheets;
 
         TemplateKey(Template template,
                 /*@Nullable*/ List<PietSharedState> pietSharedStates,
                 List<Stylesheet> mediaQueryBasedStylesheets) {
-            this.template = template;
-            this.pietSharedStates = pietSharedStates;
-            this.mediaQueryBasedStylesheets = mediaQueryBasedStylesheets;
+            this.mTemplate = template;
+            this.mPietSharedStates = pietSharedStates;
+            this.mMediaQueryBasedStylesheets = mediaQueryBasedStylesheets;
         }
 
         /** Equals checks the hashCode of the component fields to avoid expensive proto equals. */
@@ -145,62 +145,62 @@ class TemplateBinder {
             TemplateKey that = (TemplateKey) o;
 
             // Check that Templates are equal
-            if (!templateEquals(template, that.template)) {
+            if (!templateEquals(mTemplate, that.mTemplate)) {
                 return false;
             }
             // Check that PietSharedStates are equal or both null
-            if (that.pietSharedStates == null ^ this.pietSharedStates == null) {
+            if (that.mPietSharedStates == null ^ this.mPietSharedStates == null) {
                 return false;
             }
-            if (this.pietSharedStates != null && that.pietSharedStates != null
-                    && (this.pietSharedStates.size() != that.pietSharedStates.size()
-                            || this.pietSharedStates.hashCode()
-                                    != that.pietSharedStates.hashCode())) {
+            if (this.mPietSharedStates != null && that.mPietSharedStates != null
+                    && (this.mPietSharedStates.size() != that.mPietSharedStates.size()
+                            || this.mPietSharedStates.hashCode()
+                                    != that.mPietSharedStates.hashCode())) {
                 return false;
             }
             // Check that stylesheets are equal or both empty
-            if (that.mediaQueryBasedStylesheets.isEmpty()
-                    ^ this.mediaQueryBasedStylesheets.isEmpty()) {
+            if (that.mMediaQueryBasedStylesheets.isEmpty()
+                    ^ this.mMediaQueryBasedStylesheets.isEmpty()) {
                 return false;
             }
-            return this.mediaQueryBasedStylesheets == that.mediaQueryBasedStylesheets
-                    || this.mediaQueryBasedStylesheets.hashCode()
-                    == that.mediaQueryBasedStylesheets.hashCode();
+            return this.mMediaQueryBasedStylesheets == that.mMediaQueryBasedStylesheets
+                    || this.mMediaQueryBasedStylesheets.hashCode()
+                    == that.mMediaQueryBasedStylesheets.hashCode();
         }
 
         @Override
         public int hashCode() {
-            int result = template.hashCode();
-            result = 31 * result + (pietSharedStates != null ? pietSharedStates.hashCode() : 0);
+            int result = mTemplate.hashCode();
+            result = 31 * result + (mPietSharedStates != null ? mPietSharedStates.hashCode() : 0);
             result = 31 * result
-                    + (mediaQueryBasedStylesheets != null ? mediaQueryBasedStylesheets.hashCode()
-                                                          : 0);
+                    + (mMediaQueryBasedStylesheets != null ? mMediaQueryBasedStylesheets.hashCode()
+                                                           : 0);
             return result;
         }
     }
 
     static class TemplateAdapterModel {
-        private final Template template;
-        private final BindingContext bindingContext;
+        private final Template mTemplate;
+        private final BindingContext mBindingContext;
 
         TemplateAdapterModel(Template template, BindingContext bindingContext) {
-            this.template = template;
-            this.bindingContext = bindingContext;
+            this.mTemplate = template;
+            this.mBindingContext = bindingContext;
         }
 
         TemplateAdapterModel(
                 String templateId, FrameContext frameContext, BindingContext bindingContext) {
-            this.template = checkNotNull(
+            this.mTemplate = checkNotNull(
                     frameContext.getTemplate(templateId), "Template was not found: %s", templateId);
-            this.bindingContext = bindingContext;
+            this.mBindingContext = bindingContext;
         }
 
         public Template getTemplate() {
-            return template;
+            return mTemplate;
         }
 
         BindingContext getBindingContext() {
-            return bindingContext;
+            return mBindingContext;
         }
 
         @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
@@ -215,18 +215,18 @@ class TemplateBinder {
 
             TemplateAdapterModel that = (TemplateAdapterModel) o;
 
-            return templateEquals(template, that.template)
-                    && (bindingContext == that.bindingContext
-                            || (bindingContext.getBindingValuesCount()
-                                            == that.bindingContext.getBindingValuesCount()
-                                    && bindingContext.hashCode()
-                                            == that.bindingContext.hashCode()));
+            return templateEquals(mTemplate, that.mTemplate)
+                    && (mBindingContext == that.mBindingContext
+                            || (mBindingContext.getBindingValuesCount()
+                                            == that.mBindingContext.getBindingValuesCount()
+                                    && mBindingContext.hashCode()
+                                            == that.mBindingContext.hashCode()));
         }
 
         @Override
         public int hashCode() {
-            int result = template.hashCode();
-            result = 31 * result + bindingContext.hashCode();
+            int result = mTemplate.hashCode();
+            result = 31 * result + mBindingContext.hashCode();
             return result;
         }
     }

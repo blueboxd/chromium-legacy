@@ -1387,12 +1387,13 @@ static void BooleanOrNullAttributeAttributeSetter(
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "booleanOrNullAttribute");
 
+  bool is_null = IsUndefinedOrNull(v8_value);
+
   // Prepare the value to be set.
-  bool cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  bool cpp_value = is_null ? bool() : NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state);
   if (exception_state.HadException())
     return;
 
-  bool is_null = IsUndefinedOrNull(v8_value);
   impl->setBooleanOrNullAttribute(cpp_value, is_null);
 }
 
@@ -1451,12 +1452,13 @@ static void LongOrNullAttributeAttributeSetter(
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "longOrNullAttribute");
 
+  bool is_null = IsUndefinedOrNull(v8_value);
+
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value = is_null ? int32_t() : NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
   if (exception_state.HadException())
     return;
 
-  bool is_null = IsUndefinedOrNull(v8_value);
   impl->setLongOrNullAttribute(cpp_value, is_null);
 }
 

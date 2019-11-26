@@ -23,31 +23,31 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
  * FeedModelProvider}.
  */
 public final class FeedModelProviderFactory implements ModelProviderFactory {
-    private final FeedSessionManager feedSessionManager;
-    private final ThreadUtils threadUtils;
-    private final TimingUtils timingUtils;
-    private final TaskQueue taskQueue;
-    private final MainThreadRunner mainThreadRunner;
-    private final Configuration config;
-    private final BasicLoggingApi basicLoggingApi;
+    private final FeedSessionManager mFeedSessionManager;
+    private final ThreadUtils mThreadUtils;
+    private final TimingUtils mTimingUtils;
+    private final TaskQueue mTaskQueue;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Configuration mConfig;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     public FeedModelProviderFactory(FeedSessionManager feedSessionManager, ThreadUtils threadUtils,
             TimingUtils timingUtils, TaskQueue taskQueue, MainThreadRunner mainThreadRunner,
             Configuration config, BasicLoggingApi basicLoggingApi) {
-        this.feedSessionManager = feedSessionManager;
-        this.threadUtils = threadUtils;
-        this.timingUtils = timingUtils;
-        this.taskQueue = taskQueue;
-        this.mainThreadRunner = mainThreadRunner;
-        this.config = config;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mThreadUtils = threadUtils;
+        this.mTimingUtils = timingUtils;
+        this.mTaskQueue = taskQueue;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mConfig = config;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     @Override
     public ModelProvider create(String sessionId, UiContext uiContext) {
-        FeedModelProvider modelProvider = new FeedModelProvider(feedSessionManager, threadUtils,
-                timingUtils, taskQueue, mainThreadRunner, null, config, basicLoggingApi);
-        feedSessionManager.getExistingSession(sessionId, modelProvider, uiContext);
+        FeedModelProvider modelProvider = new FeedModelProvider(mFeedSessionManager, mThreadUtils,
+                mTimingUtils, mTaskQueue, mMainThreadRunner, null, mConfig, mBasicLoggingApi);
+        mFeedSessionManager.getExistingSession(sessionId, modelProvider, uiContext);
         return modelProvider;
     }
 
@@ -61,9 +61,10 @@ public final class FeedModelProviderFactory implements ModelProviderFactory {
     public ModelProvider createNew(
             /*@Nullable*/ ViewDepthProvider viewDepthProvider,
             /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
-        FeedModelProvider modelProvider = new FeedModelProvider(feedSessionManager, threadUtils,
-                timingUtils, taskQueue, mainThreadRunner, filterPredicate, config, basicLoggingApi);
-        feedSessionManager.getNewSession(
+        FeedModelProvider modelProvider =
+                new FeedModelProvider(mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
+                        mMainThreadRunner, filterPredicate, mConfig, mBasicLoggingApi);
+        mFeedSessionManager.getNewSession(
                 modelProvider, modelProvider.getViewDepthProvider(viewDepthProvider), uiContext);
         return modelProvider;
     }

@@ -28,8 +28,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
   using GetMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetMenuModel(GetMenuModelCallback callback) = 0;
-  virtual void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
-                         GetMenuModelCallback callback) = 0;
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;

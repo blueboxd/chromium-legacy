@@ -108,9 +108,8 @@ bool OpenXrRenderLoop::StartRuntime() {
   openxr_->RegisterInteractionProfileChangeCallback(
       base::BindRepeating(&OpenXRInputHelper::OnInteractionProfileChanged,
                           input_helper_->GetWeakPtr()));
-
-  DCHECK(openxr_);
-  DCHECK(input_helper_);
+  openxr_->RegisterVisibilityChangeCallback(base::BindRepeating(
+      &OpenXrRenderLoop::SetVisibilityState, weak_ptr_factory_.GetWeakPtr()));
   InitializeDisplayInfo();
 
   return true;

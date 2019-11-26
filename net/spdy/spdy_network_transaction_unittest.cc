@@ -4699,7 +4699,7 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   SequencedSocketData data(reads, writes);
   request_.extra_headers.SetHeader("User-Agent", "Chrome");

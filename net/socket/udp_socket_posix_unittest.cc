@@ -218,7 +218,7 @@ class UDPSocketPosixTest : public TestWithTaskEnvironment {
         .WillOnce(Return(kNumMsgs));
   }
 
-  TestNetLog client_log_;
+  RecordingTestNetLog client_log_;
   MockUDPSocketPosix socket_;
   DatagramBuffers buffers_;
   bool callback_fired_;

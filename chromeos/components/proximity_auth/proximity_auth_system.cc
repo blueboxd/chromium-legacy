@@ -83,8 +83,7 @@ ProximityAuthSystem::GetRemoteDevicesForUser(
   return remote_devices_map_.at(account_id);
 }
 
-void ProximityAuthSystem::OnAuthAttempted(const AccountId& /* account_id */) {
-  // TODO(tengs): There is no reason to pass the |account_id| argument anymore.
+void ProximityAuthSystem::OnAuthAttempted() {
   unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
 }
 

@@ -1106,29 +1106,6 @@ TEST_F(MessagePopupCollectionTest, PopupWidgetClosedOutsideDuringFadeOut) {
   EXPECT_FALSE(IsAnimating());
 }
 
-TEST_F(MessagePopupCollectionTest, HighPriorityNotificationShownAgain) {
-  // It only applies to a platform with MessageCenterView i.e. Chrome OS.
-  MessageCenter::Get()->SetHasMessageCenterView(true);
-
-  // Create a notification with system priority.
-  auto notification = CreateNotification("id");
-  notification->SetSystemPriority();
-  MessageCenter::Get()->AddNotification(std::move(notification));
-  AnimateUntilIdle();
-  EXPECT_EQ(1u, GetPopupCounts());
-
-  // The notification should be hidden when MessageCenterView is visible.
-  MessageCenter::Get()->SetVisibility(Visibility::VISIBILITY_MESSAGE_CENTER);
-  EXPECT_FALSE(IsAnimating());
-  EXPECT_EQ(0u, GetPopupCounts());
-
-  // The notification should be shown again when MessageCenterView is hidden.
-  MessageCenter::Get()->SetVisibility(Visibility::VISIBILITY_TRANSIENT);
-  EXPECT_TRUE(IsAnimating());
-  AnimateUntilIdle();
-  EXPECT_EQ(1u, GetPopupCounts());
-}
-
 // Notification removing may occur while the animation triggered by the previous
 // operation is running. As result, notification is removed from the message
 // center but its popup is still kept. At this moment, a new notification with

@@ -47,11 +47,6 @@ NOINLINE void MaybeDumpWithoutCrashing(
   // against concurrent quota overruns on multiple threads, but that's fine.
   have_crashed = true;
 
-  // This is happening because the user of the interface implicated on the crash
-  // stack has queued up an unreasonable number of messages, namely
-  // |quota_used|.
-  base::debug::DumpWithoutCrashing();
-
   size_t local_quota_used = total_quota_used;
   bool had_message_pipe = false;
   if (message_pipe_quota_used.has_value()) {
@@ -62,6 +57,11 @@ NOINLINE void MaybeDumpWithoutCrashing(
   base::debug::Alias(&total_quota_used);
   base::debug::Alias(&local_quota_used);
   base::debug::Alias(&had_message_pipe);
+
+  // This is happening because the user of the interface implicated on the crash
+  // stack has queued up an unreasonable number of messages, namely
+  // |quota_used|.
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace

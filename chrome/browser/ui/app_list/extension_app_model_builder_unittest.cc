@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
-
 #include <stddef.h>
 
 #include <memory>
@@ -14,11 +12,14 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
@@ -71,6 +72,23 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   return app;
 }
 
+// For testing purposes, we want to pretend there are only Extension apps on the
+// system. This method removes the others.
+void RemoveNonExtensionApps(Profile* profile,
+                            FakeAppListModelUpdater* model_updater) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->FlushMojoCallsForTesting();
+  proxy->AppRegistryCache().ForEachApp(
+      [&model_updater](const apps::AppUpdate& update) {
+        if (update.AppType() != apps::mojom::AppType::kExtension &&
+            update.AppType() != apps::mojom::AppType::kWeb) {
+          model_updater->RemoveItem(update.AppId());
+        }
+      });
+}
+
 const size_t kDefaultAppCount = 3u;
 
 }  // namespace
@@ -99,8 +117,9 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
 
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
     controller_ = std::make_unique<test::TestAppListControllerDelegate>();
-    builder_ = std::make_unique<ExtensionAppModelBuilder>(controller_.get());
+    builder_ = std::make_unique<AppServiceAppModelBuilder>(controller_.get());
     builder_->Initialize(nullptr, profile_.get(), model_updater_.get());
+    RemoveNonExtensionApps(profile_.get(), model_updater_.get());
   }
 
   void ResetBuilder() {
@@ -109,9 +128,27 @@ class ExtensionAppModelBuilderTest : public AppListTestBase {
     model_updater_.reset();
   }
 
+  // Flush mojo calls to allow AppService async callbacks to run.
+  void FlushMojoCallsForAppService() {
+    apps::AppServiceProxy* app_service_proxy_ =
+        apps::AppServiceProxyFactory::GetForProfile(profile_.get());
+    DCHECK(app_service_proxy_);
+    app_service_proxy_->FlushMojoCallsForTesting();
+  }
+
+  // Reinitialize proxy so that ExtensionApps can reinitialize to add the "web
+  // store" app and "enterprise web store" app.
+  void AppServiceProxyReInitializeForTesting() {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile_.get());
+    DCHECK(proxy);
+    proxy->ReInitializeForTesting(profile_.get());
+    FlushMojoCallsForAppService();
+  }
+
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
-  std::unique_ptr<ExtensionAppModelBuilder> builder_;
+  std::unique_ptr<AppServiceAppModelBuilder> builder_;
   std::set<std::string> default_apps_;
 
   base::ScopedTempDir second_profile_temp_dir_;
@@ -143,30 +180,33 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
               std::string(extension_misc::kEnterpriseWebStoreAppId));
   service_->AddExtension(enterprise_store.get());
 
+  AppServiceProxyReInitializeForTesting();
+
   // Web stores should be present in the model.
   FakeAppListModelUpdater model_updater1;
-  ExtensionAppModelBuilder builder1(controller_.get());
+  AppServiceAppModelBuilder builder1(controller_.get());
   builder1.Initialize(nullptr, profile_.get(), &model_updater1);
   EXPECT_TRUE(model_updater1.FindItem(store->id()));
   EXPECT_TRUE(model_updater1.FindItem(enterprise_store->id()));
 
   // Activate the HideWebStoreIcon policy.
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, true);
-
+  FlushMojoCallsForAppService();
   // Now the web stores should not be present anymore.
   EXPECT_FALSE(model_updater1.FindItem(store->id()));
   EXPECT_FALSE(model_updater1.FindItem(enterprise_store->id()));
 
   // Build a new model; web stores should NOT be present.
   FakeAppListModelUpdater model_updater2;
-  ExtensionAppModelBuilder builder2(controller_.get());
+  AppServiceAppModelBuilder builder2(controller_.get());
   builder2.Initialize(nullptr, profile_.get(), &model_updater2);
+  FlushMojoCallsForAppService();
   EXPECT_FALSE(model_updater2.FindItem(store->id()));
   EXPECT_FALSE(model_updater2.FindItem(enterprise_store->id()));
 
   // Deactivate the HideWebStoreIcon policy again.
   profile_->GetPrefs()->SetBoolean(prefs::kHideWebStoreIcon, false);
-
+  FlushMojoCallsForAppService();
   // Now the web stores should have appeared.
   EXPECT_TRUE(model_updater2.FindItem(store->id()));
   EXPECT_TRUE(model_updater2.FindItem(enterprise_store->id()));
@@ -175,9 +215,11 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
 TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
   service_->DisableExtension(kHostedAppId,
                              extensions::disable_reason::DISABLE_USER_ACTION);
+  FlushMojoCallsForAppService();
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   service_->EnableExtension(kHostedAppId);
+  FlushMojoCallsForAppService();
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
 
@@ -185,6 +227,7 @@ TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                NULL);
+  FlushMojoCallsForAppService();
   EXPECT_EQ(std::set<std::string>({"Packaged App 1", "Hosted App"}),
             GetModelContent(model_updater_.get()));
 
@@ -200,6 +243,7 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
                                NULL);
+  FlushMojoCallsForAppService();
   EXPECT_EQ(std::set<std::string>({"Packaged App 1", "Hosted App"}),
             GetModelContent(model_updater_.get()));
 
@@ -215,6 +259,7 @@ TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
   extensions::InstallObserver::ExtensionInstallParams params(
       kPackagedApp1Id, "", gfx::ImageSkia(), true, true);
   tracker->OnBeginExtensionInstall(params);
+  FlushMojoCallsForAppService();
 
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 }
@@ -225,6 +270,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
   syncer::StringOrdinal package_app_page =
       sorting->GetPageOrdinal(kPackagedApp1Id);
   sorting->SetPageOrdinal(kHostedAppId, package_app_page.CreateBefore());
+  FlushMojoCallsForAppService();
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
@@ -236,6 +282,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
   sorting->SetPageOrdinal(kHostedAppId, package_app_page);
   sorting->SetAppLaunchOrdinal(kHostedAppId,
                                app1_ordinal.CreateBetween(app2_ordinal));
+  FlushMojoCallsForAppService();
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
@@ -247,16 +294,19 @@ TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
                           sorting->GetPageOrdinal(kPackagedApp1Id));
 
   sorting->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
+  FlushMojoCallsForAppService();
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
+  FlushMojoCallsForAppService();
   // Old behavior: This would be restored to the default order.
   // New behavior: Sorting order still doesn't change.
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
 
   sorting->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
+  FlushMojoCallsForAppService();
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
   EXPECT_EQ(default_apps_, GetModelContent(model_updater_.get()));
@@ -301,6 +351,8 @@ TEST_F(ExtensionAppModelBuilderTest, BookmarkApp) {
   EXPECT_TRUE(err.empty());
 
   service_->AddExtension(bookmark_app.get());
+  AppServiceProxyReInitializeForTesting();
+  RemoveNonExtensionApps(profile_.get(), model_updater_.get());
   EXPECT_EQ(kDefaultAppCount + 1, model_updater_->ItemCount());
   const std::set<std::string> result_set =
       GetModelContent(model_updater_.get());

@@ -15,29 +15,29 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 public final class NetworkClientWrapper implements NetworkClient {
     private static final String TAG = "NetworkClientWrapper";
 
-    private final NetworkClient directNetworkClient;
-    private final ThreadUtils threadUtils;
-    private final MainThreadRunner mainThreadRunner;
+    private final NetworkClient mDirectNetworkClient;
+    private final ThreadUtils mThreadUtils;
+    private final MainThreadRunner mMainThreadRunner;
 
     public NetworkClientWrapper(NetworkClient directNetworkClient, ThreadUtils threadUtils,
             MainThreadRunner mainThreadRunner) {
-        this.directNetworkClient = directNetworkClient;
-        this.threadUtils = threadUtils;
-        this.mainThreadRunner = mainThreadRunner;
+        this.mDirectNetworkClient = directNetworkClient;
+        this.mThreadUtils = threadUtils;
+        this.mMainThreadRunner = mainThreadRunner;
     }
 
     @Override
     public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
-        if (threadUtils.isMainThread()) {
-            directNetworkClient.send(request, responseConsumer);
+        if (mThreadUtils.isMainThread()) {
+            mDirectNetworkClient.send(request, responseConsumer);
             return;
         }
-        mainThreadRunner.execute(
-                TAG + " send", () -> directNetworkClient.send(request, responseConsumer));
+        mMainThreadRunner.execute(
+                TAG + " send", () -> mDirectNetworkClient.send(request, responseConsumer));
     }
 
     @Override
     public void close() throws Exception {
-        directNetworkClient.close();
+        mDirectNetworkClient.close();
     }
 }

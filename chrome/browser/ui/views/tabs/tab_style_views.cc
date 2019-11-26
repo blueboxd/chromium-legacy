@@ -327,8 +327,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
       } else {
         path.lineTo(tab_left - bottom_radius, tab_bottom);
         path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                   SkPath::kCCW_Direction, tab_left,
-                   tab_bottom - bottom_radius);
+                   SkPathDirection::kCCW, tab_left, tab_bottom - bottom_radius);
       }
     }
 
@@ -344,7 +343,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
       // ┌─╯         ╰─┐
       path.lineTo(tab_left, tab_top + top_radius);
       path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCW_Direction, tab_left + top_radius, tab_top);
+                 SkPathDirection::kCW, tab_left + top_radius, tab_top);
     }
 
     // Draw the top crossbar and top-right curve, if present.
@@ -359,7 +358,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
       // ┌─╯         ╰─┐
       path.lineTo(tab_right - top_radius, tab_top);
       path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCW_Direction, tab_right, tab_top + top_radius);
+                 SkPathDirection::kCW, tab_right, tab_top + top_radius);
     }
 
     if (tab_right != right) {
@@ -372,7 +371,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
       } else {
         path.lineTo(tab_right, tab_bottom - bottom_radius);
         path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                   SkPath::kCCW_Direction, tab_right + bottom_radius,
+                   SkPathDirection::kCCW, tab_right + bottom_radius,
                    tab_bottom);
       }
       if (tab_bottom != extended_bottom)

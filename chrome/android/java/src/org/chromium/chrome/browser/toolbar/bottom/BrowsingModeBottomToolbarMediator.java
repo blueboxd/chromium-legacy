@@ -66,6 +66,8 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
             Tracker tracker, Runnable completeRunnable) {
         if (!tracker.shouldTriggerHelpUI(feature)) return;
+        int innerBackgroundColor =
+                ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_primary_color);
         int baseBubbleColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
 
@@ -94,8 +96,8 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
         FeatureHighlightProvider.getInstance().buildForView(activity, anchor, titleId,
                 FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteTitle1,
                 descId, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.TextAppearance_WhiteBody, finalOuterColor, finalScrimColor,
-                DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
+                R.style.TextAppearance_WhiteBody, innerBackgroundColor, finalOuterColor,
+                finalScrimColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
 
         anchor.postDelayed(() -> tracker.dismissed(feature), DUET_IPH_BUBBLE_SHOW_DURATION_MS);
     }

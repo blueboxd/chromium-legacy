@@ -3276,7 +3276,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 30
+          "shards": 40
         },
         "test": "browser_tests"
       },
@@ -3477,7 +3477,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 6
+          "shards": 12
         },
         "test": "content_browsertests"
       },
@@ -4403,7 +4403,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "sync_integration_tests"
       },

@@ -19,8 +19,9 @@
       "transform": 1
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [150, 150],
+      "name": "Scroll corner of LayoutView #document",
+      "position": [135, 135],
+      "bounds": [15, 15],
       "transform": 1
     },
     {

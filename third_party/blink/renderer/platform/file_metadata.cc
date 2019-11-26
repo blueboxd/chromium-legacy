@@ -46,6 +46,17 @@
 
 namespace blink {
 
+namespace {
+
+mojo::Remote<mojom::blink::FileUtilitiesHost>& GetFileUtilitiesHost() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<mojo::Remote<mojom::blink::FileUtilitiesHost>>,
+      thread_specific_host, ());
+  return *thread_specific_host;
+}
+
+}  // namespace
+
 // static
 FileMetadata FileMetadata::From(const base::File::Info& file_info) {
   FileMetadata file_metadata;
@@ -76,11 +87,17 @@ bool GetFileModificationTime(const String& path,
   return true;
 }
 
+void RebindFileUtilitiesForTesting() {
+  auto& host = GetFileUtilitiesHost();
+  if (host) {
+    host.Unbind().reset();
+  }
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      host.BindNewPipeAndPassReceiver());
+}
+
 bool GetFileMetadata(const String& path, FileMetadata& metadata) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<mojo::Remote<mojom::blink::FileUtilitiesHost>>,
-      thread_specific_host, ());
-  auto& host = *thread_specific_host;
+  auto& host = GetFileUtilitiesHost();
   if (!host) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         host.BindNewPipeAndPassReceiver());

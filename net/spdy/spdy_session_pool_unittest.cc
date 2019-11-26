@@ -708,7 +708,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
       http_session_.get(), test_hosts[0].key, NetLogWithSource());
 
   // The second host should pool to the existing connection.
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(TryCreateAliasedSpdySession(spdy_session_pool_, test_hosts[1].key,
                                           test_hosts[1].iplist));
@@ -1171,7 +1171,7 @@ TEST_F(SpdySessionPoolTest, IPConnectionPoolingWithWebSockets) {
 
   // SpdySession does not support Websocket before SETTINGS frame is read.
   EXPECT_FALSE(session->support_websocket());
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
   // TryCreateAliasedSpdySession should not find |session| for either
   // SpdySessionKeys if |is_websocket| argument is set.
   EXPECT_FALSE(TryCreateAliasedSpdySession(

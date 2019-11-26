@@ -74,7 +74,7 @@ public class DefaultSearchEngineDialogHelperTest {
 
         @Override
         public boolean equals(Object other) {
-            if (!(other instanceof TemplateUrl)) return false;
+            if (!(other instanceof TestTemplateUrl)) return false;
             TestTemplateUrl otherTemplateUrl = (TestTemplateUrl) other;
             return TextUtils.equals(mKeyword, otherTemplateUrl.mKeyword)
                     && TextUtils.equals(mShortName, otherTemplateUrl.mShortName);

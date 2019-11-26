@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
+#include "components/web_modal/web_modal_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,7 +21,7 @@ namespace web_modal {
 class WebContentsModalDialogManagerDelegate;
 
 // Per-WebContents class to manage WebContents-modal dialogs.
-class WebContentsModalDialogManager
+class WEB_MODAL_EXPORT WebContentsModalDialogManager
     : public SingleWebContentsDialogManagerDelegate,
       public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsModalDialogManager> {

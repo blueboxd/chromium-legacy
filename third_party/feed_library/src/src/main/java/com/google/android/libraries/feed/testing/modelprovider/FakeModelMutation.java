@@ -13,33 +13,33 @@ import java.util.List;
 
 /** Fake ModelMutation for tests. */
 public final class FakeModelMutation implements ModelMutation {
-    public final List<StreamStructure> addedChildren = new ArrayList<>();
-    public final List<StreamStructure> removedChildren = new ArrayList<>();
-    public final List<StreamStructure> updateChildren = new ArrayList<>();
-    public MutationContext mutationContext;
-    boolean commitCalled;
+    public final List<StreamStructure> mAddedChildren = new ArrayList<>();
+    public final List<StreamStructure> mRemovedChildren = new ArrayList<>();
+    public final List<StreamStructure> mUpdateChildren = new ArrayList<>();
+    public MutationContext mMutationContext;
+    boolean mCommitCalled;
 
     @Override
     public ModelMutation addChild(StreamStructure streamStructure) {
-        addedChildren.add(streamStructure);
+        mAddedChildren.add(streamStructure);
         return this;
     }
 
     @Override
     public ModelMutation removeChild(StreamStructure streamStructure) {
-        removedChildren.add(streamStructure);
+        mRemovedChildren.add(streamStructure);
         return this;
     }
 
     @Override
     public ModelMutation updateChild(StreamStructure streamStructure) {
-        updateChildren.add(streamStructure);
+        mUpdateChildren.add(streamStructure);
         return this;
     }
 
     @Override
     public ModelMutation setMutationContext(MutationContext mutationContext) {
-        this.mutationContext = mutationContext;
+        this.mMutationContext = mutationContext;
         return this;
     }
 
@@ -55,20 +55,20 @@ public final class FakeModelMutation implements ModelMutation {
 
     @Override
     public void commit() {
-        commitCalled = true;
+        mCommitCalled = true;
     }
 
     /** Clears the commit. */
     public FakeModelMutation clearCommit() {
-        commitCalled = false;
-        addedChildren.clear();
-        removedChildren.clear();
-        updateChildren.clear();
+        mCommitCalled = false;
+        mAddedChildren.clear();
+        mRemovedChildren.clear();
+        mUpdateChildren.clear();
         return this;
     }
 
     /** Returns whether this mutation was committed. */
     public boolean isCommitted() {
-        return commitCalled;
+        return mCommitCalled;
     }
 }

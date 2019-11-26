@@ -25,18 +25,18 @@ class AdapterParameters {
     private static final int DEFAULT_TEMPLATE_POOL_SIZE = 100;
     private static final int DEFAULT_NUM_TEMPLATE_POOLS = 30;
 
-    final Context context;
-    final Supplier</*@Nullable*/ ViewGroup> parentViewSupplier;
-    final HostProviders hostProviders;
-    final ParameterizedTextEvaluator templatedStringEvaluator;
-    final ElementAdapterFactory elementAdapterFactory;
-    final TemplateBinder templateBinder;
-    final StyleProvider defaultStyleProvider;
-    final Clock clock;
-    final PietStylesHelperFactory pietStylesHelperFactory;
-    final RoundedCornerMaskCache roundedCornerMaskCache;
-    final boolean allowLegacyRoundedCornerImpl;
-    final boolean allowOutlineRoundedCornerImpl;
+    final Context mContext;
+    final Supplier</*@Nullable*/ ViewGroup> mParentViewSupplier;
+    final HostProviders mHostProviders;
+    final ParameterizedTextEvaluator mTemplatedStringEvaluator;
+    final ElementAdapterFactory mElementAdapterFactory;
+    final TemplateBinder mTemplateBinder;
+    final StyleProvider mDefaultStyleProvider;
+    final Clock mClock;
+    final PietStylesHelperFactory mPietStylesHelperFactory;
+    final RoundedCornerMaskCache mRoundedCornerMaskCache;
+    final boolean mAllowLegacyRoundedCornerImpl;
+    final boolean mAllowOutlineRoundedCornerImpl;
 
     // Doesn't like passing "this" to the new ElementAdapterFactory; however, nothing in the
     // factory's construction will reference the elementAdapterFactory member of this, so should be
@@ -45,25 +45,25 @@ class AdapterParameters {
     public AdapterParameters(Context context, Supplier</*@Nullable*/ ViewGroup> parentViewSupplier,
             HostProviders hostProviders, Clock clock, boolean allowLegacyRoundedCornerImpl,
             boolean allowOutlineRoundedCornerImpl) {
-        this.context = context;
-        this.parentViewSupplier = parentViewSupplier;
-        this.hostProviders = hostProviders;
-        this.clock = clock;
+        this.mContext = context;
+        this.mParentViewSupplier = parentViewSupplier;
+        this.mHostProviders = hostProviders;
+        this.mClock = clock;
 
-        templatedStringEvaluator = new ParameterizedTextEvaluator(clock);
+        mTemplatedStringEvaluator = new ParameterizedTextEvaluator(clock);
 
         KeyedRecyclerPool<ElementAdapter<? extends View, ?>> templateRecyclerPool =
                 new KeyedRecyclerPool<>(DEFAULT_NUM_TEMPLATE_POOLS, DEFAULT_TEMPLATE_POOL_SIZE);
-        elementAdapterFactory = new ElementAdapterFactory(context, this, templateRecyclerPool);
-        templateBinder = new TemplateBinder(templateRecyclerPool, elementAdapterFactory);
+        mElementAdapterFactory = new ElementAdapterFactory(context, this, templateRecyclerPool);
+        mTemplateBinder = new TemplateBinder(templateRecyclerPool, mElementAdapterFactory);
 
-        this.defaultStyleProvider = new StyleProvider(hostProviders.getAssetProvider());
+        this.mDefaultStyleProvider = new StyleProvider(hostProviders.getAssetProvider());
 
-        this.pietStylesHelperFactory = new PietStylesHelperFactory();
-        this.roundedCornerMaskCache = new RoundedCornerMaskCache();
+        this.mPietStylesHelperFactory = new PietStylesHelperFactory();
+        this.mRoundedCornerMaskCache = new RoundedCornerMaskCache();
 
-        this.allowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
-        this.allowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
+        this.mAllowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
+        this.mAllowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
     }
 
     /** Testing-only constructor for mocking the internally-constructed objects. */
@@ -84,18 +84,18 @@ class AdapterParameters {
             ElementAdapterFactory elementAdapterFactory, TemplateBinder templateBinder, Clock clock,
             PietStylesHelperFactory pietStylesHelperFactory, RoundedCornerMaskCache maskCache,
             boolean allowLegacyRoundedCornerImpl, boolean allowOutlineRoundedCornerImpl) {
-        this.context = context;
-        this.parentViewSupplier = parentViewSupplier;
-        this.hostProviders = hostProviders;
+        this.mContext = context;
+        this.mParentViewSupplier = parentViewSupplier;
+        this.mHostProviders = hostProviders;
 
-        this.templatedStringEvaluator = templatedStringEvaluator;
-        this.elementAdapterFactory = elementAdapterFactory;
-        this.templateBinder = templateBinder;
-        this.defaultStyleProvider = new StyleProvider(hostProviders.getAssetProvider());
-        this.clock = clock;
-        this.pietStylesHelperFactory = pietStylesHelperFactory;
-        this.roundedCornerMaskCache = maskCache;
-        this.allowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
-        this.allowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
+        this.mTemplatedStringEvaluator = templatedStringEvaluator;
+        this.mElementAdapterFactory = elementAdapterFactory;
+        this.mTemplateBinder = templateBinder;
+        this.mDefaultStyleProvider = new StyleProvider(hostProviders.getAssetProvider());
+        this.mClock = clock;
+        this.mPietStylesHelperFactory = pietStylesHelperFactory;
+        this.mRoundedCornerMaskCache = maskCache;
+        this.mAllowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
+        this.mAllowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
     }
 }

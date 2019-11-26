@@ -12,56 +12,56 @@ import java.util.Set;
 
 /** Map wrapper that interns the values on put operations, using the given interner. */
 public class InternedMap<K, V> implements Map<K, V> {
-    private final Map<K, V> delegate;
-    private final Interner<V> interner;
+    private final Map<K, V> mDelegate;
+    private final Interner<V> mInterner;
 
     public InternedMap(Map<K, V> delegate, Interner<V> interner) {
-        this.delegate = Validators.checkNotNull(delegate);
-        this.interner = Validators.checkNotNull(interner);
+        this.mDelegate = Validators.checkNotNull(delegate);
+        this.mInterner = Validators.checkNotNull(interner);
     }
 
     @Override
     public int size() {
-        synchronized (delegate) {
-            return delegate.size();
+        synchronized (mDelegate) {
+            return mDelegate.size();
         }
     }
 
     @Override
     public boolean isEmpty() {
-        return delegate.isEmpty();
+        return mDelegate.isEmpty();
     }
 
     @Override
     public boolean containsKey(/*@Nullable*/ Object key) {
-        return delegate.containsKey(key);
+        return mDelegate.containsKey(key);
     }
 
     @Override
     public boolean containsValue(/*@Nullable*/ Object value) {
-        return delegate.containsValue(value);
+        return mDelegate.containsValue(value);
     }
 
     @Override
     /*@Nullable*/
     public V get(/*@Nullable*/ Object key) {
-        synchronized (delegate) {
-            return delegate.get(key);
+        synchronized (mDelegate) {
+            return mDelegate.get(key);
         }
     }
 
     @Override
     /*@Nullable*/
     public V put(K key, V value) {
-        synchronized (delegate) {
-            return delegate.put(key, interner.intern(value));
+        synchronized (mDelegate) {
+            return mDelegate.put(key, mInterner.intern(value));
         }
     }
 
     @Override
     /*@Nullable*/
     public V remove(/*@Nullable*/ Object key) {
-        return delegate.remove(key);
+        return mDelegate.remove(key);
     }
 
     @Override
@@ -75,24 +75,24 @@ public class InternedMap<K, V> implements Map<K, V> {
 
     @Override
     public void clear() {
-        synchronized (delegate) {
-            delegate.clear();
-            interner.clear();
+        synchronized (mDelegate) {
+            mDelegate.clear();
+            mInterner.clear();
         }
     }
 
     @Override
     public Set<K> keySet() {
-        return delegate.keySet();
+        return mDelegate.keySet();
     }
 
     @Override
     public Collection<V> values() {
-        return delegate.values();
+        return mDelegate.values();
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return delegate.entrySet();
+        return mDelegate.entrySet();
     }
 }

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.homepage;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
@@ -82,11 +80,16 @@ public class HomepagePolicyManager implements PrefObserver {
     }
 
     private void refresh() {
-        String homepage = PrefServiceBridge.getInstance().getString(Pref.HOME_PAGE);
-        assert homepage != null;
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        mIsHomepageLocationPolicyEnabled = prefServiceBridge.isManagedPreference(Pref.HOME_PAGE);
 
-        mIsHomepageLocationPolicyEnabled = !TextUtils.isEmpty(homepage);
-        mHomepage = homepage;
+        if (!mIsHomepageLocationPolicyEnabled) {
+            mHomepage = "";
+            return;
+        }
+
+        mHomepage = prefServiceBridge.getString(Pref.HOME_PAGE);
+        assert mHomepage != null;
     }
 
     @VisibleForTesting

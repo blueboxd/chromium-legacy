@@ -78,7 +78,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
     }
     std::set<URLRequestContext*> contexts;
     contexts.insert(&context);
-    TestNetLog test_net_log;
+    RecordingTestNetLog test_net_log;
     CreateNetLogEntriesForActiveObjects(contexts, test_net_log.GetObserver());
     auto entry_list = test_net_log.GetEntries();
     ASSERT_EQ(num_requests, entry_list.size());
@@ -109,7 +109,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
           contexts[i]->CreateRequest(GURL("about:hats"), DEFAULT_PRIORITY,
                                      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     }
-    TestNetLog test_net_log;
+    RecordingTestNetLog test_net_log;
     CreateNetLogEntriesForActiveObjects(context_set,
                                         test_net_log.GetObserver());
     auto entry_list = test_net_log.GetEntries();

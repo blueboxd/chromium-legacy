@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Режим за общ преглед</translation>
 <translation id="4382340674111381977">Назад към предишната страница</translation>
+<translation id="4458670250301149821">Преместване на икона на приложение във или извън папка в решетката с приложения</translation>
 <translation id="4472417192667361414">Настройки за системата и екрана</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, след което <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> или <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Преглед на помощта за клавишните комбинации</translation>
 <translation id="4628718545549558538">Отваряне на лентата на състоянието (където се показва снимката на профила ви)</translation>
 <translation id="4642092649622328492">Създаване на частична екранна снимка</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Изтриване на следващата буква (изтриване напред)</translation>
 <translation id="7500368597227394048">тире</translation>
 <translation id="7611271430932669992">Преместване на фокуса към изскачащите и диалоговите прозорци</translation>
+<translation id="7635348532214572995">Преместване на икона на приложение на друго място в решетката с приложения</translation>
 <translation id="766326951329901120">Поставяне на съдържанието от буферната памет като неформатиран текст</translation>
 <translation id="7703010453515335249">лява квадратна скоба</translation>
 <translation id="7724603315864178912">Изрязване</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Поставяне на съдържанието от буферната памет</translation>
 <translation id="9052808072970550123">Превключване към следващия потребител</translation>
 <translation id="906458777597946297">Увеличаване на прозореца</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, след което <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> или <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Преминаване в началото на реда</translation>
 <translation id="9106898733795143799">Страница и уеб браузър</translation>
 <translation id="9162942292291287644">Няма резултати от търсенето на „<ph name="QUERY" />“</translation>

@@ -2642,7 +2642,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4839303808932127586">Uložiť &amp;video ako...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ďalšia položka}few{# ďalšie položky}many{# ďalšej položky}other{# ďalších položiek}}</translation>
 <translation id="4842976633412754305">Táto stránka sa snaží načítať skripty z neoverených zdrojov.</translation>
-<translation id="4843488774506045600">Prihlásenie poskytuje <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Ďalšie klávesnice</translation>
 <translation id="4846680374085650406">V prípade tohto nastavenia dodržiavate odporúčania správcu.</translation>
 <translation id="4848518990323155912">Povoliť uzamykanie SIM karty (vyžadovať kód PIN pri použití mobilných dát)</translation>
@@ -3847,7 +3846,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6607831829715835317">Ďalšie nástro&amp;je</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="6615455863669487791">Zobraziť</translation>
-<translation id="6617100836880592260">Rýchlosť prehľadávania: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Aj tak ponechať</translation>
 <translation id="6619058681307408113">Protokol LPD (Line Printer Daemon)</translation>
 <translation id="661907246513853610">Web môže sledovať vašu polohu</translation>

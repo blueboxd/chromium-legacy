@@ -168,11 +168,6 @@ void RecordHeaderOutcome(NetworkErrorLoggingService::HeaderOutcome outcome) {
                             NetworkErrorLoggingService::HeaderOutcome::MAX);
 }
 
-void RecordRequestOutcome(NetworkErrorLoggingService::RequestOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      NetworkErrorLoggingService::kRequestOutcomeHistogram, outcome);
-}
-
 void RecordSignedExchangeRequestOutcome(
     NetworkErrorLoggingService::RequestOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -217,10 +212,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // This method is only called on secure requests.
     DCHECK(details.uri.SchemeIsCryptographic());
 
-    if (!reporting_service_) {
-      RecordRequestOutcome(RequestOutcome::kDiscardedNoReportingService);
+    if (!reporting_service_)
       return;
-    }
 
     base::Time request_received_time = clock_->Now();
     // base::Unretained is safe because the callback gets stored in
@@ -435,10 +428,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     auto report_origin = url::Origin::Create(details.uri);
     const NelPolicy* policy = FindPolicyForOrigin(report_origin);
-    if (!policy) {
-      RecordRequestOutcome(RequestOutcome::kDiscardedNoOriginPolicy);
+    if (!policy)
       return;
-    }
 
     MarkPolicyUsed(policy, request_received_time);
 
@@ -465,10 +456,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // This check would go earlier, but the histogram bucket will be more
     // meaningful if it only includes reports that otherwise could have been
     // uploaded.
-    if (details.reporting_upload_depth > kMaxNestedReportDepth) {
-      RecordRequestOutcome(RequestOutcome::kDiscardedReportingUpload);
+    if (details.reporting_upload_depth > kMaxNestedReportDepth)
       return;
-    }
 
     // If the server that handled the request is different than the server that
     // delivered the NEL policy (as determined by their IP address), then we
@@ -486,19 +475,14 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // errors.
     if (phase_string != kDnsPhase &&
         IsMismatchingSubdomainReport(*policy, report_origin)) {
-      RecordRequestOutcome(RequestOutcome::kDiscardedNonDNSSubdomainReport);
       return;
     }
 
     bool success = (type == OK) && !IsHttpError(details);
     const base::Optional<double> sampling_fraction =
         SampleAndReturnFraction(*policy, success);
-    if (!sampling_fraction.has_value()) {
-      RecordRequestOutcome(success
-                               ? RequestOutcome::kDiscardedUnsampledSuccess
-                               : RequestOutcome::kDiscardedUnsampledFailure);
+    if (!sampling_fraction.has_value())
       return;
-    }
 
     DVLOG(1) << "Created NEL report (" << type_string
              << ", status=" << details.status_code
@@ -509,7 +493,6 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
         CreateReportBody(phase_string, type_string, sampling_fraction.value(),
                          details),
         details.reporting_upload_depth);
-    RecordRequestOutcome(RequestOutcome::kQueued);
   }
 
   void DoQueueSignedExchangeReport(SignedExchangeReportDetails details,
@@ -924,9 +907,6 @@ const char NetworkErrorLoggingService::kReportType[] = "network-error";
 const char NetworkErrorLoggingService::kHeaderOutcomeHistogram[] =
     "Net.NetworkErrorLogging.HeaderOutcome";
 
-const char NetworkErrorLoggingService::kRequestOutcomeHistogram[] =
-    "Net.NetworkErrorLogging.RequestOutcome";
-
 const char
     NetworkErrorLoggingService::kSignedExchangeRequestOutcomeHistogram[] =
         "Net.NetworkErrorLogging.SignedExchangeRequestOutcome";
@@ -980,17 +960,6 @@ void NetworkErrorLoggingService::RecordHeaderDiscardedForCertStatusError() {
 void NetworkErrorLoggingService::
     RecordHeaderDiscardedForMissingRemoteEndpoint() {
   RecordHeaderOutcome(HeaderOutcome::DISCARDED_MISSING_REMOTE_ENDPOINT);
-}
-
-// static
-void NetworkErrorLoggingService::
-    RecordRequestDiscardedForNoNetworkErrorLoggingService() {
-  RecordRequestOutcome(RequestOutcome::kDiscardedNoNetworkErrorLoggingService);
-}
-
-// static
-void NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin() {
-  RecordRequestOutcome(RequestOutcome::kDiscardedInsecureOrigin);
 }
 
 // static

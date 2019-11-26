@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -185,6 +186,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
 
   sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
   DCHECK(skia_image);
+  DCHECK(!skia_image->isTextureBacked());
 
   // If image is lazy decoded, call readPixels() to trigger decoding.
   if (skia_image->isLazyGenerated()) {
@@ -229,7 +231,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       target_color_type = kRGBA_F16_SkColorType;
     // We can do color space and color type conversion together.
     if (needs_color_space_conversion) {
-      image_ = StaticBitmapImage::Create(skia_image);
+      image_ = UnacceleratedStaticBitmapImage::Create(skia_image);
       image_ = image_->ConvertToColorSpace(blob_color_space, target_color_type);
       skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
     } else if (skia_image->colorType() != target_color_type) {
@@ -243,7 +245,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
                             info.minRowBytes());
       skia_image->readPixels(src_data_f16, 0, 0);
       skia_image = SkImage::MakeFromRaster(src_data_f16, nullptr, nullptr);
-      image_ = StaticBitmapImage::Create(skia_image);
+      image_ = UnacceleratedStaticBitmapImage::Create(skia_image);
     }
 
     if (skia_image->peekPixels(&src_data_))

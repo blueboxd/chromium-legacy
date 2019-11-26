@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -20,11 +22,17 @@ public class EntitySuggestionViewBinder extends BaseSuggestionViewBinder {
         super.bind(model, view, propertyKey);
 
         if (EntitySuggestionViewProperties.SUBJECT_TEXT == propertyKey) {
-            TextView tv = view.findContentView(R.id.entity_subject);
+            final TextView tv = view.findContentView(R.id.entity_subject);
             tv.setText(model.get(EntitySuggestionViewProperties.SUBJECT_TEXT));
         } else if (EntitySuggestionViewProperties.DESCRIPTION_TEXT == propertyKey) {
-            TextView tv = view.findContentView(R.id.entity_description);
-            tv.setText(model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT));
+            final TextView tv = view.findContentView(R.id.entity_description);
+            final String text = model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT);
+            if (TextUtils.isEmpty(text)) {
+                tv.setVisibility(View.GONE);
+            } else {
+                tv.setVisibility(View.VISIBLE);
+                tv.setText(model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT));
+            }
         }
     }
 }

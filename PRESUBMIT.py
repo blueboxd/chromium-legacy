@@ -926,7 +926,7 @@ _BANNED_CPP_FUNCTIONS = (
           'of base::Bind. (crbug.com/714018)',
       ),
       False,
-      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
+      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
     ),
     (
       r'/\bbase::Callback[<:]',
@@ -935,7 +935,7 @@ _BANNED_CPP_FUNCTIONS = (
           'of base::Callback. (crbug.com/714018)',
       ),
       False,
-      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
+      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
     ),
     (
       r'/\bbase::Closure\b',
@@ -944,7 +944,7 @@ _BANNED_CPP_FUNCTIONS = (
           'of base::Closure. (crbug.com/714018)',
       ),
       False,
-      _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
+      (_NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,),
     ),
     (
       r'/\bRunMessageLoop\b',

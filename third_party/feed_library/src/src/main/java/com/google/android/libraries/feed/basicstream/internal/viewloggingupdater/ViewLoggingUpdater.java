@@ -10,7 +10,7 @@ import com.google.android.libraries.feed.common.feedobservable.FeedObservable;
 public class ViewLoggingUpdater extends FeedObservable<ResettableOneShotVisibilityLoggingListener> {
     /** Resets views logging state to allow them to be re-logged as visible. */
     public void resetViewTracking() {
-        for (ResettableOneShotVisibilityLoggingListener loggingListener : observers) {
+        for (ResettableOneShotVisibilityLoggingListener loggingListener : mObservers) {
             loggingListener.reset();
         }
     }

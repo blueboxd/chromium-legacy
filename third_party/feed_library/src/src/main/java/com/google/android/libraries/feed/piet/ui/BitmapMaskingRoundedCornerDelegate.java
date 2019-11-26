@@ -25,21 +25,21 @@ import com.google.search.now.ui.piet.RoundedCornersProto.RoundedCorners.Corners;
  * delegate.
  */
 class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
-    private final Paint paint;
-    private final Paint maskPaint;
-    private final RoundedCornerMaskCache maskCache;
-    private final int bitmask;
-    private final Canvas offscreenCanvas;
+    private final Paint mPaint;
+    private final Paint mMaskPaint;
+    private final RoundedCornerMaskCache mMaskCache;
+    private final int mBitmask;
+    private final Canvas mOffscreenCanvas;
 
     // Masks for each of the corners of the view; null if that corner is not rounded.
-    /*@Nullable*/ private Bitmap cornerTL;
-    /*@Nullable*/ private Bitmap cornerTR;
-    /*@Nullable*/ private Bitmap cornerBL;
-    /*@Nullable*/ private Bitmap cornerBR;
+    /*@Nullable*/ private Bitmap mCornerTL;
+    /*@Nullable*/ private Bitmap mCornerTR;
+    /*@Nullable*/ private Bitmap mCornerBL;
+    /*@Nullable*/ private Bitmap mCornerBR;
 
     // Keep track of current mask configuration so we can use cached values if nothing has changed.
-    private int lastRadius = -1;
-    private boolean lastRtL;
+    private int mLastRadius = -1;
+    private boolean mLastRtL;
 
     BitmapMaskingRoundedCornerDelegate(
             RoundedCornerMaskCache maskCache, int bitmask, boolean isRtL) {
@@ -48,12 +48,12 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
 
     BitmapMaskingRoundedCornerDelegate(
             RoundedCornerMaskCache maskCache, int bitmask, boolean isRtL, Canvas canvas) {
-        this.maskCache = maskCache;
-        offscreenCanvas = canvas;
-        this.lastRtL = !isRtL; // Flip this so we must update the layout on the first time.
-        this.bitmask = bitmask;
-        this.paint = maskCache.getPaint();
-        this.maskPaint = maskCache.getMaskPaint();
+        this.mMaskCache = maskCache;
+        mOffscreenCanvas = canvas;
+        this.mLastRtL = !isRtL; // Flip this so we must update the layout on the first time.
+        this.mBitmask = bitmask;
+        this.mPaint = maskCache.getPaint();
+        this.mMaskPaint = maskCache.getMaskPaint();
     }
 
     /**
@@ -71,37 +71,38 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
         if (radius < 1) {
             return;
         }
-        RoundedCornerBitmaps masks = maskCache.getMasks(radius);
+        RoundedCornerBitmaps masks = mMaskCache.getMasks(radius);
 
-        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_START, bitmask) && !isRtL)
-                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_END, bitmask) && isRtL)) {
-            cornerTL = masks.get(Corner.TOP_LEFT);
+        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_START, mBitmask) && !isRtL)
+                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_END, mBitmask)
+                        && isRtL)) {
+            mCornerTL = masks.get(Corner.TOP_LEFT);
         } else {
-            cornerTL = null;
+            mCornerTL = null;
         }
 
-        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_END, bitmask) && !isRtL)
-                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_START, bitmask)
+        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_END, mBitmask) && !isRtL)
+                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.TOP_START, mBitmask)
                         && isRtL)) {
-            cornerTR = masks.get(Corner.TOP_RIGHT);
+            mCornerTR = masks.get(Corner.TOP_RIGHT);
         } else {
-            cornerTR = null;
+            mCornerTR = null;
         }
 
-        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_START, bitmask) && !isRtL)
-                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_END, bitmask)
+        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_START, mBitmask) && !isRtL)
+                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_END, mBitmask)
                         && isRtL)) {
-            cornerBL = masks.get(Corner.BOTTOM_LEFT);
+            mCornerBL = masks.get(Corner.BOTTOM_LEFT);
         } else {
-            cornerBL = null;
+            mCornerBL = null;
         }
 
-        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_END, bitmask) && !isRtL)
-                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_START, bitmask)
+        if ((RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_END, mBitmask) && !isRtL)
+                || (RoundedCornerViewHelper.shouldRoundCorner(Corners.BOTTOM_START, mBitmask)
                         && isRtL)) {
-            cornerBR = masks.get(Corner.BOTTOM_RIGHT);
+            mCornerBR = masks.get(Corner.BOTTOM_RIGHT);
         } else {
-            cornerBR = null;
+            mCornerBR = null;
         }
     }
 
@@ -116,14 +117,14 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
         if (radius == 0) {
             return;
         }
-        if (radius == lastRadius && isRtL == lastRtL) {
+        if (radius == mLastRadius && isRtL == mLastRtL) {
             return;
         }
 
         initCornerMasks(radius, isRtL);
 
-        lastRadius = radius;
-        lastRtL = isRtL;
+        mLastRadius = radius;
+        mLastRtL = isRtL;
     }
 
     /**
@@ -166,33 +167,33 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
         }
         int radius = view.getRadius(width, height);
         Bitmap localOffscreenBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        offscreenCanvas.setBitmap(localOffscreenBitmap);
-        view.drawSuper(offscreenCanvas);
+        mOffscreenCanvas.setBitmap(localOffscreenBitmap);
+        view.drawSuper(mOffscreenCanvas);
         drawWithCornerMasks(canvas, radius, width, height, localOffscreenBitmap);
     }
 
     private void drawWithCornerMasks(
             Canvas canvas, int radius, int width, int height, Bitmap offscreenBitmap) {
         // Crop the corners off using masks
-        maskCorners(offscreenCanvas, width, height, radius);
+        maskCorners(mOffscreenCanvas, width, height, radius);
 
         // Draw the offscreen bitmap (view with rounded corners) to the target canvas.
-        canvas.drawBitmap(offscreenBitmap, 0f, 0f, paint);
+        canvas.drawBitmap(offscreenBitmap, 0f, 0f, mPaint);
     }
 
     /** Draws a mask on each corner that is rounded. */
     private void maskCorners(Canvas canvas, int width, int height, int radius) {
-        if (cornerTL != null) {
-            canvas.drawBitmap(cornerTL, 0, 0, maskPaint);
+        if (mCornerTL != null) {
+            canvas.drawBitmap(mCornerTL, 0, 0, mMaskPaint);
         }
-        if (cornerTR != null) {
-            canvas.drawBitmap(cornerTR, width - radius, 0, maskPaint);
+        if (mCornerTR != null) {
+            canvas.drawBitmap(mCornerTR, width - radius, 0, mMaskPaint);
         }
-        if (cornerBL != null) {
-            canvas.drawBitmap(cornerBL, 0, height - radius, maskPaint);
+        if (mCornerBL != null) {
+            canvas.drawBitmap(mCornerBL, 0, height - radius, mMaskPaint);
         }
-        if (cornerBR != null) {
-            canvas.drawBitmap(cornerBR, width - radius, height - radius, maskPaint);
+        if (mCornerBR != null) {
+            canvas.drawBitmap(mCornerBR, width - radius, height - radius, mMaskPaint);
         }
     }
 }

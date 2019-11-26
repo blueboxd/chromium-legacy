@@ -3792,11 +3792,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn không đặt chính sách này, thì giá sẽ được đặt ở cuối màn hình theo mặc định và người dùng có thể thay đổi vị trí của giá.</translation>
 <translation id="7040229947030068419">Giá trị mẫu:</translation>
 <translation id="7044883996351280650">Kiểm soát dịch vụ sao lưu và khôi phục trên thiết bị Android</translation>
-<translation id="7049373494483449255">Cho phép <ph name="PRODUCT_NAME" /> gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /> để in. LƯU Ý: Điều này chỉ ảnh hưởng đến hỗ trợ <ph name="CLOUD_PRINT_NAME" /> trong <ph name="PRODUCT_NAME" /> chứ không ngăn người dùng gửi lệnh in trên các trang web.
-
-      Nếu bật hoặc không định cấu hình cài đặt này, người dùng có thể in sang <ph name="CLOUD_PRINT_NAME" /> từ hộp thoại in của <ph name="PRODUCT_NAME" />.
-
-      Nếu tắt cài đặt này, người dùng không thể in sang <ph name="CLOUD_PRINT_NAME" /> từ hộp thoại in của <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Chính sách này nếu được bật sẽ buộc dấu trang phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
       Nếu tắt chính sách này, sẽ không có dấu trang nào được nhập.

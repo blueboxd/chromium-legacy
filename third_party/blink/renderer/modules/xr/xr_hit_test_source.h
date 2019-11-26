@@ -28,8 +28,8 @@ class XRHitTestSource : public ScriptWrappable {
   // update. This method is not exposed to JavaScript.
   HeapVector<Member<XRHitTestResult>> Results();
 
-  void Update(const WTF::Vector<device::mojom::blink::XRHitResultPtr>&
-                  hit_test_results);
+  void Update(
+      const Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results);
 
  private:
   const uint64_t id_;

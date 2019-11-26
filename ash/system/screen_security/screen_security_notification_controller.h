@@ -39,13 +39,13 @@ class ASH_EXPORT ScreenSecurityNotificationController
 
   // ScreenCaptureObserver:
   void OnScreenCaptureStart(
-      base::RepeatingClosure stop_callback,
-      base::RepeatingClosure source_callback,
+      const base::RepeatingClosure& stop_callback,
+      const base::RepeatingClosure& source_callback,
       const base::string16& screen_capture_status) override;
   void OnScreenCaptureStop() override;
 
   // ScreenShareObserver:
-  void OnScreenShareStart(const base::Closure& stop_callback,
+  void OnScreenShareStart(const base::RepeatingClosure& stop_callback,
                           const base::string16& helper_name) override;
   void OnScreenShareStop() override;
 

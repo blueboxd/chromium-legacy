@@ -203,6 +203,7 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -2018,8 +2019,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
   params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New(
-      interface_provider.PassInterface(),
-      std::move(browser_interface_broker));
+      interface_provider.PassInterface(), std::move(browser_interface_broker));
 
   params->routing_id = routing_id_;
   params->previous_routing_id = previous_routing_id;
@@ -4460,10 +4460,31 @@ void RenderFrameHostImpl::CreatePortal(
   if (frame_tree_node()->parent()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
+    frame_host_associated_receiver_.reset();
     return;
   }
+
+  // Note that we don't check |GetLastCommittedOrigin|, since that is inherited
+  // by the initial empty document of a new frame.
+  // TODO(1008989): Once issue 1008989 is fixed we could move this check into
+  // |Portal::Create|.
+  if (!GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    mojo::ReportBadMessage("Portal creation is restricted to the HTTP family.");
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
   Portal* portal =
       Portal::Create(this, std::move(pending_receiver), std::move(client));
+  if (!portal) {
+    // |portal| is null when |Portal::Create| reports a bad message, so we need
+    // to close the receiver.
+    // TODO(1027302): Remove these manual calls to reset once we have a cleaner
+    // way of reporting a bad message for an AssociatedReceiver.
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
                           portal->GetDevToolsFrameToken());
@@ -4475,10 +4496,12 @@ void RenderFrameHostImpl::AdoptPortal(
   Portal* portal = Portal::FromToken(portal_token);
   if (!portal) {
     mojo::ReportBadMessage("Unknown portal_token when adopting portal.");
+    frame_host_associated_receiver_.reset();
     return;
   }
   if (portal->owner_render_frame_host() != this) {
     mojo::ReportBadMessage("AdoptPortal called from wrong frame.");
+    frame_host_associated_receiver_.reset();
     return;
   }
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
@@ -4606,22 +4629,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-
-  PermissionControllerImpl* permission_controller =
-      PermissionControllerImpl::FromBrowserContext(
-          GetProcess()->GetBrowserContext());
-  auto* geolocation_context = delegate_->GetGeolocationContext();
-  if (geolocation_context) {
-    geolocation_service_.reset(new GeolocationServiceImpl(
-        geolocation_context, permission_controller, this));
-    // NOTE: Both the |interface_registry_| and |geolocation_service_| are
-    // owned by |this|, so their destruction will be triggered together.
-    // |interface_registry_| is declared after |geolocation_service_|, so it
-    // will be destroyed prior to |geolocation_service_|.
-    registry_->AddInterface(
-        base::BindRepeating(&GeolocationServiceImpl::Bind,
-                            base::Unretained(geolocation_service_.get())));
-  }
 
   registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
       &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
@@ -6357,6 +6364,10 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
 
 void RenderFrameHostImpl::CreatePaymentManager(
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kPayment)) {
+    mojo::ReportBadMessage("Feature policy blocks Payment");
+    return;
+  }
   GetProcess()->CreatePaymentManagerForOrigin(GetLastCommittedOrigin(),
                                               std::move(receiver));
 }
@@ -6636,6 +6647,18 @@ void RenderFrameHostImpl::GetFileSystemManager(
                  base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                                 base::Unretained(file_system_manager_.get()),
                                 std::move(receiver)));
+}
+
+void RenderFrameHostImpl::GetGeolocationService(
+    mojo::PendingReceiver<blink::mojom::GeolocationService> receiver) {
+  if (!geolocation_service_) {
+    auto* geolocation_context = delegate_->GetGeolocationContext();
+    if (!geolocation_context)
+      return;
+    geolocation_service_ =
+        std::make_unique<GeolocationServiceImpl>(geolocation_context, this);
+  }
+  geolocation_service_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetNativeFileSystemManager(

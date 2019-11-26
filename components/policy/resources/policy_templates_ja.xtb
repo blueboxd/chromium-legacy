@@ -3682,7 +3682,6 @@
       このポリシーを設定しない場合、シェルフはデフォルトで画面の下部に配置されますが、ユーザーはシェルフの位置を変更できます。</translation>
 <translation id="7040229947030068419">サンプル値:</translation>
 <translation id="7044883996351280650">Android のバックアップと復元サービスを制御する</translation>
-<translation id="7049373494483449255"><ph name="PRODUCT_NAME" /> がドキュメントを <ph name="CLOUD_PRINT_NAME" /> に送信して印刷できるようにします。注: この設定は <ph name="PRODUCT_NAME" /> での <ph name="CLOUD_PRINT_NAME" /> のサポートのみに影響します。ユーザーがウェブサイトで印刷ジョブを送信できなくなるわけではありません。この設定が有効または未設定の場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" /> に印刷できます。この設定を無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" /> に印刷できなくなります。</translation>
 <translation id="7053678646221257043">このポリシーを有効にすると、現在の既定のブラウザからブックマークがインポートされます。有効にすると、このポリシーはインポートのダイアログにも影響を与えます。無効にすると、ブックマークはインポートされません。未設定の場合はインポートするかどうかをユーザーに尋ねるか、自動的にインポートされます。</translation>
 <translation id="7063895219334505671">これらのサイトのポップアップを許可する</translation>
 <translation id="706669471845501145">サイトに対してデスクトップ通知の表示を許可する</translation>

@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Debes ingresar un número.</translation>
 <translation id="4912536737030637138">entrada de bibliografía</translation>
+<translation id="492244087561876220">comentario</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> elementos seleccionados</translation>
 <translation id="4992066212339426712">Dejar de silenciar</translation>
 <translation id="49969490063480558">Ingresa texto después del signo "<ph name="ATSIGN" />". La dirección "<ph name="INVALIDADDRESS" />" está incompleta.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">tiempo actual en segundos</translation>
 <translation id="901834265349196618">correo electrónico</translation>
+<translation id="9023835124071926463">sección de comentarios</translation>
 <translation id="9048119486235211610">navegación</translation>
 <translation id="9062295712474918030">documento</translation>
 <translation id="9093215626363556771">salir del modo de pantalla en pantalla</translation>

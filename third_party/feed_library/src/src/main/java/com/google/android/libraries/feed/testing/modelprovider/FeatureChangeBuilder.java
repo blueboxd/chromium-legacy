@@ -16,16 +16,16 @@ import java.util.List;
  * instances.
  */
 public class FeatureChangeBuilder {
-    private final List<ModelChild> removedChildren = new ArrayList<>();
-    private final List<ModelChild> appendedChildren = new ArrayList<>();
+    private final List<ModelChild> mRemovedChildren = new ArrayList<>();
+    private final List<ModelChild> mAppendedChildren = new ArrayList<>();
 
     public FeatureChangeBuilder addChildForRemoval(ModelChild modelChild) {
-        removedChildren.add(modelChild);
+        mRemovedChildren.add(modelChild);
         return this;
     }
 
     public FeatureChangeBuilder addChildForAppending(ModelChild modelChild) {
-        appendedChildren.add(modelChild);
+        mAppendedChildren.add(modelChild);
         return this;
     }
 
@@ -51,12 +51,12 @@ public class FeatureChangeBuilder {
                 return new ChildChanges() {
                     @Override
                     public List<ModelChild> getAppendedChildren() {
-                        return appendedChildren;
+                        return mAppendedChildren;
                     }
 
                     @Override
                     public List<ModelChild> getRemovedChildren() {
-                        return removedChildren;
+                        return mRemovedChildren;
                     }
                 };
             }

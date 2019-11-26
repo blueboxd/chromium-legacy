@@ -64,6 +64,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float zoom_delta, const gfx::Point& anchor) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
+  void ProgressFling(base::TimeTicks frame_time) override;
 
   ui::ViewAndroid::CopyViewCallback GetCopyViewCallback();
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
@@ -133,9 +134,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   // isn't required.
   bool allow_async_draw_ = false;
 
-  // Indicates the next draw needs to be synchronous
-  bool compute_scroll_needs_synchronous_draw_ = false;
-
   // Indicates begin frames are paused from the browser.
   bool begin_frame_paused_ = false;
 
@@ -150,7 +148,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   // From renderer.
   uint32_t renderer_param_version_;
-  bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
   bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;

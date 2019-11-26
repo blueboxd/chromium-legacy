@@ -82,7 +82,7 @@ void SystemTrayNotifier::RemoveScreenShareObserver(
 }
 
 void SystemTrayNotifier::NotifyScreenShareStart(
-    const base::Closure& stop_callback,
+    base::RepeatingClosure stop_callback,
     const base::string16& helper_name) {
   for (auto& observer : screen_share_observers_)
     observer.OnScreenShareStart(stop_callback, helper_name);

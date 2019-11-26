@@ -29,49 +29,49 @@ import java.util.Map;
 public class PietStylesHelper {
     private static final String TAG = "PietStylesHelper";
 
-    private final Map<Stylesheets, NoKeyOverwriteHashMap<String, Style>> multiStylesheetScopes =
+    private final Map<Stylesheets, NoKeyOverwriteHashMap<String, Style>> mMultiStylesheetScopes =
             new NoKeyOverwriteHashMap<>("Style", ErrorCode.ERR_DUPLICATE_STYLESHEET);
-    private final Map<String, Stylesheet> stylesheets =
+    private final Map<String, Stylesheet> mStylesheet =
             new NoKeyOverwriteHashMap<>("Stylesheet", ErrorCode.ERR_DUPLICATE_STYLESHEET);
-    private final Map<String, Template> templates =
+    private final Map<String, Template> mTemplates =
             new NoKeyOverwriteHashMap<>("Template", ErrorCode.ERR_DUPLICATE_TEMPLATE);
 
-    private final MediaQueryHelper mediaQueryHelper;
+    private final MediaQueryHelper mMediaQueryHelper;
 
     private PietStylesHelper(
             List<PietSharedState> pietSharedStates, MediaQueryHelper mediaQueryHelper) {
-        this.mediaQueryHelper = mediaQueryHelper;
+        this.mMediaQueryHelper = mediaQueryHelper;
         for (PietSharedState sharedState : pietSharedStates) {
             if (sharedState.getStylesheetsCount() > 0) {
                 for (Stylesheet stylesheet : sharedState.getStylesheetsList()) {
                     if (mediaQueryHelper.areMediaQueriesMet(stylesheet.getConditionsList())) {
-                        stylesheets.put(stylesheet.getStylesheetId(), stylesheet);
+                        mStylesheet.put(stylesheet.getStylesheetId(), stylesheet);
                     }
                 }
             }
 
             for (Template template : sharedState.getTemplatesList()) {
                 if (mediaQueryHelper.areMediaQueriesMet(template.getConditionsList())) {
-                    templates.put(template.getTemplateId(), template);
+                    mTemplates.put(template.getTemplateId(), template);
                 }
             }
         }
     }
 
     boolean areMediaQueriesMet(List<MediaQueryCondition> conditions) {
-        return mediaQueryHelper.areMediaQueriesMet(conditions);
+        return mMediaQueryHelper.areMediaQueriesMet(conditions);
     }
 
     /*@Nullable*/
     Stylesheet getStylesheet(String stylesheetId) {
-        return stylesheets.get(stylesheetId);
+        return mStylesheet.get(stylesheetId);
     }
 
     /** Returns a Map of style_id to Style. This represents the Stylesheet. */
     NoKeyOverwriteHashMap<String, Style> getStylesheetMap(
             Stylesheets stylesheetRefs, DebugLogger debugLogger) {
-        if (multiStylesheetScopes.containsKey(stylesheetRefs)) {
-            return multiStylesheetScopes.get(stylesheetRefs);
+        if (mMultiStylesheetScopes.containsKey(stylesheetRefs)) {
+            return mMultiStylesheetScopes.get(stylesheetRefs);
         }
 
         NoKeyOverwriteHashMap<String, Style> styleMap =
@@ -84,7 +84,7 @@ public class PietStylesHelper {
 
         // Add stylesheets referenced from PietSharedState.
         for (String stylesheetId : stylesheetRefs.getStylesheetIdsList()) {
-            Stylesheet stylesheet = stylesheets.get(stylesheetId);
+            Stylesheet stylesheet = mStylesheet.get(stylesheetId);
             if (stylesheet == null) {
                 String message = String.format(
                         "Stylesheet [%s] was not found in the PietSharedState", stylesheetId);
@@ -96,7 +96,7 @@ public class PietStylesHelper {
             addStylesToMapIfMediaQueryConditionsMet(stylesheet, styleMap);
         }
 
-        multiStylesheetScopes.put(stylesheetRefs, styleMap);
+        mMultiStylesheetScopes.put(stylesheetRefs, styleMap);
 
         return styleMap;
     }
@@ -118,11 +118,11 @@ public class PietStylesHelper {
     /** Returns a {@link Template} for the template */
     /*@Nullable*/
     public Template getTemplate(String templateId) {
-        return templates.get(templateId);
+        return mTemplates.get(templateId);
     }
 
     void addSharedStateTemplatesToFrame(Map<String, Template> frameTemplates) {
-        frameTemplates.putAll(templates);
+        frameTemplates.putAll(mTemplates);
     }
 
     static Style mergeStyleIdsStack(StyleIdsStack stack, Map<String, Style> styleMap,
@@ -179,17 +179,17 @@ public class PietStylesHelper {
 
     @VisibleForTesting
     static class PietStylesHelperKey {
-        private final List<PietSharedState> pietSharedStates;
-        private final MediaQueryHelper mediaQueryHelper;
+        private final List<PietSharedState> mPietSharedStates;
+        private final MediaQueryHelper mMediaQueryHelper;
 
         PietStylesHelperKey(
                 List<PietSharedState> pietSharedStates, MediaQueryHelper mediaQueryHelper) {
-            this.pietSharedStates = pietSharedStates;
-            this.mediaQueryHelper = mediaQueryHelper;
+            this.mPietSharedStates = pietSharedStates;
+            this.mMediaQueryHelper = mediaQueryHelper;
         }
 
         PietStylesHelper newPietStylesHelper() {
-            return new PietStylesHelper(pietSharedStates, mediaQueryHelper);
+            return new PietStylesHelper(mPietSharedStates, mMediaQueryHelper);
         }
 
         @SuppressWarnings({"ReferenceEquality", "EqualsUsingHashCode"})
@@ -203,8 +203,8 @@ public class PietStylesHelper {
             }
             PietStylesHelperKey that = (PietStylesHelperKey) o;
 
-            if (!mediaQueryHelper.equals(that.mediaQueryHelper)
-                    || pietSharedStates.size() != that.pietSharedStates.size()) {
+            if (!mMediaQueryHelper.equals(that.mMediaQueryHelper)
+                    || mPietSharedStates.size() != that.mPietSharedStates.size()) {
                 return false;
             }
             // Compare the two lists of PietSharedState in an container-independent way.
@@ -213,10 +213,10 @@ public class PietStylesHelper {
             // shared states, but we expect this to usually be less than ~10. Comparing .equals() on
             // PietSharedState protos is very expensive - shortcut with hashcode.
             ArrayList<Integer> sharedStateHashCodes = new ArrayList<>();
-            for (PietSharedState sharedState : pietSharedStates) {
+            for (PietSharedState sharedState : mPietSharedStates) {
                 sharedStateHashCodes.add(sharedState.hashCode());
             }
-            for (PietSharedState sharedState : that.pietSharedStates) {
+            for (PietSharedState sharedState : that.mPietSharedStates) {
                 if (!sharedStateHashCodes.remove((Integer) sharedState.hashCode())) {
                     return false;
                 }
@@ -226,8 +226,8 @@ public class PietStylesHelper {
 
         @Override
         public int hashCode() {
-            int result = pietSharedStates.hashCode();
-            result = 31 * result + mediaQueryHelper.hashCode();
+            int result = mPietSharedStates.hashCode();
+            result = 31 * result + mMediaQueryHelper.hashCode();
             return result;
         }
     }
@@ -237,10 +237,10 @@ public class PietStylesHelper {
         // TODO: Make this size configurable.
         private static final int DEFAULT_STYLES_HELPER_POOL_SIZE = 8;
 
-        final LruCache<PietStylesHelperKey, PietStylesHelper> stylesHelpers;
+        final LruCache<PietStylesHelperKey, PietStylesHelper> mStylesHelpers;
 
         PietStylesHelperFactory() {
-            this.stylesHelpers = new LruCache<PietStylesHelperKey, PietStylesHelper>(
+            this.mStylesHelpers = new LruCache<PietStylesHelperKey, PietStylesHelper>(
                     DEFAULT_STYLES_HELPER_POOL_SIZE) {
                 @Override
                 protected PietStylesHelper create(PietStylesHelperKey key) {
@@ -251,12 +251,12 @@ public class PietStylesHelper {
 
         PietStylesHelper get(
                 List<PietSharedState> pietSharedStates, MediaQueryHelper mediaQueryHelper) {
-            return checkNotNull(
-                    stylesHelpers.get(new PietStylesHelperKey(pietSharedStates, mediaQueryHelper)));
+            return checkNotNull(mStylesHelpers.get(
+                    new PietStylesHelperKey(pietSharedStates, mediaQueryHelper)));
         }
 
         void purge() {
-            stylesHelpers.evictAll();
+            mStylesHelpers.evictAll();
         }
     }
 }

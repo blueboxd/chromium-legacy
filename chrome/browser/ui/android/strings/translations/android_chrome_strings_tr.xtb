@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Adresler</translation>
 <translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
 <translation id="2904414404539560095">Sekme paylaşılacak cihazların listesi tam yükseklikte açıldı.</translation>
+<translation id="2905036901251765993">Yakınlardaki kişilerle paylaşmak için bu QR kodunu taramalarını sağlayın</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
 <translation id="2910701580606108292">Sitelerin korumalı içeriği oynatmasına izin verilmeden önce size sorulur</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3658159451045945436">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere veri tasarrufu geçmişinizi siler.</translation>
+<translation id="3682730288090679318">Sitelerin bildirim göstermelerini otomatik olarak engellemek için etkinleştirin. Bir site bildirim göstermek isterse sayfanın alt kısmında bir bilgi çubuğu görünür.</translation>
 <translation id="3692944402865947621">Depolama konumuna erişilemediği için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
 <translation id="3716182511346448902">Bu sayfa, bellekte çok fazla yer kapladığından Chrome tarafından duraklatıldı.</translation>
@@ -542,6 +544,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5048398596102334565">Sitelerin hareket sensörlerine erişmesine izin ver (önerilen)</translation>
 <translation id="5063480226653192405">Kullanım</translation>
 <translation id="5087580092889165836">Kart ekle</translation>
+<translation id="5096950519211870196">Sitelerin size bildirim gösterme istekleri engellenir. Bir site bildirim göstermek isterse sayfanın alt kısmında bir bilgi çubuğu görünür.</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
 <translation id="510275257476243843">1 saat kaldı</translation>
 <translation id="5123685120097942451">Gizli sekme</translation>
@@ -589,6 +592,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5414836363063783498">Doğrulanıyor…</translation>
 <translation id="5423934151118863508">En çok ziyaret ettiğiniz sayfalar burada görünecektir</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB kullanılabilir</translation>
+<translation id="5427766642345310212">Anladım. Varsayılan olarak yeni bildirim istekleri burada görünür.</translation>
 <translation id="543338862236136125">Şifreyi düzenle</translation>
 <translation id="5433691172869980887">Kullanıcı adı kopyalandı</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> dosya indiriliyor (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6111020039983847643">kullanılan veri miktarı</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
+<translation id="6113400363611269907">İstemleri sessiz göster</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
@@ -1019,6 +1024,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="8514477925623180633">Chrome'da depolanan şifreleri dışa aktarın</translation>
 <translation id="8514577642972634246">Gizli moda geç</translation>
+<translation id="8516012719330875537">Resim Düzenleyici</translation>
 <translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>

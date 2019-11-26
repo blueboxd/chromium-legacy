@@ -50,15 +50,14 @@ bool ImageWriter::IsValidDevice() {
                                                       nullptr, nullptr);
 }
 
-void ImageWriter::UnmountVolumes(const base::Closure& continuation) {
+void ImageWriter::UnmountVolumes(base::OnceClosure continuation) {
   if (!unmounter_)
     unmounter_.reset(new DiskUnmounterMac());
 
   unmounter_->Unmount(
-      device_path_.value(),
-      continuation,
-      base::Bind(
-          &ImageWriter::Error, base::Unretained(this), error::kUnmountVolumes));
+      device_path_.value(), std::move(continuation),
+      base::BindOnce(&ImageWriter::Error, base::Unretained(this),
+                     error::kUnmountVolumes));
 }
 
 bool ImageWriter::OpenDevice() {

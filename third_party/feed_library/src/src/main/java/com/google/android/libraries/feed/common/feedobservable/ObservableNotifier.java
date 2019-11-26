@@ -10,8 +10,8 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 public class ObservableNotifier<ObserverT> extends FeedObservable<ObserverT> {
     /** Calls all the registered listeners using the given listener method. */
     public void notifyListeners(Consumer<ObserverT> listenerMethod) {
-        synchronized (observers) {
-            for (ObserverT listener : observers) {
+        synchronized (mObservers) {
+            for (ObserverT listener : mObservers) {
                 listenerMethod.accept(listener);
             }
         }

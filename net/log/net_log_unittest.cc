@@ -36,7 +36,7 @@ base::Value NetCaptureModeParams(NetLogCaptureMode capture_mode) {
 }
 
 TEST(NetLogTest, Basic) {
-  TestNetLog net_log;
+  RecordingTestNetLog net_log;
   auto entries = net_log.GetEntries();
   EXPECT_EQ(0u, entries.size());
 
@@ -60,7 +60,7 @@ TEST(NetLogTest, CaptureModes) {
       NetLogCaptureMode::kEverything,
   };
 
-  TestNetLog net_log;
+  RecordingTestNetLog net_log;
 
   for (NetLogCaptureMode mode : kModes) {
     net_log.SetObserverCaptureMode(mode);

@@ -40,11 +40,15 @@ class WebContents;
 
 namespace gfx {
 class RenderText;
-}
+}  // namespace gfx
 
 namespace ui {
 class OSExchangeData;
 }  // namespace ui
+
+namespace views {
+class Button;
+}  // namespace views
 
 // Views-implementation of OmniboxView.
 class OmniboxViewViews : public OmniboxView,
@@ -201,21 +205,22 @@ class OmniboxViewViews : public OmniboxView,
   // flip.)
   bool TextAndUIDirectionMatch() const;
 
-  // Helper function for MaybeFocusTabButton() and MaybeUnfocusTabButton().
-  bool SelectedSuggestionHasTabMatch() const;
+  // Gets the secondary button (like the tab switch or remove suggestion)
+  // for the selected line. Returns nullptr if there is no secondary button.
+  views::Button* GetSecondaryButtonForSelectedLine() const;
 
   // Like SelectionAtEnd(), but accounts for RTL.
   bool DirectionAwareSelectionAtEnd() const;
 
-  // Attempts to either focus or unfocus the tab switch button (tests if all
+  // Attempts to either focus or unfocus the secondary button (tests if all
   // conditions are met and makes necessary subroutine call) and returns
   // whether it succeeded.
-  bool MaybeFocusTabButton();
-  bool MaybeUnfocusTabButton();
+  bool MaybeFocusSecondaryButton();
+  bool MaybeUnfocusSecondaryButton();
 
-  // If the tab switch button is focused, switches to the relevant tab.  Returns
-  // whether the switch was attempted.
-  bool MaybeSwitchToTab(const ui::KeyEvent& event);
+  // If the Secondary button for the current suggestion is focused, clicks it
+  // and returns true.
+  bool MaybeTriggerSecondaryButton(const ui::KeyEvent& event);
 
   // OmniboxView:
   void SetCaretPos(size_t caret_pos) override;

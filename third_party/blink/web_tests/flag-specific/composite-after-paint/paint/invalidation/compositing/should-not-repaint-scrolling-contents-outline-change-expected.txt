@@ -25,7 +25,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='target'",
+      "name": "Scroll corner of LayoutNGBlockFlow DIV id='target'",
       "position": [-10, -10],
       "bounds": [220, 220],
       "paintInvalidations": [

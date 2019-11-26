@@ -16,14 +16,14 @@ public final class CommitResult {
     }
 
     public @Result int getResult() {
-        return result;
+        return mResult;
     }
 
-    private final @Result int result;
+    private final @Result int mResult;
 
     // Private constructor - use static instances
     private CommitResult(@Result int result) {
-        this.result = result;
+        this.mResult = result;
     }
 
     public static final CommitResult SUCCESS = new CommitResult(Result.SUCCESS);

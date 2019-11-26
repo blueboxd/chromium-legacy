@@ -17,7 +17,7 @@ import com.sun.tools.javac.code.Symbol;
  * Triggers an error for any occurrence of android.os.AsyncTask.
  */
 @AutoService(BugChecker.class)
-@BugPattern(name = "NoAndroidAsyncTaskCheck", category = BugPattern.Category.ANDROID,
+@BugPattern(name = "NoAndroidAsyncTaskCheck",
         summary = "Do not use android.os.AsyncTask - use org.chromium.base.task.AsyncTask instead",
         severity = BugPattern.SeverityLevel.ERROR, linkType = BugPattern.LinkType.CUSTOM,
         link = "https://bugs.chromium.org/p/chromium/issues/detail?id=843745")

@@ -78,7 +78,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   // know it's safe.
   DirectoryCryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
+  encrypted_types.PutAll(AlwaysEncryptedUserTypes());
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -121,7 +121,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   // know it's safe.
   DirectoryCryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
+  encrypted_types.PutAll(AlwaysEncryptedUserTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = GetCryptographer(&trans);
@@ -232,7 +232,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   // know it's safe.
   DirectoryCryptographer* cryptographer;
   ModelTypeSet encrypted_types;
-  encrypted_types.PutAll(SyncEncryptionHandler::SensitiveTypes());
+  encrypted_types.PutAll(AlwaysEncryptedUserTypes());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = GetCryptographer(&trans);
@@ -317,7 +317,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
 TEST_F(ApplyControlDataUpdatesTest,
        NigoriConflictPendingKeysServerEncryptEverythingCustom) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
@@ -394,7 +394,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 TEST_F(ApplyControlDataUpdatesTest,
        NigoriConflictPendingKeysLocalEncryptEverythingCustom) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
@@ -470,7 +470,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 // set.
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
@@ -538,7 +538,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
 // the local nigori should be preserved.
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
@@ -619,7 +619,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
 // set remotely, the remote nigori should be preserved.
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
@@ -701,7 +701,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
 // nigori.
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
@@ -779,7 +779,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
 // nigori.
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   DirectoryCryptographer* cryptographer;
-  ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
+  ModelTypeSet encrypted_types(AlwaysEncryptedUserTypes());
   KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
   KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {

@@ -44,6 +44,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/arc/arc_service_manager.h"
@@ -63,9 +64,6 @@
 // be able to show download progress in the UI, a la ExtensionAppModelBuilder.
 // This might involve using an extensions::InstallTracker. It might also need
 // the equivalent of a LauncherExtensionAppUpdater.
-
-// TODO(crbug.com/826982): do we also need to watch prefs, the same as
-// ExtensionAppModelBuilder?
 
 // TODO(crbug.com/826982): consider that, per khmel@, "in some places Chrome
 // apps is not used and raw extension app without any effect is displayed...
@@ -297,6 +295,17 @@ void ExtensionApps::Initialize(
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
   app_service_ = app_service.get();
+
+  // Remaining initialization is only relevant to the kExtension app type.
+  if (app_type_ != apps::mojom::AppType::kExtension) {
+    return;
+  }
+
+  profile_pref_change_registrar_.Init(profile_->GetPrefs());
+  profile_pref_change_registrar_.Add(
+      prefs::kHideWebStoreIcon,
+      base::Bind(&ExtensionApps::OnHideWebStoreIconPrefChanged,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
@@ -338,7 +347,8 @@ void ExtensionApps::Connect(
     // blacklisted_extensions and blocked_extensions, corresponding to
     // kDisabledByBlacklist and kDisabledByPolicy, are deliberately ignored.
     //
-    // If making changes to which sets are consulted, also change ShouldShow.
+    // If making changes to which sets are consulted, also change ShouldShow,
+    // OnHideWebStoreIconPrefChanged.
   }
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
@@ -897,6 +907,26 @@ bool ExtensionApps::ShouldShow(const extensions::Extension* extension,
   return registry->enabled_extensions().Contains(app_id) ||
          registry->disabled_extensions().Contains(app_id) ||
          registry->terminated_extensions().Contains(app_id);
+}
+
+void ExtensionApps::OnHideWebStoreIconPrefChanged() {
+  UpdateShowInFields(extensions::kWebStoreAppId);
+  UpdateShowInFields(extension_misc::kEnterpriseWebStoreAppId);
+}
+
+void ExtensionApps::UpdateShowInFields(const std::string& app_id) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = app_id;
+  SetShowInFields(app, extension, profile_);
+  Publish(std::move(app));
 }
 
 void ExtensionApps::PopulatePermissions(

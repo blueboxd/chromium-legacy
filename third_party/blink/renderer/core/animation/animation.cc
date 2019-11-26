@@ -158,7 +158,6 @@ Animation::Animation(ExecutionContext* execution_context,
     : ContextLifecycleObserver(execution_context),
       internal_play_state_(kIdle),
       reported_play_state_(kIdle),
-      animation_play_state_(kIdle),
       playback_rate_(1),
       start_time_(),
       hold_time_(),
@@ -284,8 +283,7 @@ void Animation::setCurrentTime(double new_current_time,
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
 
   SetCompositorPending(/*effect_changed=*/false);
-  animation_play_state_ = CalculateAnimationPlayState();
-  internal_play_state_ = CalculatePlayState();
+  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify of potential state change.
   NotifyProbe();
@@ -530,8 +528,7 @@ void Animation::NotifyReady(double ready_time) {
   ClearOutdated();
 
   // TODO(crbug.com/960944): deprecate use of these flags.
-  internal_play_state_ = CalculatePlayState();
-  animation_play_state_ = CalculateAnimationPlayState();
+  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify of change to play state.
   NotifyProbe();
@@ -758,8 +755,7 @@ void Animation::setStartTime(double start_time_ms,
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
 
   // TODO(crbug.com/960944): prune use of legacy flags.
-  internal_play_state_ = CalculatePlayState();
-  animation_play_state_ = CalculateAnimationPlayState();
+  internal_play_state_ = CalculateExtendedPlayState();
 
   // Update user agent.
   base::Optional<double> new_current_time = CurrentTimeInternal();
@@ -816,12 +812,14 @@ const char* Animation::PlayStateString(AnimationPlayState play_state) {
   }
 }
 
+// TODO(crbug.com/960944): Deprecate.
 Animation::AnimationPlayState Animation::PlayStateInternal() const {
   DCHECK_NE(internal_play_state_, kUnset);
   return internal_play_state_;
 }
 
-Animation::AnimationPlayState Animation::CalculatePlayState() const {
+// TODO(crbug.com/960944): Deprecate.
+Animation::AnimationPlayState Animation::CalculateExtendedPlayState() const {
   if (paused_ && !current_time_pending_)
     return kPaused;
   if (internal_play_state_ == kIdle)
@@ -831,11 +829,6 @@ Animation::AnimationPlayState Animation::CalculatePlayState() const {
   if (Limited())
     return kFinished;
   return kRunning;
-}
-
-Animation::AnimationPlayState Animation::GetPlayState() const {
-  DCHECK_NE(animation_play_state_, kUnset);
-  return animation_play_state_;
 }
 
 // https://drafts.csswg.org/web-animations/#play-states
@@ -953,8 +946,7 @@ void Animation::pause(ExceptionState& exception_state) {
   UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 
   // TODO(crbug.com/958433): Deprecate.
-  internal_play_state_ = CalculatePlayState();
-  animation_play_state_ = CalculateAnimationPlayState();
+  internal_play_state_ = CalculateExtendedPlayState();
 
   NotifyProbe();
 }
@@ -1070,8 +1062,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 
   // TODO(crbug.com/960944): Deprecate.
-  animation_play_state_ = CalculateAnimationPlayState();
-  internal_play_state_ = CalculatePlayState();
+  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify change to pending play or finished state.
   NotifyProbe();
@@ -1171,8 +1162,7 @@ void Animation::finish(ExceptionState& exception_state) {
 
   SetOutdated();
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kSync);
-  animation_play_state_ = kFinished;
-  internal_play_state_ = kFinished;
+  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify of change to finished state.
   NotifyProbe();
@@ -1275,14 +1265,14 @@ void Animation::CommitFinishNotification() {
 
   pending_play_ = false;
   pending_pause_ = false;
-  animation_play_state_ = kFinished;
 
   // TODO(crbug.com/960944) Deprecate following flags.
   current_time_pending_ = false;
   internal_play_state_ = kFinished;
 
-  // If start_time_ is not set, then CalculatePlayState will return pending
-  // rather than finished.  Force synchronous resolution of the start time.
+  // If start_time_ is not set, then CalculateAnimationPlayState will return
+  // pending rather than finished.  Force synchronous resolution of the start
+  // time.
   if (!start_time_ && hold_time_ && timeline_ && timeline_->IsActive())
     start_time_ = CalculateStartTime(hold_time_.value());
 
@@ -1817,8 +1807,6 @@ void Animation::cancel() {
   internal_play_state_ = kIdle;
   current_time_pending_ = false;
 
-  animation_play_state_ = kIdle;
-
   // Apply changes synchronously.
   SetCompositorPending(/*effect_changed=*/false);
   SetOutdated();
@@ -1917,9 +1905,8 @@ Animation::PlayStateUpdateScope::PlayStateUpdateScope(
 
 Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   AnimationPlayState old_play_state = initial_play_state_;
-  AnimationPlayState new_play_state = animation_->CalculatePlayState();
+  AnimationPlayState new_play_state = animation_->CalculateExtendedPlayState();
   animation_->internal_play_state_ = new_play_state;
-  animation_->animation_play_state_ = animation_->CalculateAnimationPlayState();
 
   // Ordering is important, the ready promise should resolve/reject before
   // the finished promise.

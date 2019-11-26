@@ -133,7 +133,7 @@ class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
   }
   size_t completion_count() const { return test_base_.completion_count(); }
 
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   // |group_id_| and |params_| correspond to the same socket parameters.
   const ClientSocketPool::GroupId group_id_;
   scoped_refptr<ClientSocketPool::SocketParams> params_;

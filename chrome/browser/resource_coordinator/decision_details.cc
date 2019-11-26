@@ -39,6 +39,7 @@ const char* kDecisionFailureReasonStrings[] = {
     "Tab is currently connected to a bluetooth device",
     "Tab is currently holding a WebLock",
     "Tab is currently holding an IndexedDB lock",
+    "Tab has notification permission ",
 };
 static_assert(base::size(kDecisionFailureReasonStrings) ==
                   static_cast<size_t>(DecisionFailureReason::MAX),
@@ -151,6 +152,9 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::LIVE_STATE_USING_INDEXEDDB_LOCK:
       ukm->SetFailureLiveStateUsingIndexedDBLock(1);
+      break;
+    case DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION:
+      ukm->SetFailureLiveStateHasNotificationsPermission(1);
       break;
     case DecisionFailureReason::MAX:
       NOTREACHED();

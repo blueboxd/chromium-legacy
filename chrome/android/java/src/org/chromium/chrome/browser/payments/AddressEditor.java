@@ -474,7 +474,7 @@ public class AddressEditor
         // For tests, the time-out is set to 0. In this case, we should not
         // fetch the admin-areas, and show a text-field instead.
         // This is to have the tests independent of the network status.
-        if (PersonalDataManager.getInstance().getRequestTimeoutMS() == 0) {
+        if (PersonalDataManager.getRequestTimeoutMS() == 0) {
             onSubKeysReceived(null, null);
             return;
         }

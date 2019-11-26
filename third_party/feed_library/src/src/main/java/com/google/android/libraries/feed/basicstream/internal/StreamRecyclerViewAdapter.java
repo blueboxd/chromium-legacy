@@ -51,23 +51,23 @@ public class StreamRecyclerViewAdapter
         extends RecyclerView.Adapter<FeedViewHolder> implements StreamContentListener {
     private static final String TAG = "StreamRecyclerViewAdapt";
 
-    private final Context context;
-    private final View viewport;
-    private final CardConfiguration cardConfiguration;
-    private final PietManager pietManager;
-    private final Configuration configuration;
-    private final List<LeafFeatureDriver> leafFeatureDrivers;
-    private final List<HeaderDriver> headers;
-    private final HashMap<FeedViewHolder, LeafFeatureDriver> boundViewHolderToLeafFeatureDriverMap;
-    private final DeepestContentTracker deepestContentTracker;
-    private final ContentChangedListener contentChangedListener;
-    private final PietEventLogger eventLogger;
+    private final Context mContext;
+    private final View mViewport;
+    private final CardConfiguration mCardConfiguration;
+    private final PietManager mPietManager;
+    private final Configuration mConfiguration;
+    private final List<LeafFeatureDriver> mLeafFeatureDrivers;
+    private final List<HeaderDriver> mHeaders;
+    private final HashMap<FeedViewHolder, LeafFeatureDriver> mBoundViewHolderToLeafFeatureDriverMap;
+    private final DeepestContentTracker mDeepestContentTracker;
+    private final ContentChangedListener mContentChangedListener;
+    private final PietEventLogger mEventLogger;
 
-    private boolean streamContentVisible;
-    private boolean shown;
+    private boolean mStreamContentVisible;
+    private boolean mShown;
 
-    /*@Nullable*/ private StreamDriver streamDriver;
-    private final ScrollObservable scrollObservable;
+    /*@Nullable*/ private StreamDriver mStreamDriver;
+    private final ScrollObservable mScrollObservable;
 
     // Suppress initialization warnings for calling setHasStableIds on RecyclerView.Adapter
     @SuppressWarnings("initialization")
@@ -76,20 +76,20 @@ public class StreamRecyclerViewAdapter
             DeepestContentTracker deepestContentTracker,
             ContentChangedListener contentChangedListener, ScrollObservable scrollObservable,
             Configuration configuration, PietEventLogger eventLogger) {
-        this.context = context;
-        this.viewport = viewport;
-        this.cardConfiguration = cardConfiguration;
-        this.pietManager = pietManager;
-        this.contentChangedListener = contentChangedListener;
-        this.configuration = configuration;
-        headers = new ArrayList<>();
-        leafFeatureDrivers = new ArrayList<>();
+        this.mContext = context;
+        this.mViewport = viewport;
+        this.mCardConfiguration = cardConfiguration;
+        this.mPietManager = pietManager;
+        this.mContentChangedListener = contentChangedListener;
+        this.mConfiguration = configuration;
+        mHeaders = new ArrayList<>();
+        mLeafFeatureDrivers = new ArrayList<>();
         setHasStableIds(true);
-        boundViewHolderToLeafFeatureDriverMap = new HashMap<>();
-        streamContentVisible = true;
-        this.deepestContentTracker = deepestContentTracker;
-        this.scrollObservable = scrollObservable;
-        this.eventLogger = eventLogger;
+        mBoundViewHolderToLeafFeatureDriverMap = new HashMap<>();
+        mStreamContentVisible = true;
+        this.mDeepestContentTracker = deepestContentTracker;
+        this.mScrollObservable = scrollObservable;
+        this.mEventLogger = eventLogger;
     }
 
     @Override
@@ -101,15 +101,15 @@ public class StreamRecyclerViewAdapter
             return new HeaderViewHolder(frameLayout);
         } else if (viewType == TYPE_CONTINUATION) {
             return new ContinuationViewHolder(
-                    configuration, parent.getContext(), frameLayout, cardConfiguration);
+                    mConfiguration, parent.getContext(), frameLayout, mCardConfiguration);
         } else if (viewType == TYPE_NO_CONTENT) {
-            return new NoContentViewHolder(cardConfiguration, parent.getContext(), frameLayout);
+            return new NoContentViewHolder(mCardConfiguration, parent.getContext(), frameLayout);
         } else if (viewType == TYPE_ZERO_STATE) {
-            return new ZeroStateViewHolder(parent.getContext(), frameLayout, cardConfiguration);
+            return new ZeroStateViewHolder(parent.getContext(), frameLayout, mCardConfiguration);
         }
 
-        return new PietViewHolder(cardConfiguration, frameLayout, pietManager, scrollObservable,
-                viewport, context, configuration, eventLogger);
+        return new PietViewHolder(mCardConfiguration, frameLayout, mPietManager, mScrollObservable,
+                mViewport, mContext, mConfiguration, mEventLogger);
     }
 
     @Override
@@ -117,27 +117,28 @@ public class StreamRecyclerViewAdapter
         Logger.d(TAG, "onBindViewHolder for index: %s", index);
         if (isHeader(index)) {
             Logger.d(TAG, "Binding header at index %s", index);
-            HeaderDriver headerDriver = headers.get(index);
+            HeaderDriver headerDriver = mHeaders.get(index);
             headerDriver.bind(viewHolder);
-            boundViewHolderToLeafFeatureDriverMap.put(viewHolder, headerDriver);
+            mBoundViewHolderToLeafFeatureDriverMap.put(viewHolder, headerDriver);
             return;
         }
 
         int streamIndex = positionToStreamIndex(index);
 
         Logger.d(TAG, "onBindViewHolder for stream index: %s", streamIndex);
-        LeafFeatureDriver leafFeatureDriver = leafFeatureDrivers.get(streamIndex);
+        LeafFeatureDriver leafFeatureDriver = mLeafFeatureDrivers.get(streamIndex);
 
-        deepestContentTracker.updateDeepestContentTracker(
+        mDeepestContentTracker.updateDeepestContentTracker(
                 streamIndex, leafFeatureDriver.getContentId());
 
         leafFeatureDriver.bind(viewHolder);
-        boundViewHolderToLeafFeatureDriverMap.put(viewHolder, leafFeatureDriver);
+        mBoundViewHolderToLeafFeatureDriverMap.put(viewHolder, leafFeatureDriver);
     }
 
     @Override
     public void onViewRecycled(FeedViewHolder viewHolder) {
-        LeafFeatureDriver leafFeatureDriver = boundViewHolderToLeafFeatureDriverMap.get(viewHolder);
+        LeafFeatureDriver leafFeatureDriver =
+                mBoundViewHolderToLeafFeatureDriverMap.get(viewHolder);
 
         if (leafFeatureDriver == null) {
             Logger.wtf(TAG, "Could not find driver for unbinding");
@@ -145,13 +146,13 @@ public class StreamRecyclerViewAdapter
         }
 
         leafFeatureDriver.unbind();
-        boundViewHolderToLeafFeatureDriverMap.remove(viewHolder);
+        mBoundViewHolderToLeafFeatureDriverMap.remove(viewHolder);
     }
 
     @Override
     public int getItemCount() {
-        int driverSize = streamContentVisible ? leafFeatureDrivers.size() : 0;
-        return driverSize + headers.size();
+        int driverSize = mStreamContentVisible ? mLeafFeatureDrivers.size() : 0;
+        return driverSize + mHeaders.size();
     }
 
     @Override
@@ -161,42 +162,42 @@ public class StreamRecyclerViewAdapter
             return TYPE_HEADER;
         }
 
-        return leafFeatureDrivers.get(positionToStreamIndex(position)).getItemViewType();
+        return mLeafFeatureDrivers.get(positionToStreamIndex(position)).getItemViewType();
     }
 
     @Override
     public long getItemId(int position) {
         if (isHeader(position)) {
-            return headers.get(position).hashCode();
+            return mHeaders.get(position).hashCode();
         }
 
-        return leafFeatureDrivers.get(positionToStreamIndex(position)).itemId();
+        return mLeafFeatureDrivers.get(positionToStreamIndex(position)).itemId();
     }
 
     public void rebind() {
-        for (LeafFeatureDriver driver : boundViewHolderToLeafFeatureDriverMap.values()) {
+        for (LeafFeatureDriver driver : mBoundViewHolderToLeafFeatureDriverMap.values()) {
             driver.maybeRebind();
         }
     }
 
     @VisibleForTesting
     public List<LeafFeatureDriver> getLeafFeatureDrivers() {
-        return leafFeatureDrivers;
+        return mLeafFeatureDrivers;
     }
 
     private boolean isHeader(int position) {
-        return position < headers.size();
+        return position < mHeaders.size();
     }
 
     private int positionToStreamIndex(int position) {
-        return position - headers.size();
+        return position - mHeaders.size();
     }
 
     public void setHeaders(List<Header> newHeaders) {
         // TODO: Move header orchestration into separate class once header orchestration
         // logic is complex enough.
         List<Header> oldHeaders = new ArrayList<>();
-        for (HeaderDriver headerDriver : headers) {
+        for (HeaderDriver headerDriver : mHeaders) {
             oldHeaders.add(headerDriver.getHeader());
         }
         DiffResult diffResult =
@@ -205,45 +206,45 @@ public class StreamRecyclerViewAdapter
     }
 
     public int getHeaderCount() {
-        return headers.size();
+        return mHeaders.size();
     }
 
     public void setStreamContentVisible(boolean streamContentVisible) {
-        if (this.streamContentVisible == streamContentVisible) {
+        if (this.mStreamContentVisible == streamContentVisible) {
             return;
         }
-        this.streamContentVisible = streamContentVisible;
+        this.mStreamContentVisible = streamContentVisible;
 
-        if (leafFeatureDrivers.isEmpty()) {
+        if (mLeafFeatureDrivers.isEmpty()) {
             // Nothing to alter in RecyclerView if there is no leaf content.
             return;
         }
 
         if (streamContentVisible) {
-            notifyItemRangeInserted(headers.size(), leafFeatureDrivers.size());
+            notifyItemRangeInserted(mHeaders.size(), mLeafFeatureDrivers.size());
         } else {
-            notifyItemRangeRemoved(headers.size(), leafFeatureDrivers.size());
+            notifyItemRangeRemoved(mHeaders.size(), mLeafFeatureDrivers.size());
         }
     }
 
     public void setDriver(StreamDriver newStreamDriver) {
-        if (streamDriver != null) {
-            streamDriver.setStreamContentListener(null);
+        if (mStreamDriver != null) {
+            mStreamDriver.setStreamContentListener(null);
         }
 
-        notifyItemRangeRemoved(headers.size(), leafFeatureDrivers.size());
-        leafFeatureDrivers.clear();
+        notifyItemRangeRemoved(mHeaders.size(), mLeafFeatureDrivers.size());
+        mLeafFeatureDrivers.clear();
 
         // It is important that we get call getLeafFeatureDrivers before setting the content
         // listener. If this is done in the other order, it is possible that the StreamDriver
         // notifies us of something being added inside of the getLeafFeatureDrivers() call,
         // resulting in two copies of the LeafFeatureDriver being shown.
-        leafFeatureDrivers.addAll(newStreamDriver.getLeafFeatureDrivers());
+        mLeafFeatureDrivers.addAll(newStreamDriver.getLeafFeatureDrivers());
         newStreamDriver.setStreamContentListener(this);
 
-        streamDriver = newStreamDriver;
-        if (streamContentVisible) {
-            notifyItemRangeInserted(headers.size(), leafFeatureDrivers.size());
+        mStreamDriver = newStreamDriver;
+        if (mStreamContentVisible) {
+            notifyItemRangeInserted(mHeaders.size(), mLeafFeatureDrivers.size());
         }
 
         newStreamDriver.maybeRestoreScroll();
@@ -255,11 +256,11 @@ public class StreamRecyclerViewAdapter
             return;
         }
 
-        leafFeatureDrivers.addAll(index, newFeatureDrivers);
+        mLeafFeatureDrivers.addAll(index, newFeatureDrivers);
 
-        int insertionIndex = headers.size() + index;
+        int insertionIndex = mHeaders.size() + index;
 
-        if (streamContentVisible) {
+        if (mStreamContentVisible) {
             notifyItemRangeInserted(insertionIndex, newFeatureDrivers.size());
         }
         maybeNotifyContentChanged();
@@ -267,12 +268,12 @@ public class StreamRecyclerViewAdapter
 
     @Override
     public void notifyContentRemoved(int index) {
-        int removalIndex = headers.size() + index;
+        int removalIndex = mHeaders.size() + index;
 
-        leafFeatureDrivers.remove(index);
-        deepestContentTracker.removeContentId(index);
+        mLeafFeatureDrivers.remove(index);
+        mDeepestContentTracker.removeContentId(index);
 
-        if (streamContentVisible) {
+        if (mStreamContentVisible) {
             notifyItemRemoved(removalIndex);
         }
         maybeNotifyContentChanged();
@@ -280,17 +281,17 @@ public class StreamRecyclerViewAdapter
 
     @Override
     public void notifyContentsCleared() {
-        int itemCount = leafFeatureDrivers.size();
-        leafFeatureDrivers.clear();
+        int itemCount = mLeafFeatureDrivers.size();
+        mLeafFeatureDrivers.clear();
 
-        if (streamContentVisible) {
-            notifyItemRangeRemoved(headers.size(), itemCount);
+        if (mStreamContentVisible) {
+            notifyItemRangeRemoved(mHeaders.size(), itemCount);
         }
         maybeNotifyContentChanged();
     }
 
     public void onDestroy() {
-        for (HeaderDriver header : headers) {
+        for (HeaderDriver header : mHeaders) {
             header.unbind();
         }
 
@@ -298,22 +299,22 @@ public class StreamRecyclerViewAdapter
     }
 
     public void setShown(boolean shown) {
-        this.shown = shown;
+        this.mShown = shown;
     }
 
     private void maybeNotifyContentChanged() {
         // If Stream is not shown on screen, host should be notified as animations will not run and
         // the host will not be notified through StreamItemAnimator.
-        if (!shown) {
-            contentChangedListener.onContentChanged();
+        if (!mShown) {
+            mContentChangedListener.onContentChanged();
         }
     }
 
     @VisibleForTesting
     void dismissHeader(Header header) {
         int indexToRemove = -1;
-        for (int i = 0; i < headers.size(); i++) {
-            if (headers.get(i).getHeader() == header) {
+        for (int i = 0; i < mHeaders.size(); i++) {
+            if (mHeaders.get(i).getHeader() == header) {
                 indexToRemove = i;
             }
         }
@@ -322,7 +323,7 @@ public class StreamRecyclerViewAdapter
             return;
         }
 
-        headers.remove(indexToRemove).onDestroy();
+        mHeaders.remove(indexToRemove).onDestroy();
         notifyItemRemoved(indexToRemove);
         header.onDismissed();
     }
@@ -333,47 +334,47 @@ public class StreamRecyclerViewAdapter
     }
 
     private static class HeaderDiffCallback extends DiffUtil.Callback {
-        private final List<Header> oldHeaders;
-        private final List<Header> newHeaders;
+        private final List<Header> mOldHeaders;
+        private final List<Header> mNewHeaders;
 
         private HeaderDiffCallback(List<Header> oldHeaders, List<Header> newHeaders) {
-            this.oldHeaders = oldHeaders;
-            this.newHeaders = newHeaders;
+            this.mOldHeaders = oldHeaders;
+            this.mNewHeaders = newHeaders;
         }
 
         @Override
         public int getOldListSize() {
-            return oldHeaders.size();
+            return mOldHeaders.size();
         }
 
         @Override
         public int getNewListSize() {
-            return newHeaders.size();
+            return mNewHeaders.size();
         }
 
         @Override
         public boolean areItemsTheSame(int i, int i1) {
-            return oldHeaders.get(i).getView().equals(newHeaders.get(i1).getView());
+            return mOldHeaders.get(i).getView().equals(mNewHeaders.get(i1).getView());
         }
 
         @Override
         public boolean areContentsTheSame(int i, int i1) {
-            return oldHeaders.get(i).getView().equals(newHeaders.get(i1).getView());
+            return mOldHeaders.get(i).getView().equals(mNewHeaders.get(i1).getView());
         }
     }
 
     private class HeaderListUpdateCallback implements ListUpdateCallback {
-        private final List<Header> newHeaders;
+        private final List<Header> mNewHeaders;
 
         public HeaderListUpdateCallback(List<Header> newHeaders) {
-            this.newHeaders = newHeaders;
+            this.mNewHeaders = newHeaders;
         }
 
         @Override
         public void onInserted(int i, int i1) {
-            for (int index = i; index < newHeaders.size() && index < i + i1; index++) {
-                HeaderDriver headerDriver = createHeaderDriver(newHeaders.get(index));
-                headers.add(index, headerDriver);
+            for (int index = i; index < mNewHeaders.size() && index < i + i1; index++) {
+                HeaderDriver headerDriver = createHeaderDriver(mNewHeaders.get(index));
+                mHeaders.add(index, headerDriver);
             }
             notifyItemRangeInserted(i, i1);
         }
@@ -381,8 +382,8 @@ public class StreamRecyclerViewAdapter
         @Override
         public void onRemoved(int i, int i1) {
             for (int index = i + i1 - 1; index >= 0 && index > i - i1; index--) {
-                headers.get(index).onDestroy();
-                headers.remove(index);
+                mHeaders.get(index).onDestroy();
+                mHeaders.remove(index);
             }
             notifyItemRangeRemoved(i, i1);
         }

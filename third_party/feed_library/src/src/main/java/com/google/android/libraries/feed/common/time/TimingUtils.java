@@ -32,16 +32,16 @@ public class TimingUtils implements Dumpable {
     private static final String UI_THREAD = "ui";
     private static final int MAX_TO_DUMP = 10;
 
-    private static int bgThreadId = 1;
+    private static int sBgThreadId = 1;
 
-    private final ThreadUtils threadUtils = new ThreadUtils();
-    private final Object lock = new Object();
-
-    @GuardedBy("lock")
-    private final Queue<ThreadState> threadDumps = new ArrayDeque<>(MAX_TO_DUMP);
+    private final ThreadUtils mThreadUtils = new ThreadUtils();
+    private final Object mLock = new Object();
 
     @GuardedBy("lock")
-    private final LongSparseArray<ThreadStack> threadStacks = new LongSparseArray<>();
+    private final Queue<ThreadState> mThreadDumps = new ArrayDeque<>(MAX_TO_DUMP);
+
+    @GuardedBy("lock")
+    private final LongSparseArray<ThreadStack> mThreadStacks = new LongSparseArray<>();
 
     /**
      * ElapsedTimeTracker works similar to Stopwatch. This is used to track elapsed time for some
@@ -56,16 +56,16 @@ public class TimingUtils implements Dumpable {
      * thrown if the class isn't used correctly.
      */
     public static class ElapsedTimeTracker {
-        private final ThreadStack threadStack;
-        private final String source;
+        private final ThreadStack mThreadStack;
+        private final String mSource;
 
-        private final long startTime;
-        private long endTime;
+        private final long mStartTime;
+        private long mEndTime;
 
         private ElapsedTimeTracker(ThreadStack threadStack, String source) {
-            this.threadStack = threadStack;
-            this.source = source;
-            startTime = System.nanoTime();
+            this.mThreadStack = threadStack;
+            this.mSource = source;
+            mStartTime = System.nanoTime();
         }
 
         /**
@@ -75,14 +75,14 @@ public class TimingUtils implements Dumpable {
          * <p>For example: dumper.forKey(arg[0]).value(arg[1])
          */
         public void stop(Object... args) {
-            if (endTime > 0) {
+            if (mEndTime > 0) {
                 throw new IllegalStateException("ElapsedTimeTracker has already been stopped.");
             }
-            endTime = System.nanoTime();
-            TrackerState trackerState =
-                    new TrackerState(endTime - startTime, source, args, threadStack.stack.size());
-            threadStack.addTrackerState(trackerState);
-            threadStack.popElapsedTimeTracker(this);
+            mEndTime = System.nanoTime();
+            TrackerState trackerState = new TrackerState(
+                    mEndTime - mStartTime, mSource, args, mThreadStack.mStack.size());
+            mThreadStack.addTrackerState(trackerState);
+            mThreadStack.popElapsedTimeTracker(this);
         }
     }
 
@@ -92,16 +92,16 @@ public class TimingUtils implements Dumpable {
      */
     public ElapsedTimeTracker getElapsedTimeTracker(String source) {
         long threadId = Thread.currentThread().getId();
-        synchronized (lock) {
-            ThreadStack timerStack = threadStacks.get(threadId);
+        synchronized (mLock) {
+            ThreadStack timerStack = mThreadStacks.get(threadId);
             if (timerStack == null) {
                 timerStack = new ThreadStack(
-                        threadUtils.isMainThread() ? UI_THREAD : BACKGROUND_THREAD + bgThreadId++,
+                        mThreadUtils.isMainThread() ? UI_THREAD : BACKGROUND_THREAD + sBgThreadId++,
                         false);
-                threadStacks.put(threadId, timerStack);
+                mThreadStacks.put(threadId, timerStack);
             }
             ElapsedTimeTracker timeTracker = new ElapsedTimeTracker(timerStack, source);
-            timerStack.stack.push(timeTracker);
+            timerStack.mStack.push(timeTracker);
             return timeTracker;
         }
     }
@@ -113,39 +113,41 @@ public class TimingUtils implements Dumpable {
      */
     public void pinThread(Thread thread, String name) {
         ThreadStack timerStack = new ThreadStack(name, true);
-        synchronized (lock) {
-            threadStacks.put(thread.getId(), timerStack);
+        synchronized (mLock) {
+            mThreadStacks.put(thread.getId(), timerStack);
         }
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        synchronized (lock) {
-            for (ThreadState threadState : threadDumps) {
+        synchronized (mLock) {
+            for (ThreadState threadState : mThreadDumps) {
                 dumpThreadState(dumper, threadState);
             }
         }
     }
 
     private void dumpThreadState(Dumper dumper, ThreadState threadState) {
-        if (threadState.trackerStates.isEmpty()) {
+        if (threadState.mTrackerStates.isEmpty()) {
             Logger.w(TAG, "Found Empty TrackerState List");
             return;
         }
-        dumper.forKey("thread").value(threadState.threadName);
-        dumper.forKey("timeStamp").value(threadState.date).compactPrevious();
-        for (int i = threadState.trackerStates.size() - 1; i >= 0; i--) {
-            TrackerState trackerState = threadState.trackerStates.get(i);
+        dumper.forKey("thread").value(threadState.mThreadName);
+        dumper.forKey("timeStamp").value(threadState.mDate).compactPrevious();
+        for (int i = threadState.mTrackerStates.size() - 1; i >= 0; i--) {
+            TrackerState trackerState = threadState.mTrackerStates.get(i);
             Dumper child = dumper.getChildDumper();
-            child.forKey("time", trackerState.indent - 1)
-                    .value(trackerState.duration / 1000000 + "ms");
-            child.forKey("source").value(trackerState.source).compactPrevious();
-            if (trackerState.args != null && trackerState.args.length > 0) {
-                for (int j = 0; j < trackerState.args.length; j++) {
-                    String key = trackerState.args[j++].toString();
-                    Object value = (j < trackerState.args.length) ? trackerState.args[j] : "";
-                    child.forKey(key, trackerState.indent - 1).valueObject(value).compactPrevious();
+            child.forKey("time", trackerState.mIndent - 1)
+                    .value(trackerState.mDuration / 1000000 + "ms");
+            child.forKey("source").value(trackerState.mSource).compactPrevious();
+            if (trackerState.mArgs != null && trackerState.mArgs.length > 0) {
+                for (int j = 0; j < trackerState.mArgs.length; j++) {
+                    String key = trackerState.mArgs[j++].toString();
+                    Object value = (j < trackerState.mArgs.length) ? trackerState.mArgs[j] : "";
+                    child.forKey(key, trackerState.mIndent - 1)
+                            .valueObject(value)
+                            .compactPrevious();
                 }
             }
         }
@@ -153,65 +155,65 @@ public class TimingUtils implements Dumpable {
 
     /** Definition of a Stack of {@link ElapsedTimeTracker} instances. */
     private class ThreadStack {
-        final String name;
-        final Stack<ElapsedTimeTracker> stack = new Stack<>();
-        private List<TrackerState> trackerStates = new ArrayList<>();
-        final boolean pin;
+        final String mName;
+        final Stack<ElapsedTimeTracker> mStack = new Stack<>();
+        private List<TrackerState> mTrackerStates = new ArrayList<>();
+        final boolean mPin;
 
         ThreadStack(String name, boolean pin) {
-            this.name = name;
-            this.pin = pin;
+            this.mName = name;
+            this.mPin = pin;
         }
 
         void addTrackerState(TrackerState trackerState) {
-            trackerStates.add(trackerState);
+            mTrackerStates.add(trackerState);
         }
 
         void popElapsedTimeTracker(ElapsedTimeTracker tracker) {
-            ElapsedTimeTracker top = stack.peek();
+            ElapsedTimeTracker top = mStack.peek();
             if (top != tracker) {
-                int pos = stack.search(tracker);
+                int pos = mStack.search(tracker);
                 if (pos == -1) {
                     Logger.w(TAG, "Trying to Pop non-top of stack timer, ignoring");
                     return;
                 } else {
                     int c = 0;
-                    while (stack.peek() != tracker) {
+                    while (mStack.peek() != tracker) {
                         c++;
-                        stack.pop();
+                        mStack.pop();
                     }
                     Logger.w(TAG, "Pop TimingTracker which was not the current top, popped % items",
                             c);
                 }
             }
-            stack.pop();
-            if (stack.isEmpty()) {
+            mStack.pop();
+            if (mStack.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
-                TrackerState ts = trackerStates.get(trackerStates.size() - 1);
-                for (int i = 0; i < ts.args.length; i++) {
-                    String key = ts.args[i++].toString();
-                    Object value = (i < ts.args.length) ? ts.args[i] : "";
+                TrackerState ts = mTrackerStates.get(mTrackerStates.size() - 1);
+                for (int i = 0; i < ts.mArgs.length; i++) {
+                    String key = ts.mArgs[i++].toString();
+                    Object value = (i < ts.mArgs.length) ? ts.mArgs[i] : "";
                     if (!TextUtils.isEmpty(key)) {
                         sb.append(key).append(" : ").append(value);
                     } else {
                         sb.append(value);
                     }
-                    if ((i + 1) < ts.args.length) {
+                    if ((i + 1) < ts.mArgs.length) {
                         sb.append(" | ");
                     }
                 }
                 Logger.i(TAG, "Task Timing %3sms, thread %s | %s",
-                        ((tracker.endTime - tracker.startTime) / 1000000), tracker.threadStack.name,
-                        sb);
-                synchronized (lock) {
-                    if (threadDumps.size() == MAX_TO_DUMP) {
+                        ((tracker.mEndTime - tracker.mStartTime) / 1000000),
+                        tracker.mThreadStack.mName, sb);
+                synchronized (mLock) {
+                    if (mThreadDumps.size() == MAX_TO_DUMP) {
                         // Before adding a new tracker state, remove the oldest one.
-                        threadDumps.remove();
+                        mThreadDumps.remove();
                     }
-                    threadDumps.add(new ThreadState(trackerStates, name));
-                    trackerStates = new ArrayList<>();
-                    if (!pin) {
-                        threadStacks.remove(Thread.currentThread().getId());
+                    mThreadDumps.add(new ThreadState(mTrackerStates, mName));
+                    mTrackerStates = new ArrayList<>();
+                    if (!mPin) {
+                        mThreadStacks.remove(Thread.currentThread().getId());
                     }
                 }
             }
@@ -220,29 +222,29 @@ public class TimingUtils implements Dumpable {
 
     /** State associated with a thread */
     private static class ThreadState {
-        final List<TrackerState> trackerStates;
-        final String threadName;
-        final Date date;
+        final List<TrackerState> mTrackerStates;
+        final String mThreadName;
+        final Date mDate;
 
         ThreadState(List<TrackerState> trackerStates, String threadName) {
-            this.trackerStates = trackerStates;
-            this.threadName = threadName;
-            date = new Date();
+            this.mTrackerStates = trackerStates;
+            this.mThreadName = threadName;
+            mDate = new Date();
         }
     }
 
     /** State associated with a completed ElapsedTimeTracker */
     private static class TrackerState {
-        final long duration;
-        final String source;
-        final Object[] args;
-        final int indent;
+        final long mDuration;
+        final String mSource;
+        final Object[] mArgs;
+        final int mIndent;
 
         TrackerState(long duration, String source, Object[] args, int indent) {
-            this.duration = duration;
-            this.source = source;
-            this.args = args;
-            this.indent = indent;
+            this.mDuration = duration;
+            this.mSource = source;
+            this.mArgs = args;
+            this.mIndent = indent;
         }
     }
 }

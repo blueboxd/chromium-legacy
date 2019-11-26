@@ -43,20 +43,6 @@ public class WebappDataStorageTest {
     private SharedPreferences mSharedPreferences;
     private boolean mCallbackCalled;
 
-    private class FetchCallback<T> implements WebappDataStorage.FetchCallback<T> {
-        T mExpected;
-
-        FetchCallback(T expected) {
-            mExpected = expected;
-        }
-
-        @Override
-        public void onDataRetrieved(T readObject) {
-            mCallbackCalled = true;
-            assertEquals(mExpected, readObject);
-        }
-    }
-
     @Before
     public void setUp() {
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(

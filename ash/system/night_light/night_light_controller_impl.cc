@@ -890,10 +890,10 @@ void NightLightControllerImpl::ScheduleNextToggle(base::TimeDelta delay) {
   VLOG(1) << "Setting Night Light to toggle to "
           << (new_status ? "enabled" : "disabled") << " at "
           << base::TimeFormatTimeOfDay(delegate_->GetNow() + delay);
-  timer_.Start(
-      FROM_HERE, delay,
-      base::Bind(&NightLightControllerImpl::SetEnabled, base::Unretained(this),
-                 new_status, AnimationDuration::kLong));
+  timer_.Start(FROM_HERE, delay,
+               base::BindOnce(&NightLightControllerImpl::SetEnabled,
+                              base::Unretained(this), new_status,
+                              AnimationDuration::kLong));
 }
 
 }  // namespace ash

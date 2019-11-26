@@ -575,7 +575,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
 
     auto blob_data = std::make_unique<BlobData>();
     blob_data->AppendFile(file_metadata.platform_path, 0, file_metadata.length,
-                          InvalidFileTime());
+                          base::nullopt);
     scoped_refptr<BlobDataHandle> snapshot_blob =
         BlobDataHandle::Create(std::move(blob_data), file_metadata.length);
 

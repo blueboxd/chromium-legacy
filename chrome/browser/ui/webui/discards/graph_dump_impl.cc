@@ -182,10 +182,16 @@ void DiscardsGraphDumpImpl::SubscribeToChanges(
     }
   }
 
+  for (const performance_manager::WorkerNode* worker_node :
+       graph_->GetAllWorkerNodes()) {
+    SendWorkerNotification(worker_node, true);
+  }
+
   // Subscribe to subsequent notifications.
   graph_->AddFrameNodeObserver(this);
   graph_->AddPageNodeObserver(this);
   graph_->AddProcessNodeObserver(this);
+  graph_->AddWorkerNodeObserver(this);
 }
 
 void DiscardsGraphDumpImpl::OnPassedToGraph(performance_manager::Graph* graph) {
@@ -201,6 +207,7 @@ void DiscardsGraphDumpImpl::OnTakenFromGraph(
     graph_->RemoveFrameNodeObserver(this);
     graph_->RemovePageNodeObserver(this);
     graph_->RemoveProcessNodeObserver(this);
+    graph_->RemoveWorkerNodeObserver(this);
   }
 
   change_subscriber_.reset();
@@ -270,6 +277,40 @@ void DiscardsGraphDumpImpl::OnBeforeProcessNodeRemoved(
   SendDeletionNotification(process_node);
 }
 
+void DiscardsGraphDumpImpl::OnWorkerNodeAdded(
+    const performance_manager::WorkerNode* worker_node) {
+  SendWorkerNotification(worker_node, true);
+}
+
+void DiscardsGraphDumpImpl::OnBeforeWorkerNodeRemoved(
+    const performance_manager::WorkerNode* worker_node) {
+  SendDeletionNotification(worker_node);
+}
+
+void DiscardsGraphDumpImpl::OnClientFrameAdded(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::FrameNode* client_frame_node) {
+  SendWorkerNotification(worker_node, false);
+}
+
+void DiscardsGraphDumpImpl::OnBeforeClientFrameRemoved(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::FrameNode* client_frame_node) {
+  SendWorkerNotification(worker_node, false);
+}
+
+void DiscardsGraphDumpImpl::OnClientWorkerAdded(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::WorkerNode* client_worker_node) {
+  SendWorkerNotification(worker_node, false);
+}
+
+void DiscardsGraphDumpImpl::OnBeforeClientWorkerRemoved(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::WorkerNode* client_worker_node) {
+  SendWorkerNotification(worker_node, false);
+}
+
 DiscardsGraphDumpImpl::FaviconRequestHelper*
 DiscardsGraphDumpImpl::EnsureFaviconRequestHelper() {
   if (!favicon_request_helper_) {
@@ -311,7 +352,7 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
     const performance_manager::FrameNode* frame,
     bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/961785): Add more frame properties.
+  // TODO(https://crbug.com/1028117): Add more frame properties.
   discards::mojom::FrameInfoPtr frame_info = discards::mojom::FrameInfo::New();
 
   frame_info->id = GetSerializationId(frame);
@@ -337,7 +378,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
     const performance_manager::PageNode* page_node,
     bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/961785): Add more page_node properties.
+  // TODO(https://crbug.com/1028117): Add more page_node properties.
   discards::mojom::PageInfoPtr page_info = discards::mojom::PageInfo::New();
 
   page_info->id = GetSerializationId(page_node);
@@ -351,7 +392,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
 void DiscardsGraphDumpImpl::SendProcessNotification(
     const performance_manager::ProcessNode* process,
     bool created) {
-  // TODO(https://crbug.com/961785): Add more process properties.
+  // TODO(https://crbug.com/1028117): Add more process properties.
   discards::mojom::ProcessInfoPtr process_info =
       discards::mojom::ProcessInfo::New();
 
@@ -364,6 +405,36 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
     change_subscriber_->ProcessCreated(std::move(process_info));
   else
     change_subscriber_->ProcessChanged(std::move(process_info));
+}
+
+void DiscardsGraphDumpImpl::SendWorkerNotification(
+    const performance_manager::WorkerNode* worker,
+    bool created) {
+  // TODO(https://crbug.com/1028117): Add more process properties.
+  discards::mojom::WorkerInfoPtr worker_info =
+      discards::mojom::WorkerInfo::New();
+
+  worker_info->id = GetSerializationId(worker);
+  worker_info->url = worker->GetURL();
+  worker_info->process_id = GetSerializationId(worker->GetProcessNode());
+
+  for (const performance_manager::FrameNode* client_frame :
+       worker->GetClientFrames()) {
+    worker_info->client_frame_ids.push_back(GetSerializationId(client_frame));
+  }
+  for (const performance_manager::WorkerNode* client_worker :
+       worker->GetClientWorkers()) {
+    worker_info->client_worker_ids.push_back(GetSerializationId(client_worker));
+  }
+  for (const performance_manager::WorkerNode* child_worker :
+       worker->GetChildWorkers()) {
+    worker_info->child_worker_ids.push_back(GetSerializationId(child_worker));
+  }
+
+  if (created)
+    change_subscriber_->WorkerCreated(std::move(worker_info));
+  else
+    change_subscriber_->WorkerChanged(std::move(worker_info));
 }
 
 void DiscardsGraphDumpImpl::SendDeletionNotification(

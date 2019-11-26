@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -32,6 +33,12 @@ public interface AutocompleteCoordinator extends UrlFocusChangeListener, UrlText
      * @param toolbarDataProvider The data provider.
      */
     void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider);
+
+    /**
+     * @param overviewModeBehavior A means of accessing the current OverviewModeState and a way to
+     *         listen to state changes.
+     */
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior);
 
     /**
      * Updates the profile used for generating autocomplete suggestions.

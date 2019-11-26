@@ -110,6 +110,24 @@ public final class ChromePreferenceKeys {
     public static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
             "contextual_search_current_week_number";
 
+    public static final String CONTEXTUAL_SEARCH_OLDEST_WEEK = "contextual_search_oldest_week";
+    public static final String CONTEXTUAL_SEARCH_NEWEST_WEEK = "contextual_search_newest_week";
+    public static final String CONTEXTUAL_SEARCH_CLICKS_WEEK_0 = "contextual_search_clicks_week_0";
+    public static final String CONTEXTUAL_SEARCH_CLICKS_WEEK_1 = "contextual_search_clicks_week_1";
+    public static final String CONTEXTUAL_SEARCH_CLICKS_WEEK_2 = "contextual_search_clicks_week_2";
+    public static final String CONTEXTUAL_SEARCH_CLICKS_WEEK_3 = "contextual_search_clicks_week_3";
+    public static final String CONTEXTUAL_SEARCH_CLICKS_WEEK_4 = "contextual_search_clicks_week_4";
+    public static final String CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0 =
+            "contextual_search_impressions_week_0";
+    public static final String CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1 =
+            "contextual_search_impressions_week_1";
+    public static final String CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2 =
+            "contextual_search_impressions_week_2";
+    public static final String CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3 =
+            "contextual_search_impressions_week_3";
+    public static final String CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4 =
+            "contextual_search_impressions_week_4";
+
     /**
      * Whether the promotion for data reduction has been skipped on first invocation.
      * Default value is false.
@@ -375,6 +393,18 @@ public final class ChromePreferenceKeys {
                 CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
                 CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
                 CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                CONTEXTUAL_SEARCH_OLDEST_WEEK,
+                CONTEXTUAL_SEARCH_NEWEST_WEEK,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_0,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_1,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_2,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_3,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_4,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4,
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
@@ -491,6 +521,18 @@ public final class ChromePreferenceKeys {
                 CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
                 CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
                 CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                CONTEXTUAL_SEARCH_OLDEST_WEEK,
+                CONTEXTUAL_SEARCH_NEWEST_WEEK,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_0,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_1,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_2,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_3,
+                CONTEXTUAL_SEARCH_CLICKS_WEEK_4,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3,
+                CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4,
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,

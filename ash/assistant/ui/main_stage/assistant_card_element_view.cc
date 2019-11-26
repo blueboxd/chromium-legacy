@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"

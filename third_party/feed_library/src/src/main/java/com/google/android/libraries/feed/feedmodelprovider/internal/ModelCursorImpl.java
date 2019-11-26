@@ -28,21 +28,21 @@ import javax.annotation.concurrent.GuardedBy;
 public final class ModelCursorImpl implements ModelCursor, Dumpable {
     private static final String TAG = "ModelCursorImpl";
 
-    private final Object lock = new Object();
+    private final Object mLock = new Object();
 
-    private final String parentContentId;
+    private final String mParentContentId;
 
     @GuardedBy("lock")
-    private final List<UpdatableModelChild> childList;
+    private final List<UpdatableModelChild> mChildList;
 
     /*@Nullable*/
     @GuardedBy("lock")
-    private CursorIterator iterator;
+    private CursorIterator mIterator;
 
     // #dump() operation counts
-    private int updatesAtEnd;
-    private int appendCount;
-    private int removeCount;
+    private int mUpdatesAtEnd;
+    private int mAppendCount;
+    private int mRemoveCount;
 
     /**
      * Create a new ModelCursorImpl. The {@code childList} needs to be a copy of the original list
@@ -51,23 +51,23 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
      * featureChang)}.
      */
     public ModelCursorImpl(String parentContentId, List<UpdatableModelChild> childList) {
-        this.parentContentId = parentContentId;
-        this.childList = new ArrayList<>(childList);
-        this.iterator = new CursorIterator();
+        this.mParentContentId = parentContentId;
+        this.mChildList = new ArrayList<>(childList);
+        this.mIterator = new CursorIterator();
     }
 
     public String getParentContentId() {
-        return parentContentId;
+        return mParentContentId;
     }
 
     public void updateIterator(FeatureChange featureChange) {
         // if the state has been released then ignore the change
         if (isAtEnd()) {
             Logger.i(TAG, "Ignoring Update on cursor currently at end");
-            updatesAtEnd++;
+            mUpdatesAtEnd++;
             return;
         }
-        synchronized (lock) {
+        synchronized (mLock) {
             ChildChanges childChanges = featureChange.getChildChanges();
             Logger.i(TAG, "Update Cursor, removes %s, appends %s",
                     childChanges.getRemovedChildren().size(),
@@ -77,8 +77,8 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
 
             for (ModelChild modelChild : featureChange.getChildChanges().getAppendedChildren()) {
                 if (modelChild instanceof UpdatableModelChild) {
-                    childList.add(((UpdatableModelChild) modelChild));
-                    appendCount++;
+                    mChildList.add(((UpdatableModelChild) modelChild));
+                    mAppendCount++;
                 } else {
                     Logger.e(TAG, "non-UpdatableModelChild found, ignored");
                 }
@@ -92,23 +92,23 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
         }
         // Remove only needs to remove all children that are beyond the current position because we
         // have visited everything before and can't revisit them with this cursor.
-        synchronized (lock) {
-            CursorIterator cursorIterator = Validators.checkNotNull(iterator);
+        synchronized (mLock) {
+            CursorIterator cursorIterator = Validators.checkNotNull(mIterator);
             int currentPosition = cursorIterator.getPosition();
             List<UpdatableModelChild> realRemoves = new ArrayList<>();
             for (ModelChild modelChild : children) {
                 String childKey = modelChild.getContentId();
                 // This assumes removes are rare so we can walk the list for each deleted child.
-                for (int i = currentPosition; i < childList.size(); i++) {
-                    UpdatableModelChild child = childList.get(i);
+                for (int i = currentPosition; i < mChildList.size(); i++) {
+                    UpdatableModelChild child = mChildList.get(i);
                     if (child.getContentId().equals(childKey)) {
                         realRemoves.add(child);
                         break;
                     }
                 }
             }
-            removeCount += realRemoves.size();
-            childList.removeAll(realRemoves);
+            mRemoveCount += realRemoves.size();
+            mChildList.removeAll(realRemoves);
             Logger.i(TAG, "Removed %s children from the Cursor", realRemoves.size());
         }
     }
@@ -118,15 +118,15 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     public ModelChild getNextItem() {
         // The TimeoutSessionImpl may use the cursor to access the model structure
         ModelChild nextChild;
-        synchronized (lock) {
-            if (iterator == null || !iterator.hasNext()) {
+        synchronized (mLock) {
+            if (mIterator == null || !mIterator.hasNext()) {
                 release();
                 return null;
             }
-            nextChild = iterator.next();
+            nextChild = mIterator.next();
             // If we just hit the last element in the iterator, free all the resources for this
             // cursor.
-            if (!iterator.hasNext()) {
+            if (!mIterator.hasNext()) {
                 release();
             }
             // If we have a synthetic token, this is the end of the cursor.
@@ -147,48 +147,48 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     /** Release all the state assocated with this cursor */
     public void release() {
         // This could be called on a background thread.
-        synchronized (lock) {
-            iterator = null;
+        synchronized (mLock) {
+            mIterator = null;
         }
     }
 
     @Override
     public boolean isAtEnd() {
-        synchronized (lock) {
-            return iterator == null || !this.iterator.hasNext();
+        synchronized (mLock) {
+            return mIterator == null || !this.mIterator.hasNext();
         }
     }
 
     @VisibleForTesting
     final class CursorIterator implements Iterator<UpdatableModelChild> {
-        private int cursor;
+        private int mCursor;
 
         @Override
         public boolean hasNext() {
-            synchronized (lock) {
-                return cursor < childList.size();
+            synchronized (mLock) {
+                return mCursor < mChildList.size();
             }
         }
 
         @Override
         public UpdatableModelChild next() {
-            synchronized (lock) {
-                if (cursor >= childList.size()) {
+            synchronized (mLock) {
+                if (mCursor >= mChildList.size()) {
                     throw new NoSuchElementException();
                 }
-                return childList.get(cursor++);
+                return mChildList.get(mCursor++);
             }
         }
 
         int getPosition() {
-            return cursor;
+            return mCursor;
         }
     }
 
     @VisibleForTesting
     List<UpdatableModelChild> getChildListForTesting() {
-        synchronized (lock) {
-            return new ArrayList<>(childList);
+        synchronized (mLock) {
+            return new ArrayList<>(mChildList);
         }
     }
 
@@ -196,8 +196,8 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     public void dump(Dumper dumper) {
         dumper.title(TAG);
         dumper.forKey("atEnd").value(isAtEnd());
-        dumper.forKey("updatesPostAtEnd").value(updatesAtEnd).compactPrevious();
-        dumper.forKey("appendCount").value(appendCount).compactPrevious();
-        dumper.forKey("removeCount").value(removeCount).compactPrevious();
+        dumper.forKey("updatesPostAtEnd").value(mUpdatesAtEnd).compactPrevious();
+        dumper.forKey("appendCount").value(mAppendCount).compactPrevious();
+        dumper.forKey("removeCount").value(mRemoveCount).compactPrevious();
     }
 }

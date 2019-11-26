@@ -593,6 +593,18 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
           session_ended_ = true;
           RETURN_IF_XR_FAILED(xrEndSession(session_));
           break;
+        case XR_SESSION_STATE_SYNCHRONIZED:
+          visibility_changed_callback_.Run(
+              device::mojom::XRVisibilityState::HIDDEN);
+          break;
+        case XR_SESSION_STATE_VISIBLE:
+          visibility_changed_callback_.Run(
+              device::mojom::XRVisibilityState::VISIBLE_BLURRED);
+          break;
+        case XR_SESSION_STATE_FOCUSED:
+          visibility_changed_callback_.Run(
+              device::mojom::XRVisibilityState::VISIBLE);
+          break;
         default:
           break;
       }
@@ -716,6 +728,12 @@ void OpenXrApiWrapper::RegisterInteractionProfileChangeCallback(
         interaction_profile_callback) {
   interaction_profile_changed_callback_ =
       std::move(interaction_profile_callback);
+}
+
+void OpenXrApiWrapper::RegisterVisibilityChangeCallback(
+    const base::RepeatingCallback<void(mojom::XRVisibilityState)>&
+        visibility_changed_callback) {
+  visibility_changed_callback_ = std::move(visibility_changed_callback);
 }
 
 VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;

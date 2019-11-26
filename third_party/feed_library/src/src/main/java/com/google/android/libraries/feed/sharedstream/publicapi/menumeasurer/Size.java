@@ -9,22 +9,22 @@ package com.google.android.libraries.feed.sharedstream.publicapi.menumeasurer;
  * android.util.Size} which is only available in API 21.
  */
 public class Size {
-    private final int width;
-    private final int height;
+    private final int mWidth;
+    private final int mHeight;
 
     public Size(int width, int height) {
-        this.width = width;
-        this.height = height;
+        this.mWidth = width;
+        this.mHeight = height;
     }
 
     /** Gets the width of the size in pixels. */
     public int getWidth() {
-        return width;
+        return mWidth;
     }
 
     /** Gets the height of the size in pixels. */
     public int getHeight() {
-        return height;
+        return mHeight;
     }
 
     @Override
@@ -38,11 +38,11 @@ public class Size {
 
         Size size = (Size) o;
 
-        return width == size.width && height == size.height;
+        return mWidth == size.mWidth && mHeight == size.mHeight;
     }
 
     @Override
     public int hashCode() {
-        return 31 * width + height;
+        return 31 * mWidth + mHeight;
     }
 }

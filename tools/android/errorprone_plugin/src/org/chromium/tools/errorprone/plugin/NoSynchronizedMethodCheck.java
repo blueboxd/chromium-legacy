@@ -20,7 +20,7 @@ import javax.lang.model.element.Modifier;
  * Triggers an error for public methods that use "synchronized" in their signature.
  */
 @AutoService(BugChecker.class)
-@BugPattern(name = "NoSynchronizedMethodCheck", category = BugPattern.Category.JDK,
+@BugPattern(name = "NoSynchronizedMethodCheck",
         summary = "Use of synchronized in public method signature disallowed.",
         severity = BugPattern.SeverityLevel.ERROR, linkType = BugPattern.LinkType.CUSTOM,
         link = "https://stackoverflow.com/questions/20906548/why-is-synchronized-block-better-than-synchronized-method")

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> किंवा <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">अवलोकन मोड</translation>
 <translation id="4382340674111381977">मागील पेजवर परत जा</translation>
+<translation id="4458670250301149821">अ‍ॅप आयकन अ‍ॅप ग्रिडमधील फोल्डरच्या आत/बाहेर हलवा</translation>
 <translation id="4472417192667361414">सिस्टम आणि डिस्प्ले सेटिंग्ज</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, त्यानंतर <ph name="LEFT" /> किंवा <ph name="RIGHT" /> किंवा <ph name="UP" /> किंवा <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट मदतनीस पाहा</translation>
 <translation id="4628718545549558538">स्थिती क्षेत्र (जेथे तुमच्या खात्यावरील फोटो दिसतो) उघडा</translation>
 <translation id="4642092649622328492">अर्धा स्क्रीनशॉट घ्या</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">पुढील अक्षर हटवा (फॉरवर्ड करा हटवा)</translation>
 <translation id="7500368597227394048">हायफन</translation>
 <translation id="7611271430932669992">फोकस पॉपअप आणि संवाद वर हलवा</translation>
+<translation id="7635348532214572995">अ‍ॅप आयकन अ‍ॅप ग्रिडभोवती हलवा</translation>
 <translation id="766326951329901120">आशय एक साधा मजकूर म्हणून क्लिपबोर्डवरून पेस्ट करा</translation>
 <translation id="7703010453515335249">डावा कंस</translation>
 <translation id="7724603315864178912">कट करा</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">क्लिपबोर्डवरून आशय पेस्ट करा</translation>
 <translation id="9052808072970550123">पुढील वापरकर्त्यावर स्विच करा</translation>
 <translation id="906458777597946297">विंडो वाढवा</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, त्यानंतर <ph name="LEFT" /> किंवा <ph name="RIGHT" /> किंवा <ph name="UP" /> किंवा <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ओळीच्या सुरवातीला जा</translation>
 <translation id="9106898733795143799">पेज आणि वेब ब्राउझर</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> साठी शोध परिणाम नाहीत</translation>

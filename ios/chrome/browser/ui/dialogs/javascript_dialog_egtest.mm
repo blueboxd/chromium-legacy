@@ -571,6 +571,12 @@ void TapSuppressDialogsButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
   }
 
+  // This tests is for DialogPresenter behavior, and does not apply to
+  // OverlayPresenter, which is used for the non-modal dialog solution.
+  if (AreDialogsNonModal()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled for non-modal dialogs.");
+  }
+
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   const GURL kURL = self.testServer->GetURL(kLinkPageURLPath);
   [ChromeEarlGrey loadURL:kURL];

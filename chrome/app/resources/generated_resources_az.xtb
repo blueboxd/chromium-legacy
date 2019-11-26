@@ -2636,7 +2636,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4839303808932127586">Videonun saxlanma formatı:</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 əlavə}other{# əlavə}}</translation>
 <translation id="4842976633412754305">Bu səhifə doğrulanmamış mənbələrdən skript yükləməyə çalışır.</translation>
-<translation id="4843488774506045600">Loqin <ph name="EXTENSION_NAME" /> tərəfindən təmin edilir</translation>
 <translation id="4844333629810439236">Digər klaviaturalar</translation>
 <translation id="4846680374085650406">Bu ayar üçün administratorun tövsiyələrinə əməl edirsiniz.</translation>
 <translation id="4848518990323155912">SIM kartı kilidlənməsini aktiv edin (mobil data istifadə etmək üçün PIN tələb olunur)</translation>
@@ -3839,7 +3838,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6607831829715835317">Daha çox alətlər</translation>
 <translation id="6612358246767739896">Qorunan kontent</translation>
 <translation id="6615455863669487791">Mənə göstərin</translation>
-<translation id="6617100836880592260">Skan sürəti: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Hər Bir Halda Saxlayın</translation>
 <translation id="6619058681307408113">Xətti Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Sayt məkanınızı izləyə bilər</translation>

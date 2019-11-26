@@ -438,12 +438,12 @@ public class PasswordEntryViewer
     public void passwordListAvailable(int count) {
         if (mException) return;
         TextView passwordTextView = mView.findViewById(R.id.password_entry_viewer_password);
-        SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
+        SavedPasswordEntry savedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
                                                         .getPasswordManagerHandler()
                                                         .getSavedPasswordEntry(mID);
-        setRowText(R.id.url_row, SavedPasswordEntry.getUrl());
-        setRowText(R.id.username_row, SavedPasswordEntry.getUserName());
-        passwordTextView.setText(SavedPasswordEntry.getPassword());
+        setRowText(R.id.url_row, savedPasswordEntry.getUrl());
+        setRowText(R.id.username_row, savedPasswordEntry.getUserName());
+        passwordTextView.setText(savedPasswordEntry.getPassword());
     }
 
     @Override

@@ -24,28 +24,28 @@ import java.util.Set;
 public class ScrollListenerNotifier implements ScrollObserver {
     private static final String TAG = "StreamScrollMonitor";
 
-    private final MainThreadRunner mainThreadRunner;
-    private final Set<ScrollListener> scrollListeners;
-    private final ContentChangedListener contentChangedListener;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Set<ScrollListener> mScrollListeners;
+    private final ContentChangedListener mContentChangedListener;
 
     // Doesn't like adding itself to the scrollobservable
     @SuppressWarnings("initialization")
     public ScrollListenerNotifier(ContentChangedListener childChangeListener,
             ScrollObservable scrollObservable, MainThreadRunner mainThreadRunner) {
-        this.contentChangedListener = childChangeListener;
-        this.mainThreadRunner = mainThreadRunner;
+        this.mContentChangedListener = childChangeListener;
+        this.mMainThreadRunner = mainThreadRunner;
 
-        scrollListeners = new HashSet<>();
+        mScrollListeners = new HashSet<>();
 
         scrollObservable.addScrollObserver(this);
     }
 
     public void addScrollListener(ScrollListener listener) {
-        scrollListeners.add(listener);
+        mScrollListeners.add(listener);
     }
 
     public void removeScrollListener(ScrollListener listener) {
-        scrollListeners.remove(listener);
+        mScrollListeners.remove(listener);
     }
 
     /**
@@ -53,7 +53,7 @@ public class ScrollListenerNotifier implements ScrollObserver {
      * appropriate deltas.
      */
     public void onProgrammaticScroll(RecyclerView recyclerView) {
-        mainThreadRunner.execute(TAG + " onProgrammaticScroll", () -> {
+        mMainThreadRunner.execute(TAG + " onProgrammaticScroll", () -> {
             // Post scroll as this allows users of scroll to retrieve new heights/widths of change.
             onScroll(recyclerView, "", UNKNOWN_SCROLL_DELTA, UNKNOWN_SCROLL_DELTA);
         });
@@ -77,18 +77,18 @@ public class ScrollListenerNotifier implements ScrollObserver {
     @Override
     public void onScrollStateChanged(View view, String featureId, int newState, long timestamp) {
         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-            contentChangedListener.onContentChanged();
+            mContentChangedListener.onContentChanged();
         }
 
         int scrollState = convertRecyclerViewScrollStateToListenerState(newState);
-        for (ScrollListener scrollListener : scrollListeners) {
+        for (ScrollListener scrollListener : mScrollListeners) {
             scrollListener.onScrollStateChanged(scrollState);
         }
     }
 
     @Override
     public void onScroll(View view, String featureId, int dx, int dy) {
-        for (ScrollListener scrollListener : scrollListeners) {
+        for (ScrollListener scrollListener : mScrollListeners) {
             scrollListener.onScrolled(dx, dy);
         }
     }

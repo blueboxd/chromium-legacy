@@ -3650,7 +3650,6 @@
           如果不設定這項政策，檔案櫃預設會顯示在畫面底部，且使用者可以變更檔案櫃的位置。</translation>
 <translation id="7040229947030068419">範例值：</translation>
 <translation id="7044883996351280650">控制 Android 備份與還原服務</translation>
-<translation id="7049373494483449255">啟用「<ph name="PRODUCT_NAME" />」將文件提交至「<ph name="CLOUD_PRINT_NAME" />」列印。注意：這只會影響可支援「<ph name="PRODUCT_NAME" />」的「<ph name="CLOUD_PRINT_NAME" />」，但無法禁止使用者提交至網站上的列印工作。如果啟用或尚未設定這項設定，使用者可以從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。如果停用這項設定，使用者則無法從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。</translation>
 <translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>

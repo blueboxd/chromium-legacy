@@ -88,6 +88,9 @@ enum class DecisionFailureReason : int32_t {
   // The tab is opted out of the intervention as it's currently holding at least
   // one IndexedDB lock.
   LIVE_STATE_USING_INDEXEDDB_LOCK,
+  // The tab is opted out of the intervention as it has the permission to use
+  // notifications.
+  LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION,
   // This must remain last.
   MAX,
 };

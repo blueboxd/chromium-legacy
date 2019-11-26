@@ -16,7 +16,7 @@ import java.util.Map;
 
 /** A {@link LinearLayoutManager} used for testing. */
 public final class LinearLayoutManagerForTest extends LinearLayoutManager {
-    private final Map<Integer, View> childMap;
+    private final Map<Integer, View> mChildMap;
 
     public int firstVisibleItemPosition = RecyclerView.NO_POSITION;
     public int firstVisibleViewOffset;
@@ -28,7 +28,7 @@ public final class LinearLayoutManagerForTest extends LinearLayoutManager {
 
     public LinearLayoutManagerForTest(Context context) {
         super(context);
-        this.childMap = new HashMap<>();
+        this.mChildMap = new HashMap<>();
     }
 
     @Override
@@ -43,8 +43,8 @@ public final class LinearLayoutManagerForTest extends LinearLayoutManager {
 
     @Override
     public View findViewByPosition(int position) {
-        if (childMap.containsKey(position)) {
-            return checkNotNull(childMap.get(position),
+        if (mChildMap.containsKey(position)) {
+            return checkNotNull(mChildMap.get(position),
                     "addChildToPosition(int position, View child) should be called prior to "
                             + "findViewByPosition(int position).");
         }
@@ -58,6 +58,6 @@ public final class LinearLayoutManagerForTest extends LinearLayoutManager {
     }
 
     public void addChildToPosition(int position, View child) {
-        childMap.put(position, child);
+        mChildMap.put(position, child);
     }
 }

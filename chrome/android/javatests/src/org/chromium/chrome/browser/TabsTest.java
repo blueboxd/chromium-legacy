@@ -40,6 +40,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -167,8 +168,7 @@ public class TabsTest {
             return;
         }
         mActivityTestRule.startMainActivityOnBlankPage();
-        mActivityTestRule.getActivity().getLayoutManager().getAnimationHandler().setTestingMode(
-                true);
+        CompositorAnimationHandler.setTestingMode(true);
     }
 
     @After

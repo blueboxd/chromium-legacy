@@ -808,9 +808,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
   }
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Windows flakes: https://crbug.com/988938
-// Linux flakes with SkiaRenderer: https://crbug.com/1008567
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/988938
 #define MAYBE_DropValidUrlFromOutside DISABLED_DropValidUrlFromOutside
 #else
 #define MAYBE_DropValidUrlFromOutside DropValidUrlFromOutside

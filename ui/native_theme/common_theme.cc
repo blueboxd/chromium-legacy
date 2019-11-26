@@ -139,6 +139,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
         return gfx::kGoogleBlue800;
 
+      // Tooltip
+      case NativeTheme::kColorId_TooltipText:
+        return SkColorSetA(gfx::kGoogleGrey200, 0xDE);
+
       // Tree
       case NativeTheme::kColorId_TreeBackground:
         return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
@@ -311,13 +315,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TooltipBackground: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_WindowBackground, color_scheme);
-      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xE9);
+      return SkColorSetA(bg, 0xCC);
     }
-    case NativeTheme::kColorId_TooltipText: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_TooltipBackground, color_scheme);
-      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xDE);
-    }
+    case NativeTheme::kColorId_TooltipText:
+      return SkColorSetA(kPrimaryTextColor, 0xDE);
 
     // Tree
     case NativeTheme::kColorId_TreeBackground:

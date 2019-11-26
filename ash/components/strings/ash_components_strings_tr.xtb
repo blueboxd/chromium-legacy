@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> veya <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Genel bakış modu</translation>
 <translation id="4382340674111381977">Önceki sayfaya geri dön</translation>
+<translation id="4458670250301149821">Uygulama ızgarasında uygulama simgesini klasörün içine/dışına taşıma</translation>
 <translation id="4472417192667361414">Sistem ve Görüntü Ayarları</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ardından <ph name="LEFT" /> veya <ph name="RIGHT" /> ya da <ph name="UP" /> veya <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Klavye Kısayolu Yardımcısı'nı gösterir</translation>
 <translation id="4628718545549558538">Hesap resminizin görüntülendiği durum alanını açar</translation>
 <translation id="4642092649622328492">Kısmi ekran görüntüsü alır</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Sonraki harfi siler (ileri doğru silme)</translation>
 <translation id="7500368597227394048">kısa çizgi</translation>
 <translation id="7611271430932669992">Odağı pop-up'lara ve iletişim kutularına taşır</translation>
+<translation id="7635348532214572995">Uygulama simgesini uygulama ızgarası üzerinde taşıma</translation>
 <translation id="766326951329901120">Panodaki içeriği düz metin olarak yapıştırır</translation>
 <translation id="7703010453515335249">sol parantez</translation>
 <translation id="7724603315864178912">Kes</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Panodaki içeriği yapıştırır</translation>
 <translation id="9052808072970550123">Sonraki kullanıcıya geçer</translation>
 <translation id="906458777597946297">Pencereyi ekranı kaplayacak şekilde büyüt</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ardından <ph name="LEFT" /> veya <ph name="RIGHT" /> veya <ph name="UP" /> veya <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Satırın başına gider</translation>
 <translation id="9106898733795143799">Sayfa ve Web Tarayıcısı</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> için arama sonucu yok</translation>

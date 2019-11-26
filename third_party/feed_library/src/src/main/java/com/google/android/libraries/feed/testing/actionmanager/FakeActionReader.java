@@ -14,18 +14,19 @@ import java.util.List;
 
 /** Fake implementation of {@link ActionReader}. */
 public final class FakeActionReader implements ActionReader {
-    private final ArrayList<DismissActionWithSemanticProperties> dismissActions = new ArrayList<>();
+    private final ArrayList<DismissActionWithSemanticProperties> mDismissActions =
+            new ArrayList<>();
 
     @Override
     public Result<List<DismissActionWithSemanticProperties>>
     getDismissActionsWithSemanticProperties() {
-        return Result.success(dismissActions);
+        return Result.success(mDismissActions);
     }
 
     /** Adds a dismiss action with semantic properties. */
     public FakeActionReader addDismissActionsWithSemanticProperties(
             DismissActionWithSemanticProperties... dismissActionsToAdd) {
-        Collections.addAll(dismissActions, dismissActionsToAdd);
+        Collections.addAll(mDismissActions, dismissActionsToAdd);
         return this;
     }
 }

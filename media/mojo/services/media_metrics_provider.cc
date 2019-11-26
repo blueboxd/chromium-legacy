@@ -199,7 +199,8 @@ void MediaMetricsProvider::SetHaveEnough() {
 
 void MediaMetricsProvider::SetVideoPipelineInfo(
     const PipelineDecoderInfo& info) {
-  if (!uma_info_.video_pipeline_info.decoder_name.empty())
+  auto old_name = uma_info_.video_pipeline_info.decoder_name;
+  if (!old_name.empty() && old_name != info.decoder_name)
     uma_info_.video_decoder_changed = true;
   uma_info_.video_pipeline_info = info;
 }

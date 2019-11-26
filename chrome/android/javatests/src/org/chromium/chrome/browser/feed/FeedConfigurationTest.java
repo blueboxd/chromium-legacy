@@ -434,7 +434,7 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, false));
-        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
+        Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
         Assert.assertFalse(
@@ -452,7 +452,7 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals((long) FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
-        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, true));
+        Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_DELAY_MS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0l));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,

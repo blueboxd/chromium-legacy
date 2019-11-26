@@ -1,3 +1,4 @@
 document
 ++navigation
 ++++link Name='Don't click on me'
+++++++description Name='Don't click on me' IsControlElement=false

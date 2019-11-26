@@ -121,6 +121,12 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public String getCurrentUrl() {
+        // Provide NTP url instead of most recent tab url for searches in overview mode (when Start
+        // Surface is enabled). .
+        if (isInOverviewAndShowingOmnibox()) {
+            return UrlConstants.NTP_URL;
+        }
+
         // TODO(yusufo) : Consider using this for all calls from getTab() for accessing url.
         if (!hasTab()) return "";
 
@@ -283,7 +289,10 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     public Profile getProfile() {
         Profile lastUsedProfile = Profile.getLastUsedProfile();
         if (mIsIncognito) {
-            assert lastUsedProfile.hasOffTheRecordProfile();
+            // When in overview mode with no open tabs, there has not been created an
+            // OffTheRecordProfile yet. #getOffTheRecordProfile will create a profile if none
+            // exists.
+            assert lastUsedProfile.hasOffTheRecordProfile() || isInOverviewAndShowingOmnibox();
             return lastUsedProfile.getOffTheRecordProfile();
         }
         return lastUsedProfile.getOriginalProfile();
@@ -346,6 +355,11 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     @Override
     public int getPageClassification(boolean isFocusedFromFakebox) {
         if (mNativeLocationBarModelAndroid == 0) return 0;
+
+        // Provide (NTP=1) as page class in overview mode (when Start Surface is enabled). No call
+        // to the backend necessary or possible, since there is no tab or navigation entry.
+        if (isInOverviewAndShowingOmnibox()) return 1;
+
         return LocationBarModelJni.get().getPageClassification(
                 mNativeLocationBarModelAndroid, LocationBarModel.this, isFocusedFromFakebox);
     }

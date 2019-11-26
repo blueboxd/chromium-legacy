@@ -10,10 +10,10 @@ import com.google.android.libraries.feed.basicstream.internal.viewholders.ViewHo
 
 /** Fake for {@link LeafFeatureDriver}. */
 public class FakeLeafFeatureDriver extends LeafFeatureDriver {
-    private final int itemViewType;
+    private final int mItemViewType;
 
     private FakeLeafFeatureDriver(int itemViewType) {
-        this.itemViewType = itemViewType;
+        this.mItemViewType = itemViewType;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class FakeLeafFeatureDriver extends LeafFeatureDriver {
     @Override
     @ViewHolderType
     public int getItemViewType() {
-        return itemViewType;
+        return mItemViewType;
     }
 
     @Override
@@ -46,15 +46,15 @@ public class FakeLeafFeatureDriver extends LeafFeatureDriver {
 
     public static class Builder {
         @ViewHolderType
-        private int itemViewType = ViewHolderType.TYPE_CARD;
+        private int mItemViewType = ViewHolderType.TYPE_CARD;
 
         public Builder setItemViewType(@ViewHolderType int viewType) {
-            itemViewType = viewType;
+            mItemViewType = viewType;
             return this;
         }
 
         public LeafFeatureDriver build() {
-            return new FakeLeafFeatureDriver(itemViewType);
+            return new FakeLeafFeatureDriver(mItemViewType);
         }
     }
 }

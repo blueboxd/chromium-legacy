@@ -12,6 +12,8 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/x11/x11_event_source_default.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
@@ -127,6 +129,11 @@ class OzonePlatformX11 : public OzonePlatform {
     cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
+    // TODO(spang): Support XKB.
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        keyboard_layout_engine_.get());
+
     TouchFactory::SetTouchDeviceListFromCommandLine();
   }
 
@@ -174,6 +181,7 @@ class OzonePlatformX11 : public OzonePlatform {
   bool common_initialized_ = false;
 
   // Objects in the UI process.
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<X11ClipboardOzone> clipboard_;

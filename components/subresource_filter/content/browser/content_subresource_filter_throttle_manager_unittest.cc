@@ -334,7 +334,7 @@ class ContentSubresourceFilterThrottleManagerTest
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ContentSubresourceFilterThrottleManagerTest,
                          ::testing::Values(WILL_START_REQUEST,
                                            WILL_PROCESS_RESPONSE));

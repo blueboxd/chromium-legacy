@@ -9,7 +9,14 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 185],
-      "bounds": [185, 15],
+      "bounds": [200, 15],
+      "paintInvalidations": [
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 0, 185, 15],
+          "reason": "scroll control"
+        }
+      ],
       "transform": 1
     },
     {
@@ -20,20 +27,15 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='scroller'",
-      "bounds": [200, 200],
+      "position": [0, 16],
+      "bounds": [51, 19],
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='scroller'",
-          "rect": [0, 0, 200, 200],
-          "reason": "background"
+          "rect": [0, 0, 51, 19],
+          "reason": "full layer"
         }
       ],
-      "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV id='scroller'",
-      "position": [0, 16],
-      "bounds": [51, 19],
       "transform": 1
     }
   ],

@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">כתובות</translation>
 <translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">רשימת המכשירים שאפשר לשתף איתם כרטיסייה נפתחה בגובה המלא של המסך.</translation>
+<translation id="2905036901251765993">‏כדי לשתף עם אנשים בקרבת מקום, יש לתת להם לסרוק את קוד ה-QR הזה</translation>
 <translation id="2909615210195135082">‏פלטפורמת ההתראות של Google</translation>
 <translation id="2910701580606108292">הצגת שאלה לפני מתן הרשאה לאתרים להפעיל תוכן מוגן</translation>
 <translation id="2913331724188855103">‏אתרים יוכלו לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">חשוף סיסמה</translation>
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
+<translation id="3682730288090679318">יש להפעיל את האפשרות הזו כדי למנוע באופן אוטומטי מאתרים לבקש הצגה של התראות. אם אתר יבקש להציג התראות, סרגל מידע יופיע בחלק התחתון של הדף.</translation>
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
@@ -542,6 +544,7 @@
 <translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
+<translation id="5096950519211870196">אתרים לא יוכלו לבקש הצגה של התראות. אם אתר יבקש להציג התראות, סרגל מידע יופיע בחלק התחתון של הדף.</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5123685120097942451">כרטיסיית גלישה בסתר</translation>
@@ -589,6 +592,7 @@
 <translation id="5414836363063783498">מאמת…</translation>
 <translation id="5423934151118863508">הדפים שבהם אתה מבקר בתדירות הגבוהה ביותר יופיעו כאן</translation>
 <translation id="5424588387303617268">‏‎<ph name="GIGABYTES" /> GB זמינים</translation>
+<translation id="5427766642345310212">הבנתי. כברירת מחדל, בקשות חדשות להצגת התראות יופיעו כאן.</translation>
 <translation id="543338862236136125">עריכת סיסמה</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
 <translation id="543509235395288790">מתבצעת הורדה של <ph name="COUNT" /> קבצים (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6111020039983847643">צרכת בפועל</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
+<translation id="6113400363611269907">הצגה שקטה של בקשות</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="614940544461990577">כדאי לנסות:</translation>
@@ -1019,6 +1024,7 @@
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8514477925623180633">‏ייצוא סיסמאות המאוחסנות ב-Chrome</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
+<translation id="8516012719330875537">עורך תמונות</translation>
 <translation id="851751545965956758">חסימת התחברות של אתרים אל התקנים</translation>
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
 <translation id="854522910157234410">פתח דף זה</translation>

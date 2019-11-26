@@ -435,23 +435,6 @@ void SharedProtoDatabase::OnDatabaseInit(bool create_if_missing,
   }
 
   ProcessInitRequests(status);
-
-  if (init_state_ == InitState::kSuccess) {
-    // Create a ProtoLevelDBWrapper just like we create for each client, for
-    // deleting data from obsolete clients. It is fine to use the same wrapper
-    // to clear data from all clients. This object will be destroyed after
-    // clearing data for all these clients.
-    auto db_wrapper =
-        std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get());
-    Callbacks::UpdateCallback obsolete_cleared_callback = base::DoNothing();
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&SharedProtoDatabaseClient::
-                           DestroyObsoleteSharedProtoDatabaseClients,
-                       std::move(db_wrapper),
-                       std::move(obsolete_cleared_callback)),
-        kDelayToClearObsoleteDatabase);
-  }
 }
 
 void SharedProtoDatabase::OnUpdateCorruptionCountAtInit(bool success) {

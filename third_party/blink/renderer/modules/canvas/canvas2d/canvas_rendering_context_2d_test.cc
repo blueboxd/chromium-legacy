@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -84,7 +84,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
       SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height()));
   surface->getCanvas()->clear(opacity == kOpaqueBitmap ? SK_ColorWHITE
                                                        : SK_ColorTRANSPARENT);
-  image_ = StaticBitmapImage::Create(surface->makeImageSnapshot());
+  image_ = UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
 scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(

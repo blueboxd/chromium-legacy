@@ -10,6 +10,7 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/events/test/keyboard_layout.h"
 
 namespace ui {
 
@@ -17,6 +18,8 @@ namespace ui {
 // path it is set right away in XEvent => ui::Event translation. This prevents
 // regressions such as crbug.com/1007389.
 TEST(XEventTranslationTest, KeyEventDomKeyExtraction) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   ScopedXI2Event xev;
   xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
 

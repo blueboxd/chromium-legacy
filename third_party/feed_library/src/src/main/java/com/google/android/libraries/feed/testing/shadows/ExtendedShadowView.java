@@ -17,59 +17,59 @@ import org.robolectric.shadows.ShadowView;
  */
 @Implements(View.class)
 public class ExtendedShadowView extends ShadowView {
-    private int xLocation;
-    private int yLocation;
-    private int height;
-    private int width;
-    private boolean attached;
+    private int mXLocation;
+    private int mYLocation;
+    private int mHeight;
+    private int mWidth;
+    private boolean mAttached;
 
     @Implementation
     public void getLocationOnScreen(int[] pos) {
-        pos[0] = xLocation;
-        pos[1] = yLocation;
+        pos[0] = mXLocation;
+        pos[1] = mYLocation;
     }
 
     public void setLocationOnScreen(int x, int y) {
-        xLocation = x;
-        yLocation = y;
+        mXLocation = x;
+        mYLocation = y;
     }
 
     @Implementation
     public void getLocationInWindow(int[] pos) {
-        pos[0] = xLocation;
-        pos[1] = yLocation;
+        pos[0] = mXLocation;
+        pos[1] = mYLocation;
     }
 
     public void setLocationInWindow(int x, int y) {
-        xLocation = x;
-        yLocation = y;
+        mXLocation = x;
+        mYLocation = y;
     }
 
     @Override
     @Implementation
     public boolean isAttachedToWindow() {
-        return attached;
+        return mAttached;
     }
 
     public void setAttachedToWindow(boolean attached) {
-        this.attached = attached;
+        this.mAttached = attached;
     }
 
     @Implementation
     public int getHeight() {
-        return height;
+        return mHeight;
     }
 
     public void setHeight(int height) {
-        this.height = height;
+        this.mHeight = height;
     }
 
     @Implementation
     public int getWidth() {
-        return width;
+        return mWidth;
     }
 
     public void setWidth(int width) {
-        this.width = width;
+        this.mWidth = width;
     }
 }

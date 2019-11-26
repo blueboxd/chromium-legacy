@@ -146,7 +146,6 @@ class NET_EXPORT NetworkErrorLoggingService {
   // events occurred.
 
   static const char kHeaderOutcomeHistogram[];
-  static const char kRequestOutcomeHistogram[];
   static const char kSignedExchangeRequestOutcomeHistogram[];
 
   enum class HeaderOutcome {
@@ -174,6 +173,9 @@ class NET_EXPORT NetworkErrorLoggingService {
     MAX
   };
 
+  // Used for histogramming Signed Exchange request outcomes only. Previously,
+  // the outcome of all requests would be histogrammed, but this was removed in
+  // crbug.com/1007122 because the histogram was very large and not very useful.
   enum class RequestOutcome {
     kDiscardedNoNetworkErrorLoggingService = 0,
 
@@ -195,9 +197,6 @@ class NET_EXPORT NetworkErrorLoggingService {
   static void RecordHeaderDiscardedForInvalidSSLInfo();
   static void RecordHeaderDiscardedForCertStatusError();
   static void RecordHeaderDiscardedForMissingRemoteEndpoint();
-
-  static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
-  static void RecordRequestDiscardedForInsecureOrigin();
 
   // NEL policies are persisted to disk if |store| is not null.
   // The store, if given, should outlive |*this|.

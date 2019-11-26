@@ -123,7 +123,7 @@ void IconWithBadgeImageSource::SetBadge(std::unique_ptr<Badge> badge) {
   gfx::Rect badge_rect = badge_background_rect_;
   badge_rect.Inset(std::max(kPadding, (badge_rect.width() - text_width) / 2),
                    kBadgeHeight - base_font.GetHeight(), kPadding, 0);
-  badge_text_ = gfx::RenderText::CreateHarfBuzzInstance();
+  badge_text_ = gfx::RenderText::CreateRenderText();
   badge_text_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   badge_text_->SetCursorEnabled(false);
   badge_text_->SetFontList(base_font);

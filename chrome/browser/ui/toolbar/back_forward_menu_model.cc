@@ -101,9 +101,8 @@ base::string16 BackForwardMenuModel::GetLabelAt(int index) const {
   NavigationEntry* entry = GetNavigationEntry(index);
   base::string16 menu_text(entry->GetTitleForDisplay());
   menu_text = ui::EscapeMenuLabelAmpersands(menu_text);
-  menu_text =
-      gfx::ElideText(menu_text, gfx::FontList(), kMaxBackForwardMenuWidth,
-                     gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
+  menu_text = gfx::ElideText(menu_text, gfx::FontList(),
+                             kMaxBackForwardMenuWidth, gfx::ELIDE_TAIL);
 
   return menu_text;
 }

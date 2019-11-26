@@ -4,16 +4,104 @@
 
 #include "third_party/blink/renderer/core/fileapi/file.h"
 
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/file/file_utilities.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 
 namespace blink {
 
-TEST(FileTest, nativeFile) {
+namespace {
+
+class MockFileUtilitiesHost : public mojom::blink::FileUtilitiesHost {
+ public:
+  MockFileUtilitiesHost()
+      : broker_(*Platform::Current()->GetBrowserInterfaceBroker()) {
+    broker_.SetBinderForTesting(
+        FileUtilitiesHost::Name_,
+        WTF::BindRepeating(&MockFileUtilitiesHost::BindReceiver,
+                           WTF::Unretained(this)));
+    RebindFileUtilitiesForTesting();
+  }
+
+  ~MockFileUtilitiesHost() override {
+    broker_.SetBinderForTesting(FileUtilitiesHost::Name_, {});
+    RebindFileUtilitiesForTesting();
+  }
+
+  void SetFileInfoToBeReturned(const base::File::Info info) {
+    file_info_ = info;
+  }
+
+ private:
+  void BindReceiver(mojo::ScopedMessagePipeHandle handle) {
+    receivers_.Add(this,
+                   mojo::PendingReceiver<FileUtilitiesHost>(std::move(handle)));
+  }
+
+  // FileUtilitiesHost function:
+  void GetFileInfo(const base::FilePath& path,
+                   GetFileInfoCallback callback) override {
+    std::move(callback).Run(file_info_);
+  }
+
+  ThreadSafeBrowserInterfaceBrokerProxy& broker_;
+  mojo::ReceiverSet<FileUtilitiesHost> receivers_;
+  base::File::Info file_info_;
+};
+
+void ExpectLastModifiedIsNow(const File& file) {
+  const base::Time now = base::Time::Now();
+  const base::Time epoch = base::Time::UnixEpoch();
+  // Because lastModified() applies floor() internally, it can be smaller than
+  // |now|. |+ 1| adjusts it.
+  EXPECT_GE(epoch + base::TimeDelta::FromMilliseconds(file.lastModified() + 1),
+            now);
+  EXPECT_GE(file.LastModifiedDate() + 1, now.ToJsTime());
+}
+
+}  // namespace
+
+TEST(FileTest, NativeFileWithoutTimestamp) {
+  MockFileUtilitiesHost host;
+  base::File::Info info;
+  info.last_modified = base::Time();
+  host.SetFileInfoToBeReturned(info);
+
   File* const file = File::Create("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ("/native/path", file->GetPath());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  ExpectLastModifiedIsNow(*file);
+}
+
+TEST(FileTest, NativeFileWithUnixEpochTimestamp) {
+  MockFileUtilitiesHost host;
+  base::File::Info info;
+  info.last_modified = base::Time::UnixEpoch();
+  host.SetFileInfoToBeReturned(info);
+
+  File* const file = File::Create("/native/path");
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ(0, file->lastModified());
+  EXPECT_EQ(0.0, file->LastModifiedDate());
+}
+
+TEST(FileTest, NativeFileWithApocalypseTimestamp) {
+  MockFileUtilitiesHost host;
+  base::File::Info info;
+  info.last_modified = base::Time::Max();
+  host.SetFileInfoToBeReturned(info);
+
+  File* const file = File::Create("/native/path");
+  EXPECT_TRUE(file->HasBackingFile());
+
+  ExpectLastModifiedIsNow(*file);
+  // Actually, the timestamp should not be |now|.
+  // EXPECT_EQ(base::Time::Max() - base::Time::UnixEpoch(),
+  //           base::TimeDelta::FromMilliseconds(file->lastModified()));
 }
 
 TEST(FileTest, blobBackingFile) {

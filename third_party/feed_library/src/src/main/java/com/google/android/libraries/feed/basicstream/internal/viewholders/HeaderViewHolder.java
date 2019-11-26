@@ -14,21 +14,21 @@ import com.google.android.libraries.feed.common.logging.Logger;
 /** {@link FeedViewHolder} for headers. */
 public class HeaderViewHolder extends FeedViewHolder implements SwipeableViewHolder {
     private static final String TAG = "HeaderViewHolder";
-    private final FrameLayout frameLayout;
+    private final FrameLayout mFrameLayout;
 
-    /*@Nullable*/ private Header header;
-    /*@Nullable*/ private SwipeNotifier swipeNotifier;
+    /*@Nullable*/ private Header mHeader;
+    /*@Nullable*/ private SwipeNotifier mSwipeNotifier;
 
     public HeaderViewHolder(FrameLayout itemView) {
         super(itemView);
-        this.frameLayout = itemView;
+        this.mFrameLayout = itemView;
     }
 
     public void bind(Header header, SwipeNotifier swipeNotifier) {
-        this.header = header;
-        this.swipeNotifier = swipeNotifier;
+        this.mHeader = header;
+        this.mSwipeNotifier = swipeNotifier;
         ViewParent parent = header.getView().getParent();
-        if (parent == frameLayout) {
+        if (parent == mFrameLayout) {
             return;
         }
         // If header was bound to another HeaderViewHolder but not unbound properly, remove it from
@@ -36,36 +36,36 @@ public class HeaderViewHolder extends FeedViewHolder implements SwipeableViewHol
         if (parent != null) {
             ((ViewGroup) parent).removeView(header.getView());
         }
-        frameLayout.addView(header.getView());
+        mFrameLayout.addView(header.getView());
     }
 
     @Override
     public void unbind() {
-        frameLayout.removeAllViews();
-        this.header = null;
-        this.swipeNotifier = null;
+        mFrameLayout.removeAllViews();
+        this.mHeader = null;
+        this.mSwipeNotifier = null;
     }
 
     @Override
     public boolean canSwipe() {
-        if (header == null) {
+        if (mHeader == null) {
             Logger.w(TAG, "canSwipe should not be called before viewholder is bound.");
 
             // Instead of crashing if viewholder is not bound, disable swiping behavior.
             return false;
         }
-        return header.isDismissible();
+        return mHeader.isDismissible();
     }
 
     @Override
     public void onSwiped() {
-        if (swipeNotifier == null) {
+        if (mSwipeNotifier == null) {
             Logger.w(TAG, "onSwiped should not be called before viewholder is bound.");
 
             // Instead of crashing if viewholder is not bound, disable swiping behavior.
             return;
         }
 
-        swipeNotifier.onSwiped();
+        mSwipeNotifier.onSwiped();
     }
 }

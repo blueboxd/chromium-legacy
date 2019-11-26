@@ -19,15 +19,15 @@ import com.google.search.now.ui.piet.StylesProto.Borders.Edges;
  * not specified.
  */
 public class BorderDrawable extends ShapeDrawable {
-    private final boolean hasLeftBorder;
-    private final boolean hasRightBorder;
-    private final boolean hasTopBorder;
-    private final boolean hasBottomBorder;
-    private final int offsetToHideLeft;
-    private final int offsetToHideRight;
-    private final int offsetToHideTop;
-    private final int offsetToHideBottom;
-    private final int borderWidth;
+    private final boolean mHasLeftBorder;
+    private final boolean mHasRightBorder;
+    private final boolean mHasTopBorder;
+    private final boolean mHasBottomBorder;
+    private final int mOffsetToHideLeft;
+    private final int mOffsetToHideRight;
+    private final int mOffsetToHideTop;
+    private final int mOffsetToHideBottom;
+    private final int mBorderWidth;
 
     public BorderDrawable(Context context, Borders borders, float[] cornerRadii, boolean isRtL) {
         this(context, borders, cornerRadii, isRtL, /* width= */ 0, /* height= */ 0);
@@ -39,31 +39,31 @@ public class BorderDrawable extends ShapeDrawable {
             int width, int height) {
         super(new RoundRectShape(cornerRadii, null, null));
 
-        borderWidth = (int) LayoutUtils.dpToPx(borders.getWidth(), context);
+        mBorderWidth = (int) LayoutUtils.dpToPx(borders.getWidth(), context);
 
         // Calculate the offsets which push the border outside the view, making it invisible
         int bitmask = borders.getBitmask();
         if (bitmask == 0 || bitmask == 15) {
             // All borders are visible
-            hasLeftBorder = true;
-            hasRightBorder = true;
-            hasTopBorder = true;
-            hasBottomBorder = true;
-            offsetToHideLeft = 0;
-            offsetToHideRight = 0;
-            offsetToHideTop = 0;
-            offsetToHideBottom = 0;
+            mHasLeftBorder = true;
+            mHasRightBorder = true;
+            mHasTopBorder = true;
+            mHasBottomBorder = true;
+            mOffsetToHideLeft = 0;
+            mOffsetToHideRight = 0;
+            mOffsetToHideTop = 0;
+            mOffsetToHideBottom = 0;
         } else {
             int leftEdge = isRtL ? Edges.END.getNumber() : Edges.START.getNumber();
             int rightEdge = isRtL ? Edges.START.getNumber() : Edges.END.getNumber();
-            hasLeftBorder = (bitmask & leftEdge) != 0;
-            hasRightBorder = (bitmask & rightEdge) != 0;
-            hasTopBorder = (bitmask & Edges.TOP.getNumber()) != 0;
-            hasBottomBorder = (bitmask & Edges.BOTTOM.getNumber()) != 0;
-            offsetToHideLeft = hasLeftBorder ? 0 : -borderWidth;
-            offsetToHideRight = hasRightBorder ? 0 : borderWidth;
-            offsetToHideTop = hasTopBorder ? 0 : -borderWidth;
-            offsetToHideBottom = hasBottomBorder ? 0 : borderWidth;
+            mHasLeftBorder = (bitmask & leftEdge) != 0;
+            mHasRightBorder = (bitmask & rightEdge) != 0;
+            mHasTopBorder = (bitmask & Edges.TOP.getNumber()) != 0;
+            mHasBottomBorder = (bitmask & Edges.BOTTOM.getNumber()) != 0;
+            mOffsetToHideLeft = mHasLeftBorder ? 0 : -mBorderWidth;
+            mOffsetToHideRight = mHasRightBorder ? 0 : mBorderWidth;
+            mOffsetToHideTop = mHasTopBorder ? 0 : -mBorderWidth;
+            mOffsetToHideBottom = mHasBottomBorder ? 0 : mBorderWidth;
         }
         getPaint().setStyle(Paint.Style.STROKE);
         // Multiply the width by two - the centerline of the stroke will be the edge of the view, so
@@ -71,14 +71,14 @@ public class BorderDrawable extends ShapeDrawable {
         // correct width, the full stroke needs to be twice as wide.
         // For rounded corners, this relies on the containing FrameLayout to crop the outside half
         // of the rounded border; otherwise, the border would get thicker on the corners.
-        getPaint().setStrokeWidth(borderWidth * 2);
+        getPaint().setStrokeWidth(mBorderWidth * 2);
         getPaint().setColor(borders.getColor());
     }
 
     @Override
     public void setBounds(int left, int top, int right, int bottom) {
-        super.setBounds(left + offsetToHideLeft, top + offsetToHideTop, right + offsetToHideRight,
-                bottom + offsetToHideBottom);
+        super.setBounds(left + mOffsetToHideLeft, top + mOffsetToHideTop,
+                right + mOffsetToHideRight, bottom + mOffsetToHideBottom);
     }
 
     @Override

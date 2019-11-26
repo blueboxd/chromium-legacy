@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 
 #include "services/device/public/mojom/geoposition.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -464,7 +464,7 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  GetFrame()->GetInterfaceProvider().GetInterface(
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       geolocation_service_.BindNewPipeAndPassReceiver(task_runner));
   geolocation_service_->CreateGeolocation(
       geolocation_.BindNewPipeAndPassReceiver(std::move(task_runner)),

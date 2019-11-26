@@ -22,6 +22,8 @@ source_set("declarative_net_request") {
     "indexed_rule.h",
     "parse_info.cc",
     "parse_info.h",
+    "regex_rules_matcher.cc",
+    "regex_rules_matcher.h",
     "request_action.cc",
     "request_action.h",
     "request_params.cc",
@@ -41,8 +43,10 @@ source_set("declarative_net_request") {
   ]
 
   public_deps = [
+    "//components/url_matcher",
     "//components/url_pattern_index",
     "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
+    "//third_party/re2",
   ]
 
   deps = [
@@ -53,7 +57,6 @@ source_set("declarative_net_request") {
     "//extensions/common",
     "//extensions/common/api",
     "//net",
-    "//third_party/re2",
     "//tools/json_schema_compiler:generated_api_util",
     "//url",
   ]

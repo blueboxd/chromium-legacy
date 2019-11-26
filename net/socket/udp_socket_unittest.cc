@@ -161,7 +161,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
 
   // Setup the server to listen.
   IPEndPoint server_address(IPAddress::IPv4Localhost(), 0 /* port */);
-  TestNetLog server_log;
+  RecordingTestNetLog server_log;
   std::unique_ptr<UDPServerSocket> server(
       new UDPServerSocket(&server_log, NetLogSource()));
   if (use_nonblocking_io)
@@ -172,7 +172,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   ASSERT_THAT(server->GetLocalAddress(&server_address), IsOk());
 
   // Setup the client.
-  TestNetLog client_log;
+  RecordingTestNetLog client_log;
   auto client = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
                                                   &client_log, NetLogSource());
   if (use_nonblocking_io)
@@ -325,7 +325,7 @@ TEST_F(UDPSocketTest, MAYBE_LocalBroadcast) {
   IPEndPoint listen_address;
   ASSERT_TRUE(CreateUDPAddress("0.0.0.0", 0 /* port */, &listen_address));
 
-  TestNetLog server1_log, server2_log;
+  RecordingTestNetLog server1_log, server2_log;
   std::unique_ptr<UDPServerSocket> server1(
       new UDPServerSocket(&server1_log, NetLogSource()));
   std::unique_ptr<UDPServerSocket> server2(

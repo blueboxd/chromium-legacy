@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.findinpage.FindToolbar;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -630,6 +631,8 @@ public abstract class ToolbarLayout
     }
 
     void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost) {}
+
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {}
 
     /**
      * @param attached Whether or not the web content is attached to the view heirarchy.

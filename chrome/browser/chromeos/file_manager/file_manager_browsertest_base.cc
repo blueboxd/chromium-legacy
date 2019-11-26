@@ -1327,10 +1327,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.emplace_back(chromeos::features::kFilesNG);
   }
 
-  if (!IsNativeSmbTest()) {
-    disabled_features.emplace_back(features::kNativeSmb);
-  }
-
   if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }

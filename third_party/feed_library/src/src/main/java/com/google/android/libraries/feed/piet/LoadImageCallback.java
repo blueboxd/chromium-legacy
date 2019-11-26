@@ -20,76 +20,76 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 public class LoadImageCallback implements Consumer</*@Nullable*/ Drawable> {
     static final int FADE_IN_ANIMATION_TIME_MS = 300;
 
-    private final ImageView imageView;
-    private final ScaleType scaleType;
-    private final long initialTime;
-    /*@Nullable*/ private final Integer overlayColor;
-    private final boolean fadeImage;
-    private final AdapterParameters parameters;
+    private final ImageView mImageView;
+    private final ScaleType mScaleType;
+    private final long mInitialTime;
+    /*@Nullable*/ private final Integer mOverlayColor;
+    private final boolean mFadeImage;
+    private final AdapterParameters mParameters;
 
-    private boolean cancelled;
+    private boolean mCancelled;
 
-    /*@Nullable*/ private Drawable finalDrawable;
+    /*@Nullable*/ private Drawable mFinalDrawable;
 
     LoadImageCallback(ImageView imageView, ScaleType scaleType,
             /*@Nullable*/ Integer overlayColor, boolean fadeImage, AdapterParameters parameters,
             FrameContext frameContext) {
-        this.imageView = imageView;
-        this.scaleType = scaleType;
-        this.overlayColor = overlayColor;
-        this.fadeImage = fadeImage;
-        this.parameters = parameters;
-        this.initialTime = parameters.clock.elapsedRealtime();
+        this.mImageView = imageView;
+        this.mScaleType = scaleType;
+        this.mOverlayColor = overlayColor;
+        this.mFadeImage = fadeImage;
+        this.mParameters = parameters;
+        this.mInitialTime = parameters.mClock.elapsedRealtime();
     }
 
     @Override
     public void accept(/*@Nullable*/ Drawable drawable) {
-        if (cancelled || drawable == null) {
+        if (mCancelled || drawable == null) {
             return;
         }
 
-        imageView.setScaleType(scaleType);
+        mImageView.setScaleType(mScaleType);
 
-        final Drawable localDrawable = ViewUtils.applyOverlayColor(drawable, overlayColor);
-        this.finalDrawable = localDrawable;
+        final Drawable localDrawable = ViewUtils.applyOverlayColor(drawable, mOverlayColor);
+        this.mFinalDrawable = localDrawable;
 
         // If we are in the process of binding when we get the image, we should not fade in the
         // image as the image was cached.
         if (!shouldFadeInImage()) {
-            imageView.setImageDrawable(localDrawable);
+            mImageView.setImageDrawable(localDrawable);
             // Invalidating the view as the view doesn't update if not manually updated here.
-            imageView.invalidate();
+            mImageView.invalidate();
             return;
         }
 
-        Drawable initialDrawable = imageView.getDrawable() != null
-                ? imageView.getDrawable()
+        Drawable initialDrawable = mImageView.getDrawable() != null
+                ? mImageView.getDrawable()
                 : new ColorDrawable(Color.TRANSPARENT);
 
         TransitionDrawable transitionDrawable =
                 new TransitionDrawable(new Drawable[] {initialDrawable, localDrawable});
-        imageView.setImageDrawable(transitionDrawable);
+        mImageView.setImageDrawable(transitionDrawable);
         transitionDrawable.setCrossFadeEnabled(true);
         transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
 
-        imageView.postDelayed(() -> {
-            if (cancelled) {
+        mImageView.postDelayed(() -> {
+            if (mCancelled) {
                 return;
             }
             // Allows GC of the initial drawable and the transition drawable. Additionally
             // fixes the issue where the transition sometimes doesn't occur, which would
             // result in blank images.
-            imageView.setImageDrawable(this.finalDrawable);
+            mImageView.setImageDrawable(this.mFinalDrawable);
         }, FADE_IN_ANIMATION_TIME_MS);
     }
 
     private boolean shouldFadeInImage() {
-        return fadeImage
-                && (parameters.clock.elapsedRealtime() - initialTime)
-                > parameters.hostProviders.getAssetProvider().getFadeImageThresholdMs();
+        return mFadeImage
+                && (mParameters.mClock.elapsedRealtime() - mInitialTime)
+                > mParameters.mHostProviders.getAssetProvider().getFadeImageThresholdMs();
     }
 
     void cancel() {
-        this.cancelled = true;
+        this.mCancelled = true;
     }
 }

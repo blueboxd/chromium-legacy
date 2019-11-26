@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -196,7 +197,8 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     *status = kInvalidSourceImageStatus;
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
-    return surface ? StaticBitmapImage::Create(surface->makeImageSnapshot())
+    return surface ? UnacceleratedStaticBitmapImage::Create(
+                         surface->makeImageSnapshot())
                    : nullptr;
   }
   if (!size.Width() || !size.Height()) {

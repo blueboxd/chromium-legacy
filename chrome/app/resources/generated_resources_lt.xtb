@@ -2643,7 +2643,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4839303808932127586">Iš&amp;saugoti vaizdo įrašą kaip...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Dar 1}one{Dar #}few{Dar #}many{Dar #}other{Dar #}}</translation>
 <translation id="4842976633412754305">Šis puslapis bando įkelti scenarijus iš neautentifikuotų šaltinių.</translation>
-<translation id="4843488774506045600">Prisijungimo duomenis pateikė „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4844333629810439236">Kitos klaviatūros</translation>
 <translation id="4846680374085650406">Jūs vadovaujatės administratoriaus rekomendacija dėl šio nustatymo.</translation>
 <translation id="4848518990323155912">Įgalinti SIM kortelės užrakinimą (reikalauti PIN kodo naudojant mobiliojo ryšio duomenis)</translation>
@@ -3849,7 +3848,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6607831829715835317">Daugiau įrank&amp;ių</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6615455863669487791">Rodyti</translation>
-<translation id="6617100836880592260">Nuskaitymo sparta: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Vis tiek palikti</translation>
 <translation id="6619058681307408113">Eilutinio spausdintuvo paslaugų teikimo sistema (LPD)</translation>
 <translation id="661907246513853610">Svetainė gali stebėti jūsų vietą</translation>

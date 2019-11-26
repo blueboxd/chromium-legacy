@@ -16,44 +16,44 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
  * needed.
  */
 public class FakeModelProviderFactory implements ModelProviderFactory {
-    private FakeModelProvider modelProvider;
-    private String createSessionId;
-    /*@Nullable*/ private ViewDepthProvider viewDepthProvider;
+    private FakeModelProvider mModelProvider;
+    private String mCreateSessionId;
+    /*@Nullable*/ private ViewDepthProvider mViewDepthProvider;
 
     @Override
     public ModelProvider create(String sessionId, UiContext uiContext) {
-        this.modelProvider = new FakeModelProvider();
-        this.createSessionId = sessionId;
-        return modelProvider;
+        this.mModelProvider = new FakeModelProvider();
+        this.mCreateSessionId = sessionId;
+        return mModelProvider;
     }
 
     @Override
     public ModelProvider createNew(
             /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
-        this.viewDepthProvider = viewDepthProvider;
-        this.modelProvider = new FakeModelProvider();
-        return modelProvider;
+        this.mViewDepthProvider = viewDepthProvider;
+        this.mModelProvider = new FakeModelProvider();
+        return mModelProvider;
     }
 
     @Override
     public ModelProvider createNew(
             /*@Nullable*/ ViewDepthProvider viewDepthProvider,
             /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
-        this.viewDepthProvider = viewDepthProvider;
-        this.modelProvider = new FakeModelProvider();
-        return modelProvider;
+        this.mViewDepthProvider = viewDepthProvider;
+        this.mModelProvider = new FakeModelProvider();
+        return mModelProvider;
     }
 
     public FakeModelProvider getLatestModelProvider() {
-        return modelProvider;
+        return mModelProvider;
     }
 
     public String getLatestCreateSessionId() {
-        return createSessionId;
+        return mCreateSessionId;
     }
 
     /*@Nullable*/
     public ViewDepthProvider getViewDepthProvider() {
-        return viewDepthProvider;
+        return mViewDepthProvider;
     }
 }

@@ -89,7 +89,7 @@ void UnexpectedCallback(int result) {
 }  // namespace
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   // TODO(ahendrickson): Manipulate the libraries and paths to test each of the
   // libraries we expect, and also whether or not they have the interface
   // functions we want.
@@ -115,7 +115,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
@@ -131,7 +131,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_gssapi");
@@ -151,7 +151,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_badgssapi");
@@ -277,7 +277,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_FirstRound) {
 }
 
 TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
   test::MockGSSAPILibrary mock_library;

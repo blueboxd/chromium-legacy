@@ -2642,7 +2642,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4839303808932127586">Vi&amp;deo mentése másként...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 további}other{# további}}</translation>
 <translation id="4842976633412754305">Az oldal nem hiteles forrásokból próbál szkripteket betölteni.</translation>
-<translation id="4843488774506045600">A bejelentkezést biztosította: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Egyéb billentyűzetek</translation>
 <translation id="4846680374085650406">A rendszergazda javaslatát fogadja el ennél a beállításnál.</translation>
 <translation id="4848518990323155912">SIM-kártya zárolásának engedélyezése (PIN-kód bekérése mobiladatok használatához)</translation>
@@ -3849,7 +3848,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6607831829715835317">További eszközök</translation>
 <translation id="6612358246767739896">Védett tartalom</translation>
 <translation id="6615455863669487791">Megjelenítés</translation>
-<translation id="6617100836880592260">Keresési sebesség: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Megtartás</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">A webhely nyomon tudja követni a tartózkodási helyét</translation>

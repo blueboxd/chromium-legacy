@@ -8,7 +8,7 @@
 class GeolocationMock {
   constructor() {
     this.geolocationServiceInterceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.GeolocationService.name);
+        blink.mojom.GeolocationService.name, "context", true);
     this.geolocationServiceInterceptor_.oninterfacerequest =
         e => this.connectGeolocationService_(e.handle);
     this.geolocationServiceInterceptor_.start();

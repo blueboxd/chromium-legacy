@@ -215,7 +215,7 @@ TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds) {
 
 // Test NetLogs produced while going through a full Negotiate handshake.
 TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds_Logging) {
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
   MockSSPILibrary mock_library{NEGOSSP_NAME};
   HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";

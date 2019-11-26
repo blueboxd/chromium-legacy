@@ -1386,7 +1386,6 @@ jumbo_static_library("ui") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker",
       "//chrome/browser/safe_browsing:advanced_protection",
-      "//chrome/browser/ui/color:color",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/common:buildflags",
       "//chrome/common:search_mojom",
@@ -1433,6 +1432,13 @@ jumbo_static_library("ui") {
         "//chrome/browser/web_applications/components",
         "//chrome/browser/web_applications/extensions",
         "//google_apis/drive",
+      ]
+    }
+
+    if (use_color_pipeline) {
+      deps += [
+        "//chrome/browser/ui/color:color",
+        "//chrome/browser/ui/color:mixers",
       ]
     }
   }
@@ -3291,7 +3297,6 @@ jumbo_static_library("ui") {
       "webauthn/transport_utils.h",
     ]
     deps += [
-      "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/views",
       "//components/constrained_window",
       "//components/media_message_center",
@@ -3580,8 +3585,6 @@ jumbo_static_library("ui") {
       "app_list/extension_app_context_menu.h",
       "app_list/extension_app_item.cc",
       "app_list/extension_app_item.h",
-      "app_list/extension_app_model_builder.cc",
-      "app_list/extension_app_model_builder.h",
       "app_list/extension_app_utils.cc",
       "app_list/extension_app_utils.h",
       "app_list/extension_uninstaller.cc",
@@ -4066,6 +4069,8 @@ jumbo_static_library("ui") {
       "webui/tab_strip/tab_strip_ui.h",
       "webui/tab_strip/tab_strip_ui_layout.cc",
       "webui/tab_strip/tab_strip_ui_layout.h",
+      "webui/tab_strip/tab_strip_ui_metrics.cc",
+      "webui/tab_strip/tab_strip_ui_metrics.h",
       "webui/tab_strip/thumbnail_tracker.cc",
       "webui/tab_strip/thumbnail_tracker.h",
     ]

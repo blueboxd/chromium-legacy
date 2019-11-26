@@ -31,6 +31,7 @@
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
+using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 
@@ -1221,6 +1222,39 @@ TEST_P(WaylandWindowTest, TooltipNestedParent) {
   EXPECT_EQ(test_subsurface->position(), new_origin);
 
   menu_window->SetPointerFocus(false);
+}
+
+TEST_P(WaylandWindowTest, OnSizeConstraintsChanged) {
+  // Only shell v6 exercises this test as long as shell v5 does not support
+  // size constraints.
+  if (GetParam() == kXdgShellV5)
+    return;
+
+  const bool kBooleans[] = {false, true};
+  for (bool has_min_size : kBooleans) {
+    for (bool has_max_size : kBooleans) {
+      base::Optional<gfx::Size> min_size =
+          has_min_size ? base::Optional<gfx::Size>(gfx::Size(100, 200))
+                       : base::nullopt;
+      base::Optional<gfx::Size> max_size =
+          has_max_size ? base::Optional<gfx::Size>(gfx::Size(300, 400))
+                       : base::nullopt;
+      EXPECT_CALL(delegate_, GetMinimumSizeForWindow())
+          .WillOnce(Return(min_size));
+      EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
+          .WillOnce(Return(max_size));
+
+      EXPECT_CALL(*GetXdgSurface(), SetMinSize(100, 200))
+          .Times(has_min_size ? 1 : 0);
+      EXPECT_CALL(*GetXdgSurface(), SetMaxSize(300, 400))
+          .Times(has_max_size ? 1 : 0);
+
+      window_->SizeConstraintsChanged();
+      Sync();
+
+      VerifyAndClearExpectations();
+    }
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

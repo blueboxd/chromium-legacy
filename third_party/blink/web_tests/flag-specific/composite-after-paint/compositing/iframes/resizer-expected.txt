@@ -18,11 +18,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 3
-    },
-    {
-      "name": "LayoutIFrame IFRAME class='container'",
-      "bounds": [304, 154],
-      "transform": 1
     }
   ],
   "transforms": [

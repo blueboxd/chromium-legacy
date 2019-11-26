@@ -45,17 +45,17 @@ public final class TimeoutSessionImpl extends SessionImpl {
     public void updateSession(boolean clearHead, List<StreamStructure> streamStructures,
             int schemaVersion,
             /*@Nullable*/ MutationContext mutationContext) {
-        String localSessionId = Validators.checkNotNull(sessionId);
+        String localSessionId = Validators.checkNotNull(mSessionId);
         Logger.i(TAG, "updateSession; clearHead(%b), shouldAppend(%b), sessionId(%s)", clearHead,
-                legacyHeadContent, localSessionId);
+                mLegacyHeadContent, localSessionId);
         if (clearHead) {
-            if (!legacyHeadContent) {
+            if (!mLegacyHeadContent) {
                 if (shouldInvalidateModelProvider(mutationContext, localSessionId)) {
-                    if (modelProvider != null) {
+                    if (mModelProvider != null) {
                         if (mutationContext == null) {
-                            modelProvider.invalidate(UiContext.getDefaultInstance());
+                            mModelProvider.invalidate(UiContext.getDefaultInstance());
                         } else {
-                            modelProvider.invalidate(mutationContext.getUiContext());
+                            mModelProvider.invalidate(mutationContext.getUiContext());
                         }
                         Logger.i(TAG,
                                 "Invalidating Model Provider for session %s due to a clear head",
@@ -68,14 +68,14 @@ public final class TimeoutSessionImpl extends SessionImpl {
                 return;
             }
 
-            if (viewDepthProvider != null) {
+            if (mViewDepthProvider != null) {
                 // Append the new items to the existing copy of HEAD, removing the existing items
                 // which have not yet been seen by the user.
                 List<ModelChild> rootChildren = captureRootContent();
                 if (!rootChildren.isEmpty()) {
                     // Calculate the children to remove and append StreamStructure remove operations
                     String lowestChild =
-                            Validators.checkNotNull(viewDepthProvider).getChildViewDepth();
+                            Validators.checkNotNull(mViewDepthProvider).getChildViewDepth();
                     List<StreamStructure> removeOperations = removeItems(lowestChild, rootChildren);
                     Logger.i(TAG, "Removing %d items", removeOperations.size());
                     if (!removeOperations.isEmpty()) {
@@ -85,10 +85,10 @@ public final class TimeoutSessionImpl extends SessionImpl {
                 }
             }
             // Only do this once
-            legacyHeadContent = false;
+            mLegacyHeadContent = false;
         }
 
-        updateCount++;
+        mUpdateCount++;
         updateSessionInternal(streamStructures, mutationContext);
     }
 

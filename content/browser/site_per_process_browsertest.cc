@@ -731,7 +731,7 @@ class SitePerProcessFeaturePolicyBrowserTest
   // Enable tests for parameterized features.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "ExperimentalProductivityFeatures");
   }
 };
@@ -747,7 +747,7 @@ class SitePerProcessFeaturePolicyJavaScriptBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        "enable-blink-features",
+        switches::kEnableBlinkFeatures,
         "FeaturePolicyJavaScriptInterface,ExperimentalProductivityFeatures");
   }
 };
@@ -763,7 +763,7 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kDocumentUserActivationRequiredPolicy);
-    command_line->AppendSwitchASCII("enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "FeaturePolicyAutoplayFeature");
   }
 
@@ -794,7 +794,7 @@ class SitePerProcesScrollAnchorTest : public SitePerProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "ScrollAnchorSerialization");
   }
 };

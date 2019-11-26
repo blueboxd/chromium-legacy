@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -55,7 +56,7 @@ CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
       SkSurface::MakeRaster(info, info.minRowBytes(), nullptr);
   if (!surface)
     return nullptr;
-  return StaticBitmapImage::Create(surface->makeImageSnapshot());
+  return UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
 void CanvasRenderingContextHost::Commit(scoped_refptr<CanvasResource>,

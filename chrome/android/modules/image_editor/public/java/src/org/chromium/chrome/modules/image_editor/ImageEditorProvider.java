@@ -6,6 +6,7 @@ package org.chromium.chrome.modules.image_editor;
 
 import android.app.Activity;
 
+import org.chromium.chrome.browser.image_editor.ImageEditorCoordinator;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 
 /**

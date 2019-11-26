@@ -6,12 +6,12 @@ package com.google.android.libraries.feed.api.host.network;
 
 /** Representation of an HTTP response. */
 public final class HttpResponse {
-    private final int responseCode;
-    private final byte[] responseBody;
+    private final int mResponseCode;
+    private final byte[] mResponseBody;
 
     public HttpResponse(int responseCode, byte[] responseBody) {
-        this.responseCode = responseCode;
-        this.responseBody = responseBody;
+        this.mResponseCode = responseCode;
+        this.mResponseBody = responseBody;
     }
 
     /**
@@ -21,11 +21,11 @@ public final class HttpResponse {
      * network issue and no request was able to be sent.
      */
     public int getResponseCode() {
-        return responseCode;
+        return mResponseCode;
     }
 
     /** Gets the body for the response. */
     public byte[] getResponseBody() {
-        return responseBody;
+        return mResponseBody;
     }
 }

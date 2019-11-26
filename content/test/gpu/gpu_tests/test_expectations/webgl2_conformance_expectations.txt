@@ -150,11 +150,13 @@ crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
-# Flaky failure in IDirect3D9Ex::CreateDeviceEx during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ RetryOnFailure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ RetryOnFailure ]
-crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+# Flaky failure in IDirect3D9Ex::CreateDeviceEx
+# during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
+# When it fails, it's all 3 retires, thus "Failure" expectation
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ Failure ]
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]

@@ -9,7 +9,11 @@ import static org.chromium.chrome.browser.ui.system.StatusBarColorController.UND
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
+import org.chromium.chrome.browser.webapps.WebDisplayMode;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 
 import javax.inject.Inject;
 
@@ -47,12 +51,33 @@ public class CustomTabStatusBarColorProvider {
     int getBaseStatusBarColor(int fallbackStatusBarColor) {
         if (mIntentDataProvider.isOpenedByChrome()) return fallbackStatusBarColor;
 
-        return mActivityTabProvider.get() != null && mUseTabThemeColor
-                ? UNDEFINED_STATUS_BAR_COLOR
-                : mIntentDataProvider.getToolbarColor();
+        Tab tab = mActivityTabProvider.get();
+        if (tab == null) {
+            return mIntentDataProvider.getToolbarColor();
+        }
+
+        if (shouldUseDefaultThemeColorForFullscreen()) {
+            return TabThemeColorHelper.getDefaultColor(tab);
+        }
+
+        return mUseTabThemeColor ? UNDEFINED_STATUS_BAR_COLOR
+                                 : mIntentDataProvider.getToolbarColor();
     }
 
     boolean isStatusBarDefaultThemeColor(boolean isFallbackColorDefault) {
-        return mIntentDataProvider.isOpenedByChrome() && isFallbackColorDefault;
+        if (mIntentDataProvider.isOpenedByChrome()) {
+            return isFallbackColorDefault;
+        }
+
+        return shouldUseDefaultThemeColorForFullscreen();
+    }
+
+    private boolean shouldUseDefaultThemeColorForFullscreen() {
+        // Don't use the theme color provided by the page if we're in display: fullscreen. This
+        // works around an issue where the status bars go transparent and can't be seen on top of
+        // the page content when users swipe them in or they appear because the on-screen keyboard
+        // was triggered.
+        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
+        return (webappExtras != null && webappExtras.displayMode == WebDisplayMode.FULLSCREEN);
     }
 }

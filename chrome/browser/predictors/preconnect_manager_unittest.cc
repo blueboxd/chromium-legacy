@@ -86,6 +86,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   }
 
   void LookUpProxyForURL(const GURL& url,
+                         const net::NetworkIsolationKey& network_isolation_key,
                          mojo::PendingRemote<network::mojom::ProxyLookupClient>
                              proxy_lookup_client) override {
     EXPECT_TRUE(

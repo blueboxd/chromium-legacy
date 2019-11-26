@@ -14,20 +14,20 @@ import com.google.android.libraries.feed.feedactionparser.internal.PietFeedActio
 
 /** Default factory for the default {@link ActionParser} implementation. */
 public final class FeedActionParserFactory implements ActionParserFactory {
-    private final ProtocolAdapter protocolAdapter;
-    private final PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever;
-    private final BasicLoggingApi basicLoggingApi;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final PietFeedActionPayloadRetriever mPietFeedActionPayloadRetriever;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     public FeedActionParserFactory(
             ProtocolAdapter protocolAdapter, BasicLoggingApi basicLoggingApi) {
-        this.protocolAdapter = protocolAdapter;
-        this.pietFeedActionPayloadRetriever = new PietFeedActionPayloadRetriever();
-        this.basicLoggingApi = basicLoggingApi;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mPietFeedActionPayloadRetriever = new PietFeedActionPayloadRetriever();
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     @Override
     public ActionParser build(Supplier</*@Nullable*/ ContentMetadata> contentMetadataSupplier) {
-        return new FeedActionParser(protocolAdapter, pietFeedActionPayloadRetriever,
-                contentMetadataSupplier, basicLoggingApi);
+        return new FeedActionParser(mProtocolAdapter, mPietFeedActionPayloadRetriever,
+                contentMetadataSupplier, mBasicLoggingApi);
     }
 }

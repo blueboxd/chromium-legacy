@@ -31,12 +31,13 @@
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "bounds": [100, 100],
+      "name": "Scroll corner of LayoutNGBlockFlow (positioned) DIV class='container'",
+      "position": [85, 85],
+      "bounds": [15, 15],
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='corner' class='container resizeWidget'",
+      "name": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='corner' class='container resizeWidget'",
       "bounds": [100, 100],
       "transform": 4
     }

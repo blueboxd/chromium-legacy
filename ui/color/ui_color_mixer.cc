@@ -77,10 +77,8 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorTextfieldSelectionForeground] = {kColorTextfieldForeground};
   mixer[kColorThrobber] = {kColorAccent};
-  mixer[kColorTooltipBackground] =
-      SetAlpha(GetColorWithMaxContrast(kColorPrimaryBackground), 0xE9);
-  mixer[kColorTooltipForeground] =
-      SetAlpha(GetColorWithMaxContrast(kColorTooltipBackground), 0xDE);
+  mixer[kColorTooltipBackground] = SetAlpha(kColorPrimaryBackground, 0xCC);
+  mixer[kColorTooltipForeground] = SetAlpha(kColorPrimaryForeground, 0xDE);
   mixer[kColorTreeBackground] = {kColorPrimaryBackground};
   mixer[kColorTreeNodeForeground] = {kColorPrimaryForeground};
   mixer[kColorTreeNodeSelectedFocusedBackground] = {

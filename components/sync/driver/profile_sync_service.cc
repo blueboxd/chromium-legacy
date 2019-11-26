@@ -698,8 +698,8 @@ SyncService::TransportState ProfileSyncService::GetTransportState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsEngineAllowedToStart()) {
-    // We shouldn't have an engine while in a disabled state.
-    DCHECK(!engine_);
+    // We generally shouldn't have an engine while in a disabled state, but it
+    // can happen if this method gets called during ShutdownImpl().
     return TransportState::DISABLED;
   }
 

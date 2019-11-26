@@ -2613,7 +2613,6 @@
 <translation id="4839303808932127586">भिडियो रूपमा बचत गर्नु&amp;होस्ः</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{१ थप}other{# थप}}</translation>
 <translation id="4842976633412754305">यस पृष्ठले प्रमाणित नगरिएका स्रोतहरूबाट स्क्रिप्टहरू लोड गर्ने कोशिश गरिरहेको छ।</translation>
-<translation id="4843488774506045600">यो लग इन <ph name="EXTENSION_NAME" /> ले प्रदान गरेको हो</translation>
 <translation id="4844333629810439236">अन्य कुञ्जीपाटीहरू</translation>
 <translation id="4846680374085650406">तपाईंले यो सेटिङका लागि प्रशासकको सिफारिस पालना गरिरहनुभएको छ ।</translation>
 <translation id="4848518990323155912">SIM कार्ड लक गर्ने सुविधालाई सक्षम पार्नुहोस् (मोबाइल डेटाको प्रयोग गर्न PIN को आवश्यकता पर्छ)</translation>
@@ -3810,7 +3809,6 @@
 <translation id="6607831829715835317">थप उपक&amp;रणहरू</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="6615455863669487791">मलाई देखाउनुहोस्</translation>
-<translation id="6617100836880592260">स्क्यान गर्ने गति: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">जे भए पनि राख्नुहोस्</translation>
 <translation id="6619058681307408113">लाइन प्रिन्टर डेमन (LPD)</translation>
 <translation id="661907246513853610">साइटले तपाईंको स्थानको ट्र्याक गर्न सक्छ</translation>

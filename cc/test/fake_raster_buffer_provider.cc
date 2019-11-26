@@ -25,7 +25,8 @@ std::unique_ptr<RasterBuffer>
 FakeRasterBufferProviderImpl::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
-    uint64_t previous_content_id) {
+    uint64_t previous_content_id,
+    bool depends_on_at_raster_decodes) {
   auto backing = std::make_unique<StubGpuBacking>();
   backing->mailbox = gpu::Mailbox::Generate();
   resource.set_gpu_backing(std::move(backing));

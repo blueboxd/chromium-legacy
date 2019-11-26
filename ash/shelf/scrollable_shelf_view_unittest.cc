@@ -81,6 +81,11 @@ class ScrollableShelfViewTest : public AshTestBase {
     test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
   }
 
+  void TearDown() override {
+    scoped_feature_list_.Reset();
+    AshTestBase::TearDown();
+  }
+
  protected:
   ShelfID AddAppShortcut() {
     ShelfItem item = ShelfTestUtil::AddAppShortcut(base::NumberToString(id_++),
@@ -135,9 +140,6 @@ class ScrollableShelfViewTest : public AshTestBase {
   ShelfView* shelf_view_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_api_;
   int id_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfViewTest);
 };
 
 // Verifies that the display rotation from the short side to the long side
@@ -413,9 +415,28 @@ TEST_F(ScrollableShelfViewTest, DragIconToNewPage) {
   EXPECT_EQ(0, view_model->GetIndexOfView(dragged_view));
 }
 
+class HotseatScrollableShelfViewTest : public ScrollableShelfViewTest {
+ public:
+  HotseatScrollableShelfViewTest() = default;
+  ~HotseatScrollableShelfViewTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kShelfHotseat},
+                                          {});
+    ScrollableShelfViewTest::SetUp();
+  }
+
+  void TearDown() override {
+    ScrollableShelfViewTest::TearDown();
+    scoped_feature_list_.Reset();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Verifies that the scrollable shelf in oveflow mode has the correct layout
 // after switching to tablet mode (https://crbug.com/1017979).
-TEST_F(ScrollableShelfViewTest, CorrectUIAfterSwitchingToTablet) {
+TEST_F(HotseatScrollableShelfViewTest, CorrectUIAfterSwitchingToTablet) {
   // Add enough app shortcuts to ensure that at least three pages of icons show.
   for (int i = 0; i < 25; i++)
     AddAppShortcut();
@@ -443,7 +464,7 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterSwitchingToTablet) {
 
 // Verifies that the scrollable shelf without overflow has the correct layout in
 // tablet mode.
-TEST_F(ScrollableShelfViewTest, CorrectUIInTabletWithoutOverflow) {
+TEST_F(HotseatScrollableShelfViewTest, CorrectUIInTabletWithoutOverflow) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   for (int i = 0; i < 3; i++)

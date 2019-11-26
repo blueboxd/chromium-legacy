@@ -20,8 +20,8 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/serial_extension_host_queue.h"
 
 namespace extensions {
 
@@ -90,7 +90,7 @@ bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
 }
 
 ExtensionHostQueue* ChromeExtensionHostDelegate::GetExtensionHostQueue() const {
-  static base::NoDestructor<SerialExtensionHostQueue> queue;
+  static base::NoDestructor<ExtensionHostQueue> queue;
   return queue.get();
 }
 

@@ -44,7 +44,6 @@ import org.chromium.ui.test.util.UiRestriction;
  * has passed.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
         "force-fieldtrials=Study/Group"})
@@ -108,7 +107,9 @@ public class ReturnToChromeTest {
 
         mActivityTestRule.startMainActivityFromLauncher();
 
-        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()
@@ -117,23 +118,26 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-        CriteriaHelper.pollUiThread(Criteria.equals(1,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
-                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getTotalTabCount())));
+
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            CriteriaHelper.pollUiThread(Criteria.equals(1,
+                    ()
+                            -> RecordHistogram.getHistogramTotalCountForTesting(
+                                    ReturnToChromeExperimentsUtil
+                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
+                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                    mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTotalTabCount())));
+        }
     }
 
     /**
@@ -151,7 +155,9 @@ public class ReturnToChromeTest {
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
 
-        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()
@@ -160,23 +166,26 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-        CriteriaHelper.pollUiThread(Criteria.equals(2,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(false)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(false)
-                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getTotalTabCount())));
+
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            CriteriaHelper.pollUiThread(Criteria.equals(2,
+                    ()
+                            -> RecordHistogram.getHistogramTotalCountForTesting(
+                                    ReturnToChromeExperimentsUtil
+                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(false)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(false)
+                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                    mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTotalTabCount())));
+        }
     }
 
     /**
@@ -213,7 +222,9 @@ public class ReturnToChromeTest {
         // there's no tab.
         startMainActivityFromLauncherWithoutCurrentTab();
 
-        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()
@@ -222,23 +233,26 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-        CriteriaHelper.pollUiThread(Criteria.equals(1,
-                ()
-                        -> RecordHistogram.getHistogramTotalCountForTesting(
-                                ReturnToChromeExperimentsUtil
-                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
-        assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
-                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                mActivityTestRule.getActivity()
-                                        .getTabModelSelector()
-                                        .getTotalTabCount())));
+
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            CriteriaHelper.pollUiThread(Criteria.equals(1,
+                    ()
+                            -> RecordHistogram.getHistogramTotalCountForTesting(
+                                    ReturnToChromeExperimentsUtil
+                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
+            assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
+                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                    mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTotalTabCount())));
+        }
     }
 
     @Test
@@ -246,6 +260,7 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome", "RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableIf.Build(hardware_is = "bullhead", message = "https://crbug.com/1025241")
     public void testInitialScrollIndex() throws Exception {
         // clang-format on

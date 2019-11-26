@@ -24,6 +24,7 @@
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -124,8 +125,8 @@ class PopupPageLoadMetricsWaiterInitializer : public TabStripModelObserver {
 void SetRuntimeFeatureCommand(bool enable_blink_features,
                               const std::string& feature,
                               base::CommandLine* command_line) {
-  std::string cmd = enable_blink_features ? "enable-blink-features"
-                                          : "disable-blink-features";
+  std::string cmd = enable_blink_features ? switches::kEnableBlinkFeatures
+                                          : switches::kDisableBlinkFeatures;
 
   command_line->AppendSwitchASCII(cmd, feature);
 }

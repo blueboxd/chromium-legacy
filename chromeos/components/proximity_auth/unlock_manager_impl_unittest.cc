@@ -65,7 +65,6 @@ class MockMessenger : public Messenger {
 
   MOCK_METHOD1(AddObserver, void(MessengerObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(MessengerObserver* observer));
-  MOCK_CONST_METHOD0(SupportsSignIn, bool());
   MOCK_METHOD0(DispatchUnlockEvent, void());
   MOCK_METHOD1(RequestDecryption, void(const std::string& challenge));
   MOCK_METHOD0(RequestUnlock, void());
@@ -169,7 +168,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
 
-    ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
     ON_CALL(messenger_, GetChannel())
         .WillByDefault(Return(fake_client_channel_.get()));
     life_cycle_.set_messenger(&messenger_);
@@ -265,24 +263,9 @@ TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_SignIn_AllGood) {
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
 
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
   EXPECT_TRUE(unlock_manager_->IsUnlockAllowed());
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       IsUnlockAllowed_SignIn_MessengerDoesNotSupportSignIn) {
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-
-  life_cycle_.ChangeState(
-      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
-  unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
-
-  EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
@@ -794,8 +777,7 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_Unlock_SupportsSignIn_UnlockRequestFails) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
+       OnAuthAttempted_Unlock_UnlockRequestFails) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -808,7 +790,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendFails) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -823,8 +804,7 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendSucceeds) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
+       OnAuthAttempted_Unlock_RequestSucceeds_EventSendSucceeds) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -833,39 +813,12 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
   EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnUnlockResponse(true);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(true));
-  unlock_manager_->OnUnlockEventSent(true);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_Unlock_DoesntSupportSignIn_UnlockEventSendFails) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(false));
-  unlock_manager_->OnUnlockEventSent(false);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_Unlock_SupportsSignIn_UnlockEventSendSucceeds) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
 
   EXPECT_CALL(proximity_auth_client_, FinalizeUnlock(true));
   unlock_manager_->OnUnlockEventSent(true);
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
   SimulateUserPresentState();
 

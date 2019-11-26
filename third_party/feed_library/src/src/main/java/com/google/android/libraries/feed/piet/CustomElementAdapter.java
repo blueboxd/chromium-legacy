@@ -21,7 +21,7 @@ import com.google.search.now.ui.piet.ErrorsProto.ErrorCode;
 /** Adapter that manages a custom view created by the host. */
 class CustomElementAdapter extends ElementAdapter<FrameLayout, CustomElement> {
     private static final String TAG = "CustomElementAdapter";
-    CustomElementData boundCustomElementData = CustomElementData.getDefaultInstance();
+    CustomElementData mBoundCustomElementData = CustomElementData.getDefaultInstance();
 
     CustomElementAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, new FrameLayout(context), KeySupplier.SINGLETON_KEY);
@@ -40,7 +40,7 @@ class CustomElementAdapter extends ElementAdapter<FrameLayout, CustomElement> {
     void onBindModel(CustomElement customElement, Element baseElement, FrameContext frameContext) {
         switch (customElement.getContentCase()) {
             case CUSTOM_ELEMENT_DATA:
-                boundCustomElementData = customElement.getCustomElementData();
+                mBoundCustomElementData = customElement.getCustomElementData();
                 break;
             case CUSTOM_BINDING:
                 BindingValue binding =
@@ -57,7 +57,7 @@ class CustomElementAdapter extends ElementAdapter<FrameLayout, CustomElement> {
                                                 binding.getBindingId())));
                     }
                 }
-                boundCustomElementData = binding.getCustomElementData();
+                mBoundCustomElementData = binding.getCustomElementData();
                 break;
             default:
                 Logger.e(TAG,
@@ -67,8 +67,8 @@ class CustomElementAdapter extends ElementAdapter<FrameLayout, CustomElement> {
                 return;
         }
 
-        View v = getParameters().hostProviders.getCustomElementProvider().createCustomElement(
-                boundCustomElementData);
+        View v = getParameters().mHostProviders.getCustomElementProvider().createCustomElement(
+                mBoundCustomElementData);
         getBaseView().addView(v);
     }
 
@@ -79,8 +79,8 @@ class CustomElementAdapter extends ElementAdapter<FrameLayout, CustomElement> {
         // that was saved during the last bind should be fine.
         if (baseView != null && baseView.getChildCount() > 0) {
             for (int i = 0; i < baseView.getChildCount(); i++) {
-                getParameters().hostProviders.getCustomElementProvider().releaseCustomView(
-                        baseView.getChildAt(i), boundCustomElementData);
+                getParameters().mHostProviders.getCustomElementProvider().releaseCustomView(
+                        baseView.getChildAt(i), mBoundCustomElementData);
             }
             baseView.removeAllViews();
         }

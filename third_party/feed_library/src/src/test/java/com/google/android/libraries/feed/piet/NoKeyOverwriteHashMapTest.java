@@ -15,19 +15,19 @@ import org.junit.runners.JUnit4;
 /** Tests of the NoKeyOverwriteHashMap */
 @RunWith(JUnit4.class)
 public class NoKeyOverwriteHashMapTest {
-    private final NoKeyOverwriteHashMap<String, String> map =
+    private final NoKeyOverwriteHashMap<String, String> mMap =
             new NoKeyOverwriteHashMap<>("Acronym", ErrorCode.ERR_DUPLICATE_BINDING_VALUE);
 
     @Test
     public void testPutTwoDifferentKeys() {
-        map.put("CPA", "Certified Public Accountant");
-        map.put("CPU", "Central Processing Unit");
+        mMap.put("CPA", "Certified Public Accountant");
+        mMap.put("CPU", "Central Processing Unit");
     }
 
     @Test
     public void testPutTwoSameKeysThrows() {
-        map.put("CD", "Compact Disc");
-        assertThatRunnable(() -> map.put("CD", "Certificate of Deposit"))
+        mMap.put("CD", "Compact Disc");
+        assertThatRunnable(() -> mMap.put("CD", "Certificate of Deposit"))
                 .throwsAnExceptionOfType(PietFatalException.class)
                 .that()
                 .hasMessageThat()

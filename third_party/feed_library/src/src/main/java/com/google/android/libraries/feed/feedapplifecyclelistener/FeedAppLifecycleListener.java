@@ -15,22 +15,22 @@ public final class FeedAppLifecycleListener
         extends FeedObservable<FeedLifecycleListener> implements AppLifecycleListener {
     private static final String TAG = "FeedAppLifecycleLstnr";
 
-    private final ThreadUtils threadUtils;
+    private final ThreadUtils mThreadUtils;
 
     public FeedAppLifecycleListener(ThreadUtils threadUtils) {
-        this.threadUtils = threadUtils;
+        this.mThreadUtils = threadUtils;
     }
 
     @Override
     public void onEnterForeground() {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         Logger.i(TAG, "onEnterForeground called");
         dispatchLifecycleEvent(LifecycleEvent.ENTER_FOREGROUND);
     }
 
     @Override
     public void onEnterBackground() {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         Logger.i(TAG, "onEnterBackground called");
         dispatchLifecycleEvent(LifecycleEvent.ENTER_BACKGROUND);
     }
@@ -38,27 +38,27 @@ public final class FeedAppLifecycleListener
     @Override
     public void onClearAll() {
         Logger.i(TAG, "onClearAll called");
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         dispatchLifecycleEvent(LifecycleEvent.CLEAR_ALL);
     }
 
     @Override
     public void onClearAllWithRefresh() {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         Logger.i(TAG, "onClearAllWithRefresh called");
         dispatchLifecycleEvent(LifecycleEvent.CLEAR_ALL_WITH_REFRESH);
     }
 
     @Override
     public void initialize() {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         Logger.i(TAG, "initialize called");
         dispatchLifecycleEvent(LifecycleEvent.INITIALIZE);
     }
 
     private void dispatchLifecycleEvent(@LifecycleEvent String event) {
-        synchronized (observers) {
-            for (FeedLifecycleListener listener : observers) {
+        synchronized (mObservers) {
+            for (FeedLifecycleListener listener : mObservers) {
                 listener.onLifecycleEvent(event);
             }
         }

@@ -205,13 +205,8 @@ class GFX_EXPORT RenderText {
 
   virtual ~RenderText();
 
-  // Creates an instance that renders using HarfBuzz.
-  static std::unique_ptr<RenderText> CreateHarfBuzzInstance();
-
-  // Creates an instance by matching a gfx::Typesetter constant to the current
-  // build and runtime configuration. E.g. the result may use CoreText on Mac,
-  // which is the only supported native typesetter.
-  static std::unique_ptr<RenderText> CreateFor(Typesetter typesetter);
+  // Creates a RenderText instance.
+  static std::unique_ptr<RenderText> CreateRenderText();
 
   // Creates another instance of the same concrete class.
   virtual std::unique_ptr<RenderText> CreateInstanceOfSameType() const = 0;

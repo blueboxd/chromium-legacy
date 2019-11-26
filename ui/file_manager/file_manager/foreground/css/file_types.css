@@ -71,16 +71,29 @@
       url(../images/filetype/2x/filetype_folder_active.png) 2x);
 }
 
+/* .tree-row > .file-row icon for files-ng.  */
+.tree-row > .file-row > [file-type-icon='folder'] {
+  -webkit-mask-image: url(../images/filetype/filetype_folder.svg);
+}
+
 .tree-row[selected] > .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_shared_active.png) 1x,
       url(../images/filetype/2x/filetype_folder_shared_active.png) 2x);
 }
 
+.tree-row > .file-row > .shared[file-type-icon='folder'] {
+  -webkit-mask-image: url(../images/filetype/filetype_folder_shared.svg);
+}
+
 .tree-row[selected] > .team-drive-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_team_drive_active.png) 1x,
       url(../images/filetype/2x/filetype_team_drive_active.png) 2x);
+}
+
+.tree-row > .file-row > .team-drive-root[file-type-icon='folder'] {
+  -webkit-mask-image: url(../images/filetype/filetype_team_drive.svg);
 }
 
 /* TODO(fukino): Check if 'form' is in use, and remove this if possible. */
@@ -219,7 +232,8 @@
       url(../images/files/ui/2x/filetype_placeholder_video.png) 2x);
 }
 
-/* Icons for volume types. */
+/* Icons for volume types. A ".tree-row > .file-row" component in any rules
+   means the rule only matches in files-ng. */
 
 [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
@@ -227,10 +241,14 @@
       url(../images/volumes/2x/archive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='archive'] {
+.tree-row[selected] > [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/archive_active.png) 1x,
       url(../images/volumes/2x/archive_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='archive'] {
+  -webkit-mask-image: url(../images/volumes/archive.svg);
 }
 
 [root-type-icon='my_files'] {
@@ -239,10 +257,14 @@
       url(../images/volumes/2x/my_files.png) 2x);
 }
 
-.tree-row[selected] [root-type-icon='my_files'] {
+.tree-row[selected] > [root-type-icon='my_files'] {
   background-image: -webkit-image-set(
       url(../images/volumes/my_files_active.png) 1x,
       url(../images/volumes/2x/my_files_active.png) 2x);
+}
+
+.tree-row > .file-row > [root-type-icon='my_files'] {
+  -webkit-mask-image: url(../images/volumes/my_files.svg);
 }
 
 [volume-type-icon='downloads'],
@@ -252,11 +274,16 @@
       url(../images/volumes/2x/downloads.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='downloads'],
-.tree-row[selected] [file-type-icon='downloads'] {
+.tree-row[selected] > [volume-type-icon='downloads'],
+.tree-row[selected] > [file-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/downloads_active.png) 1x,
       url(../images/volumes/2x/downloads_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='downloads'],
+.tree-row > .file-row > [file-type-icon='downloads'] {
+  -webkit-mask-image: url(../images/volumes/downloads.svg);
 }
 
 [volume-type-icon='drive'] {
@@ -265,10 +292,14 @@
       url(../images/volumes/2x/drive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='drive'] {
+.tree-row[selected] > [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/drive_active.png) 1x,
       url(../images/volumes/2x/drive_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='drive'] {
+  -webkit-mask-image: url(../images/volumes/drive.svg);
 }
 
 [volume-type-icon='shortcut'] {
@@ -277,24 +308,33 @@
       url(../images/volumes/2x/shortcut.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='shortcut'] {
+.tree-row[selected] > [volume-type-icon='shortcut'] {
   background-image: -webkit-image-set(
       url(../images/volumes/shortcut_active.png) 1x,
       url(../images/volumes/2x/shortcut_active.png) 2x);
 }
 
+.tree-row > .file-row > [volume-type-icon='shortcut'] {
+  -webkit-mask-image: url(../images/volumes/shortcut.svg);
+}
+
 .drive-volume > .tree-row > [volume-type-icon='drive'],
-.tree-row [root-type-icon='drive'] {
+.tree-row > [root-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/service_drive.png) 1x,
       url(../images/volumes/2x/service_drive.png) 2x);
 }
 
 .drive-volume > .tree-row[selected] > [volume-type-icon='drive'],
-.tree-row[selected] [root-type-icon='drive'] {
+.tree-row[selected] > [root-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/service_drive_active.png) 1x,
       url(../images/volumes/2x/service_drive_active.png) 2x);
+}
+
+.drive-volume > .tree-row > .file-row > [volume-type-icon='drive'],
+.tree-row > .file-row > [root-type-icon='drive'] {
+  -webkit-mask-image: url(../images/volumes/service_drive.svg);
 }
 
 [volume-type-icon='shared_drives_grand_root'] {
@@ -303,10 +343,14 @@
       url(../images/volumes/2x/team_drive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='shared_drives_grand_root'] {
+.tree-row[selected] > [volume-type-icon='shared_drives_grand_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/team_drive_active.png) 1x,
       url(../images/volumes/2x/team_drive_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='shared_drives_grand_root'] {
+  -webkit-mask-image: url(../images/volumes/team_drive.svg);
 }
 
 [volume-type-icon='team_drive'] {
@@ -315,10 +359,14 @@
       url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='team_drive'] {
+.tree-row[selected] > [volume-type-icon='team_drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='team_drive'] {
+  -webkit-mask-image: url(../images/volumes/hard_drive.svg);
 }
 
 [volume-type-icon='computers_grand_root'] {
@@ -327,10 +375,14 @@
       url(../images/volumes/2x/devices.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='computers_grand_root'] {
+.tree-row[selected] > [volume-type-icon='computers_grand_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/devices_active.png) 1x,
       url(../images/volumes/2x/devices_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='computers_grand_root'] {
+  -webkit-mask-image: url(../images/volumes/devices.svg);
 }
 
 [volume-type-icon='computer'] {
@@ -339,10 +391,14 @@
       url(../images/volumes/2x/computer.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='computer'] {
+.tree-row[selected] > [volume-type-icon='computer'] {
   background-image: -webkit-image-set(
       url(../images/volumes/computer_active.png) 1x,
       url(../images/volumes/2x/computer_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='computer'] {
+  -webkit-mask-image: url(../images/volumes/computer.svg);
 }
 
 [volume-type-icon='drive_offline'] {
@@ -351,10 +407,14 @@
       url(../images/volumes/2x/offline.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='drive_offline'] {
+.tree-row[selected] > [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
       url(../images/volumes/offline_active.png) 1x,
       url(../images/volumes/2x/offline_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='drive_offline'] {
+  -webkit-mask-image: url(../images/volumes/offline.svg);
 }
 
 [volume-type-icon='drive_shared_with_me'] {
@@ -363,10 +423,14 @@
       url(../images/volumes/2x/shared.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='drive_shared_with_me'] {
+.tree-row[selected] > [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
       url(../images/volumes/shared_active.png) 1x,
       url(../images/volumes/2x/shared_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='drive_shared_with_me'] {
+  -webkit-mask-image: url(../images/volumes/shared.svg);
 }
 
 [volume-type-icon='drive_recent'] {
@@ -375,10 +439,14 @@
       url(../images/volumes/2x/recent.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='drive_recent'] {
+.tree-row[selected] > [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
       url(../images/volumes/recent_active.png) 1x,
       url(../images/volumes/2x/recent_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='drive_recent'] {
+  -webkit-mask-image: url(../images/volumes/recent.svg);
 }
 
 [volume-type-icon='external_media'],
@@ -389,12 +457,18 @@
       url(../images/volumes/2x/usb.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='external_media'],
-.tree-row[selected] [volume-type-icon='removable'],
-.tree-row[selected] [root-type-icon='removable'] {
+.tree-row[selected] > [volume-type-icon='external_media'],
+.tree-row[selected] > [volume-type-icon='removable'],
+.tree-row[selected] > [root-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb_active.png) 1x,
       url(../images/volumes/2x/usb_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='external_media'],
+.tree-row > .file-row > [volume-type-icon='removable'],
+.tree-row > .file-row > [root-type-icon='removable'] {
+  -webkit-mask-image: url(../images/volumes/usb.svg);
 }
 
 [volume-type-icon='removable'][volume-subtype='sd'] {
@@ -403,10 +477,14 @@
       url(../images/volumes/2x/sd.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='removable'][volume-subtype='sd'] {
+.tree-row[selected] > [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
       url(../images/volumes/sd_active.png) 1x,
       url(../images/volumes/2x/sd_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='removable'][volume-subtype='sd'] {
+  -webkit-mask-image: url(../images/volumes/sd.svg);
 }
 
 [volume-type-icon='removable'][volume-subtype='optical'] {
@@ -415,10 +493,14 @@
       url(../images/volumes/2x/cd.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='removable'][volume-subtype='optical'] {
+.tree-row[selected] > [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
       url(../images/volumes/cd_active.png) 1x,
       url(../images/volumes/2x/cd_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='removable'][volume-subtype='optical'] {
+  -webkit-mask-image: url(../images/volumes/cd.svg);
 }
 
 [volume-type-icon='media_view'][volume-subtype='images_root'] {
@@ -427,11 +509,14 @@
       url(../images/volumes/2x/images.png) 2x);
 }
 
-.tree-row[selected]
-    [volume-type-icon='media_view'][volume-subtype='images_root'] {
+.tree-row[selected] > [volume-type-icon='media_view'][volume-subtype='images_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/images_active.png) 1x,
       url(../images/volumes/2x/images_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='media_view'][volume-subtype='images_root'] {
+  -webkit-mask-image: url(../images/volumes/images.svg);
 }
 
 [volume-type-icon='media_view'][volume-subtype='videos_root'] {
@@ -440,11 +525,14 @@
       url(../images/volumes/2x/videos.png) 2x);
 }
 
-.tree-row[selected]
-    [volume-type-icon='media_view'][volume-subtype='videos_root'] {
+.tree-row[selected] > [volume-type-icon='media_view'][volume-subtype='videos_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/videos_active.png) 1x,
       url(../images/volumes/2x/videos_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='media_view'][volume-subtype='videos_root'] {
+  -webkit-mask-image: url(../images/volumes/videos.svg);
 }
 
 [volume-type-icon='media_view'][volume-subtype='audio_root'] {
@@ -453,11 +541,14 @@
       url(../images/volumes/2x/audio.png) 2x);
 }
 
-.tree-row[selected]
-    [volume-type-icon='media_view'][volume-subtype='audio_root'] {
+.tree-row[selected] > [volume-type-icon='media_view'][volume-subtype='audio_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/audio_active.png) 1x,
       url(../images/volumes/2x/audio_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='media_view'][volume-subtype='audio_root'] {
+  -webkit-mask-image: url(../images/volumes/audio.svg);
 }
 
 [volume-type-icon='mtp'] {
@@ -466,31 +557,46 @@
       url(../images/volumes/2x/phone.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='mtp'] {
+.tree-row[selected] > [volume-type-icon='mtp'] {
   background-image: -webkit-image-set(
       url(../images/volumes/phone_active.png) 1x,
       url(../images/volumes/2x/phone_active.png) 2x);
 }
 
+.tree-row > .file-row > [volume-type-icon='mtp'] {
+  -webkit-mask-image: url(../images/volumes/phone.svg);
+}
+
 [volume-type-icon='removable'][volume-subtype='unknown'],
-.tree-item .tree-item [volume-type-icon='removable'],
+.tree-item .tree-item > .tree-row > [volume-type-icon='removable'],
 [file-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive.png) 1x,
       url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='removable'][volume-subtype='unknown'],
-.tree-item .tree-item[selected] [volume-type-icon='removable'] {
+.tree-row[selected] > [volume-type-icon='removable'][volume-subtype='unknown'],
+.tree-item .tree-item > .tree-row[selected] > [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
 
-.tree-row:not([selected]) [volume-type-icon='provided'] {
+.tree-row > .file-row > [volume-type-icon='removable'][volume-subtype='unknown'],
+.tree-item .tree-item > .tree-row > .file-row > [volume-type-icon='removable'] {
+  -webkit-mask-image: url(../images/volumes/hard_drive.svg);
+}
+
+.tree-row:not([selected]) > [volume-type-icon='provided'] {
   /* Third-party icons are not provided with both an active and a non-active
   version. This filter defines the non-active version of a provided icon. */
   filter: contrast(0) brightness(0.7143);
+}
+
+.tree-row:not([active]) > .file-row > [volume-type-icon='provided'] {
+  /* Third-party icons are not provided with both an active and a non-active
+  version. This filter defines the non-active version of a provided icon. */
+  filter: contrast(0) brightness(0.85);
 }
 
 [root-type-icon='recent'] {
@@ -499,10 +605,14 @@
       url(../images/volumes/2x/recent.png) 2x);
 }
 
-.tree-row[selected] [root-type-icon='recent'] {
+.tree-row[selected] > [root-type-icon='recent'] {
   background-image: -webkit-image-set(
       url(../images/volumes/recent_active.png) 1x,
       url(../images/volumes/2x/recent_active.png) 2x);
+}
+
+.tree-row > .file-row > [root-type-icon='recent'] {
+  -webkit-mask-image: url(../images/volumes/recent.svg);
 }
 
 [file-type-icon='crostini'],
@@ -513,11 +623,16 @@
       url(../images/volumes/2x/linux_files.png) 2x);
 }
 
-.tree-row[selected] [root-type-icon='crostini'],
-.tree-row[selected] [volume-type-icon='crostini'] {
+.tree-row[selected] > [root-type-icon='crostini'],
+.tree-row[selected] > [volume-type-icon='crostini'] {
   background-image: -webkit-image-set(
       url(../images/volumes/linux_files_active.png) 1x,
       url(../images/volumes/2x/linux_files_active.png) 2x);
+}
+
+.tree-row > .file-row > [root-type-icon='crostini'],
+.tree-row > .file-row > [volume-type-icon='crostini'] {
+  -webkit-mask-image: url(../images/volumes/linux_files.svg);
 }
 
 [file-type-icon='android_files'],
@@ -527,22 +642,34 @@
       url(../images/volumes/2x/android.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='android_files'] {
+.tree-row[selected] > [volume-type-icon='android_files'] {
   background-image: -webkit-image-set(
       url(../images/volumes/android_active.png) 1x,
       url(../images/volumes/2x/android_active.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='android_files'] {
+  -webkit-mask-image: url(../images/volumes/android.svg);
 }
 
 [file-type-icon='plugin_vm'] {
   background-image: url(../images/volumes/plugin_vm.svg);
 }
 
-.tree-row[selected] [file-type-icon='plugin_vm'] {
-  background-image: url(../images/volumes/plugin_vm_active.svg);
+.tree-row[selected] > [file-type-icon='plugin_vm'] {
+  background-image: url(../images/volumes/plugin_vm_active.svg)
+}
+
+.tree-row > .file-row > [file-type-icon='plugin_vm'] {
+  -webkit-mask-image: url(../images/volumes/plugin_vm_ng.svg);
 }
 
 [volume-type-icon='smb'] {
   background-image: -webkit-image-set(
       url(../images/volumes/smb.png) 1x,
       url(../images/volumes/2x/smb.png) 2x);
+}
+
+.tree-row > .file-row > [volume-type-icon='smb'] {
+  -webkit-mask-image: url(../images/volumes/smb.svg);
 }

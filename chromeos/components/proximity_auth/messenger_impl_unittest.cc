@@ -108,12 +108,6 @@ class ProximityAuthMessengerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthMessengerImplTest);
 };
 
-TEST_F(ProximityAuthMessengerImplTest, SupportsSignIn) {
-  CreateMessenger(true /* is_multi_device_api_enabled */);
-
-  EXPECT_TRUE(messenger_->SupportsSignIn());
-}
-
 TEST_F(ProximityAuthMessengerImplTest,
        DispatchUnlockEvent_SendsExpectedMessage) {
   CreateMessenger(true /* is_multi_device_api_enabled */);

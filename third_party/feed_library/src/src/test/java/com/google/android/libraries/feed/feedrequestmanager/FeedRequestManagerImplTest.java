@@ -732,7 +732,7 @@ public class FeedRequestManagerImplTest {
                                                 FeedQuery.RequestReason.SCHEDULED_REFRESH))
                                         .setClientInfo(
                                                 ClientInfo.newBuilder()
-                                                        .setPlatformType(PlatformType.ANDROID)
+                                                        .setPlatformType(PlatformType.ANDROID_ID)
                                                         .setPlatformVersion(
                                                                 Version.newBuilder()
                                                                         .setMajor(7)
@@ -830,7 +830,7 @@ public class FeedRequestManagerImplTest {
                 .setConsistencyToken(ConsistencyToken.getDefaultInstance())
                 .setClientInfo(
                         ClientInfo.newBuilder()
-                                .setPlatformType(PlatformType.ANDROID)
+                                .setPlatformType(PlatformType.ANDROID_ID)
                                 .setPlatformVersion(Version.newBuilder()
                                                             .setMajor(4)
                                                             .setMinor(4)

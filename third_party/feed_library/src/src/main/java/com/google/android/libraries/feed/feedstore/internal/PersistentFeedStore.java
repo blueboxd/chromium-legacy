@@ -69,51 +69,51 @@ import java.util.concurrent.TimeUnit;
 public final class PersistentFeedStore implements ClearableStore, Dumpable {
     private static final String TAG = "PersistentFeedStore";
 
-    private final Configuration configuration;
-    private final TimingUtils timingUtils;
-    private final FeedExtensionRegistry extensionRegistry;
-    private final ContentStorageDirect contentStorageDirect;
-    private final JournalStorageDirect journalStorageDirect;
-    private final TaskQueue taskQueue;
-    private final ThreadUtils threadUtils;
-    private final Clock clock;
-    private final FeedStoreHelper storeHelper;
-    private final BasicLoggingApi basicLoggingApi;
-    private final MainThreadRunner mainThreadRunner;
+    private final Configuration mConfiguration;
+    private final TimingUtils mTimingUtils;
+    private final FeedExtensionRegistry mExtensionRegistry;
+    private final ContentStorageDirect mContentStorageDirect;
+    private final JournalStorageDirect mJournalStorageDirect;
+    private final TaskQueue mTaskQueue;
+    private final ThreadUtils mThreadUtils;
+    private final Clock mClock;
+    private final FeedStoreHelper mStoreHelper;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final MainThreadRunner mMainThreadRunner;
 
     // We use a common string interner pool because the same content IDs are reused across different
     // protos. The actual proto interners below are backed by thisl common pool.
-    private final InternerWithStats<String> contentIdStringInterner =
+    private final InternerWithStats<String> mContentIdStringInterner =
             new InternerWithStats<>(new WeakPoolInterner<>());
-    private final Interner<StreamStructure> streamStructureInterner =
-            new StreamStructureInterner(contentIdStringInterner);
-    private final Interner<StreamPayload> streamPayloadInterner =
-            new StreamPayloadInterner(contentIdStringInterner);
+    private final Interner<StreamStructure> mStreamStructureInterner =
+            new StreamStructureInterner(mContentIdStringInterner);
+    private final Interner<StreamPayload> mStreamPayloadInterner =
+            new StreamPayloadInterner(mContentIdStringInterner);
 
     public PersistentFeedStore(Configuration configuration, TimingUtils timingUtils,
             FeedExtensionRegistry extensionRegistry, ContentStorageDirect contentStorageDirect,
             JournalStorageDirect journalStorageDirect, TaskQueue taskQueue, ThreadUtils threadUtils,
             Clock clock, FeedStoreHelper storeHelper, BasicLoggingApi basicLoggingApi,
             MainThreadRunner mainThreadRunner) {
-        this.configuration = configuration;
-        this.timingUtils = timingUtils;
-        this.extensionRegistry = extensionRegistry;
-        this.contentStorageDirect = contentStorageDirect;
-        this.journalStorageDirect = journalStorageDirect;
-        this.taskQueue = taskQueue;
-        this.threadUtils = threadUtils;
-        this.clock = clock;
-        this.storeHelper = storeHelper;
-        this.basicLoggingApi = basicLoggingApi;
-        this.mainThreadRunner = mainThreadRunner;
+        this.mConfiguration = configuration;
+        this.mTimingUtils = timingUtils;
+        this.mExtensionRegistry = extensionRegistry;
+        this.mContentStorageDirect = contentStorageDirect;
+        this.mJournalStorageDirect = journalStorageDirect;
+        this.mTaskQueue = taskQueue;
+        this.mThreadUtils = threadUtils;
+        this.mClock = clock;
+        this.mStoreHelper = storeHelper;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mMainThreadRunner = mainThreadRunner;
     }
 
     @Override
     public Result<List<PayloadWithId>> getPayloads(List<String> contentIds) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<PayloadWithId> payloads = new ArrayList<>(contentIds.size());
-        Result<Map<String, byte[]>> contentResult = contentStorageDirect.get(contentIds);
+        Result<Map<String, byte[]>> contentResult = mContentStorageDirect.get(contentIds);
         if (!contentResult.isSuccessful()) {
             Logger.e(TAG, "Unsuccessful fetching payloads for content ids %s", contentIds);
             tracker.stop("getPayloads failed", "items", contentIds);
@@ -122,13 +122,13 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
         for (Map.Entry<String, byte[]> entry : contentResult.getValue().entrySet()) {
             try {
-                StreamPayload streamPayload = streamPayloadInterner.intern(StreamPayload.parseFrom(
-                        entry.getValue(), extensionRegistry.getExtensionRegistry()));
+                StreamPayload streamPayload = mStreamPayloadInterner.intern(StreamPayload.parseFrom(
+                        entry.getValue(), mExtensionRegistry.getExtensionRegistry()));
                 payloads.add(new PayloadWithId(entry.getKey(), streamPayload));
             } catch (InvalidProtocolBufferException e) {
                 Logger.e(TAG, "Couldn't parse content proto for id %s", entry.getKey());
-                mainThreadRunner.execute("ITEM_NOT_PARSED", () -> {
-                    basicLoggingApi.onInternalError(InternalFeedError.ITEM_NOT_PARSED);
+                mMainThreadRunner.execute("ITEM_NOT_PARSED", () -> {
+                    mBasicLoggingApi.onInternalError(InternalFeedError.ITEM_NOT_PARSED);
                 });
             }
         }
@@ -138,9 +138,9 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<List<StreamSharedState>> getSharedStates() {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        Result<Map<String, byte[]>> bytesResult = contentStorageDirect.getAll(SHARED_STATE_PREFIX);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        Result<Map<String, byte[]>> bytesResult = mContentStorageDirect.getAll(SHARED_STATE_PREFIX);
         if (!bytesResult.isSuccessful()) {
             Logger.e(TAG, "Error fetching shared states");
             tracker.stop("getSharedStates", "failed");
@@ -163,10 +163,10 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<List<StreamStructure>> getStreamStructures(String sessionId) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<StreamStructure> streamStructures;
-        Result<List<byte[]>> operationsResult = journalStorageDirect.read(sessionId);
+        Result<List<byte[]>> operationsResult = mJournalStorageDirect.read(sessionId);
         if (!operationsResult.isSuccessful()) {
             Logger.e(TAG, "Error fetching stream structures for session %s", sessionId);
             tracker.stop("getStreamStructures failed", "session", sessionId);
@@ -180,7 +180,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             }
             try {
                 streamStructures.add(
-                        streamStructureInterner.intern(StreamStructure.parseFrom(bytes)));
+                        mStreamStructureInterner.intern(StreamStructure.parseFrom(bytes)));
             } catch (InvalidProtocolBufferException e) {
                 Logger.e(TAG, e, "Error parsing stream structure.");
             }
@@ -191,11 +191,11 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<List<String>> getAllSessions() {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<String> sessions;
 
-        Result<List<String>> namesResult = journalStorageDirect.getAllJournals();
+        Result<List<String>> namesResult = mJournalStorageDirect.getAllJournals();
         if (!namesResult.isSuccessful()) {
             Logger.e(TAG, "Error fetching all journals");
             tracker.stop("getAllSessions failed");
@@ -221,15 +221,15 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<List<SemanticPropertiesWithId>> getSemanticProperties(List<String> contentIds) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<SemanticPropertiesWithId> semanticPropertiesWithIds =
                 new ArrayList<>(contentIds.size());
         List<String> contentIdKeys = new ArrayList<>(contentIds.size());
         for (String contentId : contentIds) {
             contentIdKeys.add(SEMANTIC_PROPERTIES_PREFIX + contentId);
         }
-        Result<Map<String, byte[]>> mapResult = contentStorageDirect.get(contentIdKeys);
+        Result<Map<String, byte[]>> mapResult = mContentStorageDirect.get(contentIdKeys);
 
         if (mapResult.isSuccessful()) {
             for (Map.Entry<String, byte[]> entry : mapResult.getValue().entrySet()) {
@@ -250,10 +250,10 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<List<StreamLocalAction>> getAllDismissLocalActions() {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        Result<List<byte[]>> listResult = journalStorageDirect.read(DISMISS_ACTION_JOURNAL);
+        Result<List<byte[]>> listResult = mJournalStorageDirect.read(DISMISS_ACTION_JOURNAL);
         if (!listResult.isSuccessful()) {
             Logger.e(TAG, "Error retrieving dismiss journal");
             tracker.stop("getAllDismissLocalActions failed");
@@ -278,10 +278,10 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<Set<StreamUploadableAction>> getAllUploadableActions() {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Result<Map<String, byte[]>> bytesResult =
-                contentStorageDirect.getAll(UPLOADABLE_ACTION_PREFIX);
+                mContentStorageDirect.getAll(UPLOADABLE_ACTION_PREFIX);
         if (!bytesResult.isSuccessful()) {
             Logger.e(TAG, "Error fetching shared states");
             tracker.stop("getAllUploadableActions", "failed");
@@ -304,11 +304,11 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public Result<String> createNewSession() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        String sessionId = storeHelper.getNewStreamSessionId();
-        journalStorageDirect.commit(
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        String sessionId = mStoreHelper.getNewStreamSessionId();
+        mJournalStorageDirect.commit(
                 new JournalMutation.Builder(HEAD_SESSION_ID).copy(sessionId).build());
         tracker.stop("createNewSession", sessionId);
         return Result.success(sessionId);
@@ -316,46 +316,46 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     @Override
     public void removeSession(String sessionId) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         if (sessionId.equals(HEAD_SESSION_ID)) {
             throw new IllegalStateException("Unable to delete the $HEAD session");
         }
-        journalStorageDirect.commit(new JournalMutation.Builder(sessionId).delete().build());
+        mJournalStorageDirect.commit(new JournalMutation.Builder(sessionId).delete().build());
         tracker.stop("removeSession", sessionId);
     }
 
     @Override
     public void clearHead() {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-        journalStorageDirect.commit(
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
+        mJournalStorageDirect.commit(
                 new JournalMutation.Builder(HEAD_SESSION_ID).delete().append(new byte[0]).build());
         tracker.stop("", "clearHead");
     }
 
     @Override
     public ContentMutation editContent() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         return new FeedContentMutation(this::commitContentMutation);
     }
 
     @Override
     public SessionMutation editSession(String sessionId) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         return new FeedSessionMutation(
                 feedSessionMutation -> commitSessionMutation(sessionId, feedSessionMutation));
     }
 
     @Override
     public SemanticPropertiesMutation editSemanticProperties() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         return new FeedSemanticPropertiesMutation(this::commitSemanticPropertiesMutation);
     }
 
     @Override
     public LocalActionMutation editLocalActions() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         return new FeedLocalActionMutation(this::commitLocalActionMutation);
     }
 
@@ -379,15 +379,15 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             }
         };
 
-        return new ContentGc(configuration, accessibleContent, reservedContentIds,
-                dismissActionSupplier, contentStorageDirect, taskQueue, timingUtils,
+        return new ContentGc(mConfiguration, accessibleContent, reservedContentIds,
+                dismissActionSupplier, mContentStorageDirect, mTaskQueue, mTimingUtils,
                 keepSharedStates)::gc;
     }
 
     @Override
     public Runnable triggerLocalActionGc(
             List<StreamLocalAction> actions, List<String> validContentIds) {
-        return new LocalActionGc(actions, validContentIds, journalStorageDirect, timingUtils,
+        return new LocalActionGc(actions, validContentIds, mJournalStorageDirect, mTimingUtils,
                 DISMISS_ACTION_JOURNAL)::gc;
     }
 
@@ -415,14 +415,14 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     private CommitResult commitSemanticPropertiesMutation(
             Map<String, ByteString> semanticPropertiesMap) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         Builder mutationBuilder = new Builder();
         for (Map.Entry<String, ByteString> entry : semanticPropertiesMap.entrySet()) {
             mutationBuilder.upsert(
                     SEMANTIC_PROPERTIES_PREFIX + entry.getKey(), entry.getValue().toByteArray());
         }
-        CommitResult commitResult = contentStorageDirect.commit(mutationBuilder.build());
+        CommitResult commitResult = mContentStorageDirect.commit(mutationBuilder.build());
         tracker.stop("task", "commitSemanticPropertiesMutation", "mutations",
                 semanticPropertiesMap.size());
         return commitResult;
@@ -430,8 +430,8 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     private Boolean commitSessionMutation(
             String sessionId, List<StreamStructure> streamStructures) {
-        threadUtils.checkNotMainThread();
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        mThreadUtils.checkNotMainThread();
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
         JournalMutation.Builder mutation = new JournalMutation.Builder(sessionId);
         if (streamStructures.isEmpty()) {
             // allow an empty journal to be created
@@ -440,7 +440,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
         for (StreamStructure streamStructure : streamStructures) {
             mutation.append(streamStructure.toByteArray());
         }
-        CommitResult mutationResult = journalStorageDirect.commit(mutation.build());
+        CommitResult mutationResult = mJournalStorageDirect.commit(mutation.build());
         boolean result = CommitResult.SUCCESS.equals(mutationResult);
         tracker.stop("", "commitSessionMutation", "mutations", streamStructures.size());
         Logger.i(TAG, "commitSessionMutation - Success %s, Update Session %s, stream structures %s",
@@ -449,7 +449,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
     }
 
     private CommitResult commitContentMutation(List<PayloadWithId> mutations) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
         Builder contentMutationBuilder = new Builder();
         for (PayloadWithId mutation : mutations) {
@@ -467,13 +467,13 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
         // Block waiting for the response from storage, to make this method synchronous.
         // TODO: handle errors
-        CommitResult commitResult = contentStorageDirect.commit(contentMutationBuilder.build());
+        CommitResult commitResult = mContentStorageDirect.commit(contentMutationBuilder.build());
         tracker.stop("task", "commitContentMutation", "mutations", mutations.size());
         return commitResult;
     }
 
     private CommitResult commitLocalActionMutation(Map<Integer, List<String>> actions) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
         CommitResult commitResult = CommitResult.SUCCESS;
         for (Map.Entry<Integer, List<String>> entry : actions.entrySet()) {
@@ -492,7 +492,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
                                 .setAction(actionType)
                                 .setFeatureContentId(contentId)
                                 .setTimestampSeconds(
-                                        TimeUnit.MILLISECONDS.toSeconds(clock.currentTimeMillis()))
+                                        TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis()))
                                 .build();
                 byte[] actionBytes = action.toByteArray();
                 Logger.i(TAG, "Adding StreamLocalAction bytes %s (length %d) to journal %s",
@@ -500,7 +500,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
                         journalName);
                 builder.append(actionBytes);
             }
-            commitResult = journalStorageDirect.commit(builder.build());
+            commitResult = mJournalStorageDirect.commit(builder.build());
             if (commitResult == CommitResult.FAILURE) {
                 Logger.e(TAG, "Error committing action for type %s", actionType);
                 break;
@@ -513,7 +513,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
     private CommitResult commitUploadableActionMutation(
             Map<String, FeedUploadableActionMutation.FeedUploadableActionChanges> actions) {
-        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
         Builder contentMutationBuilder = new Builder();
         for (Map.Entry<String, FeedUploadableActionMutation.FeedUploadableActionChanges> entry :
@@ -530,7 +530,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             }
         }
 
-        CommitResult commitResult = contentStorageDirect.commit(contentMutationBuilder.build());
+        CommitResult commitResult = mContentStorageDirect.commit(contentMutationBuilder.build());
         tracker.stop("task", "commitUploadableActionMutation", "actions", actions.size());
         return commitResult;
     }
@@ -538,21 +538,21 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        if (contentStorageDirect instanceof Dumpable) {
-            dumper.dump((Dumpable) contentStorageDirect);
+        if (mContentStorageDirect instanceof Dumpable) {
+            dumper.dump((Dumpable) mContentStorageDirect);
         } else {
             dumper.forKey("contentStorageDirect").value("not dumpable");
         }
-        if (journalStorageDirect instanceof Dumpable) {
-            dumper.dump((Dumpable) journalStorageDirect);
+        if (mJournalStorageDirect instanceof Dumpable) {
+            dumper.dump((Dumpable) mJournalStorageDirect);
         } else {
             dumper.forKey("journalStorage").value("not dumpable");
         }
         dumper.forKey("contentIdStringInternerSize")
-                .value(contentIdStringInterner.size())
+                .value(mContentIdStringInterner.size())
                 .compactPrevious();
         dumper.forKey("contentIdStringInternerStats")
-                .value(contentIdStringInterner.getStats())
+                .value(mContentIdStringInterner.getStats())
                 .compactPrevious();
     }
 
@@ -572,7 +572,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
      * @return whether the clear succeeded
      */
     private boolean clearJournalStorage() {
-        Result<List<String>> allJournalsResult = journalStorageDirect.getAllJournals();
+        Result<List<String>> allJournalsResult = mJournalStorageDirect.getAllJournals();
         if (!allJournalsResult.isSuccessful()) {
             Logger.e(TAG, "Error clearing all contents. Could not fetch all journals.");
             return false;
@@ -582,7 +582,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             if (DISMISS_ACTION_JOURNAL.equals(journal)) {
                 continue;
             }
-            CommitResult result = journalStorageDirect.commit(
+            CommitResult result = mJournalStorageDirect.commit(
                     new JournalMutation.Builder(journal).delete().build());
             if (result != CommitResult.SUCCESS) {
                 Logger.e(TAG, "Error clearing all contents. Could not delete journal %s", journal);
@@ -598,7 +598,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
      * @return whether the clear succeeded
      */
     private boolean clearContentStorage() {
-        Result<List<String>> results = contentStorageDirect.getAllKeys();
+        Result<List<String>> results = mContentStorageDirect.getAllKeys();
         if (!results.isSuccessful()) {
             Logger.e(TAG, "Error clearing all contents. Could not fetch all content.");
             return false;
@@ -610,7 +610,7 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             }
             contentMutationBuilder.delete(key);
         }
-        CommitResult result = contentStorageDirect.commit(contentMutationBuilder.build());
+        CommitResult result = mContentStorageDirect.commit(contentMutationBuilder.build());
         if (result != CommitResult.SUCCESS) {
             Logger.e(TAG, "Error clearing all contents. Could not commit content deletions.");
             return false;
@@ -621,12 +621,12 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
     /** Wipes all content and journals */
     @Override
     public boolean clearAll() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         boolean success = true;
         // Run clear on both content and journal
-        CommitResult result = contentStorageDirect.commit(new Builder().deleteAll().build());
-        CommitResult journalResult = journalStorageDirect.deleteAll();
+        CommitResult result = mContentStorageDirect.commit(new Builder().deleteAll().build());
+        CommitResult journalResult = mJournalStorageDirect.deleteAll();
 
         // Confirm results were successful
         if (result != CommitResult.SUCCESS) {

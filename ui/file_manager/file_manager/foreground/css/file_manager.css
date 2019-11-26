@@ -1773,7 +1773,7 @@ body:not([type='saveas-file']) #filename-input-box {
 
 body[type='folder'] .file,
 body[type='upload-folder'] .file,
-.dialog-container[connection='offline'] .dim-offline,
+.dialog-container[connection='OFFLINE'] .dim-offline,
 body[block-hosted-docs] .file.dim-hosted {
   opacity: 0.4;
 }

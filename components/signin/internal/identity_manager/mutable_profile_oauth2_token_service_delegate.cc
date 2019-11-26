@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
@@ -254,6 +253,7 @@ MutableProfileOAuth2TokenServiceDelegate::
   DCHECK(client);
   DCHECK(account_tracker_service_);
   DCHECK(network_connection_tracker_);
+  DCHECK_NE(signin::AccountConsistencyMethod::kMirror, account_consistency_);
   // It's okay to fill the backoff policy after being used in construction.
   backoff_policy_.num_errors_to_ignore = 0;
   backoff_policy_.initial_delay_ms = 1000;
@@ -407,18 +407,6 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
 
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
-
-#if defined(OS_CHROMEOS)
-  // TODO(sinhak): Remove this ifdef block after Account Manager is switched on.
-  // ChromeOS OOBE loads credentials without a primary account and expects this
-  // to be a no-op. See http://crbug.com/891818
-  if (primary_account_id.empty()) {
-    set_load_credentials_state(
-        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-    FinishLoadingCredentials();
-    return;
-  }
-#endif
 
   if (!primary_account_id.empty())
     ValidateAccountId(primary_account_id);
@@ -586,7 +574,6 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         // Only load secondary accounts when account consistency is enabled.
         bool load_account =
             account_id == loading_primary_account_id_ ||
-            account_consistency_ == signin::AccountConsistencyMethod::kMirror ||
             account_consistency_ == signin::AccountConsistencyMethod::kDice;
         LoadTokenFromDBStatus load_token_status =
             load_account
@@ -840,10 +827,8 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
-#if !defined(OS_CHROMEOS)
   if (account_consistency_ == signin::AccountConsistencyMethod::kDice)
     DCHECK(client_->GetPrefs()->GetBoolean(prefs::kTokenServiceDiceCompatible));
-#endif
   FireRefreshTokensLoaded();
 }
 

@@ -299,23 +299,24 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   if (injection_host_->id().type() == HostID::EXTENSIONS && log_activity_)
     DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id());
 
-  blink::WebLocalFrame::ScriptExecutionType option;
-  if (injector_->script_type() == UserScript::CONTENT_SCRIPT) {
-    switch (run_location_) {
-      case UserScript::DOCUMENT_END:
-      case UserScript::DOCUMENT_IDLE:
-        option = blink::WebLocalFrame::kAsynchronousBlockingOnload;
-        break;
-      default:
-        option = blink::WebLocalFrame::kSynchronous;
-        break;
-    }
-  } else {
-    option = blink::WebLocalFrame::kSynchronous;
-  }
+  // For content scripts executing during page load, we run them asynchronously
+  // in order to reduce UI jank experienced by the user. (We don't do this for
+  // DOCUMENT_START scripts, because there's no UI to jank until after those
+  // run, so we run them as soon as we can.)
+  // Note: We could potentially also run deferred and browser-driven scripts
+  // asynchronously; however, these are rare enough that there probably isn't
+  // UI jank. If this changes, we can update this.
+  bool should_execute_asynchronously =
+      injector_->script_type() == UserScript::CONTENT_SCRIPT &&
+      (run_location_ == UserScript::DOCUMENT_END ||
+       run_location_ == UserScript::DOCUMENT_IDLE);
+  blink::WebLocalFrame::ScriptExecutionType execution_option =
+      should_execute_asynchronously
+          ? blink::WebLocalFrame::kAsynchronousBlockingOnload
+          : blink::WebLocalFrame::kSynchronous;
   web_frame->RequestExecuteScriptInIsolatedWorld(
-      world_id, &sources.front(), sources.size(), is_user_gesture, option,
-      callback.release());
+      world_id, &sources.front(), sources.size(), is_user_gesture,
+      execution_option, callback.release());
 }
 
 void ScriptInjection::OnJsInjectionCompleted(

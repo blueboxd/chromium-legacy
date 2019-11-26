@@ -1176,6 +1176,8 @@ message ExtensionRequest {
   optional string id = 1;
 
   // When the user commits to requesting the extension.
+  // [request_timestamp] is milliseconds since Epoch in UTC timezone
+  // (Java time).
   optional int64 request_timestamp = 2;
 }
 

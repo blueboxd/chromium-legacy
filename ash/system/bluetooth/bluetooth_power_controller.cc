@@ -93,7 +93,7 @@ void BluetoothPowerController::StartWatchingLocalStatePrefsChanges() {
   local_state_pref_change_registrar_->Init(local_state_);
   local_state_pref_change_registrar_->Add(
       prefs::kSystemBluetoothAdapterEnabled,
-      base::Bind(
+      base::BindRepeating(
           &BluetoothPowerController::OnBluetoothPowerLocalStatePrefChanged,
           base::Unretained(this)));
 }
@@ -245,12 +245,10 @@ void BluetoothPowerController::SetBluetoothPowerOnAdapterReady() {
   pending_bluetooth_power_target_.reset();
   // Always run the next pending task after SetPowered completes regardless
   // the error.
-  bluetooth_adapter_->SetPowered(
-      enabled,
-      base::Bind(&BluetoothPowerController::RunNextPendingBluetoothTask,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothPowerController::RunNextPendingBluetoothTask,
-                 weak_ptr_factory_.GetWeakPtr()));
+  auto run_next_task = base::BindRepeating(
+      &BluetoothPowerController::RunNextPendingBluetoothTask,
+      weak_ptr_factory_.GetWeakPtr());
+  bluetooth_adapter_->SetPowered(enabled, run_next_task, run_next_task);
 }
 
 void BluetoothPowerController::RunBluetoothTaskWhenAdapterReady(

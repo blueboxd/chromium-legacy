@@ -572,73 +572,6 @@ size_t GetLongestMatchingSubdomain(const url::Origin& origin,
   return 0;
 }
 
-// Returns whether the |origin| matches the domain list of the |rule|. A match
-// means that the longest domain in |domains| that |origin| is a sub-domain of
-// is not an exception OR all the |domains| are exceptions and neither matches
-// the |origin|. Thus, domain filters with more domain components trump filters
-// with fewer domain components, i.e. the more specific a filter is, the higher
-// the priority.
-//
-// A rule whose domain list is empty or contains only negative domains is still
-// considered a "generic" rule. Therefore, if |disable_generic_rules| is set,
-// this function will always return false for such rules.
-bool DoesOriginMatchDomainList(const url::Origin& origin,
-                               const flat::UrlRule& rule,
-                               bool disable_generic_rules) {
-  const bool is_generic = !rule.domains_included();
-  DCHECK(is_generic || rule.domains_included()->size());
-  if (disable_generic_rules && is_generic)
-    return false;
-
-  // Unique |origin| matches lists of exception domains only.
-  if (origin.opaque())
-    return is_generic;
-
-  size_t longest_matching_included_domain_length = 1;
-  if (!is_generic) {
-    longest_matching_included_domain_length =
-        GetLongestMatchingSubdomain(origin, *rule.domains_included());
-  }
-  if (longest_matching_included_domain_length && rule.domains_excluded()) {
-    return GetLongestMatchingSubdomain(origin, *rule.domains_excluded()) <
-           longest_matching_included_domain_length;
-  }
-  return !!longest_matching_included_domain_length;
-}
-
-// Returns whether the request matches flags of the specified URL |rule|. Takes
-// into account:
-//  - |element_type| of the requested resource, if not *_NONE.
-//  - |activation_type| for a subdocument request, if not *_NONE.
-//  - Whether the resource |is_third_party| w.r.t. its embedding document.
-bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
-                        flat::ElementType element_type,
-                        flat::ActivationType activation_type,
-                        bool is_third_party) {
-  DCHECK((element_type == flat::ElementType_NONE) !=
-         (activation_type == flat::ActivationType_NONE));
-
-  if (element_type != flat::ElementType_NONE &&
-      !(rule.element_types() & element_type)) {
-    return false;
-  }
-  if (activation_type != flat::ActivationType_NONE &&
-      !(rule.activation_types() & activation_type)) {
-    return false;
-  }
-
-  if (is_third_party &&
-      !(rule.options() & flat::OptionFlag_APPLIES_TO_THIRD_PARTY)) {
-    return false;
-  }
-  if (!is_third_party &&
-      !(rule.options() & flat::OptionFlag_APPLIES_TO_FIRST_PARTY)) {
-    return false;
-  }
-
-  return true;
-}
-
 // |sorted_candidates| is sorted in descending order by priority. This returns
 // the first matching rule i.e. the rule with the highest priority in
 // |sorted_candidates| or null if no rule matches.
@@ -757,6 +690,58 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
 }
 
 }  // namespace
+
+bool DoesOriginMatchDomainList(const url::Origin& origin,
+                               const flat::UrlRule& rule,
+                               bool disable_generic_rules) {
+  const bool is_generic = !rule.domains_included();
+  DCHECK(is_generic || rule.domains_included()->size());
+  if (disable_generic_rules && is_generic)
+    return false;
+
+  // Unique |origin| matches lists of exception domains only.
+  if (origin.opaque())
+    return is_generic;
+
+  size_t longest_matching_included_domain_length = 1;
+  if (!is_generic) {
+    longest_matching_included_domain_length =
+        GetLongestMatchingSubdomain(origin, *rule.domains_included());
+  }
+  if (longest_matching_included_domain_length && rule.domains_excluded()) {
+    return GetLongestMatchingSubdomain(origin, *rule.domains_excluded()) <
+           longest_matching_included_domain_length;
+  }
+  return !!longest_matching_included_domain_length;
+}
+
+bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
+                        flat::ElementType element_type,
+                        flat::ActivationType activation_type,
+                        bool is_third_party) {
+  DCHECK((element_type == flat::ElementType_NONE) !=
+         (activation_type == flat::ActivationType_NONE));
+
+  if (element_type != flat::ElementType_NONE &&
+      !(rule.element_types() & element_type)) {
+    return false;
+  }
+  if (activation_type != flat::ActivationType_NONE &&
+      !(rule.activation_types() & activation_type)) {
+    return false;
+  }
+
+  if (is_third_party &&
+      !(rule.options() & flat::OptionFlag_APPLIES_TO_THIRD_PARTY)) {
+    return false;
+  }
+  if (!is_third_party &&
+      !(rule.options() & flat::OptionFlag_APPLIES_TO_FIRST_PARTY)) {
+    return false;
+  }
+
+  return true;
+}
 
 UrlPatternIndexMatcher::UrlPatternIndexMatcher(
     const flat::UrlPatternIndex* flat_index)

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
@@ -62,6 +63,9 @@ class OpenXrApiWrapper {
   void RegisterInteractionProfileChangeCallback(
       const base::RepeatingCallback<void(XrResult*)>&
           interaction_profile_callback);
+  void RegisterVisibilityChangeCallback(
+      const base::RepeatingCallback<void(mojom::XRVisibilityState)>&
+          visibility_changed_callback);
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
@@ -101,6 +105,8 @@ class OpenXrApiWrapper {
 
   base::RepeatingCallback<void(XrResult*)>
       interaction_profile_changed_callback_;
+  base::RepeatingCallback<void(mojom::XRVisibilityState)>
+      visibility_changed_callback_;
 
   // Testing objects
   static VRTestHook* test_hook_;

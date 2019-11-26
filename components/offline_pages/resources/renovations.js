@@ -4,7 +4,7 @@
 
 function renovation_wikipedia() {
   // Get list of elements to expand.
-  let elems =
+  const elems =
       document.querySelectorAll('div.collapsible-block,h2.collapsible-heading');
 
   // Apply 'open-block' class to elements. This makes the sections'
@@ -21,10 +21,10 @@ function renovation_wikipedia() {
   // disabled). We get the list of these elements in order. For every
   // lazy image placeholder, there is always a corresponding noscript
   // element.
-  let placeholders = document.querySelectorAll(
+  const placeholders = document.querySelectorAll(
       '.image > span.lazy-image-placeholder, ' +
       '.mwe-math-element > span.lazy-image-placeholder');
-  let noscripts = document.querySelectorAll(
+  const noscripts = document.querySelectorAll(
       '.image > noscript, .mwe-math-element > noscript');
 
   // Next we delete all the placeholders, then move the img elements
@@ -32,17 +32,17 @@ function renovation_wikipedia() {
   // process.
   for (let i = 0; i < placeholders.length; ++i) {
     placeholders.item(i).remove();
-    let innerText = noscripts.item(i).innerText;
+    const innerText = noscripts.item(i).innerText;
     noscripts.item(i).outerHTML = innerText;
   }
 }
 
-var mapRenovations = {
+const mapRenovations = {
   'wikipedia': renovation_wikipedia,
 };
 
 function run_renovations(flist) {
-  for (var funcName of flist) {
+  for (const funcName of flist) {
     mapRenovations[funcName]();
   }
 }

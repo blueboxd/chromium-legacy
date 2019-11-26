@@ -19,12 +19,13 @@ namespace predictors {
 
 ProxyLookupClientImpl::ProxyLookupClientImpl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ProxyLookupCallback callback,
     network::mojom::NetworkContext* network_context)
     : callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network_context->LookUpProxyForURL(
-      url,
+      url, network_isolation_key,
       receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI,
            content::BrowserTaskType::kPreconnect})));

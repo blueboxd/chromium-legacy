@@ -25,116 +25,116 @@ import java.util.Set;
 
 /** Class which allows spying on a Store implementation */
 public class DelegatingStore implements Store {
-    private final Store store;
+    private final Store mStore;
 
     public DelegatingStore(Store store) {
-        this.store = store;
+        this.mStore = store;
     }
 
     @Override
     public Result<List<PayloadWithId>> getPayloads(List<String> contentIds) {
-        return store.getPayloads(contentIds);
+        return mStore.getPayloads(contentIds);
     }
 
     @Override
     public Result<List<StreamSharedState>> getSharedStates() {
-        return store.getSharedStates();
+        return mStore.getSharedStates();
     }
 
     @Override
     public Result<List<StreamStructure>> getStreamStructures(String sessionId) {
-        return store.getStreamStructures(sessionId);
+        return mStore.getStreamStructures(sessionId);
     }
 
     @Override
     public Result<List<String>> getAllSessions() {
-        return store.getAllSessions();
+        return mStore.getAllSessions();
     }
 
     @Override
     public Result<List<SemanticPropertiesWithId>> getSemanticProperties(List<String> contentIds) {
-        return store.getSemanticProperties(contentIds);
+        return mStore.getSemanticProperties(contentIds);
     }
 
     @Override
     public Result<List<StreamLocalAction>> getAllDismissLocalActions() {
-        return store.getAllDismissLocalActions();
+        return mStore.getAllDismissLocalActions();
     }
 
     @Override
     public Result<Set<StreamUploadableAction>> getAllUploadableActions() {
-        return store.getAllUploadableActions();
+        return mStore.getAllUploadableActions();
     }
 
     @Override
     public Result<String> createNewSession() {
-        return store.createNewSession();
+        return mStore.createNewSession();
     }
 
     @Override
     public void removeSession(String sessionId) {
-        store.removeSession(sessionId);
+        mStore.removeSession(sessionId);
     }
 
     @Override
     public void clearHead() {
-        store.clearHead();
+        mStore.clearHead();
     }
 
     @Override
     public ContentMutation editContent() {
-        return store.editContent();
+        return mStore.editContent();
     }
 
     @Override
     public SessionMutation editSession(String sessionId) {
-        return store.editSession(sessionId);
+        return mStore.editSession(sessionId);
     }
 
     @Override
     public SemanticPropertiesMutation editSemanticProperties() {
-        return store.editSemanticProperties();
+        return mStore.editSemanticProperties();
     }
 
     @Override
     public LocalActionMutation editLocalActions() {
-        return store.editLocalActions();
+        return mStore.editLocalActions();
     }
 
     @Override
     public UploadableActionMutation editUploadableActions() {
-        return store.editUploadableActions();
+        return mStore.editUploadableActions();
     }
 
     @Override
     public Runnable triggerContentGc(Set<String> reservedContentIds,
             Supplier<Set<String>> accessibleContent, boolean keepSharedStates) {
-        return store.triggerContentGc(reservedContentIds, accessibleContent, keepSharedStates);
+        return mStore.triggerContentGc(reservedContentIds, accessibleContent, keepSharedStates);
     }
 
     @Override
     public Runnable triggerLocalActionGc(
             List<StreamLocalAction> actions, List<String> validContentIds) {
-        return store.triggerLocalActionGc(actions, validContentIds);
+        return mStore.triggerLocalActionGc(actions, validContentIds);
     }
 
     @Override
     public void switchToEphemeralMode() {
-        store.switchToEphemeralMode();
+        mStore.switchToEphemeralMode();
     }
 
     @Override
     public boolean isEphemeralMode() {
-        return store.isEphemeralMode();
+        return mStore.isEphemeralMode();
     }
 
     @Override
     public void registerObserver(StoreListener observer) {
-        store.registerObserver(observer);
+        mStore.registerObserver(observer);
     }
 
     @Override
     public void unregisterObserver(StoreListener observer) {
-        store.unregisterObserver(observer);
+        mStore.unregisterObserver(observer);
     }
 }

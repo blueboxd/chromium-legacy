@@ -35,8 +35,6 @@ namespace {
 TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
   base::test::TaskEnvironment task_environment;
 
-  std::unique_ptr<BoundTestNetLog> net_log =
-      std::make_unique<BoundTestNetLog>();
   MockCachingHostResolver mock_host_resolver;
 
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
@@ -92,8 +90,6 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
 TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
   base::test::TaskEnvironment task_environment;
 
-  std::unique_ptr<BoundTestNetLog> net_log =
-      std::make_unique<BoundTestNetLog>();
   MockCachingHostResolver mock_host_resolver;
 
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
@@ -135,8 +131,6 @@ TEST(NetworkQualityEstimatorUtilTest,
 
   base::test::TaskEnvironment task_environment;
 
-  std::unique_ptr<BoundTestNetLog> net_log =
-      std::make_unique<BoundTestNetLog>();
   MockCachingHostResolver mock_host_resolver;
 
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
@@ -176,9 +170,9 @@ TEST(NetworkQualityEstimatorUtilTest,
 TEST(NetworkQualityEstimatorUtilTest, Localhost) {
   base::test::TaskEnvironment task_environment;
 
-  std::unique_ptr<BoundTestNetLog> net_log =
-      std::make_unique<BoundTestNetLog>();
-  BoundTestNetLog* net_log_ptr = net_log.get();
+  std::unique_ptr<RecordingBoundTestNetLog> net_log =
+      std::make_unique<RecordingBoundTestNetLog>();
+  RecordingBoundTestNetLog* net_log_ptr = net_log.get();
 
   // Use actual HostResolver since MockCachingHostResolver does not determine
   // the correct answer for localhosts.

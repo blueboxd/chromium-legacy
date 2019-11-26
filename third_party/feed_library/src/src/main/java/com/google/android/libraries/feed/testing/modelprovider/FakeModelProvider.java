@@ -27,32 +27,32 @@ import java.util.Set;
  * needed.
  */
 public class FakeModelProvider implements ModelProvider {
-    private final Set<ModelProviderObserver> observers = new HashSet<>();
-    private ModelFeature rootFeature;
-    private boolean wasRefreshTriggered;
-    private boolean tokensEnabled = true;
-    /*@Nullable*/ private String sessionId;
+    private final Set<ModelProviderObserver> mObservers = new HashSet<>();
+    private ModelFeature mRootFeature;
+    private boolean mWasRefreshTriggered;
+    private boolean mTokensEnabled = true;
+    /*@Nullable*/ private String mSessionId;
     @RequestReason
-    private int lastRequestReason = RequestReason.UNKNOWN;
-    /*@Nullable*/ private ModelFeature immediateSessionStartModel;
-    /*@Nullable*/ private UiContext unusedTriggerRefreshUiContext;
-    private FakeModelMutation latestModelMutation = new FakeModelMutation();
-    private boolean isInvalidated;
+    private int mLastRequestReason = RequestReason.UNKNOWN;
+    /*@Nullable*/ private ModelFeature mImmediateSessionStartModel;
+    /*@Nullable*/ private UiContext mUnusedTriggerRefreshUiContext;
+    private FakeModelMutation mLatestModelMutation = new FakeModelMutation();
+    private boolean mIsInvalidated;
 
     @Override
     public ModelMutation edit() {
-        latestModelMutation = new FakeModelMutation();
-        return latestModelMutation;
+        mLatestModelMutation = new FakeModelMutation();
+        return mLatestModelMutation;
     }
 
     @Override
     public void invalidate() {
-        isInvalidated = true;
+        mIsInvalidated = true;
     }
 
     @Override
     public void invalidate(UiContext uiContext) {
-        isInvalidated = true;
+        mIsInvalidated = true;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class FakeModelProvider implements ModelProvider {
     @Override
     /*@Nullable*/
     public ModelFeature getRootFeature() {
-        return rootFeature;
+        return mRootFeature;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class FakeModelProvider implements ModelProvider {
 
     @Override
     public boolean handleToken(ModelToken modelToken) {
-        return tokensEnabled;
+        return mTokensEnabled;
     }
 
     @Override
@@ -91,9 +91,9 @@ public class FakeModelProvider implements ModelProvider {
 
     @Override
     public void triggerRefresh(@RequestReason int requestReason, UiContext uiContext) {
-        wasRefreshTriggered = true;
-        lastRequestReason = requestReason;
-        unusedTriggerRefreshUiContext = uiContext;
+        mWasRefreshTriggered = true;
+        mLastRequestReason = requestReason;
+        mUnusedTriggerRefreshUiContext = uiContext;
     }
 
     @Override
@@ -104,17 +104,17 @@ public class FakeModelProvider implements ModelProvider {
     @Override
     /*@Nullable*/
     public String getSessionId() {
-        return sessionId;
+        return mSessionId;
     }
 
     @Override
     public List<ModelChild> getAllRootChildren() {
         ImmutableList.Builder<ModelChild> listBuilder = ImmutableList.builder();
-        if (rootFeature == null) {
+        if (mRootFeature == null) {
             return listBuilder.build();
         }
 
-        ModelCursor cursor = rootFeature.getCursor();
+        ModelCursor cursor = mRootFeature.getCursor();
         ModelChild child;
         while ((child = cursor.getNextItem()) != null) {
             listBuilder.add(child);
@@ -127,17 +127,17 @@ public class FakeModelProvider implements ModelProvider {
 
     @Override
     public void registerObserver(ModelProviderObserver observer) {
-        if (immediateSessionStartModel != null) {
-            this.rootFeature = immediateSessionStartModel;
+        if (mImmediateSessionStartModel != null) {
+            this.mRootFeature = mImmediateSessionStartModel;
             observer.onSessionStart(UiContext.getDefaultInstance());
         }
 
-        observers.add(observer);
+        mObservers.add(observer);
     }
 
     @Override
     public void unregisterObserver(ModelProviderObserver observer) {
-        observers.remove(observer);
+        mObservers.remove(observer);
     }
 
     public void triggerOnSessionStart(ModelFeature rootFeature) {
@@ -145,8 +145,8 @@ public class FakeModelProvider implements ModelProvider {
     }
 
     public void triggerOnSessionStart(ModelFeature rootFeature, UiContext uiContext) {
-        this.rootFeature = rootFeature;
-        for (ModelProviderObserver observer : observers) {
+        this.mRootFeature = rootFeature;
+        for (ModelProviderObserver observer : mObservers) {
             observer.onSessionStart(uiContext);
         }
     }
@@ -156,49 +156,49 @@ public class FakeModelProvider implements ModelProvider {
     }
 
     public void triggerOnSessionFinished(UiContext uiContext) {
-        for (ModelProviderObserver observer : observers) {
+        for (ModelProviderObserver observer : mObservers) {
             observer.onSessionFinished(uiContext);
         }
     }
 
     public void triggerOnError(ModelError modelError) {
-        for (ModelProviderObserver observer : observers) {
+        for (ModelProviderObserver observer : mObservers) {
             observer.onError(modelError);
         }
     }
 
     public boolean wasRefreshTriggered() {
-        return wasRefreshTriggered;
+        return mWasRefreshTriggered;
     }
 
     public Set<ModelProviderObserver> getObservers() {
-        return observers;
+        return mObservers;
     }
 
     public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+        this.mSessionId = sessionId;
     }
 
     @RequestReason
     public int getLastRequestReason() {
-        return lastRequestReason;
+        return mLastRequestReason;
     }
 
     public void triggerOnSessionStartImmediately(ModelFeature modelFeature) {
-        immediateSessionStartModel = modelFeature;
+        mImmediateSessionStartModel = modelFeature;
     }
 
     public void setTokensEnabled(boolean value) {
-        tokensEnabled = value;
+        mTokensEnabled = value;
     }
 
     /** Returns the last {@link FakeModelMutation} returned from the {@link edit()} method. */
     public FakeModelMutation getLatestModelMutation() {
-        return latestModelMutation;
+        return mLatestModelMutation;
     }
 
     /** Returns whether this {@link ModelProvider} has been invalidated. */
     public boolean isInvalidated() {
-        return isInvalidated;
+        return mIsInvalidated;
     }
 }

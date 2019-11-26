@@ -9,36 +9,24 @@ import static org.junit.Assert.assertEquals;
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordHistogramJni;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
 
 /**
  * Test suite for the SplitInstallStatusLogger class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class SplitInstallStatusLoggerTest {
-    @Mock
-    private RecordHistogram.Natives mRecordHistogramMock;
-
-    @Rule
-    public JniMocker mocker = new JniMocker();
-
     private SplitInstallStatusLogger mStatusLogger;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
-        mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramMock);
-
+        ShadowRecordHistogram.reset();
         mStatusLogger = new SplitInstallStatusLogger();
     }
 
@@ -89,6 +77,7 @@ public class SplitInstallStatusLoggerTest {
     }
 
     private int logStatusChange(String moduleName, int status) {
+        ShadowRecordHistogram.reset();
         mStatusLogger.logStatusChange(moduleName, status);
         return getHistogramStatus(moduleName);
     }
@@ -96,6 +85,6 @@ public class SplitInstallStatusLoggerTest {
     private int getHistogramStatus(String moduleName) {
         String expName = "Android.FeatureModules.InstallingStatus." + moduleName;
         Integer expBoundary = 12;
-        return LoggerTestUtil.getHistogramStatus(mRecordHistogramMock, expName, expBoundary);
+        return LoggerTestUtil.getHistogramStatus(expName, expBoundary);
     }
 }

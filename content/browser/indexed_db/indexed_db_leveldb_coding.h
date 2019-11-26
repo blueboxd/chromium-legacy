@@ -225,12 +225,12 @@ class DataVersionKey {
   CONTENT_EXPORT static std::string Encode();
 };
 
-class BlobJournalKey {
+class RecoveryBlobJournalKey {
  public:
   static std::string Encode();
 };
 
-class LiveBlobJournalKey {
+class ActiveBlobJournalKey {
  public:
   static std::string Encode();
 };

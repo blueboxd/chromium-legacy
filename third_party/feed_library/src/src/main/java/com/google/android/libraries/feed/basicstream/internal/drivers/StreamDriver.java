@@ -60,33 +60,33 @@ import java.util.Map;
 public class StreamDriver
         implements CursorChangedListener, FeatureChangeObserver, PendingDismissHandler {
     private static final String TAG = "StreamDriver";
-    private final ActionApi actionApi;
-    private final ActionManager actionManager;
-    private final ActionParserFactory actionParserFactory;
-    private final ThreadUtils threadUtils;
-    private final ModelProvider modelProvider;
-    private final Map<ModelChild, FeatureDriver> modelChildFeatureDriverMap;
-    private final List<FeatureDriver> featureDrivers;
-    private final Clock clock;
-    private final Configuration configuration;
-    private final Context context;
-    private final SnackbarApi snackbarApi;
-    private final ContentChangedListener contentChangedListener;
-    private final ScrollRestorer scrollRestorer;
-    private final BasicLoggingApi basicLoggingApi;
-    private final StreamOfflineMonitor streamOfflineMonitor;
-    private final ContextMenuManager contextMenuManager;
-    private final boolean isInitialLoad;
-    private final MainThreadRunner mainThreadRunner;
-    private final ViewLoggingUpdater viewLoggingUpdater;
-    private final TooltipApi tooltipApi;
-    private final UiRefreshReason uiRefreshReason;
-    private final ScrollTracker scrollTracker;
+    private final ActionApi mActionApi;
+    private final ActionManager mActionManager;
+    private final ActionParserFactory mActionParserFactory;
+    private final ThreadUtils mThreadUtils;
+    private final ModelProvider mModelProvider;
+    private final Map<ModelChild, FeatureDriver> mModelChildFeatureDriverMap;
+    private final List<FeatureDriver> mFeatureDrivers;
+    private final Clock mClock;
+    private final Configuration mConfiguration;
+    private final Context mContext;
+    private final SnackbarApi mSnackbarApi;
+    private final ContentChangedListener mContentChangedListener;
+    private final ScrollRestorer mScrollRestorer;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final StreamOfflineMonitor mStreamOfflineMonitor;
+    private final ContextMenuManager mContextMenuManager;
+    private final boolean mIsInitialLoad;
+    private final MainThreadRunner mMainThreadRunner;
+    private final ViewLoggingUpdater mViewLoggingUpdater;
+    private final TooltipApi mTooltipApi;
+    private final UiRefreshReason mUiRefreshReason;
+    private final ScrollTracker mScrollTracker;
 
-    private boolean restoring;
-    private boolean rootFeatureConsumed;
-    private boolean modelFeatureChangeObserverRegistered;
-    /*@Nullable*/ private StreamContentListener contentListener;
+    private boolean mRestoring;
+    private boolean mRootFeatureConsumed;
+    private boolean mModelFeatureChangeObserverRegistered;
+    /*@Nullable*/ private StreamContentListener mContentListener;
 
     public StreamDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, ModelProvider modelProvider,
@@ -98,29 +98,29 @@ public class StreamDriver
             MainThreadRunner mainThreadRunner, ViewLoggingUpdater viewLoggingUpdater,
             TooltipApi tooltipApi, UiRefreshReason uiRefreshReason,
             BasicStreamScrollMonitor scrollMonitor) {
-        this.actionApi = actionApi;
-        this.actionManager = actionManager;
-        this.actionParserFactory = actionParserFactory;
-        this.threadUtils = threadUtils;
-        this.modelProvider = modelProvider;
-        this.clock = clock;
-        this.context = context;
-        this.snackbarApi = snackbarApi;
-        this.contextMenuManager = contextMenuManager;
-        this.modelChildFeatureDriverMap = new HashMap<>();
-        this.featureDrivers = new ArrayList<>();
-        this.configuration = configuration;
-        this.contentChangedListener = contentChangedListener;
-        this.scrollRestorer = scrollRestorer;
-        this.basicLoggingApi = basicLoggingApi;
-        this.streamOfflineMonitor = streamOfflineMonitor;
-        this.restoring = restoring;
-        this.isInitialLoad = isInitialLoad;
-        this.mainThreadRunner = mainThreadRunner;
-        this.viewLoggingUpdater = viewLoggingUpdater;
-        this.tooltipApi = tooltipApi;
-        this.uiRefreshReason = uiRefreshReason;
-        scrollTracker = new BasicStreamScrollTracker(
+        this.mActionApi = actionApi;
+        this.mActionManager = actionManager;
+        this.mActionParserFactory = actionParserFactory;
+        this.mThreadUtils = threadUtils;
+        this.mModelProvider = modelProvider;
+        this.mClock = clock;
+        this.mContext = context;
+        this.mSnackbarApi = snackbarApi;
+        this.mContextMenuManager = contextMenuManager;
+        this.mModelChildFeatureDriverMap = new HashMap<>();
+        this.mFeatureDrivers = new ArrayList<>();
+        this.mConfiguration = configuration;
+        this.mContentChangedListener = contentChangedListener;
+        this.mScrollRestorer = scrollRestorer;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mStreamOfflineMonitor = streamOfflineMonitor;
+        this.mRestoring = restoring;
+        this.mIsInitialLoad = isInitialLoad;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mViewLoggingUpdater = viewLoggingUpdater;
+        this.mTooltipApi = tooltipApi;
+        this.mUiRefreshReason = uiRefreshReason;
+        mScrollTracker = new BasicStreamScrollTracker(
                 mainThreadRunner, new ScrollLogger(basicLoggingApi), clock, scrollMonitor);
 
         modelProvider.enableRemoveTracking(
@@ -132,52 +132,52 @@ public class StreamDriver
      * given {@link ModelFeature}.
      */
     public List<LeafFeatureDriver> getLeafFeatureDrivers() {
-        if (modelProvider.getCurrentState() == State.READY && !rootFeatureConsumed) {
+        if (mModelProvider.getCurrentState() == State.READY && !mRootFeatureConsumed) {
             ChildCreationPayload childCreationPayload;
-            rootFeatureConsumed = true;
-            ModelFeature rootFeature = modelProvider.getRootFeature();
+            mRootFeatureConsumed = true;
+            ModelFeature rootFeature = mModelProvider.getRootFeature();
             if (rootFeature != null) {
-                childCreationPayload = createAndInsertChildren(rootFeature, modelProvider);
+                childCreationPayload = createAndInsertChildren(rootFeature, mModelProvider);
                 rootFeature.registerObserver(this);
-                modelFeatureChangeObserverRegistered = true;
-                if (uiRefreshReason.getReason().equals(Reason.ZERO_STATE)) {
-                    basicLoggingApi.onZeroStateRefreshCompleted(
-                            childCreationPayload.contentCount, childCreationPayload.tokenCount);
+                mModelFeatureChangeObserverRegistered = true;
+                if (mUiRefreshReason.getReason().equals(Reason.ZERO_STATE)) {
+                    mBasicLoggingApi.onZeroStateRefreshCompleted(
+                            childCreationPayload.mContentCount, childCreationPayload.mTokenCount);
                 }
             } else {
-                basicLoggingApi.onInternalError(InternalFeedError.NO_ROOT_FEATURE);
+                mBasicLoggingApi.onInternalError(InternalFeedError.NO_ROOT_FEATURE);
                 Logger.w(TAG, "found null root feature loading Leaf Feature Drivers");
-                if (uiRefreshReason.getReason().equals(Reason.ZERO_STATE)) {
-                    basicLoggingApi.onZeroStateRefreshCompleted(
+                if (mUiRefreshReason.getReason().equals(Reason.ZERO_STATE)) {
+                    mBasicLoggingApi.onZeroStateRefreshCompleted(
                             /* newContentCount= */ 0, /* newTokenCount= */ 0);
                 }
             }
         }
 
-        if (!isInitialLoad) {
+        if (!mIsInitialLoad) {
             addNoContentCardOrZeroStateIfNecessary(ZeroStateShowReason.NO_CONTENT);
         }
 
-        return buildLeafFeatureDrivers(featureDrivers);
+        return buildLeafFeatureDrivers(mFeatureDrivers);
     }
 
     public void maybeRestoreScroll() {
-        if (!restoring) {
+        if (!mRestoring) {
             return;
         }
 
         if (isLastDriverContinuationDriver()) {
             ContinuationDriver continuationDriver =
-                    (ContinuationDriver) featureDrivers.get(featureDrivers.size() - 1);
+                    (ContinuationDriver) mFeatureDrivers.get(mFeatureDrivers.size() - 1);
             // If there is a synthetic token, we should only restore if it has not been handled yet.
             if (continuationDriver.hasTokenBeenHandled()) {
                 return;
             }
         }
 
-        restoring = false;
+        mRestoring = false;
 
-        scrollRestorer.maybeRestoreScroll();
+        mScrollRestorer.maybeRestoreScroll();
     }
 
     private ChildCreationPayload createAndInsertChildren(
@@ -193,17 +193,17 @@ public class StreamDriver
     private ChildCreationPayload createAndInsertChildrenAtIndex(
             ModelCursor streamCursor, ModelProvider modelProvider, int insertionIndex) {
         Iterable<ModelChild> cursorIterable = () -> new Iterator<ModelChild>() {
-            /*@Nullable*/ private ModelChild next;
+            /*@Nullable*/ private ModelChild mNext;
 
             @Override
             public boolean hasNext() {
-                next = streamCursor.getNextItem();
-                return next != null;
+                mNext = streamCursor.getNextItem();
+                return mNext != null;
             }
 
             @Override
             public ModelChild next() {
-                return checkNotNull(next);
+                return checkNotNull(mNext);
             }
         };
         return createAndInsertChildrenAtIndex(cursorIterable, modelProvider, insertionIndex);
@@ -225,8 +225,8 @@ public class StreamDriver
                     tokenCount++;
                 }
                 newChildren.add(featureDriverChild);
-                featureDrivers.add(insertionIndex, featureDriverChild);
-                modelChildFeatureDriverMap.put(child, featureDriverChild);
+                mFeatureDrivers.add(insertionIndex, featureDriverChild);
+                mModelChildFeatureDriverMap.put(child, featureDriverChild);
                 insertionIndex++;
             }
         }
@@ -241,8 +241,8 @@ public class StreamDriver
                 return createFeatureChild(child.getModelFeature(), position);
             case Type.TOKEN:
                 ContinuationDriver continuationDriver =
-                        createContinuationDriver(basicLoggingApi, clock, configuration, context,
-                                child, modelProvider, position, snackbarApi, restoring);
+                        createContinuationDriver(mBasicLoggingApi, mClock, mConfiguration, mContext,
+                                child, modelProvider, position, mSnackbarApi, mRestoring);
 
                 // TODO: Look into moving initialize() into a more generic location. We don't
                 // really want work to be done in the constructor so we call an initialize() method
@@ -250,7 +250,7 @@ public class StreamDriver
                 continuationDriver.initialize();
                 return continuationDriver;
             case Type.UNBOUND:
-                basicLoggingApi.onInternalError(InternalFeedError.TOP_LEVEL_UNBOUND_CHILD);
+                mBasicLoggingApi.onInternalError(InternalFeedError.TOP_LEVEL_UNBOUND_CHILD);
                 Logger.e(TAG, "Found unbound child %s, ignoring it", child.getContentId());
                 return null;
             default:
@@ -267,7 +267,7 @@ public class StreamDriver
             return createClusterDriver(modelFeature, position);
         }
 
-        basicLoggingApi.onInternalError(InternalFeedError.TOP_LEVEL_INVALID_FEATURE_TYPE);
+        mBasicLoggingApi.onInternalError(InternalFeedError.TOP_LEVEL_INVALID_FEATURE_TYPE);
         Logger.w(TAG, "Invalid StreamFeature Type, must be Card or Cluster but was %s",
                 modelFeature.getStreamFeature().getFeaturePayloadCase());
         return null;
@@ -281,16 +281,16 @@ public class StreamDriver
             if (leafFeatureDriver != null) {
                 leafFeatureDrivers.add(leafFeatureDriver);
             } else {
-                basicLoggingApi.onInternalError(InternalFeedError.FAILED_TO_CREATE_LEAF);
+                mBasicLoggingApi.onInternalError(InternalFeedError.FAILED_TO_CREATE_LEAF);
                 removes.add(featureDriver);
             }
         }
         for (FeatureDriver driver : removes) {
-            this.featureDrivers.remove(driver);
+            this.mFeatureDrivers.remove(driver);
             driver.onDestroy();
         }
 
-        streamOfflineMonitor.requestOfflineStatusForNewContent();
+        mStreamOfflineMonitor.requestOfflineStatusForNewContent();
 
         return leafFeatureDrivers;
     }
@@ -314,12 +314,12 @@ public class StreamDriver
         List<ModelChild> appendedChildren = change.getChildChanges().getAppendedChildren();
 
         if (!appendedChildren.isEmpty()) {
-            int insertionIndex = featureDrivers.size();
+            int insertionIndex = mFeatureDrivers.size();
 
             notifyContentsAdded(insertionIndex,
                     buildLeafFeatureDrivers(createAndInsertChildrenAtIndex(
-                            appendedChildren, modelProvider, insertionIndex)
-                                                    .featureDrivers));
+                            appendedChildren, mModelProvider, insertionIndex)
+                                                    .mFeatureDrivers));
         }
 
         addNoContentCardOrZeroStateIfNecessary(ZeroStateShowReason.CONTENT_DISMISSED);
@@ -334,17 +334,17 @@ public class StreamDriver
             return;
         }
         ChildCreationPayload tokenPayload =
-                createAndInsertChildrenAtIndex(modelChildren, modelProvider, continuationIndex);
+                createAndInsertChildrenAtIndex(modelChildren, mModelProvider, continuationIndex);
 
-        List<FeatureDriver> newChildren = tokenPayload.featureDrivers;
+        List<FeatureDriver> newChildren = tokenPayload.mFeatureDrivers;
 
-        basicLoggingApi.onTokenCompleted(
-                wasSynthetic, tokenPayload.contentCount, tokenPayload.tokenCount);
+        mBasicLoggingApi.onTokenCompleted(
+                wasSynthetic, tokenPayload.mContentCount, tokenPayload.mTokenCount);
         notifyContentsAdded(continuationIndex, buildLeafFeatureDrivers(newChildren));
         maybeRemoveNoContentOrZeroStateCard();
         // Swap no content card with zero state if there are no more drivers.
-        if (newChildren.isEmpty() && featureDrivers.size() == 1
-                && featureDrivers.get(0) instanceof NoContentDriver) {
+        if (newChildren.isEmpty() && mFeatureDrivers.size() == 1
+                && mFeatureDrivers.get(0) instanceof NoContentDriver) {
             showZeroState(ZeroStateShowReason.NO_CONTENT_FROM_CONTINUATION_TOKEN);
         }
 
@@ -352,48 +352,48 @@ public class StreamDriver
     }
 
     private void alwaysRemoveNoContentOrZeroStateCardIfPresent() {
-        if (featureDrivers.size() == 1
-                && ((featureDrivers.get(0) instanceof NoContentDriver)
-                        || (featureDrivers.get(0) instanceof ZeroStateDriver))) {
-            featureDrivers.get(0).onDestroy();
-            featureDrivers.remove(0);
+        if (mFeatureDrivers.size() == 1
+                && ((mFeatureDrivers.get(0) instanceof NoContentDriver)
+                        || (mFeatureDrivers.get(0) instanceof ZeroStateDriver))) {
+            mFeatureDrivers.get(0).onDestroy();
+            mFeatureDrivers.remove(0);
             notifyContentRemoved(0);
         }
     }
 
     private void maybeRemoveNoContentOrZeroStateCard() {
         if (shouldRemoveNoContentCardOrZeroState()) {
-            featureDrivers.get(0).onDestroy();
-            featureDrivers.remove(0);
+            mFeatureDrivers.get(0).onDestroy();
+            mFeatureDrivers.remove(0);
             notifyContentRemoved(0);
         }
     }
 
     public void onDestroy() {
-        for (FeatureDriver featureDriver : featureDrivers) {
+        for (FeatureDriver featureDriver : mFeatureDrivers) {
             featureDriver.onDestroy();
         }
-        ModelFeature modelFeature = modelProvider.getRootFeature();
-        if (modelFeature != null && modelFeatureChangeObserverRegistered) {
+        ModelFeature modelFeature = mModelProvider.getRootFeature();
+        if (modelFeature != null && mModelFeatureChangeObserverRegistered) {
             modelFeature.unregisterObserver(this);
-            modelFeatureChangeObserverRegistered = false;
+            mModelFeatureChangeObserverRegistered = false;
         }
-        featureDrivers.clear();
-        modelChildFeatureDriverMap.clear();
-        scrollTracker.onUnbind();
+        mFeatureDrivers.clear();
+        mModelChildFeatureDriverMap.clear();
+        mScrollTracker.onUnbind();
     }
 
     public boolean hasContent() {
-        if (featureDrivers.isEmpty()) {
+        if (mFeatureDrivers.isEmpty()) {
             return false;
         }
-        return !(featureDrivers.get(0) instanceof NoContentDriver)
-                && !(featureDrivers.get(0) instanceof ZeroStateDriver);
+        return !(mFeatureDrivers.get(0) instanceof NoContentDriver)
+                && !(mFeatureDrivers.get(0) instanceof ZeroStateDriver);
     }
 
     public boolean isZeroStateBeingShown() {
-        return !featureDrivers.isEmpty() && featureDrivers.get(0) instanceof ZeroStateDriver
-                && !((ZeroStateDriver) featureDrivers.get(0)).isSpinnerShowing();
+        return !mFeatureDrivers.isEmpty() && mFeatureDrivers.get(0) instanceof ZeroStateDriver
+                && !((ZeroStateDriver) mFeatureDrivers.get(0)).isSpinnerShowing();
     }
 
     public void setModelProviderForZeroState(ModelProvider modelProvider) {
@@ -402,41 +402,41 @@ public class StreamDriver
                     "setModelProviderForZeroState should only be called when zero state is shown");
             return;
         }
-        ((ZeroStateDriver) featureDrivers.get(0)).setModelProvider(modelProvider);
+        ((ZeroStateDriver) mFeatureDrivers.get(0)).setModelProvider(modelProvider);
     }
 
     private void addNoContentCardOrZeroStateIfNecessary(
             @ZeroStateShowReason int zeroStateShowReason) {
         LeafFeatureDriver leafFeatureDriver = null;
-        if (!restoring && featureDrivers.isEmpty()) {
+        if (!mRestoring && mFeatureDrivers.isEmpty()) {
             leafFeatureDriver = createAndLogZeroState(zeroStateShowReason);
-        } else if (featureDrivers.size() == 1 && isLastDriverContinuationDriver()) {
+        } else if (mFeatureDrivers.size() == 1 && isLastDriverContinuationDriver()) {
             leafFeatureDriver = createNoContentDriver();
         }
 
         if (leafFeatureDriver != null) {
-            featureDrivers.add(0, leafFeatureDriver);
+            mFeatureDrivers.add(0, leafFeatureDriver);
             notifyContentsAdded(0, Collections.singletonList(leafFeatureDriver));
         }
     }
 
     private boolean shouldRemoveNoContentCardOrZeroState() {
-        if (featureDrivers.isEmpty()) {
+        if (mFeatureDrivers.isEmpty()) {
             return false;
         }
 
-        if (!(featureDrivers.get(0) instanceof NoContentDriver)
-                && !(featureDrivers.get(0) instanceof ZeroStateDriver)) {
+        if (!(mFeatureDrivers.get(0) instanceof NoContentDriver)
+                && !(mFeatureDrivers.get(0) instanceof ZeroStateDriver)) {
             return false;
         }
 
-        return featureDrivers.size() > 2
-                || (featureDrivers.size() == 2 && !isLastDriverContinuationDriver());
+        return mFeatureDrivers.size() > 2
+                || (mFeatureDrivers.size() == 2 && !isLastDriverContinuationDriver());
     }
 
     private boolean isLastDriverContinuationDriver() {
-        return !featureDrivers.isEmpty()
-                && featureDrivers.get(featureDrivers.size() - 1) instanceof ContinuationDriver;
+        return !mFeatureDrivers.isEmpty()
+                && mFeatureDrivers.get(mFeatureDrivers.size() - 1) instanceof ContinuationDriver;
     }
 
     /**
@@ -448,18 +448,18 @@ public class StreamDriver
      * found.
      */
     private int removeDriver(ModelChild modelChild) {
-        FeatureDriver featureDriver = modelChildFeatureDriverMap.get(modelChild);
+        FeatureDriver featureDriver = mModelChildFeatureDriverMap.get(modelChild);
         if (featureDriver == null) {
             Logger.w(TAG, "Attempting to remove feature from ModelChild not in map, %s",
                     modelChild.getContentId());
             return -1;
         }
 
-        for (int i = 0; i < featureDrivers.size(); i++) {
-            if (featureDrivers.get(i) == featureDriver) {
-                featureDrivers.remove(i);
+        for (int i = 0; i < mFeatureDrivers.size(); i++) {
+            if (mFeatureDrivers.get(i) == featureDriver) {
+                mFeatureDrivers.remove(i);
                 featureDriver.onDestroy();
-                modelChildFeatureDriverMap.remove(modelChild);
+                mModelChildFeatureDriverMap.remove(modelChild);
                 notifyContentRemoved(i);
                 return i;
             }
@@ -471,20 +471,20 @@ public class StreamDriver
     }
 
     private void notifyContentsAdded(int index, List<LeafFeatureDriver> leafFeatureDrivers) {
-        if (contentListener != null) {
-            contentListener.notifyContentsAdded(index, leafFeatureDrivers);
+        if (mContentListener != null) {
+            mContentListener.notifyContentsAdded(index, leafFeatureDrivers);
         }
     }
 
     private void notifyContentRemoved(int index) {
-        if (contentListener != null) {
-            contentListener.notifyContentRemoved(index);
+        if (mContentListener != null) {
+            mContentListener.notifyContentRemoved(index);
         }
     }
 
     private void notifyContentsCleared() {
-        if (contentListener != null) {
-            contentListener.notifyContentsCleared();
+        if (mContentListener != null) {
+            mContentListener.notifyContentsCleared();
         }
     }
 
@@ -492,7 +492,7 @@ public class StreamDriver
     public void showSpinner() {
         ZeroStateDriver zeroStateDriver = createSpinner();
         clearAllContent();
-        featureDrivers.add(zeroStateDriver);
+        mFeatureDrivers.add(zeroStateDriver);
         notifyContentsAdded(0, Collections.singletonList(zeroStateDriver));
     }
 
@@ -500,43 +500,43 @@ public class StreamDriver
     public void showZeroState(@ZeroStateShowReason int zeroStateShowReason) {
         ZeroStateDriver zeroStateDriver = createAndLogZeroState(zeroStateShowReason);
         clearAllContent();
-        featureDrivers.add(zeroStateDriver);
+        mFeatureDrivers.add(zeroStateDriver);
         notifyContentsAdded(0, Collections.singletonList(zeroStateDriver));
     }
 
     private void clearAllContent() {
         // TODO: Make sure to not notify listeners when driver is destroyed.
-        for (FeatureDriver featureDriver : featureDrivers) {
+        for (FeatureDriver featureDriver : mFeatureDrivers) {
             featureDriver.onDestroy();
         }
-        featureDrivers.clear();
+        mFeatureDrivers.clear();
         notifyContentsCleared();
     }
 
     private ZeroStateDriver createAndLogZeroState(@ZeroStateShowReason int zeroStateShowReason) {
-        basicLoggingApi.onZeroStateShown(zeroStateShowReason);
+        mBasicLoggingApi.onZeroStateShown(zeroStateShowReason);
 
         return createZeroStateDriver();
     }
 
     @VisibleForTesting
     FeatureDriver createClusterDriver(ModelFeature modelFeature, int position) {
-        return new ClusterDriver(actionApi, actionManager, actionParserFactory, basicLoggingApi,
-                modelFeature, modelProvider, position, this, streamOfflineMonitor,
-                contentChangedListener, contextMenuManager, mainThreadRunner, configuration,
-                viewLoggingUpdater, tooltipApi);
+        return new ClusterDriver(mActionApi, mActionManager, mActionParserFactory, mBasicLoggingApi,
+                modelFeature, mModelProvider, position, this, mStreamOfflineMonitor,
+                mContentChangedListener, mContextMenuManager, mMainThreadRunner, mConfiguration,
+                mViewLoggingUpdater, mTooltipApi);
     }
 
     @VisibleForTesting
     FeatureDriver createCardDriver(ModelFeature modelFeature, int position) {
-        return new CardDriver(actionApi, actionManager, actionParserFactory, basicLoggingApi,
-                modelFeature, modelProvider, position,
+        return new CardDriver(mActionApi, mActionManager, mActionParserFactory, mBasicLoggingApi,
+                modelFeature, mModelProvider, position,
                 (undoAction, pendingDismissCallback)
                         -> {
                     Logger.wtf(TAG, "Dismissing a card without a cluster is not supported.");
                 },
-                streamOfflineMonitor, contentChangedListener, contextMenuManager, mainThreadRunner,
-                configuration, viewLoggingUpdater, tooltipApi);
+                mStreamOfflineMonitor, mContentChangedListener, mContextMenuManager,
+                mMainThreadRunner, mConfiguration, mViewLoggingUpdater, mTooltipApi);
     }
 
     @VisibleForTesting
@@ -544,7 +544,7 @@ public class StreamDriver
             Configuration configuration, Context context, ModelChild modelChild,
             ModelProvider modelProvider, int position, SnackbarApi snackbarApi, boolean restoring) {
         return new ContinuationDriver(basicLoggingApi, clock, configuration, context, this,
-                modelChild, modelProvider, position, snackbarApi, threadUtils, restoring);
+                modelChild, modelProvider, position, snackbarApi, mThreadUtils, restoring);
     }
 
     @VisibleForTesting
@@ -554,18 +554,20 @@ public class StreamDriver
 
     @VisibleForTesting
     ZeroStateDriver createZeroStateDriver() {
-        return new ZeroStateDriver(basicLoggingApi, clock, modelProvider, contentChangedListener,
+        return new ZeroStateDriver(mBasicLoggingApi, mClock, mModelProvider,
+                mContentChangedListener,
                 /* spinnerShown = */ false);
     }
 
     @VisibleForTesting
     ZeroStateDriver createSpinner() {
-        return new ZeroStateDriver(basicLoggingApi, clock, modelProvider, contentChangedListener,
+        return new ZeroStateDriver(mBasicLoggingApi, mClock, mModelProvider,
+                mContentChangedListener,
                 /* spinnerShown= */ true);
     }
 
     public void setStreamContentListener(/*@Nullable*/ StreamContentListener contentListener) {
-        this.contentListener = contentListener;
+        this.mContentListener = contentListener;
     }
 
     @Override
@@ -580,14 +582,14 @@ public class StreamDriver
             return;
         }
 
-        FeatureDriver featureDriver = modelChildFeatureDriverMap.get(modelChild);
+        FeatureDriver featureDriver = mModelChildFeatureDriverMap.get(modelChild);
         if (featureDriver == null) {
             Logger.wtf(TAG, "No FeatureDriver found for that model child.");
             pendingDismissCallback.onDismissCommitted();
             return;
         }
 
-        int index = featureDrivers.indexOf(featureDriver);
+        int index = mFeatureDrivers.indexOf(featureDriver);
         if (index < 0) {
             Logger.wtf(TAG, "No FeatureDriver found in the FeatureDriver list.");
             pendingDismissCallback.onDismissCommitted();
@@ -596,10 +598,10 @@ public class StreamDriver
 
         removeDriver(modelChild);
         addNoContentCardOrZeroStateIfNecessary(ZeroStateShowReason.CONTENT_DISMISSED);
-        snackbarApi.show(undoAction.getConfirmationLabel(),
+        mSnackbarApi.show(undoAction.getConfirmationLabel(),
                 undoAction.hasUndoLabel()
                         ? undoAction.getUndoLabel()
-                        : context.getResources().getString(R.string.snackbar_default_action),
+                        : mContext.getResources().getString(R.string.snackbar_default_action),
                 new SnackbarCallbackApi() {
                     @Override
                     public void onDismissNoAction() {
@@ -621,22 +623,22 @@ public class StreamDriver
             Logger.wtf(TAG, "Could not recreate the FeatureDriver.");
             return;
         }
-        featureDrivers.add(index, featureDriver);
+        mFeatureDrivers.add(index, featureDriver);
         if (modelChild != null) {
-            modelChildFeatureDriverMap.put(modelChild, featureDriver);
+            mModelChildFeatureDriverMap.put(modelChild, featureDriver);
         }
         LeafFeatureDriver leafFeatureDriver = featureDriver.getLeafFeatureDriver();
         if (leafFeatureDriver == null) {
             Logger.wtf(TAG, "No LeafFeatureDriver found.");
             return;
         }
-        notifyContentsAdded(featureDrivers.indexOf(featureDriver),
+        notifyContentsAdded(mFeatureDrivers.indexOf(featureDriver),
                 Collections.singletonList(leafFeatureDriver));
     }
 
     /*@Nullable*/
     private ModelChild getModelChildForContentId(String contentId) {
-        for (ModelChild model : modelChildFeatureDriverMap.keySet()) {
+        for (ModelChild model : mModelChildFeatureDriverMap.keySet()) {
             if (model.getContentId().equals(contentId)) {
                 return model;
             }
@@ -646,15 +648,15 @@ public class StreamDriver
 
     /** Contains the {@link FeatureDriver} instances that were created and metadata about them. */
     private static class ChildCreationPayload {
-        private final List<FeatureDriver> featureDrivers;
-        private final int tokenCount;
-        private final int contentCount;
+        private final List<FeatureDriver> mFeatureDrivers;
+        private final int mTokenCount;
+        private final int mContentCount;
 
         private ChildCreationPayload(
                 List<FeatureDriver> featureDrivers, int tokenCount, int contentCount) {
-            this.featureDrivers = featureDrivers;
-            this.tokenCount = tokenCount;
-            this.contentCount = contentCount;
+            this.mFeatureDrivers = featureDrivers;
+            this.mTokenCount = tokenCount;
+            this.mContentCount = contentCount;
         }
     }
 

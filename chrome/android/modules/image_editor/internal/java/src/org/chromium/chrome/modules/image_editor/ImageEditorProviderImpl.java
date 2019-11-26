@@ -7,6 +7,8 @@ package org.chromium.chrome.modules.image_editor;
 import android.app.Activity;
 
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.chrome.browser.image_editor.ImageEditorCoordinator;
+import org.chromium.chrome.browser.image_editor.ImageEditorCoordinatorImpl;
 
 /**
  * Upstream implementation for DFM module hook. Does nothing. Actual implementation lives

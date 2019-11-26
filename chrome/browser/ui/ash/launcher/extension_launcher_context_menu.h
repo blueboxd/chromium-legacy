@@ -25,8 +25,6 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
 
   // LauncherContextMenu overrides:
   void GetMenuModel(GetMenuModelCallback callback) override;
-  void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
-                 GetMenuModelCallback callback) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;

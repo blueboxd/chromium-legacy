@@ -32,7 +32,7 @@
 #include "ui/events/ozone/gamepad/gamepad_event.h"
 #include "ui/events/ozone/gamepad/gamepad_observer.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/test/scoped_event_test_tick_clock.h"
@@ -67,9 +67,9 @@ class GamepadEventConverterEvdevTest : public testing::Test {
   // Overriden from testing::Test:
   void SetUp() override {
     device_manager_ = ui::CreateDeviceManagerForTest();
+    keyboard_layout_engine_ = std::make_unique<ui::StubKeyboardLayoutEngine>();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
-        nullptr, device_manager_.get(),
-        ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
+        nullptr, device_manager_.get(), keyboard_layout_engine_.get(),
         base::BindRepeating(
             &GamepadEventConverterEvdevTest::DispatchEventForTest,
             base::Unretained(this)));
@@ -97,6 +97,7 @@ class GamepadEventConverterEvdevTest : public testing::Test {
 
   std::unique_ptr<ui::GamepadEventConverterEvdev> gamepad_evdev_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
+  std::unique_ptr<ui::KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
   std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
 

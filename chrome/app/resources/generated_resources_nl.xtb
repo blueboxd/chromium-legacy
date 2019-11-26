@@ -2643,7 +2643,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4839303808932127586">&amp;Video opslaan als...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Nog 1 item}other{Nog # items}}</translation>
 <translation id="4842976633412754305">Deze pagina probeert scripts van niet-geverifieerde bronnen te laden.</translation>
-<translation id="4843488774506045600">Login geleverd door <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Andere toetsenborden</translation>
 <translation id="4846680374085650406">Je volgt de aanbeveling van de beheerder voor deze instelling.</translation>
 <translation id="4848518990323155912">Simkaartvergrendeling inschakelen (pincode vereist voor het gebruik van mobiele data)</translation>
@@ -3848,7 +3847,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6607831829715835317">Meer hu&amp;lpprogramma's</translation>
 <translation id="6612358246767739896">Beschermde content</translation>
 <translation id="6615455863669487791">Weergeven</translation>
-<translation id="6617100836880592260">Scansnelheid: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Toch behouden</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Site kan je locatie bijhouden</translation>

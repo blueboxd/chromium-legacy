@@ -10,10 +10,8 @@
 
 namespace blink {
 
-XRHitTestResult::XRHitTestResult(XRHitTestSource* hit_test_source,
-                                 const TransformationMatrix& pose)
-    : hit_test_source_(hit_test_source),
-      pose_(std::make_unique<TransformationMatrix>(pose)) {}
+XRHitTestResult::XRHitTestResult(const TransformationMatrix& pose)
+    : pose_(std::make_unique<TransformationMatrix>(pose)) {}
 
 XRPose* XRHitTestResult::getPose(XRSpace* relative_to) {
   DCHECK(relative_to->MojoFromSpace());
@@ -28,11 +26,6 @@ XRPose* XRHitTestResult::getPose(XRSpace* relative_to) {
   auto other_from_this = other_from_mojo * mojo_from_this;
 
   return MakeGarbageCollected<XRPose>(other_from_this, false);
-}
-
-void XRHitTestResult::Trace(blink::Visitor* visitor) {
-  visitor->Trace(hit_test_source_);
-  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

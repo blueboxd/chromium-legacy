@@ -496,7 +496,8 @@ void TextTexture::PrepareDrawWrapText(const base::string16& text,
   int height = 0;
   int line_height = 0;
   for (size_t i = 0; i < strings.size(); i++) {
-    auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+    std::unique_ptr<gfx::RenderText> render_text =
+        gfx::RenderText::CreateRenderText();
     UpdateRenderText(render_text.get(), strings[i], font_list, parameters.color,
                      parameters.text_alignment, parameters.shadows_enabled,
                      parameters.shadow_color, parameters.shadow_size);
@@ -529,7 +530,7 @@ void TextTexture::PrepareDrawSingleLineText(
     const TextRenderParameters& parameters) {
   if (lines_.size() != 1) {
     lines_.clear();
-    lines_.push_back(gfx::RenderText::CreateHarfBuzzInstance());
+    lines_.push_back(gfx::RenderText::CreateRenderText());
   }
 
   auto* render_text = lines_.front().get();

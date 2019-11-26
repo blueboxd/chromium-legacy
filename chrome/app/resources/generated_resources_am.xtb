@@ -2640,7 +2640,6 @@
 <translation id="4839303808932127586">ቪዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ተጨማሪ}one{# ተጨማሪ}other{# ተጨማሪ}}</translation>
 <translation id="4842976633412754305">ይህ ገጽ ፈቃድ ከሌላቸው ምንጮች የመጡ ጽሑፎችን ለመጫን እየሞከረ ነው።</translation>
-<translation id="4843488774506045600">መግቢያ የቀረበው በ<ph name="EXTENSION_NAME" /> ነው</translation>
 <translation id="4844333629810439236">ሌሎች የቁልፍ ሰሌዳዎች</translation>
 <translation id="4846680374085650406">አስተዳዳሪው ለዚህ ቅንብር የሰጠውን ምክር ነው እየተከተሉ ያሉት።</translation>
 <translation id="4848518990323155912">ሲም ካርድ መቆለፈን አንቃ (ተንቀሳቃሽ ውሂብን ለመጠቀም ፒን ጠይቅ)</translation>
@@ -3845,7 +3844,6 @@
 <translation id="6607831829715835317">&amp;ተጨማሪ መሣሪያዎች</translation>
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="6615455863669487791">አሳየኝ</translation>
-<translation id="6617100836880592260">የቅኝት ፍጥነት፦ <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">ለማንኛውም አስቀምጥ</translation>
 <translation id="6619058681307408113">የመስመር ህትመት ዴሞን (LPD)</translation>
 <translation id="661907246513853610">ጣቢያ የእርስዎን አካባቢ መከታተል ይችላል</translation>

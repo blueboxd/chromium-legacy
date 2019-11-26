@@ -651,7 +651,7 @@ void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
 
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radii,
-                    SkPath::kCCW_Direction);
+                    SkPathDirection::kCCW);
   canvas->ClipPath(path, false);
 
   if (!surface_ && item_ && !item_->GetSnapshot().isNull()) {

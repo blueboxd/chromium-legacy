@@ -151,10 +151,10 @@ public class Configuration {
         String VIEW_MIN_TIME_MS = "view_min_time_ms";
     }
 
-    private final HashMap<String, Object> values;
+    private final HashMap<String, Object> mValues;
 
     private Configuration(HashMap<String, Object> values) {
-        this.values = values;
+        this.mValues = values;
     }
 
     public String getValueOrDefault(String key, String defaultValue) {
@@ -179,10 +179,10 @@ public class Configuration {
      * @throws ClassCastException if the value can't be cast to {@code T}.
      */
     private <T> T getValueOrDefaultUnchecked(String key, T defaultValue) {
-        if (values.containsKey(key)) {
+        if (mValues.containsKey(key)) {
             // The caller assumes the responsibility of ensuring this cast succeeds
             @SuppressWarnings("unchecked")
-            T castedValue = (T) values.get(key);
+            T castedValue = (T) mValues.get(key);
             return castedValue;
         } else {
             return defaultValue;
@@ -191,12 +191,12 @@ public class Configuration {
 
     /** Returns true if a value exists for the {@code key}. */
     public boolean hasValue(String key) {
-        return values.containsKey(key);
+        return mValues.containsKey(key);
     }
 
     /** Returns a {@link Builder} for this {@link Configuration}. */
     public Builder toBuilder() {
-        return new Builder(values);
+        return new Builder(mValues);
     }
 
     /** Returns a default {@link Configuration}. */
@@ -206,10 +206,10 @@ public class Configuration {
 
     /** Builder class used to create {@link Configuration} objects. */
     public static final class Builder {
-        private final HashMap<String, Object> values;
+        private final HashMap<String, Object> mValues;
 
         private Builder(HashMap<String, Object> values) {
-            this.values = new HashMap<>(values);
+            this.mValues = new HashMap<>(values);
         }
 
         public Builder() {
@@ -217,27 +217,27 @@ public class Configuration {
         }
 
         public Builder put(@ConfigKey String key, String value) {
-            values.put(key, value);
+            mValues.put(key, value);
             return this;
         }
 
         public Builder put(@ConfigKey String key, long value) {
-            values.put(key, value);
+            mValues.put(key, value);
             return this;
         }
 
         public Builder put(@ConfigKey String key, boolean value) {
-            values.put(key, value);
+            mValues.put(key, value);
             return this;
         }
 
         public Builder put(@ConfigKey String key, double value) {
-            values.put(key, value);
+            mValues.put(key, value);
             return this;
         }
 
         public Configuration build() {
-            return new Configuration(values);
+            return new Configuration(mValues);
         }
     }
 }

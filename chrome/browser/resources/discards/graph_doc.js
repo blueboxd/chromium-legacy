@@ -11,6 +11,10 @@ const kPageNodesYRange = 100;
 // Range occupied by process nodes at the bottom of the graph view.
 const kProcessNodesYRange = 150;
 
+// Range occupied by worker nodes at the bottom of the graph view, above
+// process nodes.
+const kWorkerNodesYRange = 300;
+
 // Target y position for frame nodes.
 const kFrameNodesTargetY = kPageNodesYRange + 50;
 
@@ -54,22 +58,22 @@ class GraphNode {
   /**
    * Sets the initial x and y position of this node, also resets
    * vx and vy.
-   * @param {number} graph_width: Width of the graph view (svg).
-   * @param {number} graph_height: Height of the graph view (svg).
+   * @param {number} graphWidth: Width of the graph view (svg).
+   * @param {number} graphHeight: Height of the graph view (svg).
    */
-  setInitialPosition(graph_width, graph_height) {
-    this.x = graph_width / 2;
-    this.y = this.targetYPosition(graph_height);
+  setInitialPosition(graphWidth, graphHeight) {
+    this.x = graphWidth / 2;
+    this.y = this.targetYPosition(graphHeight);
     this.vx = 0;
     this.vy = 0;
   }
 
   /**
-   * @param {number} graph_height: Height of the graph view (svg).
+   * @param {number} graphHeight: Height of the graph view (svg).
    * @return {number}
    */
-  targetYPosition(graph_height) {
-    const bounds = this.allowedYRange(graph_height);
+  targetYPosition(graphHeight) {
+    const bounds = this.allowedYRange(graphHeight);
     return (bounds[0] + bounds[1]) / 2;
   }
 
@@ -82,12 +86,12 @@ class GraphNode {
   }
 
   /**
-   * @param {number} graph_height: Height of the graph view.
+   * @param {number} graphHeight: Height of the graph view.
    * @return {!Array<number>}
    */
-  allowedYRange(graph_height) {
+  allowedYRange(graphHeight) {
     // By default, nodes just need to be in bounds of the graph.
-    return [0, graph_height];
+    return [0, graphHeight];
   }
 
   /** @return {number}: The strength of the repulsion force with other nodes. */
@@ -131,7 +135,7 @@ class PageNode extends GraphNode {
   }
 
   /** override */
-  allowedYRange(graph_height) {
+  allowedYRange(graphHeight) {
     return [0, kPageNodesYRange];
   }
 
@@ -156,13 +160,13 @@ class FrameNode extends GraphNode {
   }
 
   /** override */
-  targetYPosition(graph_height) {
+  targetYPosition(graphHeight) {
     return kFrameNodesTargetY;
   }
 
   /** override */
-  allowedYRange(graph_height) {
-    return [kFrameNodesTopMargin, graph_height - kFrameNodesBottomMargin];
+  allowedYRange(graphHeight) {
+    return [kFrameNodesTopMargin, graphHeight - kFrameNodesBottomMargin];
   }
 
   /** override */
@@ -195,8 +199,8 @@ class ProcessNode extends GraphNode {
   }
 
   /** override */
-  allowedYRange(graph_height) {
-    return [graph_height - kProcessNodesYRange, graph_height];
+  allowedYRange(graphHeight) {
+    return [graphHeight - kProcessNodesYRange, graphHeight];
   }
 
   /** override */
@@ -205,11 +209,53 @@ class ProcessNode extends GraphNode {
   }
 }
 
+class WorkerNode extends GraphNode {
+  /** @param {!discards.mojom.WorkerInfo} worker */
+  constructor(worker) {
+    super(worker.id);
+    /** @type {!discards.mojom.WorkerInfo} */
+    this.worker = worker;
+
+    this.color = this.selectColor(worker.processId);
+  }
+
+  /** override */
+  get title() {
+    return this.worker.url.url.length > 0 ? this.worker.url.url : 'Worker';
+  }
+
+  /** @return {number} */
+  targetYPositionStrength() {
+    return 10;
+  }
+
+  /** override */
+  allowedYRange(graphHeight) {
+    return [
+      graphHeight - kWorkerNodesYRange, graphHeight - kProcessNodesYRange
+    ];
+  }
+
+  /** override */
+  manyBodyStrength() {
+    return -600;
+  }
+
+  /** override */
+  linkTargets() {
+    // Link the process, in addition to all the client and child workers.
+    return [
+      this.worker.processId, ...this.worker.clientFrameIds,
+      ...this.worker.clientWorkerIds, ...this.worker.childWorkerIds
+    ];
+  }
+}
+
 /**
  * A force that bounds GraphNodes |allowedYRange| in Y.
- * @param {number} graph_height
+ * @param {number} graphHeight
  */
-function bounding_force(graph_height) {
+function boundingForce(graphHeight) {
   /** @type {!Array<!GraphNode>} */
   let nodes = [];
   /** @type {!Array<!Array>} */
@@ -234,7 +280,7 @@ function bounding_force(graph_height) {
   /** @param {!Array<!GraphNode>} n */
   force.initialize = function(n) {
     nodes = n;
-    bounds = nodes.map(node => node.allowedYRange(graph_height));
+    bounds = nodes.map(node => node.allowedYRange(graphHeight));
   };
 
   return force;
@@ -336,6 +382,11 @@ class Graph {
   }
 
   /** @override */
+  workerCreated(worker) {
+    this.addNode_(new WorkerNode(worker));
+  }
+
+  /** @override */
   frameChanged(frame) {
     const frameNode = /** @type {!FrameNode} */ (this.nodes_.get(frame.id));
     frameNode.frame = frame;
@@ -355,6 +406,17 @@ class Graph {
   }
 
   /** @override */
+  workerChanged(worker) {
+    const workerNode =
+        /** @type {!WorkerNode} */ (this.nodes_.get(worker.id));
+
+    // Worker node links may change dynamically, so account for that here.
+    this.removeNodeLinks_(workerNode);
+    workerNode.worker = worker;
+    this.addNodeLinks_(workerNode);
+  }
+
+  /** @override */
   favIconDataAvailable(iconInfo) {
     const graphNode = this.nodes_.get(iconInfo.nodeId);
     if (graphNode) {
@@ -366,12 +428,19 @@ class Graph {
   nodeDeleted(nodeId) {
     const node = this.nodes_.get(nodeId);
 
+    // Remove any links, and then the node itself.
+    this.removeNodeLinks_(node);
+    this.nodes_.delete(nodeId);
+  }
+
+  /**
+   * @param {!GraphNode} node
+   * @private
+   */
+  removeNodeLinks_(node) {
     // Filter away any links to or from the deleted node.
     this.links_ =
         this.links_.filter(link => link.source != node && link.target != node);
-
-    // And remove the node.
-    this.nodes_.delete(nodeId);
   }
 
   /**
@@ -394,6 +463,10 @@ class Graph {
         this.processCreated(
             /** @type {!discards.mojom.ProcessInfo} */ (data));
         break;
+      case 'workerCreated':
+        this.workerCreated(
+            /** @type {!discards.mojom.WorkerInfo} */ (data));
+        break;
       case 'frameChanged':
         this.frameChanged(
             /** @type {!discards.mojom.FrameInfo} */ (data));
@@ -409,6 +482,10 @@ class Graph {
       case 'favIconDataAvailable':
         this.favIconDataAvailable(
             /** @type {!discards.mojom.FavIconInfo} */ (data));
+        break;
+      case 'workerChanged':
+        this.workerChanged(
+            /** @type {!discards.mojom.WorkerInfo} */ (data));
         break;
       case 'nodeDeleted':
         this.nodeDeleted(/** @type {number} */ (data));
@@ -511,18 +588,6 @@ class Graph {
   }
 
   /**
-   * @param {!GraphNode} source
-   * @param {number} dst_id
-   * @private
-   */
-  maybeAddLink_(source, dst_id) {
-    const target = this.nodes_.get(dst_id);
-    if (target) {
-      this.links_.push({source: source, target: target});
-    }
-  }
-
-  /**
    * Adds a new node to the graph, populates its links and gives it an initial
    * position.
    *
@@ -531,13 +596,24 @@ class Graph {
    */
   addNode_(node) {
     this.nodes_.set(node.id, node);
+    this.addNodeLinks_(node);
+    node.setInitialPosition(this.width_, this.height_);
+  }
 
+  /**
+   * Adds all the links for a node to the graph.
+   *
+   * @param {!GraphNode} node
+   * @private
+   */
+  addNodeLinks_(node) {
     const linkTargets = node.linkTargets();
     for (const linkTarget of linkTargets) {
-      this.maybeAddLink_(node, linkTarget);
+      const target = this.nodes_.get(linkTarget);
+      if (target) {
+        this.links_.push({source: node, target: target});
+      }
     }
-
-    node.setInitialPosition(this.width_, this.height_);
   }
 
   /**
@@ -618,7 +694,7 @@ class Graph {
                        .strength(this.getTargetYPositionStrength_.bind(this));
     this.simulation_.force('x_pos', xForce);
     this.simulation_.force('y_pos', yForce);
-    this.simulation_.force('y_bound', bounding_force(this.height_));
+    this.simulation_.force('y_bound', boundingForce(this.height_));
 
     if (!this.wasResized_) {
       this.wasResized_ = true;

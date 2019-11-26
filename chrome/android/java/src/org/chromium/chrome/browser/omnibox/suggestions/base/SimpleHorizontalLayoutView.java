@@ -102,7 +102,7 @@ class SimpleHorizontalLayoutView extends ViewGroup {
         dynamicView.measure(MeasureSpec.makeMeasureSpec(contentViewWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         final int heightPx = dynamicView.getMeasuredHeight();
-        heightSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.AT_MOST);
+        heightSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY);
 
         // Apply measured dimensions to all children.
         for (int index = 0; index < getChildCount(); ++index) {

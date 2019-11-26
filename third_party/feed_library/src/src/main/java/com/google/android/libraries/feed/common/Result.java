@@ -6,12 +6,12 @@ package com.google.android.libraries.feed.common;
 
 /** Wrapper that allows callbacks to return a value as well as whether the call was successful. */
 public class Result<T> {
-    /*@Nullable*/ private final T value;
-    private final boolean isSuccessful;
+    /*@Nullable*/ private final T mValue;
+    private final boolean mIsSuccessful;
 
     private Result(/*@Nullable*/ T value, boolean isSuccessful) {
-        this.value = value;
-        this.isSuccessful = isSuccessful;
+        this.mValue = value;
+        this.mIsSuccessful = isSuccessful;
     }
 
     public static <T> Result<T> success(T value) {
@@ -24,14 +24,14 @@ public class Result<T> {
 
     /** Retrieves the value for the result. */
     public T getValue() {
-        if (!isSuccessful) {
+        if (!mIsSuccessful) {
             throw new IllegalStateException("Cannot retrieve value for failed result");
         }
-        return Validators.checkNotNull(value);
+        return Validators.checkNotNull(mValue);
     }
 
     // TODO: replace isSuccessful with failed()
     public boolean isSuccessful() {
-        return isSuccessful;
+        return mIsSuccessful;
     }
 }

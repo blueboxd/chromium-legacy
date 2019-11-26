@@ -13,21 +13,21 @@ import java.util.List;
 
 /** Implementation of the {@link SessionMutation}. */
 public final class FeedSessionMutation implements SessionMutation {
-    private final List<StreamStructure> streamStructures = new ArrayList<>();
-    private final Committer<Boolean, List<StreamStructure>> committer;
+    private final List<StreamStructure> mStreamStructures = new ArrayList<>();
+    private final Committer<Boolean, List<StreamStructure>> mCommitter;
 
     FeedSessionMutation(Committer<Boolean, List<StreamStructure>> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public SessionMutation add(StreamStructure streamStructure) {
-        streamStructures.add(streamStructure);
+        mStreamStructures.add(streamStructure);
         return this;
     }
 
     @Override
     public Boolean commit() {
-        return committer.commit(streamStructures);
+        return mCommitter.commit(mStreamStructures);
     }
 }

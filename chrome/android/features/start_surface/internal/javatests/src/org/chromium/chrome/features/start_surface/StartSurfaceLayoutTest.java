@@ -120,7 +120,7 @@ public class StartSurfaceLayoutTest {
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
-        mRepeat = 3;
+        mRepeat = 1;
 
         mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         mTabListDelegate.setBitmapCallbackForTesting(mBitmapListener);
@@ -535,7 +535,6 @@ public class StartSurfaceLayoutTest {
     public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
         // Get the GTS in the warm state.
         prepareTabs(2, 0, NTP_URL);
-        mRepeat = 2;
         testTabToGrid(NTP_URL);
 
         Thread.sleep(1000);
@@ -559,7 +558,6 @@ public class StartSurfaceLayoutTest {
     public void testInvisibleTabsDontFetchSoft() throws InterruptedException {
         // Get the GTS in the soft cleaned up state.
         prepareTabs(2, 0, NTP_URL);
-        mRepeat = 2;
         testTabToGrid(NTP_URL);
 
         Thread.sleep(1000);

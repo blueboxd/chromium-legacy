@@ -112,6 +112,8 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(, ArcAppShortcutsSearchProviderTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ArcAppShortcutsSearchProviderTest,
+                         testing::Bool());
 
 }  // namespace app_list

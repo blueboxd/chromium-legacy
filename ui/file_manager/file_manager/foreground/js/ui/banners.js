@@ -708,9 +708,10 @@ class Banners extends cr.EventTarget {
   maybeShowAuthFailBanner_() {
     const connection = this.volumeManager_.getDriveConnectionState();
     const showDriveNotReachedMessage = this.isOnCurrentProfileDrive() &&
-        connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+        connection.type ==
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         connection.reason ==
-            VolumeManagerCommon.DriveConnectionReason.NOT_READY;
+            chrome.fileManagerPrivate.DriveOfflineReason.NOT_READY;
     this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
   }
 }

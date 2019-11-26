@@ -278,6 +278,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::ProxyResolvingSocketFactory> receiver)
       override;
   void LookUpProxyForURL(const GURL& url,
+                         const net::NetworkIsolationKey& network_isolation_key,
                          mojo::PendingRemote<mojom::ProxyLookupClient>
                              proxy_lookup_client) override;
   void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;

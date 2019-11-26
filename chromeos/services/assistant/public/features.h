@@ -118,6 +118,9 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsProactiveSuggestionsShowOnScrollEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsProactiveSuggestionsShowRichEntryPointEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsProactiveSuggestionsSuppressDuplicatesEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsRoutinesEnabled();

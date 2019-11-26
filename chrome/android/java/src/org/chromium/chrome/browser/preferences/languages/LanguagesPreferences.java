@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.languages;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
@@ -70,7 +71,7 @@ public class LanguagesPreferences
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_ADD_LANGUAGES && resultCode == getActivity().RESULT_OK) {
+        if (requestCode == REQUEST_CODE_ADD_LANGUAGES && resultCode == Activity.RESULT_OK) {
             String code = data.getStringExtra(AddLanguageFragment.INTENT_NEW_ACCEPT_LANGUAGE);
             LanguagesManager.getInstance().addToAcceptLanguages(code);
             LanguagesManager.recordAction(

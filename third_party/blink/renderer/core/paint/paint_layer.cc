@@ -344,6 +344,15 @@ void PaintLayer::UpdateLayerPositionRecursive() {
       SetNeedsCompositingInputsUpdate();
   }
 
+  // Display-locked elements always have a PaintLayer, meaning that the
+  // PaintLayer traversal won't skip locked elements. Thus, we don't have to do
+  // an ancestor check, and simply skip iterating children when this element is
+  // locked for child layout.
+  if (GetLayoutObject().LayoutBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren)) {
+    return;
+  }
+
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->UpdateLayerPositionRecursive();
 }
@@ -517,6 +526,13 @@ void PaintLayer::UpdatePaginationRecursive(bool needs_pagination_update) {
             GetLayoutObject().FlowThreadContainingBlock())
       EnsureRareData().enclosing_pagination_layer =
           containing_flow_thread->Layer();
+  }
+
+  // If this element prevents child painting, then we can skip updating
+  // pagination info, since it won't be used anyway.
+  if (GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren)) {
+    return;
   }
 
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())

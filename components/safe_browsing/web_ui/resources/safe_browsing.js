@@ -21,7 +21,7 @@ cr.define('safe_browsing', function() {
         addSavedPasswords(passwords));
     cr.sendWithPromise('getDatabaseManagerInfo', []).then(
       function(databaseState) {
-        var fullHashCacheState = databaseState.splice(-1,1);
+        const fullHashCacheState = databaseState.splice(-1,1);
         addDatabaseManagerInfo(databaseState);
         addFullHashCacheInfo(fullHashCacheState);
     });
@@ -131,18 +131,18 @@ cr.define('safe_browsing', function() {
 
     // When the tab updates, update the anchor
     $('tabbox').addEventListener('selectedChange', function() {
-      var tabbox = $('tabbox');
-      var tabs = tabbox.querySelector('tabs').children;
-      var selectedTab = tabs[tabbox.selectedIndex];
+      const tabbox = $('tabbox');
+      const tabs = tabbox.querySelector('tabs').children;
+      const selectedTab = tabs[tabbox.selectedIndex];
       window.location.hash = 'tab-' + selectedTab.id;
     }, true);
   }
 
   function addExperiments(result) {
-    var resLength = result.length;
-    var experimentsListFormatted = '';
+    const resLength = result.length;
+    let experimentsListFormatted = '';
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       experimentsListFormatted += "<div><b>" + result[i + 1] +
           "</b>: " + result[i] + "</div>";
     }
@@ -150,10 +150,10 @@ cr.define('safe_browsing', function() {
   }
 
   function addPrefs(result) {
-    var resLength = result.length;
-    var preferencesListFormatted = "";
+    const resLength = result.length;
+    let preferencesListFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
           result[i] + "</div>";
     }
@@ -161,16 +161,16 @@ cr.define('safe_browsing', function() {
   }
 
   function addCookie(result) {
-    var cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
+    const cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
         '<b>Created:</b> ' + (new Date(result[1])).toLocaleString();
     $('cookie-panel').innerHTML = cookieFormatted;
   }
 
   function addSavedPasswords(result) {
-    var resLength = result.length;
-    var savedPasswordFormatted = "";
+    const resLength = result.length;
+    let savedPasswordFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       savedPasswordFormatted += "<div>" + result[i];
       if (result[i+1]) {
         savedPasswordFormatted += " (GAIA password)";
@@ -184,10 +184,10 @@ cr.define('safe_browsing', function() {
   }
 
   function addDatabaseManagerInfo(result) {
-    var resLength = result.length;
-    var preferencesListFormatted = "";
+    const resLength = result.length;
+    let preferencesListFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
           result[i + 1] + "</div>";
     }
@@ -199,36 +199,36 @@ cr.define('safe_browsing', function() {
   }
 
   function addSentClientDownloadRequestsInfo(result) {
-    var logDiv = $('sent-client-download-requests-list');
+    const logDiv = $('sent-client-download-requests-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addReceivedClientDownloadResponseInfo(result) {
-    var logDiv = $('received-client-download-response-list');
+    const logDiv = $('received-client-download-response-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addSentCSBRRsInfo(result) {
-    var logDiv = $('sent-csbrrs-list');
+    const logDiv = $('sent-csbrrs-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addPGEvent(result) {
-    var logDiv = $('pg-event-log');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('pg-event-log');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
   function addSecurityEvent(result) {
-    var logDiv = $('security-event-log');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('security-event-log');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
   function insertTokenToTable(tableId, token) {
-    var row = $(tableId).insertRow();
+    const row = $(tableId).insertRow();
     row.className = 'content';
     row.id = tableId + '-' + token;
     row.insertCell().className = 'content';
@@ -236,14 +236,14 @@ cr.define('safe_browsing', function() {
   }
 
   function addResultToTable(tableId, result, position) {
-    var token = result[0];
-    var request = result[1];
+    const token = result[0];
+    const request = result[1];
 
     if ($(tableId + '-' + token) == undefined) {
       insertTokenToTable(tableId, token);
     }
 
-    var cell = $(tableId + '-' + token).cells[position];
+    const cell = $(tableId + '-' + token).cells[position];
     appendChildWithInnerText(cell, request);
   }
 
@@ -264,8 +264,8 @@ cr.define('safe_browsing', function() {
   }
 
   function addLogMessage(result) {
-    var logDiv = $('log-messages');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('log-messages');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
@@ -274,7 +274,7 @@ cr.define('safe_browsing', function() {
     if (!logDiv) {
       return;
     }
-    var textDiv = document.createElement('div');
+    const textDiv = document.createElement('div');
     textDiv.innerText = text;
     logDiv.appendChild(textDiv);
   }

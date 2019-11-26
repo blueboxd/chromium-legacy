@@ -20,13 +20,13 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
@@ -59,10 +59,10 @@ class MODULES_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
   Persistent<RTCStatsResponseBase> impl_;
 };
 
-// Mockable wrapper for blink::WebRTCStatsRequest
+// Mockable wrapper for RTCStatsRequest
 class MODULES_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
  public:
-  explicit LocalRTCStatsRequest(blink::WebRTCStatsRequest impl);
+  explicit LocalRTCStatsRequest(RTCStatsRequest* impl);
   // Constructor for testing.
   LocalRTCStatsRequest();
 
@@ -75,7 +75,7 @@ class MODULES_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
   ~LocalRTCStatsRequest() override;
 
  private:
-  blink::WebRTCStatsRequest impl_;
+  CrossThreadPersistent<RTCStatsRequest> impl_;
 };
 
 // RTCPeerConnectionHandler is a delegate for the RTC PeerConnection API
@@ -143,7 +143,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       scoped_refptr<RTCIceCandidatePlatform> candidate) override;
   void RestartIce() override;
 
-  void GetStats(const blink::WebRTCStatsRequest& request) override;
+  void GetStats(RTCStatsRequest* request) override;
   void GetStats(blink::WebRTCStatsReportCallback callback,
                 const blink::WebVector<webrtc::NonStandardGroupId>&
                     exposed_group_ids) override;
@@ -161,7 +161,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
 
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const blink::WebString& label,
-      const blink::WebRTCDataChannelInit& init) override;
+      const RTCDataChannelInitPlatform& init) override;
   void Stop() override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(

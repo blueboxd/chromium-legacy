@@ -29,12 +29,12 @@ public abstract class JournalStorageDirectConformanceTest {
     private static final byte[] DATA_0 = "data 0".getBytes(Charset.forName("UTF-8"));
     private static final byte[] DATA_1 = "data 1".getBytes(Charset.forName("UTF-8"));
 
-    protected JournalStorageDirect journalStorage;
+    protected JournalStorageDirect mJournalStorage;
 
     @Test
     public void readOfEmptyJournalReturnsEmptyData() {
         // Try to read some blobs from an empty journal store.
-        Result<List<byte[]>> result = journalStorage.read(JOURNAL_NAME);
+        Result<List<byte[]>> result = mJournalStorage.read(JOURNAL_NAME);
         List<byte[]> input = result.getValue();
 
         // The result should be an empty List.
@@ -45,12 +45,12 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void appendToJournal() {
         // Write some data
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(DATA_0).append(DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Read the data back into blobs.
-        Result<List<byte[]>> result = journalStorage.read(JOURNAL_NAME);
+        Result<List<byte[]>> result = mJournalStorage.read(JOURNAL_NAME);
         List<byte[]> input = result.getValue();
         // We should get back one byte array, containing the bytes of DATA_0 and DATA_1.
         assertThat(input).isNotNull();
@@ -62,17 +62,17 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void copyJournal() {
         // Write some data.
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(DATA_0).append(DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Copy the data into a new journal
-        commitResult = journalStorage.commit(
+        commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).copy(JOURNAL_COPY_NAME).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Read the data back into blobs.
-        Result<List<byte[]>> result = journalStorage.read(JOURNAL_COPY_NAME);
+        Result<List<byte[]>> result = mJournalStorage.read(JOURNAL_COPY_NAME);
         List<byte[]> input = result.getValue();
         // We should get back one byte array, containing the bytes of DATA_0 and DATA_1.
         assertThat(input).isNotNull();
@@ -84,17 +84,17 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void deleteJournal() {
         // Write some data.
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(DATA_0).append(DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Delete the journal
         commitResult =
-                journalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME).delete().build());
+                mJournalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME).delete().build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Try to read the deleted journal.
-        Result<List<byte[]>> result = journalStorage.read(JOURNAL_NAME);
+        Result<List<byte[]>> result = mJournalStorage.read(JOURNAL_NAME);
         List<byte[]> input = result.getValue();
 
         // The result should be an empty List.
@@ -105,23 +105,23 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void deleteAllJournals() {
         // Write some data, then copy into two journals.
-        CommitResult commitResult = journalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME)
-                                                                  .append(DATA_0)
-                                                                  .append(DATA_1)
-                                                                  .copy(JOURNAL_COPY_NAME)
-                                                                  .build());
+        CommitResult commitResult = mJournalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME)
+                                                                   .append(DATA_0)
+                                                                   .append(DATA_1)
+                                                                   .copy(JOURNAL_COPY_NAME)
+                                                                   .build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Delete all journals
-        commitResult = journalStorage.deleteAll();
+        commitResult = mJournalStorage.deleteAll();
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Try to read the deleted journals
-        Result<Boolean> result = journalStorage.exists(JOURNAL_NAME);
+        Result<Boolean> result = mJournalStorage.exists(JOURNAL_NAME);
         Boolean input = result.getValue();
         assertThat(input).isFalse();
 
-        result = journalStorage.exists(JOURNAL_COPY_NAME);
+        result = mJournalStorage.exists(JOURNAL_COPY_NAME);
         input = result.getValue();
         assertThat(input).isFalse();
     }
@@ -129,18 +129,18 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void exists() {
         // Write some data.
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(DATA_0).append(DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Boolean> result = journalStorage.exists(JOURNAL_NAME);
+        Result<Boolean> result = mJournalStorage.exists(JOURNAL_NAME);
         Boolean input = result.getValue();
         assertThat(input).isTrue();
     }
 
     @Test
     public void exists_doesNotExist() {
-        Result<Boolean> result = journalStorage.exists(JOURNAL_NAME);
+        Result<Boolean> result = mJournalStorage.exists(JOURNAL_NAME);
         Boolean input = result.getValue();
         assertThat(input).isFalse();
     }
@@ -148,11 +148,11 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void getAllJournals_singleJournal() {
         // Write some data.
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(DATA_0).append(DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<List<String>> result = journalStorage.getAllJournals();
+        Result<List<String>> result = mJournalStorage.getAllJournals();
         List<String> input = result.getValue();
         assertThat(input).hasSize(1);
         assertThat(input).contains(JOURNAL_NAME);
@@ -161,14 +161,14 @@ public abstract class JournalStorageDirectConformanceTest {
     @Test
     public void getAllJournals_multipleJournals() {
         // Write some data.
-        CommitResult commitResult = journalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME)
-                                                                  .append(DATA_0)
-                                                                  .append(DATA_1)
-                                                                  .copy(JOURNAL_COPY_NAME)
-                                                                  .build());
+        CommitResult commitResult = mJournalStorage.commit(new JournalMutation.Builder(JOURNAL_NAME)
+                                                                   .append(DATA_0)
+                                                                   .append(DATA_1)
+                                                                   .copy(JOURNAL_COPY_NAME)
+                                                                   .build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<List<String>> result = journalStorage.getAllJournals();
+        Result<List<String>> result = mJournalStorage.getAllJournals();
         List<String> input = result.getValue();
         assertThat(input).hasSize(2);
         assertThat(input).contains(JOURNAL_NAME);
@@ -176,7 +176,7 @@ public abstract class JournalStorageDirectConformanceTest {
     }
 
     @Test
-    public void StreamLocalAction_roundTrip() {
+    public void streamLocalAction_roundTrip() {
         // Write a Stream action with known breaking data ([INTERNAL LINK])
         StreamLocalAction action =
                 StreamLocalAction.newBuilder()
@@ -184,12 +184,12 @@ public abstract class JournalStorageDirectConformanceTest {
                         .setAction(1)
                         .setFeatureContentId("FEATURE::stories.f::5726498306727238903")
                         .build();
-        CommitResult commitResult = journalStorage.commit(
+        CommitResult commitResult = mJournalStorage.commit(
                 new JournalMutation.Builder(JOURNAL_NAME).append(action.toByteArray()).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Ensure that it can be parsed back correctly
-        Result<List<byte[]>> result = journalStorage.read(JOURNAL_NAME);
+        Result<List<byte[]>> result = mJournalStorage.read(JOURNAL_NAME);
         List<byte[]> bytes = result.getValue();
         assertThat(bytes).hasSize(1);
         StreamLocalAction parsedAction = null;

@@ -81,16 +81,31 @@ class MockObserver : public UpdateClient::Observer {
   MOCK_METHOD2(OnEvent, void(Events event, const std::string&));
 };
 
+class MockActionHandler : public ActionHandler {
+ public:
+  MockActionHandler() = default;
+
+  MOCK_METHOD3(Handle,
+               void(const base::FilePath&, const std::string&, Callback));
+
+ private:
+  ~MockActionHandler() override = default;
+
+  MockActionHandler(const MockActionHandler&) = delete;
+  MockActionHandler& operator=(const MockActionHandler&) = delete;
+};
+
 }  // namespace
 
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
+using ::testing::Unused;
 
 using std::string;
 
@@ -3591,8 +3606,6 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
   update_client->RemoveObserver(&observer);
 }
 
-#if defined(OS_WIN)  // ActionRun is only implemented on Windows.
-
 // Tests that a run action in invoked in the CRX install scenario.
 TEST_F(UpdateClientTest, ActionRun_Install) {
   class MockUpdateChecker : public UpdateChecker {
@@ -3752,15 +3765,26 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
           config(), base::MakeRefCounted<MockPingManager>(config()),
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
-  // The action is a program which returns 1877345072 as a hardcoded value.
   update_client->Install(
       std::string("gjpmebpgbhcamgdgjcmnjfhggjpgcimm"),
       base::BindOnce([](const std::vector<std::string>& ids) {
+        auto action_handler = base::MakeRefCounted<MockActionHandler>();
+        EXPECT_CALL(*action_handler, Handle(_, _, _))
+            .WillOnce([](const base::FilePath& action,
+                         const std::string& session_id,
+                         ActionHandler::Callback callback) {
+              EXPECT_EQ("ChromeRecovery.crx3",
+                        action.BaseName().MaybeAsASCII());
+              EXPECT_TRUE(!session_id.empty());
+              std::move(callback).Run(true, 1877345072, 0);
+            });
+
         CrxComponent crx;
         crx.name = "test_niea";
         crx.pk_hash.assign(gjpm_hash, gjpm_hash + base::size(gjpm_hash));
         crx.version = base::Version("0.0");
         crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
+        crx.action_handler = action_handler;
         crx.crx_format_requirement = crx_file::VerifierFormat::CRX3;
         return std::vector<base::Optional<CrxComponent>>{crx};
       }),
@@ -3857,8 +3881,8 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     }
   };
 
-  // Unpack the CRX to mock an existing install to be updated. The payload to
-  // run is going to be picked up from this directory.
+  // Unpack the CRX to mock an existing install to be updated. The action to
+  // run is going to be resolved relative to this directory.
   base::FilePath unpack_path;
   {
     base::RunLoop runloop;
@@ -3899,19 +3923,30 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
           config(), base::MakeRefCounted<MockPingManager>(config()),
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
 
-  // The action is a program which returns 1877345072 as a hardcoded value.
   const std::vector<std::string> ids = {"gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
   update_client->Update(
       ids,
       base::BindOnce(
           [](const base::FilePath& unpack_path,
              const std::vector<std::string>& ids) {
+            auto action_handler = base::MakeRefCounted<MockActionHandler>();
+            EXPECT_CALL(*action_handler, Handle(_, _, _))
+                .WillOnce([](const base::FilePath& action,
+                             const std::string& session_id,
+                             ActionHandler::Callback callback) {
+                  EXPECT_EQ("ChromeRecovery.crx3",
+                            action.BaseName().MaybeAsASCII());
+                  EXPECT_TRUE(!session_id.empty());
+                  std::move(callback).Run(true, 1877345072, 0);
+                });
+
             CrxComponent crx;
             crx.name = "test_niea";
             crx.pk_hash.assign(gjpm_hash, gjpm_hash + base::size(gjpm_hash));
             crx.version = base::Version("1.0");
             crx.installer =
                 base::MakeRefCounted<ReadOnlyTestInstaller>(unpack_path);
+            crx.action_handler = action_handler;
             crx.crx_format_requirement = crx_file::VerifierFormat::CRX3;
             return std::vector<base::Optional<CrxComponent>>{crx};
           },
@@ -3926,7 +3961,5 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   RunThreads();
 }
-
-#endif  // OS_WIN
 
 }  // namespace update_client

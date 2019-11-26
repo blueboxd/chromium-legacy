@@ -819,13 +819,16 @@ unpacker.app = {
                         opt_onError(fileSystemId);
                       return;
                     }
+                    const errorMessageString =
+                        error.message === 'TOO_MANY_OPENED' ?
+                        stringData['ZIP_ARCHIVER_TOO_MANY_OPENED'] :
+                        stringData['ZIP_ARCHIVER_OTHER_ERROR_MESSAGE'];
                     chrome.notifications.create(
                         fileSystemId, {
                           type: 'basic',
                           iconUrl: chrome.runtime.getManifest().icons[128],
                           title: entry.name,
-                          message:
-                              stringData['ZIP_ARCHIVER_OTHER_ERROR_MESSAGE'],
+                          message: errorMessageString,
                         },
                         function() {});
                     if (opt_onError)

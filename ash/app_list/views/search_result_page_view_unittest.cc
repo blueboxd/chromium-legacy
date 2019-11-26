@@ -123,7 +123,7 @@ class SearchResultPageViewTest
 // Instantiate the Boolean which is used to toggle answer cards in
 // the parameterized tests.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SearchResultPageViewTest,
     ::testing::Values(AnswerCardState::ANSWER_CARD_OFF,
                       AnswerCardState::ANSWER_CARD_ON_WITHOUT_RESULT,

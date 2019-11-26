@@ -19,68 +19,68 @@ import java.util.Set;
 public final class FeedUploadableActionMutation implements UploadableActionMutation {
     private static final String TAG = "FeedUploadableActionMutation";
 
-    private final Map<String, FeedUploadableActionChanges> actions = new HashMap<>();
-    private final Committer<CommitResult, Map<String, FeedUploadableActionChanges>> committer;
+    private final Map<String, FeedUploadableActionChanges> mActions = new HashMap<>();
+    private final Committer<CommitResult, Map<String, FeedUploadableActionChanges>> mCommitter;
 
     FeedUploadableActionMutation(
             Committer<CommitResult, Map<String, FeedUploadableActionChanges>> committer) {
-        this.committer = committer;
+        this.mCommitter = committer;
     }
 
     @Override
     public UploadableActionMutation upsert(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = actions.get(contentId);
+        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }
         actionsForId.upsertAction(action);
-        actions.put(contentId, actionsForId);
+        mActions.put(contentId, actionsForId);
         Logger.i(TAG, "Added action %d", action);
         return this;
     }
 
     @Override
     public UploadableActionMutation remove(StreamUploadableAction action, String contentId) {
-        /*@Nullable*/ FeedUploadableActionChanges actionsForId = actions.get(contentId);
+        /*@Nullable*/ FeedUploadableActionChanges actionsForId = mActions.get(contentId);
         if (actionsForId == null) {
             actionsForId = new FeedUploadableActionChanges();
         }
         actionsForId.removeAction(action);
-        actions.put(contentId, actionsForId);
+        mActions.put(contentId, actionsForId);
         Logger.i(TAG, "Added action %d", action);
         return this;
     }
 
     @Override
     public CommitResult commit() {
-        return committer.commit(actions);
+        return mCommitter.commit(mActions);
     }
 
     public static class FeedUploadableActionChanges {
-        private final Set<StreamUploadableAction> upsertActions;
-        private final Set<StreamUploadableAction> removeActions;
+        private final Set<StreamUploadableAction> mUpsertActions;
+        private final Set<StreamUploadableAction> mRemoveActions;
 
         FeedUploadableActionChanges() {
-            this.upsertActions = new HashSet<>();
-            this.removeActions = new HashSet<>();
+            this.mUpsertActions = new HashSet<>();
+            this.mRemoveActions = new HashSet<>();
         }
 
         void upsertAction(StreamUploadableAction action) {
-            upsertActions.add(action);
-            removeActions.remove(action);
+            mUpsertActions.add(action);
+            mRemoveActions.remove(action);
         }
 
         void removeAction(StreamUploadableAction action) {
-            removeActions.add(action);
-            upsertActions.remove(action);
+            mRemoveActions.add(action);
+            mUpsertActions.remove(action);
         }
 
         public Set<StreamUploadableAction> upsertActions() {
-            return upsertActions;
+            return mUpsertActions;
         }
 
         public Set<StreamUploadableAction> removeActions() {
-            return removeActions;
+            return mRemoveActions;
         }
     }
 }

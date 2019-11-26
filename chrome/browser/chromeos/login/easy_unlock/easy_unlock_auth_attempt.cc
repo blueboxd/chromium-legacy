@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 

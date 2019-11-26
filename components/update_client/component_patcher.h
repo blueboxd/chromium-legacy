@@ -43,6 +43,7 @@ namespace update_client {
 
 class CrxInstaller;
 class DeltaUpdateOp;
+class Patcher;
 enum class UnpackerError;
 
 // The type of a patch file.

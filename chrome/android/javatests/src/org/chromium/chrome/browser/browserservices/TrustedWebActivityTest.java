@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -33,20 +32,18 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -56,7 +53,6 @@ import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -144,8 +140,8 @@ public class TrustedWebActivityTest {
         intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, Color.GREEN);
         launchCustomTabActivity(intent);
         CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
-        waitForThemeColor(activity, Color.RED);
-        assertStatusBarColor(activity, Color.RED);
+        ThemeTestUtils.waitForThemeColor(activity, Color.RED);
+        ThemeTestUtils.assertStatusBarColor(activity, Color.RED);
     }
 
     /**
@@ -168,12 +164,12 @@ public class TrustedWebActivityTest {
         intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, Color.GREEN);
         launchCustomTabActivity(intent);
         CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
-        waitForThemeColor(activity, Color.RED);
-        assertStatusBarColor(activity, Color.RED);
+        ThemeTestUtils.waitForThemeColor(activity, Color.RED);
+        ThemeTestUtils.assertStatusBarColor(activity, Color.RED);
 
         mCustomTabActivityTestRule.loadUrl(pageWithoutThemeColor);
-        waitForThemeColor(activity, Color.GREEN);
-        assertStatusBarColor(activity, Color.GREEN);
+        ThemeTestUtils.waitForThemeColor(activity, Color.GREEN);
+        ThemeTestUtils.assertStatusBarColor(activity, Color.GREEN);
     }
 
     /**
@@ -198,8 +194,8 @@ public class TrustedWebActivityTest {
         addTrustedOriginToIntent(intent, pageWithThemeColorCertError);
         launchCustomTabActivity(intent);
         CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
-        waitForThemeColor(activity, Color.RED);
-        assertStatusBarColor(activity, Color.RED);
+        ThemeTestUtils.waitForThemeColor(activity, Color.RED);
+        ThemeTestUtils.assertStatusBarColor(activity, Color.RED);
 
         spoofVerification(PACKAGE_NAME, pageWithThemeColorCertError);
         ChromeTabUtils.loadUrlOnUiThread(activity.getActivityTab(), pageWithThemeColorCertError);
@@ -208,8 +204,8 @@ public class TrustedWebActivityTest {
                 () -> { return TabThemeColorHelper.getDefaultColor(activity.getActivityTab()); });
         int expectedColor =
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? defaultColor : Color.BLACK;
-        waitForThemeColor(activity, defaultColor);
-        assertStatusBarColor(activity, expectedColor);
+        ThemeTestUtils.waitForThemeColor(activity, defaultColor);
+        ThemeTestUtils.assertStatusBarColor(activity, expectedColor);
     }
 
     public void launchCustomTabActivity(Intent intent) throws TimeoutException {
@@ -217,39 +213,6 @@ public class TrustedWebActivityTest {
         spoofVerification(PACKAGE_NAME, url);
         createSession(intent, PACKAGE_NAME);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-    }
-
-    /**
-     * Waits for the Tab's theme-color to change to the passed-in color.
-     */
-    public static void waitForThemeColor(CustomTabActivity activity, int expectedColor)
-            throws ExecutionException, TimeoutException {
-        int themeColor = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return TabThemeColorHelper.getColor(activity.getActivityTab()); });
-        if (themeColor == expectedColor) {
-            return;
-        }
-        // Use longer-than-default timeout to give page time to finish loading.
-        CallbackHelper callbackHelper = new CallbackHelper();
-        activity.getActivityTab().addObserver(new EmptyTabObserver() {
-            @Override
-            public void onDidChangeThemeColor(Tab tab, int color) {
-                if (color == expectedColor) {
-                    callbackHelper.notifyCalled();
-                }
-            }
-        });
-        callbackHelper.waitForFirst(10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Asserts that the status bar color equals the passed-in color.
-     */
-    public static void assertStatusBarColor(CustomTabActivity activity, int expectedColor) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            expectedColor = ColorUtils.getDarkenedColorForStatusBar(expectedColor);
-        }
-        assertEquals(expectedColor, activity.getWindow().getStatusBarColor());
     }
 
     /**

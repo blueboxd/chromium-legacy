@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">‏אפשר להקיש על הלחצן "התחלת הרישום ביומן" כדי לאסוף רשומות יומן ושגיאות של לוח JavaScript מכל הכרטיסיות. רשומות היומן ייאספו (ויישמרו רק בזיכרון) עד לסגירת הדף הזה, או להקשה על "הפסקת הרישום ביומן".</translation>
 <translation id="1657011748321897393">השיתוף נכשל משום שאינך מחובר לרשת.</translation>
 <translation id="165877110639533037">אין כרטיסיות פתוחות</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">כדי שהסימניות שלך יופיעו בכל המכשירים, יש להפעיל סינכרון.</translation>
 <translation id="1687475363370981210">סמן את הכול כ'נקרא'</translation>
 <translation id="1690731385917361335">אין פריטים</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2690858294534178585">המצלמה נמצאת בשימוש</translation>
 <translation id="2691653761409724435">לא זמין במצב לא מקוון</translation>
+<translation id="2695507686909505111">הדף תורגם</translation>
 <translation id="2702801445560668637">רשימת קריאה</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
 <translation id="3789841737615482174">התקן</translation>
+<translation id="3803696231112616155">הצגה של הצעה לתרגם את הדף הזה</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3915450441834151894">פרטי אתר</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">הדף הזה ייפתח ביישום אחר.</translation>
 <translation id="4375040482473363939">‏חיפוש של קוד QR</translation>
 <translation id="4378154925671717803">טלפון</translation>
+<translation id="4389019817280890563">צריך להקיש לשינוי שפה</translation>
 <translation id="441868831736628555">הודעת פרטיות</translation>
 <translation id="4454246407045105932">הוספת שפה</translation>
 <translation id="4476574785019001431">הגדרות</translation>
@@ -344,6 +348,7 @@
 <translation id="5871497086027727873">פריט אחד הועבר</translation>
 <translation id="5897956970858271241">מעבר לקישור שהועתק</translation>
 <translation id="5911030830365207728">Google Translate</translation>
+<translation id="5913600720976431809">אפשרויות לתרגום הדף</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5938160824633642847">המכשיר שלך כמעט מלא. צריך לפנות מקום ולנסות שוב.</translation>
 <translation id="5948291296578561264">מאפשר לך לשמור תמונות בספריית התמונות.</translation>
@@ -375,6 +380,7 @@
 <translation id="6219688215832490856">לא לתרגם אף פעם</translation>
 <translation id="6254066287920239840">פתח קישורים באפליקציה ולא בדפדפן.</translation>
 <translation id="6255097610484507482">עריכת כרטיס אשראי</translation>
+<translation id="6284652193729350524">הצגת הצעה לתרגום <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">יציאה וכיבוי הסנכרון</translation>
 <translation id="6308436439357671616">אישור זה מאפשר לך לצלם ולעדכן תמונות.</translation>
 <translation id="6324528485781869530">החלפת חשבון לסנכרון</translation>
@@ -429,6 +435,7 @@
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914583639806229067">חיפוש תמונה שהעתקת</translation>
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
+<translation id="6930799952781667037">יש להקיש כדי לעבור לשפה הזו.</translation>
 <translation id="6944369514868857500">בחירת חשבון אחר</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6973630695168034713">תיקיות</translation>
@@ -458,6 +465,7 @@
 <translation id="7293171162284876153">‏כדי להתחיל לסנכרן צריך להפעיל את האפשרות "סנכרון הנתונים מ-Chrome".</translation>
 <translation id="7336264872878993241">הושלמה הורדה של <ph name="PERCENT" /> אחוז</translation>
 <translation id="7346909386216857016">בסדר, הבנתי</translation>
+<translation id="734758817008927353">אפשרויות לשמירת כרטיס</translation>
 <translation id="7348502496356775519">הוספה לסימניות</translation>
 <translation id="7383797227493018512">רשימת קריאה</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
@@ -482,6 +490,7 @@
 <translation id="7671141431838911305">התקנה</translation>
 <translation id="7765158879357617694">העברה</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
+<translation id="7781011649027948662">לתרגם את הדף?</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="778855399387580014">‏חיפוש בכרטיסיית Chrome חדשה.</translation>
 <translation id="7791543448312431591">הוספה</translation>

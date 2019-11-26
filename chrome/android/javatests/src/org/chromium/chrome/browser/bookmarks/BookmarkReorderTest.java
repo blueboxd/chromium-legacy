@@ -812,9 +812,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        final BookmarkDelegate delegate = getBookmarkManager();
-        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
-        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        openFolder(folder);
 
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =
@@ -855,9 +853,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        final BookmarkDelegate delegate = getBookmarkManager();
-        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
-        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        openFolder(folder);
 
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
@@ -892,9 +888,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        final BookmarkDelegate delegate = getBookmarkManager();
-        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
-        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        openFolder(folder);
 
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
@@ -929,9 +923,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        final BookmarkDelegate delegate = getBookmarkManager();
-        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
-        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        openFolder(folder);
 
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =

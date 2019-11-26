@@ -5103,11 +5103,10 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
 }
 
 Document* Document::CloneDocumentWithoutChildren() const {
-  DocumentInit init =
-      DocumentInit::Create()
-          .WithContextDocument(ContextDocument())
-          .WithURL(Url())
-          .WithOriginToCommit(GetSecurityOrigin()->IsolatedCopy());
+  DocumentInit init = DocumentInit::Create()
+                          .WithContextDocument(ContextDocument())
+                          .WithOwnerDocument(const_cast<Document*>(this))
+                          .WithURL(Url());
   if (IsXMLDocument()) {
     if (IsXHTMLDocument())
       return XMLDocument::CreateXHTML(

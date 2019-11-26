@@ -5,6 +5,7 @@ document
 ++menu Name='Button4' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++button Name='Button5'
 ++button Name='Complex button '
+++++description Name='Complex button ' IsControlElement=false
 ++++textbox
 ++button Name='Complex toggle button ' Toggle.ToggleState='On'
 ++++description Name='Complex toggle button '

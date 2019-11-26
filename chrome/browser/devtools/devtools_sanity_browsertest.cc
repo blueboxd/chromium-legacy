@@ -1053,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 // different from the extension's background page, are rendered in their own
 // processes and not in the devtools process or the extension's process.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       HttpIframeInDevToolsExtensionDevtools) {
+                       DISABLED_HttpIframeInDevToolsExtensionDevtools) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Install the dynamically-generated extension.

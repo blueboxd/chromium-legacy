@@ -100,7 +100,7 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                              0};  // bottom-left
   SkPath frame_path;
   frame_path.addRoundRect(gfx::RectToSkRect(bounds), radii,
-                          SkPath::kCW_Direction);
+                          SkPathDirection::kCW);
   bool antialias = corner_radius > 0;
 
   gfx::ScopedCanvas scoped_save(canvas);

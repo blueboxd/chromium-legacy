@@ -7,10 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "build/buildflag.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/device_id_helper.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_client.h"
 
 #if defined(OS_ANDROID)
@@ -68,7 +70,7 @@ CreateCrOsOAuthDelegate(
       account_tracker_service, network_connection_tracker, account_manager,
       is_regular_profile);
 }
-#else
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
 std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
 CreateMutableProfileOAuthDelegate(
     AccountTrackerService* account_tracker_service,
@@ -130,7 +132,7 @@ CreateOAuth2TokenServiceDelegate(
   return CreateCrOsOAuthDelegate(account_tracker_service,
                                  network_connection_tracker, account_manager,
                                  is_regular_profile);
-#else
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Fall back to |MutableProfileOAuth2TokenServiceDelegate| on all platforms
   // other than Android, iOS, and Chrome OS.
   return CreateMutableProfileOAuthDelegate(
@@ -140,7 +142,9 @@ CreateOAuth2TokenServiceDelegate(
       reauth_callback,
 #endif  // defined(OS_WIN)
       network_connection_tracker);
-
+#else
+  NOTREACHED();
+  return nullptr;
 #endif  // defined(OS_ANDROID)
 }
 

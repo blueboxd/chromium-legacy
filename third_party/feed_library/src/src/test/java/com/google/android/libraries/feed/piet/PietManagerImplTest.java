@@ -57,9 +57,9 @@ import java.util.Locale;
 @RunWith(RobolectricTestRunner.class)
 public class PietManagerImplTest {
     @Mock
-    private ActionHandler actionHandler;
+    private ActionHandler mActionHandler;
     @Mock
-    private EventLogger eventLogger;
+    private EventLogger mEventLogger;
     @Mock
     private CustomElementProvider customElementProvider;
 
@@ -93,8 +93,9 @@ public class PietManagerImplTest {
     @Test
     public void testCreatePietFrameAdapter() {
         Supplier<ViewGroup> cardViewSupplier = Suppliers.of(viewGroup1);
-        FrameAdapterImpl frameAdapter = (FrameAdapterImpl) pietManager.createPietFrameAdapter(
-                cardViewSupplier, actionHandler, eventLogger, context, /* logDataCallback= */ null);
+        FrameAdapterImpl frameAdapter =
+                (FrameAdapterImpl) pietManager.createPietFrameAdapter(cardViewSupplier,
+                        mActionHandler, mEventLogger, context, /* logDataCallback= */ null);
         assertThat(frameAdapter.getParameters().parentViewSupplier)
                 .isSameInstanceAs(cardViewSupplier);
     }
@@ -110,7 +111,7 @@ public class PietManagerImplTest {
         };
         Supplier<ViewGroup> cardViewSupplier = Suppliers.of(viewGroup1);
         FrameAdapterImpl frameAdapter = (FrameAdapterImpl) pietManager.createPietFrameAdapter(
-                cardViewSupplier, actionHandler, eventLogger, context, logDataCallback);
+                cardViewSupplier, mActionHandler, mEventLogger, context, logDataCallback);
         assertThat(frameAdapter.getParameters().hostProviders.getLogDataCallback())
                 .isEqualTo(logDataCallback);
     }
@@ -152,7 +153,7 @@ public class PietManagerImplTest {
         // There's no good way to test the HostBindingProvider.
 
         FrameAdapterImpl frameAdapter = (FrameAdapterImpl) manager.createPietFrameAdapter(
-                Suppliers.of(viewGroup1), actionHandler, eventLogger, context,
+                Suppliers.of(viewGroup1), mActionHandler, mEventLogger, context,
                 /* logDataCallback= */ null);
         FrameContext frameContext = frameAdapter.createFrameContext(
                 Frame.getDefaultInstance(), 0, Collections.emptyList(), viewGroup2);
@@ -210,7 +211,7 @@ public class PietManagerImplTest {
         assertThat(parameters.clock).isSameInstanceAs(clock);
 
         FrameAdapterImpl frameAdapter = (FrameAdapterImpl) manager.createPietFrameAdapter(
-                Suppliers.of(viewGroup1), actionHandler, eventLogger, context,
+                Suppliers.of(viewGroup1), mActionHandler, mEventLogger, context,
                 /* logDataCallback= */ null);
         FrameContext frameContext = frameAdapter.createFrameContext(
                 Frame.getDefaultInstance(), 0, Collections.emptyList(), viewGroup2);

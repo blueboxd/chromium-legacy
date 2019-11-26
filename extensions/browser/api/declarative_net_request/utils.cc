@@ -221,5 +221,23 @@ dnr_api::RequestDetails CreateRequestDetails(const WebRequestInfo& request) {
   return details;
 }
 
+re2::RE2::Options CreateRE2Options(bool is_case_sensitive) {
+  re2::RE2::Options options;
+
+  // RE2 supports UTF-8 and Latin1 encoding. We only need to support ASCII, so
+  // use Latin1 encoding. This should also be more efficient than UTF-8.
+  // Note: Latin1 is an 8 bit extension to ASCII.
+  options.set_encoding(re2::RE2::Options::EncodingLatin1);
+
+  options.set_case_sensitive(is_case_sensitive);
+
+  // Don't capture unless needed, for efficiency.
+  // TODO(crbug.com/974391): Capturing should be supported for regex based
+  // substitutions which are not implemented yet.
+  options.set_never_capture(true);
+
+  return options;
+}
+
 }  // namespace declarative_net_request
 }  // namespace extensions

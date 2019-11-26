@@ -327,7 +327,7 @@ TEST_P(UploadFileElementReaderTest, WrongPath) {
   EXPECT_THAT(init_callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          UploadFileElementReaderTest,
                          testing::ValuesIn({false, true}));
 

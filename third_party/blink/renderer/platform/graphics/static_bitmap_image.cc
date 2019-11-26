@@ -20,20 +20,6 @@
 
 namespace blink {
 
-scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
-    sk_sp<SkImage> image,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-        context_provider_wrapper) {
-  if (!image)
-    return nullptr;
-  if (image->isTextureBacked()) {
-    CHECK(context_provider_wrapper);
-    return AcceleratedStaticBitmapImage::CreateFromSkImage(
-        image, std::move(context_provider_wrapper));
-  }
-  return UnacceleratedStaticBitmapImage::Create(image);
-}
-
 scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
   DCHECK(!image.GetSkImage()->isTextureBacked());
   return UnacceleratedStaticBitmapImage::Create(std::move(image));
@@ -42,7 +28,7 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
 scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     sk_sp<SkData> data,
     const SkImageInfo& info) {
-  return Create(
+  return UnacceleratedStaticBitmapImage::Create(
       SkImage::MakeRasterData(info, std::move(data), info.minRowBytes()));
 }
 
@@ -76,9 +62,11 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
         skia_image->makeColorTypeAndColorSpace(color_type, color_space);
   }
 
-  return StaticBitmapImage::Create(skia_image, skia_image->isTextureBacked()
-                                                   ? ContextProviderWrapper()
-                                                   : nullptr);
+  if (skia_image->isTextureBacked()) {
+    return AcceleratedStaticBitmapImage::CreateFromSkImage(
+        skia_image, ContextProviderWrapper());
+  }
+  return UnacceleratedStaticBitmapImage::Create(skia_image);
 }
 
 size_t StaticBitmapImage::GetSizeInBytes(

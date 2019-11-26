@@ -778,11 +778,11 @@ public final class Logger {
         // Log.d truncates long lines.  This is a workaround to print long lines by chunking
         // into 2000 chars per line.  The line limit here is arbitrary but cannot be pushed past
         // 4000 chars.  Keeping it at 3500 or lower should be safe.
-        int LENGTH_MAX = 2000;
+        int lengthMax = 2000;
         int total = request.length();
-        for (int start = 0; start < total; start += LENGTH_MAX) {
+        for (int start = 0; start < total; start += lengthMax) {
             // String.substring(...) expects the end to be the string length, never more.
-            int end = Math.min(start + LENGTH_MAX, total);
+            int end = Math.min(start + lengthMax, total);
             Logger.d(tag, "%s", request.substring(start, end));
         }
         // End-tag is not a standard HTML </end> because the utility

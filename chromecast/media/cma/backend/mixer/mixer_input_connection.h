@@ -125,6 +125,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void PostPcmCompletion();
   void PostEos();
   void PostError(MixerError error);
+  void PostAudioReadyForPlayback();
   void DropAudio(int64_t frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
                                         int64_t playback_absolute_timestamp)
@@ -172,7 +173,6 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   AudioFader fader_ GUARDED_BY(lock_);
   bool zero_fader_frames_ GUARDED_BY(lock_) = false;
   bool started_ GUARDED_BY(lock_) = false;
-  bool ready_for_playback_ GUARDED_BY(lock_) = false;
   double playback_rate_ GUARDED_BY(lock_) = 1.0;
   bool use_start_timestamp_ GUARDED_BY(lock_) = false;
   // The absolute timestamp relative to clock monotonic (raw) at which the
@@ -196,6 +196,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   base::RepeatingClosure pcm_completion_task_;
   base::RepeatingClosure eos_task_;
+  base::RepeatingClosure ready_for_playback_task_;
 
   base::WeakPtr<MixerInputConnection> weak_this_;
   base::WeakPtrFactory<MixerInputConnection> weak_factory_;

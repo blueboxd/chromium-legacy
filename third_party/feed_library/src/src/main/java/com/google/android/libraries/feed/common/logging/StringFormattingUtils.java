@@ -13,15 +13,15 @@ public final class StringFormattingUtils {
     // Do not instantiate
     private StringFormattingUtils() {}
 
-    private static SimpleDateFormat logDateFormat;
+    private static SimpleDateFormat sLogDateFormat;
 
     /** Formats {@code date} in the same format as used by logcat. */
     static synchronized String formatLogDate(Date date) {
-        if (logDateFormat == null) {
+        if (sLogDateFormat == null) {
             // Getting the date format is mildly expensive, so don't do it unless we need it.
-            logDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
+            sLogDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
         }
-        return logDateFormat.format(date);
+        return sLogDateFormat.format(date);
     }
 
     /** Formats a long as a Date */

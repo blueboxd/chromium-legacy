@@ -4,8 +4,6 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
-#include <linux/magic.h>
-#include <sys/statvfs.h>
 #include <time.h>
 
 #include <set>
@@ -14,11 +12,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -31,10 +27,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
-#include "base/values.h"
-#include "build/build_config.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -44,184 +37,17 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
-#include "components/arc/session/arc_vm_client_adapter_util.h"
+#include "components/arc/session/file_system_status.h"
 #include "components/version_info/version_info.h"
 
 namespace arc {
 namespace {
 
-constexpr const char kArcVmConfigJsonPath[] = "/usr/share/arcvm/config.json";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
-constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
-constexpr const char kDlcPath[] = "/run/imageloader/arcvm-dlc/package/root";
-constexpr const char kFstab[] = "fstab";
-constexpr const char kGeneratedPropertyFilesPath[] =
-    "/run/arcvm/host_generated";
 constexpr const char kHomeDirectory[] = "/home";
-constexpr const char kKernel[] = "vmlinux";
-constexpr const char kPropertyFilesPath[] = "/usr/share/arcvm/properties";
-constexpr const char kRootFs[] = "system.raw.img";
-constexpr const char kVendorImage[] = "vendor.raw.img";
 
 constexpr int64_t kInvalidCid = -1;
-
-// A move-only class to hold status of the host file system.
-class FileSystemStatus {
- public:
-  FileSystemStatus(FileSystemStatus&& rhs) = default;
-  ~FileSystemStatus() = default;
-  FileSystemStatus& operator=(FileSystemStatus&& rhs) = default;
-
-  bool is_android_debuggable() const { return is_android_debuggable_; }
-  bool is_host_rootfs_writable() const { return is_host_rootfs_writable_; }
-  bool is_system_image_ext_format() const {
-    return is_system_image_ext_format_;
-  }
-  const base::FilePath& system_image_path() const { return system_image_path_; }
-  const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
-  const base::FilePath& guest_kernel_path() const { return guest_kernel_path_; }
-  const base::FilePath& fstab_path() const { return fstab_path_; }
-  bool property_files_expanded() const { return property_files_expanded_; }
-
-  static FileSystemStatus GetFileSystemStatusBlocking() {
-    return FileSystemStatus();
-  }
-  static bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
-    return IsAndroidDebuggable(json_path);
-  }
-  static bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
-                                            const base::FilePath& dest_path) {
-    return ExpandPropertyFiles(source_path, dest_path);
-  }
-  static bool IsSystemImageExtFormatForTesting(const base::FilePath& path) {
-    return IsSystemImageExtFormat(path);
-  }
-
- private:
-  FileSystemStatus()
-      : is_android_debuggable_(
-            IsAndroidDebuggable(base::FilePath(kArcVmConfigJsonPath))),
-        is_host_rootfs_writable_(IsHostRootfsWritable()),
-        system_image_path_(SelectDlcOrBuiltin(base::FilePath(kRootFs))),
-        vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
-        guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
-        fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))),
-        property_files_expanded_(
-            ExpandPropertyFiles(base::FilePath(kPropertyFilesPath),
-                                base::FilePath(kGeneratedPropertyFilesPath))),
-        is_system_image_ext_format_(
-            IsSystemImageExtFormat(system_image_path_)) {}
-
-  // Parse a JSON file which is like the following and returns a result:
-  //   {
-  //     "ANDROID_DEBUGGABLE": false
-  //   }
-  static bool IsAndroidDebuggable(const base::FilePath& json_path) {
-    if (!base::PathExists(json_path))
-      return false;
-
-    std::string content;
-    if (!base::ReadFileToString(json_path, &content))
-      return false;
-
-    base::JSONReader::ValueWithError result(
-        base::JSONReader::ReadAndReturnValueWithError(content,
-                                                      base::JSON_PARSE_RFC));
-    if (!result.value) {
-      LOG(ERROR) << "Error parsing " << json_path
-                 << ": code=" << result.error_code
-                 << ", message=" << result.error_message << ": " << content;
-      return false;
-    }
-    if (!result.value->is_dict()) {
-      LOG(ERROR) << "Error parsing " << json_path << ": " << *(result.value);
-      return false;
-    }
-
-    const base::Value* debuggable = result.value->FindKeyOfType(
-        "ANDROID_DEBUGGABLE", base::Value::Type::BOOLEAN);
-    if (!debuggable) {
-      LOG(ERROR) << "ANDROID_DEBUGGABLE is not found in " << json_path;
-      return false;
-    }
-
-    return debuggable->GetBool();
-  }
-
-  static bool IsHostRootfsWritable() {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    struct statvfs buf;
-    if (statvfs("/", &buf) < 0) {
-      PLOG(ERROR) << "statvfs() failed";
-      return false;
-    }
-    const bool rw = !(buf.f_flag & ST_RDONLY);
-    VLOG(1) << "Host's rootfs is " << (rw ? "rw" : "ro");
-    return rw;
-  }
-
-  static base::FilePath SelectDlcOrBuiltin(const base::FilePath& file) {
-    const base::FilePath dlc_path = base::FilePath(kDlcPath).Append(file);
-    if (base::PathExists(dlc_path)) {
-      VLOG(1) << "arcvm-dlc will be used for " << file.value();
-      return dlc_path;
-    }
-    return base::FilePath(kBuiltinPath).Append(file);
-  }
-
-  // Copies two prop files in /usr/share/arcvm to /run/arcvm/host_generated with
-  // or without modifications (depending on whether the board is unibuild).
-  // Returns true if the copy is successful.
-  static bool ExpandPropertyFiles(const base::FilePath& source_path,
-                                  const base::FilePath& dest_path) {
-    CrosConfig config;
-    for (const char* file : {"default.prop", "build.prop"}) {
-      if (!ExpandPropertyFile(source_path.Append(file), dest_path.Append(file),
-                              &config)) {
-        LOG(ERROR) << "Failed to expand " << source_path.Append(file);
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout
-  // Super block starts from block 0, offset 0x400.
-  // 0x38: Magic signature (Len=16, value=0xEF53) in little-endian order.
-  static bool IsSystemImageExtFormat(const base::FilePath& path) {
-    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    if (!file.IsValid()) {
-      PLOG(ERROR) << "Cannot open system image file: " << path.value();
-      return false;
-    }
-
-    uint8_t buf[2];
-    if (!file.ReadAndCheck(0x400 + 0x38, base::make_span(buf, sizeof(buf)))) {
-      PLOG(ERROR) << "File read error on system image file: " << path.value();
-      return false;
-    }
-
-    uint16_t magic_le = *reinterpret_cast<uint16_t*>(buf);
-#if defined(ARCH_CPU_LITTLE_ENDIAN)
-    return magic_le == EXT4_SUPER_MAGIC;
-#else
-#error Unsupported platform
-#endif
-  }
-
-  bool is_android_debuggable_;
-  bool is_host_rootfs_writable_;
-  base::FilePath system_image_path_;
-  base::FilePath vendor_image_path_;
-  base::FilePath guest_kernel_path_;
-  base::FilePath fstab_path_;
-  bool property_files_expanded_;
-  bool is_system_image_ext_format_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemStatus);
-};
 
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
@@ -346,8 +172,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_owner_id(user_id_hash);
 
   request.add_params("root=/dev/vda");
-  if (file_system_status.is_host_rootfs_writable())
+  if (file_system_status.is_host_rootfs_writable() &&
+      file_system_status.is_system_image_ext_format()) {
     request.add_params("rw");
+  }
   request.add_params("init=/init");
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
@@ -404,9 +232,15 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
   explicit ArcVmClientAdapter(version_info::Channel channel)
+      : ArcVmClientAdapter(channel, {}) {}
+
+  // For testing purposes and the internal use (by the other ctor) only.
+  ArcVmClientAdapter(version_info::Channel channel,
+                     const FileSystemStatusRewriter& rewriter)
       : channel_(channel),
         is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
-                           ->IsRunningOnVm()) {
+                           ->IsRunningOnVm()),
+        file_system_status_rewriter_for_testing_(rewriter) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
     client->AddObserver(this);
@@ -490,10 +324,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void SetUserInfo(const std::string& hash,
                    const std::string& serial_number) override {
-    DCHECK(!hash.empty());
     DCHECK(user_id_hash_.empty());
-    DCHECK(!serial_number.empty());
     DCHECK(serial_number_.empty());
+    if (hash.empty())
+      LOG(WARNING) << "hash is empty";
+    if (serial_number.empty())
+      LOG(WARNING) << "serial_number is empty";
     user_id_hash_ = hash;
     serial_number_ = serial_number;
   }
@@ -625,9 +461,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                           const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
+    if (file_system_status_rewriter_for_testing_)
+      file_system_status_rewriter_for_testing_.Run(&file_system_status);
+
     if (!file_system_status.property_files_expanded()) {
-      // TODO(yusukes): Once build_image and push_to_device.py are updated, run
-      // the |callback| with false here and return.
+      LOG(ERROR) << "Failed to expand property files";
+      std::move(callback).Run(false);
+      return;
     }
 
     if (serial_number_.empty()) {
@@ -725,6 +565,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   bool should_notify_observers_ = false;
   int64_t current_cid_ = kInvalidCid;
 
+  FileSystemStatusRewriter file_system_status_rewriter_for_testing_;
+
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};
 
@@ -736,18 +578,10 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
   return std::make_unique<ArcVmClientAdapter>(channel);
 }
 
-bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
-  return FileSystemStatus::IsAndroidDebuggableForTesting(json_path);
-}
-
-bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
-                                   const base::FilePath& dest_path) {
-  return FileSystemStatus::ExpandPropertyFilesForTesting(source_path,
-                                                         dest_path);
-}
-
-bool IsSystemImageExtFormatForTesting(const base::FilePath& path) {
-  return FileSystemStatus::IsSystemImageExtFormatForTesting(path);
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
+    version_info::Channel channel,
+    const FileSystemStatusRewriter& rewriter) {
+  return std::make_unique<ArcVmClientAdapter>(channel, rewriter);
 }
 
 }  // namespace arc

@@ -209,6 +209,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       std::unique_ptr<content::DownloadManager> download_manager);
 
+  static void SetPermissionControllerForTesting(
+      BrowserContext* browser_context,
+      std::unique_ptr<PermissionController> permission_controller);
+
   // Makes the Service Manager aware of this BrowserContext, and assigns a
   // instance group ID to it. Should be called for each BrowserContext created.
   static void Initialize(BrowserContext* browser_context,

@@ -138,6 +138,31 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestInsanceLost) {
   TestWebXRSessionEndWhenEventTriggered(
       this, device_test::mojom::EventType::kInstanceLost);
 }
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestVisibilityChanged) {
+  MockXRDeviceHookBase transition_mock;
+  this->LoadUrlAndAwaitInitialization(
+      this->GetFileUrlForHtmlTestFile("webxr_test_visibility_changed"));
+  this->EnterSessionWithUserGestureOrFail();
+
+  // Wait for JavaScript to submit at least one frame.
+  ASSERT_TRUE(this->PollJavaScriptBoolean("hasPresentedFrame",
+                                          this->kPollTimeoutMedium))
+      << "No frame submitted";
+
+  this->PollJavaScriptBooleanOrFail("isVisibilityEqualTo('visible')",
+                                    this->kPollTimeoutMedium);
+
+  device_test::mojom::EventData event_data = {};
+  event_data.type = device_test::mojom::EventType::kVisibilityVisibleBlurred;
+  transition_mock.PopulateEvent(event_data);
+
+  // TODO(crbug.com/1002742): visible-blurred is forced to hidden in WebXR
+  this->PollJavaScriptBooleanOrFail("isVisibilityEqualTo('hidden')",
+                                    this->kPollTimeoutMedium);
+  this->RunJavaScriptOrFail("done()");
+  this->EndTest();
+}
 #endif  // BUILDFLAG(ENABLE_OPENXR)
 
 #endif  // OS_WIN

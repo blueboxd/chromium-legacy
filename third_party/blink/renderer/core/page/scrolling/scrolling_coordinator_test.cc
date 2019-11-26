@@ -1706,10 +1706,9 @@ TEST_P(ScrollingCoordinatorTest, CompositedResizerNonFastScrollableRegion) {
   auto* scroller_element =
       GetFrame()->GetDocument()->getElementById("scroller");
   auto* scroller = ToLayoutBox(scroller_element->GetLayoutObject());
-  auto* scroll_corner_graphics_layer =
-      scroller->GetScrollableArea()->LayerForScrollCorner();
-  auto region = scroll_corner_graphics_layer->non_fast_scrollable_region();
-  EXPECT_EQ(region.bounds(), gfx::Rect(-7, -7, 14, 14));
+  auto* graphics_layer = scroller->Layer()->GraphicsLayerBacking(scroller);
+  auto region = graphics_layer->CcLayer()->non_fast_scrollable_region();
+  EXPECT_EQ(region.bounds(), gfx::Rect(66, 66, 14, 14));
 }
 
 TEST_P(ScrollingCoordinatorTest, TouchActionUpdatesOutsideInterestRect) {

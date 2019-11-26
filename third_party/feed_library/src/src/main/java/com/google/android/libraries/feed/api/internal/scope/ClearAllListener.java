@@ -25,21 +25,21 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
 public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
     private static final String TAG = "ClearAllListener";
 
-    private final TaskQueue taskQueue;
-    private final FeedSessionManager feedSessionManager;
-    private final /*@Nullable*/ Resettable store;
-    private final ThreadUtils threadUtils;
-    private int clearCount;
-    private int refreshCount;
+    private final TaskQueue mTaskQueue;
+    private final FeedSessionManager mFeedSessionManager;
+    private final /*@Nullable*/ Resettable mStore;
+    private final ThreadUtils mThreadUtils;
+    private int mClearCount;
+    private int mRefreshCount;
 
     @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
     public ClearAllListener(TaskQueue taskQueue, FeedSessionManager feedSessionManager,
             /*@Nullable*/ Resettable store, ThreadUtils threadUtils,
             FeedObservable<FeedLifecycleListener> lifecycleListenerObservable) {
-        this.taskQueue = taskQueue;
-        this.feedSessionManager = feedSessionManager;
-        this.store = store;
-        this.threadUtils = threadUtils;
+        this.mTaskQueue = taskQueue;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mStore = store;
+        this.mThreadUtils = threadUtils;
 
         lifecycleListenerObservable.registerObserver(this);
     }
@@ -48,10 +48,10 @@ public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
     public void onLifecycleEvent(String event) {
         switch (event) {
             case LifecycleEvent.CLEAR_ALL:
-                taskQueue.execute(Task.CLEAR_ALL, TaskType.IMMEDIATE, this::clearAll);
+                mTaskQueue.execute(Task.CLEAR_ALL, TaskType.IMMEDIATE, this::clearAll);
                 break;
             case LifecycleEvent.CLEAR_ALL_WITH_REFRESH:
-                taskQueue.execute(
+                mTaskQueue.execute(
                         Task.CLEAR_ALL_WITH_REFRESH, TaskType.IMMEDIATE, this::clearAllWithRefresh);
                 break;
             default:
@@ -60,33 +60,33 @@ public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
     }
 
     private void clearAll() {
-        threadUtils.checkNotMainThread();
-        clearCount++;
+        mThreadUtils.checkNotMainThread();
+        mClearCount++;
 
         Logger.i(TAG, "starting clearAll");
         // Clear the task queue first, preventing any tasks from running until initialization
-        taskQueue.reset();
+        mTaskQueue.reset();
         // reset the session state
-        feedSessionManager.reset();
-        if (store != null) {
-            store.reset();
+        mFeedSessionManager.reset();
+        if (mStore != null) {
+            mStore.reset();
         }
         // Initialize the TaskQueue so new tasks will start running
-        taskQueue.completeReset();
+        mTaskQueue.completeReset();
     }
 
     private void clearAllWithRefresh() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         clearAll();
-        feedSessionManager.triggerRefresh(
+        mFeedSessionManager.triggerRefresh(
                 null, RequestReason.CLEAR_ALL, UiContext.getDefaultInstance());
-        refreshCount++;
+        mRefreshCount++;
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("clearCount").value(clearCount);
-        dumper.forKey("clearWithRefreshCount").value(refreshCount);
+        dumper.forKey("clearCount").value(mClearCount);
+        dumper.forKey("clearWithRefreshCount").value(mRefreshCount);
     }
 }

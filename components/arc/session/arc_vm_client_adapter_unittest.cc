@@ -4,15 +4,18 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
@@ -20,6 +23,7 @@
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
+#include "components/arc/session/file_system_status.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,10 +131,17 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
-    adapter_ = CreateArcVmClientAdapter(version_info::Channel::STABLE);
+    adapter_ = CreateArcVmClientAdapterForTesting(
+        version_info::Channel::STABLE,
+        base::BindRepeating(&ArcVmClientAdapterTest::RewriteStatus,
+                            base::Unretained(this)));
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+
+    property_files_expanded_ = true;
+    host_rootfs_writable_ = false;
+    system_image_ext_format_ = false;
 
     // The fake client returns VM_STATUS_STARTING by default. Change it
     // to VM_STATUS_RUNNING which is used by ARCVM.
@@ -258,10 +269,28 @@ class ArcVmClientAdapterTest : public testing::Test,
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
+  void set_property_files_expanded(bool property_files_expanded) {
+    property_files_expanded_ = property_files_expanded;
+  }
+
+  void set_host_rootfs_writable(bool host_rootfs_writable) {
+    host_rootfs_writable_ = host_rootfs_writable;
+  }
+
+  void set_system_image_ext_format(bool system_image_ext_format) {
+    system_image_ext_format_ = system_image_ext_format;
+  }
+
  private:
   TestDebugDaemonClient* GetTestDebugDaemonClient() {
     return static_cast<TestDebugDaemonClient*>(
         chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
+  }
+
+  void RewriteStatus(FileSystemStatus* status) {
+    status->set_property_files_expanded_for_testing(property_files_expanded_);
+    status->set_host_rootfs_writable_for_testing(host_rootfs_writable_);
+    status->set_system_image_ext_format_for_testing(system_image_ext_format_);
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -270,6 +299,11 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   content::BrowserTaskEnvironment browser_task_environment_;
   base::ScopedTempDir dir_;
+
+  // Variables to override the value in FileSystemStatus.
+  bool property_files_expanded_;
+  bool host_rootfs_writable_;
+  bool system_image_ext_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
@@ -385,11 +419,58 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
 }
 
 // Tests that "no user ID hash" failure is handled properly.
-TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserInfo) {
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserId) {
+  // Don't set the user id hash. Note that we cannot call StartArcVm() without
+  // it.
+  adapter()->SetUserInfo(std::string(), kSerialNumber);
   StartMiniArc();
 
-  // Don't call SetValidUserInfo(). Note that we cannot call StartArcVm()
-  // without valid user info.
+  UpgradeArc(false);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that "no serial" failure is handled properly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoSerial) {
+  // Don't set the serial number. Note that we cannot call StartArcVm() without
+  // it.
+  adapter()->SetUserInfo(kUserIdHash, std::string());
+  StartMiniArc();
+
+  UpgradeArc(false);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that property expansion failure is handled correctly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_PropertyExpansionError) {
+  SetValidUserInfo();
+  StartMiniArc();
+  // Inject failure to the FileSystemStatus object.
+  set_property_files_expanded(false);
+
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
@@ -622,146 +703,54 @@ TEST_F(ArcVmClientAdapterTest, VmStartedSignal) {
   run_loop()->RunUntilIdle();
 }
 
-// Tests if androidboot.debuggable is set properly.
-TEST_F(ArcVmClientAdapterTest, IsAndroidDebuggable) {
-  constexpr const char kAndroidDebuggableTrueJson[] = R"json({
-    "ANDROID_DEBUGGABLE": true
-  })json";
-  constexpr const char kAndroidDebuggableFalseJson[] = R"json({
-    "ANDROID_DEBUGGABLE": false
-  })json";
-  constexpr const char kInvalidTypeJson[] = R"json([
-    42
-  ])json";
-  constexpr const char kInvalidJson[] = R"json({
-    "ANDROID_DEBUGGABLE": true,
-  })json";
-  constexpr const char kKeyNotFoundJson[] = R"json({
-    "BADKEY": "a"
-  })json";
-  constexpr const char kNonBooleanValue[] = R"json({
-    "ANDROID_DEBUGGABLE": "a"
-  })json";
-  constexpr const char kBadKeyType[] = R"json({
-    42: true
-  })json";
-
-  auto test = [](const base::FilePath& dir, const std::string& str) {
-    base::FilePath path;
-    if (!CreateTemporaryFileInDir(dir, &path))
-      return false;
-    base::WriteFile(path, str.data(), str.size());
-    return IsAndroidDebuggableForTesting(path);
-  };
-
-  EXPECT_TRUE(test(GetTempDir(), kAndroidDebuggableTrueJson));
-  EXPECT_FALSE(test(GetTempDir(), kAndroidDebuggableFalseJson));
-  EXPECT_FALSE(test(GetTempDir(), kInvalidTypeJson));
-  EXPECT_FALSE(test(GetTempDir(), kInvalidJson));
-  EXPECT_FALSE(test(GetTempDir(), kKeyNotFoundJson));
-  EXPECT_FALSE(test(GetTempDir(), kNonBooleanValue));
-  EXPECT_FALSE(test(GetTempDir(), kBadKeyType));
+// Tests that ConciergeServiceRestarted() doesn't crash.
+TEST_F(ArcVmClientAdapterTest, TestConciergeServiceRestarted) {
+  StartMiniArc();
+  for (auto& observer : GetTestConciergeClient()->observer_list())
+    observer.ConciergeServiceRestarted();
 }
 
-// Tests the case where the json file doesn't exist.
-TEST_F(ArcVmClientAdapterTest, IsAndroidDebuggable_NonExistent) {
-  EXPECT_FALSE(
-      IsAndroidDebuggableForTesting(base::FilePath("/nonexistent-path")));
+// Tests that the kernel parameter does not include "rw" by default.
+TEST_F(ArcVmClientAdapterTest, KernelParam_RO) {
+  SetValidUserInfo();
+  StartMiniArc();
+  set_host_rootfs_writable(false);
+  set_system_image_ext_format(false);
+  UpgradeArc(true);
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // Check "rw" is not in |params|.
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  const std::vector<std::string> params(
+      std::make_move_iterator(request.mutable_params()->begin()),
+      std::make_move_iterator(request.mutable_params()->end()));
+  EXPECT_FALSE(base::Contains(params, "rw"));
 }
 
-// Tests the case where the json file is not readable.
-TEST_F(ArcVmClientAdapterTest, IsAndroidDebuggable_CannotRead) {
-  constexpr const char kValidJson[] = R"json({
-    "ANDROID_DEBUGGABLE": true
-  })json";
-  base::FilePath path;
-  ASSERT_TRUE(CreateTemporaryFileInDir(GetTempDir(), &path));
-  base::WriteFile(path, kValidJson, strlen(kValidJson));
-  base::SetPosixFilePermissions(path, 0300);  // not readable
-  EXPECT_FALSE(IsAndroidDebuggableForTesting(path));
+// Tests that the kernel parameter does include "rw" when '/' is writable and
+// the image is in ext4.
+TEST_F(ArcVmClientAdapterTest, KernelParam_RW) {
+  SetValidUserInfo();
+  StartMiniArc();
+  set_host_rootfs_writable(true);
+  set_system_image_ext_format(true);
+  UpgradeArc(true);
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // Check "rw" is in |params|.
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  const std::vector<std::string> params(
+      std::make_move_iterator(request.mutable_params()->begin()),
+      std::make_move_iterator(request.mutable_params()->end()));
+  EXPECT_TRUE(base::Contains(params, "rw"));
 }
 
-TEST_F(ArcVmClientAdapterTest, ExpandPropertyFilesForTesting_NoSource) {
-  // Both source and dest are not found.
-  EXPECT_FALSE(ExpandPropertyFilesForTesting(base::FilePath("/nonexistent1"),
-                                             base::FilePath("/nonexistent2")));
-
-  // Both source and dest exist, but the source directory is empty.
-  base::FilePath source_dir;
-  ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &source_dir));
-  base::FilePath dest_dir;
-  ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &dest_dir));
-  EXPECT_FALSE(ExpandPropertyFilesForTesting(source_dir, dest_dir));
-
-  // Add default.prop to the source, but not build.prop.
-  base::FilePath default_prop = source_dir.Append("default.prop");
-  constexpr const char kDefaultProp[] = "ro.foo=bar\n";
-  base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
-  EXPECT_FALSE(ExpandPropertyFilesForTesting(source_dir, dest_dir));
-
-  // Add build.prop too. Then the call should succeed.
-  base::FilePath build_prop = source_dir.Append("build.prop");
-  constexpr const char kBuildProp[] = "ro.baz=boo\n";
-  base::WriteFile(build_prop, kBuildProp, strlen(kBuildProp));
-  EXPECT_TRUE(ExpandPropertyFilesForTesting(source_dir, dest_dir));
-
-  // Verify two dest files are there.
-  EXPECT_TRUE(base::PathExists(dest_dir.Append("default.prop")));
-  EXPECT_TRUE(base::PathExists(dest_dir.Append("build.prop")));
-
-  // Verify their content.
-  // Note: ExpandPropertyFile() adds a trailing LF.
-  std::string content;
-  EXPECT_TRUE(
-      base::ReadFileToString(dest_dir.Append("default.prop"), &content));
-  EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
-  EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
-  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
-
-  // Finally, test the case where source is valid but the dest is not.
-  EXPECT_FALSE(ExpandPropertyFilesForTesting(source_dir,
-                                             base::FilePath("/nonexistent")));
-}
-
-TEST_F(ArcVmClientAdapterTest, IsSystemImageExtFormatForTesting_FileMissing) {
-  EXPECT_FALSE(
-      IsSystemImageExtFormatForTesting(base::FilePath("/nonexistent")));
-}
-
-TEST_F(ArcVmClientAdapterTest,
-       IsSystemImageExtFormatForTesting_FileSizeTooSmall) {
-  base::FilePath file;
-  ASSERT_TRUE(base::CreateTemporaryFile(&file));
-  char data[100];
-  memset(data, 0, sizeof(data));
-  base::WriteFile(file, data, sizeof(data));
-
-  EXPECT_FALSE(IsSystemImageExtFormatForTesting(file));
-}
-
-TEST_F(ArcVmClientAdapterTest,
-       IsSystemImageExtFormatForTesting_MagicNumberDoesNotMatch) {
-  base::FilePath file;
-  ASSERT_TRUE(base::CreateTemporaryFile(&file));
-  char data[2048];
-  memset(data, 0, sizeof(data));
-  base::WriteFile(file, data, sizeof(data));
-
-  EXPECT_FALSE(IsSystemImageExtFormatForTesting(file));
-}
-
-TEST_F(ArcVmClientAdapterTest,
-       IsSystemImageExtFormatForTesting_MagicNumberMatches) {
-  base::FilePath file;
-  ASSERT_TRUE(base::CreateTemporaryFile(&file));
-  char data[2048];
-  memset(data, 0, sizeof(data));
-  // Magic signature (0xEF53) is in little-endian order.
-  data[0x400 + 0x38] = 0x53;
-  data[0x400 + 0x39] = 0xEF;
-  base::WriteFile(file, data, sizeof(data));
-
-  EXPECT_TRUE(IsSystemImageExtFormatForTesting(file));
+// Tests that CreateArcVmClientAdapter(), the non-testing version, doesn't
+// crash.
+TEST_F(ArcVmClientAdapterTest, TestCreateArcVmClientAdapter) {
+  CreateArcVmClientAdapter(version_info::Channel::STABLE);
+  CreateArcVmClientAdapter(version_info::Channel::BETA);
+  CreateArcVmClientAdapter(version_info::Channel::DEV);
 }
 
 }  // namespace

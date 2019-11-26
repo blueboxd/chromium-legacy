@@ -47,7 +47,11 @@ SuggestionChipView::SuggestionChipView(const Params& params,
     : Button(listener),
       icon_view_(new views::ImageView()),
       text_view_(new views::Label()) {
+  // Configure focus. Note that we don't install the default focus ring as we
+  // use custom highlighting instead.
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetInstallFocusRingOnFocus(false);
+
   InitLayout(params);
 }
 

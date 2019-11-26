@@ -268,7 +268,8 @@ void OmniboxTextView::ReapplyStyling() {
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
     const base::string16& text) const {
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);

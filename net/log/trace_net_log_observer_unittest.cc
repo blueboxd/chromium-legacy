@@ -157,7 +157,7 @@ class TraceNetLogObserverTest : public TestWithTaskEnvironment {
 
   base::ListValue* trace_events() const { return trace_events_.get(); }
 
-  TestNetLog* net_log() { return &net_log_; }
+  RecordingTestNetLog* net_log() { return &net_log_; }
 
   TraceNetLogObserver* trace_net_log_observer() const {
     return trace_net_log_observer_.get();
@@ -167,7 +167,7 @@ class TraceNetLogObserverTest : public TestWithTaskEnvironment {
   std::unique_ptr<base::ListValue> trace_events_;
   base::trace_event::TraceResultBuffer trace_buffer_;
   base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   std::unique_ptr<TraceNetLogObserver> trace_net_log_observer_;
 };
 

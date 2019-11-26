@@ -63,7 +63,7 @@ class ParameterizedAccessibilityTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_SUITE_P(, ParameterizedAccessibilityTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedAccessibilityTest, testing::Bool());
 
 }  // namespace test
 }  // namespace blink

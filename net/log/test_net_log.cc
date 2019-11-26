@@ -14,15 +14,15 @@
 
 namespace net {
 
-TestNetLog::TestNetLog() {
+RecordingTestNetLog::RecordingTestNetLog() {
   AddObserver(this, NetLogCaptureMode::kIncludeSensitive);
 }
 
-TestNetLog::~TestNetLog() {
+RecordingTestNetLog::~RecordingTestNetLog() {
   RemoveObserver(this);
 }
 
-std::vector<NetLogEntry> TestNetLog::GetEntries() const {
+std::vector<NetLogEntry> RecordingTestNetLog::GetEntries() const {
   base::AutoLock lock(lock_);
   std::vector<NetLogEntry> result;
   for (const auto& entry : entry_list_)
@@ -30,7 +30,7 @@ std::vector<NetLogEntry> TestNetLog::GetEntries() const {
   return result;
 }
 
-std::vector<NetLogEntry> TestNetLog::GetEntriesForSource(
+std::vector<NetLogEntry> RecordingTestNetLog::GetEntriesForSource(
     NetLogSource source) const {
   base::AutoLock lock(lock_);
   std::vector<NetLogEntry> result;
@@ -41,7 +41,7 @@ std::vector<NetLogEntry> TestNetLog::GetEntriesForSource(
   return result;
 }
 
-std::vector<NetLogEntry> TestNetLog::GetEntriesWithType(
+std::vector<NetLogEntry> RecordingTestNetLog::GetEntriesWithType(
     NetLogEventType type) const {
   base::AutoLock lock(lock_);
   std::vector<NetLogEntry> result;
@@ -52,17 +52,17 @@ std::vector<NetLogEntry> TestNetLog::GetEntriesWithType(
   return result;
 }
 
-size_t TestNetLog::GetSize() const {
+size_t RecordingTestNetLog::GetSize() const {
   base::AutoLock lock(lock_);
   return entry_list_.size();
 }
 
-void TestNetLog::Clear() {
+void RecordingTestNetLog::Clear() {
   base::AutoLock lock(lock_);
   entry_list_.clear();
 }
 
-void TestNetLog::OnAddEntry(const NetLogEntry& entry) {
+void RecordingTestNetLog::OnAddEntry(const NetLogEntry& entry) {
   base::Value params = entry.params.Clone();
   auto time = base::TimeTicks::Now();
 
@@ -72,44 +72,46 @@ void TestNetLog::OnAddEntry(const NetLogEntry& entry) {
                            std::move(params));
 }
 
-NetLog::ThreadSafeObserver* TestNetLog::GetObserver() {
+NetLog::ThreadSafeObserver* RecordingTestNetLog::GetObserver() {
   return this;
 }
 
-void TestNetLog::SetObserverCaptureMode(NetLogCaptureMode capture_mode) {
+void RecordingTestNetLog::SetObserverCaptureMode(
+    NetLogCaptureMode capture_mode) {
   RemoveObserver(this);
   AddObserver(this, capture_mode);
 }
 
-BoundTestNetLog::BoundTestNetLog()
+RecordingBoundTestNetLog::RecordingBoundTestNetLog()
     : net_log_(NetLogWithSource::Make(&test_net_log_, NetLogSourceType::NONE)) {
 }
 
-BoundTestNetLog::~BoundTestNetLog() = default;
+RecordingBoundTestNetLog::~RecordingBoundTestNetLog() = default;
 
-std::vector<NetLogEntry> BoundTestNetLog::GetEntries() const {
+std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntries() const {
   return test_net_log_.GetEntries();
 }
 
-std::vector<NetLogEntry> BoundTestNetLog::GetEntriesForSource(
+std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntriesForSource(
     NetLogSource source) const {
   return test_net_log_.GetEntriesForSource(source);
 }
 
-std::vector<NetLogEntry> BoundTestNetLog::GetEntriesWithType(
+std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntriesWithType(
     NetLogEventType type) const {
   return test_net_log_.GetEntriesWithType(type);
 }
 
-size_t BoundTestNetLog::GetSize() const {
+size_t RecordingBoundTestNetLog::GetSize() const {
   return test_net_log_.GetSize();
 }
 
-void BoundTestNetLog::Clear() {
+void RecordingBoundTestNetLog::Clear() {
   test_net_log_.Clear();
 }
 
-void BoundTestNetLog::SetObserverCaptureMode(NetLogCaptureMode capture_mode) {
+void RecordingBoundTestNetLog::SetObserverCaptureMode(
+    NetLogCaptureMode capture_mode) {
   test_net_log_.SetObserverCaptureMode(capture_mode);
 }
 

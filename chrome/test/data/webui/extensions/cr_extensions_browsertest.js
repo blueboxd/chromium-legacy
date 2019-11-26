@@ -653,7 +653,7 @@ var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   }
 };
 
-TEST_F('CrExtensionsOptionsDialogTest', 'Layout', function() {
+TEST_F('CrExtensionsOptionsDialogTest', 'DISABLED_Layout', function() {
   this.runMochaTest(extension_options_dialog_tests.TestNames.Layout);
 });
 

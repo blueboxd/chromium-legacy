@@ -9,31 +9,22 @@ import static org.junit.Assert.assertEquals;
 import com.google.android.play.core.splitinstall.model.SplitInstallErrorCode;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordHistogramJni;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
 
 /**
  * Test suite for the SplitInstallFailureLogger class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class SplitInstallFailureLoggerTest {
-    @Mock
-    private RecordHistogram.Natives mRecordHistogramMock;
-
-    @Rule
-    public JniMocker mocker = new JniMocker();
-
     private SplitInstallFailureLogger mFailureLogger;
 
-    private int mErrorCodeMapping[][] = {
+    private final int mErrorCodeMapping[][] = {
             {4, SplitInstallErrorCode.ACCESS_DENIED},
             {5, SplitInstallErrorCode.ACTIVE_SESSIONS_LIMIT_EXCEEDED},
             {6, SplitInstallErrorCode.API_NOT_AVAILABLE},
@@ -53,10 +44,7 @@ public class SplitInstallFailureLoggerTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
-        mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramMock);
-
+        ShadowRecordHistogram.reset();
         mFailureLogger = new SplitInstallFailureLogger();
     }
 
@@ -108,12 +96,14 @@ public class SplitInstallFailureLoggerTest {
 
         // Act & Assert.
         for (int[] tuple : mErrorCodeMapping) {
+            ShadowRecordHistogram.reset();
             int expectedOutputCode = tuple[0];
             int inputCode = tuple[1];
             mFailureLogger.logStatusFailure(moduleName, inputCode);
             assertEquals(expectedOutputCode, getHistogramStatus(moduleName));
         }
 
+        ShadowRecordHistogram.reset();
         mFailureLogger.logStatusFailure(moduleName, unknownCode);
         assertEquals(expectedUnknownCode, getHistogramStatus(moduleName));
     }
@@ -127,12 +117,14 @@ public class SplitInstallFailureLoggerTest {
 
         // Act & Assert.
         for (int[] tuple : mErrorCodeMapping) {
+            ShadowRecordHistogram.reset();
             int expectedOutputCode = tuple[0];
             int inputCode = tuple[1];
             mFailureLogger.logRequestFailure(moduleName, inputCode);
             assertEquals(expectedOutputCode, getHistogramStatus(moduleName));
         }
 
+        ShadowRecordHistogram.reset();
         mFailureLogger.logRequestFailure(moduleName, unknownCode);
         assertEquals(expectedUnknownCode, getHistogramStatus(moduleName));
     }
@@ -140,6 +132,6 @@ public class SplitInstallFailureLoggerTest {
     private int getHistogramStatus(String moduleName) {
         String expName = "Android.FeatureModules.InstallStatus." + moduleName;
         Integer expBoundary = 22;
-        return LoggerTestUtil.getHistogramStatus(mRecordHistogramMock, expName, expBoundary);
+        return LoggerTestUtil.getHistogramStatus(expName, expBoundary);
     }
 }

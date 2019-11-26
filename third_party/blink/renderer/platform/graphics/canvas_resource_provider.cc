@@ -17,9 +17,10 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -1045,10 +1046,10 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal() {
 
   auto paint_image = MakeImageSnapshot();
   if (paint_image.GetSkImage()->isTextureBacked() && ContextProviderWrapper()) {
-    return StaticBitmapImage::Create(paint_image.GetSkImage(),
-                                     ContextProviderWrapper());
+    return AcceleratedStaticBitmapImage::CreateFromSkImage(
+        paint_image.GetSkImage(), ContextProviderWrapper());
   }
-  return StaticBitmapImage::Create(std::move(paint_image));
+  return UnacceleratedStaticBitmapImage::Create(std::move(paint_image));
 }
 
 cc::PaintImage CanvasResourceProvider::MakeImageSnapshot() {

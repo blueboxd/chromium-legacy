@@ -7,12 +7,10 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "components/arc/session/arc_client_adapter.h"
+#include "components/arc/session/file_system_status.h"
 #include "components/version_info/channel.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace arc {
 
@@ -20,11 +18,11 @@ namespace arc {
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
     version_info::Channel channel);
 
-// Function(s) below are for testing.
-bool IsAndroidDebuggableForTesting(const base::FilePath& json_path);
-bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
-                                   const base::FilePath& dest_path);
-bool IsSystemImageExtFormatForTesting(const base::FilePath& path);
+using FileSystemStatusRewriter =
+    base::RepeatingCallback<void(FileSystemStatus*)>;
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
+    version_info::Channel channel,
+    const FileSystemStatusRewriter& rewriter);
 
 }  // namespace arc
 

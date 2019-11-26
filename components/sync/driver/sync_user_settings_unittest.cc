@@ -26,6 +26,9 @@ namespace syncer {
 
 namespace {
 
+// Declared here because the pref is obsolete in production code.
+const char kSyncSessions[] = "sync.sessions";
+
 ModelTypeSet GetUserTypes() {
   ModelTypeSet user_types = UserTypes();
 #if defined(OS_CHROMEOS)
@@ -116,7 +119,7 @@ TEST_F(SyncUserSettingsTest, DeleteDirectivesAndProxyTabsMigration) {
   // in proxy tabs also being enabled. Also, manually disable typed urls, which
   // should mean that history delete directives are not enabled.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
-  pref_service_.SetBoolean(prefs::kSyncSessions, true);
+  pref_service_.SetBoolean(kSyncSessions, true);
   MigrateSessionsToProxyTabsPrefs(&pref_service_);
 
   preferred_types = sync_user_settings->GetPreferredDataTypes();

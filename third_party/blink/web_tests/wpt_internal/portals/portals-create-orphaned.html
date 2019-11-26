@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="/portals/resources/open-blank-host.js"></script>
 <body>
   <script>
     function createPortal(doc, src, channel) {
@@ -17,7 +18,7 @@
     }
 
     promise_test(async () => {
-      var w = window.open();
+      var w = await openBlankPortalHost();
       var doc = w.document;
       var portal = await createPortal(doc,
           "resources/portals-create-orphaned-portal.html",

@@ -21,26 +21,26 @@ import com.google.android.libraries.feed.piet.host.LogDataCallback;
 /** Implementation of {@link PietManager}. */
 class PietManagerImpl implements PietManager {
     @VisibleForTesting
-    final AssetProvider assetProvider;
-    private final DebugBehavior debugBehavior;
-    private final CustomElementProvider customElementProvider;
-    private final HostBindingProvider hostBindingProvider;
-    private final Clock clock;
-    private final boolean allowLegacyRoundedCornerImpl;
-    private final boolean allowOutlineRoundedCornerImpl;
-    @VisibleForTesting /*@Nullable*/ AdapterParameters adapterParameters;
+    final AssetProvider mAssetProvider;
+    private final DebugBehavior mDebugBehavior;
+    private final CustomElementProvider mCustomElementProvider;
+    private final HostBindingProvider mHostBindingProvider;
+    private final Clock mClock;
+    private final boolean mAllowLegacyRoundedCornerImpl;
+    private final boolean mAllowOutlineRoundedCornerImpl;
+    @VisibleForTesting /*@Nullable*/ AdapterParameters mAdapterParameters;
 
     PietManagerImpl(DebugBehavior debugBehavior, AssetProvider assetProvider,
             CustomElementProvider customElementProvider, HostBindingProvider hostBindingProvider,
             Clock clock, boolean allowLegacyRoundedCornerImpl,
             boolean allowOutlineRoundedCornerImpl) {
-        this.debugBehavior = debugBehavior;
-        this.assetProvider = assetProvider;
-        this.customElementProvider = customElementProvider;
-        this.hostBindingProvider = hostBindingProvider;
-        this.clock = clock;
-        this.allowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
-        this.allowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
+        this.mDebugBehavior = debugBehavior;
+        this.mAssetProvider = assetProvider;
+        this.mCustomElementProvider = customElementProvider;
+        this.mHostBindingProvider = hostBindingProvider;
+        this.mClock = clock;
+        this.mAllowLegacyRoundedCornerImpl = allowLegacyRoundedCornerImpl;
+        this.mAllowOutlineRoundedCornerImpl = allowOutlineRoundedCornerImpl;
     }
 
     @Override
@@ -56,7 +56,8 @@ class PietManagerImpl implements PietManager {
         AdapterParameters parameters =
                 getAdapterParameters(context, cardViewProducer, logDataCallback);
 
-        return new FrameAdapterImpl(context, parameters, actionHandler, eventLogger, debugBehavior);
+        return new FrameAdapterImpl(
+                context, parameters, actionHandler, eventLogger, mDebugBehavior);
     }
 
     /**
@@ -68,22 +69,22 @@ class PietManagerImpl implements PietManager {
     AdapterParameters getAdapterParameters(Context context,
             Supplier</*@Nullable*/ ViewGroup> cardViewProducer,
             /*@Nullable*/ LogDataCallback logDataCallback) {
-        if (adapterParameters == null || adapterParameters.context != context) {
-            adapterParameters = new AdapterParameters(context, cardViewProducer,
-                    new HostProviders(assetProvider, customElementProvider, hostBindingProvider,
+        if (mAdapterParameters == null || mAdapterParameters.mContext != context) {
+            mAdapterParameters = new AdapterParameters(context, cardViewProducer,
+                    new HostProviders(mAssetProvider, mCustomElementProvider, mHostBindingProvider,
                             logDataCallback),
-                    clock, allowLegacyRoundedCornerImpl, allowOutlineRoundedCornerImpl);
+                    mClock, mAllowLegacyRoundedCornerImpl, mAllowOutlineRoundedCornerImpl);
         }
-        return adapterParameters;
+        return mAdapterParameters;
     }
 
     @Override
     public void purgeRecyclerPools() {
-        if (adapterParameters != null) {
-            AdapterParameters adapterParametersNonNull = adapterParameters;
-            adapterParametersNonNull.elementAdapterFactory.purgeRecyclerPools();
-            adapterParametersNonNull.pietStylesHelperFactory.purge();
-            adapterParametersNonNull.roundedCornerMaskCache.purge();
+        if (mAdapterParameters != null) {
+            AdapterParameters adapterParametersNonNull = mAdapterParameters;
+            adapterParametersNonNull.mElementAdapterFactory.purgeRecyclerPools();
+            adapterParametersNonNull.mPietStylesHelperFactory.purge();
+            adapterParametersNonNull.mRoundedCornerMaskCache.purge();
         }
     }
 }

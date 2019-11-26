@@ -573,7 +573,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     return std::string(buffer.get(), header_length);
   }
 
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const quic::QuicStreamId client_data_stream_id1_;

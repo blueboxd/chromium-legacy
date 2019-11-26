@@ -15,27 +15,27 @@ import java.util.List;
 /** Implementation of the {@link ModelToken}. */
 public final class UpdatableModelToken
         extends FeedObservable<TokenCompletedObserver> implements ModelToken {
-    private final StreamToken token;
-    private final boolean isSynthetic;
+    private final StreamToken mToken;
+    private final boolean mIsSynthetic;
 
     public UpdatableModelToken(StreamToken token, boolean isSynthetic) {
-        this.token = token;
-        this.isSynthetic = isSynthetic;
+        this.mToken = token;
+        this.mIsSynthetic = isSynthetic;
     }
 
     @Override
     public boolean isSynthetic() {
-        return isSynthetic;
+        return mIsSynthetic;
     }
 
     @Override
     public StreamToken getStreamToken() {
-        return token;
+        return mToken;
     }
 
     public List<TokenCompletedObserver> getObserversToNotify() {
-        synchronized (observers) {
-            return new ArrayList<>(observers);
+        synchronized (mObservers) {
+            return new ArrayList<>(mObservers);
         }
     }
 }

@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">Şu anda <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> öğesini kullanan saldırganlar cihazınıza zarar verebilecek uygulamalar yükleyebilir, sizden habersiz mobil faturanıza ücretler ekleyebilir veya kişisel bilgilerinizi çalabilirler. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">İnternet bağlantısı yok</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />Tanılama uygulamasını<ph name="END_LINK" /> kullanarak bağlantınızı düzeltin</translation>
+<translation id="22320125457191592">Size özel</translation>
 <translation id="2239100178324503013">Şimdi gönder</translation>
 <translation id="2248949050832152960">WebAuthn'u kullan</translation>
 <translation id="2250931979407627383">Solda kenar dikişi</translation>
@@ -372,6 +373,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Güvenlik uyarısı</translation>
 <translation id="2699302886720511147">Kabul Edilen Kartlar</translation>
 <translation id="2702801445560668637">Okuma Listesi</translation>
 <translation id="2704283930420550640">Değer, biçimle eşleşmiyor.</translation>
@@ -472,6 +474,7 @@
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3209034400446768650">Sayfa sizden ücret alabilir</translation>
 <translation id="3209080785413271048">Kayıtlı ödeme yöntemlerinizi doğrulamak için Windows Hello'yu kullanın.</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> sitesinde etkinliğiniz izleniyor</translation>
 <translation id="3215092763954878852">WebAuthn kullanılamadı</translation>
 <translation id="3225919329040284222">Sunucu, yerleşik beklentilerle eşleşmeyen bir sertifika sundu. Bu beklentiler sizi korumak amacıyla bazı yüksek güvenlikli web sitelerinde bulunur.</translation>
 <translation id="3226128629678568754">Sayfayı yüklemek üzere gereken verileri tekrar göndermek için yeniden yükle düğmesine basın.</translation>
@@ -530,6 +533,7 @@
 <translation id="3528485271872257980">Koyu Kahverengi</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Senkronize edilmiş cihazlarda en az 1 öğe}=1{1 öğe (ve senkronize edilmiş cihazlarda daha fazlası)}other{# öğe (ve senkronize edilmiş cihazlarda daha fazlası)}}</translation>
 <translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
+<translation id="3553513561058684206">Size Özel</translation>
 <translation id="3566021033012934673">Bağlantınız gizli değil</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> web sitesindeki yerleşik bir sayfanın mesajı</translation>
@@ -759,6 +763,7 @@
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
 <translation id="4597348597567598915">Boyut 8</translation>
 <translation id="4600854749408232102">C6/C5 (Zarf)</translation>
+<translation id="4613966523036881546">Bu bağlantının sertifikasının ağa müdahale etmek ve izlemek amacıyla kullanıldığı bilindiğinden, Google Chrome tarafından güvenilmez.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> sitesi bir kaynak politikasının
     tüm isteklerine uygulanmasını istedi, ancak bu politika şu anda uygulanamaz.</translation>
 <translation id="464342062220857295">Özellik ara</translation>
@@ -1464,6 +1469,7 @@ Ek ayrıntılar:
 <translation id="8103161714697287722">Ödeme Yöntemi</translation>
 <translation id="8105368624971345109">Kapat</translation>
 <translation id="8118489163946903409">Ödeme yöntemi</translation>
+<translation id="8124023448510659215">Bu bağlantıya ait sertifikanın ağa müdahale etmek ve izlemek amacıyla kullanıldığı bilindiğinden, Chromium bu bağlantıya güvenmez.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş. BT yöneticinizden sorunu çözmesini isteyin.</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8149426793427495338">Bilgisayarınız uyku moduna geçti.</translation>
@@ -1607,6 +1613,8 @@ Ek ayrıntılar:
 <translation id="8957210676456822347">Giriş Portalı Yetkilendirmesi</translation>
 <translation id="8962950042226115166">Şüpheli site</translation>
 <translation id="8968766641738584599">Kartı kaydet</translation>
+<translation id="8969267497192857913">Yazdığınız her şey, görüntülediğiniz her sayfa veya web'deki diğer etkinlikleriniz izlenir ve sitelerdeki içerik, bilginiz dışında değiştirilebilir.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Sunucu sertifikasının süresi doldu.</translation>
 <translation id="8975012916872825179">Telefon numaraları, e-posta adresleri ve gönderim adresleri gibi bilgileri içerir</translation>
 <translation id="8975263830901772334">Yazdırdığınız dosyaların adları</translation>

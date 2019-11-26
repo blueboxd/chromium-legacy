@@ -69,6 +69,7 @@ js_library("test_error_reporting") {
 
 js_library("volume_manager_types") {
   deps = [
+    "//ui/file_manager/externs:file_manager_private",
     "//ui/webui/resources/js:assert",
   ]
 }

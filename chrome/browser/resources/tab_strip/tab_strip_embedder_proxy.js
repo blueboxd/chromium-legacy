@@ -39,6 +39,14 @@ export class TabStripEmbedderProxy {
     chrome.send('showTabContextMenu', [tabId, locationX, locationY]);
   }
 
+  /**
+   * @param {number} locationX
+   * @param {number} locationY
+   */
+  showBackgroundContextMenu(locationX, locationY) {
+    chrome.send('showBackgroundContextMenu', [locationX, locationY]);
+  }
+
   closeContainer() {
     chrome.send('closeContainer');
   }

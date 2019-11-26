@@ -62,7 +62,7 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
     @VisibleForTesting
     static final int SINGLE_LAYER_ID = 0;
 
-    private final Set<ImageSpanDrawableCallback> loadingImages = new HashSet<>();
+    private final Set<ImageSpanDrawableCallback> mLoadingImages = new HashSet<>();
 
     ChunkedTextElementAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters);
@@ -184,8 +184,8 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
             addMargin(spannable, chunkStyle.getMargins().getStart());
         }
 
-        CharSequence evaluatedText = getParameters().templatedStringEvaluator.evaluate(
-                getParameters().hostProviders.getAssetProvider(), parameterizedText);
+        CharSequence evaluatedText = getParameters().mTemplatedStringEvaluator.evaluate(
+                getParameters().mHostProviders.getAssetProvider(), parameterizedText);
         spannable.append(evaluatedText);
         if (chunkStyle.hasColor()) {
             spannable.setSpan(new ForegroundColorSpan(chunkStyle.getColor()), start,
@@ -276,19 +276,19 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
         Integer overlayColor = chunkStyle.hasColor() ? chunkStyle.getColor() : null;
         ImageSpanDrawableCallback imageSpanLoader =
                 new ImageSpanDrawableCallback(wrapper, chunkStyle, overlayColor, textView);
-        loadingImages.add(imageSpanLoader);
+        mLoadingImages.add(imageSpanLoader);
         int styleWidth = styleToImageDim(chunkStyle.getWidthSpecPx(getContext()));
         int styleHeight = styleToImageDim(chunkStyle.getHeightSpecPx(getContext()));
-        getParameters().hostProviders.getAssetProvider().getImage(
+        getParameters().mHostProviders.getAssetProvider().getImage(
                 image, styleWidth, styleHeight, imageSpanLoader);
     }
 
     @Override
     void onUnbindModel() {
-        for (ImageSpanDrawableCallback imageLoader : loadingImages) {
+        for (ImageSpanDrawableCallback imageLoader : mLoadingImages) {
             imageLoader.cancelCallback();
         }
-        loadingImages.clear();
+        mLoadingImages.clear();
         super.onUnbindModel();
     }
 
@@ -340,21 +340,21 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
     }
 
     static class ActionsClickableSpan extends ClickableSpan {
-        private final Action action;
-        private final ActionHandler handler;
-        private final Frame frame;
+        private final Action mAction;
+        private final ActionHandler mHandler;
+        private final Frame mFrame;
 
         ActionsClickableSpan(Action action, ActionHandler handler, Frame frame) {
-            this.action = action;
-            this.handler = handler;
-            this.frame = frame;
+            this.mAction = action;
+            this.mHandler = handler;
+            this.mFrame = frame;
         }
 
         @Override
         public void onClick(View widget) {
             // TODO: Pass VE information with the action.
-            handler.handleAction(
-                    action, ActionType.CLICK, frame, widget, LogData.getDefaultInstance());
+            mHandler.handleAction(
+                    mAction, ActionType.CLICK, mFrame, widget, LogData.getDefaultInstance());
         }
 
         @Override
@@ -371,10 +371,10 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
      * will still be broken in that case.
      */
     static class ChunkedTextTouchListener implements View.OnTouchListener {
-        private final SpannableStringBuilder spannable;
+        private final SpannableStringBuilder mSpannable;
 
         ChunkedTextTouchListener(SpannableStringBuilder spannable) {
-            this.spannable = spannable;
+            this.mSpannable = spannable;
         }
 
         @Override
@@ -396,7 +396,7 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
                 int line = layout.getLineForVertical(y);
                 int off = layout.getOffsetForHorizontal(line, x);
 
-                ClickableSpan[] links = spannable.getSpans(off, off, ClickableSpan.class);
+                ClickableSpan[] links = mSpannable.getSpans(off, off, ClickableSpan.class);
 
                 if (links.length != 0) {
                     if (action == MotionEvent.ACTION_UP) {
@@ -411,35 +411,35 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
 
     @VisibleForTesting
     class ImageSpanDrawableCallback implements Consumer</*@Nullable*/ Drawable> {
-        private final LayerDrawable wrapper;
-        private final StyleProvider imageStyle;
-        /*@Nullable*/ private final Integer overlayColor;
-        private final TextView textView;
-        private boolean cancelled;
+        private final LayerDrawable mWrapper;
+        private final StyleProvider mImageStyle;
+        /*@Nullable*/ private final Integer mOverlayColor;
+        private final TextView mTextView;
+        private boolean mCancelled;
 
         ImageSpanDrawableCallback(LayerDrawable wrapper, StyleProvider imageStyle,
                 /*@Nullable*/ Integer overlayColor, TextView textView) {
-            this.wrapper = wrapper;
-            this.imageStyle = imageStyle;
-            this.overlayColor = overlayColor;
-            this.textView = textView;
+            this.mWrapper = wrapper;
+            this.mImageStyle = imageStyle;
+            this.mOverlayColor = overlayColor;
+            this.mTextView = textView;
         }
 
         @Override
         public void accept(/*@Nullable*/ Drawable imageDrawable) {
-            if (cancelled || imageDrawable == null) {
+            if (mCancelled || imageDrawable == null) {
                 return;
             }
-            Drawable finalDrawable = ViewUtils.applyOverlayColor(imageDrawable, overlayColor);
-            checkState(wrapper.setDrawableByLayerId(SINGLE_LAYER_ID, finalDrawable),
+            Drawable finalDrawable = ViewUtils.applyOverlayColor(imageDrawable, mOverlayColor);
+            checkState(mWrapper.setDrawableByLayerId(SINGLE_LAYER_ID, finalDrawable),
                     "Failed to set drawable on chunked text");
-            setBounds(finalDrawable, imageStyle, textView);
-            textView.invalidate();
-            loadingImages.remove(this);
+            setBounds(finalDrawable, mImageStyle, mTextView);
+            mTextView.invalidate();
+            mLoadingImages.remove(this);
         }
 
         void cancelCallback() {
-            cancelled = true;
+            mCancelled = true;
         }
     }
 

@@ -21,16 +21,14 @@ namespace {
 
 // Returns the number of entries in |net_log| that have type set to
 // |NetLogEventType::NETWORK_QUALITY_CHANGED|.
-int GetNetworkQualityChangedEntriesCount(BoundTestNetLog* net_log) {
+int GetNetworkQualityChangedEntriesCount(RecordingBoundTestNetLog* net_log) {
   return net_log->GetEntriesWithType(NetLogEventType::NETWORK_QUALITY_CHANGED)
       .size();
 }
 
 // Verify that the net log events are recorded correctly.
 TEST(NetworkQualityEstimatorEventCreatorTest, Notified) {
-  // std::unique_ptr<BoundTestNetLog>
-  // net_log(std::make_unique<BoundTestNetLog>());
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
 
   EventCreator event_creator(net_log.bound());
 

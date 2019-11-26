@@ -438,7 +438,7 @@ class BidirectionalStreamTest : public TestWithTaskEnvironment {
     session_ = CreateSpdySession(http_session_.get(), key, net_log_.bound());
   }
 
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
   const GURL default_url_;

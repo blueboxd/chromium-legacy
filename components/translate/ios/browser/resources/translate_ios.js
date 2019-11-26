@@ -96,7 +96,7 @@ if (typeof(XMLHttpRequest.prototype.realSend) == 'undefined') {
     // the browser. Else, pass it through to the original implementation.
     // |securityOrigin| is predefined by translate_script.cc.
     if (this.savedUrl.startsWith(securityOrigin)) {
-      var length = __gCrWeb.translate['xhrs'].push(this);
+      const length = __gCrWeb.translate['xhrs'].push(this);
       __gCrWeb.message.invokeOnHost({
           'command': 'translate.sendrequest',
           'method': this.savedMethod,

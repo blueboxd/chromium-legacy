@@ -2643,7 +2643,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4839303808932127586">Saglabāt &amp;video kā</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Vēl 1}zero{Vēl #}one{Vēl #}other{Vēl #}}</translation>
 <translation id="4842976633412754305">Šajā lapā tiek mēģināts ielādēt skriptus no neautentificētiem avotiem.</translation>
-<translation id="4843488774506045600">Pieteikšanos nodrošina <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Citas tastatūras</translation>
 <translation id="4846680374085650406">Jūs ievērojat administratora ieteikumus attiecībā uz šo iestatījumu.</translation>
 <translation id="4848518990323155912">Iespējot SIM kartes bloķēšanu (pieprasīt PIN, lai izmantotu mobilos datus)</translation>
@@ -3848,7 +3847,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6607831829715835317">Vairā&amp;k rīku</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6615455863669487791">Rādīt man</translation>
-<translation id="6617100836880592260">Meklēšanas ātrums: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Tik un tā paturēt</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Vietne var izsekot jūsu atrašanās vietu.</translation>

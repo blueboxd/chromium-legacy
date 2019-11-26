@@ -21,16 +21,16 @@ namespace {
 
 std::vector<base::string16> GenerateMessage(const ExtensionSet& external,
                                             const ExtensionSet& forbidden) {
-  std::vector<base::string16> message;
-  std::transform(external.begin(), external.end(), message.begin(),
-                 [](const auto& extension) {
-                   int id = extension->is_app()
-                                ? IDS_APP_ALERT_ITEM_EXTERNAL
-                                : IDS_EXTENSION_ALERT_ITEM_EXTERNAL;
-                   base::string16 name = base::UTF8ToUTF16(extension->name());
-                   return l10n_util::GetStringFUTF16(id, name);
-                 });
-  std::transform(forbidden.begin(), forbidden.end(), message.begin(),
+  std::vector<base::string16> message(external.size() + forbidden.size());
+  auto it = std::transform(
+      external.begin(), external.end(), message.begin(),
+      [](const auto& extension) {
+        int id = extension->is_app() ? IDS_APP_ALERT_ITEM_EXTERNAL
+                                     : IDS_EXTENSION_ALERT_ITEM_EXTERNAL;
+        base::string16 name = base::UTF8ToUTF16(extension->name());
+        return l10n_util::GetStringFUTF16(id, name);
+      });
+  std::transform(forbidden.begin(), forbidden.end(), it,
                  [](const auto& extension) {
                    int id = extension->is_app()
                                 ? IDS_APP_ALERT_ITEM_BLACKLISTED
@@ -129,6 +129,10 @@ void ExtensionErrorUIDefault::Close() {
     // possibly synchronously.
     global_error_->GetBubbleView()->CloseBubbleView();
   }
+}
+
+GlobalErrorWithStandardBubble* ExtensionErrorUIDefault::GetErrorForTesting() {
+  return global_error_.get();
 }
 
 }  // namespace extensions

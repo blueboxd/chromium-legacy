@@ -22,7 +22,6 @@ class ContainerNode;
 class DragState;
 class DataTransfer;
 class Element;
-class FloatQuad;
 class HitTestResult;
 class InputDeviceCapabilities;
 class LocalFrame;
@@ -96,7 +95,7 @@ class CORE_EXPORT MouseEventManager final
   void CancelFakeMouseMoveEvent();
   void MayUpdateHoverWhenContentUnderMouseChanged(
       MouseEventManager::UpdateHoverReason);
-  void MayUpdateHoverAfterScroll(const FloatQuad&);
+  void MayUpdateHoverAfterScroll(const FloatRect&);
 
   void SetLastKnownMousePosition(const WebMouseEvent&);
   void SetLastMousePositionAsUnknown();

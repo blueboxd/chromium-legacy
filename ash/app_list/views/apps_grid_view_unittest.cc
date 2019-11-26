@@ -367,7 +367,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, AppsGridViewTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AppsGridViewTest, testing::Bool());
 
 class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
  public:
@@ -1858,7 +1858,7 @@ TEST_P(AppsGridViewTabletTest, Basic) {
       1);
 }
 
-INSTANTIATE_TEST_SUITE_P(, AppsGridViewTabletTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AppsGridViewTabletTest, testing::Bool());
 
 // Test various dragging behaviors only allowed when apps grid gap (part of
 // home launcher feature) is enabled.

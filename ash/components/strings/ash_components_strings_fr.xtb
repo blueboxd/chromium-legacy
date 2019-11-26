@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Mode de présentation</translation>
 <translation id="4382340674111381977">Revenir à la page précédente</translation>
+<translation id="4458670250301149821">Déplacer une icône d'application dans/depuis un dossier de la grille d'applications</translation>
 <translation id="4472417192667361414">Paramètres du système et de l'affichage</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, puis <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Consulter l'aide relative aux raccourcis clavier</translation>
 <translation id="4628718545549558538">Ouvrir la zone d'état (là où se trouve la photo de votre compte)</translation>
 <translation id="4642092649622328492">Faire une capture d'écran partielle</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Supprimer la lettre suivante (suppression avant)</translation>
 <translation id="7500368597227394048">trait d'union</translation>
 <translation id="7611271430932669992">Passer aux fenêtres pop-up et aux boîtes de dialogue</translation>
+<translation id="7635348532214572995">Déplacer une icône d'application sur la grille d'applications</translation>
 <translation id="766326951329901120">Coller le contenu du Presse-papiers en texte brut</translation>
 <translation id="7703010453515335249">crochet gauche</translation>
 <translation id="7724603315864178912">Couper</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Coller le contenu du Presse-papiers</translation>
 <translation id="9052808072970550123">Passer à l'utilisateur suivant</translation>
 <translation id="906458777597946297">Agrandir la fenêtre</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, puis <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Accéder au début de la ligne</translation>
 <translation id="9106898733795143799">Page et navigateur Web</translation>
 <translation id="9162942292291287644">Aucun résultat de recherche pour <ph name="QUERY" /></translation>

@@ -30,37 +30,37 @@ import java.util.concurrent.TimeUnit;
 public final class FeedActionReader implements ActionReader {
     private static final String TAG = "FeedActionReader";
 
-    private final Store store;
-    private final Clock clock;
-    private final ProtocolAdapter protocolAdapter;
-    private final TaskQueue taskQueue;
-    private final long dismissActionTTLSeconds;
-    private final double minValidActionRatio;
+    private final Store mStore;
+    private final Clock mClock;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final TaskQueue mTaskQueue;
+    private final long mDismissActionTTLSeconds;
+    private final double mMinValidActionRatio;
 
     public FeedActionReader(Store store, Clock clock, ProtocolAdapter protocolAdapter,
             TaskQueue taskQueue, Configuration configuration) {
-        this.store = store;
-        this.clock = clock;
-        this.protocolAdapter = protocolAdapter;
-        this.taskQueue = taskQueue;
-        this.dismissActionTTLSeconds = configuration.getValueOrDefault(
+        this.mStore = store;
+        this.mClock = clock;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mTaskQueue = taskQueue;
+        this.mDismissActionTTLSeconds = configuration.getValueOrDefault(
                 ConfigKey.DEFAULT_ACTION_TTL_SECONDS, TimeUnit.DAYS.toSeconds(3L));
-        minValidActionRatio =
+        mMinValidActionRatio =
                 configuration.getValueOrDefault(ConfigKey.MINIMUM_VALID_ACTION_RATIO, 0.3);
     }
 
     @Override
     public Result<List<DismissActionWithSemanticProperties>>
     getDismissActionsWithSemanticProperties() {
-        Result<List<StreamLocalAction>> dismissActionsResult = store.getAllDismissLocalActions();
+        Result<List<StreamLocalAction>> dismissActionsResult = mStore.getAllDismissLocalActions();
         if (!dismissActionsResult.isSuccessful()) {
             Logger.e(TAG, "Error fetching dismiss actions from store");
             return Result.failure();
         }
         List<StreamLocalAction> dismissActions = dismissActionsResult.getValue();
         Set<String> contentIds = new HashSet<>(dismissActions.size());
-        long minValidTime = TimeUnit.MILLISECONDS.toSeconds(clock.currentTimeMillis())
-                - dismissActionTTLSeconds;
+        long minValidTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis())
+                - mDismissActionTTLSeconds;
         for (StreamLocalAction dismissAction : dismissActions) {
             if (dismissAction.getTimestampSeconds() > minValidTime) {
                 contentIds.add(dismissAction.getFeatureContentId());
@@ -70,13 +70,13 @@ public final class FeedActionReader implements ActionReader {
         // Clean up if necessary
         // Note that since we're using a Set, it's possible this will trigger prematurely due to
         // duplicates not being counted as valid.
-        if ((double) contentIds.size() / dismissActions.size() < minValidActionRatio) {
-            taskQueue.execute(Task.LOCAL_ACTION_GC, TaskType.BACKGROUND,
-                    store.triggerLocalActionGc(dismissActions, new ArrayList<>(contentIds)));
+        if ((double) contentIds.size() / dismissActions.size() < mMinValidActionRatio) {
+            mTaskQueue.execute(Task.LOCAL_ACTION_GC, TaskType.BACKGROUND,
+                    mStore.triggerLocalActionGc(dismissActions, new ArrayList<>(contentIds)));
         }
 
         Result<List<SemanticPropertiesWithId>> semanticPropertiesResult =
-                store.getSemanticProperties(new ArrayList<>(contentIds));
+                mStore.getSemanticProperties(new ArrayList<>(contentIds));
         if (!semanticPropertiesResult.isSuccessful()) {
             return Result.failure();
         }
@@ -86,7 +86,7 @@ public final class FeedActionReader implements ActionReader {
         for (SemanticPropertiesWithId semanticPropertiesWithId :
                 semanticPropertiesResult.getValue()) {
             Result<ContentId> wireContentIdResult =
-                    protocolAdapter.getWireContentId(semanticPropertiesWithId.contentId);
+                    mProtocolAdapter.getWireContentId(semanticPropertiesWithId.contentId);
             if (!wireContentIdResult.isSuccessful()) {
                 Logger.e(TAG, "Error converting to wire result for contentId: %s",
                         semanticPropertiesWithId.contentId);
@@ -99,7 +99,7 @@ public final class FeedActionReader implements ActionReader {
             contentIds.remove(semanticPropertiesWithId.contentId);
         }
         for (String contentId : contentIds) {
-            Result<ContentId> wireContentIdResult = protocolAdapter.getWireContentId(contentId);
+            Result<ContentId> wireContentIdResult = mProtocolAdapter.getWireContentId(contentId);
             if (!wireContentIdResult.isSuccessful()) {
                 Logger.e(TAG, "Error converting to wire result for contentId: %s", contentId);
                 continue;

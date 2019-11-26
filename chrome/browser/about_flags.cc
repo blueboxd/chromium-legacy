@@ -54,7 +54,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/components/proximity_auth/switches.h"
 #include "components/assist_ranker/predictor_config_definitions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -946,20 +945,11 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_CHROMEOS)
-const FeatureEntry::FeatureParam kTranslateBubbleUIButton[] = {
-    {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleButtonValue}};
 const FeatureEntry::FeatureParam kTranslateBubbleUITab[] = {
     {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleTabValue}};
-const FeatureEntry::FeatureParam kTranslateBubbleUIButtonGM2[] = {
-    {language::kTranslateUIBubbleKey,
-     language::kTranslateUIBubbleButtonGM2Value}};
 
 const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
-    {"Button", kTranslateBubbleUIButton, base::size(kTranslateBubbleUIButton),
-     nullptr},
-    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr},
-    {"Button_GM2", kTranslateBubbleUIButtonGM2,
-     base::size(kTranslateBubbleUIButton), nullptr}};
+    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr}};
 #endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
 
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
@@ -3943,10 +3933,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-    {"app-service-ash", flag_descriptions::kAppServiceAshName,
-     flag_descriptions::kAppServiceAshDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
-
     {"app-service-instance-registry",
      flag_descriptions::kAppServiceInstanceRegistryName,
      flag_descriptions::kAppServiceInstanceRegistryDescription, kOsCrOS,

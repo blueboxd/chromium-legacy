@@ -20,29 +20,29 @@ public abstract class JournalOperation {
     }
 
     public @Type int getType() {
-        return type;
+        return mType;
     }
 
-    private final @Type int type;
+    private final @Type int mType;
 
     // Only the following classes may extend JournalOperation
     private JournalOperation(@Type int type) {
-        this.type = type;
+        this.mType = type;
     }
 
     /**
      * A {@link JournalOperation} created by calling {@link JournalMutation.Builder#append(byte[])}.
      */
     public static final class Append extends JournalOperation {
-        private final byte[] value;
+        private final byte[] mValue;
 
         Append(byte[] value) {
             super(Type.APPEND);
-            this.value = value;
+            this.mValue = value;
         }
 
         public byte[] getValue() {
-            return value;
+            return mValue;
         }
     }
 
@@ -50,15 +50,15 @@ public abstract class JournalOperation {
      * A {@link JournalOperation} created by calling {@link JournalMutation.Builder#copy(String)}.
      */
     public static final class Copy extends JournalOperation {
-        private final String toJournalName;
+        private final String mToJournalName;
 
         Copy(String toJournalName) {
             super(Type.COPY);
-            this.toJournalName = toJournalName;
+            this.mToJournalName = toJournalName;
         }
 
         public String getToJournalName() {
-            return toJournalName;
+            return mToJournalName;
         }
     }
 

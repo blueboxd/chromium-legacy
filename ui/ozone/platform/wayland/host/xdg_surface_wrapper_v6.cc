@@ -116,6 +116,16 @@ void XDGSurfaceWrapperV6::SetWindowGeometry(const gfx::Rect& bounds) {
                                       bounds.height());
 }
 
+void XDGSurfaceWrapperV6::SetMinSize(int32_t width, int32_t height) {
+  DCHECK(zxdg_toplevel_v6_);
+  zxdg_toplevel_v6_set_min_size(zxdg_toplevel_v6_.get(), width, height);
+}
+
+void XDGSurfaceWrapperV6::SetMaxSize(int32_t width, int32_t height) {
+  DCHECK(zxdg_toplevel_v6_);
+  zxdg_toplevel_v6_set_max_size(zxdg_toplevel_v6_.get(), width, height);
+}
+
 void XDGSurfaceWrapperV6::SetAppId(const std::string& app_id) {
   zxdg_toplevel_v6_set_app_id(zxdg_toplevel_v6_.get(), app_id.c_str());
 }

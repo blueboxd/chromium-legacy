@@ -2023,8 +2023,6 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   Document* doc = frame_->GetDocument();
   if (!doc)
     return WebInputEventResult::kNotHandled;
-  // TODO(szager): Remove CHECK after diagnosing crash in crbug.com/1020939
-  CHECK(doc->IsActive());
 
   static const int kContextMenuMargin = 1;
 
@@ -2032,8 +2030,6 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   Element* focused_element =
       override_target_element ? override_target_element : doc->FocusedElement();
-  // TODO(szager): Remove CHECK after diagnosing crash in crbug.com/1020939
-  CHECK(!focused_element || focused_element->GetLayoutObject());
   FrameSelection& selection = frame_->Selection();
   VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
 
@@ -2166,7 +2162,7 @@ void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 void EventHandler::MayUpdateHoverAfterScroll(
-    const FloatQuad& scroller_rect_in_frame) {
+    const FloatRect& scroller_rect_in_frame) {
   mouse_event_manager_->MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 

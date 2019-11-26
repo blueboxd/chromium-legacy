@@ -201,7 +201,7 @@ class DnsRequest {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   {
     FuzzedDataProvider data_provider(data, size);
-    net::TestNetLog net_log;
+    net::RecordingTestNetLog net_log;
 
     net::HostResolver::ManagerOptions options;
     options.max_concurrent_resolves =

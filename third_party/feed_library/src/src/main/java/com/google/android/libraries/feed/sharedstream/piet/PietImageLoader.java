@@ -19,11 +19,11 @@ import javax.inject.Inject;
 
 /** A Piet {@link ImageLoader} which uses {@link ImageLoaderApi} to load images. */
 public class PietImageLoader implements ImageLoader {
-    private final ImageLoaderApi imageLoaderApi;
+    private final ImageLoaderApi mImageLoaderApi;
 
     @Inject
     public PietImageLoader(ImageLoaderApi imageLoaderApi) {
-        this.imageLoaderApi = imageLoaderApi;
+        this.mImageLoaderApi = imageLoaderApi;
     }
 
     @Override
@@ -34,6 +34,6 @@ public class PietImageLoader implements ImageLoader {
             urls.add(source.getUrl());
         }
 
-        imageLoaderApi.loadDrawable(urls, widthPx, heightPx, consumer);
+        mImageLoaderApi.loadDrawable(urls, widthPx, heightPx, consumer);
     }
 }

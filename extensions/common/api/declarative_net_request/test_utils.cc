@@ -66,6 +66,7 @@ TestRuleCondition& TestRuleCondition::operator=(const TestRuleCondition&) =
 std::unique_ptr<base::DictionaryValue> TestRuleCondition::ToValue() const {
   auto dict = std::make_unique<base::DictionaryValue>();
   SetValue(dict.get(), kUrlFilterKey, url_filter);
+  SetValue(dict.get(), kRegexFilterKey, regex_filter);
   SetValue(dict.get(), kIsUrlFilterCaseSensitiveKey,
            is_url_filter_case_sensitive);
   SetValue(dict.get(), kDomainsKey, domains);

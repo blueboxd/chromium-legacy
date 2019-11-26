@@ -292,7 +292,7 @@ ModelTypeSet GetEncryptedTypes(bool encrypt_everything) {
   if (encrypt_everything) {
     return EncryptableUserTypes();
   }
-  return SyncEncryptionHandler::SensitiveTypes();
+  return AlwaysEncryptedUserTypes();
 }
 
 }  // namespace
@@ -1025,7 +1025,8 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   broadcasting_observer_->OnCryptographerStateChanged(
       state_.cryptographer.get(),
       /*has_pending_keys=*/false);
-  broadcasting_observer_->OnEncryptedTypesChanged(SensitiveTypes(), false);
+  broadcasting_observer_->OnEncryptedTypesChanged(AlwaysEncryptedUserTypes(),
+                                                  false);
 }
 
 const CryptographerImpl& NigoriSyncBridgeImpl::GetCryptographerForTesting()

@@ -132,7 +132,10 @@ class PreconnectManager {
                                  bool allow_credentials) {}
 
     virtual void OnPreresolveFinished(const GURL& url, bool success) {}
-    virtual void OnProxyLookupFinished(const GURL& url, bool success) {}
+    virtual void OnProxyLookupFinished(
+        const GURL& url,
+        const net::NetworkIsolationKey& network_isolation_key,
+        bool success) {}
   };
 
   static const size_t kMaxInflightPreresolves = 3;
@@ -185,6 +188,7 @@ class PreconnectManager {
       ResolveHostCallback callback) const;
   std::unique_ptr<ProxyLookupClientImpl> LookupProxyForUrl(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       ProxyLookupCallback callback) const;
 
   void TryToLaunchPreresolveJobs();

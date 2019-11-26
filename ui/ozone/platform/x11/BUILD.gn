@@ -48,6 +48,7 @@ source_set("x11") {
     "//ui/events",
     "//ui/events/devices",
     "//ui/events/ozone",
+    "//ui/events/ozone/layout",
     "//ui/events/platform",
     "//ui/events/platform/x11",
     "//ui/events/x",

@@ -64,7 +64,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     ASSERT_TRUE(embedded_sct_chain_.get());
   }
 
-  bool CheckForEmbeddedSCTInNetLog(const TestNetLog& net_log) {
+  bool CheckForEmbeddedSCTInNetLog(const RecordingTestNetLog& net_log) {
     auto entries = net_log.GetEntries();
     if (entries.size() != 2)
       return false;
@@ -114,7 +114,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   // |kLogDescription|.
   bool CheckPrecertificateVerification(scoped_refptr<X509Certificate> chain) {
     SignedCertificateTimestampAndStatusList scts;
-    TestNetLog test_net_log;
+    RecordingTestNetLog test_net_log;
     NetLogWithSource net_log = NetLogWithSource::Make(
         &test_net_log, NetLogSourceType::SSL_CONNECT_JOB);
     verifier_->Verify(kHostname, chain.get(), base::StringPiece(),

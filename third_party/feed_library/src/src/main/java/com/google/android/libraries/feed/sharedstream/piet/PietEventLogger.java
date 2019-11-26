@@ -12,14 +12,14 @@ import java.util.List;
 
 /** Logger that logs to the {@link BasicLoggingApi} any Piet errors. */
 public class PietEventLogger {
-    private final BasicLoggingApi basicLoggingApi;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     public PietEventLogger(BasicLoggingApi basicLoggingApi) {
-        this.basicLoggingApi = basicLoggingApi;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     public void logEvents(List<ErrorCode> pietErrors) {
-        basicLoggingApi.onPietFrameRenderingEvent(convertErrorCodes(pietErrors));
+        mBasicLoggingApi.onPietFrameRenderingEvent(convertErrorCodes(pietErrors));
     }
 
     private List<Integer> convertErrorCodes(List<ErrorCode> errorCodes) {

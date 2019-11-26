@@ -17,6 +17,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/test/keyboard_layout.h"
 
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
@@ -29,6 +30,8 @@ namespace ui {
 // Checks that MakeWebKeyboardEvent makes a DOM3 spec compliant key event.
 // crbug.com/127142
 TEST(WebInputEventTest, TestMakeWebKeyboardEvent) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   {
     // Press left Ctrl.
     KeyEvent event(ET_KEY_PRESSED, VKEY_CONTROL, DomCode::CONTROL_LEFT,
@@ -147,6 +150,7 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
 #else
 #define XK(x) 0
 #endif
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   struct TestCase {
     DomCode dom_code;         // The physical key (location).
     KeyboardCode ui_keycode;  // The virtual key code.
@@ -458,6 +462,8 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
 }
 
 TEST(WebInputEventTest, KeyEvent) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+
   struct {
     ui::KeyEvent event;
     blink::WebInputEvent::Type web_type;

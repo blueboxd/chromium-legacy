@@ -44,38 +44,38 @@ import com.google.android.libraries.feed.piet.host.ThrowingCustomElementProvider
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
     // Required external dependencies.
-    private final Context context;
-    private final ActionApi actionApi;
-    private final ImageLoaderApi imageLoaderApi;
+    private final Context mContext;
+    private final ActionApi mActionApi;
+    private final ImageLoaderApi mImageLoaderApi;
 
-    private final ProtocolAdapter protocolAdapter;
-    private final FeedSessionManager feedSessionManager;
-    private final ThreadUtils threadUtils;
-    private final TimingUtils timingUtils;
-    private final TaskQueue taskQueue;
-    private final MainThreadRunner mainThreadRunner;
-    private final Clock clock;
-    private final ActionManager actionManager;
-    private final CardConfiguration cardConfiguration;
-    private final StreamConfiguration streamConfiguration;
-    private final DebugBehavior debugBehavior;
-    private final Configuration config;
-    private final SnackbarApi snackbarApi;
-    private final BasicLoggingApi basicLoggingApi;
-    private final OfflineIndicatorApi offlineIndicatorApi;
-    private final FeedKnownContent feedKnownContent;
-    private final TooltipApi tooltipApi;
-    private final ApplicationInfo applicationInfo;
-    private final FeedExtensionRegistry feedExtensionRegistry;
-    private boolean isBackgroundDark;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final FeedSessionManager mFeedSessionManager;
+    private final ThreadUtils mThreadUtils;
+    private final TimingUtils mTimingUtils;
+    private final TaskQueue mTaskQueue;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Clock mClock;
+    private final ActionManager mActionManager;
+    private final CardConfiguration mCardConfiguration;
+    private final StreamConfiguration mStreamConfiguration;
+    private final DebugBehavior mDebugBehavior;
+    private final Configuration mConfig;
+    private final SnackbarApi mSnackbarApi;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final OfflineIndicatorApi mOfflineIndicatorApi;
+    private final FeedKnownContent mFeedKnownContent;
+    private final TooltipApi mTooltipApi;
+    private final ApplicationInfo mApplicationInfo;
+    private final FeedExtensionRegistry mFeedExtensionRegistry;
+    private boolean mIsBackgroundDark;
 
     // Optional internal components to override the default implementations.
-    /*@MonotonicNonNull*/ private ActionParserFactory actionParserFactory;
-    /*@MonotonicNonNull*/ private ModelProviderFactory modelProviderFactory;
-    /*@MonotonicNonNull*/ private Stream stream;
-    /*@MonotonicNonNull*/ private StreamFactory streamFactory;
-    /*@MonotonicNonNull*/ private CustomElementProvider customElementProvider;
-    /*@MonotonicNonNull*/ private HostBindingProvider hostBindingProvider;
+    /*@MonotonicNonNull*/ private ActionParserFactory mActionParserFactory;
+    /*@MonotonicNonNull*/ private ModelProviderFactory mModelProviderFactory;
+    /*@MonotonicNonNull*/ private Stream mStream;
+    /*@MonotonicNonNull*/ private StreamFactory mStreamFactory;
+    /*@MonotonicNonNull*/ private CustomElementProvider mCustomElementProvider;
+    /*@MonotonicNonNull*/ private HostBindingProvider mHostBindingProvider;
 
     /** Construct this builder using {@link ProcessScope#createStreamScopeBuilder} */
     public StreamScopeBuilder(Context context, ActionApi actionApi, ImageLoaderApi imageLoaderApi,
@@ -88,82 +88,82 @@ public final class StreamScopeBuilder {
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi,
             TooltipSupportedApi tooltipSupportedApi, ApplicationInfo applicationInfo,
             FeedExtensionRegistry feedExtensionRegistry) {
-        this.context = context;
-        this.actionApi = actionApi;
-        this.imageLoaderApi = imageLoaderApi;
-        this.protocolAdapter = protocolAdapter;
-        this.feedSessionManager = feedSessionManager;
-        this.threadUtils = threadUtils;
-        this.timingUtils = timingUtils;
-        this.taskQueue = taskQueue;
-        this.mainThreadRunner = mainThreadRunner;
-        this.streamConfiguration = streamConfiguration;
-        this.cardConfiguration = cardConfiguration;
-        this.clock = clock;
-        this.debugBehavior = debugBehavior;
-        this.actionManager = actionManager;
-        this.config = config;
-        this.snackbarApi = snackbarApi;
-        this.basicLoggingApi = basicLoggingApi;
-        this.offlineIndicatorApi = offlineIndicatorApi;
-        this.feedKnownContent = feedKnownContent;
-        this.tooltipApi = tooltipApi;
-        this.applicationInfo = applicationInfo;
-        this.feedExtensionRegistry = feedExtensionRegistry;
+        this.mContext = context;
+        this.mActionApi = actionApi;
+        this.mImageLoaderApi = imageLoaderApi;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mThreadUtils = threadUtils;
+        this.mTimingUtils = timingUtils;
+        this.mTaskQueue = taskQueue;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mStreamConfiguration = streamConfiguration;
+        this.mCardConfiguration = cardConfiguration;
+        this.mClock = clock;
+        this.mDebugBehavior = debugBehavior;
+        this.mActionManager = actionManager;
+        this.mConfig = config;
+        this.mSnackbarApi = snackbarApi;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mOfflineIndicatorApi = offlineIndicatorApi;
+        this.mFeedKnownContent = feedKnownContent;
+        this.mTooltipApi = tooltipApi;
+        this.mApplicationInfo = applicationInfo;
+        this.mFeedExtensionRegistry = feedExtensionRegistry;
     }
 
     public StreamScopeBuilder setIsBackgroundDark(boolean isBackgroundDark) {
-        this.isBackgroundDark = isBackgroundDark;
+        this.mIsBackgroundDark = isBackgroundDark;
         return this;
     }
 
     public StreamScopeBuilder setStreamFactory(StreamFactory streamFactory) {
-        this.streamFactory = streamFactory;
+        this.mStreamFactory = streamFactory;
         return this;
     }
 
     public StreamScopeBuilder setModelProviderFactory(ModelProviderFactory modelProviderFactory) {
-        this.modelProviderFactory = modelProviderFactory;
+        this.mModelProviderFactory = modelProviderFactory;
         return this;
     }
 
     public StreamScopeBuilder setCustomElementProvider(
             CustomElementProvider customElementProvider) {
-        this.customElementProvider = customElementProvider;
+        this.mCustomElementProvider = customElementProvider;
         return this;
     }
 
     public StreamScopeBuilder setHostBindingProvider(HostBindingProvider hostBindingProvider) {
-        this.hostBindingProvider = hostBindingProvider;
+        this.mHostBindingProvider = hostBindingProvider;
         return this;
     }
 
     public StreamScope build() {
-        if (modelProviderFactory == null) {
-            modelProviderFactory = new FeedModelProviderFactory(feedSessionManager, threadUtils,
-                    timingUtils, taskQueue, mainThreadRunner, config, basicLoggingApi);
+        if (mModelProviderFactory == null) {
+            mModelProviderFactory = new FeedModelProviderFactory(mFeedSessionManager, mThreadUtils,
+                    mTimingUtils, mTaskQueue, mMainThreadRunner, mConfig, mBasicLoggingApi);
         }
-        if (actionParserFactory == null) {
-            actionParserFactory = new FeedActionParserFactory(protocolAdapter, basicLoggingApi);
+        if (mActionParserFactory == null) {
+            mActionParserFactory = new FeedActionParserFactory(mProtocolAdapter, mBasicLoggingApi);
         }
-        if (customElementProvider == null) {
-            customElementProvider = new ThrowingCustomElementProvider();
+        if (mCustomElementProvider == null) {
+            mCustomElementProvider = new ThrowingCustomElementProvider();
         }
-        if (hostBindingProvider == null) {
-            hostBindingProvider = new HostBindingProvider();
+        if (mHostBindingProvider == null) {
+            mHostBindingProvider = new HostBindingProvider();
         }
-        if (streamFactory == null) {
-            streamFactory = new BasicStreamFactory();
+        if (mStreamFactory == null) {
+            mStreamFactory = new BasicStreamFactory();
         }
-        stream = streamFactory.build(Validators.checkNotNull(actionParserFactory), context,
-                applicationInfo.getBuildType(), cardConfiguration, imageLoaderApi,
-                Validators.checkNotNull(customElementProvider), debugBehavior, clock,
-                Validators.checkNotNull(modelProviderFactory),
-                Validators.checkNotNull(hostBindingProvider), offlineIndicatorApi, config,
-                actionApi, actionManager, snackbarApi, streamConfiguration, feedExtensionRegistry,
-                basicLoggingApi, mainThreadRunner, isBackgroundDark, tooltipApi, threadUtils,
-                feedKnownContent);
+        mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mContext,
+                mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
+                Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
+                Validators.checkNotNull(mModelProviderFactory),
+                Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
+                mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
+                mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
+                mTooltipApi, mThreadUtils, mFeedKnownContent);
         return new FeedStreamScope(
-                Validators.checkNotNull(stream), Validators.checkNotNull(modelProviderFactory));
+                Validators.checkNotNull(mStream), Validators.checkNotNull(mModelProviderFactory));
     }
 }

@@ -48,13 +48,15 @@ class XRRenderState;
 class XRRenderStateInit;
 class XRRigidTransform;
 class XRSpace;
+class XRTransientInputHitTestOptionsInit;
+class XRTransientInputHitTestSource;
 class XRViewData;
 class XRWebGLLayer;
 class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-using XRSessionFeatureSet = WTF::HashSet<device::mojom::XRSessionFeature>;
+using XRSessionFeatureSet = HashSet<device::mojom::XRSessionFeature>;
 
 class XRSession final
     : public EventTargetWithInlineData,
@@ -86,7 +88,7 @@ class XRSession final
 
     // Keeps track of which features have already been reported, to reduce
     // redundant mojom calls.
-    WTF::HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
+    HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
   };
 
   XRSession(XR* xr,
@@ -146,6 +148,10 @@ class XRSession final
   ScriptPromise requestHitTestSource(ScriptState* script_state,
                                      XRHitTestOptionsInit* options,
                                      ExceptionState& exception_state);
+  ScriptPromise requestHitTestSourceForTransientInput(
+      ScriptState* script_state,
+      XRTransientInputHitTestOptionsInit* options_init,
+      ExceptionState& exception_state);
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,
@@ -192,7 +198,7 @@ class XRSession final
   void OnButtonEvent(
       device::mojom::blink::XRInputSourceStatePtr input_source) override;
 
-  WTF::Vector<XRViewData>& views();
+  Vector<XRViewData>& views();
 
   void AddTransientInputSource(XRInputSource* input_source);
   void RemoveTransientInputSource(XRInputSource* input_source);
@@ -235,6 +241,8 @@ class XRSession final
   // Returns true if the session recognizes passed in hit_test_source as still
   // existing.
   bool ValidateHitTestSourceExists(XRHitTestSource* hit_test_source);
+  bool ValidateHitTestSourceExists(
+      XRTransientInputHitTestSource* hit_test_source);
 
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
@@ -291,6 +299,15 @@ class XRSession final
   void ProcessInputSourceEvents(
       base::span<const device::mojom::blink::XRInputSourceStatePtr>
           input_states);
+
+  // Processes world understanding state for current frame:
+  // - updates state of hit test sources & fills them out with results
+  // - updates state of detected planes
+  // - updates state of anchors
+  // In order to correctly set the state of hit test sources, this *must* be
+  // called after updating XRInputSourceArray (performed by
+  // OnInputStateChangeInternal) as hit test results for transient input sources
+  // use the mapping of input source id to XRInputSource object.
   void UpdateWorldUnderstandingStateForFrame(
       double timestamp,
       const device::mojom::blink::XRFrameDataPtr& frame_data);
@@ -305,10 +322,14 @@ class XRSession final
 
   void OnHitTestResults(
       ScriptPromiseResolver* resolver,
-      base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
-          results);
+      base::Optional<Vector<device::mojom::blink::XRHitResultPtr>> results);
 
   void OnSubscribeToHitTestResult(
+      ScriptPromiseResolver* resolver,
+      device::mojom::SubscribeToHitTestResult result,
+      uint64_t subscription_id);
+
+  void OnSubscribeToHitTestForTransientInputResult(
       ScriptPromiseResolver* resolver,
       device::mojom::SubscribeToHitTestResult result,
       uint64_t subscription_id);
@@ -368,8 +389,10 @@ class XRSession final
   // that we don't keep the XRHitTestSources alive.
   HeapHashMap<uint64_t, WeakMember<XRHitTestSource>>
       hit_test_source_ids_to_hit_test_sources_;
+  HeapHashMap<uint64_t, WeakMember<XRTransientInputHitTestSource>>
+      hit_test_source_ids_to_transient_input_hit_test_sources_;
 
-  WTF::Vector<XRViewData> views_;
+  Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;
   Member<XRWebGLLayer> prev_base_layer_;
@@ -379,8 +402,8 @@ class XRSession final
   HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
   // Set of promises returned from CreateAnchor that are still in-flight.
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
-  // Set of promises returned from requestHitTestSource that are still
-  // in-flight.
+  // Set of promises returned from requestHitTestSource and
+  // requestHitTestSourceForTransientInput that are still in-flight.
   HeapHashSet<Member<ScriptPromiseResolver>> request_hit_test_source_promises_;
   HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 

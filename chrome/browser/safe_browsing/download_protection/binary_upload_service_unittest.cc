@@ -123,8 +123,8 @@ class BinaryUploadServiceTest : public testing::Test {
   void UploadForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request,
       bool authorized = true) {
-    service_->MaybeUploadForDeepScanningCallback(std::move(request),
-                                                 authorized);
+    service_->SetAuthForTesting(authorized);
+    service_->MaybeUploadForDeepScanning(std::move(request));
   }
 
   void ReceiveMessageForRequest(BinaryUploadService::Request* request,

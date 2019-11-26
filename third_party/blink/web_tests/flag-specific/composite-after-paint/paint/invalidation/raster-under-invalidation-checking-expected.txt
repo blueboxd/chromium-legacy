@@ -960,8 +960,9 @@
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='scroller'",
-      "bounds": [150, 150],
+      "name": "Scroll corner of LayoutNGBlockFlow DIV id='scroller'",
+      "position": [135, 135],
+      "bounds": [15, 15],
       "transform": 3
     },
     {

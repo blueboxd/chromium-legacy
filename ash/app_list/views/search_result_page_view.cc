@@ -310,9 +310,8 @@ void SearchResultPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
           base::NumberToString16(last_search_result_count_), query);
     }
   } else {
-    value = l10n_util::GetStringFUTF16(
-        IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT_ZERO_STATE,
-        base::NumberToString16(last_search_result_count_));
+    value = l10n_util::GetStringUTF16(
+        IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT_ZERO_STATE);
   }
 
   node_data->SetValue(value);

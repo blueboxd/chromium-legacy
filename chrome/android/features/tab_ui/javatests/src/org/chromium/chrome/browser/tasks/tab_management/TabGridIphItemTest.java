@@ -12,7 +12,6 @@ import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,15 +23,11 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.r
 import android.content.res.Configuration;
 import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
 import android.support.test.filters.MediumTest;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,7 +43,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -103,7 +97,7 @@ public class TabGridIphItemTest {
         // Enter the IPH dialog and exit by clicking ScrimView.
         enterIphDialog(cta);
         verifyIphDialogShowing(cta);
-        exitIphDialogByClickingScrim(cta);
+        TabUiTestHelper.clickScrimToExitDialog(cta);
         verifyIphDialogHiding(cta);
 
         // Exiting IPH dialog should not dismiss the IPH.
@@ -193,29 +187,6 @@ public class TabGridIphItemTest {
         onView(withId(R.id.close_button))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(click());
-    }
-
-    private void exitIphDialogByClickingScrim(ChromeTabbedActivity cta) {
-        onView(instanceOf(ScrimView.class))
-                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                .perform(new ViewAction() {
-                    @Override
-                    public Matcher<View> getConstraints() {
-                        return isDisplayed();
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "click on ScrimView";
-                    }
-
-                    @Override
-                    public void perform(UiController uiController, View view) {
-                        assertTrue(view instanceof ScrimView);
-                        ScrimView scrimView = (ScrimView) view;
-                        scrimView.performClick();
-                    }
-                });
     }
 
     private void enterIphDialog(ChromeTabbedActivity cta) {

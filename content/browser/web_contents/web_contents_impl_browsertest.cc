@@ -1295,7 +1295,9 @@ class WebContentsSplitCacheBrowserTestEnabled
     if (GetParam())
       enabled_features.push_back(blink::features::kPlzDedicatedWorker);
 
-    feature_list.InitWithFeatures(enabled_features, {});
+    feature_list.InitWithFeatures(
+        enabled_features,
+        {net::features::kAppendFrameOriginToNetworkIsolationKey});
   }
 
  private:

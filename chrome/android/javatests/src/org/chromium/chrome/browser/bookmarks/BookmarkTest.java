@@ -337,7 +337,7 @@ public class BookmarkTest {
         final BookmarkDelegate delegate = getBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        openFolder(folder);
 
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         Assert.assertEquals(
@@ -387,7 +387,7 @@ public class BookmarkTest {
         BookmarkManager manager = getBookmarkManager();
 
         // Open the new folder where these bookmarks were created.
-        TestThreadUtils.runOnUiThreadBlocking(() -> manager.openFolder(testFolder));
+        openFolder(testFolder);
 
         Assert.assertEquals("Wrong state, should be in folder", BookmarkUIState.STATE_FOLDER,
                 manager.getCurrentState());
@@ -593,5 +593,11 @@ public class BookmarkTest {
 
     protected void searchBookmarks(final String query) {
         TestThreadUtils.runOnUiThreadBlocking(() -> getBookmarkItemsAdapter().search(query));
+    }
+
+    protected void openFolder(BookmarkId folder) {
+        final BookmarkDelegate delegate = getBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
     }
 }

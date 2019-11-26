@@ -18,15 +18,9 @@
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
-    },
-    {
-      "name": "LayoutNGBlockFlow HTML",
-      "bounds": [1000, 1000],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='positioned layer'",

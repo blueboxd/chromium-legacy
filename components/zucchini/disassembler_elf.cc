@@ -20,12 +20,71 @@ namespace zucchini {
 namespace {
 
 constexpr uint64_t kElfImageBase = 0;
+constexpr size_t kSizeBound = 0x7FFF0000;
+
+// Bit fields for JudgeSection() return value.
+enum SectionJudgement : int {
+  // Bit: Section does not invalidate ELF, but may or may not be useful.
+  SECTION_BIT_SAFE = 1 << 0,
+  // Bit: Section useful for AddressTranslator, to map between offsets and RVAs.
+  SECTION_BIT_USEFUL_FOR_ADDRESS_TRANSLATOR = 1 << 1,
+  // Bit: Section useful for |offset_bound|, to estimate ELF size.
+  SECTION_BIT_USEFUL_FOR_OFFSET_BOUND = 1 << 2,
+  // Bit: Section potentially useful for pointer extraction.
+  SECTION_BIT_MAYBE_USEFUL_FOR_POINTERS = 1 << 3,
+
+  // The following are verdicts from combining bits, to improve semantics.
+  // Default value: A section is malformed and invalidates ELF.
+  SECTION_IS_MALFORMED = 0,
+  // Section does not invalidate ELF, but is also not used for anything.
+  SECTION_IS_USELESS = SECTION_BIT_SAFE,
+};
+
+// Decides how a section affects ELF parsing, and returns a bit field composed
+// from SectionJudgement values.
+template <class Traits>
+int JudgeSection(size_t image_size, const typename Traits::Elf_Shdr* section) {
+  // Examine RVA range: Reject if numerical overflow may happen.
+  if (!BufferRegion{section->sh_addr, section->sh_size}.FitsIn(kSizeBound))
+    return SECTION_IS_MALFORMED;
+
+  // Examine offset range: If section takes up |image| data then be stricter.
+  size_t offset_bound =
+      (section->sh_type == elf::SHT_NOBITS) ? kSizeBound : image_size;
+  if (!BufferRegion{section->sh_offset, section->sh_size}.FitsIn(offset_bound))
+    return SECTION_IS_MALFORMED;
+
+  // Empty sections don't contribute to offset-RVA mapping. For consistency, it
+  // should also not affect |offset_bounds|.
+  if (section->sh_size == 0)
+    return SECTION_IS_USELESS;
+
+  // Sections with |sh_addr == 0| are ignored because these tend to duplicates
+  // (can cause problems for lookup) and uninteresting. For consistency, it
+  // should also not affect |offset_bounds|.
+  if (section->sh_addr == 0)
+    return SECTION_IS_USELESS;
+
+  if (section->sh_type == elf::SHT_NOBITS) {
+    // Special case for .tbss sections: These should be ignored because they may
+    // have offset-RVA map that don't match other sections.
+    if (section->sh_flags & elf::SHF_TLS)
+      return SECTION_IS_USELESS;
+
+    // Section is useful for offset-RVA translation, but does not affect
+    // |offset_bounds| since it can have large virtual size (e.g., .bss).
+    return SECTION_BIT_SAFE | SECTION_BIT_USEFUL_FOR_ADDRESS_TRANSLATOR;
+  }
+
+  return SECTION_BIT_SAFE | SECTION_BIT_USEFUL_FOR_ADDRESS_TRANSLATOR |
+         SECTION_BIT_USEFUL_FOR_OFFSET_BOUND |
+         SECTION_BIT_MAYBE_USEFUL_FOR_POINTERS;
+}
 
 // Determines whether |section| is a reloc section.
 template <class Traits>
 bool IsRelocSection(const typename Traits::Elf_Shdr& section) {
-  if (section.sh_size == 0)
-    return false;
+  DCHECK_GT(section.sh_size, 0U);
   if (section.sh_type == elf::SHT_REL) {
     // Also validate |section.sh_entsize|, which gets used later.
     return section.sh_entsize == sizeof(typename Traits::Elf_Rel);
@@ -38,7 +97,9 @@ bool IsRelocSection(const typename Traits::Elf_Shdr& section) {
 // Determines whether |section| is a section with executable code.
 template <class Traits>
 bool IsExecSection(const typename Traits::Elf_Shdr& section) {
-  return (section.sh_flags & elf::SHF_EXECINSTR) != 0;
+  DCHECK_GT(section.sh_size, 0U);
+  return section.sh_type == elf::SHT_PROGBITS &&
+         (section.sh_flags & elf::SHF_EXECINSTR) != 0;
 }
 
 }  // namespace
@@ -199,47 +260,38 @@ bool DisassemblerElf<Traits>::ParseHeader() {
   // Establish bound on encountered offsets.
   offset_t offset_bound = std::max(section_table_end, segment_table_end);
 
-  // Visit each section, validate, and add address translation data to |units|.
+  // Visits |segments_| to get estimate on |offset_bound|.
+  for (const typename Traits::Elf_Phdr* segment = segments_;
+       segment != segments_ + segments_count_; ++segment) {
+    if (!image_.covers({segment->p_offset, segment->p_filesz}))
+      return false;
+    offset_t segment_end =
+        base::checked_cast<offset_t>(segment->p_offset + segment->p_filesz);
+    offset_bound = std::max(offset_bound, segment_end);
+  }
+
+  // Visit and validate each section; add address translation data to |units|.
   std::vector<AddressTranslator::Unit> units;
   units.reserve(sections_count_);
+  section_judgements_.reserve(sections_count_);
 
   for (int i = 0; i < sections_count_; ++i) {
     const typename Traits::Elf_Shdr* section = &sections_[i];
+    int judgement = JudgeSection<Traits>(image_.size(), section);
+    section_judgements_.push_back(judgement);
+    if ((judgement & SECTION_BIT_SAFE) == 0)
+      return false;
 
-    // Skip empty sections. These don't affect |offset_bound|, and don't
-    // contribute to RVA-offset mapping.
-    if (section->sh_size == 0) {
-      // Skipping empty sections is only safe if the |sh_offset| is within the
-      // image. Fail if this is not true as the input is ill-formed.
-      if (section->sh_offset >= image_.size())
-        return false;
-
-      continue;
-    }
-
-    // Extract dimensions to 32-bit integers to facilitate conversion. Range of
-    // values was ensured above when checking that the section is bounded.
     uint32_t sh_size = base::checked_cast<uint32_t>(section->sh_size);
     offset_t sh_offset = base::checked_cast<offset_t>(section->sh_offset);
     rva_t sh_addr = base::checked_cast<rva_t>(section->sh_addr);
-
-    // Update |offset_bound|.
-    if (section->sh_type != elf::SHT_NOBITS) {
-      // Be strict with offsets: Any size overflow invalidates the file.
-      if (!image_.covers({sh_offset, sh_size}))
-        return false;
-
-      offset_t section_end = sh_offset + sh_size;
-      offset_bound = std::max(offset_bound, section_end);
-    }
-
-    // Compute mappings to translate between RVA and offset. As a heuristic,
-    // sections with RVA == 0 (i.e., |sh_addr == 0|) are ignored because these
-    // tend to be duplicates (which cause problems during lookup), and tend to
-    // be uninteresting.
-    if (section->sh_addr > 0) {
-      // Add |section| data for offset-RVA translation.
+    if ((judgement & SECTION_BIT_USEFUL_FOR_ADDRESS_TRANSLATOR) != 0) {
+      // Store mappings between RVA and offset.
       units.push_back({sh_offset, sh_size, sh_addr, sh_size});
+    }
+    if ((judgement & SECTION_BIT_USEFUL_FOR_OFFSET_BOUND) != 0) {
+      offset_t section_end = base::checked_cast<offset_t>(sh_offset + sh_size);
+      offset_bound = std::max(offset_bound, section_end);
     }
   }
 
@@ -248,20 +300,8 @@ bool DisassemblerElf<Traits>::ParseHeader() {
   if (translator_.Initialize(std::move(units)) != AddressTranslator::kSuccess)
     return false;
 
-  // Visits |segments_| to get better estimate on |offset_bound|.
-  for (const typename Traits::Elf_Phdr* segment = segments_;
-       segment != segments_ + segments_count_; ++segment) {
-    if (!RangeIsBounded(segment->p_offset, segment->p_filesz, kOffsetBound))
-      return false;
-    offset_t segment_end =
-        base::checked_cast<offset_t>(segment->p_offset + segment->p_filesz);
-    offset_bound = std::max(offset_bound, segment_end);
-  }
-
-  if (offset_bound > image_.size())
-    return false;
+  DCHECK_LE(offset_bound, image_.size());
   image_.shrink(offset_bound);
-
   return true;
 }
 
@@ -271,10 +311,12 @@ void DisassemblerElf<Traits>::ExtractInterestingSectionHeaders() {
   DCHECK(exec_headers_.empty());
   for (elf::Elf32_Half i = 0; i < sections_count_; ++i) {
     const typename Traits::Elf_Shdr* section = sections_ + i;
-    if (IsRelocSection<Traits>(*section))
-      reloc_section_dims_.emplace_back(*section);
-    else if (IsExecSection<Traits>(*section))
-      exec_headers_.push_back(section);
+    if ((section_judgements_[i] & SECTION_BIT_MAYBE_USEFUL_FOR_POINTERS) != 0) {
+      if (IsRelocSection<Traits>(*section))
+        reloc_section_dims_.emplace_back(*section);
+      else if (IsExecSection<Traits>(*section))
+        exec_headers_.push_back(section);
+    }
   }
   auto comp = [](const typename Traits::Elf_Shdr* a,
                  const typename Traits::Elf_Shdr* b) {

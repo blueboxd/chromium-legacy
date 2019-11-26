@@ -46,26 +46,26 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     private static final String TAG = "FeedProtocolAdapter";
     static final String CONTENT_ID_DELIMITER = "::";
 
-    private final List<DataOperationTransformer> dataOperationTransformers;
-    private final List<RequiredContentAdapter> requiredContentAdapters;
-    private final TimingUtils timingUtils;
+    private final List<DataOperationTransformer> mDataOperationTransformers;
+    private final List<RequiredContentAdapter> mRequiredContentAdapters;
+    private final TimingUtils mTimingUtils;
 
     // Operation counts for #dump(Dumpable)
-    private int responseHandlingCount;
-    private int convertContentIdCount;
+    private int mResponseHandlingCount;
+    private int mConvertContentIdCount;
 
     public FeedProtocolAdapter(
             List<RequiredContentAdapter> requiredContentAdapters, TimingUtils timingUtils) {
-        this.timingUtils = timingUtils;
-        this.requiredContentAdapters = requiredContentAdapters;
-        dataOperationTransformers = new ArrayList<>(2);
-        dataOperationTransformers.add(new FeatureDataOperationTransformer());
-        dataOperationTransformers.add(new ContentDataOperationTransformer());
+        this.mTimingUtils = timingUtils;
+        this.mRequiredContentAdapters = requiredContentAdapters;
+        mDataOperationTransformers = new ArrayList<>(2);
+        mDataOperationTransformers.add(new FeatureDataOperationTransformer());
+        mDataOperationTransformers.add(new ContentDataOperationTransformer());
     }
 
     @Override
     public String getStreamContentId(ContentId contentId) {
-        convertContentIdCount++;
+        mConvertContentIdCount++;
         return createContentId(contentId);
     }
 
@@ -98,7 +98,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
 
     @Override
     public Result<Model> createModel(Response response) {
-        responseHandlingCount++;
+        mResponseHandlingCount++;
 
         FeedResponse feedResponse = response.getExtension(FeedResponse.feedResponse);
         Logger.i(TAG, "createModel, operations %s", feedResponse.getDataOperationCount());
@@ -118,11 +118,11 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
 
     private Result<List<StreamDataOperation>> createOperations(
             List<DataOperation> dataOperations, FeedResponseMetadata responseMetadata) {
-        ElapsedTimeTracker totalTimeTracker = timingUtils.getElapsedTimeTracker(TAG);
+        ElapsedTimeTracker totalTimeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<StreamDataOperation> streamDataOperations = new ArrayList<>();
         Set<ContentId> requiredContentIds = new HashSet<>();
         for (DataOperation operation : dataOperations) {
-            for (RequiredContentAdapter adapter : requiredContentAdapters) {
+            for (RequiredContentAdapter adapter : mRequiredContentAdapters) {
                 requiredContentIds.addAll(adapter.determineRequiredContentIds(operation));
             }
 
@@ -229,7 +229,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     private StreamDataOperation.Builder transformOperation(DataOperation operation,
             StreamDataOperation.Builder streamDataOperation,
             FeedResponseMetadata feedResponseMetadata) {
-        for (DataOperationTransformer transformer : dataOperationTransformers) {
+        for (DataOperationTransformer transformer : mDataOperationTransformers) {
             streamDataOperation =
                     transformer.transform(operation, streamDataOperation, feedResponseMetadata);
         }
@@ -321,8 +321,8 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("responseHandlingCount").value(responseHandlingCount);
-        dumper.forKey("convertContentIdCount").value(convertContentIdCount).compactPrevious();
+        dumper.forKey("responseHandlingCount").value(mResponseHandlingCount);
+        dumper.forKey("convertContentIdCount").value(mConvertContentIdCount).compactPrevious();
     }
 
     private static Operation operationToStreamOperation(DataOperation.Operation operation) {

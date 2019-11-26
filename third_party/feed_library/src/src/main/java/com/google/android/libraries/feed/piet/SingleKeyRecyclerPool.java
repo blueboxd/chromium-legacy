@@ -10,24 +10,25 @@ import android.support.v4.util.Pools.SimplePool;
 class SingleKeyRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerPool<A> {
     private static final String KEY_ERROR_MESSAGE = "Given key %s does not match singleton key %s";
 
-    private final RecyclerKey singletonKey;
-    private final int capacity;
+    private final RecyclerKey mSingletonKey;
+    private final int mCapacity;
 
-    private SimplePool<A> pool;
+    private SimplePool<A> mPool;
 
     SingleKeyRecyclerPool(RecyclerKey key, int capacity) {
-        singletonKey = key;
-        this.capacity = capacity;
-        pool = new SimplePool<>(capacity);
+        mSingletonKey = key;
+        this.mCapacity = capacity;
+        mPool = new SimplePool<>(capacity);
     }
 
     /*@Nullable*/
     @Override
     public A get(RecyclerKey key) {
-        if (!singletonKey.equals(key)) {
-            throw new IllegalArgumentException(String.format(KEY_ERROR_MESSAGE, key, singletonKey));
+        if (!mSingletonKey.equals(key)) {
+            throw new IllegalArgumentException(
+                    String.format(KEY_ERROR_MESSAGE, key, mSingletonKey));
         }
-        return pool.acquire();
+        return mPool.acquire();
     }
 
     @Override
@@ -35,14 +36,15 @@ class SingleKeyRecyclerPool<A extends ElementAdapter<?, ?>> implements RecyclerP
         if (key == null) {
             throw new NullPointerException(String.format("null key for %s", adapter));
         }
-        if (!singletonKey.equals(key)) {
-            throw new IllegalArgumentException(String.format(KEY_ERROR_MESSAGE, key, singletonKey));
+        if (!mSingletonKey.equals(key)) {
+            throw new IllegalArgumentException(
+                    String.format(KEY_ERROR_MESSAGE, key, mSingletonKey));
         }
-        pool.release(adapter);
+        mPool.release(adapter);
     }
 
     @Override
     public void clear() {
-        pool = new SimplePool<>(capacity);
+        mPool = new SimplePool<>(mCapacity);
     }
 }

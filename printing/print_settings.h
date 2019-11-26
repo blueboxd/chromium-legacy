@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
@@ -25,8 +26,9 @@
 
 namespace printing {
 
-// Returns true if |color_mode| is color and not B&W.
-PRINTING_EXPORT bool IsColorModelSelected(int color_mode);
+// Returns true if |color_mode| is color and not B&W. Must be called with a
+// |color_mode| from printing::ColorModel, excluding UNKNOWN_COLOR_MODEL.
+PRINTING_EXPORT base::Optional<bool> IsColorModelSelected(int color_mode);
 
 #if defined(USE_CUPS)
 // Get the color model setting name and value for the |color_mode|.

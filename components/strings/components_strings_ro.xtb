@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ar putea să instaleze aplicații periculoase care deteriorează dispozitivul, adaugă costuri ascunse pe factura de telefonie mobilă sau îți fură informațiile cu caracter personal. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nu există conexiune la internet</translation>
 <translation id="2230458221926704099">Remediază conexiunea folosind <ph name="BEGIN_LINK" />aplicația de diagnosticare<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Pentru tine</translation>
 <translation id="2239100178324503013">Trimite acum</translation>
 <translation id="2248949050832152960">Folosește WebAuthn</translation>
 <translation id="2250931979407627383">Broșare pe marginea din stânga</translation>
@@ -374,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Avertisment de siguranță</translation>
 <translation id="2699302886720511147">Carduri acceptate</translation>
 <translation id="2702801445560668637">Listă de lectură</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
@@ -474,6 +476,7 @@
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3209034400446768650">Pagina poate percepe o taxă</translation>
 <translation id="3209080785413271048">Folosește Windows Hello pentru a confirma metodele de plată salvate.</translation>
+<translation id="3212581601480735796">Activitatea ta de pe <ph name="HOSTNAME" /> este monitorizată</translation>
 <translation id="3215092763954878852">Nu s-a putut folosi WebAuthn</translation>
 <translation id="3225919329040284222">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri web, cu un grad sporit de securitate, pentru a vă proteja.</translation>
 <translation id="3226128629678568754">Apăsați butonul de reîncărcare pentru a retrimite datele necesare pentru încărcarea paginii.</translation>
@@ -532,6 +535,7 @@
 <translation id="3528485271872257980">Maro închis</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Cel puțin 1 element pe dispozitivele sincronizate}=1{1 element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
 <translation id="3539171420378717834">Păstrează o copie a cardului pe dispozitiv</translation>
+<translation id="3553513561058684206">Pentru tine</translation>
 <translation id="3566021033012934673">Conexiunea nu este privată</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">O pagină încorporată de pe <ph name="SITE" /> afișează mesajul</translation>
@@ -762,6 +766,7 @@
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="4597348597567598915">Mărimea 8</translation>
 <translation id="4600854749408232102">C6/C5 (Plic)</translation>
+<translation id="4613966523036881546">Google Chrome nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="4635654612248442824">Site-ul <ph name="ORIGIN" /> a solicitat ca o politică de origine
     să se aplice tuturor solicitărilor, dar această politică nu poate fi aplicată momentan.</translation>
 <translation id="464342062220857295">Funcții de căutare</translation>
@@ -1467,6 +1472,7 @@ Detalii suplimentare:
 <translation id="8103161714697287722">Metodă de plată</translation>
 <translation id="8105368624971345109">Dezactivează</translation>
 <translation id="8118489163946903409">Metodă de plată</translation>
+<translation id="8124023448510659215">Chromium nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />” nu a fost instalat corect pe computer sau în rețea. Contactează administratorul IT pentru a remedia această problemă.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8149426793427495338">Computerul este inactiv.</translation>
@@ -1610,6 +1616,8 @@ Detalii suplimentare:
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
 <translation id="8962950042226115166">Site suspect</translation>
 <translation id="8968766641738584599">Salvează cardul</translation>
+<translation id="8969267497192857913">Orice tastezi, orice pagini afișezi și orice altă activitate de pe web este urmărită, iar conținutul de pe site-uri poate fi modificat fără știrea ta.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8975012916872825179">Include informații precum numerele de telefon, adresele de e-mail și adresele de expediere</translation>
 <translation id="8975263830901772334">Numele fișierelor pe care le printezi</translation>

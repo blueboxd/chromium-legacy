@@ -18,31 +18,32 @@ import java.util.List;
 
 /** This is a builder class for creating internal protocol elements. */
 public class InternalProtocolBuilder {
-    private final ContentIdGenerators idGenerators = new ContentIdGenerators();
-    private final List<StreamDataOperation> dataOperations = new ArrayList<>();
+    private final ContentIdGenerators mIdGenerators = new ContentIdGenerators();
+    private final List<StreamDataOperation> mDataOperations = new ArrayList<>();
 
     /** This adds a Root Feature into the Stream of data operations */
     public InternalProtocolBuilder addRootFeature() {
         StreamFeature streamFeature = StreamFeature.newBuilder()
-                                              .setContentId(idGenerators.createRootContentId(0))
+                                              .setContentId(mIdGenerators.createRootContentId(0))
                                               .build();
-        StreamStructure streamStructure = StreamStructure.newBuilder()
-                                                  .setOperation(Operation.UPDATE_OR_APPEND)
-                                                  .setContentId(idGenerators.createRootContentId(0))
-                                                  .build();
+        StreamStructure streamStructure =
+                StreamStructure.newBuilder()
+                        .setOperation(Operation.UPDATE_OR_APPEND)
+                        .setContentId(mIdGenerators.createRootContentId(0))
+                        .build();
         StreamPayload streamPayload =
                 StreamPayload.newBuilder().setStreamFeature(streamFeature).build();
-        dataOperations.add(StreamDataOperation.newBuilder()
-                                   .setStreamStructure(streamStructure)
-                                   .setStreamPayload(streamPayload)
-                                   .build());
+        mDataOperations.add(StreamDataOperation.newBuilder()
+                                    .setStreamStructure(streamStructure)
+                                    .setStreamPayload(streamPayload)
+                                    .build());
         return this;
     }
 
     public InternalProtocolBuilder addClearOperation() {
         StreamStructure streamStructure =
                 StreamStructure.newBuilder().setOperation(Operation.CLEAR_ALL).build();
-        dataOperations.add(
+        mDataOperations.add(
                 StreamDataOperation.newBuilder().setStreamStructure(streamStructure).build());
         return this;
     }
@@ -56,10 +57,10 @@ public class InternalProtocolBuilder {
                                                   .build();
         StreamPayload streamPayload =
                 StreamPayload.newBuilder().setStreamSharedState(streamSharedState).build();
-        dataOperations.add(StreamDataOperation.newBuilder()
-                                   .setStreamStructure(streamStructure)
-                                   .setStreamPayload(streamPayload)
-                                   .build());
+        mDataOperations.add(StreamDataOperation.newBuilder()
+                                    .setStreamStructure(streamStructure)
+                                    .setStreamPayload(streamPayload)
+                                    .build());
         return this;
     }
 
@@ -71,10 +72,10 @@ public class InternalProtocolBuilder {
                                                   .build();
         StreamPayload streamPayload =
                 StreamPayload.newBuilder().setStreamToken(streamToken).build();
-        dataOperations.add(StreamDataOperation.newBuilder()
-                                   .setStreamStructure(streamStructure)
-                                   .setStreamPayload(streamPayload)
-                                   .build());
+        mDataOperations.add(StreamDataOperation.newBuilder()
+                                    .setStreamStructure(streamStructure)
+                                    .setStreamPayload(streamPayload)
+                                    .build());
         return this;
     }
 
@@ -88,10 +89,10 @@ public class InternalProtocolBuilder {
                                                   .build();
         StreamPayload streamPayload =
                 StreamPayload.newBuilder().setStreamFeature(streamFeature).build();
-        dataOperations.add(StreamDataOperation.newBuilder()
-                                   .setStreamStructure(streamStructure)
-                                   .setStreamPayload(streamPayload)
-                                   .build());
+        mDataOperations.add(StreamDataOperation.newBuilder()
+                                    .setStreamStructure(streamStructure)
+                                    .setStreamPayload(streamPayload)
+                                    .build());
         return this;
     }
 
@@ -101,13 +102,13 @@ public class InternalProtocolBuilder {
                                                   .setContentId(contentId)
                                                   .setParentContentId(parentId)
                                                   .build();
-        dataOperations.add(
+        mDataOperations.add(
                 StreamDataOperation.newBuilder().setStreamStructure(streamStructure).build());
         return this;
     }
 
     public InternalProtocolBuilder addRequiredContent(String contentId) {
-        dataOperations.add(
+        mDataOperations.add(
                 StreamDataOperation.newBuilder()
                         .setStreamStructure(StreamStructure.newBuilder()
                                                     .setOperation(Operation.REQUIRED_CONTENT)
@@ -117,7 +118,7 @@ public class InternalProtocolBuilder {
     }
 
     public List<StreamDataOperation> build() {
-        return new ArrayList<>(dataOperations);
+        return new ArrayList<>(mDataOperations);
     }
 
     /**
@@ -126,7 +127,7 @@ public class InternalProtocolBuilder {
      */
     public List<StreamStructure> buildAsStreamStructure() {
         List<StreamStructure> streamStructures = new ArrayList<>();
-        for (StreamDataOperation operation : dataOperations) {
+        for (StreamDataOperation operation : mDataOperations) {
             // For the structure, ignore the shared state
             if (operation.getStreamPayload().hasStreamSharedState()) {
                 continue;
@@ -138,7 +139,7 @@ public class InternalProtocolBuilder {
 
     public List<PayloadWithId> buildAsPayloadWithId() {
         List<PayloadWithId> payloads = new ArrayList<>();
-        for (StreamDataOperation operation : dataOperations) {
+        for (StreamDataOperation operation : mDataOperations) {
             // For the structure, ignore the shared state
             if (operation.getStreamPayload().hasStreamSharedState()) {
                 continue;

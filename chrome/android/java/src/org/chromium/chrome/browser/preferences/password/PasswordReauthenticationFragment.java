@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.password;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -63,7 +64,7 @@ public class PasswordReauthenticationFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE) {
-            if (resultCode == getActivity().RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 ReauthenticationManager.recordLastReauth(
                         System.currentTimeMillis(), getArguments().getInt(SCOPE_ID));
             } else {

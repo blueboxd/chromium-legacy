@@ -19,19 +19,19 @@ import com.google.android.libraries.feed.common.logging.Logger;
 public class HeaderDriver extends LeafFeatureDriver {
     private static final String TAG = "HeaderDriver";
 
-    private final Header header;
-    private final SwipeNotifier swipeNotifier;
-    /*@Nullable*/ private HeaderViewHolder headerViewHolder;
+    private final Header mHeader;
+    private final SwipeNotifier mSwipeNotifier;
+    /*@Nullable*/ private HeaderViewHolder mHeaderViewHolder;
 
     public HeaderDriver(Header header, SwipeNotifier swipeNotifier) {
-        this.header = header;
-        this.swipeNotifier = swipeNotifier;
+        this.mHeader = header;
+        this.mSwipeNotifier = swipeNotifier;
     }
 
     @Override
     public void bind(FeedViewHolder viewHolder) {
         if (isBound()) {
-            if (viewHolder == this.headerViewHolder) {
+            if (viewHolder == this.mHeaderViewHolder) {
                 Logger.e(TAG, "Being rebound to the previously bound viewholder");
                 return;
             }
@@ -39,28 +39,28 @@ public class HeaderDriver extends LeafFeatureDriver {
         }
 
         checkState(viewHolder instanceof HeaderViewHolder);
-        headerViewHolder = (HeaderViewHolder) viewHolder;
-        headerViewHolder.bind(header, swipeNotifier);
+        mHeaderViewHolder = (HeaderViewHolder) viewHolder;
+        mHeaderViewHolder.bind(mHeader, mSwipeNotifier);
     }
 
     @Override
     public void unbind() {
-        if (headerViewHolder == null) {
+        if (mHeaderViewHolder == null) {
             return;
         }
 
-        headerViewHolder.unbind();
-        headerViewHolder = null;
+        mHeaderViewHolder.unbind();
+        mHeaderViewHolder = null;
     }
 
     @Override
     public void maybeRebind() {
-        if (headerViewHolder == null) {
+        if (mHeaderViewHolder == null) {
             return;
         }
 
         // Unbinding clears the viewHolder, so storing to rebind.
-        HeaderViewHolder localViewHolder = headerViewHolder;
+        HeaderViewHolder localViewHolder = mHeaderViewHolder;
         unbind();
         bind(localViewHolder);
     }
@@ -74,11 +74,11 @@ public class HeaderDriver extends LeafFeatureDriver {
     public void onDestroy() {}
 
     public Header getHeader() {
-        return header;
+        return mHeader;
     }
 
     @VisibleForTesting
     boolean isBound() {
-        return headerViewHolder != null;
+        return mHeaderViewHolder != null;
     }
 }

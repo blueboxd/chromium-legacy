@@ -21,6 +21,21 @@
 namespace extensions {
 namespace declarative_net_request {
 
+namespace {
+
+base::Optional<RequestAction> GetMaxPriorityAction(
+    base::Optional<RequestAction> lhs,
+    base::Optional<RequestAction> rhs) {
+  if (!lhs)
+    return rhs;
+  if (!rhs)
+    return lhs;
+  return lhs->rule_priority > rhs->rule_priority ? std::move(lhs)
+                                                 : std::move(rhs);
+}
+
+}  // namespace
+
 // static
 RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
     const RulesetSource& source,
@@ -65,17 +80,27 @@ RulesetMatcher::~RulesetMatcher() = default;
 
 base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
     const RequestParams& params) const {
-  return url_pattern_index_matcher_.GetBlockOrCollapseAction(params);
+  base::Optional<RequestAction> action =
+      url_pattern_index_matcher_.GetBlockOrCollapseAction(params);
+  if (!action)
+    action = regex_matcher_.GetBlockOrCollapseAction(params);
+  return action;
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetAllowAction(
     const RequestParams& params) const {
-  return url_pattern_index_matcher_.GetAllowAction(params);
+  base::Optional<RequestAction> action =
+      url_pattern_index_matcher_.GetAllowAction(params);
+  if (!action)
+    action = regex_matcher_.GetAllowAction(params);
+  return action;
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
     const RequestParams& params) const {
-  return url_pattern_index_matcher_.GetRedirectAction(params);
+  return GetMaxPriorityAction(
+      url_pattern_index_matcher_.GetRedirectAction(params),
+      regex_matcher_.GetRedirectAction(params));
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
@@ -83,34 +108,36 @@ base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
   if (!IsUpgradeableRequest(params))
     return base::nullopt;
 
-  return url_pattern_index_matcher_.GetUpgradeAction(params);
+  return GetMaxPriorityAction(
+      url_pattern_index_matcher_.GetUpgradeAction(params),
+      regex_matcher_.GetUpgradeAction(params));
 }
 
 uint8_t RulesetMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
     uint8_t ignored_mask,
     std::vector<RequestAction>* remove_headers_actions) const {
-  return url_pattern_index_matcher_.GetRemoveHeadersMask(
+  DCHECK(remove_headers_actions);
+  static_assert(
+      flat::RemoveHeaderType_ANY <= std::numeric_limits<uint8_t>::max(),
+      "flat::RemoveHeaderType can't fit in a uint8_t");
+
+  uint8_t mask = url_pattern_index_matcher_.GetRemoveHeadersMask(
       params, ignored_mask, remove_headers_actions);
+  return mask | regex_matcher_.GetRemoveHeadersMask(params, ignored_mask | mask,
+                                                    remove_headers_actions);
 }
 
 bool RulesetMatcher::IsExtraHeadersMatcher() const {
-  return url_pattern_index_matcher_.IsExtraHeadersMatcher();
+  return url_pattern_index_matcher_.IsExtraHeadersMatcher() ||
+         regex_matcher_.IsExtraHeadersMatcher();
 }
 
 base::Optional<RequestAction>
 RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
     const RequestParams& params) const {
-  base::Optional<RequestAction> redirect_action = GetRedirectAction(params);
-  base::Optional<RequestAction> upgrade_action = GetUpgradeAction(params);
-
-  if (!redirect_action)
-    return upgrade_action;
-  if (!upgrade_action)
-    return redirect_action;
-  if (upgrade_action->rule_priority >= redirect_action->rule_priority)
-    return upgrade_action;
-  return redirect_action;
+  return GetMaxPriorityAction(GetRedirectAction(params),
+                              GetUpgradeAction(params));
 }
 
 RulesetMatcher::RulesetMatcher(
@@ -127,7 +154,11 @@ RulesetMatcher::RulesetMatcher(
       url_pattern_index_matcher_(extension_id,
                                  source_type,
                                  root_->index_list(),
-                                 root_->extension_metadata()) {}
+                                 root_->extension_metadata()),
+      regex_matcher_(extension_id,
+                     source_type,
+                     root_->regex_rules(),
+                     root_->extension_metadata()) {}
 
 }  // namespace declarative_net_request
 }  // namespace extensions

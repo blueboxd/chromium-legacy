@@ -26,15 +26,18 @@
   }
 
   #tab:focus {
-    box-shadow: 0 0 0 2px var(--tabstrip-focus-outline-color);
     outline: none;
+  }
+
+  :host-context(.focus-outline-visible) #tab:focus {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-outline-color);
   }
 
   :host([active]) #tab {
     box-shadow: 0 0 0 2px var(--tabstrip-tab-active-border-color);
   }
 
-  :host([active]) #tab:focus {
+  :host-context(.focus-outline-visible):host([active]) #tab:focus {
     box-shadow: 0 0 0 4px var(--tabstrip-focus-outline-color),
                 0 0 0 2px var(--tabstrip-tab-active-border-color);
   }
@@ -221,7 +224,7 @@
     width: 18px;
   }
 
-  #close:focus #closeIconFocus {
+  :host-context(.focus-outline-visible) #close:focus #closeIconFocus {
     background: currentColor;
     border-radius: 50%;
     height: 24px;

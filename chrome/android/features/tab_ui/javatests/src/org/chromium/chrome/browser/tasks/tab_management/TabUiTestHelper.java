@@ -6,10 +6,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -25,10 +29,14 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import org.hamcrest.Matcher;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -37,6 +45,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -322,6 +331,33 @@ public class TabUiTestHelper {
         CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
                 "The thumbnail " + jpegFile.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Exit the PopupWindow dialog by clicking the outer ScrimView.
+     * @param cta  The current running activity.
+     */
+    static void clickScrimToExitDialog(ChromeTabbedActivity cta) {
+        onView(instanceOf(ScrimView.class))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(new ViewAction() {
+                    @Override
+                    public Matcher<View> getConstraints() {
+                        return isDisplayed();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "click on ScrimView";
+                    }
+
+                    @Override
+                    public void perform(UiController uiController, View view) {
+                        assertTrue(view instanceof ScrimView);
+                        ScrimView scrimView = (ScrimView) view;
+                        scrimView.performClick();
+                    }
+                });
     }
 
     /**

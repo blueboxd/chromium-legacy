@@ -415,9 +415,9 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
               return;
             }
           }
-          blob_data->AppendFile(element.filename_, element.file_start_,
-                                file_length,
-                                element.expected_file_modification_time_);
+          blob_data->AppendFile(
+              element.filename_, element.file_start_, file_length,
+              DoubleTToOptionalTime(element.expected_file_modification_time_));
           break;
         }
         case FormDataElement::kEncodedBlob:

@@ -14,18 +14,18 @@ import com.google.android.libraries.feed.api.internal.sessionmanager.FeedSession
 public final class RequestManagerImpl implements RequestManager {
     private static final String TAG = "RequestManagerImpl";
 
-    private final FeedRequestManager feedRequestManager;
-    private final FeedSessionManager feedSessionManager;
+    private final FeedRequestManager mFeedRequestManager;
+    private final FeedSessionManager mFeedSessionManager;
 
     public RequestManagerImpl(
             FeedRequestManager feedRequestManager, FeedSessionManager feedSessionManager) {
-        this.feedRequestManager = feedRequestManager;
-        this.feedSessionManager = feedSessionManager;
+        this.mFeedRequestManager = feedRequestManager;
+        this.mFeedSessionManager = feedSessionManager;
     }
 
     @Override
     public void triggerScheduledRefresh() {
-        feedRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED,
-                feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+        mFeedRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED,
+                mFeedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
     }
 }

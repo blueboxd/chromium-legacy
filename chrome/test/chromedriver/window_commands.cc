@@ -1503,6 +1503,8 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
+                if (event.type == kPause)
+                  event.type = kTouchMove;
                 event.id = dispatch_touch_events.size();
                 dispatch_touch_events.push_back(event);
               }

@@ -8,6 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 
 import java.nio.ByteBuffer;
@@ -32,6 +33,26 @@ public class PaymentHandlerHost {
          */
         @CalledByNative("PaymentHandlerHostDelegate")
         boolean changePaymentMethodFromPaymentHandler(String methodName, String stringifiedData);
+
+        /**
+         * Notifies the merchant that the selected shipping option has changed within a payment
+         * handler. The merchant may recalculate the payment details (e.g. total) based on the
+         * updated shipping option.
+         * @param shippingOptionId      The selected shipping option identifier.
+         * @return "False" if not in a valid state.
+         */
+        @CalledByNative("PaymentHandlerHostDelegate")
+        boolean changeShippingOptionFromPaymentHandler(String shippingOptionId);
+
+        /**
+         * Notifies the merchant that the selected shipping address has changed within a payment
+         * handler. The merchant may recalculate the payment details (e.g. total or shipping
+         * options) based on the updated shipping address.
+         * @param shippingAddress      The selected shipping address.
+         * @return "False" if not in a valid state.
+         */
+        @CalledByNative("PaymentHandlerHostDelegate")
+        boolean changeShippingAddressFromPaymentHandler(PaymentAddress shippingAddress);
     }
 
     /** Pointer to the native bridge. This Java object owns the native bridge. */
@@ -49,12 +70,14 @@ public class PaymentHandlerHost {
     }
 
     /**
-     * Checks whether the payment method change event is ongoing.
-     * @return True after payment handler called changePaymentMethod() and before the merchant
-     * replies with either updateWith() or noUpdatedPaymentDetails().
+     * Checks whether any payment method, shipping address or shipping option change event is
+     * ongoing.
+     * @return True after payment handler called changePaymentMethod(), changeShippingAddress(), or
+     *         changeShippingOption() and before the merchant replies with either updateWith() or
+     *         noUpdatedPaymentDetails().
      */
-    public boolean isChangingPaymentMethod() {
-        return PaymentHandlerHostJni.get().isChangingPaymentMethod(mNativePointer);
+    public boolean isChanging() {
+        return PaymentHandlerHostJni.get().isChanging(mNativePointer);
     }
 
     /**
@@ -78,7 +101,8 @@ public class PaymentHandlerHost {
     }
 
     /**
-     * Notifies the payment handler that the merchant ignored the the payment-method-change event.
+     * Notifies the payment handler that the merchant ignored the the payment-method,
+     * shipping-address, or shipping-option change event.
      */
     public void noUpdatedPaymentDetails() {
         PaymentHandlerHostJni.get().noUpdatedPaymentDetails(mNativePointer);
@@ -88,6 +112,24 @@ public class PaymentHandlerHost {
     public void destroy() {
         PaymentHandlerHostJni.get().destroy(mNativePointer);
         mNativePointer = 0;
+    }
+
+    @CalledByNative
+    private static Object createShippingAddress(String country, String[] addressLine, String region,
+            String city, String dependentLocality, String postalCode, String sortingCode,
+            String organization, String recipient, String phone) {
+        PaymentAddress result = new PaymentAddress();
+        result.country = country;
+        result.addressLine = addressLine;
+        result.region = region;
+        result.city = city;
+        result.dependentLocality = dependentLocality;
+        result.postalCode = postalCode;
+        result.sortingCode = sortingCode;
+        result.organization = organization;
+        result.recipient = recipient;
+        result.phone = phone;
+        return result;
     }
 
     /**
@@ -107,10 +149,11 @@ public class PaymentHandlerHost {
         long init(WebContents webContents, PaymentHandlerHostDelegate delegate);
 
         /**
-         * Checks whether the payment method change is currently in progress.
+         * Checks whether any payment method, shipping address, or shipping option change is
+         * currently in progress.
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
          */
-        boolean isChangingPaymentMethod(long nativePaymentHandlerHost);
+        boolean isChanging(long nativePaymentHandlerHost);
 
         /**
          * Returns the native pointer to the payment handler host (not the bridge). The native
@@ -128,7 +171,8 @@ public class PaymentHandlerHost {
         void updateWith(long nativePaymentHandlerHost, ByteBuffer responseBuffer);
 
         /**
-         * Notifies the payment handler that the merchant ignored the payment method change event.
+         * Notifies the payment handler that the merchant ignored the payment method, shipping
+         * address, or shipping option change event.
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
          */
         void noUpdatedPaymentDetails(long nativePaymentHandlerHost);

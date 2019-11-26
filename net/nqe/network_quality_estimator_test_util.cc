@@ -29,16 +29,17 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator()
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     const std::map<std::string, std::string>& variation_params)
-    : TestNetworkQualityEstimator(variation_params,
-                                  true,
-                                  true,
-                                  std::make_unique<BoundTestNetLog>()) {}
+    : TestNetworkQualityEstimator(
+          variation_params,
+          true,
+          true,
+          std::make_unique<RecordingBoundTestNetLog>()) {}
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     const std::map<std::string, std::string>& variation_params,
     bool allow_local_host_requests_for_tests,
     bool allow_smaller_responses_for_tests,
-    std::unique_ptr<BoundTestNetLog> net_log)
+    std::unique_ptr<RecordingBoundTestNetLog> net_log)
     : TestNetworkQualityEstimator(variation_params,
                                   allow_local_host_requests_for_tests,
                                   allow_smaller_responses_for_tests,
@@ -50,7 +51,7 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     bool allow_local_host_requests_for_tests,
     bool allow_smaller_responses_for_tests,
     bool suppress_notifications_for_testing,
-    std::unique_ptr<BoundTestNetLog> net_log)
+    std::unique_ptr<RecordingBoundTestNetLog> net_log)
     : NetworkQualityEstimator(
           std::make_unique<NetworkQualityEstimatorParams>(variation_params),
           net_log->bound().net_log()),
@@ -64,18 +65,18 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     std::unique_ptr<NetworkQualityEstimatorParams> params)
-    : TestNetworkQualityEstimator(std::move(params),
-                                  std::make_unique<BoundTestNetLog>()) {}
+    : TestNetworkQualityEstimator(
+          std::move(params),
+          std::make_unique<RecordingBoundTestNetLog>()) {}
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     std::unique_ptr<NetworkQualityEstimatorParams> params,
-    std::unique_ptr<BoundTestNetLog> net_log)
+    std::unique_ptr<RecordingBoundTestNetLog> net_log)
     : NetworkQualityEstimator(std::move(params), net_log->bound().net_log()),
       net_log_(std::move(net_log)),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       embedded_test_server_(base::FilePath(kTestFilePath)),
-      suppress_notifications_for_testing_(false) {
-}
+      suppress_notifications_for_testing_(false) {}
 
 TestNetworkQualityEstimator::~TestNetworkQualityEstimator() = default;
 

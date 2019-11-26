@@ -26,10 +26,10 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class FeatureDataOperationTransformerTest {
     private static final String CONTENT_ID = "123";
-    private DataOperation.Builder dataOperation;
-    private StreamDataOperation.Builder dataOperationBuilder;
-    private StreamFeature streamFeature;
-    private FeatureDataOperationTransformer featureDataOperationTransformer;
+    private DataOperation.Builder mDataOperation;
+    private StreamDataOperation.Builder mDataOperationBuilder;
+    private StreamFeature mStreamFeature;
+    private FeatureDataOperationTransformer mFeatureDataOperationTransformer;
 
     @Before
     public void setUp() {

@@ -190,10 +190,16 @@ def _extract_dom_module_id(html_file):
     return match.group(1)
 
 
+def _add_template_markers(html_template):
+  return '<!--_html_template_start_-->%s<!--_html_template_end_-->' % \
+      html_template;
+
+
 def _extract_template(html_file, html_type):
   if html_type == 'v3-ready':
     with io.open(html_file, encoding='utf-8', mode='r') as f:
-      return f.read()
+      template = f.read()
+      return _add_template_markers('\n' + template)
 
   if html_type == 'dom-module':
     with io.open(html_file, encoding='utf-8', mode='r') as f:
@@ -212,7 +218,7 @@ def _extract_template(html_file, html_type):
           assert re.match(r'\s*</template>', lines[i - 2])
           assert re.match(r'\s*<script ', lines[i - 1])
           end_line = i - 3;
-    return '\n' + ''.join(lines[start_line:end_line + 1])
+    return _add_template_markers('\n' + ''.join(lines[start_line:end_line + 1]))
 
   if html_type == 'style-module':
     with io.open(html_file, encoding='utf-8', mode='r') as f:

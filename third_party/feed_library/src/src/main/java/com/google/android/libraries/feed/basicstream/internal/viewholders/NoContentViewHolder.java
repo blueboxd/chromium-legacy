@@ -17,14 +17,14 @@ import com.google.android.libraries.feed.common.ui.LayoutUtils;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for no content card. */
 public class NoContentViewHolder extends FeedViewHolder {
-    private final CardConfiguration cardConfiguration;
-    private final View view;
+    private final CardConfiguration mCardConfiguration;
+    private final View mView;
 
     public NoContentViewHolder(
             CardConfiguration cardConfiguration, Context context, FrameLayout frameLayout) {
         super(frameLayout);
-        this.cardConfiguration = cardConfiguration;
-        view = LayoutInflater.from(context).inflate(R.layout.no_content, frameLayout);
+        this.mCardConfiguration = cardConfiguration;
+        mView = LayoutInflater.from(context).inflate(R.layout.no_content, frameLayout);
     }
 
     public void bind() {
@@ -37,10 +37,10 @@ public class NoContentViewHolder extends FeedViewHolder {
             itemView.setLayoutParams(layoutParams);
         }
         LayoutUtils.setMarginsRelative((MarginLayoutParams) layoutParams,
-                cardConfiguration.getCardStartMargin(), 0, cardConfiguration.getCardEndMargin(),
-                cardConfiguration.getCardBottomMargin());
+                mCardConfiguration.getCardStartMargin(), 0, mCardConfiguration.getCardEndMargin(),
+                mCardConfiguration.getCardBottomMargin());
 
-        view.setBackground(cardConfiguration.getCardBackground());
+        mView.setBackground(mCardConfiguration.getCardBackground());
     }
 
     @Override

@@ -625,10 +625,13 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
     uint64_t size;
-    double last_modified_ms = InvalidFileTime();
-    file->CaptureSnapshot(size, last_modified_ms);
-    // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
-    double last_modified = last_modified_ms / kMsPerSecond;
+    base::Optional<base::Time> last_modified_time;
+    file->CaptureSnapshot(size, last_modified_time);
+    // TODO(crbug.com/988343): transition WebBlobInfo.lastModified to be
+    // base::Time also.
+    double last_modified = last_modified_time
+                               ? last_modified_time->ToDoubleT()
+                               : std::numeric_limits<double>::quiet_NaN();
     blob_info_array_->emplace_back(file->GetBlobDataHandle(), file->GetPath(),
                                    file->name(), file->type(), last_modified,
                                    size);
@@ -644,11 +647,12 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     if (file->HasValidSnapshotMetadata()) {
       WriteUint32(1);
       uint64_t size;
-      double last_modified_ms;
-      file->CaptureSnapshot(size, last_modified_ms);
+      base::Optional<base::Time> last_modified;
+      file->CaptureSnapshot(size, last_modified);
       DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
       WriteUint64(size);
-      WriteDouble(last_modified_ms);
+      WriteDouble(last_modified ? last_modified->ToJsTimeIgnoringNull()
+                                : std::numeric_limits<double>::quiet_NaN());
     } else {
       WriteUint32(0);
     }

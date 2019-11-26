@@ -125,7 +125,7 @@ class FolderShortcutsDataModel extends cr.EventTarget {
         // does not exist anymore.
         if (!volumeInfo ||
             this.volumeManager_.getDriveConnectionState().type !==
-                VolumeManagerCommon.DriveConnectionType.ONLINE) {
+                chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE) {
           if (!this.unresolvablePaths_[path]) {
             changed = true;
             this.unresolvablePaths_[path] = true;
@@ -486,7 +486,7 @@ class FolderShortcutsDataModel extends cr.EventTarget {
     // If Drive is online, then delete the shortcut permanently. Otherwise,
     // delete from model and add to |unresolvablePaths_|.
     if (this.volumeManager_.getDriveConnectionState().type !==
-        VolumeManagerCommon.DriveConnectionType.ONLINE) {
+        chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE) {
       const path = this.convertUrlToStoredPath_(entry.toURL());
       // TODO(mtomasz): Add support for multi-profile.
       this.unresolvablePaths_[path] = true;

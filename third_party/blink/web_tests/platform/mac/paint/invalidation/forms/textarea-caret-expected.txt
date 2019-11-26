@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "HorizontalScrollbar",
-          "rect": [5, 5, 167, 44],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [5, 5, 167, 44],
           "reason": "chunk appeared"
@@ -20,11 +15,6 @@
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [5, 5, 167, 44],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [5, 5, 167, 44],
-          "reason": "paint property change"
         },
         {
           "object": "LayoutNGBlockFlow HTML",
@@ -33,13 +23,18 @@
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [8, 8, 161, 38],
-          "reason": "paint property change"
+          "rect": [9, 11, 159, 16],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [9, 30, 159, 15],
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 11, 159, 16],
-          "reason": "chunk appeared"
+          "rect": [153, 30, 15, 15],
+          "reason": "chunk disappeared"
         }
       ]
     }

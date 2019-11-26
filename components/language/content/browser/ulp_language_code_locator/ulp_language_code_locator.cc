@@ -63,13 +63,17 @@ std::vector<std::string> UlpLanguageCodeLocator::GetLanguageCodes(
     const bool is_cached =
         celllangs_cached->GetDictionary(index, &celllang_cached);
 
-    const S2CellId cell_cached =
-        is_cached ? S2CellId::FromToken(
-                        *celllang_cached->FindStringKey(kCellTokenKey))
-                  : S2CellId::None();
+    const std::string* token_cached =
+        is_cached ? celllang_cached->FindStringKey(kCellTokenKey) : nullptr;
+    const S2CellId cell_cached = token_cached != nullptr
+                                     ? S2CellId::FromToken(*token_cached)
+                                     : S2CellId::None();
 
-    if (cell_cached.is_valid() && cell_cached.contains(cell)) {
-      language = *celllang_cached->FindStringKey(kLanguageKey);
+    const std::string* lang_cached =
+        is_cached ? celllang_cached->FindStringKey(kLanguageKey) : nullptr;
+    if (cell_cached.is_valid() && cell_cached.contains(cell) &&
+        lang_cached != nullptr) {
+      language = *lang_cached;
     } else {
       const S2LangQuadTreeNode& root =
           S2LangQuadTreeNode::Deserialize(serialized_langtrees_[index].get());

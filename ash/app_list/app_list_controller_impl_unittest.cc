@@ -529,7 +529,9 @@ class HotseatAppListControllerImplTest
 };
 
 // Tests with both hotseat disabled and enabled.
-INSTANTIATE_TEST_SUITE_P(, HotseatAppListControllerImplTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         HotseatAppListControllerImplTest,
+                         testing::Bool());
 
 // Verifies that the pinned app should still show after canceling the drag from
 // AppsGridView to Shelf (https://crbug.com/1021768).

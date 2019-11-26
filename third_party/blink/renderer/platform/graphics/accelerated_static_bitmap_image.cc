@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -179,7 +180,7 @@ IntSize AcceleratedStaticBitmapImage::Size() const {
 scoped_refptr<StaticBitmapImage>
 AcceleratedStaticBitmapImage::MakeUnaccelerated() {
   CreateImageFromMailboxIfNeeded();
-  return StaticBitmapImage::Create(
+  return UnacceleratedStaticBitmapImage::Create(
       skia_texture_holder_->GetSkImage()->makeNonTextureImage());
 }
 

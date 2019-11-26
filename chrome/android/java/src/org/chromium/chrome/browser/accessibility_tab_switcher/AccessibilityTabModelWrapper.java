@@ -64,19 +64,6 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     // to run against API version 19.
     private boolean mIsAttachedToWindow;
 
-    private class ButtonOnClickListener implements View.OnClickListener {
-        private final boolean mIncognito;
-
-        public ButtonOnClickListener(boolean incognito) {
-            mIncognito = incognito;
-        }
-
-        @Override
-        public void onClick(View v) {
-            setSelectedModel(mIncognito);
-        }
-    }
-
     public AccessibilityTabModelWrapper(Context context) {
         super(context);
     }

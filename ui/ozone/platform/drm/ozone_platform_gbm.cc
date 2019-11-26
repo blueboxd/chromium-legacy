@@ -202,12 +202,13 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_ = std::make_unique<DrmCursor>(window_manager_.get());
 
 #if BUILDFLAG(USE_XKBCOMMON)
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
+    keyboard_layout_engine_ =
+        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_);
 #else
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<StubKeyboardLayoutEngine>());
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
 #endif
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        keyboard_layout_engine_.get());
 
     event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         cursor_.get(), device_manager_.get(),
@@ -356,6 +357,10 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the host process.
+#if BUILDFLAG(USE_XKBCOMMON)
+  XkbEvdevCodes xkb_evdev_code_converter_;
+#endif
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<DrmDeviceConnector> drm_device_connector_;
   scoped_refptr<HostDrmDevice> host_drm_device_;
   base::PlatformThreadRef host_thread_;
@@ -367,10 +372,6 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
   InitializedHostProperties host_properties_;
-
-#if BUILDFLAG(USE_XKBCOMMON)
-  XkbEvdevCodes xkb_evdev_code_converter_;
-#endif
 
   base::WeakPtrFactory<OzonePlatformGbm> weak_factory_{this};
 

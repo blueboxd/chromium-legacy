@@ -34,6 +34,16 @@ chrome.fileManagerPrivate = {
     EXCLUDE_DIRECTORIES: 'EXCLUDE_DIRECTORIES',
     OFFLINE: 'OFFLINE',
   },
+  DriveConnectionStateType: {
+    ONLINE: 'ONLINE',
+    OFFLINE: 'OFFLINE',
+    METERED: 'METERED',
+  },
+  DriveOfflineReason: {
+    NOT_READY: 'NOT_READY',
+    NO_NETWORK: 'NO_NETWORK',
+    NO_SERVICE: 'NO_SERVICE',
+  },
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',
   preferences_: {

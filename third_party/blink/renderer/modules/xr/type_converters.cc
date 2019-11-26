@@ -88,9 +88,8 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::PosePtr>::
 
 blink::HeapVector<blink::Member<blink::DOMPointReadOnly>>
 TypeConverter<blink::HeapVector<blink::Member<blink::DOMPointReadOnly>>,
-              WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>>::
-    Convert(const WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>&
-                vertices) {
+              Vector<device::mojom::blink::XRPlanePointDataPtr>>::
+    Convert(const Vector<device::mojom::blink::XRPlanePointDataPtr>& vertices) {
   blink::HeapVector<blink::Member<blink::DOMPointReadOnly>> result;
 
   for (const auto& vertex_data : vertices) {

@@ -24,13 +24,9 @@ BEFORE:
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
-    },
-    {
-      "name": "LayoutNGBlockFlow HTML",
-      "position": [8, 8],
-      "bounds": [792, 72]
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
@@ -75,14 +71,9 @@ AFTER:
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
-    },
-    {
-      "name": "LayoutNGBlockFlow HTML",
-      "position": [8, 8],
-      "bounds": [792, 853],
-      "transform": 1
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",

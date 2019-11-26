@@ -121,8 +121,9 @@ class CONTENT_EXPORT CacheStorageContextImpl
 
   void ShutdownOnTaskRunner();
 
-  void GetBlobStorageMojoContextOnIOThread(
-      ChromeBlobStorageContext* blob_storage_context);
+  void BindBlobStorageMojoContextOnIOThread(
+      ChromeBlobStorageContext* blob_storage_context,
+      mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver);
 
   void SetBlobParametersForCacheOnTaskRunner(
       mojo::PendingRemote<storage::mojom::BlobStorageContext> remote);

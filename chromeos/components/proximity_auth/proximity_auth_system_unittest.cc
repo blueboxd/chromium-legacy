@@ -16,7 +16,6 @@
 #include "chromeos/components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/mock_proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
-#include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/components/proximity_auth/unlock_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -397,7 +396,7 @@ TEST_F(ProximityAuthSystemTest, StopSystem_RegisteredUserFocused) {
 TEST_F(ProximityAuthSystemTest, OnAuthAttempted) {
   FocusUser(kUser1);
   EXPECT_CALL(*unlock_manager_, OnAuthAttempted(_));
-  proximity_auth_system_->OnAuthAttempted(AccountId::FromUserEmail(kUser1));
+  proximity_auth_system_->OnAuthAttempted();
 }
 
 TEST_F(ProximityAuthSystemTest, Suspend_ScreenUnlocked) {

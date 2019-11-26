@@ -43,7 +43,7 @@ using InstallError = update_client::InstallError;
 
 }  // namespace
 
-ComponentInstallerPolicy::~ComponentInstallerPolicy() {}
+ComponentInstallerPolicy::~ComponentInstallerPolicy() = default;
 
 ComponentInstaller::RegistrationInfo::RegistrationInfo()
     : version(kNullVersion) {}
@@ -51,13 +51,14 @@ ComponentInstaller::RegistrationInfo::RegistrationInfo()
 ComponentInstaller::RegistrationInfo::~RegistrationInfo() = default;
 
 ComponentInstaller::ComponentInstaller(
-    std::unique_ptr<ComponentInstallerPolicy> installer_policy)
+    std::unique_ptr<ComponentInstallerPolicy> installer_policy,
+    scoped_refptr<update_client::ActionHandler> action_handler)
     : current_version_(kNullVersion),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  installer_policy_ = std::move(installer_policy);
-}
+      installer_policy_(std::move(installer_policy)),
+      action_handler_(action_handler),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-ComponentInstaller::~ComponentInstaller() {}
+ComponentInstaller::~ComponentInstaller() = default;
 
 void ComponentInstaller::Register(ComponentUpdateService* cus,
                                   base::OnceClosure callback) {
@@ -400,6 +401,7 @@ void ComponentInstaller::FinishRegistration(
   installer_policy_->GetHash(&crx.pk_hash);
   crx.app_id = update_client::GetCrxIdFromPublicKeyHash(crx.pk_hash);
   crx.installer = this;
+  crx.action_handler = action_handler_;
   crx.version = current_version_;
   crx.fingerprint = current_fingerprint_;
   crx.name = installer_policy_->GetName();

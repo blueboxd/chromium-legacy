@@ -36,6 +36,16 @@ public interface RenderFrameHost {
     void getCanonicalUrlForSharing(Callback<String> callback);
 
     /**
+     * Returns whether the feature policy allows the "payment" feature in this frame.
+     *
+     * TODO(rouslan): Expose the full set of feature policy enum values to Java. See:
+     * https://crbug.com/1027176
+     *
+     * @return Whether the feature policy allows the "payment" feature in this frame.
+     */
+    boolean isPaymentFeaturePolicyEnabled();
+
+    /**
      * Returns an InterfaceProvider that provides access to interface implementations provided by
      * the corresponding RenderFrame. This provides access to interfaces implemented in the renderer
      * to Java code in the browser process.

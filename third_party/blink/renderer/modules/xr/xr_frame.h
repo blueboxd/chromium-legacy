@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExceptionState;
+class XRAnchorSet;
 class XRHitTestResult;
 class XRHitTestSource;
 class XRInputSource;
@@ -24,8 +25,9 @@ class XRPose;
 class XRReferenceSpace;
 class XRSession;
 class XRSpace;
+class XRTransientInputHitTestResult;
+class XRTransientInputHitTestSource;
 class XRViewerPose;
-class XRAnchorSet;
 class XRWorldInformation;
 
 class XRFrame final : public ScriptWrappable {
@@ -53,6 +55,10 @@ class XRFrame final : public ScriptWrappable {
 
   HeapVector<Member<XRHitTestResult>> getHitTestResults(
       XRHitTestSource* hit_test_source);
+
+  HeapVector<Member<XRTransientInputHitTestResult>>
+  getHitTestResultsForTransientInput(
+      XRTransientInputHitTestSource* hit_test_source);
 
   bool EmulatedPosition() const { return emulated_position_; }
 

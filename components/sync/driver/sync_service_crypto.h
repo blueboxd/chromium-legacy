@@ -137,8 +137,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     RequiredUserAction required_user_action = RequiredUserAction::kNone;
 
     // The current set of encrypted types. Always a superset of
-    // Cryptographer::SensitiveTypes().
-    ModelTypeSet encrypted_types = SyncEncryptionHandler::SensitiveTypes();
+    // AlwaysEncryptedUserTypes().
+    ModelTypeSet encrypted_types = AlwaysEncryptedUserTypes();
 
     // Whether we want to encrypt everything.
     bool encrypt_everything = false;

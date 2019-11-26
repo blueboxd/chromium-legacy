@@ -15,16 +15,16 @@ import com.google.android.libraries.feed.common.time.testing.FakeClock.ClockUpda
 public class FakeClock extends ObservableNotifier<ClockUpdateListener> implements Clock {
     private static final String TAG = "FakeClock";
 
-    private long currentTime;
-    private long elapsedRealtimeMs;
+    private long mCurrentTime;
+    private long mElapsedRealtimeMs;
 
     public FakeClock() {
         this(0, 0);
     }
 
     public FakeClock(long currentTime, long elapsedRealtime) {
-        this.currentTime = currentTime;
-        elapsedRealtimeMs = elapsedRealtime;
+        this.mCurrentTime = currentTime;
+        mElapsedRealtimeMs = elapsedRealtime;
     }
 
     /**
@@ -40,8 +40,8 @@ public class FakeClock extends ObservableNotifier<ClockUpdateListener> implement
      * convenience.
      */
     public FakeClock set(long currentTime, long elapsedRealtime) {
-        this.currentTime = currentTime;
-        elapsedRealtimeMs = elapsedRealtime;
+        this.mCurrentTime = currentTime;
+        mElapsedRealtimeMs = elapsedRealtime;
         onClockUpdated(currentTime, elapsedRealtime);
         return this;
     }
@@ -52,11 +52,11 @@ public class FakeClock extends ObservableNotifier<ClockUpdateListener> implement
 
     public void advance(long millis) {
         assertThat(millis).isAtLeast(0L);
-        currentTime += millis;
-        elapsedRealtimeMs += millis;
+        mCurrentTime += millis;
+        mElapsedRealtimeMs += millis;
 
-        Logger.i(TAG, "Advancing clock to %d", currentTime);
-        onClockUpdated(currentTime, elapsedRealtimeMs);
+        Logger.i(TAG, "Advancing clock to %d", mCurrentTime);
+        onClockUpdated(mCurrentTime, mElapsedRealtimeMs);
     }
 
     /**
@@ -69,17 +69,17 @@ public class FakeClock extends ObservableNotifier<ClockUpdateListener> implement
 
     @Override
     public long currentTimeMillis() {
-        return currentTime;
+        return mCurrentTime;
     }
 
     @Override
     public long elapsedRealtime() {
-        return elapsedRealtimeMs;
+        return mElapsedRealtimeMs;
     }
 
     @Override
     public long uptimeMillis() {
-        return elapsedRealtimeMs;
+        return mElapsedRealtimeMs;
     }
 
     private void onClockUpdated(long currentTime, long elapsedRealtime) {

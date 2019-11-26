@@ -34,12 +34,7 @@ ArcLauncherContextMenu::ArcLauncherContextMenu(
 ArcLauncherContextMenu::~ArcLauncherContextMenu() = default;
 
 void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  BuildMenu(std::make_unique<ui::SimpleMenuModel>(this), std::move(callback));
-}
-
-void ArcLauncherContextMenu::BuildMenu(
-    std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback) {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   const ArcAppListPrefs* arc_list_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);

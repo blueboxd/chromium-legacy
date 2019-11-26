@@ -47,10 +47,7 @@ ClearFramebufferResourceManager::ClearFramebufferResourceManager(
   Initialize(decoder);
 }
 
-ClearFramebufferResourceManager::~ClearFramebufferResourceManager() {
-  Destroy();
-  DCHECK(!buffer_id_);
-}
+ClearFramebufferResourceManager::~ClearFramebufferResourceManager() = default;
 
 void ClearFramebufferResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {
@@ -77,7 +74,6 @@ void ClearFramebufferResourceManager::Destroy() {
 
   glDeleteProgram(program_);
   glDeleteBuffersARB(1, &buffer_id_);
-  buffer_id_ = 0;
 }
 
 void ClearFramebufferResourceManager::ClearFramebuffer(

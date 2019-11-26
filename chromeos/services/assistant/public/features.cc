@@ -40,6 +40,11 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kAssistantProactiveSuggestionsShowOnScroll{
     &kAssistantProactiveSuggestions, "show-on-scroll", true};
 
+// When enabled, we will use the rich, content-forward entry point for the
+// proactive suggestions feature in lieu of the simple entry point affordance.
+const base::FeatureParam<bool> kAssistantProactiveSuggestionsShowRichEntryPoint{
+    &kAssistantProactiveSuggestions, "show-rich-entry-point", false};
+
 const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
     &kAssistantProactiveSuggestions, "suppress-duplicates", false};
 
@@ -135,6 +140,10 @@ bool IsProactiveSuggestionsEnabled() {
 
 bool IsProactiveSuggestionsShowOnScrollEnabled() {
   return kAssistantProactiveSuggestionsShowOnScroll.Get();
+}
+
+bool IsProactiveSuggestionsShowRichEntryPointEnabled() {
+  return kAssistantProactiveSuggestionsShowRichEntryPoint.Get();
 }
 
 bool IsProactiveSuggestionsSuppressDuplicatesEnabled() {

@@ -337,7 +337,7 @@ void Path::AddArcTo(const FloatPoint& p,
               WebCoreFloatToSkScalar(r.Height()),
               WebCoreFloatToSkScalar(x_rotate),
               large_arc ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
-              sweep ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
+              sweep ? SkPathDirection::kCW : SkPathDirection::kCCW,
               WebCoreFloatToSkScalar(p.X()), WebCoreFloatToSkScalar(p.Y()));
 }
 
@@ -399,7 +399,7 @@ void Path::AddArc(const FloatPoint& p,
 
 void Path::AddRect(const FloatRect& rect) {
   // Start at upper-left, add clock-wise.
-  path_.addRect(rect, SkPath::kCW_Direction, 0);
+  path_.addRect(rect, SkPathDirection::kCW, 0);
 }
 
 void Path::AddEllipse(const FloatPoint& p,
@@ -430,7 +430,7 @@ void Path::AddEllipse(const FloatPoint& p,
 
 void Path::AddEllipse(const FloatRect& rect) {
   // Start at 3 o'clock, add clock-wise.
-  path_.addOval(rect, SkPath::kCW_Direction, 1);
+  path_.addOval(rect, SkPathDirection::kCW, 1);
 }
 
 void Path::AddRoundedRect(const FloatRoundedRect& r) {
@@ -502,7 +502,7 @@ void Path::AddPathForRoundedRect(const FloatRect& rect,
   // Start at upper-left (after corner radii), add clock-wise.
   path_.addRRect(FloatRoundedRect(rect, top_left_radius, top_right_radius,
                                   bottom_left_radius, bottom_right_radius),
-                 SkPath::kCW_Direction, 0);
+                 SkPathDirection::kCW, 0);
 }
 
 void Path::AddPath(const Path& src, const AffineTransform& transform) {

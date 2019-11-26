@@ -62,7 +62,6 @@ class Element;
 class Event;
 template <typename EventType>
 class EventWithHitTestResults;
-class FloatQuad;
 class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
@@ -97,7 +96,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   void MayUpdateHoverWhenContentUnderMouseChanged(
       MouseEventManager::UpdateHoverReason);
-  void MayUpdateHoverAfterScroll(const FloatQuad&);
+  void MayUpdateHoverAfterScroll(const FloatRect&);
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,

@@ -137,6 +137,9 @@ class BinaryUploadService {
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
   void ResetAuthorizationData();
 
+  // Sets |can_upload_data_| for tests.
+  void SetAuthForTesting(bool authorized);
+
   // Returns whether a download should be blocked based on file size alone. It
   // checks the enterprise policy BlockLargeFileTransfer to decide this.
   static bool ShouldBlockFileSize(size_t file_size);

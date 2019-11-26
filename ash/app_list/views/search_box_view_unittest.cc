@@ -590,7 +590,7 @@ class SearchBoxViewAutocompleteTest
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SearchBoxViewAutocompleteTest,
                          ::testing::Values(ui::VKEY_LEFT,
                                            ui::VKEY_RIGHT,

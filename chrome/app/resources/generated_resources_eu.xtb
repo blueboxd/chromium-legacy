@@ -2617,7 +2617,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4839303808932127586">Go&amp;rde bideoa honela…</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Beste bat}other{Beste #}}</translation>
 <translation id="4842976633412754305">Orria autentifikatu gabeko iturburuetako scriptak kargatu nahian dabil.</translation>
-<translation id="4843488774506045600">Saio-hasierako pantailaren hornitzailea: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Bestelako teklatuak</translation>
 <translation id="4846680374085650406">Administratzailearen gomendioa betetzen ari zara ezarpenari dagokionez.</translation>
 <translation id="4848518990323155912">Gaitu SIM txartela blokeatzeko aukera (eskatu PIN kodea telefonoko datuak erabiltzeko)</translation>
@@ -3815,7 +3814,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6607831829715835317">&amp;Tresna gehiago</translation>
 <translation id="6612358246767739896">Eduki babestua</translation>
 <translation id="6615455863669487791">Erakuts iezadazu</translation>
-<translation id="6617100836880592260">Bilaketa-abiadura: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Gorde hala ere</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Webguneak zure kokapenaren jarraipena egin dezake</translation>

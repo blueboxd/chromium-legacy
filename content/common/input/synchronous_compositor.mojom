@@ -28,9 +28,6 @@ struct SyncCompositorCommonRendererParams;
 // The SynchronousCompositor is an associated interface with WidgetInputHandler
 // because input must be delivered in order with the compositing events.
 interface SynchronousCompositor {
-  // Computes the scroll at given time.
-  ComputeScroll(mojo_base.mojom.TimeTicks time);
-
   // Hardware draw asynchronously, ReturnFrame will return the result on
   // the associated SynchronousCompositorControlHost.
   DemandDrawHwAsync(SyncCompositorDemandDrawHwParams draw_params);

@@ -274,7 +274,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   // Start request 0.
   int rv;
   TestCompletionCallback callback0;
-  BoundTestNetLog log0;
+  RecordingBoundTestNetLog log0;
   ProxyInfo results0;
   rv = resolver().GetProxyForURL(GURL("http://request0"), NetworkIsolationKey(),
                                  &results0, callback0.callback(), nullptr,
@@ -350,7 +350,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   std::unique_ptr<ProxyResolver::Request> request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
-  BoundTestNetLog log0;
+  RecordingBoundTestNetLog log0;
   rv = resolver().GetProxyForURL(GURL("http://request0"), NetworkIsolationKey(),
                                  &results0, callback0.callback(), &request0,
                                  log0.bound());
@@ -360,7 +360,7 @@ TEST_F(MultiThreadedProxyResolverTest,
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  BoundTestNetLog log1;
+  RecordingBoundTestNetLog log1;
   rv = resolver().GetProxyForURL(GURL("http://request1"), NetworkIsolationKey(),
                                  &results1, callback1.callback(), nullptr,
                                  log1.bound());
@@ -369,7 +369,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   std::unique_ptr<ProxyResolver::Request> request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  BoundTestNetLog log2;
+  RecordingBoundTestNetLog log2;
   rv = resolver().GetProxyForURL(GURL("http://request2"), NetworkIsolationKey(),
                                  &results2, callback2.callback(), &request2,
                                  log2.bound());

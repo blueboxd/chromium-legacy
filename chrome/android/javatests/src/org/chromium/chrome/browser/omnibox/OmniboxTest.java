@@ -141,7 +141,8 @@ public class OmniboxTest {
      * Test for checking whether soft input model switches with focus.
      */
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -215,7 +216,8 @@ public class OmniboxTest {
      * Tests that focusing a url bar starts a zero suggest request.
      */
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -260,7 +262,8 @@ public class OmniboxTest {
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.KITKAT, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure

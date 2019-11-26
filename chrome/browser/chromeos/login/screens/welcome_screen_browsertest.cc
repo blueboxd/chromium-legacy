@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
             locale);
 }
 
-IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, SelectedLanguage) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, DISABLED_SelectedLanguage) {
   observer_->Wait();
   const std::string locale = "ru";
   EXPECT_EQ(g_browser_process->local_state()->GetString(

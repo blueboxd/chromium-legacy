@@ -775,7 +775,7 @@ int HeadlessShellMain(int argc, const char** argv) {
 
   if (command_line.HasSwitch(switches::kHideScrollbars)) {
     builder.SetOverrideWebPreferencesCallback(
-        base::Bind([](WebPreferences* preferences) {
+        base::BindRepeating([](WebPreferences* preferences) {
           preferences->hide_scrollbars = true;
         }));
   }

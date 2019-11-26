@@ -23,28 +23,28 @@ public class WeakPoolInterner<T> extends PoolInternerBase<T> {
     }
 
     private static final class WeakPool<T> implements Pool<T> {
-        private final WeakHashMap<T, WeakReference<T>> pool = new WeakHashMap<>();
+        private final WeakHashMap<T, WeakReference<T>> mPool = new WeakHashMap<>();
 
         @Override
         /*@Nullable*/
         public T get(T input) {
-            WeakReference<T> weakRef = pool.get(input);
+            WeakReference<T> weakRef = mPool.get(input);
             return weakRef != null ? weakRef.get() : null;
         }
 
         @Override
         public void put(T input) {
-            pool.put(input, new WeakReference<>(input));
+            mPool.put(input, new WeakReference<>(input));
         }
 
         @Override
         public void clear() {
-            pool.clear();
+            mPool.clear();
         }
 
         @Override
         public int size() {
-            return pool.size();
+            return mPool.size();
         }
     }
 }

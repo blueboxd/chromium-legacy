@@ -160,8 +160,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void UpdateInvalidationVersions(
       const std::map<ModelType, int64_t>& invalidation_versions);
 
-  SyncEngineHost* host() { return host_; }
-
  private:
   friend class SyncEngineBackend;
 

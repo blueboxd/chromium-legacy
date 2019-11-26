@@ -319,6 +319,9 @@ void TreeNode::WriteIntoJson(
         compare_func,
     Json::Value* out) {
   if (symbol) {
+    if (symbol->NumAliases() > 1) {
+      (*out)["numAliases"] = symbol->NumAliases();
+    }
     if (symbol->IsDex()) {
       (*out)["idPath"] = std::string(symbol->FullName());
     } else {

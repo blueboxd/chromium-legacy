@@ -16,22 +16,22 @@ import java.util.List;
 /** Implementation of the {@link ModelFeature} */
 public final class UpdatableModelFeature
         extends FeedObservable<FeatureChangeObserver> implements ModelFeature {
-    private StreamFeature streamFeature;
-    private final CursorProvider cursorProvider;
+    private StreamFeature mStreamFeature;
+    private final CursorProvider mCursorProvider;
 
     UpdatableModelFeature(StreamFeature streamFeature, CursorProvider cursorProvider) {
-        this.streamFeature = streamFeature;
-        this.cursorProvider = cursorProvider;
+        this.mStreamFeature = streamFeature;
+        this.mCursorProvider = cursorProvider;
     }
 
     @Override
     public StreamFeature getStreamFeature() {
-        return streamFeature;
+        return mStreamFeature;
     }
 
     @Override
     public ModelCursor getCursor() {
-        return cursorProvider.getCursor(streamFeature.getContentId());
+        return mCursorProvider.getCursor(mStreamFeature.getContentId());
     }
 
     @Override
@@ -41,12 +41,12 @@ public final class UpdatableModelFeature
     }
 
     public List<FeatureChangeObserver> getObserversToNotify() {
-        synchronized (observers) {
-            return new ArrayList<>(observers);
+        synchronized (mObservers) {
+            return new ArrayList<>(mObservers);
         }
     }
 
     void setFeatureValue(StreamFeature streamFeature) {
-        this.streamFeature = streamFeature;
+        this.mStreamFeature = streamFeature;
     }
 }

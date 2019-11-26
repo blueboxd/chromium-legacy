@@ -904,7 +904,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
   RunAllTasksUntilIdle();
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
+TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
   TestCallback callback_creator1;
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3;

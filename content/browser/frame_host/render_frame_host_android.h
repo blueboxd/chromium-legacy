@@ -48,6 +48,10 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       const base::android::JavaParamRef<jobject>&,
       const base::android::JavaParamRef<jobject>& jcallback) const;
 
+  bool IsPaymentFeaturePolicyEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&) const;
+
   // Returns UnguessableToken.
   base::android::ScopedJavaLocalRef<jobject> GetAndroidOverlayRoutingToken(
       JNIEnv* env,

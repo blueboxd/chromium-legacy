@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_transient_input_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
@@ -133,7 +134,17 @@ void XRFrame::Deactivate() {
 
 HeapVector<Member<XRHitTestResult>> XRFrame::getHitTestResults(
     XRHitTestSource* hit_test_source) {
-  if (!session_->ValidateHitTestSourceExists(hit_test_source))
+  if (!hit_test_source ||
+      !session_->ValidateHitTestSourceExists(hit_test_source))
+    return {};
+  return hit_test_source->Results();
+}
+
+HeapVector<Member<XRTransientInputHitTestResult>>
+XRFrame::getHitTestResultsForTransientInput(
+    XRTransientInputHitTestSource* hit_test_source) {
+  if (!hit_test_source ||
+      !session_->ValidateHitTestSourceExists(hit_test_source))
     return {};
   return hit_test_source->Results();
 }

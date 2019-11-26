@@ -9,12 +9,12 @@ import com.google.android.libraries.feed.api.internal.common.ThreadUtils;
 
 /** Fake implementation of {@link SchedulerApi}. */
 public final class FakeSchedulerApi implements SchedulerApi {
-    private final ThreadUtils threadUtils;
+    private final ThreadUtils mThreadUtils;
     @RequestBehavior
-    private int requestBehavior = RequestBehavior.NO_REQUEST_WITH_CONTENT;
+    private int mRequestBehavior = RequestBehavior.NO_REQUEST_WITH_CONTENT;
 
     public FakeSchedulerApi(ThreadUtils threadUtils) {
-        this.threadUtils = threadUtils;
+        this.mThreadUtils = threadUtils;
     }
 
     @Override
@@ -26,13 +26,13 @@ public final class FakeSchedulerApi implements SchedulerApi {
     @Override
     @RequestBehavior
     public int shouldSessionRequestData(SessionState sessionState) {
-        threadUtils.checkMainThread();
-        return requestBehavior;
+        mThreadUtils.checkMainThread();
+        return mRequestBehavior;
     }
 
     /** Sets the result returned from {@link shouldSessionRequestData( SessionState )}. */
     public FakeSchedulerApi setRequestBehavior(@RequestBehavior int requestBehavior) {
-        this.requestBehavior = requestBehavior;
+        this.mRequestBehavior = requestBehavior;
         return this;
     }
 }

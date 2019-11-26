@@ -2615,7 +2615,6 @@
 <translation id="4839303808932127586">ບັນທຶກວິດີໂອເປັນ...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{ອີກ 1 ລາຍການ}other{ອີກ # ລາຍການ}}</translation>
 <translation id="4842976633412754305">ໜ້າ​ນີ້​ພະ​ຍາ​ຍາມ​ໂຫຼດ​ໜັງ​ສື​ຂຽນ​ຈາກ​ແຫຼ່ງ​ທີ່​ບໍ່​ໄດ້​ຮັບ​ຮອງ.</translation>
-<translation id="4843488774506045600">ການເຂົ້າສູ່ລະບົບທີ່ສະໜອງໃຫ້ໂດຍ <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">ຄີບອດອື່ນ</translation>
 <translation id="4846680374085650406">ທ່ານກໍາລັງປະຕິບັດຕາມຄໍາແນະນໍາຂອງຜູ້ຄວບຄຸມສໍາລັບການຕັ້ງຄ່າ.</translation>
 <translation id="4848518990323155912">ເປີດນຳໃຊ້ການລັອກແຜ່ນ SIM (ຈຳເປັນຕ້ອງມີ PIN ເພື່ອໃຊ້ຂໍ້ມູນມືຖື)</translation>
@@ -3813,7 +3812,6 @@
 <translation id="6607831829715835317">ເຄື່ອງມືເພີ່ມເຕີມ</translation>
 <translation id="6612358246767739896">ເນື້ອ​ໃນ​ທີ່ຖືກ​ປົກ​ປ້ອງ</translation>
 <translation id="6615455863669487791">ສະ​ແດງຂ້ອຍ</translation>
-<translation id="6617100836880592260">ຄວາມໄວການສະແກນ: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">ຢືນຢັນໃຫ້ເກັບໄວ້</translation>
 <translation id="6619058681307408113">ເຄື່ອງພິມແດມອນແບບໃຊ້ສາຍ (LPD)</translation>
 <translation id="661907246513853610">ເວັບໄຊສາມາດຕິດຕາມສະຖານທີ່ຂອງທ່ານໄດ້</translation>

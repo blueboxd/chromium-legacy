@@ -60,8 +60,6 @@ class SynchronousLayerTreeFrameSinkClient {
       uint32_t layer_tree_frame_sink_id,
       base::Optional<viz::CompositorFrame> frame) = 0;
   virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
-  virtual void OnBeginFrameForAnimateInput(
-      const viz::BeginFrameArgs& begin_frame_args) = 0;
   virtual void SinkDestroyed() = 0;
 
  protected:
@@ -116,7 +114,6 @@ class SynchronousLayerTreeFrameSink
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
-  void SetNeedsSynchronousAnimateInput();
   void WillSkipDraw();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
@@ -159,8 +156,6 @@ class SynchronousLayerTreeFrameSink
 
   // Not owned.
   SynchronousLayerTreeFrameSinkClient* sync_client_ = nullptr;
-  bool needs_begin_frame_ = false;
-  bool needs_begin_frame_for_animate_input_ = false;
 
   // Used to allocate bitmaps in the software Display.
   // TODO(crbug.com/692814): The Display never sends its resources out of

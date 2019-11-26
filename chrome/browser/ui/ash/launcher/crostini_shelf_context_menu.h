@@ -18,8 +18,6 @@ class CrostiniShelfContextMenu : public LauncherContextMenu {
 
   // LauncherContextMenu:
   void GetMenuModel(GetMenuModelCallback callback) override;
-  void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
-                 GetMenuModelCallback callback) override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 

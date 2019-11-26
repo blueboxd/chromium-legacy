@@ -113,7 +113,7 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
     MockRead data_reads[] = {
         MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength),
         MockRead(ASYNC, payload_read.data(), payload_read.size())};
-    TestNetLog log;
+    RecordingTestNetLog log;
 
     user_sock_ = BuildMockSocket(data_reads, data_writes, host_resolver_.get(),
                                  "localhost", 80, &log);
@@ -232,7 +232,7 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
                   kSOCKS4OkRequestLocalHostPort80Length)};
     MockRead data_reads[] = {
         MockRead(SYNCHRONOUS, test.fail_reply, base::size(test.fail_reply))};
-    TestNetLog log;
+    RecordingTestNetLog log;
 
     user_sock_ = BuildMockSocket(data_reads, data_writes, host_resolver_.get(),
                                  "localhost", 80, &log);
@@ -265,7 +265,7 @@ TEST_F(SOCKSClientSocketTest, PartialServerReads) {
   MockRead data_reads[] = {
       MockRead(ASYNC, kSOCKSPartialReply1, base::size(kSOCKSPartialReply1)),
       MockRead(ASYNC, kSOCKSPartialReply2, base::size(kSOCKSPartialReply2))};
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, data_writes, host_resolver_.get(),
                                "localhost", 80, &log);
@@ -299,7 +299,7 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
   };
   MockRead data_reads[] = {
       MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength)};
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, data_writes, host_resolver_.get(),
                                "localhost", 80, &log);
@@ -326,7 +326,7 @@ TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
       MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength - 2),
       // close connection unexpectedly
       MockRead(SYNCHRONOUS, 0)};
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   user_sock_ = BuildMockSocket(data_reads, data_writes, host_resolver_.get(),
                                "localhost", 80, &log);
@@ -351,7 +351,7 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
 
   host_resolver_->rules()->AddSimulatedFailure(hostname);
 
-  TestNetLog log;
+  RecordingTestNetLog log;
 
   user_sock_ = BuildMockSocket(base::span<MockRead>(), base::span<MockWrite>(),
                                host_resolver_.get(), hostname, 80, &log);
@@ -425,7 +425,7 @@ TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
 
 TEST_F(SOCKSClientSocketTest, Tag) {
   StaticSocketDataProvider data;
-  TestNetLog log;
+  RecordingTestNetLog log;
   MockTaggingStreamSocket* tagging_sock =
       new MockTaggingStreamSocket(std::unique_ptr<StreamSocket>(
           new MockTCPClientSocket(address_list_, &log, &data)));
@@ -451,7 +451,7 @@ TEST_F(SOCKSClientSocketTest, Tag) {
 TEST_F(SOCKSClientSocketTest, SetDisableSecureDns) {
   for (bool disable_secure_dns : {false, true}) {
     StaticSocketDataProvider data;
-    TestNetLog log;
+    RecordingTestNetLog log;
     MockHostResolver host_resolver;
     SOCKSClientSocket socket(
         std::make_unique<MockTCPClientSocket>(address_list_, &log, &data),

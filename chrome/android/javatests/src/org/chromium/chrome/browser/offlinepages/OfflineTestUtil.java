@@ -81,7 +81,6 @@ public class OfflineTestUtil {
     // Returns the OfflinePageItem with the given clientId, or null if one doesn't exist.
     public static @Nullable OfflinePageItem getPageByClientId(ClientId clientId)
             throws TimeoutException {
-        ArrayList<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         for (OfflinePageItem item : getAllPages()) {
             if (item.getClientId().equals(clientId)) {
                 return item;

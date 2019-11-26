@@ -37,7 +37,7 @@ std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
   return matchers;
 }
 
-bool HasAnyRules(const url_pattern_index::flat::UrlPatternIndex* index) {
+bool HasAnyRules(const flat_rule::UrlPatternIndex* index) {
   DCHECK(index);
 
   if (index->fallback_rules()->size() > 0)

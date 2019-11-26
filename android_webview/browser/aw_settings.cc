@@ -16,6 +16,7 @@
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -42,7 +43,8 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->should_clear_document_background = false;
   web_prefs->viewport_meta_enabled = true;
   web_prefs->picture_in_picture_enabled = false;
-  web_prefs->disable_features_depending_on_viz = true;
+  web_prefs->disable_features_depending_on_viz =
+      !::features::IsUsingVizForWebView();
   web_prefs->disable_accelerated_small_canvases = true;
   web_prefs->reenable_web_components_v0 = true;
 }

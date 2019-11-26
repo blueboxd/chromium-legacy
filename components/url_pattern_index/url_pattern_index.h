@@ -128,6 +128,30 @@ class UrlPatternIndexBuilder {
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexBuilder);
 };
 
+// Returns whether the |origin| matches the domain list of the |rule|. A match
+// means that the longest domain in |domains| that |origin| is a sub-domain of
+// is not an exception OR all the |domains| are exceptions and neither matches
+// the |origin|. Thus, domain filters with more domain components trump filters
+// with fewer domain components, i.e. the more specific a filter is, the higher
+// the priority.
+//
+// A rule whose domain list is empty or contains only negative domains is still
+// considered a "generic" rule. Therefore, if |disable_generic_rules| is set,
+// this function will always return false for such rules.
+bool DoesOriginMatchDomainList(const url::Origin& origin,
+                               const flat::UrlRule& rule,
+                               bool disable_generic_rules);
+
+// Returns whether the request matches flags of the specified |rule|. Takes into
+// account:
+//  - |element_type| of the requested resource, if not *_NONE.
+//  - |activation_type| for a subdocument request, if not *_NONE.
+//  - Whether the resource |is_third_party| w.r.t. its embedding document.
+bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
+                        flat::ElementType element_type,
+                        flat::ActivationType activation_type,
+                        bool is_third_party);
+
 // Encapsulates a read-only index built over the URL patterns of a set of URL
 // rules, and provides fast matching of network requests against these rules.
 class UrlPatternIndexMatcher {

@@ -81,7 +81,7 @@ namespace corewm {
 // TODO(oshima): Consider to use views::Label.
 class TooltipAura::TooltipView : public views::View {
  public:
-  TooltipView() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
+  TooltipView() : render_text_(gfx::RenderText::CreateRenderText()) {
     SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                 kVerticalPaddingBottom, kHorizontalPadding));
 
@@ -135,18 +135,16 @@ class TooltipAura::TooltipView : public views::View {
     render_text_->SetColor(color);
   }
 
-  void SetBackgroundColor(SkColor background_color) {
+  void SetBackgroundColor(SkColor background_color, SkColor border_color) {
     if (CanUseTranslucentTooltipWidget()) {
       // Corner radius of tooltip background.
       const float kTooltipCornerRadius = 2.f;
       SetBackground(views::CreateBackgroundFromPainter(
-          views::Painter::CreateSolidRoundRectPainter(background_color,
-                                                      kTooltipCornerRadius)));
+          views::Painter::CreateRoundRectWith1PxBorderPainter(
+              background_color, border_color, kTooltipCornerRadius)));
     } else {
       SetBackground(views::CreateSolidBackground(background_color));
 
-      auto border_color =
-          color_utils::GetColorWithMaxContrast(background_color);
       SetBorder(views::CreatePaddedBorder(
           views::CreateSolidBorder(1, border_color),
           gfx::Insets(kVerticalPaddingTop - 1, kHorizontalPadding - 1,
@@ -254,13 +252,17 @@ void TooltipAura::SetText(aura::Window* window,
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
   auto background_color =
       native_theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
-  if (!CanUseTranslucentTooltipWidget())
-    background_color = SkColorSetA(background_color, 0xFF);
-  tooltip_view_->SetBackgroundColor(background_color);
+  if (!CanUseTranslucentTooltipWidget()) {
+    background_color = color_utils::GetResultingPaintColor(
+        background_color, native_theme->GetSystemColor(
+                              ui::NativeTheme::kColorId_WindowBackground));
+  }
   auto foreground_color =
       native_theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText);
   if (!CanUseTranslucentTooltipWidget())
-    foreground_color = SkColorSetA(foreground_color, 0xFF);
+    foreground_color =
+        color_utils::GetResultingPaintColor(foreground_color, background_color);
+  tooltip_view_->SetBackgroundColor(background_color, foreground_color);
   tooltip_view_->SetForegroundColor(foreground_color);
 }
 

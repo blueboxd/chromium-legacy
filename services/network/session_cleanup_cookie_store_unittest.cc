@@ -89,7 +89,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionCleanupCookieStore> store_;
-  net::BoundTestNetLog net_log_;
+  net::RecordingBoundTestNetLog net_log_;
 };
 
 TEST_F(SessionCleanupCookieStoreTest, TestPersistence) {

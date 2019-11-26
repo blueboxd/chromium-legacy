@@ -9,7 +9,6 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -36,6 +35,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
@@ -52,11 +52,13 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -92,6 +94,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     private WebappInfo mWebappInfo;
 
+    private BrowserServicesIntentDataProvider mIntentDataProvider;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -155,6 +158,11 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
+    }
+
+    @Override
+    public BrowserServicesIntentDataProvider getIntentDataProvider() {
+        return mIntentDataProvider;
     }
 
     @Override
@@ -346,13 +354,17 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
-        WebappActivityModule webappModule = new WebappActivityModule(mWebappInfo.getProvider());
+        mIntentDataProvider = mWebappInfo.getProvider();
+        WebappActivityModule webappModule = new WebappActivityModule(mIntentDataProvider);
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(
                         commonsModule, webappModule);
         mTabController = component.resolveTabController();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
+
+        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+        mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         component.resolveCompositorContentInitializer();
 
@@ -661,17 +673,19 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     private void updateTaskDescription() {
+        Tab tab = getActivityTab();
+
         String title = null;
         if (!TextUtils.isEmpty(mWebappInfo.shortName())) {
             title = mWebappInfo.shortName();
-        } else if (getActivityTab() != null) {
-            title = getActivityTab().getTitle();
+        } else if (tab != null) {
+            title = tab.getTitle();
         }
 
         Bitmap icon = null;
         if (mWebappInfo.icon() != null) {
             icon = mWebappInfo.icon().bitmap();
-        } else if (getActivityTab() != null) {
+        } else if (tab != null) {
             icon = mLargestFavicon;
         }
 
@@ -688,30 +702,19 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // triggered.
         if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
             taskDescriptionColor = mBrandColor;
-            if (getToolbarManager() != null) {
-                getToolbarManager().onThemeColorChanged(mBrandColor, false);
-            }
         }
 
         ApiCompatibilityUtils.setTaskDescription(this, title, icon,
                 ColorUtils.getOpaqueColor(taskDescriptionColor));
-        getStatusBarColorController().updateStatusBarColor(isStatusBarDefaultThemeColor());
-    }
 
-    @Override
-    public int getBaseStatusBarColor() {
-        // White default color is used to match CCTs and WebAPK shell. The returned color is ignored
-        // pre Android M when isStatusBarDefaultThemeColor() == true.
-        return isStatusBarDefaultThemeColor() ? Color.WHITE : mBrandColor;
-    }
-
-    @Override
-    public boolean isStatusBarDefaultThemeColor() {
-        // Don't use the brand color for the status bars if we're in display: fullscreen. This works
-        // around an issue where the status bars go transparent and can't be seen on top of the page
-        // content when users swipe them in or they appear because the on-screen keyboard was
-        // triggered.
-        return mBrandColor == null || mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN;
+        if (getToolbarManager() != null && !isStatusBarDefaultThemeColor()) {
+            int toolbarColor = getBaseStatusBarColor();
+            if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
+                toolbarColor = (tab == null) ? mIntentDataProvider.getToolbarColor()
+                                             : TabThemeColorHelper.getColor(tab);
+            }
+            getToolbarManager().onThemeColorChanged(toolbarColor, false);
+        }
     }
 
     @Override

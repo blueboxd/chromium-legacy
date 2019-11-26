@@ -101,6 +101,7 @@ void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
 }  // namespace
 
 TEST(KeyConverter, SingleChar) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::list<KeyEvent> key_events;
   builder.SetText("h", "h")->SetKeyCode(ui::VKEY_H)->Generate(&key_events);
@@ -108,6 +109,7 @@ TEST(KeyConverter, SingleChar) {
 }
 
 TEST(KeyConverter, SingleNumber) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::list<KeyEvent> key_events;
   builder.SetText("1", "1")->SetKeyCode(ui::VKEY_1)->Generate(&key_events);
@@ -115,6 +117,7 @@ TEST(KeyConverter, SingleNumber) {
 }
 
 TEST(KeyConverter, MultipleChars) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::list<KeyEvent> key_events;
   builder.SetText("h", "h")->SetKeyCode(ui::VKEY_H)->Generate(&key_events);
@@ -124,6 +127,7 @@ TEST(KeyConverter, MultipleChars) {
 }
 
 TEST(KeyConverter, WebDriverSpecialChar) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::list<KeyEvent> key_events;
   builder.SetKeyCode(ui::VKEY_SPACE)->SetText(" ", " ")->Generate(&key_events);
@@ -142,6 +146,7 @@ TEST(KeyConverter, WebDriverSpecialNonCharKey) {
 }
 
 TEST(KeyConverter, FrenchKeyOnEnglishLayout) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::string e_acute = base::WideToUTF8(L"\u00E9");
   std::list<KeyEvent> key_events;
@@ -175,6 +180,7 @@ TEST(KeyConverter, NeedsCtrlAndAlt) {
 #endif
 
 TEST(KeyConverter, UppercaseCharDoesShift) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder shift_builder;
   shift_builder.SetKeyCode(ui::VKEY_SHIFT);
   KeyEventBuilder a_builder;
@@ -189,6 +195,7 @@ TEST(KeyConverter, UppercaseCharDoesShift) {
 }
 
 TEST(KeyConverter, UppercaseSymbolCharDoesShift) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder shift_builder;
   shift_builder.SetKeyCode(ui::VKEY_SHIFT);
   KeyEventBuilder one_builder;
@@ -203,6 +210,7 @@ TEST(KeyConverter, UppercaseSymbolCharDoesShift) {
 }
 
 TEST(KeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   std::list<KeyEvent> key_events;
   KeyEventBuilder shift_builder;
   key_events.push_back(shift_builder.SetType(kRawKeyDownEventType)
@@ -262,6 +270,7 @@ TEST(KeyConverter, ToggleModifiers) {
 }
 
 TEST(KeyConverter, AllShorthandKeys) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   KeyEventBuilder builder;
   std::list<KeyEvent> key_events;
   builder.SetKeyCode(ui::VKEY_RETURN)
@@ -319,6 +328,7 @@ TEST(KeyConverter, MAYBE_AllEnglishKeyboardSymbols) {
 }
 
 TEST(KeyConverter, AllEnglishKeyboardTextChars) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   std::string kLowerChars = "0123456789abcdefghijklmnopqrstuvwxyz";
   std::string kUpperChars = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (size_t i = 0; i < kLowerChars.length(); ++i) {

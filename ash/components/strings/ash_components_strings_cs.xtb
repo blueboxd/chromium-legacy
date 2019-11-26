@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> nebo <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Režim přehledu</translation>
 <translation id="4382340674111381977">Vrátit se na předchozí stránku</translation>
+<translation id="4458670250301149821">Přesunout ikonu aplikace v mřížce aplikací do složky nebo mimo složku</translation>
 <translation id="4472417192667361414">Nastavení systému a zobrazení</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> a potom <ph name="LEFT" />, nebo <ph name="RIGHT" />, nebo <ph name="UP" />, nebo <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Zobrazit nápovědu ke klávesovým zkratkám</translation>
 <translation id="4628718545549558538">Otevřít stavovou oblast (kde se zobrazuje obrázek účtu)</translation>
 <translation id="4642092649622328492">Pořídit částečný snímek obrazovky</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Vymazat následující písmeno (odstranění následujícího znaku).</translation>
 <translation id="7500368597227394048">spojovník</translation>
 <translation id="7611271430932669992">Přesunout zaměření na vyskakovací a dialogová okna</translation>
+<translation id="7635348532214572995">Přesunout ikonu aplikace v mřížce aplikací</translation>
 <translation id="766326951329901120">Vložit obsah ze schránky jako prostý text</translation>
 <translation id="7703010453515335249">levá hranatá závorka</translation>
 <translation id="7724603315864178912">Vyjmout</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Vložit obsah ze schránky</translation>
 <translation id="9052808072970550123">Přepnout na dalšího uživatele</translation>
 <translation id="906458777597946297">Maximalizovat okno</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> a poté <ph name="LEFT" />, nebo <ph name="RIGHT" />, nebo <ph name="UP" />, nebo <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Přejít na začátek řádku</translation>
 <translation id="9106898733795143799">Stránka a webový prohlížeč</translation>
 <translation id="9162942292291287644">Žádné výsledky vyhledávání na téma <ph name="QUERY" /></translation>

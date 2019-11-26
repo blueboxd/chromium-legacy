@@ -28,13 +28,13 @@ class RulesetMatcherInterface {
 
   virtual ~RulesetMatcherInterface();
 
-  // Returns the ruleset's matching RequestAction with type |BLOCK| or
-  // |COLLAPSE|, or base::nullopt if the ruleset has no matching blocking rule.
+  // Returns any matching RequestAction with type |BLOCK| or |COLLAPSE|, or
+  // base::nullopt if the ruleset has no matching blocking rule.
   virtual base::Optional<RequestAction> GetBlockOrCollapseAction(
       const RequestParams& params) const = 0;
 
-  // Returns the ruleset's matching RequestAction with type |ALLOW| or
-  // base::nullopt if the ruleset has no matching allow rule.
+  // Returns any matching RequestAction with type |ALLOW| or base::nullopt if
+  // the ruleset has no matching allow rule.
   virtual base::Optional<RequestAction> GetAllowAction(
       const RequestParams& params) const = 0;
 
@@ -53,6 +53,7 @@ class RulesetMatcherInterface {
   // Returns the bitmask of headers to remove from the request. The bitmask
   // corresponds to flat::RemoveHeaderType. |ignored_mask| denotes the mask of
   // headers to be skipped for evaluation and is excluded in the return value.
+  // TODO(karandeepb): Rename |ignored_mask| to |excluded_remove_headers_mask|.
   virtual uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t ignored_mask,

@@ -31,6 +31,8 @@
 
 namespace blink {
 
+// TODO(crbug.com/787254): Merge  RTCStatsResponseBase and RTCStatsResponse
+// when the former is not referenced in renderer/platform anymore.
 class RTCStatsResponseBase : public ScriptWrappable {
  public:
   ~RTCStatsResponseBase() override = default;

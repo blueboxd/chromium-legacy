@@ -35,7 +35,7 @@ import java.util.List;
  * elements.
  */
 abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
-    private ExtraLineHeight extraLineHeight = ExtraLineHeight.builder().build();
+    private ExtraLineHeight mExtraLineHeight = ExtraLineHeight.builder().build();
 
     TextElementAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, createView(context));
@@ -160,7 +160,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         Font font = getElementStyle().getFont();
 
         if (!font.hasLineHeight()) {
-            return extraLineHeight;
+            return mExtraLineHeight;
         }
 
         int totalExtraPadding = 0;
@@ -168,11 +168,11 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         if (font.hasLineHeight()) {
             float changeInLineHeight = calculateCurrentAndExpectedLineHeightDifference();
             if (changeInLineHeight == 0) {
-                return extraLineHeight;
+                return mExtraLineHeight;
             }
 
             float extraLineHeightBetweenLinesFloat =
-                    extraLineHeight.betweenLinesExtraPx() + changeInLineHeight;
+                    mExtraLineHeight.betweenLinesExtraPx() + changeInLineHeight;
             extraLineHeightBetweenLines = Math.round(extraLineHeightBetweenLinesFloat);
 
             // Adjust the rounding for the extra top and bottom padding, to make the total height of
@@ -190,19 +190,19 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
                     -(extraLineHeightBetweenLines - extraPaddingForLineHeightBottom);
         }
 
-        extraLineHeight = ExtraLineHeight.builder()
-                                  .setTopPaddingPx(extraPaddingForLineHeightTop)
-                                  .setBottomPaddingPx(extraPaddingForLineHeightBottom)
-                                  .setBetweenLinesExtraPx(extraLineHeightBetweenLines)
-                                  .build();
+        mExtraLineHeight = ExtraLineHeight.builder()
+                                   .setTopPaddingPx(extraPaddingForLineHeightTop)
+                                   .setBottomPaddingPx(extraPaddingForLineHeightBottom)
+                                   .setBetweenLinesExtraPx(extraLineHeightBetweenLines)
+                                   .build();
 
-        return extraLineHeight;
+        return mExtraLineHeight;
     }
 
     private boolean baseFontHeightChanged() {
         // Check if we've already calculated the extra line height and there is a significant
         // difference between the current and expected line heights.
-        if (extraLineHeight.betweenLinesExtraPx() == 0) {
+        if (mExtraLineHeight.betweenLinesExtraPx() == 0) {
             return false;
         }
         float lineHeightDifference = calculateCurrentAndExpectedLineHeightDifference();
@@ -234,9 +234,9 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
     void setValuesUsedInRecyclerKey(TextElementKey fontKey, FrameContext frameContext) {
         TextView textView = getBaseView();
         textView.setTextSize(fontKey.getSize());
-        if (!fontKey.typefaces.isEmpty()) {
+        if (!fontKey.mTypefaces.isEmpty()) {
             FontDetails fontDetails =
-                    new FontDetails(fontKey.typefaces, fontKey.isItalic(), frameContext);
+                    new FontDetails(fontKey.mTypefaces, fontKey.isItalic(), frameContext);
             loadFont(textView, fontDetails);
         } else {
             makeFontItalic(textView, fontKey.isItalic());
@@ -297,7 +297,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
     private void loadCustomTypeface(
             String customTypefaceName, FontDetails fontDetails, TextView textView) {
         TypefaceCallback typefaceCallback = new TypefaceCallback(textView, fontDetails);
-        getParameters().hostProviders.getAssetProvider().getTypeface(
+        getParameters().mHostProviders.getAssetProvider().getTypeface(
                 customTypefaceName, fontDetails.isItalic(), typefaceCallback);
     }
 
@@ -350,31 +350,31 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
     /** We will Key TextViews off of Font Size, Typefaces and Italics. */
     // LINT.IfChange
     static class TextElementKey extends RecyclerKey {
-        private final int size;
-        private final boolean italic;
-        private final List<StylesProto.Typeface> typefaces;
+        private final int mSize;
+        private final boolean mItalic;
+        private final List<StylesProto.Typeface> mTypefaces;
 
         TextElementKey(Font font) {
-            size = font.getSize();
-            italic = font.getItalic();
-            typefaces = font.getTypefaceList();
+            mSize = font.getSize();
+            mItalic = font.getItalic();
+            mTypefaces = font.getTypefaceList();
         }
 
         public int getSize() {
-            return size;
+            return mSize;
         }
 
         public boolean isItalic() {
-            return italic;
+            return mItalic;
         }
 
         @Override
         public int hashCode() {
             // Can't use Objects.hash() as it is only available in KK+ and can't use Guava's impl
             // either.
-            int result = size;
-            result = 31 * result + (italic ? 1 : 0);
-            result = 31 * result + typefaces.hashCode();
+            int result = mSize;
+            result = 31 * result + (mItalic ? 1 : 0);
+            result = 31 * result + mTypefaces.hashCode();
             return result;
         }
 
@@ -393,32 +393,33 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
             }
 
             TextElementKey key = (TextElementKey) obj;
-            return key.size == size && key.italic == italic && typefaces.equals(key.typefaces);
+            return key.mSize == mSize && key.mItalic == mItalic
+                    && mTypefaces.equals(key.mTypefaces);
         }
     }
     // LINT.ThenChange
 
     static class ExtraLineHeight {
-        private final int topPaddingPx;
-        private final int bottomPaddingPx;
-        private final int betweenLinesExtraPx;
+        private final int mTopPaddingPx;
+        private final int mBottomPaddingPx;
+        private final int mBetweenLinesExtraPx;
 
         int topPaddingPx() {
-            return topPaddingPx;
+            return mTopPaddingPx;
         }
 
         int bottomPaddingPx() {
-            return bottomPaddingPx;
+            return mBottomPaddingPx;
         }
 
         int betweenLinesExtraPx() {
-            return betweenLinesExtraPx;
+            return mBetweenLinesExtraPx;
         }
 
         private ExtraLineHeight(Builder builder) {
-            this.topPaddingPx = builder.topPaddingPx;
-            this.bottomPaddingPx = builder.bottomPaddingPx;
-            this.betweenLinesExtraPx = builder.betweenLinesExtraPx;
+            this.mTopPaddingPx = builder.mTopPaddingPx;
+            this.mBottomPaddingPx = builder.mBottomPaddingPx;
+            this.mBetweenLinesExtraPx = builder.mBetweenLinesExtraPx;
         }
 
         static Builder builder() {
@@ -426,22 +427,22 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
 
         static class Builder {
-            private int topPaddingPx;
-            private int bottomPaddingPx;
-            private int betweenLinesExtraPx;
+            private int mTopPaddingPx;
+            private int mBottomPaddingPx;
+            private int mBetweenLinesExtraPx;
 
             Builder setTopPaddingPx(int value) {
-                topPaddingPx = value;
+                mTopPaddingPx = value;
                 return this;
             }
 
             Builder setBottomPaddingPx(int value) {
-                bottomPaddingPx = value;
+                mBottomPaddingPx = value;
                 return this;
             }
 
             Builder setBetweenLinesExtraPx(int value) {
-                betweenLinesExtraPx = value;
+                mBetweenLinesExtraPx = value;
                 return this;
             }
 
@@ -452,56 +453,56 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
     }
 
     static class FontDetails {
-        private int fontIndexToLoad;
-        private final List<StylesProto.Typeface> typefaceList;
-        private final boolean isItalic;
-        private final FrameContext frameContextForErrors;
+        private int mFontIndexToLoad;
+        private final List<StylesProto.Typeface> mTypefaceList;
+        private final boolean mIsItalic;
+        private final FrameContext mFrameContextForErrors;
 
         FontDetails(List<StylesProto.Typeface> typefaceList, boolean isItalic,
                 FrameContext frameContext) {
-            this.typefaceList = typefaceList;
-            this.isItalic = isItalic;
-            this.frameContextForErrors = frameContext;
+            this.mTypefaceList = typefaceList;
+            this.mIsItalic = isItalic;
+            this.mFrameContextForErrors = frameContext;
         }
 
         FrameContext getFrameContext() {
-            return frameContextForErrors;
+            return mFrameContextForErrors;
         }
 
         StylesProto./*@Nullable*/ Typeface getTypefaceToLoad() {
-            if (typefaceList.size() <= fontIndexToLoad) {
+            if (mTypefaceList.size() <= mFontIndexToLoad) {
                 return null;
             }
-            return typefaceList.get(fontIndexToLoad);
+            return mTypefaceList.get(mFontIndexToLoad);
         }
 
         void currentTypefaceFailedToLoad() {
-            fontIndexToLoad++;
+            mFontIndexToLoad++;
         }
 
         boolean isItalic() {
-            return isItalic;
+            return mIsItalic;
         }
     }
 
     class TypefaceCallback implements Consumer</*@Nullable*/ Typeface> {
-        private final TextView textView;
-        private final FontDetails fontDetails;
+        private final TextView mTextView;
+        private final FontDetails mFontDetails;
 
         TypefaceCallback(TextView textView, FontDetails fontDetails) {
-            this.textView = textView;
-            this.fontDetails = fontDetails;
+            this.mTextView = textView;
+            this.mFontDetails = fontDetails;
         }
 
         @Override
         public void accept(/*@Nullable*/ Typeface typeface) {
             if (typeface == null) {
-                fontDetails.currentTypefaceFailedToLoad();
-                loadFont(textView, fontDetails);
+                mFontDetails.currentTypefaceFailedToLoad();
+                loadFont(mTextView, mFontDetails);
                 return;
             }
-            if (textView.getTypeface() == null || !textView.getTypeface().equals(typeface)) {
-                textView.setTypeface(typeface);
+            if (mTextView.getTypeface() == null || !mTextView.getTypeface().equals(typeface)) {
+                mTextView.setTypeface(typeface);
             }
         }
     }

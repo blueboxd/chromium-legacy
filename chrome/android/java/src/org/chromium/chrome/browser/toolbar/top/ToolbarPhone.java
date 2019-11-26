@@ -52,6 +52,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -1616,6 +1617,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     @Override
     public void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost) {
         mLayoutUpdateHost = layoutUpdateHost;
+    }
+
+    @Override
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mLocationBar.setOverviewModeBehavior(overviewModeBehavior);
     }
 
     @Override

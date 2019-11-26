@@ -100,7 +100,6 @@ group("gn_all") {
   if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     deps += [
       "//chrome",
-      "//chrome/browser/ui/color:dump_colors",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
@@ -812,6 +811,10 @@ group("gn_all") {
     ]
   }
 
+  if (use_color_pipeline) {
+    deps += [ "//chrome/browser/ui/color:dump_colors" ]
+  }
+
   # PFFFT.
   deps += [
     "//third_party/pffft:fuzzers",
@@ -864,7 +867,6 @@ if (is_win) {
       "//components/zucchini",
       "//courgette",
       "//courgette:copy_courgette_binaries",
-      "//remoting/webapp",
       "//tools/metrics:metrics_metadata",
     ]
 
@@ -1324,6 +1326,7 @@ if (closure_compile) {
       "components/security_interstitials/core/common/resources:closure_compile",
       "components/sync/driver/resources:closure_compile",
       "components/ukm/debug:closure_compile",
+      "components/flags_ui/resources:closure_compile",
       "content/browser/resources:closure_compile",
       "mojo/public/tools/bindings/generators/js_templates/lite/test:closure_compile",
       "ui/webui/resources:closure_compile",

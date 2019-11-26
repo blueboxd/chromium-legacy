@@ -3616,7 +3616,6 @@
       如果未设置此政策，工具栏将默认放置在屏幕底部，但用户可以更改工具栏的位置。</translation>
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="7044883996351280650">控制 Android 备份和恢复服务</translation>
-<translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME" />将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME" />中的 <ph name="CLOUD_PRINT_NAME" />支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。</translation>
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>

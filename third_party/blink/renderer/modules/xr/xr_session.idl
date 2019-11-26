@@ -58,5 +58,9 @@ enum XRVisibilityState {
 
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> end();
 
-  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException] Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
+  // https://github.com/immersive-web/hit-test/blob/master/hit-testing-explainer.md
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException]
+  Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException]
+  Promise<XRTransientInputHitTestSource> requestHitTestSourceForTransientInput(XRTransientInputHitTestOptionsInit options);
 };

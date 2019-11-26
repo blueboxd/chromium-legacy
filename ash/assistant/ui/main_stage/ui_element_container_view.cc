@@ -8,7 +8,9 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_response.h"
-#include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/model/ui/assistant_card_element.h"
+#include "ash/assistant/model/ui/assistant_text_element.h"
+#include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
@@ -290,7 +292,7 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
 void UiElementContainerView::HandleResponse(const AssistantResponse& response) {
   for (const auto& ui_element : response.GetUiElements()) {
-    switch (ui_element->GetType()) {
+    switch (ui_element->type()) {
       case AssistantUiElementType::kCard:
         OnCardElementAdded(
             static_cast<const AssistantCardElement*>(ui_element.get()));

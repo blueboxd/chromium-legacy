@@ -17,27 +17,27 @@ import java.util.Set;
 public class SessionContentTracker implements Dumpable {
     private static final String TAG = "SessionContentTracker";
 
-    private final boolean supportsClearAll;
-    private final Set<String> contentIds = new HashSet<>();
+    private final boolean mSupportsClearAll;
+    private final Set<String> mContentIds = new HashSet<>();
 
     SessionContentTracker(boolean supportsClearAll) {
-        this.supportsClearAll = supportsClearAll;
+        this.mSupportsClearAll = supportsClearAll;
     }
 
     public boolean isEmpty() {
-        return contentIds.isEmpty();
+        return mContentIds.isEmpty();
     }
 
     public void clear() {
-        contentIds.clear();
+        mContentIds.clear();
     }
 
     public boolean contains(String contentId) {
-        return contentIds.contains(contentId);
+        return mContentIds.contains(contentId);
     }
 
     public Set<String> getContentIds() {
-        return new HashSet<>(contentIds);
+        return new HashSet<>(mContentIds);
     }
 
     public void update(StreamStructure streamStructure) {
@@ -45,14 +45,14 @@ public class SessionContentTracker implements Dumpable {
         switch (streamStructure.getOperation()) {
             case UPDATE_OR_APPEND: // Fall-through
             case REQUIRED_CONTENT:
-                contentIds.add(contentId);
+                mContentIds.add(contentId);
                 break;
             case REMOVE:
-                contentIds.remove(contentId);
+                mContentIds.remove(contentId);
                 break;
             case CLEAR_ALL:
-                if (supportsClearAll) {
-                    contentIds.clear();
+                if (mSupportsClearAll) {
+                    mContentIds.clear();
                 } else {
                     Logger.i(TAG, "CLEAR_ALL not supported.");
                 }
@@ -71,6 +71,6 @@ public class SessionContentTracker implements Dumpable {
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("contentIds").value(contentIds.size());
+        dumper.forKey("contentIds").value(mContentIds.size());
     }
 }

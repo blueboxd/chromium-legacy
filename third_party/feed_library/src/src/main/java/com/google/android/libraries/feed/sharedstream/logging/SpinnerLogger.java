@@ -15,16 +15,16 @@ import com.google.android.libraries.feed.common.time.Clock;
 public class SpinnerLogger {
     private static final String TAG = "SpinnerLogger";
     private static final int SPINNER_INACTIVE = -1;
-    private final BasicLoggingApi basicLoggingApi;
-    private final Clock clock;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final Clock mClock;
 
-    private long spinnerStartTime = SPINNER_INACTIVE;
+    private long mSpinnerStartTime = SPINNER_INACTIVE;
     @SpinnerType
-    private int spinnerType;
+    private int mSpinnerType;
 
     public SpinnerLogger(BasicLoggingApi basicLoggingApi, Clock clock) {
-        this.basicLoggingApi = basicLoggingApi;
-        this.clock = clock;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mClock = clock;
     }
 
     public void spinnerStarted(@SpinnerType int spinnerType) {
@@ -35,9 +35,9 @@ public class SpinnerLogger {
             return;
         }
 
-        basicLoggingApi.onSpinnerStarted(spinnerType);
-        spinnerStartTime = clock.currentTimeMillis();
-        this.spinnerType = spinnerType;
+        mBasicLoggingApi.onSpinnerStarted(spinnerType);
+        mSpinnerStartTime = mClock.currentTimeMillis();
+        this.mSpinnerType = spinnerType;
     }
 
     public void spinnerFinished() {
@@ -46,9 +46,9 @@ public class SpinnerLogger {
             return;
         }
 
-        long spinnerDuration = clock.currentTimeMillis() - spinnerStartTime;
-        basicLoggingApi.onSpinnerFinished((int) spinnerDuration, spinnerType);
-        spinnerStartTime = SPINNER_INACTIVE;
+        long spinnerDuration = mClock.currentTimeMillis() - mSpinnerStartTime;
+        mBasicLoggingApi.onSpinnerFinished((int) spinnerDuration, mSpinnerType);
+        mSpinnerStartTime = SPINNER_INACTIVE;
     }
 
     public void spinnerDestroyedWithoutCompleting() {
@@ -59,18 +59,18 @@ public class SpinnerLogger {
             return;
         }
 
-        long spinnerDuration = clock.currentTimeMillis() - spinnerStartTime;
-        basicLoggingApi.onSpinnerDestroyedWithoutCompleting((int) spinnerDuration, spinnerType);
-        spinnerStartTime = SPINNER_INACTIVE;
+        long spinnerDuration = mClock.currentTimeMillis() - mSpinnerStartTime;
+        mBasicLoggingApi.onSpinnerDestroyedWithoutCompleting((int) spinnerDuration, mSpinnerType);
+        mSpinnerStartTime = SPINNER_INACTIVE;
     }
 
     @VisibleForTesting
     @SpinnerType
     public int getSpinnerType() {
-        return spinnerType;
+        return mSpinnerType;
     }
 
     public boolean isSpinnerActive() {
-        return spinnerStartTime != SPINNER_INACTIVE;
+        return mSpinnerStartTime != SPINNER_INACTIVE;
     }
 }

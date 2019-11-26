@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.support.annotation.CallSuper;
+import android.support.annotation.ColorRes;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -76,19 +79,23 @@ public class BaseSuggestionViewBinder
             rciv.setRoundedCorners(radius, radius, radius, radius);
         }
 
-        updateIcon(view, sds, isDarkMode(model));
+        @ColorRes
+        int tint = isDarkMode(model) ? R.color.default_icon_color_secondary_list
+                                     : R.color.white_mode_tint;
+
+        updateIcon(view, sds, tint);
     }
 
     /** Update attributes of decorated suggestion icon. */
     private static void updateActionIcon(PropertyModel model, BaseSuggestionView baseView) {
         final ImageView view = baseView.getActionImageView();
         final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ACTION_ICON);
-        updateIcon(view, sds, isDarkMode(model));
+        updateIcon(view, sds, ChromeColors.getIconTintRes(!isDarkMode(model)));
     }
 
     /** Update image view using supplied drawable state object */
     private static void updateIcon(
-            ImageView view, SuggestionDrawableState sds, boolean useDarkColors) {
+            ImageView view, SuggestionDrawableState sds, @ColorRes int tintRes) {
         final Resources res = view.getContext().getResources();
 
         view.setVisibility(sds == null ? View.GONE : View.VISIBLE);
@@ -98,10 +105,12 @@ public class BaseSuggestionViewBinder
             return;
         }
 
-        view.setImageDrawable(sds.drawable);
+        ColorStateList tint = null;
         if (sds.allowTint) {
-            ApiCompatibilityUtils.setImageTintList(
-                    view, ChromeColors.getIconTint(view.getContext(), !useDarkColors));
+            tint = AppCompatResources.getColorStateList(view.getContext(), tintRes);
         }
+
+        view.setImageDrawable(sds.drawable);
+        ApiCompatibilityUtils.setImageTintList(view, tint);
     }
 }

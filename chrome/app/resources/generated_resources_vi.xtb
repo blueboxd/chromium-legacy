@@ -2617,7 +2617,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4839303808932127586">Lưu &amp;video thành...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 mục khác}other{# mục khác}}</translation>
 <translation id="4842976633412754305">Trang này đang cố gắng tải tập lệnh từ nguồn chưa được xác thực.</translation>
-<translation id="4843488774506045600">Màn hình đăng nhập của <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Các bàn phím khác</translation>
 <translation id="4846680374085650406">Bạn đang theo khuyến cáo của quản trị viên về cài đặt này.</translation>
 <translation id="4848518990323155912">Bật khóa thẻ SIM (cần có mã PIN để sử dụng dữ liệu di động)</translation>
@@ -3815,7 +3814,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>
-<translation id="6617100836880592260">Tốc độ quét: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Vẫn tiếp tục</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Trang web có thể theo dõi vị trí của bạn</translation>

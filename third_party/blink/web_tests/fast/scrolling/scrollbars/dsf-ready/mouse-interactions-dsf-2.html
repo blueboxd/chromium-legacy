@@ -16,15 +16,9 @@
   top: 100px;
   left: 100px;
 }
-.customLocation {
-  position: absolute;
-  top: 250px;
-  left: 100px;
-}
-
 .space {
-  height: 1000px;
-  width: 1000px;
+  height: 200px;
+  width: 200px;
 }
 </style>
 
@@ -79,18 +73,18 @@ window.onload = () => {
     // TODO(arakeri): crbug.com/1016188 has been filed to investigate the differences
     // in scroll offsets between platforms.
     if (onLinuxPlatform)
-      expected_offset = window.devicePixelRatio == 1 ? 732 : 457.5;
+      expected_offset = window.devicePixelRatio == 1 ? 92 : 73;
     else if (onMacPlatform)
-      expected_offset = 281;
+      expected_offset = 46;
     else
-      expected_offset = window.devicePixelRatio == 1 ? 481 : 362;
+      expected_offset = window.devicePixelRatio == 1 ? 71 : 73;
     assert_equals(standardDivFast.scrollTop, expected_offset, "Vertical thumb drag downwards did not scroll as expected.");
   }, "Test mouse drags on non-custom composited div scrollbar thumb.");
 
-  promise_test (async (test) => {
+  promise_test (async () => {
     // Since scrollbars on Mac don't have buttons, this test is irrelevant.
     if(onMacPlatform)
-      test.done();
+      return;
 
     resetScrollOffset(standardDivFast);
 
@@ -99,7 +93,7 @@ window.onload = () => {
     assert_equals(standardDivFast.scrollTop, 40, "Pressing the down arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
-  promise_test (async (test) => {
+  promise_test (async () => {
     resetScrollOffset(standardDivFast);
 
     // Testing forward scroll on vertical scrollbar. Mac uses "Option" key
@@ -108,11 +102,11 @@ window.onload = () => {
     await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, standardRectFast.top + 50, /*left_click*/0, modifier);
     let expected_offset = 0;
     if (onLinuxPlatform)
-      expected_offset = window.devicePixelRatio == 1 ? 695 : 606;
+      expected_offset = window.devicePixelRatio == 1 ? 87 : 82;
     else if (onMacPlatform)
-      expected_offset = 549;
+      expected_offset = 74;
     else
-      expected_offset = window.devicePixelRatio == 1 ? 626 : 579.5;
+      expected_offset = 82;
 
     // TODO(arakeri): crbug.com/1019076 Option + click is off by 3-4 px.
     assert_approx_equals(standardDivFast.scrollTop, expected_offset, 3,

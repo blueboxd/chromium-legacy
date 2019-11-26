@@ -163,6 +163,15 @@ enum sh_flag_masks {
   SHF_WRITE = 1 << 0,
   SHF_ALLOC = 1 << 1,
   SHF_EXECINSTR = 1 << 2,
+  // 1 << 3 is reserved.
+  SHF_MERGE = 1 << 4,
+  SHF_STRINGS = 1 << 5,
+  SHF_INFO_LINK = 1 << 6,
+  SHF_LINK_ORDER = 1 << 7,
+  SHF_OS_NONCONFORMING = 1 << 8,
+  SHF_GROUP = 1 << 9,
+  SHF_TLS = 1 << 10,
+  SHF_COMPRESSED = 1 << 11,
 };
 
 struct Elf32_Phdr {

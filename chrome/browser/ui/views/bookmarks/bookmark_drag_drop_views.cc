@@ -117,7 +117,8 @@ class BookmarkDragImageSource : public gfx::CanvasImageSource {
 
     // Draw bookmark count if more than 1 bookmark is dragged.
     base::string16 count = base::NumberToString16(count_);
-    auto render_text = gfx::RenderText::CreateFor(gfx::Typesetter::BROWSER);
+    std::unique_ptr<gfx::RenderText> render_text =
+        gfx::RenderText::CreateRenderText();
     render_text->SetFontList(font_list);
     render_text->SetCursorEnabled(false);
     render_text->SetColor(SK_ColorWHITE);

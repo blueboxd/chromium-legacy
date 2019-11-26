@@ -31,75 +31,76 @@ public final class SessionTestUtils {
     private static final long DELAY_MS = 100L;
     private static final long SHORT_DELAY_MS = 25L;
 
-    private final InfraIntegrationScope scope;
-    private long currentDelay;
+    private final InfraIntegrationScope mScope;
+    private long mCurrentDelay;
 
     public SessionTestUtils(@RequestBehavior int requestBehavior) {
-        scope = new InfraIntegrationScope.Builder()
+        mScope =
+                new InfraIntegrationScope.Builder()
                         .setSchedulerApi(new FakeSchedulerApi(FakeThreadUtils.withoutThreadChecks())
                                                  .setRequestBehavior(requestBehavior))
                         .withTimeoutSessionConfiguration(TIMEOUT_MS)
                         .build();
-        currentDelay = DELAY_MS;
+        mCurrentDelay = DELAY_MS;
     }
 
     /** Shortens the delay on requests so that they complete before timeout. */
     public SessionTestUtils requestBeforeTimeout() {
-        currentDelay = SHORT_DELAY_MS;
+        mCurrentDelay = SHORT_DELAY_MS;
         return this;
     }
 
     /** Returns the {@link InfraIntegrationScope}. */
     public InfraIntegrationScope getScope() {
-        return scope;
+        return mScope;
     }
 
     private ViewDepthProvider createViewDepthProvider() {
         return new FakeViewDepthProvider().setChildViewDepth(
-                scope.getProtocolAdapter().getStreamContentId(REQUEST_1[1]));
+                mScope.getProtocolAdapter().getStreamContentId(REQUEST_1[1]));
     }
 
     /** Creates a new session and returns the {@link ModelProvider}. */
     public ModelProvider createNewSession() {
-        return scope.getModelProviderFactory().createNew(
+        return mScope.getModelProviderFactory().createNew(
                 createViewDepthProvider(), UiContext.getDefaultInstance());
     }
 
     /** Populates HEAD with data. */
     public void populateHead() {
-        scope.getFakeFeedRequestManager()
+        mScope.getFakeFeedRequestManager()
                 .queueResponse(ResponseBuilder.forClearAllWithCards(REQUEST_1).build())
                 .triggerRefresh(RequestReason.OPEN_WITHOUT_CONTENT,
-                        scope.getFeedSessionManager().getUpdateConsumer(
+                        mScope.getFeedSessionManager().getUpdateConsumer(
                                 MutationContext.EMPTY_CONTEXT));
     }
 
     /** Enqueues an error response and returns the delay in milliseconds. */
     public long queueError() {
-        scope.getFakeFeedRequestManager().queueError(currentDelay);
-        return currentDelay;
+        mScope.getFakeFeedRequestManager().queueError(mCurrentDelay);
+        return mCurrentDelay;
     }
 
     /** Enqueues a response and returns the delay in milliseconds. */
     public long queueRequest() {
-        scope.getFakeFeedRequestManager().queueResponse(
-                ResponseBuilder.forClearAllWithCards(REQUEST_2).build(), currentDelay);
-        return currentDelay;
+        mScope.getFakeFeedRequestManager().queueResponse(
+                ResponseBuilder.forClearAllWithCards(REQUEST_2).build(), mCurrentDelay);
+        return mCurrentDelay;
     }
 
     /** Enqueues an error response, triggers the refresh, and returns the delay in milliseconds. */
     public long startOutstandingRequestWithError() {
         long delayMs = queueError();
-        scope.getFakeFeedRequestManager().triggerRefresh(RequestReason.OPEN_WITHOUT_CONTENT,
-                scope.getFeedSessionManager().getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+        mScope.getFakeFeedRequestManager().triggerRefresh(RequestReason.OPEN_WITHOUT_CONTENT,
+                mScope.getFeedSessionManager().getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
         return delayMs;
     }
 
     /** Enqueues a response, triggers the refresh, and returns the delay in milliseconds. */
     public long startOutstandingRequest() {
         long delayMs = queueRequest();
-        scope.getFakeFeedRequestManager().triggerRefresh(RequestReason.OPEN_WITHOUT_CONTENT,
-                scope.getFeedSessionManager().getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+        mScope.getFakeFeedRequestManager().triggerRefresh(RequestReason.OPEN_WITHOUT_CONTENT,
+                mScope.getFeedSessionManager().getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
         return delayMs;
     }
 
@@ -108,7 +109,7 @@ public final class SessionTestUtils {
         assertThat(rootChildren).hasSize(REQUEST_1.length);
         for (int i = 0; i < rootChildren.size(); i++) {
             assertThat(rootChildren.get(i).getContentId())
-                    .isEqualTo(scope.getProtocolAdapter().getStreamContentId(REQUEST_1[i]));
+                    .isEqualTo(mScope.getProtocolAdapter().getStreamContentId(REQUEST_1[i]));
         }
     }
 
@@ -117,7 +118,7 @@ public final class SessionTestUtils {
         assertThat(rootChildren).hasSize(REQUEST_2.length);
         for (int i = 0; i < rootChildren.size(); i++) {
             assertThat(rootChildren.get(i).getContentId())
-                    .isEqualTo(scope.getProtocolAdapter().getStreamContentId(REQUEST_2[i]));
+                    .isEqualTo(mScope.getProtocolAdapter().getStreamContentId(REQUEST_2[i]));
         }
     }
 
@@ -133,7 +134,7 @@ public final class SessionTestUtils {
      * Asserts that no runnables are pending in the {@link TaskQueue} or {@link MainThreadRunner}.
      */
     public void assertWorkComplete() {
-        assertThat(scope.getTaskQueue().hasBacklog()).isFalse();
-        assertThat(scope.getFakeMainThreadRunner().hasPendingTasks()).isFalse();
+        assertThat(mScope.getTaskQueue().hasBacklog()).isFalse();
+        assertThat(mScope.getFakeMainThreadRunner().hasPendingTasks()).isFalse();
     }
 }

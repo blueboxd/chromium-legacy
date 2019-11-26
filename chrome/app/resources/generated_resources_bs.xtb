@@ -2643,7 +2643,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4839303808932127586">Sač&amp;uvaj videozapis kao…</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Još 1}one{Još #}few{Još #}other{Još #}}</translation>
 <translation id="4842976633412754305">Ova stranica pokušava učitati skripte s izvora koji nisu autentificirani.</translation>
-<translation id="4843488774506045600">Prijavu pruža ekstenzija <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Ostale tastature</translation>
 <translation id="4846680374085650406">U skladu ste s preporukom administratora za ovu postavku.</translation>
 <translation id="4848518990323155912">Omogući zaključavanje SIM kartice (potreban je PIN za korištenje mobilnih podataka)</translation>
@@ -3848,7 +3847,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6607831829715835317">Više ala&amp;ta</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
-<translation id="6617100836880592260">Brzina skeniranja: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Ipak zadrži</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Web lokacija može pratiti vašu lokaciju</translation>

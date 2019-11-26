@@ -36,7 +36,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
       TestCompletionCallback test_callback;
       HttpAuthChallengeTokenizer tokenizer(challenge.begin(), challenge.end());
       HttpAuthHandlerMock mock_handler;
-      BoundTestNetLog test_net_log;
+      RecordingBoundTestNetLog test_net_log;
 
       // set_connection_based(true) indicates that the HandleAnotherChallenge()
       // call after GenerateAuthToken() is expected and does not result in

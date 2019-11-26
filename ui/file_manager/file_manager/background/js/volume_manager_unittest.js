@@ -20,10 +20,20 @@ function setUp() {
       },
     },
     fileManagerPrivate: {
+      DriveConnectionStateType: {
+        ONLINE: 'ONLINE',
+        OFFLINE: 'OFFLINE',
+        METERED: 'METERED',
+      },
+      DriveOfflineReason: {
+        NOT_READY: 'NOT_READY',
+        NO_NETWORK: 'NO_NETWORK',
+        NO_SERVICE: 'NO_SERVICE',
+      },
       mountSourcePath_: null,
       onMountCompletedListeners_: [],
       onDriveConnectionStatusChangedListeners_: [],
-      driveConnectionState_: VolumeManagerCommon.DriveConnectionType.ONLINE,
+      driveConnectionState_: 'ONLINE',
       volumeMetadataList_: [],
       addMount: function(fileUrl, callback) {
         callback(mockChrome.fileManagerPrivate.mountSourcePath_);
@@ -157,21 +167,21 @@ function testGetDriveConnectionState(callback) {
       volumeManagerFactory.getInstance().then(volumeManager => {
         // Default connection state is online
         assertEquals(
-            VolumeManagerCommon.DriveConnectionType.ONLINE,
+            chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE,
             volumeManager.getDriveConnectionState());
 
         // Sets it to offline.
         chrome.fileManagerPrivate.driveConnectionState =
-            VolumeManagerCommon.DriveConnectionType.OFFLINE;
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
         assertEquals(
-            VolumeManagerCommon.DriveConnectionType.OFFLINE,
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
             volumeManager.getDriveConnectionState());
 
         // Sets it back to online
         chrome.fileManagerPrivate.driveConnectionState =
-            VolumeManagerCommon.DriveConnectionType.ONLINE;
+            chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE;
         assertEquals(
-            VolumeManagerCommon.DriveConnectionType.ONLINE,
+            chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE,
             volumeManager.getDriveConnectionState());
       }),
       callback);

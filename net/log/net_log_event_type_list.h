@@ -2809,7 +2809,11 @@ EVENT_TYPE(CERT_VERIFIER_REQUEST)
 //   "certificates": <A list of PEM encoded certificates, the first one
 //                    being the certificate to verify and the remaining
 //                    being intermediate certificates to assist path
-//                    building. Only present when byte logging is enabled.>
+//                    building.>
+//   "ocsp_response": <Optionally, a PEM encoded stapled OCSP response.>
+//   "sct_list": <Optionally, a PEM encoded SignedCertificateTimestampList.>
+//   "host": <The hostname verification is being performed for.>
+//   "verifier_flags": <The CertVerifier::VerifyFlags.>
 // }
 //
 // The END phase event parameters are:

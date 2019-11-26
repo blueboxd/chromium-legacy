@@ -14,28 +14,28 @@ import java.util.ArrayList;
 
 /** Fake implementation of {@link NetworkClient}. */
 public final class FakeNetworkClient implements NetworkClient {
-    private final FakeThreadUtils fakeThreadUtils;
-    private final ArrayList<HttpResponse> responses = new ArrayList<>();
-    /*@Nullable*/ private HttpRequest request;
-    /*@Nullable*/ private HttpResponse defaultResponse;
+    private final FakeThreadUtils mFakeThreadUtils;
+    private final ArrayList<HttpResponse> mResponses = new ArrayList<>();
+    /*@Nullable*/ private HttpRequest mRequest;
+    /*@Nullable*/ private HttpResponse mDefaultResponse;
 
     public FakeNetworkClient(FakeThreadUtils fakeThreadUtils) {
-        this.fakeThreadUtils = fakeThreadUtils;
+        this.mFakeThreadUtils = fakeThreadUtils;
     }
 
     @Override
     public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
-        this.request = request;
-        boolean policy = fakeThreadUtils.enforceMainThread(true);
+        this.mRequest = request;
+        boolean policy = mFakeThreadUtils.enforceMainThread(true);
         try {
-            if (responses.isEmpty() && defaultResponse != null) {
-                responseConsumer.accept(defaultResponse);
+            if (mResponses.isEmpty() && mDefaultResponse != null) {
+                responseConsumer.accept(mDefaultResponse);
                 return;
             }
 
-            responseConsumer.accept(responses.remove(0));
+            responseConsumer.accept(mResponses.remove(0));
         } finally {
-            fakeThreadUtils.enforceMainThread(policy);
+            mFakeThreadUtils.enforceMainThread(policy);
         }
     }
 
@@ -44,19 +44,19 @@ public final class FakeNetworkClient implements NetworkClient {
 
     /** Adds a response to the {@link FakeNetworkClient} to be returned in order. */
     public FakeNetworkClient addResponse(HttpResponse response) {
-        responses.add(response);
+        mResponses.add(response);
         return this;
     }
 
     /** Sets a default response to use if no other response is available. */
     public FakeNetworkClient setDefaultResponse(HttpResponse response) {
-        defaultResponse = response;
+        mDefaultResponse = response;
         return this;
     }
 
     /** Returns the last {@link HttpRequest} sent. */
     /*@Nullable*/
     public HttpRequest getLatestRequest() {
-        return request;
+        return mRequest;
     }
 }

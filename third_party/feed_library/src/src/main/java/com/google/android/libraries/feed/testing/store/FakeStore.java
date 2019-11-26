@@ -34,13 +34,13 @@ import java.util.List;
 
 /** Fake implementation of {@link com.google.android.libraries.feed.api.internal.store.Store}. */
 public final class FakeStore extends FeedStore {
-    private final FakeThreadUtils fakeThreadUtils;
-    private boolean allowCreateNewSession = true;
-    private boolean allowEditContent = true;
-    private boolean allowGetPayloads = true;
-    private boolean allowGetStreamStructures = true;
-    private boolean allowGetSharedStates = true;
-    private boolean clearHeadCalled;
+    private final FakeThreadUtils mFakeThreadUtils;
+    private boolean mAllowCreateNewSession = true;
+    private boolean mAllowEditContent = true;
+    private boolean mAllowGetPayloads = true;
+    private boolean mAllowGetStreamStructures = true;
+    private boolean mAllowGetSharedStates = true;
+    private boolean mClearHeadCalled;
 
     public FakeStore(Configuration configuration, FakeThreadUtils fakeThreadUtils,
             TaskQueue taskQueue, Clock clock) {
@@ -48,12 +48,12 @@ public final class FakeStore extends FeedStore {
                 new InMemoryContentStorage(), new InMemoryJournalStorage(), fakeThreadUtils,
                 taskQueue, clock, new FakeBasicLoggingApi(),
                 FakeMainThreadRunner.runTasksImmediately());
-        this.fakeThreadUtils = fakeThreadUtils;
+        this.mFakeThreadUtils = fakeThreadUtils;
     }
 
     @Override
     public Result<List<PayloadWithId>> getPayloads(List<String> contentIds) {
-        if (!allowGetPayloads) {
+        if (!mAllowGetPayloads) {
             return Result.failure();
         }
 
@@ -62,7 +62,7 @@ public final class FakeStore extends FeedStore {
 
     @Override
     public Result<List<StreamStructure>> getStreamStructures(String sessionId) {
-        if (!allowGetStreamStructures) {
+        if (!mAllowGetStreamStructures) {
             return Result.failure();
         }
 
@@ -71,13 +71,13 @@ public final class FakeStore extends FeedStore {
 
     @Override
     public void clearHead() {
-        clearHeadCalled = true;
+        mClearHeadCalled = true;
         super.clearHead();
     }
 
     @Override
     public Result<String> createNewSession() {
-        if (!allowCreateNewSession) {
+        if (!mAllowCreateNewSession) {
             return Result.failure();
         }
 
@@ -86,7 +86,7 @@ public final class FakeStore extends FeedStore {
 
     @Override
     public Result<List<StreamSharedState>> getSharedStates() {
-        if (!allowGetSharedStates) {
+        if (!mAllowGetSharedStates) {
             return Result.failure();
         }
 
@@ -95,7 +95,7 @@ public final class FakeStore extends FeedStore {
 
     @Override
     public ContentMutation editContent() {
-        if (!allowEditContent) {
+        if (!mAllowEditContent) {
             return new ContentMutation() {
                 @Override
                 public ContentMutation add(String contentId, StreamPayload payload) {
@@ -114,12 +114,12 @@ public final class FakeStore extends FeedStore {
 
     /** Returns if {@link FeedStore#clearAll()} was called. */
     public boolean getClearHeadCalled() {
-        return clearHeadCalled;
+        return mClearHeadCalled;
     }
 
     /** Clears all content storage. */
     public FakeStore clearContent() {
-        contentStorage.commit(
+        mContentStorage.commit(
                 new com.google.android.libraries.feed.api.host.storage.ContentMutation.Builder()
                         .deleteAll()
                         .build());
@@ -128,64 +128,64 @@ public final class FakeStore extends FeedStore {
 
     /** Sets whether to fail on calls to {@link getStreamStructures(String)}. */
     public FakeStore setAllowGetStreamStructures(boolean value) {
-        allowGetStreamStructures = value;
+        mAllowGetStreamStructures = value;
         return this;
     }
 
     /** Sets whether to fail on calls to {@link editContent()}. */
     public FakeStore setAllowEditContent(boolean value) {
-        allowEditContent = value;
+        mAllowEditContent = value;
         return this;
     }
 
     /** Sets whether to fail on calls to {@link createNewSession()}. */
     public FakeStore setAllowCreateNewSession(boolean value) {
-        allowCreateNewSession = value;
+        mAllowCreateNewSession = value;
         return this;
     }
 
     /** Sets whether to fail on calls to {@link getPayloads(List)}. */
     public FakeStore setAllowGetPayloads(boolean value) {
-        allowGetPayloads = value;
+        mAllowGetPayloads = value;
         return this;
     }
 
     /** Sets whether to fail on calls to {@link getSharedStates()}. */
     public FakeStore setAllowGetSharedStates(boolean value) {
-        allowGetSharedStates = value;
+        mAllowGetSharedStates = value;
         return this;
     }
 
     /** Adds the {@code payload} to the store. */
     public FakeStore setContent(String contentId, StreamPayload payload) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         editContent().add(contentId, payload).commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
     /** Adds the {@code payloads} to the store. */
     public FakeStore setContent(List<PayloadWithId> payloads) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         ContentMutation mutation = editContent();
         for (PayloadWithId payload : payloads) {
             mutation.add(payload.contentId, payload.payload);
         }
         mutation.commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
     /** Adds the {@code sharedStates} to the store. */
     public FakeStore setSharedStates(StreamSharedState... sharedStates) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         ContentMutation mutation = editContent();
         for (StreamSharedState sharedState : sharedStates) {
             mutation.add(sharedState.getContentId(),
                     StreamPayload.newBuilder().setStreamSharedState(sharedState).build());
         }
         mutation.commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
@@ -196,41 +196,41 @@ public final class FakeStore extends FeedStore {
 
     /** Adds the {@code structures} to the store for the specified {@code sessionId}. */
     public FakeStore setStreamStructures(String sessionId, List<StreamStructure> structures) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         SessionMutation mutation = editSession(sessionId);
         for (StreamStructure structure : structures) {
             mutation.add(structure);
         }
         mutation.commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
     /** Adds the {@code actions} to the store. */
     public FakeStore setStreamUploadableActions(StreamUploadableAction... actions) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         UploadableActionMutation mutation = editUploadableActions();
         for (StreamUploadableAction action : actions) {
             mutation.upsert(action, action.getFeatureContentId());
         }
         mutation.commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
     /** Adds the {@code actions} to the store. */
     public FakeStore addSemanticProperties(String contentId, SemanticProperties properties) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         SemanticPropertiesMutation mutation = editSemanticProperties();
         mutation.add(contentId, properties.getSemanticPropertiesData());
         mutation.commit();
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return this;
     }
 
     /** Gets all content associated with the {@code contentId}. */
     public List<Object> getContentById(String contentId) {
-        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        boolean policy = mFakeThreadUtils.enforceMainThread(false);
         ArrayList<String> contentIds = new ArrayList<>(1);
         contentIds.add(contentId);
         ArrayList<Object> result = new ArrayList<>();
@@ -241,7 +241,7 @@ public final class FakeStore extends FeedStore {
                 result.add(action);
             }
         }
-        fakeThreadUtils.enforceMainThread(policy);
+        mFakeThreadUtils.enforceMainThread(policy);
         return result;
     }
 }

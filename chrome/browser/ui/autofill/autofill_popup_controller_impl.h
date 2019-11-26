@@ -185,10 +185,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // line is currently selected.
   base::Optional<int> selected_line_;
 
-  // The typesetter to use when eliding text. This must be BROWSER when the UI
-  // is drawn by Cocoa on macOS.
-  gfx::Typesetter typesetter_ = gfx::Typesetter::HARFBUZZ;
-
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupControllerImpl);

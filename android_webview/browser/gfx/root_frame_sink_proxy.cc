@@ -24,11 +24,11 @@ scoped_refptr<RootFrameSink> RootFrameSinkProxy::GetRootFrameSinkHelper(
 
 RootFrameSinkProxy::RootFrameSinkProxy(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    base::RepeatingClosure invalidate_callback)
+    RootFrameSinkProxyClient* client)
     : ui_task_runner_(ui_task_runner),
       viz_task_runner_(
           VizCompositorThreadRunnerWebView::GetInstance()->task_runner()),
-      invalidate_callback_(std::move(invalidate_callback)) {
+      client_(client) {
   DETACH_FROM_THREAD(viz_thread_checker_);
   viz_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RootFrameSinkProxy::InitializeOnViz,
@@ -127,8 +127,11 @@ RootFrameSinkGetter RootFrameSinkProxy::GetRootFrameSinkCallback() {
 
 bool RootFrameSinkProxy::OnBeginFrameDerivedImpl(
     const viz::BeginFrameArgs& args) {
+  DCHECK(client_);
   if (BeginFrame(args))
-    invalidate_callback_.Run();
+    client_->Invalidate();
+
+  client_->ProgressFling(args.frame_time);
 
   return true;
 }

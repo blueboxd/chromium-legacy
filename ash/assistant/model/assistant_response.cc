@@ -4,7 +4,8 @@
 
 #include "ash/assistant/model/assistant_response.h"
 
-#include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/model/ui/assistant_card_element.h"
+#include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
@@ -83,7 +84,7 @@ void AssistantResponse::Processor::Process() {
   response_.set_processing_state(ProcessingState::kProcessing);
 
   for (const auto& ui_element : response_.GetUiElements()) {
-    switch (ui_element->GetType()) {
+    switch (ui_element->type()) {
       case AssistantUiElementType::kCard:
         ++processing_count_;
         // Start asynchronous processing of the card element.

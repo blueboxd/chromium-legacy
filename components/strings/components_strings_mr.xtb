@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">सध्या <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />वर असलेले आक्रमणकर्ता तुमच्या डिव्हाइसला हानी पोहोचवणारे धोकादायक ॲप इंस्टॉल करू शकतात, तुमच्या मोबाइल बिलामध्ये लपलेले शुल्क जोडू शकतात किंवा तुमची वैयक्तिक माहिती चोरू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">इंटरनेट नाही</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान ॲप<ph name="END_LINK" /> वापरून आपल्या कनेक्शनचे निराकरण करा</translation>
+<translation id="22320125457191592">तुमच्यासाठी</translation>
 <translation id="2239100178324503013">आता पाठवा</translation>
 <translation id="2248949050832152960">WebAuthn वापरा</translation>
 <translation id="2250931979407627383">एज स्टिच लेफ्ट</translation>
@@ -374,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">सोडा</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">सुरक्षा चेतावणी</translation>
 <translation id="2699302886720511147">स्वीकारली जाणारी कार्डे</translation>
 <translation id="2702801445560668637">वाचन सूची</translation>
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
@@ -476,6 +478,7 @@
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3209034400446768650">पेज कदाचित शुल्क आकारू शकते</translation>
 <translation id="3209080785413271048">तुमच्या सेव्ह केलेल्या पेमेंट पद्धतींची पडताळणी करण्यासाठी Windows Hello वापरा.</translation>
+<translation id="3212581601480735796">तुमच्या <ph name="HOSTNAME" /> वरील अ‍ॅक्टिव्हिटीचे परीक्षण केले जात आहे</translation>
 <translation id="3215092763954878852">WebAuthn वापरता आले नाही</translation>
 <translation id="3225919329040284222">सर्व्हरने असे सर्टिफिकेट सादर केले आहे जे अंगभूत अपेक्षांशी जुळत नाही. या अपेक्षा तुम्हाला संरक्षित करण्यासाठी विशिष्ट, उच्च सुरक्षिततेच्या वेबसाइटसाठी समाविष्ट केल्या आहेत.</translation>
 <translation id="3226128629678568754">पृष्ठ लोड करण्यास आवश्यक असलेला डेटा पुन्हा सबमिट करण्यासाठी रीलोड बटण दाबा.</translation>
@@ -533,6 +536,7 @@
 <translation id="3528485271872257980">गडद तपकिरी</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{ सिंक केलेल्या डिव्हाइसवर किमान 1 आयटम}=1{1 आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}other{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणि आणखी काही)}}</translation>
 <translation id="3539171420378717834">या डिव्हाइसवर या कार्डची एक प्रत ठेवा</translation>
+<translation id="3553513561058684206">तुमच्यासाठी</translation>
 <translation id="3566021033012934673">तुमचे कनेक्शन खाजगी नाही</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> वरील एंबेड केलेल्‍या पेजचे म्हणणे हे आहे की</translation>
@@ -763,6 +767,7 @@
 <translation id="4594403342090139922">&amp;हटवा पूर्ववत करा</translation>
 <translation id="4597348597567598915">आकार ८</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">या कनेक्शनच्या सर्टिफिकेटवर Google Chrome विश्वास ठेवत नाही, कारण ते नेटवर्क अवरोधित करण्यासाठी आणि त्याचे परीक्षण करण्यासाठी वापरले जाण्याकरिता ओळखले जाते.</translation>
 <translation id="4635654612248442824">साइटने <ph name="ORIGIN" />विनंती केली आहे की, मूळ धोरण
      त्याच्या सर्व विनंतीवर लागू होईल पण हे धोरण सध्या लागू केले जाऊ शकत नाही.</translation>
 <translation id="464342062220857295">शोध वैशिष्ट्ये</translation>
@@ -1469,6 +1474,7 @@
 <translation id="8103161714697287722">पेमेंट पद्धत</translation>
 <translation id="8105368624971345109">बंद करा</translation>
 <translation id="8118489163946903409">पेमेंट पद्धत</translation>
+<translation id="8124023448510659215">या कनेक्शनच्या सर्टिफिकेटवर Chromium विश्वास ठेवत नाही, कारण ते नेटवर्क अवरोधित करण्यासाठी आणि त्याचे परीक्षण करण्यासाठी वापरले जाण्याकरिता ओळखले जाते.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" तुमच्या काँप्युटरवर किंवा नेटवर्कवर योग्य रीतीने इंस्टॉल केले नव्हते. तुमच्या अ‍ॅडमिनिस्ट्रेटरला ही समस्या सोडवण्यास सांगा.</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8149426793427495338">तुमचा कॉंप्युटर निष्क्रीय झाला.</translation>
@@ -1611,6 +1617,8 @@
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
 <translation id="8962950042226115166">संशयास्पद साइट</translation>
 <translation id="8968766641738584599">कार्ड सेव्ह करा</translation>
+<translation id="8969267497192857913">तुम्ही टाइप करत असलेले काहीही, तुम्ही पाहत असलेली कोणतीही पेज किंवा वेबवरील इतर कोणत्याही अ‍ॅक्टिव्हिटीवर नजर ठेवली जाते आणि साइटवरचा आशय तुमच्या नकळत बदलला जाऊ शकतो.
+    <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">सर्व्हरचे सर्टिफिकेट एक्स्पायर झाले आहे.</translation>
 <translation id="8975012916872825179">फोन नंबर, ईमेल ॲड्रेस आणि शिपिंग पत्ते यांसारखी माहिती समाविष्ट आहे</translation>
 <translation id="8975263830901772334">तुम्ही प्रिंट करत असलेल्या फायलींची नावे</translation>

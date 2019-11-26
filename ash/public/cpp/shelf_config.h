@@ -94,6 +94,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The duration of the hotseat background animations in ms.
   base::TimeDelta hotseat_background_animation_duration() const;
 
+  // The duration of the shelf show/hide animation in ms.
+  base::TimeDelta shelf_animation_duration() const;
+
   // The extra padding added to status area tray buttons on the shelf.
   int status_area_hit_region_padding() const;
 

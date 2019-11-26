@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -362,24 +363,11 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
 bool IsValidRegex(const dnr_api::Rule& parsed_rule) {
   DCHECK(parsed_rule.condition.regex_filter);
 
-  re2::RE2::Options options;
-
-  // RE2 supports UTF-8 and Latin1 encoding. We only need to support ASCII, so
-  // use Latin1 encoding. This should also be more efficient than UTF-8.
-  // Note: Latin1 is an 8 bit extension to ASCII.
-  options.set_encoding(re2::RE2::Options::EncodingLatin1);
-
-  options.set_case_sensitive(IsCaseSensitive(parsed_rule));
-
-  // Don't capture unless needed, for efficiency.
-  // TODO(crbug.com/974391): Capturing should be supported for regex based
-  // substitutions which are not implemented yet.
-  options.set_never_capture(true);
-
-  // TODO(crbug.com/974391): Regex compilation can be expensive. Also, these
-  // need to be compiled again once the ruleset is loaded, which means duplicate
-  // work. We should maintain a global cache of compiled regexes.
-  re2::RE2 regex(*parsed_rule.condition.regex_filter, options);
+  // TODO(karandeepb): Regex compilation can be expensive. Also, these need to
+  // be compiled again once the ruleset is loaded, which means duplicate work.
+  // We should maintain a global cache of compiled regexes.
+  re2::RE2 regex(*parsed_rule.condition.regex_filter,
+                 CreateRE2Options(IsCaseSensitive(parsed_rule)));
   return regex.ok();
 }
 

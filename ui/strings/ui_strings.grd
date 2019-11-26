@@ -950,20 +950,23 @@ need to be translated for each locale.-->
       </message>
 
 
-      <message name="IDS_APP_ACCESSIBILITY_STAR_RATING_ARC" desc="Accessibility text for the star rating of a Play Store app.">
-        Star rating <ph name="RATING_SCORE">$1<ex>5.0</ex></ph>
+      <message name="IDS_APP_ACCESSIBILITY_APP_WITH_STAR_RATING_ARC" desc="Accessibility text for a Play Store app with star rating.">
+        <ph name="APP_NAME_TYPE">$1<ex>Snapchat, Playstore App</ex></ph>, Star rating <ph name="RATING_SCORE">$2<ex>5.0</ex></ph>
+      </message>
+       <message name="IDS_APP_ACCESSIBILITY_APP_WITH_PRICE_ARC" desc="Accessibility text for a Play Store app with price.">
+        <ph name="APP_NAME_INFO">$1<ex>Snapchat, Playstore App, Star rating 4.1</ex></ph>, <ph name="PRICE">$2<ex>Free</ex></ph>
       </message>
       <message name="IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT" desc="Accessibility text to specify a search result is a play store app.">
-        Play Store App
+        <ph name="APP_NAME">$1<ex>Snapchat</ex></ph>, Play Store App
       </message>
       <message name="IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT" desc="Accessibility text to specify a search result is an installed app.">
-        Installed App
+        <ph name="APP_NAME">$1<ex>Files</ex></ph>, Installed App
       </message>
       <message name="IDS_APP_ACCESSIBILITY_INTERNAL_APP_ANNOUNCEMENT" desc="Accessibility text to specify a search result is an internal app.">
-        App
+        <ph name="APP_NAME">$1<ex>Camera</ex></ph>, App
       </message>
       <message name="IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC" desc="Accessibility text to specify a search result is an app recommendation.">
-        App recommendation
+        <ph name="APP_NAME">$1<ex>Instagram</ex></ph>, App recommendation
       </message>
       <!-- Strings describing the touch calibration UX -->
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_EXIT_LABEL" desc="A message to notify the user about using the escape key to exit the calibration mode.">

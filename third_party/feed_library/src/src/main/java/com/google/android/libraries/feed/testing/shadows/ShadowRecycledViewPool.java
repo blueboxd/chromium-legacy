@@ -20,14 +20,14 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(RecyclerView.RecycledViewPool.class)
 public class ShadowRecycledViewPool {
-    private int clearCount;
+    private int mClearCount;
 
     @Implementation
     public void clear() {
-        clearCount++;
+        mClearCount++;
     }
 
     public int getClearCallCount() {
-        return clearCount;
+        return mClearCount;
     }
 }

@@ -455,7 +455,20 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param currentTab        Current tab being displayed.
      */
     protected void updateBookmarkMenuItem(MenuItem bookmarkMenuItem, Tab currentTab) {
-        bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
+        // If this method is called before the {@link #mBookmarkBridgeSupplierCallback} has been
+        // called, try to retrieve the bridge directly from the supplier.
+        if (mBookmarkBridge == null && mBookmarkBridgeSupplier != null) {
+            mBookmarkBridge = mBookmarkBridgeSupplier.get();
+        }
+
+        if (mBookmarkBridge == null) {
+            // If the BookmarkBridge still isn't available, assume the bookmark menu item is not
+            // editable.
+            bookmarkMenuItem.setEnabled(false);
+        } else {
+            bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
+        }
+
         if (BookmarkBridge.hasBookmarkIdForTab(currentTab)) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
@@ -474,7 +487,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @param currentTab      Current tab being displayed.
      */
     protected void updateRequestDesktopSiteMenuItem(
-            Menu menu, Tab currentTab, boolean canShowRequestDekstopSite) {
+            Menu menu, Tab currentTab, boolean canShowRequestDesktopSite) {
         MenuItem requestMenuRow = menu.findItem(R.id.request_desktop_site_row_menu_id);
         MenuItem requestMenuLabel = menu.findItem(R.id.request_desktop_site_id);
         MenuItem requestMenuCheck = menu.findItem(R.id.request_desktop_site_check_id);
@@ -486,7 +499,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // Also hide request desktop site on Reader Mode.
         boolean isDistilledPage = DomDistillerUrlUtils.isDistilledPage(url);
 
-        boolean itemVisible = canShowRequestDekstopSite
+        boolean itemVisible = canShowRequestDesktopSite
                 && (!isChromeScheme || currentTab.isNativePage()) && !isDistilledPage;
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;

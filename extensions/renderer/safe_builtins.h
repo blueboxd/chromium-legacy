@@ -39,6 +39,7 @@ class SafeBuiltins {
   v8::Local<v8::Object> GetRegExp() const;
   v8::Local<v8::Object> GetString() const;
   v8::Local<v8::Object> GetError() const;
+  v8::Local<v8::Object> GetPromise() const;
 
  private:
   ScriptContext* context_;

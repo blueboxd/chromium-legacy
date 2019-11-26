@@ -40,22 +40,22 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     private static final String TAG = "PersistentContent";
     private static final String CONTENT_DIR = "content";
 
-    private final Context context;
-    private final ThreadUtils threadUtils;
-    private final Executor executor;
+    private final Context mContext;
+    private final ThreadUtils mThreadUtils;
+    private final Executor mExecutor;
 
-    private File contentDir;
+    private File mContentDir;
 
     public PersistentContentStorage(Context context, Executor executor, ThreadUtils threadUtils) {
-        this.context = context;
-        this.executor = executor;
-        this.threadUtils = threadUtils;
+        this.mContext = context;
+        this.mExecutor = executor;
+        this.mThreadUtils = threadUtils;
     }
 
     @Override
     public void get(List<String> keys, Consumer<Result<Map<String, byte[]>>> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(get(keys)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(get(keys)));
     }
 
     @Override
@@ -64,7 +64,7 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
 
         Map<String, byte[]> valueMap = new HashMap<>(keys.size());
         for (String key : keys) {
-            File keyFile = new File(contentDir, key);
+            File keyFile = new File(mContentDir, key);
             if (keyFile.exists()) {
                 try {
                     valueMap.put(key, getFileContents(keyFile));
@@ -79,15 +79,15 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
 
     @Override
     public void getAll(String prefix, Consumer<Result<Map<String, byte[]>>> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(getAll(prefix)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(getAll(prefix)));
     }
 
     @Override
     public Result<Map<String, byte[]>> getAll(String prefix) {
         initializeContentDir();
 
-        File[] files = contentDir.listFiles();
+        File[] files = mContentDir.listFiles();
 
         Map<String, byte[]> allFilesMap = new HashMap<>();
 
@@ -108,7 +108,7 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     }
 
     private byte[] getFileContents(File keyFile) throws IOException {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -128,8 +128,8 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
-        threadUtils.checkMainThread();
-        executor.execute(() -> consumer.accept(commit(mutation)));
+        mThreadUtils.checkMainThread();
+        mExecutor.execute(() -> consumer.accept(commit(mutation)));
     }
 
     @Override
@@ -163,13 +163,13 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
 
     @Override
     public void getAllKeys(Consumer<Result<List<String>>> consumer) {
-        threadUtils.checkMainThread();
+        mThreadUtils.checkMainThread();
         consumer.accept(getAllKeys());
     }
 
     @Override
     public Result<List<String>> getAllKeys() {
-        String[] filenames = contentDir.list();
+        String[] filenames = mContentDir.list();
         if (filenames != null) {
             return Result.success(Arrays.asList(filenames));
         } else {
@@ -178,11 +178,11 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     }
 
     private boolean deleteAll() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         boolean success = true;
 
-        File[] files = contentDir.listFiles();
+        File[] files = mContentDir.listFiles();
         if (files != null) {
             // Delete all files in the content directory
             for (File file : files) {
@@ -193,13 +193,13 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
                 }
             }
         }
-        return contentDir.delete() && success;
+        return mContentDir.delete() && success;
     }
 
     private boolean deleteByPrefix(DeleteByPrefix operation) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        File[] files = contentDir.listFiles();
+        File[] files = mContentDir.listFiles();
 
         if (files != null) {
             for (File file : files) {
@@ -218,9 +218,9 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     }
 
     private boolean delete(Delete operation) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        File file = new File(contentDir, operation.getKey());
+        File file = new File(mContentDir, operation.getKey());
         boolean result = file.delete();
         if (!result) {
             Logger.e(TAG, "Error deleting key %s", operation.getKey());
@@ -229,9 +229,9 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     }
 
     private boolean upsert(Upsert operation) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        File file = new File(contentDir, operation.getKey());
+        File file = new File(mContentDir, operation.getKey());
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(operation.getValue());
             return true;
@@ -243,13 +243,13 @@ public final class PersistentContentStorage implements ContentStorage, ContentSt
     }
 
     private void initializeContentDir() {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
-        if (contentDir == null) {
-            contentDir = context.getDir(CONTENT_DIR, Context.MODE_PRIVATE);
+        if (mContentDir == null) {
+            mContentDir = mContext.getDir(CONTENT_DIR, Context.MODE_PRIVATE);
         }
-        if (!contentDir.exists()) {
-            contentDir.mkdir();
+        if (!mContentDir.exists()) {
+            mContentDir.mkdir();
         }
     }
 }

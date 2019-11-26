@@ -23,24 +23,24 @@ import java.util.Set;
 /** Default implementation of the {@link KnownContent}. */
 public final class FeedKnownContentImpl implements FeedKnownContent {
     private static final String TAG = "FeedKnownContentImpl";
-    private final FeedSessionManager feedSessionManager;
-    private final Set<KnownContent.Listener> listeners = new HashSet<>();
-    private final MainThreadRunner mainThreadRunner;
-    private final ThreadUtils threadUtils;
-    private final KnownContent.Listener listener;
+    private final FeedSessionManager mFeedSessionManager;
+    private final Set<KnownContent.Listener> mListeners = new HashSet<>();
+    private final MainThreadRunner mMainThreadRunner;
+    private final ThreadUtils mThreadUtils;
+    private final KnownContent.Listener mListener;
 
     @SuppressWarnings("nullness:method.invocation.invalid")
     public FeedKnownContentImpl(FeedSessionManager feedSessionManager,
             MainThreadRunner mainThreadRunner, ThreadUtils threadUtils) {
-        this.feedSessionManager = feedSessionManager;
-        this.mainThreadRunner = mainThreadRunner;
-        this.threadUtils = threadUtils;
+        this.mFeedSessionManager = feedSessionManager;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mThreadUtils = threadUtils;
 
-        this.listener = new KnownContent.Listener() {
+        this.mListener = new KnownContent.Listener() {
             @Override
             public void onContentRemoved(List<ContentRemoval> contentRemoved) {
                 runOnMainThread(TAG + " onContentRemoved", () -> {
-                    for (KnownContent.Listener knownContentListener : listeners) {
+                    for (KnownContent.Listener knownContentListener : mListeners) {
                         knownContentListener.onContentRemoved(contentRemoved);
                     }
                 });
@@ -49,7 +49,7 @@ public final class FeedKnownContentImpl implements FeedKnownContent {
             @Override
             public void onNewContentReceived(boolean isNewRefresh, long contentCreationDateTimeMs) {
                 runOnMainThread(TAG + " onNewContentReceived", () -> {
-                    for (KnownContent.Listener knownContentListener : listeners) {
+                    for (KnownContent.Listener knownContentListener : mListeners) {
                         knownContentListener.onNewContentReceived(
                                 isNewRefresh, contentCreationDateTimeMs);
                     }
@@ -57,12 +57,12 @@ public final class FeedKnownContentImpl implements FeedKnownContent {
             }
         };
 
-        feedSessionManager.setKnownContentListener(this.listener);
+        feedSessionManager.setKnownContentListener(this.mListener);
     }
 
     @Override
     public void getKnownContent(Consumer<List<ContentMetadata>> knownContentConsumer) {
-        feedSessionManager.getStreamFeaturesFromHead(
+        mFeedSessionManager.getStreamFeaturesFromHead(
                 streamPayload
                 -> {
                     if (!streamPayload.getStreamFeature().hasContent()) {
@@ -89,25 +89,25 @@ public final class FeedKnownContentImpl implements FeedKnownContent {
 
     @Override
     public void addListener(KnownContent.Listener listener) {
-        listeners.add(listener);
+        mListeners.add(listener);
     }
 
     @Override
     public void removeListener(KnownContent.Listener listener) {
-        listeners.remove(listener);
+        mListeners.remove(listener);
     }
 
     @Override
     public KnownContent.Listener getKnownContentHostNotifier() {
-        return listener;
+        return mListener;
     }
 
     private void runOnMainThread(String name, Runnable runnable) {
-        if (threadUtils.isMainThread()) {
+        if (mThreadUtils.isMainThread()) {
             runnable.run();
             return;
         }
 
-        mainThreadRunner.execute(name, runnable);
+        mMainThreadRunner.execute(name, runnable);
     }
 }

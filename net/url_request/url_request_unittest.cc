@@ -746,7 +746,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
   }
 
  protected:
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
   URLRequestJobFactoryImpl* job_factory_impl_;
   std::unique_ptr<URLRequestJobFactory> job_factory_;
@@ -4537,7 +4537,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
 
   for (auto cancel_stage : kCancelStages) {
     AsyncLoggingUrlRequestDelegate request_delegate(cancel_stage);
-    TestNetLog net_log;
+    RecordingTestNetLog net_log;
     TestURLRequestContext context(true);
     context.set_network_delegate(nullptr);
     context.set_net_log(&net_log);
@@ -6767,7 +6767,7 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
   FilteringTestNetworkDelegate network_delegate;
   network_delegate.SetCookieFilter("not_stored_cookie");
   network_delegate.set_block_get_cookies();
-  TestNetLog net_log;
+  RecordingTestNetLog net_log;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.set_net_log(&net_log);
@@ -6909,6 +6909,180 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
         "DO_NOT_WARN\",\"name\":\"path_cookie\",\"operation\":\"send\"}",
         SerializeNetLogValueToJson(entries[0].params));
     net_log.Clear();
+  }
+}
+
+// Test that the SameSite-by-default CookieInclusionStatus warnings do not get
+// set if the cookie would have been rejected for other reasons.
+// Regression test for https://crbug.com/1027318.
+TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  FilteringTestNetworkDelegate network_delegate;
+  network_delegate.SetCookieFilter("blockeduserpreference");
+  CookieMonster cm(nullptr, nullptr);
+  TestURLRequestContext context(true);
+  context.set_cookie_store(&cm);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  // Set cookies
+  {
+    // Attempt to set some cookies in a cross-site context without a SameSite
+    // attribute. They should all be blocked. Only the one that would have been
+    // included had it not been for the new SameSite features should have a
+    // warning attached.
+    TestDelegate d;
+    GURL test_url = test_server.GetURL(
+        "/set-cookie?blockeduserpreference=true&"
+        "unspecifiedsamesite=1&"
+        "invalidsecure=1;Secure");
+    GURL cross_site_url = test_server.GetURL("other.example", "/");
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(cross_site_url);  // cross-site context
+    req->Start();
+    d.RunUntilComplete();
+
+    ASSERT_EQ(3u, req->maybe_stored_cookies().size());
+
+    // Cookie blocked by user preferences is not warned about.
+    EXPECT_EQ("blockeduserpreference",
+              req->maybe_stored_cookies()[0].cookie->Name());
+    // It doesn't pick up the EXCLUDE_UNSPECIFIED_TREATED_AS_LAX because it
+    // doesn't even make it to the cookie store (it is filtered out beforehand).
+    EXPECT_TRUE(req->maybe_stored_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
+              req->maybe_stored_cookies()[0].status.warning());
+
+    // Cookie that would be included had it not been for the new SameSite rules
+    // is warned about.
+    EXPECT_EQ("unspecifiedsamesite",
+              req->maybe_stored_cookies()[1].cookie->Name());
+    EXPECT_TRUE(req->maybe_stored_cookies()[1]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
+                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+              req->maybe_stored_cookies()[1].status.warning());
+
+    // Cookie that is blocked because of invalid Secure attribute is not warned
+    // about.
+    EXPECT_EQ("invalidsecure", req->maybe_stored_cookies()[2].cookie->Name());
+    EXPECT_TRUE(
+        req->maybe_stored_cookies()[2]
+            .status.HasExactlyExclusionReasonsForTesting(
+                {CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+                 CanonicalCookie::CookieInclusionStatus::
+                     EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
+              req->maybe_stored_cookies()[2].status.warning());
+  }
+
+  // Get cookies (blocked by user preference)
+  network_delegate.set_block_get_cookies();
+  {
+    GURL url = test_server.GetURL("/");
+    auto cookie1 = CanonicalCookie::Create(url, "cookienosamesite=1",
+                                           base::Time::Now(), base::nullopt);
+    base::RunLoop run_loop;
+    CanonicalCookie::CookieInclusionStatus status;
+    cm.SetCanonicalCookieAsync(
+        std::move(cookie1), url.scheme(), CookieOptions::MakeAllInclusive(),
+        base::BindLambdaForTesting(
+            [&](CanonicalCookie::CookieInclusionStatus result) {
+              status = result;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    EXPECT_TRUE(status.IsInclude());
+
+    TestDelegate d;
+    GURL test_url = test_server.GetURL("/echoheader?Cookie");
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    GURL cross_site_url = test_server.GetURL("other.example", "/");
+    req->set_site_for_cookies(cross_site_url);  // cross-site context
+    req->Start();
+    d.RunUntilComplete();
+
+    // No cookies were sent with the request because getting cookies is blocked.
+    EXPECT_EQ("None", d.data_received());
+    ASSERT_EQ(1u, req->maybe_sent_cookies().size());
+    EXPECT_EQ("cookienosamesite", req->maybe_sent_cookies()[0].cookie.Name());
+    EXPECT_TRUE(req->maybe_sent_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES,
+                         CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    // Cookie should not be warned about because it was blocked because of user
+    // preferences.
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
+              req->maybe_sent_cookies()[0].status.warning());
+  }
+  network_delegate.unset_block_get_cookies();
+
+  // Get cookies
+  {
+    GURL url = test_server.GetURL("/");
+    auto cookie2 = CanonicalCookie::Create(url, "cookiewithpath=1;path=/foo",
+                                           base::Time::Now(), base::nullopt);
+    base::RunLoop run_loop;
+    // Note: cookie1 from the previous testcase is still in the cookie store.
+    CanonicalCookie::CookieInclusionStatus status;
+    cm.SetCanonicalCookieAsync(
+        std::move(cookie2), url.scheme(), CookieOptions::MakeAllInclusive(),
+        base::BindLambdaForTesting(
+            [&](CanonicalCookie::CookieInclusionStatus result) {
+              status = result;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    EXPECT_TRUE(status.IsInclude());
+
+    TestDelegate d;
+    GURL test_url = test_server.GetURL("/echoheader?Cookie");
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    GURL cross_site_url = test_server.GetURL("other.example", "/");
+    req->set_site_for_cookies(cross_site_url);  // cross-site context
+    req->Start();
+    d.RunUntilComplete();
+
+    // No cookies were sent with the request because they don't specify SameSite
+    // and the request is cross-site.
+    EXPECT_EQ("None", d.data_received());
+    ASSERT_EQ(2u, req->maybe_sent_cookies().size());
+    // Cookie excluded for other reasons is not warned about.
+    // Note: this cookie is first because the cookies are sorted by path length
+    // with longest first. See CookieSorter() in cookie_monster.cc.
+    EXPECT_EQ("cookiewithpath", req->maybe_sent_cookies()[0].cookie.Name());
+    EXPECT_TRUE(
+        req->maybe_sent_cookies()[0]
+            .status.HasExactlyExclusionReasonsForTesting(
+                {CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
+                 CanonicalCookie::CookieInclusionStatus::
+                     EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
+              req->maybe_sent_cookies()[0].status.warning());
+    // Cookie that was only blocked because of unspecified SameSite should be
+    // warned about.
+    EXPECT_EQ("cookienosamesite", req->maybe_sent_cookies()[1].cookie.Name());
+    EXPECT_TRUE(req->maybe_sent_cookies()[1]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
+                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+              req->maybe_sent_cookies()[1].status.warning());
   }
 }
 

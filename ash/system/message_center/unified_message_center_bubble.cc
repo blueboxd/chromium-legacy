@@ -200,8 +200,13 @@ void UnifiedMessageCenterBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   tray_->tray_event_filter()->RemoveBubble(this);
   tray_->bubble()->unified_view()->RemoveObserver(this);
+  message_center_view_->RemoveObserver(this);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
+
+  // Close the quick settings bubble as well, which may not automatically happen
+  // when dismissing the message center bubble by pressing ESC.
+  tray_->CloseBubble();
 }
 
 }  // namespace ash

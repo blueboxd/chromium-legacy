@@ -44,8 +44,8 @@ class SynchronousLoadObserver {
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
     load_observer_.reset(new LoadObserver(
         devtools_client_.get(),
-        base::Bind(&HeadlessBrowserTest::FinishAsynchronousTest,
-                   base::Unretained(browser_test))));
+        base::BindOnce(&HeadlessBrowserTest::FinishAsynchronousTest,
+                       base::Unretained(browser_test))));
   }
 
   ~SynchronousLoadObserver() {

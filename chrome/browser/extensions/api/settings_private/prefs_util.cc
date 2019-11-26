@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -355,13 +354,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
-
-  // TODO(crbug.com/894585): After M71, only whitelist the Smart Lock 'sign-in
-  // enabled' pref in the pre-Multidevice case, i.e., when
-  // kEnableUnifiedMultiDeviceSettings is false. In the Multidevice case, JS
-  // access to this pref is restricted.
-  (*s_whitelist)[proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Accessibility.
   (*s_whitelist)[ash::prefs::kAccessibilitySpokenFeedbackEnabled] =

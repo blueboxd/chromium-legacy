@@ -108,9 +108,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void DeliverInputForHighLatencyMode() override;
 
   // SynchronousInputHandlerProxy implementation.
-  void SetOnlySynchronouslyAnimateRootFlings(
+  void SetSynchronousInputHandler(
       SynchronousInputHandler* synchronous_input_handler) override;
-  void SynchronouslyAnimate(base::TimeTicks time) override;
   void SynchronouslySetRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float magnify_delta,
@@ -193,12 +192,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
 
-  // When present, Animates are not requested to the InputHandler, but to this
-  // SynchronousInputHandler instead. And all Animate() calls are expected to
-  // happen via the SynchronouslyAnimate() call instead of coming directly from
-  // the InputHandler.
   SynchronousInputHandler* synchronous_input_handler_;
-  bool allow_root_animate_;
 
 #if DCHECK_IS_ON()
   bool expect_scroll_update_end_;

@@ -26,11 +26,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
-#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
-#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "components/arc/test/fake_app_instance.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -162,33 +157,6 @@ bool AreEqual(const gfx::ImageSkia& image1, const gfx::ImageSkia& image2) {
   return gfx::test::AreImagesEqual(gfx::Image(image1), gfx::Image(image2));
 }
 
-#if defined(OS_CHROMEOS)
-
-bool AreAllImageRepresentationsDifferent(const gfx::ImageSkia& image1,
-                                         const gfx::ImageSkia& image2) {
-  const std::vector<gfx::ImageSkiaRep> image1_reps = image1.image_reps();
-  const std::vector<gfx::ImageSkiaRep> image2_reps = image2.image_reps();
-  DCHECK_EQ(image1_reps.size(), image2_reps.size());
-  for (size_t i = 0; i < image1_reps.size(); ++i) {
-    const float scale = image1_reps[i].scale();
-    const gfx::ImageSkiaRep& image_rep2 = image2.GetRepresentation(scale);
-    if (gfx::test::AreBitmapsClose(image1_reps[i].GetBitmap(),
-                                   image_rep2.GetBitmap(), 0)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-void WaitForIconUpdates(const gfx::ImageSkia& icon) {
-  icon.EnsureRepsForSupportedScales();
-  gfx::ImageSkia reference_image = icon.DeepCopy();
-  while (!AreAllImageRepresentationsDifferent(reference_image, icon))
-    base::RunLoop().RunUntilIdle();
-}
-
-#endif  // defined(OS_CHROMEOS)
-
 }  // namespace
 
 class ChromeAppIconTest : public ExtensionServiceTestBase {
@@ -268,90 +236,6 @@ TEST_F(ChromeAppIconTest, IconRelease) {
 }
 
 #if defined(OS_CHROMEOS)
-
-class ChromeAppIconWithModelTest : public ChromeAppIconTest {
- public:
-  ChromeAppIconWithModelTest() = default;
-  ~ChromeAppIconWithModelTest() override = default;
-
- protected:
-  void CreateBuilder() {
-    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
-    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
-    builder_ = std::make_unique<ExtensionAppModelBuilder>(controller_.get());
-    builder_->Initialize(nullptr, profile(), model_updater_.get());
-  }
-
-  void ResetBuilder() {
-    builder_.reset();
-    controller_.reset();
-    model_updater_.reset();
-  }
-
-  ChromeAppListItem* FindAppListItem(const std::string& app_id) {
-    return model_updater_->FindItem(app_id);
-  }
-
-  test::TestAppListControllerDelegate* app_list_controller() {
-    return controller_.get();
-  }
-
- private:
-  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
-  std::unique_ptr<test::TestAppListControllerDelegate> controller_;
-  std::unique_ptr<ExtensionAppModelBuilder> builder_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppIconWithModelTest);
-};
-
-// Validates icons sizes for various consumers.
-TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
-  CreateBuilder();
-
-  // App list item is already created. Wait until all image representations are
-  // updated and take image snapshot.
-  ChromeAppListItem* app_list_item = FindAppListItem(kTestAppId);
-  ASSERT_TRUE(app_list_item);
-  WaitForIconUpdates(app_list_item->icon());
-  gfx::ImageSkia app_list_item_image = app_list_item->icon().DeepCopy();
-
-  const ChromeAppIconService::ResizeFunction resize_function =
-      base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
-
-  // Load reference icon sized for the app list.
-  TestAppIcon reference_icon_app_list(
-      profile(), kTestAppId,
-      ash::AppListConfig::instance().grid_icon_dimension(), resize_function);
-
-  // Wait until reference data is loaded.
-  reference_icon_app_list.image_skia().EnsureRepsForSupportedScales();
-  reference_icon_app_list.WaitForIconUpdates();
-  EXPECT_FALSE(IsBlankImage(reference_icon_app_list.image_skia()));
-
-  // Now compare with app list icon snapshot.
-  EXPECT_TRUE(
-      AreEqual(reference_icon_app_list.image_skia(), app_list_item_image));
-
-  // Load reference icon sized for the shelf.
-  TestAppIcon reference_icon_shelf(profile(), kTestAppId,
-                                   extension_misc::EXTENSION_ICON_MEDIUM,
-                                   resize_function);
-
-  // Wait until reference data is loaded.
-  reference_icon_shelf.image_skia().EnsureRepsForSupportedScales();
-  reference_icon_shelf.WaitForIconUpdates();
-  EXPECT_FALSE(IsBlankImage(reference_icon_shelf.image_skia()));
-
-  TestAppIconLoader loader_delegate;
-  ChromeAppIconLoader loader(profile(), extension_misc::EXTENSION_ICON_MEDIUM,
-                             resize_function, &loader_delegate);
-  loader.FetchImage(kTestAppId);
-  WaitForIconUpdates(loader_delegate.icon());
-  EXPECT_TRUE(
-      AreEqual(reference_icon_shelf.image_skia(), loader_delegate.icon()));
-
-  ResetBuilder();
-}
 
 TEST_F(ChromeAppIconTest, ChromeBadging) {
   ArcAppTest arc_test;

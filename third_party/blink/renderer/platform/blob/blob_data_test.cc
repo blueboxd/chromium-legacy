@@ -284,8 +284,8 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyElements) {
   auto data = std::make_unique<BlobData>();
   data->AppendBytes(small_test_data_.data(), 0);
   data->AppendBlob(empty_blob_, 0, 0);
-  data->AppendFile("path", 0, 0, 0.0);
-  data->AppendFileSystemURL(NullURL(), 0, 0, 0.0);
+  data->AppendFile("path", 0, 0, base::Time::UnixEpoch());
+  data->AppendFileSystemURL(NullURL(), 0, 0, base::Time::UnixEpoch());
 
   TestCreateBlob(std::move(data), {});
 }
@@ -359,18 +359,17 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
-  double timestamp1 = base::Time::Now().ToDoubleT();
-  double timestamp2 = timestamp1 + 1;
+  base::Time timestamp1 = base::Time::Now();
+  base::Time timestamp2 = timestamp1 + base::TimeDelta::FromSeconds(1);
   KURL url(NullURL(), "http://example.com/");
   auto data = std::make_unique<BlobData>();
   data->AppendFile("path", 4, 32, timestamp1);
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::File(
-      "path", 4, 32, base::Time::FromDoubleT(timestamp1)));
-  expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 15, 876, base::Time::FromDoubleT(timestamp2)));
+  expected_elements.push_back(ExpectedElement::File("path", 4, 32, timestamp1));
+  expected_elements.push_back(
+      ExpectedElement::FileFilesystem(url, 15, 876, timestamp2));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -385,11 +384,11 @@ TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
-  double timestamp = base::Time::Now().ToDoubleT();
+  base::Time timestamp = base::Time::Now();
   KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 0, uint64_t(-1), base::Time::FromDoubleT(timestamp)));
+  expected_elements.push_back(
+      ExpectedElement::FileFilesystem(url, 0, uint64_t(-1), timestamp));
 
   TestCreateBlob(
       BlobData::CreateForFileSystemURLWithUnknownSize(url, timestamp),

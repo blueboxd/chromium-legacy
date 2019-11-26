@@ -28,8 +28,8 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
     private static final String TAG = "ElementListAdapter";
 
     // Only needed for reporting errors during updateChildLayoutParams.
-    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromCreate;
-    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromBind;
+    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromCreate;
+    /*@Nullable*/ private FrameContext mFrameContextForDebugLogsFromBind;
 
     private ElementListAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, createView(context), KeySupplier.SINGLETON_KEY);
@@ -46,15 +46,15 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
 
     @Override
     void onCreateAdapter(ElementList model, Element baseElement, FrameContext frameContext) {
-        this.frameContextForDebugLogsFromCreate = frameContext;
+        this.mFrameContextForDebugLogsFromCreate = frameContext;
         super.onCreateAdapter(model, baseElement, frameContext);
     }
 
     @Override
     void onBindModel(ElementList model, Element baseElement, FrameContext frameContext) {
-        this.frameContextForDebugLogsFromBind = frameContext;
+        this.mFrameContextForDebugLogsFromBind = frameContext;
         super.onBindModel(model, baseElement, frameContext);
-        for (ElementAdapter<? extends View, ?> adapter : childAdapters) {
+        for (ElementAdapter<? extends View, ?> adapter : mChildAdapters) {
             updateChildLayoutParams(adapter);
         }
     }
@@ -67,27 +67,27 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
     @Override
     void onUnbindModel() {
         super.onUnbindModel();
-        this.frameContextForDebugLogsFromBind = null;
+        this.mFrameContextForDebugLogsFromBind = null;
     }
 
     @Override
     void onReleaseAdapter() {
         super.onReleaseAdapter();
-        this.frameContextForDebugLogsFromCreate = null;
+        this.mFrameContextForDebugLogsFromCreate = null;
     }
 
     @Override
     public void setLayoutParams(ViewGroup.LayoutParams layoutParams) {
         super.setLayoutParams(layoutParams);
-        for (ElementAdapter<? extends View, ?> adapter : childAdapters) {
+        for (ElementAdapter<? extends View, ?> adapter : mChildAdapters) {
             updateChildLayoutParams(adapter);
         }
     }
 
     /*@Nullable*/
     private FrameContext getLoggingFrameContext() {
-        return frameContextForDebugLogsFromBind != null ? frameContextForDebugLogsFromBind
-                                                        : frameContextForDebugLogsFromCreate;
+        return mFrameContextForDebugLogsFromBind != null ? mFrameContextForDebugLogsFromBind
+                                                         : mFrameContextForDebugLogsFromCreate;
     }
 
     private void updateChildLayoutParams(ElementAdapter<? extends View, ?> adapter) {

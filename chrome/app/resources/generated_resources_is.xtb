@@ -2643,7 +2643,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4839303808932127586">&amp;Vista myndskeið sem...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 í viðbót}one{# í viðbót}other{# í viðbót}}</translation>
 <translation id="4842976633412754305">Þessi síða er að reyna að hlaða skriftur af óstaðfestum uppruna.</translation>
-<translation id="4843488774506045600">Innskráning í gegnum <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Önnur lyklaborð</translation>
 <translation id="4846680374085650406">Þú notar ráðlagt gildi stjórnandans fyrir þessa stillingu.</translation>
 <translation id="4848518990323155912">Virkja læsingu SIM-korts (krefjast PIN-númers til að nota farsímagögn)</translation>
@@ -3848,7 +3847,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6607831829715835317">F&amp;leiri verkfæri</translation>
 <translation id="6612358246767739896">Varið efni</translation>
 <translation id="6615455863669487791">Sýnið mér</translation>
-<translation id="6617100836880592260">Skönnunarhraði: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Halda samt</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Vefsvæði getur rakið staðsetningu þína</translation>

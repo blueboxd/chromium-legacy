@@ -62,6 +62,10 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/mojohaus/animal-sniffer/master/animal-sniffer-annotations/pom.xml",
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),
+        'com_google_protobuf_protobuf_java': new PropertyOverride(
+            url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
+            licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
+            licenseName: "BSD"),
         'com_google_protobuf_protobuf_lite': new PropertyOverride(
             url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
             licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",

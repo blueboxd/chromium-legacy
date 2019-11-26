@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 #include "url/origin.h"
 
 using base::android::AttachCurrentThread;
@@ -93,6 +94,13 @@ void RenderFrameHostAndroid::GetCanonicalUrlForSharing(
   render_frame_host_->GetCanonicalUrlForSharing(base::BindOnce(
       &OnGetCanonicalUrlForSharing,
       base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
+}
+
+bool RenderFrameHostAndroid::IsPaymentFeaturePolicyEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&) const {
+  return render_frame_host_->IsFeatureEnabled(
+      blink::mojom::FeaturePolicyFeature::kPayment);
 }
 
 ScopedJavaLocalRef<jobject>

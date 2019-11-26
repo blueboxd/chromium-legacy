@@ -102,7 +102,7 @@ FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
 //
 // |data| is used to create a FuzzedServerSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  net::BoundTestNetLog bound_test_net_log;
+  net::RecordingBoundTestNetLog bound_test_net_log;
   FuzzedDataProvider data_provider(data, size);
   net::FuzzedSocketFactoryWithMockSSLData socket_factory(&data_provider);
   socket_factory.set_fuzz_connect_result(false);

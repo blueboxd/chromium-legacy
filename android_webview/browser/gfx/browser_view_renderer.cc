@@ -115,9 +115,8 @@ BrowserViewRenderer::BrowserViewRenderer(
       clear_view_(false),
       offscreen_pre_raster_(false) {
   if (::features::IsUsingVizForWebView()) {
-    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
-        ui_task_runner_, base::BindRepeating(&BrowserViewRenderer::Invalidate,
-                                             base::Unretained(this)));
+    root_frame_sink_proxy_ =
+        std::make_unique<RootFrameSinkProxy>(ui_task_runner_, this);
   }
 }
 
@@ -840,6 +839,13 @@ void BrowserViewRenderer::CopyOutput(
 
 void BrowserViewRenderer::Invalidate() {
   PostInvalidate(compositor_);
+}
+
+void BrowserViewRenderer::ProgressFling(base::TimeTicks frame_time) {
+  if (!compositor_)
+    return;
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::ProgressFling");
+  compositor_->ProgressFling(frame_time);
 }
 
 void BrowserViewRenderer::PostInvalidate(

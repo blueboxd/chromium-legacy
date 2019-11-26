@@ -216,9 +216,10 @@ class FileTasks {
    */
   static isOffline_(volumeManager) {
     const connection = volumeManager.getDriveConnectionState();
-    return connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+    return connection.type ==
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         connection.reason ==
-        VolumeManagerCommon.DriveConnectionReason.NO_NETWORK;
+        chrome.fileManagerPrivate.DriveOfflineReason.NO_NETWORK;
   }
 
   /**
@@ -689,7 +690,7 @@ class FileTasks {
 
     const isDriveOffline =
         this.volumeManager_.getDriveConnectionState().type ===
-        VolumeManagerCommon.DriveConnectionType.OFFLINE;
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
 
     if (isDriveOffline) {
       this.metadataModel_.get(this.entries_, ['availableOffline', 'hosted'])
@@ -716,7 +717,7 @@ class FileTasks {
     }
 
     const isOnMetered = this.volumeManager_.getDriveConnectionState().type ===
-        VolumeManagerCommon.DriveConnectionType.METERED;
+        chrome.fileManagerPrivate.DriveConnectionStateType.METERED;
 
     if (isOnMetered) {
       this.metadataModel_.get(this.entries_, ['availableWhenMetered', 'size'])

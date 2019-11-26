@@ -16,25 +16,25 @@ import java.util.concurrent.Executor;
  * instead")*/
 public class MainThreadRunner {
     private static final String TAG = "MainThreadRunner";
-    private static final Handler handler = new Handler(Looper.getMainLooper());
+    private static final Handler sHandler = new Handler(Looper.getMainLooper());
 
-    private final Executor executor;
+    private final Executor mExecutor;
 
     public MainThreadRunner() {
-        this.executor = handler::post;
+        this.mExecutor = sHandler::post;
     }
 
     /** Executes the {@code runnable} on the {@link Executor} used to initialize this class. */
     public void execute(String name, Runnable runnable) {
         Logger.i(TAG, "Running task [%s] on the Main Thread", name);
-        executor.execute(runnable);
+        mExecutor.execute(runnable);
     }
 
     public CancelableTask executeWithDelay(String name, Runnable runnable, long delayMs) {
         CancelableRunnableTask cancelable = new CancelableRunnableTask(runnable);
         Logger.i(TAG, "Running task [%s] on the Main Thread with a delay of %d milliseconds", name,
                 delayMs);
-        handler.postDelayed(cancelable, delayMs);
+        sHandler.postDelayed(cancelable, delayMs);
         return cancelable;
     }
 }

@@ -19,37 +19,38 @@ public class VisibilityMonitor
     public static final double DEFAULT_VIEW_LOG_THRESHOLD = .66;
     private static final String TAG = "VisibilityMonitor";
 
-    private final View view;
-    private final double viewLogThreshold;
-    private boolean visible;
-    /*@Nullable*/ private VisibilityListener visibilityListener;
+    private final View mView;
+    private final double mViewLogThreshold;
+    private boolean mVisible;
+    /*@Nullable*/ private VisibilityListener mVisibilityListener;
 
     public VisibilityMonitor(View view, Configuration configuration) {
-        this.view = view;
-        this.viewLogThreshold = configuration.getValueOrDefault(
+        this.mView = view;
+        this.mViewLogThreshold = configuration.getValueOrDefault(
                 ConfigKey.VIEW_LOG_THRESHOLD, DEFAULT_VIEW_LOG_THRESHOLD);
     }
 
     public VisibilityMonitor(View view, double viewLogThreshold) {
-        this.view = view;
-        this.viewLogThreshold = viewLogThreshold;
+        this.mView = view;
+        this.mViewLogThreshold = viewLogThreshold;
     }
 
     @Override
     public boolean onPreDraw() {
-        ViewParent parent = view.getParent();
+        ViewParent parent = mView.getParent();
         if (parent != null) {
-            Rect rect = new Rect(0, 0, view.getWidth(), view.getHeight());
+            Rect rect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
 
             @SuppressWarnings("argument.type.incompatible")
-            boolean childVisibleRectNotEmpty = parent.getChildVisibleRect(view, rect, null);
-            if (childVisibleRectNotEmpty && rect.height() >= viewLogThreshold * view.getHeight()) {
-                if (!visible) {
+            boolean childVisibleRectNotEmpty = parent.getChildVisibleRect(mView, rect, null);
+            if (childVisibleRectNotEmpty
+                    && rect.height() >= mViewLogThreshold * mView.getHeight()) {
+                if (!mVisible) {
                     notifyListenerOnVisible();
-                    visible = true;
+                    mVisible = true;
                 }
             } else {
-                visible = false;
+                mVisible = false;
             }
         }
         return true;
@@ -57,13 +58,13 @@ public class VisibilityMonitor
 
     @Override
     public void onViewAttachedToWindow(View v) {
-        view.getViewTreeObserver().addOnPreDrawListener(this);
+        mView.getViewTreeObserver().addOnPreDrawListener(this);
     }
 
     @Override
     public void onViewDetachedFromWindow(View v) {
-        visible = false;
-        view.getViewTreeObserver().removeOnPreDrawListener(this);
+        mVisible = false;
+        mView.getViewTreeObserver().removeOnPreDrawListener(this);
     }
 
     public void setListener(/*@Nullable*/ VisibilityListener visibilityListener) {
@@ -71,7 +72,7 @@ public class VisibilityMonitor
             detach();
         }
 
-        this.visibilityListener = visibilityListener;
+        this.mVisibilityListener = visibilityListener;
 
         if (visibilityListener != null) {
             attach();
@@ -79,22 +80,22 @@ public class VisibilityMonitor
     }
 
     private void attach() {
-        view.addOnAttachStateChangeListener(this);
-        if (ViewCompat.isAttachedToWindow(view)) {
-            view.getViewTreeObserver().addOnPreDrawListener(this);
+        mView.addOnAttachStateChangeListener(this);
+        if (ViewCompat.isAttachedToWindow(mView)) {
+            mView.getViewTreeObserver().addOnPreDrawListener(this);
         }
     }
 
     private void detach() {
-        view.removeOnAttachStateChangeListener(this);
-        if (ViewCompat.isAttachedToWindow(view)) {
-            view.getViewTreeObserver().removeOnPreDrawListener(this);
+        mView.removeOnAttachStateChangeListener(this);
+        if (ViewCompat.isAttachedToWindow(mView)) {
+            mView.getViewTreeObserver().removeOnPreDrawListener(this);
         }
     }
 
     private void notifyListenerOnVisible() {
-        if (visibilityListener != null) {
-            visibilityListener.onViewVisible();
+        if (mVisibilityListener != null) {
+            mVisibilityListener.onViewVisible();
         }
     }
 }

@@ -801,8 +801,7 @@ TEST(CleanerSandboxInterface, DISABLED_DeleteService_Running) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-// Disabled: https://crbug.com/956016
-TEST(CleanerSandboxInterface, DISABLED_DeleteService_HandleHeld) {
+TEST(CleanerSandboxInterface, DeleteService_HandleHeld) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;

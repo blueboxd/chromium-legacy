@@ -13,21 +13,21 @@ import java.util.Arrays;
  * dismissed content, and any semantic properties associated with it.
  */
 public final class DismissActionWithSemanticProperties {
-    private final ContentId contentId;
-    private final byte /*@Nullable*/[] semanticProperties;
+    private final ContentId mContentId;
+    private final byte /*@Nullable*/[] mSemanticProperties;
 
     public DismissActionWithSemanticProperties(
             ContentId contentId, byte /*@Nullable*/[] semanticProperties) {
-        this.contentId = contentId;
-        this.semanticProperties = semanticProperties;
+        this.mContentId = contentId;
+        this.mSemanticProperties = semanticProperties;
     }
 
     public ContentId getContentId() {
-        return contentId;
+        return mContentId;
     }
 
     public byte /*@Nullable*/[] getSemanticProperties() {
-        return semanticProperties;
+        return mSemanticProperties;
     }
 
     @Override
@@ -41,16 +41,16 @@ public final class DismissActionWithSemanticProperties {
 
         DismissActionWithSemanticProperties that = (DismissActionWithSemanticProperties) o;
 
-        if (!contentId.equals(that.contentId)) {
+        if (!mContentId.equals(that.mContentId)) {
             return false;
         }
-        return Arrays.equals(semanticProperties, that.semanticProperties);
+        return Arrays.equals(mSemanticProperties, that.mSemanticProperties);
     }
 
     @Override
     public int hashCode() {
-        int result = contentId.hashCode();
-        result = 31 * result + Arrays.hashCode(semanticProperties);
+        int result = mContentId.hashCode();
+        result = 31 * result + Arrays.hashCode(mSemanticProperties);
         return result;
     }
 }

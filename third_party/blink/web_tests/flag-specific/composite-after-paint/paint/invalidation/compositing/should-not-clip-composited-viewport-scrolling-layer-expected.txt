@@ -5,6 +5,13 @@
       "bounds": [2008, 1516],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
+          "rect": [8, 8, 2000, 1500],
+          "reason": "background"
+        }
+      ],
       "transform": 1
     },
     {
@@ -18,23 +25,9 @@
       "bounds": [15, 585]
     },
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600]
-    },
-    {
-      "name": "LayoutNGBlockFlow HTML",
-      "position": [8, 8],
-      "bounds": [2000, 1500],
-      "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
-          "rect": [0, 0, 2000, 1500],
-          "reason": "background"
-        }
-      ],
-      "transform": 1
+      "name": "Scroll corner of LayoutView #document",
+      "position": [785, 585],
+      "bounds": [15, 15]
     }
   ],
   "transforms": [

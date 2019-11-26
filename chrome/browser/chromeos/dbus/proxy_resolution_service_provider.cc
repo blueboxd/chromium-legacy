@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
@@ -53,7 +54,9 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
         &ProxyLookupRequest::OnProxyLookupComplete, base::Unretained(this),
         net::ERR_ABORTED, base::nullopt));
 
+    // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
     network_context->LookUpProxyForURL(source_url,
+                                       net::NetworkIsolationKey::Todo(),
                                        std::move(proxy_lookup_client));
   }
 

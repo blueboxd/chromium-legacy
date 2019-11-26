@@ -2617,7 +2617,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4839303808932127586">Za&amp;pisz film wideo jako...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{jeszcze 1}few{jeszcze #}many{jeszcze #}other{jeszcze #}}</translation>
 <translation id="4842976633412754305">Ta strona próbuje wczytać skrypty z nieuwierzytelnionych źródeł.</translation>
-<translation id="4843488774506045600">Obsługa logowania: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Inne klawiatury</translation>
 <translation id="4846680374085650406">Przestrzegasz zaleceń administratora dotyczących tego ustawienia.</translation>
 <translation id="4848518990323155912">Włącz blokowanie karty SIM (wymagaj kodu PIN do używania komórkowej transmisji danych)</translation>
@@ -3815,7 +3814,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6607831829715835317">Więcej narzę&amp;dzi</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6615455863669487791">Pokaż mi</translation>
-<translation id="6617100836880592260">Szybkość skanowania: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Zachowaj mimo to</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Strona może śledzić Twoją lokalizację</translation>

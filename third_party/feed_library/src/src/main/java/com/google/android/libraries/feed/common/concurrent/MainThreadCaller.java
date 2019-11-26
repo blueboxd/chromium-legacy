@@ -12,10 +12,10 @@ import java.util.concurrent.ExecutionException;
 /** Abstract class which support calling Host methods on the {@link MainThreadRunner}. */
 public abstract class MainThreadCaller {
     private static final String TAG = "MainThreadCaller";
-    private final MainThreadRunner mainThreadRunner;
+    private final MainThreadRunner mMainThreadRunner;
 
     protected MainThreadCaller(MainThreadRunner mainThreadRunner) {
-        this.mainThreadRunner = mainThreadRunner;
+        this.mMainThreadRunner = mainThreadRunner;
     }
 
     /** Execute a task with a {@link Consumer}. */
@@ -26,7 +26,8 @@ public abstract class MainThreadCaller {
      */
     protected <T> T mainThreadCaller(String location, ConsumerTask<T> task, T failure) {
         SimpleSettableFuture<T> sharedStatesFuture = new SimpleSettableFuture<>();
-        mainThreadRunner.execute(TAG + " " + location, () -> task.execute(sharedStatesFuture::put));
+        mMainThreadRunner.execute(
+                TAG + " " + location, () -> task.execute(sharedStatesFuture::put));
         try {
             return sharedStatesFuture.get();
         } catch (InterruptedException | ExecutionException e) {

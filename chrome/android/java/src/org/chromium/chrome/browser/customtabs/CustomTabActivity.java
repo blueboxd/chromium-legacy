@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
@@ -58,7 +57,6 @@ import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -77,7 +75,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
-    private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
     private CustomTabIntentHandler mCustomTabIntentHandler;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
@@ -115,7 +112,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             resetPostMessageHandlersForCurrentSession();
         }
     };
-
 
     @Override
     protected Drawable getBackgroundDrawable() {
@@ -399,33 +395,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    public int getActivityThemeColor() {
-        if (mIntentDataProvider.isOpenedByChrome()) {
-            return TabState.UNSPECIFIED_THEME_COLOR;
-        }
-
-        return mIntentDataProvider.getToolbarColor();
-    }
-
-    @Override
-    public int getBaseStatusBarColor() {
-        return mCustomTabStatusBarColorProvider
-                .getBaseStatusBarColor(super.getBaseStatusBarColor());
-    }
-
-    @Override
-    public boolean isStatusBarDefaultThemeColor() {
-        return mCustomTabStatusBarColorProvider
-                .isStatusBarDefaultThemeColor(super.isStatusBarDefaultThemeColor());
-    }
-
-    @Override
     public void onUpdateStateChanged() {}
 
-    /**
-     * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
-     */
-    @VisibleForTesting
+    @Override
     public BrowserServicesIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
@@ -510,7 +482,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);
 
-        mCustomTabStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabController = component.resolveTabController();
         mTabProvider = component.resolveTabProvider();
         mTabFactory = component.resolveTabFactory();

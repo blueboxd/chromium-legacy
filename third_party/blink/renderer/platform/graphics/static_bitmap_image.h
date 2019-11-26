@@ -26,13 +26,6 @@ class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
-  // WebGraphicsContext3DProviderWrapper argument only needs to be provided if
-  // The SkImage is texture backed, in which case it must be a reference to the
-  // context provider that owns the GrContext with which the SkImage is
-  // associated.
-  static scoped_refptr<StaticBitmapImage> Create(
-      sk_sp<SkImage>,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
   static scoped_refptr<StaticBitmapImage> Create(sk_sp<SkData> data,
                                                  const SkImageInfo&);

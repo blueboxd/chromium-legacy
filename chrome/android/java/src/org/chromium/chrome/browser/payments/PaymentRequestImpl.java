@@ -108,7 +108,7 @@ import java.util.Set;
  */
 public class PaymentRequestImpl
         implements PaymentRequest, PaymentRequestUI.Client, PaymentApp.InstrumentsCallback,
-                   PaymentApp.PaymentMethodChangeCallback, PaymentInstrument.AbortCallback,
+                   PaymentApp.PaymentRequestUpdateEventCallback, PaymentInstrument.AbortCallback,
                    PaymentInstrument.InstrumentDetailsCallback,
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
@@ -914,6 +914,9 @@ public class PaymentRequestImpl
 
         setShowingPaymentRequest(this);
         mIsCurrentPaymentRequestShowing = true;
+        mIsUserGestureShow = isUserGesture;
+        mWaitForUpdatedDetails = waitForUpdatedDetails;
+
         mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
@@ -924,9 +927,6 @@ public class PaymentRequestImpl
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
-
-        mIsUserGestureShow = isUserGesture;
-        mWaitForUpdatedDetails = waitForUpdatedDetails;
 
         if (isFinishedQueryingPaymentApps()) {
             // Calculate skip ui and build ui only after all payment instruments are ready and
@@ -1122,7 +1122,7 @@ public class PaymentRequestImpl
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().setPaymentMethodChangeCallback(this);
+            q.getKey().setPaymentRequestUpdateEventCallback(this);
             q.getKey().getInstruments(mId, q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
                     mCertificateChain,
                     mModifiers == null ? new HashMap<>() : Collections.unmodifiableMap(mModifiers),
@@ -1209,17 +1209,83 @@ public class PaymentRequestImpl
     }
 
     /**
+     * Called by the payment app to get updated payment details based on the shipping option.
+     */
+    @Override
+    public boolean changeShippingOptionFromInvokedApp(String shippingOptionId) {
+        if (TextUtils.isEmpty(shippingOptionId) || mClient == null
+                || mInvokedPaymentInstrument == null || !mRequestShipping
+                || mRawShippingOptions == null) {
+            return false;
+        }
+
+        boolean isValidId = false;
+        for (PaymentShippingOption option : mRawShippingOptions) {
+            if (shippingOptionId.equals(option.id)) {
+                isValidId = true;
+                break;
+            }
+        }
+
+        if (!isValidId) return false;
+
+        mClient.onShippingOptionChange(shippingOptionId);
+        return true;
+    }
+
+    /**
+     * Called by payment app to get updated payment details based on the shipping address.
+     */
+    @Override
+    public boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress) {
+        if (shippingAddress == null || mClient == null || mInvokedPaymentInstrument == null
+                || !mRequestShipping) {
+            return false;
+        }
+
+        redactShippingAddress(shippingAddress);
+        mClient.onShippingAddressChange(shippingAddress);
+        return true;
+    }
+
+    /**
      * Called by the web-based payment handler to get updated total based on the billing address,
      * for example.
      */
     @Override
     public boolean changePaymentMethodFromPaymentHandler(
             String methodName, String stringifiedData) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChangingPaymentMethod()) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
             return false;
         }
 
         return changePaymentMethodFromInvokedApp(methodName, stringifiedData);
+    }
+
+    /**
+     * Called by the web-based payment handler to get updated payment details based on the shipping
+     * option.
+     */
+    @Override
+    public boolean changeShippingOptionFromPaymentHandler(String shippingOptionId) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
+            return false;
+        }
+
+        return changeShippingOptionFromInvokedApp(shippingOptionId);
+    }
+
+    /**
+     * Called by the web-based payment handler to get updated payment details based on the shipping
+     * address.
+     */
+    @Override
+    public boolean changeShippingAddressFromPaymentHandler(PaymentAddress shippingAddress) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
+            return false;
+        }
+
+        return changeShippingAddressFromInvokedApp(shippingAddress);
     }
 
     /**
@@ -1278,8 +1344,7 @@ public class PaymentRequestImpl
         }
 
         if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
-                && (mInvokedPaymentInstrument == null
-                        || !mInvokedPaymentInstrument.isChangingPaymentMethod())) {
+                && (mInvokedPaymentInstrument == null || !mInvokedPaymentInstrument.isChanging())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
@@ -1287,8 +1352,7 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (mInvokedPaymentInstrument != null
-                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
+        if (mInvokedPaymentInstrument != null && mInvokedPaymentInstrument.isChanging()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
             // updated price in its UI.
@@ -1298,11 +1362,11 @@ public class PaymentRequestImpl
             // opaque to Chrome sub-instruments inside, representing each card in the user account.
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
-            // Todo(sahel): handlesShipping must be true when the payment handler is responsible for
-            // handling shipping. crbug.com/984694
             mInvokedPaymentInstrument.updateWith(
-                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(
-                            details, false /* handlesShipping */, this /* methodChecker */));
+                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(details,
+                            mInvokedPaymentInstrument
+                                    .handlesShippingAddress() /* handlesShipping */,
+                            this /* methodChecker */));
             return;
         }
 
@@ -1375,8 +1439,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mInvokedPaymentInstrument != null
-                && mInvokedPaymentInstrument.isChangingPaymentMethod()) {
+        if (mInvokedPaymentInstrument != null && mInvokedPaymentInstrument.isChanging()) {
             mInvokedPaymentInstrument.noUpdatedPaymentDetails();
             return;
         }
@@ -2727,16 +2790,8 @@ public class PaymentRequestImpl
         // Don't reuse the selected address because it is formatted for display.
         AutofillAddress shippingAddress = new AutofillAddress(chromeActivity, profile);
 
-        // Redact shipping address before exposing it in ShippingAddressChangeEvent.
-        // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
         PaymentAddress redactedAddress = shippingAddress.toPaymentAddress();
-        if (PaymentsExperimentalFeatures.isEnabled(
-                    ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
-            redactedAddress.organization = "";
-            redactedAddress.phone = "";
-            redactedAddress.recipient = "";
-            redactedAddress.addressLine = new String[0];
-        }
+        redactShippingAddress(redactedAddress);
 
         // This updates the line items and the shipping options asynchronously.
         mClient.onShippingAddressChange(redactedAddress);
@@ -2840,6 +2895,21 @@ public class PaymentRequestImpl
     private void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail) {
         if (mClient == null || !mWasRetryCalled) return;
         mClient.onPayerDetailChange(detail);
+    }
+
+    /**
+     * Redact shipping address before exposing it in ShippingAddressChangeEvent.
+     * https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
+     * @param shippingAddress The shippingAddress to get redacted.
+     */
+    private void redactShippingAddress(PaymentAddress shippingAddress) {
+        if (PaymentsExperimentalFeatures.isEnabled(
+                    ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
+            shippingAddress.organization = "";
+            shippingAddress.phone = "";
+            shippingAddress.recipient = "";
+            shippingAddress.addressLine = new String[0];
+        }
     }
 
     /**

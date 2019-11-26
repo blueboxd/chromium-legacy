@@ -5,6 +5,7 @@
 #include "components/payments/content/android/payment_handler_host.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
 #include "components/payments/content/android/jni_headers/PaymentHandlerHost_jni.h"
@@ -33,7 +34,7 @@ PaymentHandlerHost::PaymentHandlerHost(
 
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
-jboolean PaymentHandlerHost::IsChangingPaymentMethod(JNIEnv* env) const {
+jboolean PaymentHandlerHost::IsChanging(JNIEnv* env) const {
   return payment_handler_host_.is_changing();
 }
 
@@ -71,18 +72,37 @@ bool PaymentHandlerHost::ChangePaymentMethod(
 
 bool PaymentHandlerHost::ChangeShippingOption(
     const std::string& shipping_option_id) {
-  // Shipping and contact info delegation is not implemented on Android yet.
-  // TODO(sahel): crbug.com/984694
-  NOTREACHED();
-  return false;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_PaymentHandlerHostDelegate_changeShippingOptionFromPaymentHandler(
+      env, delegate_,
+      base::android::ConvertUTF8ToJavaString(env, shipping_option_id));
 }
 
 bool PaymentHandlerHost::ChangeShippingAddress(
     mojom::PaymentAddressPtr shipping_address) {
-  // Shipping and contact info delegation is not implemented on Android yet.
-  // TODO(sahel): crbug.com/984694
-  NOTREACHED();
-  return false;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> jshipping_address =
+      Java_PaymentHandlerHost_createShippingAddress(
+          env,
+          base::android::ConvertUTF8ToJavaString(env,
+                                                 shipping_address->country),
+          base::android::ToJavaArrayOfStrings(env,
+                                              shipping_address->address_line),
+          base::android::ConvertUTF8ToJavaString(env, shipping_address->region),
+          base::android::ConvertUTF8ToJavaString(env, shipping_address->city),
+          base::android::ConvertUTF8ToJavaString(
+              env, shipping_address->dependent_locality),
+          base::android::ConvertUTF8ToJavaString(env,
+                                                 shipping_address->postal_code),
+          base::android::ConvertUTF8ToJavaString(
+              env, shipping_address->sorting_code),
+          base::android::ConvertUTF8ToJavaString(
+              env, shipping_address->organization),
+          base::android::ConvertUTF8ToJavaString(env,
+                                                 shipping_address->recipient),
+          base::android::ConvertUTF8ToJavaString(env, shipping_address->phone));
+  return Java_PaymentHandlerHostDelegate_changeShippingAddressFromPaymentHandler(
+      env, delegate_, jshipping_address);
 }
 
 }  // namespace android

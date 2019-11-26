@@ -1305,7 +1305,7 @@ class DirectoryModel extends cr.EventTarget {
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const canUseDriveSearch =
         this.volumeManager_.getDriveConnectionState().type !==
-            VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         (locationInfo && locationInfo.isDriveBased);
 
     if (entry.rootType == VolumeManagerCommon.RootType.RECENT) {

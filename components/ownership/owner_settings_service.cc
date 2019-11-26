@@ -110,14 +110,15 @@ void OwnerSettingsService::IsOwnerAsync(const IsOwnerCallback& callback) {
 bool OwnerSettingsService::AssembleAndSignPolicyAsync(
     base::TaskRunner* task_runner,
     std::unique_ptr<em::PolicyData> policy,
-    const AssembleAndSignPolicyAsyncCallback& callback) {
+    AssembleAndSignPolicyAsyncCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!task_runner || !IsOwner())
     return false;
   return base::PostTaskAndReplyWithResult(
       task_runner, FROM_HERE,
-      base::Bind(&AssembleAndSignPolicy, base::Passed(&policy), private_key_),
-      callback);
+      base::BindOnce(&AssembleAndSignPolicy, base::Passed(&policy),
+                     private_key_),
+      std::move(callback));
 }
 
 bool OwnerSettingsService::SetBoolean(const std::string& setting, bool value) {
@@ -146,8 +147,8 @@ bool OwnerSettingsService::SetString(const std::string& setting,
 }
 
 void OwnerSettingsService::ReloadKeypair() {
-  ReloadKeypairImpl(
-      base::Bind(&OwnerSettingsService::OnKeypairLoaded, as_weak_ptr()));
+  ReloadKeypairImpl(base::BindRepeating(&OwnerSettingsService::OnKeypairLoaded,
+                                        as_weak_ptr()));
 }
 
 void OwnerSettingsService::OnKeypairLoaded(

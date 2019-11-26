@@ -238,8 +238,11 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
 
   switch (scroll_type) {
     case kCompositorScroll:
-    case kClampingScroll:
       ScrollOffsetChanged(clamped_offset, scroll_type);
+      break;
+    case kClampingScroll:
+      GetScrollAnimator().AdjustAnimationAndSetScrollOffset(clamped_offset,
+                                                            scroll_type);
       break;
     case kAnchoringScroll:
       GetScrollAnimator().AdjustAnimationAndSetScrollOffset(clamped_offset,

@@ -22,6 +22,7 @@ class RenderingStorySet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     assert platform in platforms.ALL_PLATFORMS
+    self._platform = platform
 
     if platform == platforms.MOBILE:
       shared_page_state_class = shared_state.MobileRenderingSharedState
@@ -79,6 +80,18 @@ class RenderingStorySet(story.StorySet):
           extra_browser_args=required_args,
           shared_page_state_class=shared_page_state_class,
           name_suffix=name_suffix))
+
+  def GetAbridgedStorySetTagFilter(self):
+    if self._platform == platforms.DESKTOP:
+      if os.name == 'nt':
+        return 'representative_win_desktop'
+      else:
+        # There is no specific tag for linux, cros, etc,
+        # so just use mac's.
+        return 'representative_mac_desktop'
+    elif self._platform == platforms.MOBILE:
+      return 'representative_mobile'
+    raise RuntimeError('Platform {} is not in the list of expected platforms.')
 
 
 class DesktopRenderingStorySet(RenderingStorySet):

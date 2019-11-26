@@ -24,6 +24,7 @@ class WebBlobInfo {
                            const WebString& type,
                            uint64_t size,
                            mojo::ScopedMessagePipeHandle);
+  // |last_modified| - Seconds from Unix epoch.
   BLINK_EXPORT WebBlobInfo(const WebString& uuid,
                            const WebString& file_path,
                            const WebString& file_name,

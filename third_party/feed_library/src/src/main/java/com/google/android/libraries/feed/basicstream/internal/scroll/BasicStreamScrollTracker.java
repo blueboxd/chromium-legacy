@@ -16,28 +16,28 @@ import com.google.android.libraries.feed.sharedstream.scroll.ScrollTracker;
 
 /** A @link{ScrollTracker} used by BasicStream */
 public class BasicStreamScrollTracker extends ScrollTracker {
-    private final ScrollLogger scrollLogger;
-    private final ScrollObserver scrollObserver;
-    private final ScrollObservable scrollObservable;
+    private final ScrollLogger mScrollLogger;
+    private final ScrollObserver mScrollObserver;
+    private final ScrollObservable mScrollObservable;
 
     public BasicStreamScrollTracker(MainThreadRunner mainThreadRunner, ScrollLogger scrollLogger,
             Clock clock, ScrollObservable scrollObservable) {
         super(mainThreadRunner, clock);
-        this.scrollLogger = scrollLogger;
-        this.scrollObservable = scrollObservable;
-        this.scrollObserver = new BasicStreamScrollObserver();
-        scrollObservable.addScrollObserver(scrollObserver);
+        this.mScrollLogger = scrollLogger;
+        this.mScrollObservable = scrollObservable;
+        this.mScrollObserver = new BasicStreamScrollObserver();
+        mScrollObservable.addScrollObserver(mScrollObserver);
     }
 
     @Override
     protected void onScrollEvent(int scrollAmount, long timestamp) {
-        scrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+        mScrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
     }
 
     @Override
     public void onUnbind() {
         super.onUnbind();
-        scrollObservable.removeScrollObserver(scrollObserver);
+        mScrollObservable.removeScrollObserver(mScrollObserver);
     }
 
     private class BasicStreamScrollObserver implements ScrollObserver {

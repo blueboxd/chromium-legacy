@@ -274,6 +274,7 @@
 <translation id="2218879909401188352">תוקפים שמשתמשים עכשיו ב-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להתקין יישומים מסוכנים ולגרום נזק למכשיר שלך, להגדיל את החיובים שלך על החבילה לנייד או לגנוב את המידע האישי שלך. <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">אין אינטרנט</translation>
 <translation id="2230458221926704099">תקן את החיבור באמצעות <ph name="BEGIN_LINK" />אפליקציית הבדיקה<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">הצעות בשבילך</translation>
 <translation id="2239100178324503013">שלח עכשיו</translation>
 <translation id="2248949050832152960">‏שימוש ב-WebAuthn</translation>
 <translation id="2250931979407627383">הידוק קצוות בצד שמאל</translation>
@@ -372,6 +373,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">אזהרת אבטחה</translation>
 <translation id="2699302886720511147">כרטיסים שהסוחר מקבל</translation>
 <translation id="2702801445560668637">רשימת קריאה</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
@@ -474,6 +476,7 @@
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3209034400446768650">כניסה לדף עשויה להיות כרוכה בתשלום</translation>
 <translation id="3209080785413271048">‏אפשר להשתמש ב-Windows Hello כדי לאמת את אמצעי התשלום ששמרת.</translation>
+<translation id="3212581601480735796">הפעילות שלך ב-<ph name="HOSTNAME" /> מנוטרת</translation>
 <translation id="3215092763954878852">‏לא ניתן להשתמש ב-WebAuthn</translation>
 <translation id="3225919329040284222">השרת הציג אישור שאינו תואם את הציפיות המובנות. ציפיות אלה נכללות עבור אתרי אינטרנט מסוימים בעלי אבטחה גבוהה כדי להגן עליך.</translation>
 <translation id="3226128629678568754">לחץ על לחצן הטעינה מחדש כדי לשלוח מחדש את הנתונים הדרושים לטעינת הדף.</translation>
@@ -532,6 +535,7 @@
 <translation id="3528485271872257980">חום כהה</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
+<translation id="3553513561058684206">הצעות בשבילך</translation>
 <translation id="3566021033012934673">החיבור שלך אינו פרטי</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">דף מוטמע באתר <ph name="SITE" /> אומר</translation>
@@ -762,6 +766,7 @@
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4597348597567598915">גודל 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)‎</translation>
+<translation id="4613966523036881546">‏מערכת Google Chrome אינה נותנת אמון באישור של החיבור הזה, מפני שהוא מוכר כאישור שבו נעשה שימוש ליירוט רשתות ולמעקב אחריהן.</translation>
 <translation id="4635654612248442824">האתר <ph name="ORIGIN" /> ביקש שמדיניות המקור
     תחול על כל הבקשות שלו, אבל לא ניתן כרגע להחיל את המדיניות הזו.</translation>
 <translation id="464342062220857295">תכונות חיפוש</translation>
@@ -1472,6 +1477,7 @@ Del</translation>
 <translation id="8103161714697287722">אמצעי תשלום</translation>
 <translation id="8105368624971345109">כבה</translation>
 <translation id="8118489163946903409">אמצעי תשלום</translation>
+<translation id="8124023448510659215">‏מערכת Chromium אינה נותנת אמון באישור של החיבור הזה, מפני שהוא מוכר כאישור שבו נעשה שימוש ליירוט רשתות ולמעקב אחריהן.</translation>
 <translation id="8127301229239896662">‏הייתה בעיה בהתקנה של "<ph name="SOFTWARE_NAME" />" במחשב שלך או ברשת. יש לבקש ממנהל ה-IT לפתור את הבעיה.</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8149426793427495338">המחשב עבר למצב שינה.</translation>
@@ -1615,6 +1621,8 @@ Del</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="8962950042226115166">אתר חשוד</translation>
 <translation id="8968766641738584599">שמירת הכרטיס</translation>
+<translation id="8969267497192857913">מתבצע ניטור של כל הקלדת טקסט, כל הצגת דף או כל פעילות אחרת באינטרנט. כמו כן, תוכן באתרים עשוי להשתנות ללא ידיעתך.
+    <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
 <translation id="8975012916872825179">כולל מידע כמו מספרי טלפון, כתובות אימייל וכתובות למשלוח</translation>
 <translation id="8975263830901772334">שמות הקבצים שמודפסים על ידך</translation>

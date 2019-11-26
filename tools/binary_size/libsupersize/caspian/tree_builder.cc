@@ -239,10 +239,7 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
   const bool has_dex =
       node->node_stats.child_stats.count(SectionId::kDex) ||
       node->node_stats.child_stats.count(SectionId::kDexMethod);
-  // Don't try to merge dex symbols for catch-all symbols under (No path).
-  const bool is_no_path = node->id_path.path == kNoName;
-
-  if (!is_file_node || !has_dex || is_no_path || node->children.empty()) {
+  if (!is_file_node || !has_dex || node->children.empty()) {
     return;
   }
 
@@ -263,7 +260,10 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
     const bool has_class_prefix =
         is_class_node || split_index != std::string_view::npos;
 
-    if (has_class_prefix) {
+    const SectionId section =
+        child->symbol ? child->symbol->Section() : SectionId::kNone;
+    if (has_class_prefix &&
+        (section == SectionId::kDex || section == SectionId::kDexMethod)) {
       const std::string_view class_id_path =
           child->id_path.path.substr(0, split_index);
 
@@ -278,11 +278,21 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
 
       TreeNode*& class_node = java_class_containers[class_id_path];
       if (class_node == nullptr) {
+        // We have to construct the class node id_path, because parent nodes
+        // need to have an id_path that describes how to reach them from root.
+        // Symbol (leaf) nodes typically store their full name in the id_path,
+        // which for class nodes would be as "org.x.y.ClassName" even if that
+        // node's parent is the file "a/b/c". So if we want an id_path of the
+        // form "a/b/c/ClassName$0", we have to create it.
         class_node = new TreeNode();
-        class_node->id_path = GroupedPath{child->id_path.group, class_id_path};
+        owned_strings_.push_back(std::string(node->id_path.path) + "/" +
+                                 std::string(class_id_path));
+        class_node->id_path =
+            GroupedPath{node->id_path.group, owned_strings_.back()};
+        class_node->short_name_index =
+            short_name_index + node->id_path.path.size() + 1;
         class_node->src_path = node->src_path;
         class_node->component = node->component;
-        class_node->short_name_index = short_name_index;
         class_node->container_type = ContainerType::kJavaClass;
         _parents[class_node->id_path] = class_node;
       }

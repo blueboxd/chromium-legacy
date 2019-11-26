@@ -50,7 +50,8 @@ class CC_EXPORT RasterBufferProvider {
   virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) = 0;
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) = 0;
 
   // Flush pending work from writing the content of the RasterBuffer, so that
   // queries to tell if the backing is ready to draw from will get the right

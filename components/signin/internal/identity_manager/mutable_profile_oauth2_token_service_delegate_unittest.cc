@@ -16,8 +16,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
@@ -25,7 +23,6 @@
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/device_id_helper.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -52,7 +49,6 @@ static const char kEmail[] = "user@gmail.com";
 
 namespace {
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Create test account info.
 AccountInfo CreateTestAccountInfo(const std::string& name,
                                   bool is_hosted_domain,
@@ -73,7 +69,6 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
   EXPECT_EQ(is_valid, account_info.IsValid());
   return account_info;
 }
-#endif
 
 }  // namespace
 
@@ -270,7 +265,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 };
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceDBUpgrade) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   CoreAccountId main_account_id("account_id");
   std::string main_refresh_token("old_refresh_token");
 
@@ -386,7 +381,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentials) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   const CoreAccountId account_id("account_id");
   const CoreAccountId account_id2("account_id_2");
 
@@ -462,8 +457,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(0, auth_error_changed_count_);
   ResetObserverCounts();
 }
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentialsEmptyPrimaryAccountId_DiceEnabled) {
@@ -571,9 +564,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   ASSERT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-#if !defined(OS_CHROMEOS)
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        LoadCredentialsClearsTokenDBWhenNoPrimaryAccount_DiceDisabled) {
   // Populate DB with 2 valid tokens.
@@ -598,7 +589,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ASSERT_TRUE(token_web_data_result_.get());
   ASSERT_EQ(0u, token_web_data_result_->GetValue().tokens.size());
 }
-#endif  // !defined(OS_CHROMEOS)
 
 // Tests that calling UpdateCredentials revokes the old token, without sending
 // the notification.
@@ -988,7 +978,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, CanonicalizeAccountId) {
   pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                            AccountTrackerService::MIGRATION_NOT_STARTED);
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  pref_service_.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   tokens["AccountId-user@gmail.com"] = "refresh_token";
   tokens["AccountId-Foo.Bar@gmail.com"] = "refresh_token";
@@ -1006,9 +997,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, CanonicalizeAccountId) {
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        CanonAndNonCanonAccountId) {
+  pref_service_.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
   pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                            AccountTrackerService::MIGRATION_NOT_STARTED);
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   tokens["AccountId-Foo.Bar@gmail.com"] = "bad_token";
   tokens["AccountId-foobar@gmail.com"] = "good_token";
@@ -1025,7 +1017,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   EXPECT_TRUE(oauth2_service_delegate_->GetAccounts().empty());
   const CoreAccountId account_id1("account_id1");
   const CoreAccountId account_id2("account_id2");
@@ -1045,7 +1037,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownService) {
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   if (account_tracker_service_.GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     std::string email = "foo@gmail.com";
@@ -1105,7 +1097,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        GaiaIdMigrationCrashInTheMiddle) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   if (account_tracker_service_.GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     std::string email1 = "foo@gmail.com";
@@ -1194,29 +1186,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(primary_account));
   EXPECT_FALSE(
-      oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
-}
-
-TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
-       LoadSecondaryAccountsWhenMirrorEnabled) {
-  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kMirror);
-  CoreAccountId primary_account("primaryaccount");
-  CoreAccountId secondary_account("secondaryaccount");
-
-  oauth2_service_delegate_->RevokeAllCredentials();
-  ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.id, "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.id, "refresh_token");
-  oauth2_service_delegate_->LoadCredentials(primary_account);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(2, token_available_count_);
-  EXPECT_EQ(0, token_revoked_count_);
-  EXPECT_EQ(1, end_batch_changes_);
-  EXPECT_TRUE(
-      oauth2_service_delegate_->RefreshTokenIsAvailable(primary_account));
-  EXPECT_TRUE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
 }
 

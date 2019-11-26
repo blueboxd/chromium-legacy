@@ -17,7 +17,7 @@ import com.sun.source.tree.AnnotationTree;
  * Assert android.support.annotation.Nullable is used instead of javax.annotation.Nullable.
  */
 @AutoService(BugChecker.class)
-@BugPattern(name = "AndroidNullableCheck", category = BugPattern.Category.ANDROID,
+@BugPattern(name = "AndroidNullableCheck",
         summary = "Use android.support.annotation.Nullable instead of javax.annotation.Nullable.",
         severity = BugPattern.SeverityLevel.ERROR, linkType = BugPattern.LinkType.CUSTOM,
         link = "http://crbug.com/771683")

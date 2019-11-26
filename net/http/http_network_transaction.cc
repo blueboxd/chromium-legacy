@@ -1393,11 +1393,8 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
 
   NetworkErrorLoggingService* service =
       session_->network_error_logging_service();
-  if (!service) {
-    NetworkErrorLoggingService::
-        RecordRequestDiscardedForNoNetworkErrorLoggingService();
+  if (!service)
     return;
-  }
 
   // Don't report on proxy auth challenges.
   if (response_.headers && response_.headers->response_code() ==
@@ -1411,10 +1408,8 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
     return;
 
   // Ignore errors from non-HTTPS origins.
-  if (!url_.SchemeIsCryptographic()) {
-    NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin();
+  if (!url_.SchemeIsCryptographic())
     return;
-  }
 
   NetworkErrorLoggingService::RequestDetails details;
 

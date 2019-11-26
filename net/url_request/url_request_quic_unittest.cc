@@ -130,7 +130,7 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
   }
 
  protected:
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
 
  private:
   void StartQuicServer() {

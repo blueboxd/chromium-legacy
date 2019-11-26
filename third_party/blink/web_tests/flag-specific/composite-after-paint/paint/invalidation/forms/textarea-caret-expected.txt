@@ -17,24 +17,9 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [7, 7, 183, 40],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [7, 7, 183, 40],
-          "reason": "paint property change"
-        },
-        {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 181, 38],
           "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [8, 8, 181, 38],
-          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
@@ -49,6 +34,16 @@
         {
           "object": "HorizontalScrollbar",
           "rect": [9, 30, 164, 15],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutTextControl TEXTAREA id='editor'",
+          "rect": [173, 30, 15, 15],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "Scroll corner of LayoutTextControl TEXTAREA id='editor'",
+          "rect": [173, 30, 15, 15],
           "reason": "chunk appeared"
         }
       ]

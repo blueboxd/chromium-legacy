@@ -112,7 +112,7 @@ class DriveShareAction {
     assert(metadata.length === 1);
     const canShareItem = metadata[0].canShare !== false;
     return this.volumeManager_.getDriveConnectionState().type !==
-        VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         canShareItem;
   }
 
@@ -525,7 +525,7 @@ class DriveManageAction {
    */
   canExecute() {
     return this.volumeManager_.getDriveConnectionState().type !==
-        VolumeManagerCommon.DriveConnectionType.OFFLINE;
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
   }
 
   /**

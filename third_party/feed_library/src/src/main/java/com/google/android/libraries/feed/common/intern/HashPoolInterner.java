@@ -23,30 +23,30 @@ public class HashPoolInterner<T> extends PoolInternerBase<T> {
     }
 
     private static final class HashPool<T> implements Pool<T> {
-        private final SparseArrayCompat<WeakReference<T>> pool = new SparseArrayCompat<>();
+        private final SparseArrayCompat<WeakReference<T>> mPool = new SparseArrayCompat<>();
 
         @Override
         /*@Nullable*/
         public T get(T input) {
-            WeakReference<T> weakRef = (input != null) ? pool.get(input.hashCode()) : null;
+            WeakReference<T> weakRef = (input != null) ? mPool.get(input.hashCode()) : null;
             return weakRef != null ? weakRef.get() : null;
         }
 
         @Override
         public void put(T input) {
             if (input != null) {
-                pool.put(input.hashCode(), new WeakReference<>(input));
+                mPool.put(input.hashCode(), new WeakReference<>(input));
             }
         }
 
         @Override
         public void clear() {
-            pool.clear();
+            mPool.clear();
         }
 
         @Override
         public int size() {
-            return pool.size();
+            return mPool.size();
         }
     }
 }

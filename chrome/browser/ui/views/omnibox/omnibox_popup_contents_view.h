@@ -60,6 +60,9 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // Called by the active result view to inform model (due to mouse event).
   void UnselectButton();
 
+  // Gets the OmniboxResultView for match |i|.
+  OmniboxResultView* result_view_at(size_t i);
+
   // Returns whether we're in experimental keyword mode and the input gives
   // sufficient confidence that the user wants keyword mode.
   bool InExplicitExperimentalKeywordMode();
@@ -96,8 +99,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // coordinates. Returns OmniboxPopupModel::kNoMatch if there isn't a match at
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
-
-  OmniboxResultView* result_view_at(size_t i);
 
   LocationBarView* location_bar_view() { return location_bar_view_; }
 

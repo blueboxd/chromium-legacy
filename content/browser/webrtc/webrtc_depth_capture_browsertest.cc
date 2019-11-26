@@ -63,7 +63,7 @@ class WebRtcDepthCaptureBrowserTest : public WebRtcContentBrowserTestBase {
         fake_device_switch,
         base::StringPrintf("device-count=%d", device_count));
     if (enable_video_kind) {
-      command_line->AppendSwitchASCII("--enable-blink-features",
+      command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                       "MediaCaptureDepthVideoKind");
     }
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);

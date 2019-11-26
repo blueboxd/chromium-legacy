@@ -814,7 +814,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, AppListViewFocusTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AppListViewFocusTest, testing::Bool());
 
 }  // namespace
 

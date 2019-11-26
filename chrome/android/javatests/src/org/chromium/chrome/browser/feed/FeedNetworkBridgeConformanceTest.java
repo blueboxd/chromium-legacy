@@ -101,12 +101,12 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
 
     private void createNetworkClient() {
         // The networkClient is declared and tested in NetworkClientConformanceTest
-        networkClient = new FeedTestNetworkBridge(Profile.getLastUsedProfile());
+        mNetworkClient = new FeedTestNetworkBridge(Profile.getLastUsedProfile());
     }
 
     private void destroyNetworkClient() {
-        ((FeedTestNetworkBridge) networkClient).destroy();
-        networkClient = null;
+        ((FeedTestNetworkBridge) mNetworkClient).destroy();
+        mNetworkClient = null;
     }
 
     private void createAndStartTestServer() {

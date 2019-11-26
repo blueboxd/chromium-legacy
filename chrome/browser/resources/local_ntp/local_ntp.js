@@ -290,7 +290,7 @@ let lastEnterEvent = null;
  * The last queried input.
  * @type {string|undefined}
  */
-let lastInput;
+let lastQueriedInput;
 
 /**
  * Last text/inline autocompletion shown in the realbox (either by user input or
@@ -321,6 +321,34 @@ function areRealboxMatchesVisible() {
   return $(IDS.REALBOX_INPUT_WRAPPER).classList.contains(CLASSES.SHOW_MATCHES);
 }
 
+/** @param {!AutocompleteResult} result */
+function autocompleteResultChanged(result) {
+  if (result.input !== lastQueriedInput) {
+    return;  // Stale result; ignore.
+  }
+
+  renderAutocompleteMatches(result.matches);
+  autocompleteResult = result;
+
+  $(IDS.REALBOX).focus();
+
+  updateRealboxOutput({
+    inline: '',
+    text: lastQueriedInput || '',
+  });
+
+  const first = result.matches[0];
+  if (first && first.allowedToBeDefaultMatch) {
+    selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
+    updateRealboxOutput({inline: first.inlineAutocompletion});
+
+    if (enterWasPressed) {
+      assert(lastEnterEvent);
+      navigateToMatch(first, lastEnterEvent);
+    }
+  }
+}
+
 /**
  * @param {number} style
  * @return {!Array<string>}
@@ -337,6 +365,15 @@ function classificationStyleToClasses(style) {
     classes.push('url');
   }
   return classes;
+}
+
+function clearAutocompleteMatches() {
+  autocompleteResult = null;
+  window.chrome.embeddedSearch.searchBox.stopAutocomplete(
+      /*clearResult=*/ true);
+  // Autocomplete sends updates once it is stopped. Invalidate those results
+  // by setting the last queried input to its uninitialized value.
+  lastQueriedInput = undefined;
 }
 
 /**
@@ -1168,34 +1205,6 @@ function onMostVisitedChange() {
   reloadTiles();
 }
 
-/** @param {!AutocompleteResult} result */
-function autocompleteResultChanged(result) {
-  if (result.input !== lastInput) {
-    return;  // Stale result; ignore.
-  }
-
-  populateAutocompleteMatches(result.matches);
-  autocompleteResult = result;
-
-  $(IDS.REALBOX).focus();
-
-  updateRealboxOutput({
-    inline: '',
-    text: lastInput || '',
-  });
-
-  const first = result.matches[0];
-  if (first && first.allowedToBeDefaultMatch) {
-    selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
-    updateRealboxOutput({inline: first.inlineAutocompletion});
-
-    if (enterWasPressed) {
-      assert(lastEnterEvent);
-      navigateToMatch(first, lastEnterEvent);
-    }
-  }
-}
-
 /** @param {!Event} e */
 function onRealboxCutCopy(e) {
   const realboxEl = $(IDS.REALBOX);
@@ -1271,7 +1280,7 @@ function onRealboxWrapperFocusOut(e) {
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   if (!realboxWrapper.contains(relatedTarget)) {
     // Clear the input if it was empty when displaying the matches.
-    if (lastInput === '') {
+    if (lastQueriedInput === '') {
       updateRealboxOutput({inline: '', text: ''});
     }
     setRealboxMatchesVisible(false);
@@ -1329,7 +1338,7 @@ function onRealboxWrapperKeydown(e) {
 
   if (key === 'Enter') {
     if (matchEls.concat(realboxEl).includes(e.target)) {
-      if (lastInput === autocompleteResult.input) {
+      if (lastQueriedInput === autocompleteResult.input) {
         if (autocompleteResult.matches[selected]) {
           navigateToMatch(autocompleteResult.matches[selected], e);
         }
@@ -1479,9 +1488,65 @@ function overrideExecutableTimeoutForTesting(timeout) {
 }
 
 /**
+ * @param {string} input
+ */
+function queryAutocomplete(input) {
+  lastQueriedInput = input;
+  const preventInlineAutocomplete = isDeletingInput || pastedInRealbox ||
+      $(IDS.REALBOX).selectionStart !== input.length;  // Caret not at the end.
+  window.chrome.embeddedSearch.searchBox.queryAutocomplete(
+      input, preventInlineAutocomplete);
+}
+
+/**
+ * @param {!Element} element
+ * @param {!Array<string>} keys
+ * @param {!function(Event)} handler
+ */
+function registerKeyHandler(element, keys, handler) {
+  element.addEventListener('keydown', e => {
+    if (keys.includes(e.key)) {
+      handler(e);
+    }
+  });
+}
+
+/**
+ * Fetches new data (RIDs) from the embeddedSearch.newTabPage API and passes
+ * them to the iframe.
+ */
+function reloadTiles() {
+  // Don't attempt to load tiles if the MV data isn't available yet - this can
+  // happen occasionally, see https://crbug.com/794942. In that case, we should
+  // get an onMostVisitedChange call once they are available.
+  // Note that MV data being available is different from having > 0 tiles. There
+  // can legitimately be 0 tiles, e.g. if the user blacklisted them all.
+  if (!ntpApiHandle.mostVisitedAvailable) {
+    return;
+  }
+
+  const pages = ntpApiHandle.mostVisited;
+  const cmds = [];
+  const maxNumTiles = customLinksEnabled() ? MAX_NUM_TILES_CUSTOM_LINKS :
+                                             MAX_NUM_TILES_MOST_VISITED;
+  for (let i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
+    cmds.push({cmd: 'tile', rid: pages[i].rid});
+  }
+  cmds.push({cmd: 'show'});
+
+  $(IDS.MOST_VISITED).hidden =
+      !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
+
+  const iframe = $(IDS.TILES_IFRAME);
+  if (iframe) {
+    iframe.contentWindow.postMessage(cmds, '*');
+  }
+}
+
+/**
  * @param {!Array<!AutocompleteMatch>} matches
  */
-function populateAutocompleteMatches(matches) {
+function renderAutocompleteMatches(matches) {
   const realboxMatchesEl = document.createElement('div');
   realboxMatchesEl.setAttribute('role', 'listbox');
 
@@ -1591,62 +1656,6 @@ function populateAutocompleteMatches(matches) {
   const hasMatches = matches.length > 0;
   setRealboxMatchesVisible(hasMatches);
   setRealboxWrapperListenForKeydown(hasMatches);
-}
-
-/**
- * @param {string} input
- */
-function queryAutocomplete(input) {
-  lastInput = input;
-  const preventInlineAutocomplete = isDeletingInput || pastedInRealbox ||
-      $(IDS.REALBOX).selectionStart !== input.length;  // Caret not at the end.
-  window.chrome.embeddedSearch.searchBox.queryAutocomplete(
-      input, preventInlineAutocomplete);
-}
-
-/**
- * @param {!Element} element
- * @param {!Array<string>} keys
- * @param {!function(Event)} handler
- */
-function registerKeyHandler(element, keys, handler) {
-  element.addEventListener('keydown', e => {
-    if (keys.includes(e.key)) {
-      handler(e);
-    }
-  });
-}
-
-/**
- * Fetches new data (RIDs) from the embeddedSearch.newTabPage API and passes
- * them to the iframe.
- */
-function reloadTiles() {
-  // Don't attempt to load tiles if the MV data isn't available yet - this can
-  // happen occasionally, see https://crbug.com/794942. In that case, we should
-  // get an onMostVisitedChange call once they are available.
-  // Note that MV data being available is different from having > 0 tiles. There
-  // can legitimately be 0 tiles, e.g. if the user blacklisted them all.
-  if (!ntpApiHandle.mostVisitedAvailable) {
-    return;
-  }
-
-  const pages = ntpApiHandle.mostVisited;
-  const cmds = [];
-  const maxNumTiles = customLinksEnabled() ? MAX_NUM_TILES_CUSTOM_LINKS :
-                                             MAX_NUM_TILES_MOST_VISITED;
-  for (let i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
-    cmds.push({cmd: 'tile', rid: pages[i].rid});
-  }
-  cmds.push({cmd: 'show'});
-
-  $(IDS.MOST_VISITED).hidden =
-      !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
-
-  const iframe = $(IDS.TILES_IFRAME);
-  if (iframe) {
-    iframe.contentWindow.postMessage(cmds, '*');
-  }
 }
 
 /**
@@ -1897,15 +1906,6 @@ function sendNtpThemeToMostVisitedIframe() {
  */
 function setAttributionVisibility(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
-}
-
-function clearAutocompleteMatches() {
-  autocompleteResult = null;
-  window.chrome.embeddedSearch.searchBox.stopAutocomplete(
-      /*clearResult=*/ true);
-  // Autocomplete sends updates once it is stopped. Invalidate those results
-  // by setting the last queried input to its uninitialized value.
-  lastInput = undefined;
 }
 
 /**

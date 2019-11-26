@@ -18,6 +18,7 @@ class IntRect;
 class Scrollbar;
 struct PaintInfo;
 class PaintLayerScrollableArea;
+struct PhysicalOffset;
 
 class ScrollableAreaPainter {
   STACK_ALLOCATED();
@@ -34,6 +35,13 @@ class ScrollableAreaPainter {
   void PaintScrollCorner(GraphicsContext&,
                          const IntPoint& paint_offset,
                          const CullRect&);
+
+  // Records a scroll hit test data to force main thread handling of events
+  // in the expanded resizer touch area.
+  void RecordResizerScrollHitTestData(
+      GraphicsContext&,
+      const PhysicalOffset& paint_offset,
+      const DisplayItemClient& background_client);
 
  private:
   void DrawPlatformResizerImage(GraphicsContext&,

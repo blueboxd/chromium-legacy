@@ -13,38 +13,38 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Wrapper for {@link Interner} that also tracks cache hits/misses. */
 public class InternerWithStats<T> implements Interner<T> {
-    private final Interner<T> delegate;
-    private final CacheStats stats = new CacheStats();
+    private final Interner<T> mDelegate;
+    private final CacheStats mStats = new CacheStats();
 
     public InternerWithStats(Interner<T> delegate) {
-        this.delegate = Validators.checkNotNull(delegate);
+        this.mDelegate = Validators.checkNotNull(delegate);
     }
 
     @Override
     public T intern(T arg) {
-        T internedArg = delegate.intern(arg);
+        T internedArg = mDelegate.intern(arg);
         if (internedArg != arg) {
-            stats.incrementHitCount();
+            mStats.incrementHitCount();
         } else {
-            stats.incrementMissCount();
+            mStats.incrementMissCount();
         }
         return internedArg;
     }
 
     @Override
     public void clear() {
-        delegate.clear();
-        stats.reset();
+        mDelegate.clear();
+        mStats.reset();
     }
 
     @Override
     public int size() {
-        return delegate.size();
+        return mDelegate.size();
     }
 
     public String getStats() {
-        int hits = stats.hitCount();
-        int total = hits + stats.missCount();
+        int hits = mStats.hitCount();
+        int total = hits + mStats.missCount();
         double ratio = (total == 0) ? 1.0 : (double) hits / total;
         return String.format(Locale.US, "Cache Hit Ratio: %d/%d (%.2f)", hits, total, ratio);
     }
@@ -52,30 +52,30 @@ public class InternerWithStats<T> implements Interner<T> {
     /** Similar to Guava CacheStats but thread safe. */
     @ThreadSafe
     private static final class CacheStats {
-        private final AtomicInteger hitCount = new AtomicInteger();
-        private final AtomicInteger missCount = new AtomicInteger();
+        private final AtomicInteger mHitCount = new AtomicInteger();
+        private final AtomicInteger mMissCount = new AtomicInteger();
 
         private CacheStats() {}
 
         private void incrementHitCount() {
-            hitCount.incrementAndGet();
+            mHitCount.incrementAndGet();
         }
 
         private void incrementMissCount() {
-            missCount.incrementAndGet();
+            mMissCount.incrementAndGet();
         }
 
         private int hitCount() {
-            return hitCount.get();
+            return mHitCount.get();
         }
 
         private int missCount() {
-            return missCount.get();
+            return mMissCount.get();
         }
 
         public void reset() {
-            hitCount.set(0);
-            missCount.set(0);
+            mHitCount.set(0);
+            mMissCount.set(0);
         }
     }
 }

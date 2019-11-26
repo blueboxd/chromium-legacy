@@ -19,7 +19,7 @@ import org.junit.Test;
 import java.util.Collections;
 
 public abstract class NetworkClientConformanceTest {
-    protected NetworkClient networkClient;
+    protected NetworkClient mNetworkClient;
 
     /** Defines a valid URI for the provided method. */
     protected Uri getValidUri(@HttpMethod String httpMethod) {
@@ -40,7 +40,7 @@ public abstract class NetworkClientConformanceTest {
             assertThat(response.getResponseCode()).isNotNull();
         });
 
-        networkClient.send(request, responseConsumer);
+        mNetworkClient.send(request, responseConsumer);
         waitForRequest();
         assertThat(responseConsumer.isCalled()).isTrue();
     }
@@ -56,7 +56,7 @@ public abstract class NetworkClientConformanceTest {
             assertThat(response.getResponseCode()).isNotNull();
         });
 
-        networkClient.send(request, responseConsumer);
+        mNetworkClient.send(request, responseConsumer);
         waitForRequest();
         assertThat(responseConsumer.isCalled()).isTrue();
     }
@@ -72,7 +72,7 @@ public abstract class NetworkClientConformanceTest {
             assertThat(response.getResponseCode()).isNotNull();
         });
 
-        networkClient.send(request, responseConsumer);
+        mNetworkClient.send(request, responseConsumer);
         waitForRequest();
         assertThat(responseConsumer.isCalled()).isTrue();
     }
@@ -88,7 +88,7 @@ public abstract class NetworkClientConformanceTest {
             assertThat(response.getResponseCode()).isNotNull();
         });
 
-        networkClient.send(request, responseConsumer);
+        mNetworkClient.send(request, responseConsumer);
         waitForRequest();
         assertThat(responseConsumer.isCalled()).isTrue();
     }

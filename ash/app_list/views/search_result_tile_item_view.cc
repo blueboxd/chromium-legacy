@@ -221,40 +221,36 @@ void SearchResultTileItemView::OnResultChanged() {
 base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
   base::string16 accessible_name;
   if (!result()->accessible_name().empty())
-    accessible_name = result()->accessible_name();
-  else
-    accessible_name = title_->GetText();
+    return result()->accessible_name();
 
   if (result()->result_type() == AppListSearchResultType::kPlayStoreApp ||
       result()->result_type() == AppListSearchResultType::kInstantApp) {
-    accessible_name +=
-        base::UTF8ToUTF16(", ") +
-        l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT);
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT, title_->GetText());
+  } else if (result()->result_type() ==
+             AppListSearchResultType::kPlayStoreReinstallApp) {
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC, title_->GetText());
   } else if (result()->result_type() ==
              AppListSearchResultType::kInstalledApp) {
-    accessible_name += base::UTF8ToUTF16(", ") +
-                       l10n_util::GetStringUTF16(
-                           IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT);
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT, title_->GetText());
   } else if (result()->result_type() == AppListSearchResultType::kInternalApp) {
-    accessible_name += base::UTF8ToUTF16(", ") +
-                       l10n_util::GetStringUTF16(
-                           IDS_APP_ACCESSIBILITY_INTERNAL_APP_ANNOUNCEMENT);
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_ACCESSIBILITY_INTERNAL_APP_ANNOUNCEMENT, title_->GetText());
+  } else {
+    accessible_name = title_->GetText();
   }
 
   if (rating_ && rating_->GetVisible()) {
-    accessible_name +=
-        base::UTF8ToUTF16(", ") +
-        l10n_util::GetStringFUTF16(IDS_APP_ACCESSIBILITY_STAR_RATING_ARC,
-                                   rating_->GetText());
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_ACCESSIBILITY_APP_WITH_STAR_RATING_ARC, accessible_name,
+        rating_->GetText());
   }
-  if (price_ && price_->GetVisible())
-    accessible_name += base::UTF8ToUTF16(", ") + price_->GetText();
-
-  if (result()->result_type() ==
-      AppListSearchResultType::kPlayStoreReinstallApp) {
-    accessible_name +=
-        base::UTF8ToUTF16(", ") +
-        l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC);
+  if (price_ && price_->GetVisible()) {
+    accessible_name =
+        l10n_util::GetStringFUTF16(IDS_APP_ACCESSIBILITY_APP_WITH_PRICE_ARC,
+                                   accessible_name, price_->GetText());
   }
   return accessible_name;
 }

@@ -39,14 +39,6 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   abs_rect.MoveBy(paint_offset);
 
   const auto& client = DisplayItemClientForCorner();
-  IntRect touch_rect = scrollable_area_->ResizerCornerRect(
-      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
-          scrollable_area_->Layer()->SubpixelAccumulation()),
-      kResizerForTouch);
-  touch_rect.MoveBy(paint_offset);
-  ScrollHitTestDisplayItem::Record(
-      context, client, DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
-
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.Intersects(abs_rect))
       return;
@@ -77,6 +69,22 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     context.SetFillColor(Color::kTransparent);
     context.DrawRect(larger_corner);
   }
+}
+
+void ScrollableAreaPainter::RecordResizerScrollHitTestData(
+    GraphicsContext& context,
+    const PhysicalOffset& paint_offset,
+    const DisplayItemClient& client) {
+  if (!GetScrollableArea().GetLayoutBox()->CanResize())
+    return;
+
+  IntRect touch_rect = scrollable_area_->ResizerCornerRect(
+      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
+          paint_offset),
+      kResizerForTouch);
+  touch_rect.MoveBy(RoundedIntPoint(paint_offset));
+  ScrollHitTestDisplayItem::Record(
+      context, client, DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
 }
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(
@@ -276,7 +284,7 @@ const DisplayItemClient& ScrollableAreaPainter::DisplayItemClientForCorner()
   if (const auto* graphics_layer =
           GetScrollableArea().GraphicsLayerForScrollCorner())
     return *graphics_layer;
-  return *GetScrollableArea().GetLayoutBox();
+  return GetScrollableArea().GetScrollCornerDisplayItemClient();
 }
 
 }  // namespace blink

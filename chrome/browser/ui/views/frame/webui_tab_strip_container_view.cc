@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -105,7 +106,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
       auto_closer_(std::make_unique<AutoCloser>(
           base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
                      base::Unretained(this)),
-          base::Bind(&WebUITabStripContainerView::CloseContainer,
+          base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
                      base::Unretained(this)))) {
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
@@ -179,8 +180,8 @@ WebUITabStripContainerView::CreateNewTabButton() {
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   DCHECK_EQ(nullptr, tab_counter_);
 
-  auto tab_counter = CreateWebUITabCounterButton(
-      this, browser_->tab_strip_model(), GetThemeProvider());
+  auto tab_counter =
+      CreateWebUITabCounterButton(this, browser_->tab_strip_model());
 
   tab_counter_ = tab_counter.get();
   view_observer_.Add(tab_counter_);
@@ -246,6 +247,11 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
   return false;
 }
 
+void WebUITabStripContainerView::CloseForEventOutsideTabStrip() {
+  RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOutsideTabStrip);
+  SetContainerTargetVisibility(false);
+}
+
 void WebUITabStripContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(&animation_, animation);
@@ -293,12 +299,19 @@ int WebUITabStripContainerView::GetHeightForWidth(int w) const {
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER) {
-    SetContainerTargetVisibility(!GetVisible());
+    const bool new_visibility = !GetVisible();
+    if (new_visibility) {
+      RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTapOnTabCounter);
+    } else {
+      RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOnTabCounter);
+    }
+
+    SetContainerTargetVisibility(new_visibility);
 
     if (GetVisible() && sender->HasFocus()) {
       // Automatically move focus to the tab strip WebUI if the focus is
       // currently on the toggle button.
-      SetPaneFocus(web_view_);
+      SetPaneFocusAndFocusDefault();
     }
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
@@ -329,4 +342,16 @@ void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
     new_tab_button_ = nullptr;
   else if (observed_view == tab_counter_)
     tab_counter_ = nullptr;
+}
+
+bool WebUITabStripContainerView::SetPaneFocusAndFocusDefault() {
+  // Make sure the pane first receives focus, then send a WebUI event to the
+  // front-end so the correct HTML element receives focus.
+  bool received_focus = AccessiblePaneView::SetPaneFocusAndFocusDefault();
+  if (received_focus) {
+    TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
+        web_view_->GetWebContents()->GetWebUI()->GetController());
+    tab_strip_ui->ReceivedKeyboardFocus();
+  }
+  return received_focus;
 }

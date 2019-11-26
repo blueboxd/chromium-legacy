@@ -285,7 +285,7 @@ class FileSelectionHandler extends cr.EventTarget {
    */
   isOfflineWithUncachedFilesSelected_() {
     return this.volumeManager_.getDriveConnectionState().type ===
-        VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         this.selection.anyFilesNotInCache;
   }
 

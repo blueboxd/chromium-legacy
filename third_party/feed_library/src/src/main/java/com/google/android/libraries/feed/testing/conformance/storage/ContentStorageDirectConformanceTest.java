@@ -32,18 +32,18 @@ public abstract class ContentStorageDirectConformanceTest {
     private static final byte[] DATA_1 = "data 1".getBytes(Charset.forName("UTF-8"));
     private static final byte[] OTHER_DATA = "other data".getBytes(Charset.forName("UTF-8"));
 
-    protected ContentStorageDirect storage;
+    protected ContentStorageDirect mStorage;
 
     @Test
     public void missingKey() {
-        Result<Map<String, byte[]>> result = storage.get(Collections.singletonList(KEY_0));
+        Result<Map<String, byte[]>> result = mStorage.get(Collections.singletonList(KEY_0));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isNull();
     }
 
     @Test
     public void missingKey_multipleKeys() {
-        Result<Map<String, byte[]>> result = storage.get(Arrays.asList(KEY_0, KEY_1));
+        Result<Map<String, byte[]>> result = mStorage.get(Arrays.asList(KEY_0, KEY_1));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isNull();
         assertThat(valueMap.get(KEY_1)).isNull();
@@ -52,21 +52,21 @@ public abstract class ContentStorageDirectConformanceTest {
     @Test
     public void storeAndRetrieve() {
         CommitResult commitResult =
-                storage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_0).build());
+                mStorage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_0).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Map<String, byte[]>> result = storage.get(Collections.singletonList(KEY_0));
+        Result<Map<String, byte[]>> result = mStorage.get(Collections.singletonList(KEY_0));
         Map<String, byte[]> input = result.getValue();
         assertThat(input.get(KEY_0)).isEqualTo(DATA_0);
     }
 
     @Test
     public void storeAndRetrieve_multipleKeys() {
-        CommitResult commitResult = storage.commit(
+        CommitResult commitResult = mStorage.commit(
                 new ContentMutation.Builder().upsert(KEY_0, DATA_0).upsert(KEY_1, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Map<String, byte[]>> result = storage.get(Arrays.asList(KEY_0, KEY_1));
+        Result<Map<String, byte[]>> result = mStorage.get(Arrays.asList(KEY_0, KEY_1));
         Map<String, byte[]> input = result.getValue();
         assertThat(input.get(KEY_0)).isEqualTo(DATA_0);
         assertThat(input.get(KEY_1)).isEqualTo(DATA_1);
@@ -74,11 +74,11 @@ public abstract class ContentStorageDirectConformanceTest {
 
     @Test
     public void storeAndOverwrite_chained() {
-        CommitResult commitResult = storage.commit(
+        CommitResult commitResult = mStorage.commit(
                 new ContentMutation.Builder().upsert(KEY_0, DATA_0).upsert(KEY_0, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Map<String, byte[]>> result = storage.get(Collections.singletonList(KEY_0));
+        Result<Map<String, byte[]>> result = mStorage.get(Collections.singletonList(KEY_0));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isEqualTo(DATA_1);
     }
@@ -86,65 +86,65 @@ public abstract class ContentStorageDirectConformanceTest {
     @Test
     public void storeAndOverwrite_separate() {
         CommitResult commitResult =
-                storage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_0).build());
+                mStorage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_0).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Map<String, byte[]>> result = storage.get(Collections.singletonList(KEY_0));
+        Result<Map<String, byte[]>> result = mStorage.get(Collections.singletonList(KEY_0));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isEqualTo(DATA_0);
 
-        commitResult = storage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_1).build());
+        commitResult = mStorage.commit(new ContentMutation.Builder().upsert(KEY_0, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        result = storage.get(Collections.singletonList(KEY_0));
+        result = mStorage.get(Collections.singletonList(KEY_0));
         valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isEqualTo(DATA_1);
     }
 
     @Test
     public void storeAndDelete() {
-        CommitResult commitResult = storage.commit(
+        CommitResult commitResult = mStorage.commit(
                 new ContentMutation.Builder().upsert(KEY_0, DATA_0).upsert(KEY_1, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm Key 0 and 1 are present
-        Result<Map<String, byte[]>> result = storage.get(Arrays.asList(KEY_0, KEY_1));
+        Result<Map<String, byte[]>> result = mStorage.get(Arrays.asList(KEY_0, KEY_1));
         Map<String, byte[]> input = result.getValue();
         assertThat(input.get(KEY_0)).isEqualTo(DATA_0);
         assertThat(input.get(KEY_1)).isEqualTo(DATA_1);
 
         // Delete Key 0
-        commitResult = storage.commit(new ContentMutation.Builder().delete(KEY_0).build());
+        commitResult = mStorage.commit(new ContentMutation.Builder().delete(KEY_0).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm that Key 0 is deleted and Key 1 is present
-        Result<Map<String, byte[]>> result2 = storage.get(Arrays.asList(KEY_0, KEY_1));
+        Result<Map<String, byte[]>> result2 = mStorage.get(Arrays.asList(KEY_0, KEY_1));
         Map<String, byte[]> valueMap = result2.getValue();
         assertThat(valueMap.get(KEY_0)).isNull();
     }
 
     @Test
     public void storeAndDeleteByPrefix() {
-        CommitResult commitResult = storage.commit(new ContentMutation.Builder()
-                                                           .upsert(KEY_0, DATA_0)
-                                                           .upsert(KEY_1, DATA_1)
-                                                           .upsert(OTHER_KEY, OTHER_DATA)
-                                                           .build());
+        CommitResult commitResult = mStorage.commit(new ContentMutation.Builder()
+                                                            .upsert(KEY_0, DATA_0)
+                                                            .upsert(KEY_1, DATA_1)
+                                                            .upsert(OTHER_KEY, OTHER_DATA)
+                                                            .build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm Key 0, Key 1, and Other are present
-        Result<Map<String, byte[]>> result = storage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
+        Result<Map<String, byte[]>> result = mStorage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isEqualTo(DATA_0);
         assertThat(valueMap.get(KEY_1)).isEqualTo(DATA_1);
         assertThat(valueMap.get(OTHER_KEY)).isEqualTo(OTHER_DATA);
 
         // Delete by prefix Key
-        commitResult = storage.commit(new ContentMutation.Builder().deleteByPrefix(KEY).build());
+        commitResult = mStorage.commit(new ContentMutation.Builder().deleteByPrefix(KEY).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm Key 0 and Key 1 are deleted, and Other is present
-        result = storage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
+        result = mStorage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
         valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isNull();
         assertThat(valueMap.get(KEY_1)).isNull();
@@ -153,26 +153,26 @@ public abstract class ContentStorageDirectConformanceTest {
 
     @Test
     public void storeAndDeleteAll() {
-        CommitResult commitResult = storage.commit(new ContentMutation.Builder()
-                                                           .upsert(KEY_0, DATA_0)
-                                                           .upsert(KEY_1, DATA_1)
-                                                           .upsert(OTHER_KEY, OTHER_DATA)
-                                                           .build());
+        CommitResult commitResult = mStorage.commit(new ContentMutation.Builder()
+                                                            .upsert(KEY_0, DATA_0)
+                                                            .upsert(KEY_1, DATA_1)
+                                                            .upsert(OTHER_KEY, OTHER_DATA)
+                                                            .build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm Key 0, Key 1, and Other are present
-        Result<Map<String, byte[]>> result = storage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
+        Result<Map<String, byte[]>> result = mStorage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
         Map<String, byte[]> valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isEqualTo(DATA_0);
         assertThat(valueMap.get(KEY_1)).isEqualTo(DATA_1);
         assertThat(valueMap.get(OTHER_KEY)).isEqualTo(OTHER_DATA);
 
         // Delete all
-        commitResult = storage.commit(new ContentMutation.Builder().deleteAll().build());
+        commitResult = mStorage.commit(new ContentMutation.Builder().deleteAll().build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
         // Confirm all keys are deleted
-        result = storage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
+        result = mStorage.get(Arrays.asList(KEY_0, KEY_1, OTHER_KEY));
         valueMap = result.getValue();
         assertThat(valueMap.get(KEY_0)).isNull();
         assertThat(valueMap.get(KEY_1)).isNull();
@@ -181,11 +181,11 @@ public abstract class ContentStorageDirectConformanceTest {
 
     @Test
     public void multipleValues_getAll() {
-        CommitResult commitResult = storage.commit(
+        CommitResult commitResult = mStorage.commit(
                 new ContentMutation.Builder().upsert(KEY_0, DATA_0).upsert(KEY_1, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<Map<String, byte[]>> result = storage.getAll(KEY);
+        Result<Map<String, byte[]>> result = mStorage.getAll(KEY);
         Map<String, byte[]> input = result.getValue();
         assertThat(input.get(KEY_0)).isEqualTo(DATA_0);
         assertThat(input.get(KEY_1)).isEqualTo(DATA_1);
@@ -193,11 +193,11 @@ public abstract class ContentStorageDirectConformanceTest {
 
     @Test
     public void multipleValues_getAllKeys() {
-        CommitResult commitResult = storage.commit(
+        CommitResult commitResult = mStorage.commit(
                 new ContentMutation.Builder().upsert(KEY_0, DATA_0).upsert(KEY_1, DATA_1).build());
         assertThat(commitResult).isEqualTo(CommitResult.SUCCESS);
 
-        Result<List<String>> result = storage.getAllKeys();
+        Result<List<String>> result = mStorage.getAllKeys();
         assertThat(result.getValue()).containsExactly(KEY_0, KEY_1);
     }
 }

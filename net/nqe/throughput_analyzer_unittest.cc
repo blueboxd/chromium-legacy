@@ -63,7 +63,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
                 &TestThroughputAnalyzer::OnNewThroughputObservationAvailable,
                 base::Unretained(this)),
             tick_clock,
-            std::make_unique<BoundTestNetLog>()->bound()),
+            std::make_unique<RecordingBoundTestNetLog>()->bound()),
         throughput_observations_received_(0),
         bits_received_(0) {}
 

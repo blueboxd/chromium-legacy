@@ -37,25 +37,13 @@
     {
       "name": "HorizontalScrollbar",
       "position": [20, 205],
-      "bounds": [185, 15],
+      "bounds": [200, 15],
       "transform": 1
     },
     {
       "name": "VerticalScrollbar",
       "position": [205, 20],
       "bounds": [15, 185],
-      "transform": 1
-    },
-    {
-      "name": "LayoutNGBlockFlow DIV id='target'",
-      "bounds": [240, 240],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 240, 240],
-          "reason": "background"
-        }
-      ],
       "transform": 1
     }
   ],

@@ -49,6 +49,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private final ContextMenuItemDelegate mDelegate;
     private final @ContextMenuMode int mMode;
     private final ShareDelegate mShareDelegate;
+    private boolean mEnableLensWithSearchByImageText;
 
     /**
      * Defines the Groups of each Context Menu Item
@@ -393,7 +394,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                         if (enableGoogleLensFeature
                                 && shouldShowLensMenuItemAndRecordMetrics(
                                         context, templateUrlServiceInstance)) {
-                            imageTab.add(new ChromeContextMenuItem(Item.SEARCH_WITH_GOOGLE_LENS));
+                            if (LensUtils.useLensWithSearchByImageText()) {
+                                mEnableLensWithSearchByImageText = true;
+                                imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
+                            } else {
+                                imageTab.add(
+                                        new ChromeContextMenuItem(Item.SEARCH_WITH_GOOGLE_LENS));
+                            }
                         } else {
                             imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
                         }
@@ -554,8 +561,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             helper.searchWithGoogleLens(mDelegate.isIncognito());
         } else if (itemId == R.id.contextmenu_search_by_image) {
-            ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_BY_IMAGE);
-            helper.searchForImage();
+            if (mEnableLensWithSearchByImageText) {
+                ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
+                helper.searchWithGoogleLens(mDelegate.isIncognito());
+            } else {
+                ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_BY_IMAGE);
+                helper.searchForImage();
+            }
         } else if (itemId == R.id.contextmenu_share_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SHARE_IMAGE);
             helper.shareImage();

@@ -415,7 +415,7 @@ TEST_F(SpdyStreamTest, StreamError) {
 
   AddReadEOF();
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1254,7 +1254,7 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   AddReadEOF();
 
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   SequencedSocketData data(GetReads(), GetWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);

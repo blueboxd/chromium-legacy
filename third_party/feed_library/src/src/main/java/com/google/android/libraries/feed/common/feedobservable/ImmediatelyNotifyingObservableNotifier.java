@@ -12,23 +12,23 @@ import com.google.android.libraries.feed.common.functional.Consumer;
  */
 public final class ImmediatelyNotifyingObservableNotifier<ObserverT>
         extends FeedObservable<ObserverT> {
-    private Consumer<ObserverT> currentConsumer;
+    private Consumer<ObserverT> mCurrentConsumer;
 
     public ImmediatelyNotifyingObservableNotifier(Consumer<ObserverT> listenerMethod) {
-        currentConsumer = listenerMethod;
+        mCurrentConsumer = listenerMethod;
     }
 
     @Override
     public void registerObserver(ObserverT observerT) {
         super.registerObserver(observerT);
-        currentConsumer.accept(observerT);
+        mCurrentConsumer.accept(observerT);
     }
 
     /** Calls all the registered listeners using the given listener method. */
     public void notifyListeners(Consumer<ObserverT> listenerMethod) {
-        currentConsumer = listenerMethod;
-        synchronized (observers) {
-            for (ObserverT listener : observers) {
+        mCurrentConsumer = listenerMethod;
+        synchronized (mObservers) {
+            for (ObserverT listener : mObservers) {
                 listenerMethod.accept(listener);
             }
         }

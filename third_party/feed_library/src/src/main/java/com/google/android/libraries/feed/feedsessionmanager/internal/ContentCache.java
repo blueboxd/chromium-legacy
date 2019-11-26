@@ -9,8 +9,9 @@ import com.google.android.libraries.feed.common.logging.Dumper;
 import com.google.android.libraries.feed.common.logging.Logger;
 import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * In order to support optimistic writes, the cache must store the payloads for the full duration of
@@ -24,15 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ContentCache implements Dumpable {
     private static final String TAG = "ContentCache";
 
-    private final Map<String, StreamPayload> mutationCache;
+    private final Map<String, StreamPayload> mMutationCache;
 
-    private int lookupCount;
-    private int hitCount;
-    private int maxMutationCacheSize;
-    private int mutationsCount;
+    private int mLookupCount;
+    private int mHitCount;
+    private int mMaxMutationCacheSize;
+    private int mMutationsCount;
 
     public ContentCache() {
-        mutationCache = new ConcurrentHashMap<>();
+        mMutationCache = Collections.synchronizedMap(new HashMap<>());
     }
 
     /**
@@ -42,8 +43,8 @@ public final class ContentCache implements Dumpable {
      * is called.
      */
     void startMutation() {
-        mutationsCount++;
-        mutationCache.clear();
+        mMutationsCount++;
+        mMutationCache.clear();
     }
 
     /**
@@ -52,19 +53,19 @@ public final class ContentCache implements Dumpable {
      * finished the mutation. At this point it would be safe to clear the cache.
      */
     void finishMutation() {
-        if (mutationCache.size() > maxMutationCacheSize) {
-            maxMutationCacheSize = mutationCache.size();
+        if (mMutationCache.size() > mMaxMutationCacheSize) {
+            mMaxMutationCacheSize = mMutationCache.size();
         }
-        mutationCache.clear();
+        mMutationCache.clear();
     }
 
     /** Return the {@link StreamPayload} or {@code null} if it is not found in the cache. */
     /*@Nullable*/
     public StreamPayload get(String key) {
-        StreamPayload value = mutationCache.get(key);
-        lookupCount++;
+        StreamPayload value = mMutationCache.get(key);
+        mLookupCount++;
         if (value != null) {
-            hitCount++;
+            mHitCount++;
         } else {
             // This is expected on startup.
             Logger.d(TAG, "Mutation Cache didn't contain item %s", key);
@@ -75,26 +76,26 @@ public final class ContentCache implements Dumpable {
     /** Add a new value to the cache, returning the previous version or {@code null}. */
     /*@Nullable*/
     public StreamPayload put(String key, StreamPayload payload) {
-        return mutationCache.put(key, payload);
+        return mMutationCache.put(key, payload);
     }
 
     /** Returns the current number of items in the cache. */
     public int size() {
-        return mutationCache.size();
+        return mMutationCache.size();
     }
 
     public void reset() {
-        mutationCache.clear();
+        mMutationCache.clear();
     }
 
     @Override
     public void dump(Dumper dumper) {
         dumper.title(TAG);
-        dumper.forKey("mutationCacheSize").value(mutationCache.size());
-        dumper.forKey("mutationsCount").value(mutationsCount).compactPrevious();
-        dumper.forKey("maxMutationCacheSize").value(maxMutationCacheSize).compactPrevious();
-        dumper.forKey("lookupCount").value(lookupCount);
-        dumper.forKey("hits").value(hitCount).compactPrevious();
-        dumper.forKey("misses").value(lookupCount - hitCount).compactPrevious();
+        dumper.forKey("mutationCacheSize").value(mMutationCache.size());
+        dumper.forKey("mutationsCount").value(mMutationsCount).compactPrevious();
+        dumper.forKey("maxMutationCacheSize").value(mMaxMutationCacheSize).compactPrevious();
+        dumper.forKey("lookupCount").value(mLookupCount);
+        dumper.forKey("hits").value(mHitCount).compactPrevious();
+        dumper.forKey("misses").value(mLookupCount - mHitCount).compactPrevious();
     }
 }

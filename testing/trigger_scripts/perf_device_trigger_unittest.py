@@ -58,6 +58,7 @@ class UnitTest(unittest.TestCase):
     args = Args()
     args.shards = len(previous_task_assignment_map)
     args.dump_json = 'output.json'
+    args.multiple_dimension_script_verbose = True
     swarming_args = [
         'trigger',
         '--swarming',
@@ -275,7 +276,7 @@ class UnitTest(unittest.TestCase):
     self.assertIn(expected_task_assignment.get(1), new_healthy_bots)
     self.assertIn(expected_task_assignment.get(2), new_healthy_bots)
 
-  def test_previously_duplicate_task_assignemnts(self):
+  def test_previously_duplicate_task_assignments(self):
     triggerer = self.setup_and_trigger(
         previous_task_assignment_map={0: 'build3', 1: 'build3', 2: 'build5',
                                       3: 'build6'},

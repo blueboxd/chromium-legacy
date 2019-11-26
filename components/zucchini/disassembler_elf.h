@@ -131,6 +131,9 @@ class DisassemblerElf : public Disassembler {
   elf::Elf32_Half segments_count_ = 0;
   const typename Traits::Elf_Phdr* segments_ = nullptr;
 
+  // Bit fields to store the role each section may play.
+  std::vector<int> section_judgements_;
+
   // Translator between offsets and RVAs.
   AddressTranslator translator_;
 

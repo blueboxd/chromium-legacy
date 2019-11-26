@@ -309,7 +309,7 @@ class Request {
 
   const net::ProxyInfo& results() const { return results_; }
   net::LoadState load_state() { return request_->GetLoadState(); }
-  net::BoundTestNetLog& net_log() { return net_log_; }
+  net::RecordingBoundTestNetLog& net_log() { return net_log_; }
   const net::TestCompletionCallback& callback() const { return callback_; }
 
  private:
@@ -320,7 +320,7 @@ class Request {
   std::unique_ptr<net::ProxyResolver::Request> request_;
   int error_;
   net::TestCompletionCallback callback_;
-  net::BoundTestNetLog net_log_;
+  net::RecordingBoundTestNetLog net_log_;
 };
 
 Request::Request(net::ProxyResolver* resolver,
@@ -559,7 +559,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   net::HangingHostResolver host_resolver_;
-  net::TestNetLog net_log_;
+  net::RecordingTestNetLog net_log_;
   std::unique_ptr<MockMojoProxyResolverFactory> mock_proxy_resolver_factory_;
   std::unique_ptr<net::ProxyResolverFactory> proxy_resolver_factory_mojo_;
 

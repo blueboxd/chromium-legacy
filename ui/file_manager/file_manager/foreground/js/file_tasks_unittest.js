@@ -47,6 +47,16 @@ function setUp() {
       },
     },
     fileManagerPrivate: {
+      DriveConnectionStateType: {
+        ONLINE: 'ONLINE',
+        OFFLINE: 'OFFLINE',
+        METERED: 'METERED',
+      },
+      DriveOfflineReason: {
+        NOT_READY: 'NOT_READY',
+        NO_NETWORK: 'NO_NETWORK',
+        NO_SERVICE: 'NO_SERVICE',
+      },
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);
       },
@@ -92,7 +102,7 @@ function getMockFileManager() {
         };
       },
       getDriveConnectionState: function() {
-        return VolumeManagerCommon.DriveConnectionType.ONLINE;
+        return chrome.fileManagerPrivate.DriveConnectionStateType;
       },
       getVolumeInfo: function(entry) {
         return {

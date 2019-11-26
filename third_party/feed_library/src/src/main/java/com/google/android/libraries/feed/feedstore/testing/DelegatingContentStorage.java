@@ -19,49 +19,49 @@ import java.util.Map;
  * interfaces.
  */
 public class DelegatingContentStorage implements ContentStorage, ContentStorageDirect {
-    private final ContentStorageDirect delegate;
+    private final ContentStorageDirect mDelegate;
 
     public DelegatingContentStorage(ContentStorageDirect delegate) {
-        this.delegate = delegate;
+        this.mDelegate = delegate;
     }
 
     @Override
     public void get(List<String> keys, Consumer<Result<Map<String, byte[]>>> consumer) {
-        consumer.accept(delegate.get(keys));
+        consumer.accept(mDelegate.get(keys));
     }
 
     @Override
     public Result<Map<String, byte[]>> get(List<String> keys) {
-        return delegate.get(keys);
+        return mDelegate.get(keys);
     }
 
     @Override
     public void getAll(String prefix, Consumer<Result<Map<String, byte[]>>> consumer) {
-        consumer.accept(delegate.getAll(prefix));
+        consumer.accept(mDelegate.getAll(prefix));
     }
 
     @Override
     public Result<Map<String, byte[]>> getAll(String prefix) {
-        return delegate.getAll(prefix);
+        return mDelegate.getAll(prefix);
     }
 
     @Override
     public void getAllKeys(Consumer<Result<List<String>>> consumer) {
-        consumer.accept(delegate.getAllKeys());
+        consumer.accept(mDelegate.getAllKeys());
     }
 
     @Override
     public Result<List<String>> getAllKeys() {
-        return delegate.getAllKeys();
+        return mDelegate.getAllKeys();
     }
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
-        consumer.accept(delegate.commit(mutation));
+        consumer.accept(mDelegate.commit(mutation));
     }
 
     @Override
     public CommitResult commit(ContentMutation mutation) {
-        return delegate.commit(mutation);
+        return mDelegate.commit(mutation);
     }
 }

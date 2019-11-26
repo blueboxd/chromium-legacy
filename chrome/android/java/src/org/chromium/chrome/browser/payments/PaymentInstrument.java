@@ -294,8 +294,18 @@ public abstract class PaymentInstrument extends EditableOption {
     /**
      * @return True after changePaymentMethodFromInvokedApp(), before update updateWith() or
      * noUpdatedPaymentDetails().
+     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
      */
     public boolean isChangingPaymentMethod() {
+        return false;
+    }
+
+    /**
+     * @return True after changePaymentMethodFromInvokedApp(), changeShippingOptionFromInvokedApp(),
+     *         or changeShippingAddressFromInvokedApp() and before update updateWith() or
+     *         noUpdatedPaymentDetails().
+     */
+    public boolean isChanging() {
         return false;
     }
 

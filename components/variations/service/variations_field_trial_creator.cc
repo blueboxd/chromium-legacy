@@ -511,6 +511,13 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
       break;
   }
 
+  bool success = http_header_provider->ForceDisableVariationIds(
+      command_line->GetSwitchValueASCII(switches::kForceDisableVariationIds));
+  if (!success) {
+    ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                       switches::kForceDisableVariationIds));
+  }
+
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(kEnableFeatures),
       command_line->GetSwitchValueASCII(kDisableFeatures));

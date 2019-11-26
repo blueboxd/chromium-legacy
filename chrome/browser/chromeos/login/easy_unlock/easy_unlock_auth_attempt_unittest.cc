@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

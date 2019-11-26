@@ -16,109 +16,109 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
 /** Logs the initial event after sessions have been requested by the UI. */
 public class UiSessionRequestLogger implements ModelProviderObserver {
     private static final String TAG = "UiSessionRequestLogger";
-    private final Clock clock;
-    private final BasicLoggingApi basicLoggingApi;
-    private int sessionCount;
-    /*@Nullable*/ private SessionRequestState sessionRequestState;
+    private final Clock mClock;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private int mSessionCount;
+    /*@Nullable*/ private SessionRequestState mSessionRequestState;
 
     public UiSessionRequestLogger(Clock clock, BasicLoggingApi basicLoggingApi) {
-        this.clock = clock;
-        this.basicLoggingApi = basicLoggingApi;
+        this.mClock = clock;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     /** Should be called whenever the UI requests a new session from the {@link ModelProvider}. */
     public void onSessionRequested(ModelProvider modelProvider) {
-        if (sessionRequestState != null) {
-            sessionRequestState.modelProvider.unregisterObserver(this);
+        if (mSessionRequestState != null) {
+            mSessionRequestState.mModelProvider.unregisterObserver(this);
         }
 
-        this.sessionRequestState = new SessionRequestState(modelProvider, clock);
+        this.mSessionRequestState = new SessionRequestState(modelProvider, mClock);
         modelProvider.registerObserver(this);
     }
 
     @Override
     public void onSessionStart(UiContext uiContext) {
-        if (sessionRequestState == null) {
+        if (mSessionRequestState == null) {
             Logger.wtf(TAG, "onSessionStart() called without SessionRequestState.");
             return;
         }
 
-        SessionRequestState localSessionRequestState = sessionRequestState;
+        SessionRequestState localSessionRequestState = mSessionRequestState;
 
-        basicLoggingApi.onInitialSessionEvent(
-                SessionEvent.STARTED, localSessionRequestState.getElapsedTime(), ++sessionCount);
+        mBasicLoggingApi.onInitialSessionEvent(
+                SessionEvent.STARTED, localSessionRequestState.getElapsedTime(), ++mSessionCount);
 
         localSessionRequestState.getModelProvider().unregisterObserver(this);
-        sessionRequestState = null;
+        mSessionRequestState = null;
     }
 
     @Override
     public void onSessionFinished(UiContext uiContext) {
-        if (sessionRequestState == null) {
+        if (mSessionRequestState == null) {
             Logger.wtf(TAG, "onSessionFinished() called without SessionRequestState.");
             return;
         }
 
-        SessionRequestState localSessionRequestState = sessionRequestState;
+        SessionRequestState localSessionRequestState = mSessionRequestState;
 
-        basicLoggingApi.onInitialSessionEvent(SessionEvent.FINISHED_IMMEDIATELY,
-                localSessionRequestState.getElapsedTime(), ++sessionCount);
+        mBasicLoggingApi.onInitialSessionEvent(SessionEvent.FINISHED_IMMEDIATELY,
+                localSessionRequestState.getElapsedTime(), ++mSessionCount);
 
         localSessionRequestState.getModelProvider().unregisterObserver(this);
-        sessionRequestState = null;
+        mSessionRequestState = null;
     }
 
     @Override
     public void onError(ModelError modelError) {
-        if (sessionRequestState == null) {
+        if (mSessionRequestState == null) {
             Logger.wtf(TAG, "onError() called without SessionRequestState.");
             return;
         }
 
-        SessionRequestState localSessionRequestState = sessionRequestState;
+        SessionRequestState localSessionRequestState = mSessionRequestState;
 
-        basicLoggingApi.onInitialSessionEvent(
-                SessionEvent.ERROR, localSessionRequestState.getElapsedTime(), ++sessionCount);
+        mBasicLoggingApi.onInitialSessionEvent(
+                SessionEvent.ERROR, localSessionRequestState.getElapsedTime(), ++mSessionCount);
 
         localSessionRequestState.getModelProvider().unregisterObserver(this);
-        sessionRequestState = null;
+        mSessionRequestState = null;
     }
 
     /** Should be called whenever the UI is destroyed, and will log the event if necessary. */
     public void onDestroy() {
-        if (sessionRequestState == null) {
+        if (mSessionRequestState == null) {
             // We don't wtf here as to allow onDestroy() to be called regardless of the internal
             // state.
             return;
         }
 
-        SessionRequestState localSessionRequestState = sessionRequestState;
+        SessionRequestState localSessionRequestState = mSessionRequestState;
 
-        basicLoggingApi.onInitialSessionEvent(SessionEvent.USER_ABANDONED,
-                localSessionRequestState.getElapsedTime(), ++sessionCount);
+        mBasicLoggingApi.onInitialSessionEvent(SessionEvent.USER_ABANDONED,
+                localSessionRequestState.getElapsedTime(), ++mSessionCount);
 
         localSessionRequestState.getModelProvider().unregisterObserver(this);
-        sessionRequestState = null;
+        mSessionRequestState = null;
     }
 
     /** Encapsulates the state of whether a session has been requested and when it was requested. */
     private static class SessionRequestState {
-        private final long sessionRequestTime;
-        private final ModelProvider modelProvider;
-        private final Clock clock;
+        private final long mSessionRequestTime;
+        private final ModelProvider mModelProvider;
+        private final Clock mClock;
 
         private SessionRequestState(ModelProvider modelProvider, Clock clock) {
-            this.sessionRequestTime = clock.elapsedRealtime();
-            this.modelProvider = modelProvider;
-            this.clock = clock;
+            this.mSessionRequestTime = clock.elapsedRealtime();
+            this.mModelProvider = modelProvider;
+            this.mClock = clock;
         }
 
         int getElapsedTime() {
-            return (int) (clock.elapsedRealtime() - sessionRequestTime);
+            return (int) (mClock.elapsedRealtime() - mSessionRequestTime);
         }
 
         ModelProvider getModelProvider() {
-            return modelProvider;
+            return mModelProvider;
         }
     }
 }

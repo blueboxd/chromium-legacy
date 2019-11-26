@@ -40,12 +40,37 @@ namespace blink {
 class MediaStreamComponent;
 class RTCStatsResponseBase;
 
+// TODO(crbug.com/787254): Merge RTCStatsRequest and RTCStatsRequestImpl
+// when the former is not referenced in renderer/platform anymore.
+//
+// The RTCStatsRequest class represents a JavaScript call on
+// RTCPeerConnection.getStats(). The user of this API will use
+// the calls on this class and RTCStatsResponseBase to fill in the
+// data that will be returned via a callback to the user in an
+// RTCStatsResponse structure.
+//
+// The typical usage pattern is:
+// RTCStatsRequest* request = <from somewhere>
+// RTCStatsResponseBase* response = request->CreateResponse();
+//
+// For each item on which statistics are going to be reported:
+//   WebRTCLegacyStats stats(...);
+//   (configuration of stats object depends on item type)
+//   response.AddStats(stats);
+// When finished adding information:
+// request->RequestSucceeded(response);
 class RTCStatsRequest : public GarbageCollected<RTCStatsRequest> {
  public:
   virtual ~RTCStatsRequest() = default;
 
   virtual RTCStatsResponseBase* CreateResponse() = 0;
+
+  // This function returns true if a selector argument was given to getStats.
   virtual bool HasSelector() = 0;
+
+  // The Component() accessor give the information
+  // required to look up a MediaStreamTrack implementation.
+  // It is only useful to call it when HasSelector() returns true.
   virtual MediaStreamComponent* Component() = 0;
   virtual void RequestSucceeded(RTCStatsResponseBase*) = 0;
 

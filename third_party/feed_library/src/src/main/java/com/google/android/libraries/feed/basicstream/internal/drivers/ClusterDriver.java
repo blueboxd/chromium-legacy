@@ -32,23 +32,23 @@ import com.google.search.now.ui.action.FeedActionProto.UndoAction;
 /** {@link FeatureDriver} for Clusters. */
 public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper {
     private static final String TAG = "ClusterDriver";
-    private final ActionApi actionApi;
-    private final ActionManager actionManager;
-    private final ActionParserFactory actionParserFactory;
-    private final BasicLoggingApi basicLoggingApi;
-    private final ModelFeature clusterModel;
-    private final ModelProvider modelProvider;
-    private final int position;
-    private final PendingDismissHandler pendingDismissHandler;
-    private final StreamOfflineMonitor streamOfflineMonitor;
-    private final ContentChangedListener contentChangedListener;
-    private final ContextMenuManager contextMenuManager;
-    private final MainThreadRunner mainThreadRunner;
-    private final Configuration configuration;
-    private final ViewLoggingUpdater viewLoggingUpdater;
-    private final TooltipApi tooltipApi;
+    private final ActionApi mActionApi;
+    private final ActionManager mActionManager;
+    private final ActionParserFactory mActionParserFactory;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final ModelFeature mClusterModel;
+    private final ModelProvider mModelProvider;
+    private final int mPosition;
+    private final PendingDismissHandler mPendingDismissHandler;
+    private final StreamOfflineMonitor mStreamOfflineMonitor;
+    private final ContentChangedListener mContentChangedListener;
+    private final ContextMenuManager mContextMenuManager;
+    private final MainThreadRunner mMainThreadRunner;
+    private final Configuration mConfiguration;
+    private final ViewLoggingUpdater mViewLoggingUpdater;
+    private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private CardDriver cardDriver;
+    /*@Nullable*/ private CardDriver mCardDriver;
 
     ClusterDriver(ActionApi actionApi, ActionManager actionManager,
             ActionParserFactory actionParserFactory, BasicLoggingApi basicLoggingApi,
@@ -57,39 +57,39 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
             ContentChangedListener contentChangedListener, ContextMenuManager contextMenuManager,
             MainThreadRunner mainThreadRunner, Configuration configuration,
             ViewLoggingUpdater viewLoggingUpdater, TooltipApi tooltipApi) {
-        this.actionApi = actionApi;
-        this.actionManager = actionManager;
-        this.actionParserFactory = actionParserFactory;
-        this.basicLoggingApi = basicLoggingApi;
-        this.clusterModel = clusterModel;
-        this.modelProvider = modelProvider;
-        this.position = position;
-        this.pendingDismissHandler = pendingDismissHandler;
-        this.streamOfflineMonitor = streamOfflineMonitor;
-        this.contentChangedListener = contentChangedListener;
-        this.contextMenuManager = contextMenuManager;
-        this.mainThreadRunner = mainThreadRunner;
-        this.configuration = configuration;
-        this.viewLoggingUpdater = viewLoggingUpdater;
-        this.tooltipApi = tooltipApi;
+        this.mActionApi = actionApi;
+        this.mActionManager = actionManager;
+        this.mActionParserFactory = actionParserFactory;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mClusterModel = clusterModel;
+        this.mModelProvider = modelProvider;
+        this.mPosition = position;
+        this.mPendingDismissHandler = pendingDismissHandler;
+        this.mStreamOfflineMonitor = streamOfflineMonitor;
+        this.mContentChangedListener = contentChangedListener;
+        this.mContextMenuManager = contextMenuManager;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mConfiguration = configuration;
+        this.mViewLoggingUpdater = viewLoggingUpdater;
+        this.mTooltipApi = tooltipApi;
     }
 
     @Override
     public void onDestroy() {
-        if (cardDriver != null) {
-            cardDriver.onDestroy();
+        if (mCardDriver != null) {
+            mCardDriver.onDestroy();
         }
     }
 
     @Override
     /*@Nullable*/
     public LeafFeatureDriver getLeafFeatureDriver() {
-        if (cardDriver == null) {
-            cardDriver = createCardChild(clusterModel);
+        if (mCardDriver == null) {
+            mCardDriver = createCardChild(mClusterModel);
         }
 
-        if (cardDriver != null) {
-            return cardDriver.getLeafFeatureDriver();
+        if (mCardDriver != null) {
+            return mCardDriver.getLeafFeatureDriver();
         }
 
         return null;
@@ -102,7 +102,7 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
         ModelChild child;
         while ((child = cursor.getNextItem()) != null) {
             if (child.getType() != Type.FEATURE) {
-                basicLoggingApi.onInternalError(InternalFeedError.CLUSTER_CHILD_MISSING_FEATURE);
+                mBasicLoggingApi.onInternalError(InternalFeedError.CLUSTER_CHILD_MISSING_FEATURE);
                 Logger.e(TAG, "Child of cursor is not a feature");
                 continue;
             }
@@ -110,7 +110,7 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
             ModelFeature childModelFeature = child.getModelFeature();
 
             if (!childModelFeature.getStreamFeature().hasCard()) {
-                basicLoggingApi.onInternalError(InternalFeedError.CLUSTER_CHILD_NOT_CARD);
+                mBasicLoggingApi.onInternalError(InternalFeedError.CLUSTER_CHILD_NOT_CARD);
                 Logger.e(TAG, "Content not card.");
                 continue;
             }
@@ -123,10 +123,10 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
 
     @VisibleForTesting
     CardDriver createCardDriver(ModelFeature content) {
-        return new CardDriver(actionApi, actionManager, actionParserFactory, basicLoggingApi,
-                content, modelProvider, position, this, streamOfflineMonitor,
-                contentChangedListener, contextMenuManager, mainThreadRunner, configuration,
-                viewLoggingUpdater, tooltipApi);
+        return new CardDriver(mActionApi, mActionManager, mActionParserFactory, mBasicLoggingApi,
+                content, mModelProvider, mPosition, this, mStreamOfflineMonitor,
+                mContentChangedListener, mContextMenuManager, mMainThreadRunner, mConfiguration,
+                mViewLoggingUpdater, mTooltipApi);
     }
 
     @Override
@@ -134,7 +134,8 @@ public class ClusterDriver implements FeatureDriver, ClusterPendingDismissHelper
             UndoAction undoAction, PendingDismissCallback pendingDismissCallback) {
         // Get the content id assoc with this ClusterDriver and pass the dismiss to the
         // StreamDriver.
-        pendingDismissHandler.triggerPendingDismiss(
-                clusterModel.getStreamFeature().getContentId(), undoAction, pendingDismissCallback);
+        mPendingDismissHandler.triggerPendingDismiss(
+                mClusterModel.getStreamFeature().getContentId(), undoAction,
+                pendingDismissCallback);
     }
 }

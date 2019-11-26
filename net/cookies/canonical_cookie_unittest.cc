@@ -2312,11 +2312,31 @@ TEST(CookieInclusionStatusTest, NotValid) {
 
 TEST(CookieInclusionStatusTest, AddExclusionReason) {
   CanonicalCookie::CookieInclusionStatus status;
+  status.set_warning(CanonicalCookie::CookieInclusionStatus::
+                         WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
   status.AddExclusionReason(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
   EXPECT_TRUE(status.IsValid());
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR}));
+  // Adding an exclusion reason other than
+  // EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX or
+  // EXCLUDE_SAMESITE_NONE_INSECURE should clear any SameSite warning.
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
+            status.warning());
+
+  status = CanonicalCookie::CookieInclusionStatus();
+  status.set_warning(CanonicalCookie::CookieInclusionStatus::
+                         WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+  status.AddExclusionReason(CanonicalCookie::CookieInclusionStatus::
+                                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+  EXPECT_TRUE(status.IsValid());
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CanonicalCookie::CookieInclusionStatus::
+           EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+            status.warning());
 }
 
 TEST(CookieInclusionStatusTest, RemoveExclusionReason) {
@@ -2340,22 +2360,6 @@ TEST(CookieInclusionStatusTest, RemoveExclusionReason) {
   EXPECT_TRUE(status.IsValid());
   EXPECT_FALSE(status.HasExclusionReason(
       CanonicalCookie::CookieInclusionStatus::NUM_EXCLUSION_REASONS));
-}
-
-TEST(CookieInclusionStatusTest, AddExclusionReasonsAndWarningIfAny) {
-  CanonicalCookie::CookieInclusionStatus status1;
-  CanonicalCookie::CookieInclusionStatus status2;
-
-  status1.set_exclusion_reasons(0b00011111u);
-  status2.set_exclusion_reasons(0b11111000u);
-  status2.set_warning(
-      CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
-
-  status1.AddExclusionReasonsAndWarningIfAny(status2);
-
-  EXPECT_EQ(0b11111111u, status1.exclusion_reasons());
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE,
-            status1.warning());
 }
 
 }  // namespace net

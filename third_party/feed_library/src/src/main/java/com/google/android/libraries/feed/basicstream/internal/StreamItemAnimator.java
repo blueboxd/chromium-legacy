@@ -15,21 +15,21 @@ import com.google.android.libraries.feed.api.client.stream.Stream.ContentChanged
  * after animations occur.
  */
 public class StreamItemAnimator extends DefaultItemAnimator {
-    private final ContentChangedListener contentChangedListener;
-    private boolean isStreamContentVisible;
+    private final ContentChangedListener mContentChangedListener;
+    private boolean mIsStreamContentVisible;
 
     public StreamItemAnimator(ContentChangedListener contentChangedListener) {
-        this.contentChangedListener = contentChangedListener;
+        this.mContentChangedListener = contentChangedListener;
     }
 
     @Override
     public void onAnimationFinished(RecyclerView.ViewHolder viewHolder) {
         super.onAnimationFinished(viewHolder);
-        contentChangedListener.onContentChanged();
+        mContentChangedListener.onContentChanged();
     }
 
     public void setStreamVisibility(boolean isStreamContentVisible) {
-        if (this.isStreamContentVisible == isStreamContentVisible) {
+        if (this.mIsStreamContentVisible == isStreamContentVisible) {
             return;
         }
 
@@ -40,11 +40,11 @@ public class StreamItemAnimator extends DefaultItemAnimator {
             endAnimations();
         }
 
-        this.isStreamContentVisible = isStreamContentVisible;
+        this.mIsStreamContentVisible = isStreamContentVisible;
     }
 
     @VisibleForTesting
     public boolean getStreamContentVisibility() {
-        return isStreamContentVisible;
+        return mIsStreamContentVisible;
     }
 }

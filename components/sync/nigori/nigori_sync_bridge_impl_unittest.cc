@@ -391,7 +391,7 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldNotifyObserversOnInit) {
   // TODO(crbug.com/922900): once persistence is supported for Nigori, this
   // test should be extended to verify whole encryption state.
   EXPECT_CALL(*observer(),
-              OnEncryptedTypesChanged(SyncEncryptionHandler::SensitiveTypes(),
+              OnEncryptedTypesChanged(AlwaysEncryptedUserTypes(),
                                       /*encrypt_everything=*/false));
   bridge()->Init();
 }
@@ -1235,7 +1235,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->GetPassphraseTypeForTesting(),
               Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
   EXPECT_THAT(bridge()->GetEncryptedTypesForTesting(),
-              Eq(SyncEncryptionHandler::SensitiveTypes()));
+              Eq(AlwaysEncryptedUserTypes()));
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 
   EXPECT_CALL(*observer(), OnTrustedVaultKeyAccepted());
@@ -1283,7 +1283,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->GetPassphraseTypeForTesting(),
               Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
   EXPECT_THAT(bridge()->GetEncryptedTypesForTesting(),
-              Eq(SyncEncryptionHandler::SensitiveTypes()));
+              Eq(AlwaysEncryptedUserTypes()));
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 
   EXPECT_CALL(*observer(), OnTrustedVaultKeyAccepted());

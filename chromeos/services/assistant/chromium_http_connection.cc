@@ -110,6 +110,7 @@ void ChromiumHttpConnection::SetChunkedUploadContentType(
   upload_content_ = "";
   upload_content_type_ = "";
   chunked_upload_content_type_ = content_type;
+  AddHeader(::net::HttpRequestHeaders::kContentType, content_type);
 }
 
 void ChromiumHttpConnection::EnableHeaderResponse() {

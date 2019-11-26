@@ -41,46 +41,47 @@ import java.util.concurrent.TimeUnit;
 public final class FeedActionUploadRequestManager implements ActionUploadRequestManager {
     private static final String TAG = "ActionUploadRequest";
 
-    private final Configuration configuration;
-    private final NetworkClient networkClient;
-    private final ProtocolAdapter protocolAdapter;
-    private final FeedExtensionRegistry extensionRegistry;
-    private final TaskQueue taskQueue;
-    private final ThreadUtils threadUtils;
-    private final Store store;
-    private final Clock clock;
-    private final long maxActionUploadAttempts;
+    private final Configuration mConfiguration;
+    private final NetworkClient mNetworkClient;
+    private final ProtocolAdapter mProtocolAdapter;
+    private final FeedExtensionRegistry mExtensionRegistry;
+    private final TaskQueue mTaskQueue;
+    private final ThreadUtils mThreadUtils;
+    private final Store mStore;
+    private final Clock mClock;
+    private final long mMaxActionUploadAttempts;
     // Total number of actions that can be uploaded in a chained batch request.
-    private final long maxActionsUploadsPerBatchedRequest;
+    private final long mMaxActionsUploadsPerBatchedRequest;
     // Maximum bytes that can be uploaded in a single request.
-    private final long maxBytesPerRequest;
-    private final long maxActionUploadTtl;
+    private final long mMaxBytesPerRequest;
+    private final long mMaxActionUploadTtl;
 
     public FeedActionUploadRequestManager(Configuration configuration, NetworkClient networkClient,
             ProtocolAdapter protocolAdapter, FeedExtensionRegistry extensionRegistry,
             TaskQueue taskQueue, ThreadUtils threadUtils, Store store, Clock clock) {
-        this.configuration = configuration;
-        this.networkClient = networkClient;
-        this.protocolAdapter = protocolAdapter;
-        this.extensionRegistry = extensionRegistry;
-        this.taskQueue = taskQueue;
-        this.threadUtils = threadUtils;
-        this.store = store;
-        this.clock = clock;
-        maxBytesPerRequest = configuration.getValueOrDefault(
+        this.mConfiguration = configuration;
+        this.mNetworkClient = networkClient;
+        this.mProtocolAdapter = protocolAdapter;
+        this.mExtensionRegistry = extensionRegistry;
+        this.mTaskQueue = taskQueue;
+        this.mThreadUtils = threadUtils;
+        this.mStore = store;
+        this.mClock = clock;
+        mMaxBytesPerRequest = configuration.getValueOrDefault(
                 ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 4000L);
-        maxActionsUploadsPerBatchedRequest = configuration.getValueOrDefault(
+        mMaxActionsUploadsPerBatchedRequest = configuration.getValueOrDefault(
                 ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 10L);
-        maxActionUploadAttempts =
+        mMaxActionUploadAttempts =
                 configuration.getValueOrDefault(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 1L);
-        maxActionUploadTtl = configuration.getValueOrDefault(ConfigKey.FEED_ACTION_TTL_SECONDS, 0L);
+        mMaxActionUploadTtl =
+                configuration.getValueOrDefault(ConfigKey.FEED_ACTION_TTL_SECONDS, 0L);
     }
 
     @Override
     public void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
             Consumer<Result<ConsistencyToken>> consumer) {
-        if (maxActionUploadAttempts == 0 || maxBytesPerRequest == 0
-                || maxActionsUploadsPerBatchedRequest == 0) {
+        if (mMaxActionUploadAttempts == 0 || mMaxBytesPerRequest == 0
+                || mMaxActionsUploadsPerBatchedRequest == 0) {
             consumer.accept(Result.success(token));
             return;
         }
@@ -89,20 +90,20 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
 
     private void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
             Consumer<Result<ConsistencyToken>> consumer, int uploadCount) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
         // Return the token if there are no actions to upload.
-        if (actions.isEmpty() || uploadCount >= maxActionsUploadsPerBatchedRequest) {
+        if (actions.isEmpty() || uploadCount >= mMaxActionsUploadsPerBatchedRequest) {
             consumer.accept(Result.success(token));
             return;
         }
         UploadableActionsRequestBuilder requestBuilder =
-                new UploadableActionsRequestBuilder(protocolAdapter);
+                new UploadableActionsRequestBuilder(mProtocolAdapter);
         int actionPayloadBytes = 0;
         Set<StreamUploadableAction> actionsToUpload = new HashSet<>();
         ArrayList<String> contentIds = new ArrayList<>();
         for (StreamUploadableAction action : actions) {
             int actionBytes = action.toByteArray().length;
-            if (maxBytesPerRequest > actionPayloadBytes + actionBytes) {
+            if (mMaxBytesPerRequest > actionPayloadBytes + actionBytes) {
                 actionsToUpload.add(action);
                 contentIds.add(action.getFeatureContentId());
                 actionPayloadBytes += actionBytes;
@@ -112,7 +113,7 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
         }
 
         Result<List<SemanticPropertiesWithId>> semanticPropertiesResult =
-                store.getSemanticProperties(contentIds);
+                mStore.getSemanticProperties(contentIds);
         List<SemanticPropertiesWithId> semanticPropertiesList = new ArrayList<>();
         if (semanticPropertiesResult.isSuccessful()
                 && !semanticPropertiesResult.getValue().isEmpty()) {
@@ -120,7 +121,7 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
         }
 
         Consumer<Result<ConsistencyToken>> tokenConsumer = result -> {
-            threadUtils.checkNotMainThread();
+            mThreadUtils.checkNotMainThread();
             if (result.isSuccessful()) {
                 actions.removeAll(actionsToUpload);
                 if (!actions.isEmpty()) {
@@ -142,18 +143,18 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
     private void executeUploadActionRequest(Set<StreamUploadableAction> actions,
             UploadableActionsRequestBuilder requestBuilder,
             Consumer<Result<ConsistencyToken>> consumer) {
-        threadUtils.checkNotMainThread();
+        mThreadUtils.checkNotMainThread();
 
         String endpoint =
-                configuration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_ENDPOINT, "");
+                mConfiguration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_ENDPOINT, "");
         @HttpMethod
-        String httpMethod = configuration.getValueOrDefault(
+        String httpMethod = mConfiguration.getValueOrDefault(
                 ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.POST);
         HttpRequest httpRequest = RequestHelper.buildHttpRequest(
                 httpMethod, requestBuilder.build().toByteArray(), endpoint, /* locale= */ "");
 
         Logger.i(TAG, "Making Request: %s", httpRequest.getUri().getPath());
-        networkClient.send(httpRequest, input -> {
+        mNetworkClient.send(httpRequest, input -> {
             Logger.i(TAG, "Request: %s completed with response code: %s",
                     httpRequest.getUri().getPath(), input.getResponseCode());
             if (input.getResponseCode() != 200) {
@@ -165,7 +166,7 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
                 }
                 Logger.e(TAG, "errorCode: %d", input.getResponseCode());
                 Logger.e(TAG, "errorResponse: %s", errorBody);
-                taskQueue.execute(Task.EXECUTE_UPLOAD_ACTION_REQUEST, TaskType.IMMEDIATE,
+                mTaskQueue.execute(Task.EXECUTE_UPLOAD_ACTION_REQUEST, TaskType.IMMEDIATE,
                         () -> { consumer.accept(Result.failure()); });
                 return;
             }
@@ -175,15 +176,15 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
 
     private void handleUploadableActionResponseBytes(Set<StreamUploadableAction> actions,
             final byte[] responseBytes, final Consumer<Result<ConsistencyToken>> consumer) {
-        taskQueue.execute(Task.HANDLE_UPLOADABLE_ACTION_RESPONSE_BYTES, TaskType.IMMEDIATE, () -> {
+        mTaskQueue.execute(Task.HANDLE_UPLOADABLE_ACTION_RESPONSE_BYTES, TaskType.IMMEDIATE, () -> {
             Response response;
-            boolean isLengthPrefixed = configuration.getValueOrDefault(
+            boolean isLengthPrefixed = mConfiguration.getValueOrDefault(
                     ConfigKey.FEED_ACTION_SERVER_RESPONSE_LENGTH_PREFIXED, true);
             try {
                 response = Response.parseFrom(isLengthPrefixed
                                 ? RequestHelper.getLengthPrefixedValue(responseBytes)
                                 : responseBytes,
-                        extensionRegistry.getExtensionRegistry());
+                        mExtensionRegistry.getExtensionRegistry());
             } catch (IOException e) {
                 Logger.e(TAG, e, "Response parse failed");
                 handleUpdatingActionsOnFailure(actions);
@@ -195,7 +196,7 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
             final Result<ConsistencyToken> contextResult;
             if (feedActionResponse.hasConsistencyToken()) {
                 contextResult = Result.success(feedActionResponse.getConsistencyToken());
-                UploadableActionMutation actionMutation = store.editUploadableActions();
+                UploadableActionMutation actionMutation = mStore.editUploadableActions();
                 for (StreamUploadableAction action : actions) {
                     actionMutation.remove(action, action.getFeatureContentId());
                 }
@@ -213,12 +214,13 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
     }
 
     private void handleUpdatingActionsOnFailure(Set<StreamUploadableAction> actions) {
-        UploadableActionMutation actionMutation = store.editUploadableActions();
+        UploadableActionMutation actionMutation = mStore.editUploadableActions();
         for (StreamUploadableAction action : actions) {
             int uploadAttempts = action.getUploadAttempts();
-            long currentTime = TimeUnit.MILLISECONDS.toSeconds(clock.currentTimeMillis());
+            long currentTime = TimeUnit.MILLISECONDS.toSeconds(mClock.currentTimeMillis());
             long timeSinceUpload = currentTime - action.getTimestampSeconds();
-            if (uploadAttempts < maxActionUploadAttempts && timeSinceUpload < maxActionUploadTtl) {
+            if (uploadAttempts < mMaxActionUploadAttempts
+                    && timeSinceUpload < mMaxActionUploadTtl) {
                 actionMutation.upsert(
                         action.toBuilder().setUploadAttempts(uploadAttempts + 1).build(),
                         action.getFeatureContentId());

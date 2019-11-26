@@ -333,7 +333,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // closed.
   void MaybeComplete();
 
-  std::vector<OnRedirectCallback> on_redirect_callback_;
+  OnRedirectCallback on_redirect_callback_;
   OnResponseStartedCallback on_response_started_callback_;
   UploadProgressCallback on_upload_progress_callback_;
   DownloadProgressCallback on_download_progress_callback_;
@@ -1242,8 +1242,7 @@ void SimpleURLLoaderImpl::SetOnRedirectCallback(
   // Check if a request has not yet been started.
   DCHECK(!body_handler_);
 
-  on_redirect_callback_.push_back(on_redirect_callback);
-  DCHECK(on_redirect_callback);
+  on_redirect_callback_ = on_redirect_callback;
 }
 
 void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
@@ -1607,15 +1606,13 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
   }
 
   std::vector<std::string> removed_headers;
-  for (auto callback : on_redirect_callback_) {
-    if (callback) {
-      base::WeakPtr<SimpleURLLoaderImpl> weak_this =
-          weak_ptr_factory_.GetWeakPtr();
-      callback.Run(redirect_info, *response_head, &removed_headers);
-      // If deleted by the callback, bail now.
-      if (!weak_this)
-        return;
-    }
+  if (on_redirect_callback_) {
+    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
+        weak_ptr_factory_.GetWeakPtr();
+    on_redirect_callback_.Run(redirect_info, *response_head, &removed_headers);
+    // If deleted by the callback, bail now.
+    if (!weak_this)
+      return;
   }
 
   final_url_ = redirect_info.new_url;

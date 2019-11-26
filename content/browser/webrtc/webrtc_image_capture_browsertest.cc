@@ -101,7 +101,7 @@ class WebRtcImageCaptureBrowserTestBase
         switches::kUseFakeDeviceForMediaStream));
 
     // Enable Pan/Tilt for testing.
-    command_line->AppendSwitchASCII("--enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapturePanTilt");
   }
 

@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -154,6 +155,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     void set_finished(bool finish) { finished_ = finish; }
     size_t index() { return index_; }
     void set_index(size_t index) { index_ = index; }
+    base::CancelableOnceClosure* read_stream_callback() {
+      return &read_stream_callback_;
+    }
 
    private:
     // Starting position of the stream, this is from the network response.
@@ -186,6 +190,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
     // The stream through which data comes.
     std::unique_ptr<InputStream> input_stream_;
+
+    // Cancelable callback to read from the |input_stream_|.
+    base::CancelableOnceClosure read_stream_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };

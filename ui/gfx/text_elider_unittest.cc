@@ -191,8 +191,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
     EXPECT_EQ(expected,
               ElideFilename(filepath, font_list,
-                            GetStringWidthF(using_width_of, font_list),
-                            Typesetter::DEFAULT));
+                            GetStringWidthF(using_width_of, font_list)));
   }
 }
 

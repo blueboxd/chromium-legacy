@@ -9,6 +9,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -30,13 +31,17 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
+import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -218,6 +223,38 @@ public class TabGridDialogTest {
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
     }
 
+    @Test
+    @MediumTest
+    public void testUndoClosureInDialog() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Click close button to close the first tab in group.
+        closeFirstTabInDialog(cta);
+        verifyShowingDialog(cta, 1);
+
+        // Exit dialog, wait for the undo bar showing and undo the closure.
+        TabUiTestHelper.clickScrimToExitDialog(cta);
+        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
+
+        // Verify the undo has happened.
+        onView(withId(R.id.tab_title)).check((v, noMatchException) -> {
+            TextView textView = (TextView) v;
+            assertEquals("2 tabs", textView.getText().toString());
+        });
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+    }
+
     private void mergeAllTabsToAGroup(ChromeTabbedActivity cta) {
         List<Tab> tabGroup = new ArrayList<>();
         TabModel tabModel = cta.getTabModelSelector().getModel(false);
@@ -311,5 +348,43 @@ public class TabGridDialogTest {
                     // Verify if we can grab focus on the editText or not.
                     assertEquals(isEnabled, v.isFocused());
                 });
+    }
+
+    private void closeFirstTabInDialog(ChromeTabbedActivity cta) {
+        onView(withId(R.id.tab_list_view))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(new ViewAction() {
+                    @Override
+                    public Matcher<View> getConstraints() {
+                        return isDisplayed();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "close first tab";
+                    }
+
+                    @Override
+                    public void perform(UiController uiController, View view) {
+                        RecyclerView recyclerView = (RecyclerView) view;
+                        RecyclerView.ViewHolder viewHolder =
+                                recyclerView.findViewHolderForAdapterPosition(0);
+                        assert viewHolder != null;
+                        viewHolder.itemView.findViewById(R.id.action_button).performClick();
+                    }
+                });
+    }
+
+    private boolean verifyUndoBarShowingAndClickUndo() {
+        boolean isShowing = true;
+        try {
+            onView(withId(R.id.snackbar_button)).check(matches(isCompletelyDisplayed()));
+            onView(withId(R.id.snackbar_button)).perform(click());
+        } catch (NoMatchingRootException | AssertionError e) {
+            isShowing = false;
+        } catch (Exception e) {
+            assert false : "error when verifying undo snack bar.";
+        }
+        return isShowing;
     }
 }

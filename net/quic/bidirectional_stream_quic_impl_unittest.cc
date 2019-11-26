@@ -818,7 +818,7 @@ class BidirectionalStreamQuicImplTest
     ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
   }
 
-  const BoundTestNetLog& net_log() const { return net_log_; }
+  const RecordingBoundTestNetLog& net_log() const { return net_log_; }
 
   QuicChromiumClientSession* session() const { return session_.get(); }
 
@@ -841,7 +841,7 @@ class BidirectionalStreamQuicImplTest
   QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
   scoped_refptr<TestTaskRunner> runner_;
   std::unique_ptr<MockWrite[]> mock_writes_;
   quic::MockClock clock_;

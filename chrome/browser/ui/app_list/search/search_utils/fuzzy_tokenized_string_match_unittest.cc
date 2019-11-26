@@ -19,9 +19,9 @@ class FuzzyTokenizedStringMatchTest : public testing::Test {};
 
 TEST_F(FuzzyTokenizedStringMatchTest, PartialRatioTest) {
   FuzzyTokenizedStringMatch match;
-  EXPECT_EQ(match.PartialRatio(base::UTF8ToUTF16("abcde"),
-                               base::UTF8ToUTF16("ababcXXXbcdeY")),
-            0.8);
+  EXPECT_NEAR(match.PartialRatio(base::UTF8ToUTF16("abcde"),
+                                 base::UTF8ToUTF16("ababcXXXbcdeY")),
+              0.6, 0.01);
   EXPECT_NEAR(match.PartialRatio(base::UTF8ToUTF16("big string"),
                                  base::UTF8ToUTF16("strength")),
               0.71, 0.01);
@@ -96,7 +96,7 @@ TEST_F(FuzzyTokenizedStringMatchTest, TokenSortRatioTest) {
         base::UTF8ToUTF16("this text is really really really long"));
     EXPECT_EQ(match.TokenSortRatio(ash::TokenizedString(query),
                                    ash::TokenizedString(text), true),
-              0.5);
+              0.5 * std::pow(0.9, 1));
     EXPECT_NEAR(match.TokenSortRatio(ash::TokenizedString(query),
                                      ash::TokenizedString(text), false),
                 0.33, 0.01);
@@ -269,7 +269,7 @@ TEST_F(FuzzyTokenizedStringMatchTest, OtherParamTest) {
   base::string16 text(base::UTF8ToUTF16("famous"));
   EXPECT_FALSE(match.IsRelevant(ash::TokenizedString(query),
                                 ash::TokenizedString(text)));
-  EXPECT_NEAR(match.relevance(), 0.33, 0.01);
+  EXPECT_NEAR(match.relevance(), 0.33 / 2, 0.01);
 }
 
 }  // namespace app_list

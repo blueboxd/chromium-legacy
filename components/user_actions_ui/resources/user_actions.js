@@ -21,9 +21,9 @@ cr.define('userActions', function() {
    * @param {string} userAction the name of the user action observed.
    */
   function observeUserAction(userAction) {
-    var table = $('user-actions-table');
-    var tr = document.createElement('tr');
-    var td = document.createElement('td');
+    const table = $('user-actions-table');
+    const tr = document.createElement('tr');
+    let td = document.createElement('td');
     td.textContent = userAction;
     tr.appendChild(td);
     td = document.createElement('td');

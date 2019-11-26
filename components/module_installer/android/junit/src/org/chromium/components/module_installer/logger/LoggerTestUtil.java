@@ -4,37 +4,40 @@
 
 package org.chromium.components.module_installer.logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.verify;
-
-import org.mockito.ArgumentCaptor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * Util class for supporting logger testing.
+ *
+ * TODO(bttk): remove in favor of a general purpose metrics test util
  */
 public class LoggerTestUtil {
-    public static int getHistogramStatus(
-            RecordHistogram.Natives mockHistogram, String expectedName, Integer expectedBoundary) {
-        ArgumentCaptor<String> name = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Long> key = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<Integer> sample = ArgumentCaptor.forClass(Integer.class);
-        ArgumentCaptor<Integer> boundary = ArgumentCaptor.forClass(Integer.class);
-
+    /**
+     * Asserts that enumerated histogram {@code name} has at least one sample.
+     *
+     * @param name Name of the enumerated histogram.
+     * @param boundary The smallest value not in the enumeration.
+     * @return The smallest recorded sample.
+     */
+    public static int getHistogramStatus(String name, int boundary) {
         // Make sure the metrics are flushed.
         // Needed by the EnumeratedHistogramSample but not for RecordHistogram.
         CachedMetrics.commitCachedMetrics();
 
-        verify(mockHistogram, atLeast(1))
-                .recordEnumeratedHistogram(
-                        name.capture(), key.capture(), sample.capture(), boundary.capture());
+        int sampleCount = RecordHistogram.getHistogramTotalCountForTesting(name);
+        assertThat(sampleCount, greaterThan(0));
 
-        assertEquals(expectedName, name.getValue());
-        assertEquals(expectedBoundary, boundary.getValue());
-
-        return sample.getValue();
+        for (int i = 0; i < boundary; i++) {
+            if (RecordHistogram.getHistogramValueCountForTesting(name, i) > 0) {
+                return i;
+            }
+        }
+        // There are samples only in the overflow bucket. More context:
+        // https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#count-histograms_choosing-min-and-max
+        return Integer.MAX_VALUE;
     }
 }

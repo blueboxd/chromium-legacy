@@ -299,11 +299,12 @@ class SuggestAppsDialog extends FileManagerDialogBase {
 
   /**
    * Called when the connection status is changed.
-   * @param {VolumeManagerCommon.DriveConnectionType} connectionType Current
-   *     connection type.
+   * @param {chrome.fileManagerPrivate.DriveConnectionStateType} connectionType
+   *     Current connection type.
    */
   onDriveConnectionChanged(connectionType) {
-    if (connectionType === VolumeManagerCommon.DriveConnectionType.OFFLINE) {
+    if (connectionType ===
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE) {
       this.widget_.onConnectionLost();
     }
   }

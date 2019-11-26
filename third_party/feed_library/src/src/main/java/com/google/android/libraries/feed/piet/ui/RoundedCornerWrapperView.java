@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.piet.ui;
 
 import static com.google.android.libraries.feed.common.Validators.checkState;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Outline;
@@ -53,25 +54,25 @@ import com.google.search.now.ui.piet.StylesProto.Borders;
  * strategies.
  */
 public class RoundedCornerWrapperView extends FrameLayout {
-    private final int radiusOverride;
-    private final RoundedCorners roundedCorners;
-    private final Supplier<Boolean> isRtLSupplier;
-    private final Context context;
-    private final Borders borders;
-    private final boolean allowClipPath;
-    private final boolean allowOutlineRounding;
-    private final boolean hasRoundedCorners;
-    private final boolean allFourCornersRounded;
-    private final RoundedCornerMaskCache maskCache;
+    private final int mRadiusOverride;
+    private final RoundedCorners mRoundedCorners;
+    private final Supplier<Boolean> mIsRtLSupplier;
+    private final Context mContext;
+    private final Borders mBorders;
+    private final boolean mAllowClipPath;
+    private final boolean mAllowOutlineRounding;
+    private final boolean mHasRoundedCorners;
+    private final boolean mAllFourCornersRounded;
+    private final RoundedCornerMaskCache mMaskCache;
 
-    private RoundedCornerDelegate roundingDelegate;
-    private boolean drawSuperCalled;
+    private RoundedCornerDelegate mRoundingDelegate;
+    private boolean mDrawSuperCalled;
 
     // Keep track of current mask configuration so we can use cached values if nothing has changed.
-    int lastWidth = -1;
-    int lastHeight = -1;
+    int mLastWidth = -1;
+    int mLastHeight = -1;
 
-    private int roundedCornerRadius;
+    private int mRoundedCornerRadius;
 
     // Doesn't like the call to setOutlineProvider
     @SuppressWarnings("initialization")
@@ -80,17 +81,17 @@ public class RoundedCornerWrapperView extends FrameLayout {
             Borders borders, boolean allowClipPath, boolean allowOutlineRounding) {
         super(context);
 
-        this.radiusOverride = radiusOverride;
-        this.roundedCorners = roundedCorners;
-        this.isRtLSupplier = isRtLSupplier;
-        this.allowClipPath = allowClipPath;
-        this.allowOutlineRounding = allowOutlineRounding;
-        this.context = context;
-        this.borders = borders;
-        this.maskCache = maskCache;
-        this.hasRoundedCorners =
+        this.mRadiusOverride = radiusOverride;
+        this.mRoundedCorners = roundedCorners;
+        this.mIsRtLSupplier = isRtLSupplier;
+        this.mAllowClipPath = allowClipPath;
+        this.mAllowOutlineRounding = allowOutlineRounding;
+        this.mContext = context;
+        this.mBorders = borders;
+        this.mMaskCache = maskCache;
+        this.mHasRoundedCorners =
                 RoundedCornerViewHelper.hasValidRoundedCorners(roundedCorners, radiusOverride);
-        this.allFourCornersRounded =
+        this.mAllFourCornersRounded =
                 RoundedCornerViewHelper.allFourCornersRounded(roundedCorners.getBitmask());
 
         setRoundingStrategy();
@@ -104,14 +105,14 @@ public class RoundedCornerWrapperView extends FrameLayout {
     }
 
     private void setRoundingStrategy() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && allowClipPath) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && mAllowClipPath) {
             setRoundingDelegate(RoundingStrategy.CLIP_PATH);
             if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR2) {
                 // clipPath doesn't work with hardware rendering on < 18.
                 setLayerType(LAYER_TYPE_SOFTWARE, null);
             }
-        } else if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && allFourCornersRounded
-                && allowOutlineRounding) {
+        } else if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && mAllFourCornersRounded
+                && mAllowOutlineRounding) {
             setRoundingDelegate(RoundingStrategy.OUTLINE_PROVIDER);
         } else {
             setRoundingDelegate(RoundingStrategy.BITMAP_MASKING);
@@ -119,9 +120,9 @@ public class RoundedCornerWrapperView extends FrameLayout {
     }
 
     private void updateRoundingStrategy() {
-        if (roundingDelegate instanceof OutlineProviderRoundedCornerDelegate
+        if (mRoundingDelegate instanceof OutlineProviderRoundedCornerDelegate
                 && this.isAttachedToWindow() && !this.isHardwareAccelerated()) {
-            if (allowClipPath) {
+            if (mAllowClipPath) {
                 setRoundingDelegate(RoundingStrategy.CLIP_PATH);
             } else {
                 setRoundingDelegate(RoundingStrategy.BITMAP_MASKING);
@@ -130,26 +131,27 @@ public class RoundedCornerWrapperView extends FrameLayout {
     }
 
     void setRoundingDelegate(RoundingStrategy strategy) {
-        if (roundingDelegate != null) {
-            roundingDelegate.destroy(this);
+        if (mRoundingDelegate != null) {
+            mRoundingDelegate.destroy(this);
         }
-        roundingDelegate = RoundedCornerDelegateFactory.getDelegate(
-                strategy, maskCache, roundedCorners.getBitmask(), isRtLSupplier.get());
-        roundingDelegate.initializeForView(this);
+        mRoundingDelegate = RoundedCornerDelegateFactory.getDelegate(
+                strategy, mMaskCache, mRoundedCorners.getBitmask(), mIsRtLSupplier.get());
+        mRoundingDelegate.initializeForView(this);
     }
 
+    @TargetApi(VERSION_CODES.LOLLIPOP)
     private void setupOutlineProvider() {
-        if (hasRoundedCorners) {
+        if (mHasRoundedCorners) {
             super.setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
                     int radius = getRadius(view.getWidth(), view.getHeight());
-                    if (allFourCornersRounded) {
+                    if (mAllFourCornersRounded) {
                         outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
                         return;
                     }
                     float[] radii = RoundedCornerViewHelper.createRoundedCornerBitMask(
-                            radius, roundedCorners.getBitmask(), isRtLSupplier.get());
+                            radius, mRoundedCorners.getBitmask(), mIsRtLSupplier.get());
                     RoundRectShape outlineShape = new RoundRectShape(radii, null, null);
                     outlineShape.resize(view.getWidth(), view.getHeight());
                     // This actually sets the outline to use this shape
@@ -167,7 +169,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
      */
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        roundingDelegate.dispatchDraw(canvas);
+        mRoundingDelegate.dispatchDraw(canvas);
         super.dispatchDraw(canvas);
     }
 
@@ -180,7 +182,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
     @Override
     public void onDescendantInvalidated(View child, View target) {
         super.onDescendantInvalidated(child, target);
-        roundingDelegate.onDescendantInvalidated(this, target);
+        mRoundingDelegate.onDescendantInvalidated(this, target);
     }
 
     /**
@@ -191,7 +193,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
      */
     @Override
     public ViewParent invalidateChildInParent(final int[] location, final Rect dirty) {
-        roundingDelegate.invalidateChildInParent(this, dirty);
+        mRoundingDelegate.invalidateChildInParent(this, dirty);
         return super.invalidateChildInParent(location, dirty);
     }
 
@@ -203,14 +205,15 @@ public class RoundedCornerWrapperView extends FrameLayout {
      * strategy requires manipulating the {@link Canvas}, which the delegate handles.
      */
     @Override
+    @SuppressWarnings("MissingSuperCall")
     public void draw(Canvas canvas) {
-        drawSuperCalled = false;
-        roundingDelegate.draw(this, canvas);
-        checkState(drawSuperCalled, "View.draw() never called in RoundedCornerWrapperView.draw()");
+        mDrawSuperCalled = false;
+        mRoundingDelegate.draw(this, canvas);
+        checkState(mDrawSuperCalled, "View.draw() never called in RoundedCornerWrapperView.draw()");
     }
 
     public void drawSuper(Canvas canvas) {
-        drawSuperCalled = true;
+        mDrawSuperCalled = true;
         super.draw(canvas);
     }
 
@@ -230,8 +233,8 @@ public class RoundedCornerWrapperView extends FrameLayout {
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
         updateRoundingStrategy();
-        roundingDelegate.onSizeChanged(getRadius(width, height), width, height,
-                roundedCorners.getBitmask(), isRtLSupplier.get());
+        mRoundingDelegate.onSizeChanged(getRadius(width, height), width, height,
+                mRoundedCorners.getBitmask(), mIsRtLSupplier.get());
     }
 
     /**
@@ -243,7 +246,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if (!changed || !hasRoundedCorners) {
+        if (!changed || !mHasRoundedCorners) {
             return;
         }
 
@@ -257,7 +260,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
         int radius = getRadius(width, height);
         addBorders(radius);
 
-        roundingDelegate.onLayout(radius, isRtLSupplier.get(), width, height);
+        mRoundingDelegate.onLayout(radius, mIsRtLSupplier.get(), width, height);
     }
 
     /**
@@ -271,17 +274,17 @@ public class RoundedCornerWrapperView extends FrameLayout {
      * appropriate measurements.
      */
     void addBorders(int radius) {
-        if (borders.getWidth() <= 0) {
+        if (mBorders.getWidth() <= 0) {
             return;
         }
-        boolean isRtL = isRtLSupplier.get();
+        boolean isRtL = mIsRtLSupplier.get();
         // Set up outline of borders
         float[] outerRadii = RoundedCornerViewHelper.createRoundedCornerBitMask(
-                radius, roundedCorners.getBitmask(), isRtL);
+                radius, mRoundedCorners.getBitmask(), isRtL);
 
         // Create a drawable to stroke the border
         BorderDrawable borderDrawable =
-                new BorderDrawable(context, borders, outerRadii, isRtL, lastWidth, lastHeight);
+                new BorderDrawable(mContext, mBorders, outerRadii, isRtL, mLastWidth, mLastHeight);
         this.setForeground(borderDrawable);
     }
 
@@ -294,43 +297,43 @@ public class RoundedCornerWrapperView extends FrameLayout {
      * for the size of the view.
      */
     public int getRadius(int width, int height) {
-        if (!hasRoundedCorners || width == 0 || height == 0) {
+        if (!mHasRoundedCorners || width == 0 || height == 0) {
             return 0;
         }
-        if (radiusOverride > 0) {
-            roundedCornerRadius = radiusOverride;
-            return roundedCornerRadius;
+        if (mRadiusOverride > 0) {
+            mRoundedCornerRadius = mRadiusOverride;
+            return mRoundedCornerRadius;
         }
-        if (width == lastWidth && height == lastHeight) {
-            return roundedCornerRadius;
+        if (width == mLastWidth && height == mLastHeight) {
+            return mRoundedCornerRadius;
         }
         int radius = makeRadius(width, height);
-        lastWidth = width;
-        lastHeight = height;
+        mLastWidth = width;
+        mLastHeight = height;
         return radius;
     }
 
     /** Calculates the corner radius, clipping to width or height when necessary. */
     private int makeRadius(int width, int height) {
         int radius;
-        RadiusOptionsCase radiusOptions = roundedCorners.getRadiusOptionsCase();
+        RadiusOptionsCase radiusOptions = mRoundedCorners.getRadiusOptionsCase();
 
         switch (radiusOptions) {
             case RADIUS_DP:
-                radius = (int) LayoutUtils.dpToPx(roundedCorners.getRadiusDp(), context);
+                radius = (int) LayoutUtils.dpToPx(mRoundedCorners.getRadiusDp(), mContext);
                 break;
             case RADIUS_PERCENTAGE_OF_HEIGHT:
-                radius = roundedCorners.getRadiusPercentageOfHeight() * height / 100;
+                radius = mRoundedCorners.getRadiusPercentageOfHeight() * height / 100;
                 break;
             case RADIUS_PERCENTAGE_OF_WIDTH:
-                radius = roundedCorners.getRadiusPercentageOfWidth() * width / 100;
+                radius = mRoundedCorners.getRadiusPercentageOfWidth() * width / 100;
                 break;
             default:
                 radius = 0;
         }
 
-        roundedCornerRadius =
-                RoundedCornerViewHelper.adjustRadiusIfTooBig(width, height, radius, roundedCorners);
-        return roundedCornerRadius;
+        mRoundedCornerRadius = RoundedCornerViewHelper.adjustRadiusIfTooBig(
+                width, height, radius, mRoundedCorners);
+        return mRoundedCornerRadius;
     }
 }

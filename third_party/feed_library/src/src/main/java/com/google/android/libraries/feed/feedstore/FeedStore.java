@@ -63,202 +63,203 @@ public class FeedStore
     private static final String TAG = "FeedStore";
 
     // Permanent reference to the persistent store (used for setting off cleanup)
-    private final PersistentFeedStore persistentStore;
-    private final MainThreadRunner mainThreadRunner;
+    private final PersistentFeedStore mPersistentStore;
+    private final MainThreadRunner mMainThreadRunner;
     // The current store
-    private ClearableStore delegate;
+    private ClearableStore mDelegate;
 
-    private final TaskQueue taskQueue;
+    private final TaskQueue mTaskQueue;
 
     // Needed for switching to ephemeral mode
-    private final FeedStoreHelper storeHelper = new FeedStoreHelper();
-    private final BasicLoggingApi basicLoggingApi;
-    private final Clock clock;
-    private final TimingUtils timingUtils;
-    private final ThreadUtils threadUtils;
+    private final FeedStoreHelper mStoreHelper = new FeedStoreHelper();
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final Clock mClock;
+    private final TimingUtils mTimingUtils;
+    private final ThreadUtils mThreadUtils;
 
-    private boolean isEphemeralMode;
+    private boolean mIsEphemeralMode;
 
-    protected final ContentStorageDirect contentStorage;
-    protected final JournalStorageDirect journalStorage;
+    protected final ContentStorageDirect mContentStorage;
+    protected final JournalStorageDirect mJournalStorage;
 
     public FeedStore(Configuration configuration, TimingUtils timingUtils,
             FeedExtensionRegistry extensionRegistry, ContentStorageDirect contentStorage,
             JournalStorageDirect journalStorage, ThreadUtils threadUtils, TaskQueue taskQueue,
             Clock clock, BasicLoggingApi basicLoggingApi, MainThreadRunner mainThreadRunner) {
-        this.taskQueue = taskQueue;
-        this.clock = clock;
-        this.timingUtils = timingUtils;
-        this.threadUtils = threadUtils;
-        this.basicLoggingApi = basicLoggingApi;
-        this.mainThreadRunner = mainThreadRunner;
-        this.contentStorage = contentStorage;
-        this.journalStorage = journalStorage;
+        this.mTaskQueue = taskQueue;
+        this.mClock = clock;
+        this.mTimingUtils = timingUtils;
+        this.mThreadUtils = threadUtils;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mMainThreadRunner = mainThreadRunner;
+        this.mContentStorage = contentStorage;
+        this.mJournalStorage = journalStorage;
 
-        this.persistentStore = new PersistentFeedStore(configuration, this.timingUtils,
-                extensionRegistry, contentStorage, journalStorage, this.taskQueue, threadUtils,
-                this.clock, this.storeHelper, basicLoggingApi, mainThreadRunner);
-        delegate = persistentStore;
+        this.mPersistentStore = new PersistentFeedStore(configuration, this.mTimingUtils,
+                extensionRegistry, contentStorage, journalStorage, this.mTaskQueue, threadUtils,
+                this.mClock, this.mStoreHelper, basicLoggingApi, mainThreadRunner);
+        mDelegate = mPersistentStore;
     }
 
     @Override
     public Result<List<PayloadWithId>> getPayloads(List<String> contentIds) {
-        return delegate.getPayloads(contentIds);
+        return mDelegate.getPayloads(contentIds);
     }
 
     @Override
     public Result<List<StreamSharedState>> getSharedStates() {
-        return delegate.getSharedStates();
+        return mDelegate.getSharedStates();
     }
 
     @Override
     public Result<List<StreamStructure>> getStreamStructures(String sessionId) {
-        return delegate.getStreamStructures(sessionId);
+        return mDelegate.getStreamStructures(sessionId);
     }
 
     @Override
     public Result<List<String>> getAllSessions() {
-        return delegate.getAllSessions();
+        return mDelegate.getAllSessions();
     }
 
     @Override
     public Result<List<SemanticPropertiesWithId>> getSemanticProperties(List<String> contentIds) {
-        return delegate.getSemanticProperties(contentIds);
+        return mDelegate.getSemanticProperties(contentIds);
     }
 
     @Override
     public Result<List<StreamLocalAction>> getAllDismissLocalActions() {
-        return delegate.getAllDismissLocalActions();
+        return mDelegate.getAllDismissLocalActions();
     }
 
     @Override
     public Result<Set<StreamUploadableAction>> getAllUploadableActions() {
-        return delegate.getAllUploadableActions();
+        return mDelegate.getAllUploadableActions();
     }
 
     @Override
     public Result<String> createNewSession() {
-        return delegate.createNewSession();
+        return mDelegate.createNewSession();
     }
 
     @Override
     public void removeSession(String sessionId) {
-        delegate.removeSession(sessionId);
+        mDelegate.removeSession(sessionId);
     }
 
     @Override
     public void clearHead() {
-        delegate.clearHead();
+        mDelegate.clearHead();
     }
 
     @Override
     public ContentMutation editContent() {
-        return delegate.editContent();
+        return mDelegate.editContent();
     }
 
     @Override
     public SessionMutation editSession(String sessionId) {
-        return delegate.editSession(sessionId);
+        return mDelegate.editSession(sessionId);
     }
 
     @Override
     public SemanticPropertiesMutation editSemanticProperties() {
-        return delegate.editSemanticProperties();
+        return mDelegate.editSemanticProperties();
     }
 
     @Override
     public LocalActionMutation editLocalActions() {
-        return delegate.editLocalActions();
+        return mDelegate.editLocalActions();
     }
 
     @Override
     public UploadableActionMutation editUploadableActions() {
-        return delegate.editUploadableActions();
+        return mDelegate.editUploadableActions();
     }
 
     @Override
     public Runnable triggerContentGc(Set<String> reservedContentIds,
             Supplier<Set<String>> accessibleContent, boolean keepSharedStates) {
-        return delegate.triggerContentGc(reservedContentIds, accessibleContent, keepSharedStates);
+        return mDelegate.triggerContentGc(reservedContentIds, accessibleContent, keepSharedStates);
     }
 
     @Override
     public Runnable triggerLocalActionGc(
             List<StreamLocalAction> actions, List<String> validContentIds) {
-        return delegate.triggerLocalActionGc(actions, validContentIds);
+        return mDelegate.triggerLocalActionGc(actions, validContentIds);
     }
 
     @Override
     public boolean isEphemeralMode() {
-        return isEphemeralMode;
+        return mIsEphemeralMode;
     }
 
     @Override
     public void switchToEphemeralMode() {
         // This should be called on a background thread because it's called during error handling.
-        threadUtils.checkNotMainThread();
-        if (!isEphemeralMode) {
-            persistentStore.switchToEphemeralMode();
-            delegate = new EphemeralFeedStore(clock, timingUtils, storeHelper);
+        mThreadUtils.checkNotMainThread();
+        if (!mIsEphemeralMode) {
+            mPersistentStore.switchToEphemeralMode();
+            mDelegate = new EphemeralFeedStore(mClock, mTimingUtils, mStoreHelper);
 
-            taskQueue.execute(Task.CLEAR_PERSISTENT_STORE_TASK, TaskType.BACKGROUND, () -> {
-                ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+            mTaskQueue.execute(Task.CLEAR_PERSISTENT_STORE_TASK, TaskType.BACKGROUND, () -> {
+                ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
                 // Try to just wipe content + sessions
-                boolean clearSuccess = persistentStore.clearNonActionContent();
+                boolean clearSuccess = mPersistentStore.clearNonActionContent();
                 // If that fails, wipe everything.
                 if (!clearSuccess) {
-                    persistentStore.clearAll();
+                    mPersistentStore.clearAll();
                 }
                 tracker.stop("clearPersistentStore", "completed");
             });
 
-            isEphemeralMode = true;
-            synchronized (observers) {
-                for (StoreListener listener : observers) {
+            mIsEphemeralMode = true;
+            synchronized (mObservers) {
+                for (StoreListener listener : mObservers) {
                     listener.onSwitchToEphemeralMode();
                 }
             }
-            mainThreadRunner.execute("log ephemeral switch",
-                    () -> basicLoggingApi.onInternalError(InternalFeedError.SWITCH_TO_EPHEMERAL));
+            mMainThreadRunner.execute("log ephemeral switch",
+                    () -> mBasicLoggingApi.onInternalError(InternalFeedError.SWITCH_TO_EPHEMERAL));
         }
     }
 
     @Override
     public void reset() {
-        persistentStore.clearNonActionContent();
+        mPersistentStore.clearNonActionContent();
     }
 
     @Override
     public void onLifecycleEvent(@LifecycleEvent String event) {
-        if (LifecycleEvent.ENTER_BACKGROUND.equals(event) && isEphemeralMode) {
-            taskQueue.execute(
+        if (LifecycleEvent.ENTER_BACKGROUND.equals(event) && mIsEphemeralMode) {
+            mTaskQueue.execute(
                     Task.DUMP_EPHEMERAL_ACTIONS, TaskType.BACKGROUND, this::dumpEphemeralActions);
         }
     }
 
     private void dumpEphemeralActions() {
         // Get all action-related content (actions + semantic data)
-        Result<List<StreamLocalAction>> dismissActionsResult = delegate.getAllDismissLocalActions();
+        Result<List<StreamLocalAction>> dismissActionsResult =
+                mDelegate.getAllDismissLocalActions();
         if (!dismissActionsResult.isSuccessful()) {
             Logger.e(TAG, "Error retrieving actions when trying to dump ephemeral actions.");
             return;
         }
         List<StreamLocalAction> dismissActions = dismissActionsResult.getValue();
-        LocalActionMutation localActionMutation = persistentStore.editLocalActions();
+        LocalActionMutation localActionMutation = mPersistentStore.editLocalActions();
         List<String> dismissActionContentIds = new ArrayList<>(dismissActions.size());
         for (StreamLocalAction dismiss : dismissActions) {
             dismissActionContentIds.add(dismiss.getFeatureContentId());
             localActionMutation.add(dismiss.getAction(), dismiss.getFeatureContentId());
         }
         Result<List<SemanticPropertiesWithId>> semanticPropertiesResult =
-                delegate.getSemanticProperties(dismissActionContentIds);
+                mDelegate.getSemanticProperties(dismissActionContentIds);
         if (!semanticPropertiesResult.isSuccessful()) {
             Logger.e(TAG,
                     "Error retrieving semantic properties when trying to dump ephemeral actions.");
             return;
         }
         SemanticPropertiesMutation semanticPropertiesMutation =
-                persistentStore.editSemanticProperties();
+                mPersistentStore.editSemanticProperties();
         for (SemanticPropertiesWithId semanticProperties : semanticPropertiesResult.getValue()) {
             semanticPropertiesMutation.add(semanticProperties.contentId,
                     ByteString.copyFrom(semanticProperties.semanticData));

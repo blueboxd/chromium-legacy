@@ -23,6 +23,8 @@ component("layout") {
     "keyboard_layout_engine_manager.h",
     "no/no_keyboard_layout_engine.cc",
     "no/no_keyboard_layout_engine.h",
+    "scoped_keyboard_layout_engine.cc",
+    "scoped_keyboard_layout_engine.h",
     "stub/stub_keyboard_layout_engine.cc",
     "stub/stub_keyboard_layout_engine.h",
   ]

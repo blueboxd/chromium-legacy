@@ -196,38 +196,6 @@ TEST_F(MessageCenterUiControllerTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(ui_controller_->message_center_visible());
 }
 
-TEST_F(MessageCenterUiControllerTest,
-       MessageCenterReopenPopupsForSystemPriority) {
-  ASSERT_FALSE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          "MessageCenterReopnPopupsForSystemPriority",
-          ASCIIToUTF16("Test Web Notification"),
-          ASCIIToUTF16("Notification message body."), gfx::Image(),
-          ASCIIToUTF16("www.test.org"), GURL(), DummyNotifierId(),
-          message_center::RichNotificationData(), nullptr /* delegate */));
-  notification->SetSystemPriority();
-  message_center_->AddNotification(std::move(notification));
-
-  ASSERT_TRUE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-
-  bool shown =
-      ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
-  EXPECT_TRUE(shown);
-
-  ASSERT_FALSE(ui_controller_->popups_visible());
-  ASSERT_TRUE(ui_controller_->message_center_visible());
-
-  ui_controller_->HideMessageCenterBubble();
-
-  ASSERT_TRUE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-}
-
 TEST_F(MessageCenterUiControllerTest, ShowBubbleFails) {
   // Now the delegate will signal that it was unable to show a bubble.
   delegate_->show_popups_success_ = false;

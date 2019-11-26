@@ -449,6 +449,22 @@ class TabListMediator {
                     }
                     sTabClosedFromMapTabClosedFromMap.remove(tab.getId());
                 }
+                // TODO(yuezhanggg): clean up updateTab() calls in this class.
+                if (mActionsOnAllRelatedTabs) {
+                    TabModelFilter filter = mTabModelSelector.getTabModelFilterProvider()
+                                                    .getCurrentTabModelFilter();
+                    int index = filter.indexOf(tab);
+                    if (index == TabList.INVALID_TAB_INDEX
+                            || getRelatedTabsForId(tab.getId()).size() == 1) {
+                        return;
+                    }
+                    Tab currentGroupSelectedTab = filter.getTabAt(index);
+
+                    assert mModel.indexFromId(currentGroupSelectedTab.getId()) == index;
+
+                    updateTab(index, currentGroupSelectedTab,
+                            mModel.get(index).model.get(TabProperties.IS_SELECTED), false, false);
+                }
             }
 
             @Override

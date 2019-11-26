@@ -18,14 +18,14 @@ import com.google.search.now.ui.stream.StreamOfflineExtensionProto.OfflineExtens
 public class PietHostBindingProvider extends HostBindingProvider {
     private static final String TAG = "PietHostBindingProvider";
 
-    private final StreamOfflineMonitor offlineMonitor;
-    /*@Nullable*/ private final HostBindingProvider hostHostBindingProvider;
+    private final StreamOfflineMonitor mOfflineMonitor;
+    /*@Nullable*/ private final HostBindingProvider mHostBindingProvider;
 
     public PietHostBindingProvider(
             /*@Nullable*/ HostBindingProvider hostHostBindingProvider,
             StreamOfflineMonitor offlineMonitor) {
-        this.hostHostBindingProvider = hostHostBindingProvider;
-        this.offlineMonitor = offlineMonitor;
+        this.mHostBindingProvider = hostHostBindingProvider;
+        this.mOfflineMonitor = offlineMonitor;
     }
 
     @Override
@@ -36,8 +36,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getCustomElementDataBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getCustomElementDataBindingForValue(bindingValue);
         }
         return super.getCustomElementDataBindingForValue(bindingValue);
     }
@@ -50,8 +50,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getParameterizedTextBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getParameterizedTextBindingForValue(bindingValue);
         }
         return super.getParameterizedTextBindingForValue(bindingValue);
     }
@@ -64,8 +64,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getChunkedTextBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getChunkedTextBindingForValue(bindingValue);
         }
         return super.getChunkedTextBindingForValue(bindingValue);
     }
@@ -78,8 +78,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getImageBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getImageBindingForValue(bindingValue);
         }
         return super.getImageBindingForValue(bindingValue);
     }
@@ -92,8 +92,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getActionsBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getActionsBindingForValue(bindingValue);
         }
         return super.getActionsBindingForValue(bindingValue);
     }
@@ -106,8 +106,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getGridCellWidthBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getGridCellWidthBindingForValue(bindingValue);
         }
         return super.getGridCellWidthBindingForValue(bindingValue);
     }
@@ -120,8 +120,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getLogDataBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getLogDataBindingForValue(bindingValue);
         }
         return super.getLogDataBindingForValue(bindingValue);
     }
@@ -134,8 +134,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getTemplateBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getTemplateBindingForValue(bindingValue);
         }
         return super.getTemplateBindingForValue(bindingValue);
     }
@@ -148,8 +148,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getStyleBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getStyleBindingForValue(bindingValue);
         }
         return super.getStyleBindingForValue(bindingValue);
     }
@@ -162,8 +162,8 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return genericBindingResult;
         }
 
-        if (hostHostBindingProvider != null) {
-            return hostHostBindingProvider.getVisibilityBindingForValue(bindingValue);
+        if (mHostBindingProvider != null) {
+            return mHostBindingProvider.getVisibilityBindingForValue(bindingValue);
         }
 
         return super.getVisibilityBindingForValue(bindingValue);
@@ -195,7 +195,7 @@ public class PietHostBindingProvider extends HostBindingProvider {
             return null;
         }
 
-        return offlineMonitor.isAvailableOffline(offlineExtension.getUrl())
+        return mOfflineMonitor.isAvailableOffline(offlineExtension.getUrl())
                 ? offlineExtension.getOfflineBinding()
                 : offlineExtension.getNotOfflineBinding();
     }

@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace base {
 class FilePath;
@@ -63,6 +64,9 @@ void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status);
 // WebRequestInfo.
 api::declarative_net_request::RequestDetails CreateRequestDetails(
     const WebRequestInfo& request);
+
+// Creates default RE2::Options.
+re2::RE2::Options CreateRE2Options(bool is_case_sensitive);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

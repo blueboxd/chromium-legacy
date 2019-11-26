@@ -17,22 +17,22 @@ import java.util.List;
  * class is used to commit changes to a journal in {@link JournalStorage}.
  */
 public final class JournalMutation {
-    private final String journalName;
-    private final List<JournalOperation> operations;
+    private final String mJournalName;
+    private final List<JournalOperation> mOperations;
 
     private JournalMutation(String journalName, List<JournalOperation> operations) {
-        this.journalName = journalName;
-        this.operations = Collections.unmodifiableList(operations);
+        this.mJournalName = journalName;
+        this.mOperations = Collections.unmodifiableList(operations);
     }
 
     /** An unmodifiable list of operations to be committed by {@link JournalStorage}. */
     public List<JournalOperation> getOperations() {
-        return operations;
+        return mOperations;
     }
 
     /** The name of the journal this mutation should be applied to. */
     public String getJournalName() {
-        return journalName;
+        return mJournalName;
     }
 
     /**
@@ -40,11 +40,11 @@ public final class JournalMutation {
      * underlying {@link JournalStorage}.
      */
     public static final class Builder {
-        private final ArrayList<JournalOperation> operations = new ArrayList<>();
-        private final String journalName;
+        private final ArrayList<JournalOperation> mOperations = new ArrayList<>();
+        private final String mJournalName;
 
         public Builder(String journalName) {
-            this.journalName = journalName;
+            this.mJournalName = journalName;
         }
 
         /**
@@ -53,25 +53,25 @@ public final class JournalMutation {
          * <p>This method can be called repeatedly to append multiple times.
          */
         public Builder append(byte[] value) {
-            operations.add(new Append(value));
+            mOperations.add(new Append(value));
             return this;
         }
 
         /** Copies the journal to {@code toJournalName}. */
         public Builder copy(String toJournalName) {
-            operations.add(new Copy(toJournalName));
+            mOperations.add(new Copy(toJournalName));
             return this;
         }
 
         /** Deletes the journal. */
         public Builder delete() {
-            operations.add(new Delete());
+            mOperations.add(new Delete());
             return this;
         }
 
         /** Creates a {@link JournalMutation} based on the operations added in this builder. */
         public JournalMutation build() {
-            return new JournalMutation(journalName, new ArrayList<>(operations));
+            return new JournalMutation(mJournalName, new ArrayList<>(mOperations));
         }
     }
 }

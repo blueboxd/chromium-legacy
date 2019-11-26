@@ -10,8 +10,8 @@ import com.google.android.libraries.feed.testing.host.logging.FakeBasicLoggingAp
 
 /** A fake {@link TaskQueue} implementation. */
 public final class FakeTaskQueue extends TaskQueue {
-    private boolean resetWasCalled;
-    private boolean completeResetWasCalled;
+    private boolean mResetWasCalled;
+    private boolean mCompleteResetWasCalled;
 
     public FakeTaskQueue(FakeClock fakeClock, FakeThreadUtils fakeThreadUtils) {
         this(fakeClock, FakeDirectExecutor.runTasksImmediately(fakeThreadUtils));
@@ -25,41 +25,41 @@ public final class FakeTaskQueue extends TaskQueue {
     @Override
     public void reset() {
         super.reset();
-        resetWasCalled = true;
+        mResetWasCalled = true;
     }
 
     @Override
     public void completeReset() {
         super.completeReset();
-        completeResetWasCalled = true;
+        mCompleteResetWasCalled = true;
     }
 
     public void resetCounts() {
-        taskCount = 0;
-        immediateTaskCount = 0;
-        headInvalidateTaskCount = 0;
-        headResetTaskCount = 0;
-        userFacingTaskCount = 0;
-        backgroundTaskCount = 0;
+        mTaskCount = 0;
+        mImmediateTaskCount = 0;
+        mHeadInvalidateTaskCount = 0;
+        mHeadResetTaskCount = 0;
+        mUserFacingTaskCount = 0;
+        mBackgroundTaskCount = 0;
     }
 
     public int getBackgroundTaskCount() {
-        return backgroundTaskCount;
+        return mBackgroundTaskCount;
     }
 
     public int getImmediateTaskCount() {
-        return immediateTaskCount;
+        return mImmediateTaskCount;
     }
 
     public int getUserFacingTaskCount() {
-        return userFacingTaskCount;
+        return mUserFacingTaskCount;
     }
 
     public boolean resetWasCalled() {
-        return resetWasCalled;
+        return mResetWasCalled;
     }
 
     public boolean completeResetWasCalled() {
-        return completeResetWasCalled;
+        return mCompleteResetWasCalled;
     }
 }

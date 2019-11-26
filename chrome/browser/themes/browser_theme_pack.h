@@ -18,6 +18,7 @@
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
+#include "ui/color/color_buildflags.h"
 #include "ui/gfx/color_utils.h"
 
 namespace base {
@@ -31,8 +32,11 @@ class Image;
 }
 
 namespace ui {
-class ColorProvider;
 class DataPack;
+
+#if BUILDFLAG(USE_COLOR_PIPELINE)
+class ColorProvider;
+#endif
 }
 
 // An optimized representation of a theme, backed by a mmapped DataPack.
@@ -95,9 +99,11 @@ class BrowserThemePack : public CustomThemeSupplier {
       const override;
   bool HasCustomImage(int id) const override;
 
+#if BUILDFLAG(USE_COLOR_PIPELINE)
   // Builds the color mixers that represent the state of the current browser
   // theme instance.
   void AddCustomThemeColorMixers(ui::ColorProvider* provider) const;
+#endif
 
  private:
   friend class BrowserThemePackTest;

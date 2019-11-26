@@ -87,15 +87,14 @@ class CC_EXPORT ImageDecodeCache {
   virtual ~ImageDecodeCache() {}
 
   struct CC_EXPORT TaskResult {
-    explicit TaskResult(bool need_unref);
+    explicit TaskResult(bool need_unref, bool is_at_raster_decode);
     explicit TaskResult(scoped_refptr<TileTask> task);
     TaskResult(const TaskResult& result);
     ~TaskResult();
 
-    bool IsAtRaster() const { return !task && !need_unref; }
-
     scoped_refptr<TileTask> task;
     bool need_unref = false;
+    bool is_at_raster_decode = false;
   };
   // Fill in an TileTask which will decode the given image when run. In
   // case the image is already cached, fills in nullptr. Returns true if the

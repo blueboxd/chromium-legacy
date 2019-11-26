@@ -37,18 +37,18 @@ import java.util.List;
 public class StreamActionApiImpl implements StreamActionApi {
     private static final String TAG = "StreamActionApiImpl";
 
-    private final ActionApi actionApi;
-    private final ActionParser actionParser;
-    private final ActionManager actionManager;
-    private final BasicLoggingApi basicLoggingApi;
-    private final Supplier<ContentLoggingData> contentLoggingData;
-    private final ContextMenuManager contextMenuManager;
-    private final ClusterPendingDismissHelper clusterPendingDismissHelper;
-    private final ViewElementActionHandler viewElementActionHandler;
-    private final String contentId;
-    private final TooltipApi tooltipApi;
+    private final ActionApi mActionApi;
+    private final ActionParser mActionParser;
+    private final ActionManager mActionManager;
+    private final BasicLoggingApi mBasicLoggingApi;
+    private final Supplier<ContentLoggingData> mContentLoggingData;
+    private final ContextMenuManager mContextMenuManager;
+    private final ClusterPendingDismissHelper mClusterPendingDismissHelper;
+    private final ViewElementActionHandler mViewElementActionHandler;
+    private final String mContentId;
+    private final TooltipApi mTooltipApi;
 
-    /*@Nullable*/ private final String sessionId;
+    /*@Nullable*/ private final String mSessionId;
 
     public StreamActionApiImpl(ActionApi actionApi, ActionParser actionParser,
             ActionManager actionManager, BasicLoggingApi basicLoggingApi,
@@ -56,17 +56,17 @@ public class StreamActionApiImpl implements StreamActionApi {
             /*@Nullable*/ String sessionId, ClusterPendingDismissHelper clusterPendingDismissHelper,
             ViewElementActionHandler viewElementActionHandler, String contentId,
             TooltipApi tooltipApi) {
-        this.actionApi = actionApi;
-        this.actionParser = actionParser;
-        this.actionManager = actionManager;
-        this.basicLoggingApi = basicLoggingApi;
-        this.contentLoggingData = contentLoggingData;
-        this.contextMenuManager = contextMenuManager;
-        this.sessionId = sessionId;
-        this.clusterPendingDismissHelper = clusterPendingDismissHelper;
-        this.viewElementActionHandler = viewElementActionHandler;
-        this.contentId = contentId;
-        this.tooltipApi = tooltipApi;
+        this.mActionApi = actionApi;
+        this.mActionParser = actionParser;
+        this.mActionManager = actionManager;
+        this.mBasicLoggingApi = basicLoggingApi;
+        this.mContentLoggingData = contentLoggingData;
+        this.mContextMenuManager = contextMenuManager;
+        this.mSessionId = sessionId;
+        this.mClusterPendingDismissHelper = clusterPendingDismissHelper;
+        this.mViewElementActionHandler = viewElementActionHandler;
+        this.mContentId = contentId;
+        this.mTooltipApi = tooltipApi;
     }
 
     @Override
@@ -75,21 +75,21 @@ public class StreamActionApiImpl implements StreamActionApi {
         List<LabelledFeedActionData> enabledActions = new ArrayList<>();
         for (LabelledFeedActionData labelledFeedActionData :
                 openContextMenuData.getContextMenuDataList()) {
-            if (actionParser.canPerformAction(
+            if (mActionParser.canPerformAction(
                         labelledFeedActionData.getFeedActionPayload(), this)) {
                 actionLabels.add(labelledFeedActionData.getLabel());
                 enabledActions.add(labelledFeedActionData);
             }
         }
 
-        boolean menuOpened = contextMenuManager.openContextMenu(anchorView, actionLabels,
+        boolean menuOpened = mContextMenuManager.openContextMenu(anchorView, actionLabels,
                 (int position)
-                        -> actionParser.parseFeedActionPayload(
+                        -> mActionParser.parseFeedActionPayload(
                                 enabledActions.get(position).getFeedActionPayload(),
                                 StreamActionApiImpl.this, anchorView, ActionSource.CONTEXT_MENU));
 
         if (menuOpened) {
-            basicLoggingApi.onContentContextMenuOpened(contentLoggingData.get());
+            mBasicLoggingApi.onContentContextMenuOpened(mContentLoggingData.get());
         }
     }
 
@@ -113,22 +113,22 @@ public class StreamActionApiImpl implements StreamActionApi {
             UndoAction undoAction, ActionPayload payload, int interestType) {
         if (!undoAction.hasConfirmationLabel()) {
             dismiss(dataOperations);
-            basicLoggingApi.onNotInterestedIn(
-                    interestType, contentLoggingData.get(), /* wasCommitted = */ true);
+            mBasicLoggingApi.onNotInterestedIn(
+                    interestType, mContentLoggingData.get(), /* wasCommitted = */ true);
         } else {
             dismissWithSnackbar(undoAction, new PendingDismissCallback() {
                 @Override
                 public void onDismissReverted() {
-                    basicLoggingApi.onNotInterestedIn(
-                            interestType, contentLoggingData.get(), /* wasCommitted = */ false);
+                    mBasicLoggingApi.onNotInterestedIn(
+                            interestType, mContentLoggingData.get(), /* wasCommitted = */ false);
                 }
 
                 @Override
                 public void onDismissCommitted() {
                     dismiss(dataOperations);
-                    actionManager.createAndUploadAction(contentId, payload);
-                    basicLoggingApi.onNotInterestedIn(
-                            interestType, contentLoggingData.get(), /* wasCommitted = */ true);
+                    mActionManager.createAndUploadAction(mContentId, payload);
+                    mBasicLoggingApi.onNotInterestedIn(
+                            interestType, mContentLoggingData.get(), /* wasCommitted = */ true);
                 }
             });
         }
@@ -139,128 +139,130 @@ public class StreamActionApiImpl implements StreamActionApi {
             UndoAction undoAction, ActionPayload payload) {
         if (!undoAction.hasConfirmationLabel()) {
             dismissLocal(contentId, dataOperations);
-            basicLoggingApi.onContentDismissed(contentLoggingData.get(), /* wasCommitted = */ true);
+            mBasicLoggingApi.onContentDismissed(
+                    mContentLoggingData.get(), /* wasCommitted = */ true);
         } else {
             dismissWithSnackbar(undoAction, new PendingDismissCallback() {
                 @Override
                 public void onDismissReverted() {
-                    basicLoggingApi.onContentDismissed(
-                            contentLoggingData.get(), /* wasCommitted = */ false);
+                    mBasicLoggingApi.onContentDismissed(
+                            mContentLoggingData.get(), /* wasCommitted = */ false);
                 }
 
                 @Override
                 public void onDismissCommitted() {
                     dismissLocal(contentId, dataOperations);
                     dismiss(dataOperations);
-                    actionManager.createAndUploadAction(contentId, payload);
-                    basicLoggingApi.onContentDismissed(
-                            contentLoggingData.get(), /* wasCommitted = */ true);
+                    mActionManager.createAndUploadAction(contentId, payload);
+                    mBasicLoggingApi.onContentDismissed(
+                            mContentLoggingData.get(), /* wasCommitted = */ true);
                 }
             });
         }
     }
 
     private void dismiss(List<StreamDataOperation> dataOperations) {
-        actionManager.dismiss(dataOperations, sessionId);
+        mActionManager.dismiss(dataOperations, mSessionId);
     }
 
     private void dismissLocal(String contentId, List<StreamDataOperation> dataOperations) {
-        actionManager.dismissLocal(Collections.singletonList(contentId), dataOperations, sessionId);
+        mActionManager.dismissLocal(
+                Collections.singletonList(contentId), dataOperations, mSessionId);
     }
 
     private void dismissWithSnackbar(
             UndoAction undoAction, PendingDismissCallback pendingDismissCallback) {
-        clusterPendingDismissHelper.triggerPendingDismissForCluster(
+        mClusterPendingDismissHelper.triggerPendingDismissForCluster(
                 undoAction, pendingDismissCallback);
     }
 
     @Override
     public void onClientAction(@ActionType int actionType) {
-        basicLoggingApi.onClientAction(contentLoggingData.get(), actionType);
+        mBasicLoggingApi.onClientAction(mContentLoggingData.get(), actionType);
     }
 
     @Override
     public void openUrl(String url) {
-        actionApi.openUrl(url);
+        mActionApi.openUrl(url);
     }
 
     @Override
     public void openUrl(String url, String consistencyTokenQueryParamName) {
-        actionManager.uploadAllActionsAndUpdateUrl(
-                url, consistencyTokenQueryParamName, result -> { actionApi.openUrl(result); });
+        mActionManager.uploadAllActionsAndUpdateUrl(
+                url, consistencyTokenQueryParamName, result -> { mActionApi.openUrl(result); });
     }
 
     @Override
     public boolean canOpenUrl() {
-        return actionApi.canOpenUrl();
+        return mActionApi.canOpenUrl();
     }
 
     @Override
     public void openUrlInIncognitoMode(String url) {
-        actionApi.openUrlInIncognitoMode(url);
+        mActionApi.openUrlInIncognitoMode(url);
     }
 
     @Override
     public void openUrlInIncognitoMode(String url, String consistencyTokenQueryParamName) {
-        actionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
-                result -> { actionApi.openUrlInIncognitoMode(result); });
+        mActionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
+                result -> { mActionApi.openUrlInIncognitoMode(result); });
     }
 
     @Override
     public boolean canOpenUrlInIncognitoMode() {
-        return actionApi.canOpenUrlInIncognitoMode();
+        return mActionApi.canOpenUrlInIncognitoMode();
     }
 
     @Override
     public void openUrlInNewTab(String url) {
-        actionApi.openUrlInNewTab(url);
+        mActionApi.openUrlInNewTab(url);
     }
 
     @Override
     public void openUrlInNewTab(String url, String consistencyTokenQueryParamName) {
-        actionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
-                result -> { actionApi.openUrlInNewTab(result); });
+        mActionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
+                result -> { mActionApi.openUrlInNewTab(result); });
     }
 
     @Override
     public boolean canOpenUrlInNewTab() {
-        return actionApi.canOpenUrlInNewTab();
+        return mActionApi.canOpenUrlInNewTab();
     }
 
     @Override
     public void openUrlInNewWindow(String url) {
-        actionApi.openUrlInNewWindow(url);
+        mActionApi.openUrlInNewWindow(url);
     }
 
     @Override
     public void openUrlInNewWindow(String url, String consistencyTokenQueryParamName) {
-        actionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
-                result -> { actionApi.openUrlInNewWindow(result); });
+        mActionManager.uploadAllActionsAndUpdateUrl(url, consistencyTokenQueryParamName,
+                result -> { mActionApi.openUrlInNewWindow(result); });
     }
 
     @Override
     public boolean canOpenUrlInNewWindow() {
-        return actionApi.canOpenUrlInNewWindow();
+        return mActionApi.canOpenUrlInNewWindow();
     }
 
     @Override
     public void downloadUrl(ContentMetadata contentMetadata) {
-        actionApi.downloadUrl(contentMetadata);
+        mActionApi.downloadUrl(contentMetadata);
     }
 
     @Override
     public boolean canDownloadUrl() {
-        return actionApi.canDownloadUrl();
+        return mActionApi.canDownloadUrl();
     }
 
     @Override
     public void learnMore() {
-        actionApi.learnMore();
+        mActionApi.learnMore();
     }
 
     @Override
     public boolean canLearnMore() {
-        return actionApi.canLearnMore();
+        return mActionApi.canLearnMore();
     }
 
     @Override
@@ -280,17 +282,17 @@ public class StreamActionApiImpl implements StreamActionApi {
 
     @Override
     public void onElementView(int elementType) {
-        viewElementActionHandler.onElementView(elementType);
+        mViewElementActionHandler.onElementView(elementType);
     }
 
     @Override
     public void onElementHide(int elementType) {
-        viewElementActionHandler.onElementHide(elementType);
+        mViewElementActionHandler.onElementHide(elementType);
     }
 
     @Override
     public void onElementClick(int elementType) {
-        basicLoggingApi.onVisualElementClicked(contentLoggingData.get(), elementType);
+        mBasicLoggingApi.onVisualElementClicked(mContentLoggingData.get(), elementType);
     }
 
     @Override
@@ -300,7 +302,7 @@ public class StreamActionApiImpl implements StreamActionApi {
 
     @Override
     public void maybeShowTooltip(TooltipInfo tooltipInfo, View view) {
-        tooltipApi.maybeShowHelpUi(tooltipInfo, view, new TooltipCallbackApi() {
+        mTooltipApi.maybeShowHelpUi(tooltipInfo, view, new TooltipCallbackApi() {
             @Override
             public void onShow() {
                 onElementView(ElementType.TOOLTIP.getNumber());

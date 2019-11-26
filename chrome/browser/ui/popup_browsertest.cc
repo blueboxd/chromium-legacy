@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
@@ -31,8 +32,8 @@ class PopupBrowserTest : public InProcessBrowserTest,
         switches::kDisablePopupBlocking);
     const bool enable_window_placement = GetParam();
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        enable_window_placement ? "enable-blink-features"
-                                : "disable-blink-features",
+        enable_window_placement ? switches::kEnableBlinkFeatures
+                                : switches::kDisableBlinkFeatures,
         "WindowPlacement");
   }
 

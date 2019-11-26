@@ -771,27 +771,49 @@ void Animation::setStartTime(double start_time_ms,
   NotifyProbe();
 }
 
+// https://drafts.csswg.org/web-animations-1/#setting-the-associated-effect
 void Animation::setEffect(AnimationEffect* new_effect) {
-  if (content_ == new_effect)
-    return;
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
-                                    kSetCompositorPendingWithEffectChanged);
+  // 1. Let old effect be the current associated effect of animation, if any.
+  AnimationEffect* old_effect = content_;
 
-  base::Optional<double> stored_current_time = CurrentTimeInternal();
-  if (content_)
-    content_->Detach();
+  // 2. If new effect is the same object as old effect, abort this procedure.
+  if (new_effect == old_effect)
+    return;
+
+  // 3. If animation has a pending pause task, reschedule that task to run as
+  //    soon as animation is ready.
+  // 4. If animation has a pending play task, reschedule that task to run as
+  //    soon as animation is ready to play new effect.
+  // No special action required for a reschedule. The pending_pause_ and
+  // pending_play_ flags remain unchanged.
+
+  // 5. If new effect is not null and if new effect is the associated effect of
+  //    another previous animation, run the procedure to set the associated
+  //    effect of an animation (this procedure) on previous animation passing
+  //    null as new effect.
+  if (new_effect && new_effect->GetAnimation())
+    new_effect->GetAnimation()->setEffect(nullptr);
+
+  // 6. Let the associated effect of the animation be the new effect.
+  if (old_effect)
+    old_effect->Detach();
   content_ = new_effect;
-  if (new_effect) {
-    // FIXME: This logic needs to be updated once groups are implemented
-    if (new_effect->GetAnimation()) {
-      new_effect->GetAnimation()->cancel();
-      new_effect->GetAnimation()->setEffect(nullptr);
-    }
+  if (new_effect)
     new_effect->Attach(this);
-    SetOutdated();
-  }
-  if (stored_current_time)
-    SetCurrentTimeInternal(stored_current_time.value(), kTimingUpdateOnDemand);
+  SetOutdated();
+
+  // 7. Run the procedure to update an animation’s finished state for animation
+  //    with the did seek flag set to false (continuous), and the synchronously
+  //    notify flag set to false (async).
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+
+  SetCompositorPending(/*effect_change=*/true);
+
+  // TODO(crbug.com/960944): Deprecate use of these flags.
+  internal_play_state_ = CalculateExtendedPlayState();
+
+  // Notify of a potential state change.
+  NotifyProbe();
 }
 
 const char* Animation::PlayStateString(AnimationPlayState play_state) {
@@ -1245,42 +1267,37 @@ void Animation::AsyncFinishMicrotask() {
   // Resolve the finished promise and queue the finished event only if the
   // animation is still in a pending finished state. It is possible that the
   // transition was only temporary.
-  if (pending_finish_notification_)
+  if (pending_finish_notification_) {
+    // A pending play or pause must resolve before the finish promise.
+    if (pending() && timeline_)
+      NotifyReady(timeline_->CurrentTimeSeconds().value_or(0));
     CommitFinishNotification();
+  }
 
   // This is a once callback and needs to be re-armed.
   has_queued_microtask_ = false;
 }
 
+// Refer to 'finished notification steps' in
+// https://drafts.csswg.org/web-animations-1/#updating-the-finished-state
 void Animation::CommitFinishNotification() {
   pending_finish_notification_ = false;
-  // Play state could have changed since the task was initially scheduled.
+
+  // 1. If animation’s play state is not equal to finished, abort these steps.
   if (CalculateAnimationPlayState() != kFinished)
     return;
 
-  if (pending() && ready_promise_ &&
-      ready_promise_->GetState() == AnimationPromise::kPending) {
-    ResolvePromiseMaybeAsync(ready_promise_.Get());
-  }
-
-  pending_play_ = false;
-  pending_pause_ = false;
-
-  // TODO(crbug.com/960944) Deprecate following flags.
-  current_time_pending_ = false;
-  internal_play_state_ = kFinished;
-
-  // If start_time_ is not set, then CalculateAnimationPlayState will return
-  // pending rather than finished.  Force synchronous resolution of the start
-  // time.
-  if (!start_time_ && hold_time_ && timeline_ && timeline_->IsActive())
-    start_time_ = CalculateStartTime(hold_time_.value());
-
+  // 2. Resolve animation’s current finished promise object with animation.
   if (finished_promise_ &&
       finished_promise_->GetState() == AnimationPromise::kPending) {
     ResolvePromiseMaybeAsync(finished_promise_.Get());
   }
+
+  // 3. Create an AnimationPlaybackEvent, finishEvent.
   QueueFinishedEvent();
+
+  // TODO(crbug.com/960944) Deprecate following flags.
+  internal_play_state_ = kFinished;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation

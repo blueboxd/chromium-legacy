@@ -2713,6 +2713,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]
@@ -3827,7 +3830,6 @@ crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inlin
 crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inline-010.html [ Failure ]
 
 # Sheriff 2019-08-19:
-crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 [ Debug ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]

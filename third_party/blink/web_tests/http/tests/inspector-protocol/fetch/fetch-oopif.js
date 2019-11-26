@@ -32,7 +32,7 @@
     subframeFetcher.setLogPrefix("[subframe] ");
     await subframeFetcher.enable();
     subframeFetcher.onRequest().continueRequest({});
-    dp1.Runtime.runIfWaitingForDebugger();
+    await dp1.Runtime.runIfWaitingForDebugger();
   });
 
   await session.evaluateAsync(`addFrame('http://devtools.oopif-a.test:8000/inspector-protocol/fetch/resources/frame-with-subresource.html')`);

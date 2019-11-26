@@ -90,11 +90,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
 
-    // It's safe to use base::Unretained since the NavigationHandle is owned by
+    // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->WillStartRequest(
+    request_->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
+
+    request_->WillStartRequest();
   }
 
   // Helper function to call WillRedirectRequest on |handle|. If this function
@@ -106,12 +108,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
 
-    // It's safe to use base::Unretained since the NavigationHandle is owned by
+    // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->WillRedirectRequest(
-        GURL(), nullptr,
+    request_->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
+
+    request_->WillRedirectRequest(GURL(), nullptr);
   }
 
   // Helper function to call WillFailRequest on |handle|. If this function
@@ -124,11 +127,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     callback_result_ = NavigationThrottle::DEFER;
     request_->set_net_error(net_error_code);
 
-    // It's safe to use base::Unretained since the NavigationHandle is owned by
+    // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->WillFailRequest(
+    request_->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
+
+    request_->WillFailRequest();
   }
 
   // Whether the callback was called.
@@ -199,10 +204,11 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   // The callback provided to NavigationRequest::WillStartRequest,
   // NavigationRequest::WillRedirectRequest, and
   // NavigationRequest::WillFailRequest during the tests.
-  void UpdateThrottleCheckResult(
+  bool UpdateThrottleCheckResult(
       NavigationThrottle::ThrottleCheckResult result) {
     callback_result_ = result;
     was_callback_called_ = true;
+    return true;
   }
 
   std::unique_ptr<NavigationRequest> request_;

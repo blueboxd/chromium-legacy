@@ -332,14 +332,14 @@ final class FakeUrlRequest extends UrlRequestBase {
         transitionStates(State.STARTED, State.REDIRECT_RECEIVED);
         if (mUrlResponseInfo.getAllHeaders().get("location") == null) {
             // Response did not have a location header, so this request must fail.
+            final String prevUrl = mCurrentUrl;
             mUserExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     tryToFailWithException(new CronetExceptionImpl(
                             "Request failed due to bad redirect HTTP headers",
-                            new IllegalStateException("Response recieved from URL: " + mCurrentUrl
-                                    + " was a "
-                                    + "redirect, but lacked a location header.")));
+                            new IllegalStateException("Response recieved from URL: " + prevUrl
+                                    + " was a redirect, but lacked a location header.")));
                 }
             });
             return;

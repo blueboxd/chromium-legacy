@@ -140,6 +140,11 @@ class TouchToFillView implements BottomSheetContent {
     }
 
     @Override
+    public boolean skipHalfStateOnScrollingDown() {
+        return false;
+    }
+
+    @Override
     public int getPeekHeight() {
         return BottomSheetContent.HeightMode.DISABLED;
     }

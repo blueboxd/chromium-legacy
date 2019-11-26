@@ -49,6 +49,7 @@ void AppCacheUpdateJob::URLFetcher::Start() {
   } else if (existing_response_headers_.get()) {
     AddConditionalHeaders(existing_response_headers_.get());
   }
+  request_->SetFetchMetadataHeaders();
   request_->Start();
 }
 

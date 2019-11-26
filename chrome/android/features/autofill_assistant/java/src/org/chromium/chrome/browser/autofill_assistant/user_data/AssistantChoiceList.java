@@ -25,6 +25,7 @@ import androidx.annotation.DrawableRes;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.ArrayList;
@@ -403,7 +404,8 @@ public class AssistantChoiceList extends GridLayout {
         int editButtonSize = getContext().getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_choicelist_edit_button_size);
         ChromeImageView editButton = new ChromeImageView(getContext());
-        editButton.setImageResource(editButtonDrawable);
+        editButton.setImageDrawable(TintedDrawable.constructTintedDrawable(
+                getContext(), editButtonDrawable, R.color.default_icon_color));
         editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editButton.setLayoutParams(new ViewGroup.LayoutParams(editButtonSize, editButtonSize));
 

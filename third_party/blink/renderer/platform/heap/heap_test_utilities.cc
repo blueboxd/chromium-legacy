@@ -69,6 +69,24 @@ void IncrementalMarkingTestDriver::FinishSteps(
   }
 }
 
+bool IncrementalMarkingTestDriver::SingleConcurrentStep(
+    BlinkGC::StackState stack_state) {
+  CHECK(thread_state_->IsIncrementalMarking());
+  if (thread_state_->GetGCState() ==
+      ThreadState::kIncrementalMarkingStepScheduled) {
+    thread_state_->IncrementalMarkingStep(stack_state, base::TimeDelta());
+    return true;
+  }
+  return false;
+}
+
+void IncrementalMarkingTestDriver::FinishConcurrentSteps(
+    BlinkGC::StackState stack_state) {
+  CHECK(thread_state_->IsIncrementalMarking());
+  while (SingleConcurrentStep(stack_state)) {
+  }
+}
+
 void IncrementalMarkingTestDriver::FinishGC(bool complete_sweep) {
   CHECK(thread_state_->IsIncrementalMarking());
   FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);

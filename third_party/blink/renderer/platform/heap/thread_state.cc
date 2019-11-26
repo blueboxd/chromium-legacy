@@ -1209,7 +1209,12 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
     Heap().FlushNotFullyConstructedObjects();
   }
 
-  bool complete = MarkPhaseAdvanceMarking(base::TimeTicks::Now() + duration);
+  bool complete = true;
+  // If duration is 0, should skip incremental marking.
+  if (!duration.is_zero()) {
+    complete =
+        complete && MarkPhaseAdvanceMarking(base::TimeTicks::Now() + duration);
+  }
 
   if (base::FeatureList::IsEnabled(
           blink::features::kBlinkHeapConcurrentMarking)) {

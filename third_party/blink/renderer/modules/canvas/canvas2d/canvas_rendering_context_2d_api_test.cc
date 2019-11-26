@@ -233,7 +233,7 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageData) {
   EXPECT_EQ(100, image_data->width());
   EXPECT_EQ(50, image_data->height());
 
-  for (unsigned i = 0; i < image_data->data()->length(); ++i)
+  for (size_t i = 0; i < image_data->data()->lengthAsSizeT(); ++i)
     image_data->data()->Data()[i] = 255;
 
   EXPECT_EQ(255, image_data->data()->Data()[32]);
@@ -260,10 +260,10 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageData) {
   ImageData* imgdata4 = Context2D()->createImageData(-10, -20, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ((unsigned)800, imgdata1->data()->length());
-  EXPECT_EQ((unsigned)800, imgdata2->data()->length());
-  EXPECT_EQ((unsigned)800, imgdata3->data()->length());
-  EXPECT_EQ((unsigned)800, imgdata4->data()->length());
+  EXPECT_EQ(800u, imgdata1->data()->lengthAsSizeT());
+  EXPECT_EQ(800u, imgdata2->data()->lengthAsSizeT());
+  EXPECT_EQ(800u, imgdata3->data()->lengthAsSizeT());
+  EXPECT_EQ(800u, imgdata4->data()->lengthAsSizeT());
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, CreateImageDataTooBig) {

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -260,7 +261,7 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
 
   const std::string notification_id = kProfileSigninNotificationId +
                                       profile_->GetProfileUserName() +
-                                      std::to_string(message_id);
+                                      base::NumberToString(message_id);
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);

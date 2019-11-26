@@ -394,7 +394,7 @@ class CONTENT_EXPORT NavigationRequest
   // Simulates renderer aborting navigation.
   void RendererAbortedNavigationForTesting();
 
-  typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
+  typedef base::OnceCallback<bool(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
   NavigationThrottle* GetDeferringThrottleForTesting() const {
@@ -697,14 +697,10 @@ class CONTENT_EXPORT NavigationRequest
 
   // TODO(zetamoo): Remove the Will* methods and fold them into their callers.
 
-  // Called when the URLRequest will start in the network stack. |callback| will
-  // be called when all throttle checks have completed. This will allow the
-  // caller to cancel the navigation or let it proceed.
-  void WillStartRequest(ThrottleChecksFinishedCallback callback);
+  // Called when the URLRequest will start in the network stack.
+  void WillStartRequest();
 
   // Called when the URLRequest will be redirected in the network stack.
-  // |callback| will be called when all throttles check have completed. This
-  // will allow the caller to cancel the navigation or let it proceed.
   // This will also inform the delegate that the request was redirected.
   //
   // |post_redirect_process| is the renderer process we expect to use to commit
@@ -712,14 +708,10 @@ class CONTENT_EXPORT NavigationRequest
   // no live process that can be used. In that case, a suitable renderer process
   // will be created at commit time.
   void WillRedirectRequest(const GURL& new_referrer_url,
-                           RenderProcessHost* post_redirect_process,
-                           ThrottleChecksFinishedCallback callback);
+                           RenderProcessHost* post_redirect_process);
 
-  // Called when the URLRequest will fail. |callback| will be called when all
-  // throttles check have completed. This will allow the caller to explicitly
-  // cancel the navigation (with a custom error code and/or custom error page
-  // HTML) or let the failure proceed as normal.
-  void WillFailRequest(ThrottleChecksFinishedCallback callback);
+  // Called when the URLRequest will fail.
+  void WillFailRequest();
 
   // Called when the URLRequest has delivered response headers and metadata.
   // |callback| will be called when all throttle checks have completed,
@@ -727,7 +719,7 @@ class CONTENT_EXPORT NavigationRequest
   // NavigationHandle will not call |callback| with a result of DEFER.
   // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
   // just before calling |callback|.
-  void WillProcessResponse(ThrottleChecksFinishedCallback callback);
+  void WillProcessResponse();
 
   // Checks for attempts to navigate to a page that is already referenced more
   // than once in the frame's ancestors.  This is a helper function used by
@@ -748,8 +740,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.
-  void UpdateStateFollowingRedirect(const GURL& new_referrer_url,
-                                    ThrottleChecksFinishedCallback callback);
+  void UpdateStateFollowingRedirect(const GURL& new_referrer_url);
 
   // NeedsUrlLoader() returns true if the navigation needs to use the
   // NavigationURLLoader for loading the document.
@@ -786,11 +777,6 @@ class CONTENT_EXPORT NavigationRequest
   // RenderFrameHost. This can either be for the commit of a successful
   // navigation or an error page.
   bool IsWaitingToCommit();
-
-  // Helper function to run and reset the |complete_callback_|. This marks the
-  // end of a round of NavigationThrottleChecks.
-  // TODO(zetamoo): This can be removed once the navigation states are merged.
-  void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
   // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
   // long time.
@@ -1026,12 +1012,9 @@ class CONTENT_EXPORT NavigationRequest
   // with this html as content and |net_error| as the network error.
   std::string post_commit_error_page_html_;
 
-  // This callback will be run when all throttle checks have been performed.
-  // TODO(zetamoo): This can be removed once the navigation states are merged.
-  ThrottleChecksFinishedCallback complete_callback_;
-
   // This test-only callback will be run when all throttle checks have been
-  // performed.
+  // performed. If the callback returns true, On*ChecksComplete functions are
+  // skipped, and only the test callback is being performed.
   // TODO(clamy): Revisit the unit test architecture.
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
 

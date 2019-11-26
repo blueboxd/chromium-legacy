@@ -53,6 +53,13 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
+  bool AreDropTypesRequired() override;
+  bool CanDrop(const ui::OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // ExtensionsContainer:
   ToolbarActionViewController* GetActionForId(
@@ -71,6 +78,20 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
   void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+
+  // ToolbarActionView::Delegate:
+  content::WebContents* GetCurrentWebContents() override;
+  bool ShownInsideMenu() const override;
+  void OnToolbarActionViewDragDone() override;
+  views::LabelButton* GetOverflowReferenceView() const override;
+  gfx::Size GetToolbarActionSize() override;
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            ui::OSExchangeData* data) override;
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override;
 
   ToolbarActionView* GetViewForId(const std::string& id);
 
@@ -120,29 +141,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
   void OnToolbarPinnedActionsChanged() override;
-
-  // ToolbarActionView::Delegate:
-  content::WebContents* GetCurrentWebContents() override;
-  bool ShownInsideMenu() const override;
-  void OnToolbarActionViewDragDone() override;
-  views::LabelButton* GetOverflowReferenceView() const override;
-  gfx::Size GetToolbarActionSize() override;
-  void WriteDragDataForView(View* sender,
-                            const gfx::Point& press_pt,
-                            ui::OSExchangeData* data) override;
-  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
-  bool CanStartDragForView(View* sender,
-                           const gfx::Point& press_pt,
-                           const gfx::Point& p) override;
-
-  // views::View:
-  bool GetDropFormats(int* formats,
-                      std::set<ui::ClipboardFormatType>* format_types) override;
-  bool AreDropTypesRequired() override;
-  bool CanDrop(const ui::OSExchangeData& data) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;

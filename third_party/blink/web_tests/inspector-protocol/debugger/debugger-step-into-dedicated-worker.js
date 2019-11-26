@@ -2,7 +2,7 @@
   const {page, session, dp} = await testRunner.startBlank(
       `Tests that dedicated worker won't crash on attempt to step into. Bug 232392.`);
 
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
                            flatten: true});
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-step-into.js')}');

@@ -14,7 +14,7 @@
   const swdp = session.createChild(attachedToTarget.params.sessionId).protocol;
   await swdp.Network.enable();
 
-  swdp.Runtime.runIfWaitingForDebugger();
+  await swdp.Runtime.runIfWaitingForDebugger();
 
   const [
     requestWillBeSent,

@@ -523,6 +523,18 @@ public class BottomSheetController implements Destroyable {
     }
 
     /**
+     * WARNING: This destroys the internal sheet state. Only use in tests and only use once!
+     *
+     * To simulate scrolling, this method puts the sheet in a permanent scrolling state.
+     * @return The target state of the bottom sheet (to check thresholds).
+     */
+    @VisibleForTesting
+    @SheetState
+    int forceScrollingForTesting(float sheetHeight, float yVelocity) {
+        return mBottomSheet.forceScrollingStateForTesting(sheetHeight, yVelocity);
+    }
+
+    /**
      * Request that some content be shown in the bottom sheet.
      * @param content The content to be shown in the bottom sheet.
      * @param animate Whether the appearance of the bottom sheet should be animated.

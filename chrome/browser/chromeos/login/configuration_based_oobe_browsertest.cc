@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
@@ -35,41 +36,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-
-// TODO(crbug.com/997685): Flaky on linux.
-#if defined(OS_LINUX)
-#define MAYBE_TestSelectConnectedNetwork DISABLED_TestSelectConnectedNetwork
-#define MAYBE_TestSelectNetwork DISABLED_TestSelectNetwork
-#define MAYBE_TestDeviceRequisition DISABLED_TestDeviceRequisition
-#else
-#define MAYBE_TestSelectConnectedNetwork TestSelectConnectedNetwork
-#define MAYBE_TestSelectNetwork TestSelectNetwork
-#define MAYBE_TestDeviceRequisition TestDeviceRequisition
-#endif
-
-// Disabled due to flakiness: https://crbug.com/997685.
-#define MAYBE_TestDemoModeAcceptEula DISABLED_TestDemoModeAcceptEula
-#define MAYBE_TestDemoModeOfflineNetwork DISABLED_TestDemoModeOfflineNetwork
-// Disabled on debug build due to flakiness: https://crbug.com/997685.
-#if !defined(NDEBUG)
-#define MAYBE_TestAcceptEula DISABLED_TestAcceptEula
-#define MAYBE_TestDemoModeAcceptArcTos DISABLED_TestDemoModeAcceptArcTos
-#define MAYBE_TestDemoModePreferences DISABLED_TestDemoModePreferences
-#define MAYBE_TestEnableDemoMode DISABLED_TestEnableDemoMode
-#define MAYBE_TestLeaveWelcomeScreen DISABLED_TestLeaveWelcomeScreen
-#define MAYBE_TestSwitchLanguageIME DISABLED_TestSwitchLanguageIME
-#define MAYBE_TestLeaveWelcomeScreen DISABLED_TestLeaveWelcomeScreen
-#define MAYBE_TestSkipHIDDetection DISABLED_TestSkipHIDDetection
-#else
-#define MAYBE_TestAcceptEula TestAcceptEula
-#define MAYBE_TestDemoModeAcceptArcTos TestDemoModeAcceptArcTos
-#define MAYBE_TestDemoModePreferences TestDemoModePreferences
-#define MAYBE_TestEnableDemoMode TestEnableDemoMode
-#define MAYBE_TestLeaveWelcomeScreen TestLeaveWelcomeScreen
-#define MAYBE_TestSwitchLanguageIME TestSwitchLanguageIME
-#define MAYBE_TestLeaveWelcomeScreen TestLeaveWelcomeScreen
-#define MAYBE_TestSkipHIDDetection TestSkipHIDDetection
-#endif
 
 namespace chromeos {
 
@@ -166,6 +132,15 @@ class OobeConfigurationTest : public OobeBaseTest {
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
+  void TearDownOnMainThread() override {
+    base::RunLoop run_loop;
+    // Explicitly shut down all login UI before shutting down browser to avoid
+    // a case when OOBE configuration object is destroyed first.
+    LoginDisplayHost::default_host()->Finalize(run_loop.QuitClosure());
+    run_loop.Run();
+    OobeBaseTest::TearDownOnMainThread();
+  }
+
  protected:
   // Owned by DBusThreadManagerSetter
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
@@ -211,13 +186,13 @@ class OobeConfigurationEnrollmentTest : public OobeConfigurationTest {
 };
 
 // Check that configuration lets correctly pass Welcome screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestLeaveWelcomeScreen) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestLeaveWelcomeScreen) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 // Check that language and input methods are set correctly.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestSwitchLanguageIME) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSwitchLanguageIME) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 
@@ -239,21 +214,20 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestSwitchLanguageIME) {
 }
 
 // Check that configuration lets correctly start Demo mode setup.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestEnableDemoMode) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestEnableDemoMode) {
   LoadConfiguration();
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly pass through demo preferences.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDemoModePreferences) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModePreferences) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }
 
 // Check that configuration lets correctly use offline demo mode on network
 // screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest,
-                       MAYBE_TestDemoModeOfflineNetwork) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeOfflineNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
@@ -262,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest,
 
 // Check that configuration lets correctly use offline demo mode on EULA
 // screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDemoModeAcceptEula) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptEula) {
   LoadConfiguration();
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
@@ -271,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDemoModeAcceptEula) {
 
 // Check that configuration lets correctly use offline demo mode on ARC++ ToS
 // screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDemoModeAcceptArcTos) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptArcTos) {
   LoadConfiguration();
   OobeScreenWaiter(DemoPreferencesScreenView::kScreenId).Wait();
   SimulateOfflineEnvironment();
@@ -287,14 +261,13 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDemoModeAcceptArcTos) {
 }
 
 // Check that configuration lets correctly select a network by GUID.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestSelectNetwork) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
 
 // Check that configuration would proceed if there is a connected network.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest,
-                       MAYBE_TestSelectConnectedNetwork) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectConnectedNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
@@ -307,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestConnectedNetworkNoWelcome) {
 }
 
 // Check that when configuration has ONC and EULA, we get to update screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestAcceptEula) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestAcceptEula) {
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::DOWNLOADING);
   status.set_progress(0.1);
@@ -319,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestAcceptEula) {
 
 // Check that when configuration has requisition, it gets applied at the
 // beginning.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDeviceRequisition) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDeviceRequisition) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
   auto* policy_manager = g_browser_process->platform_part()
@@ -357,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestShowHID) {
 
 // Check that HID detection screen is really skipped and rest of configuration
 // is applied.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, MAYBE_TestSkipHIDDetection) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestSkipHIDDetection) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 }

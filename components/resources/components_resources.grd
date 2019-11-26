@@ -18,6 +18,7 @@
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
       <part file="offline_pages_resources.grdp" />
+      <part file="policy_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="safe_browsing_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />

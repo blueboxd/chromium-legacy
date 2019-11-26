@@ -287,15 +287,7 @@ class PLATFORM_EXPORT ThreadState final {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
-  // Returns true if concurrent marking is finished (i.e. all current threads
-  // terminated and the worklist is empty)
-  bool ConcurrentMarkingStep();
-  void ScheduleConcurrentMarking();
-  void PerformConcurrentMark();
-
   void CompleteSweep();
-  void NotifySweepDone();
-  void PostSweep();
 
   // Returns whether it is currently allowed to allocate an object. Mainly used
   // for sanity checks asserts.
@@ -493,14 +485,26 @@ class PLATFORM_EXPORT ThreadState final {
   // Incremental marking implementation functions.
   void IncrementalMarkingStartForTesting();
   void IncrementalMarkingStart(BlinkGC::GCReason);
+  // Incremental marking step advance marking on the mutator thread. This method
+  // also reschedules concurrent marking tasks if needed. The duration parameter
+  // applies only to incremental marking steps on the mutator thread.
   void IncrementalMarkingStep(
       BlinkGC::StackState,
       base::TimeDelta duration = kDefaultIncrementalMarkingStepDuration);
   void IncrementalMarkingFinalize();
 
+  // Returns true if concurrent marking is finished (i.e. all current threads
+  // terminated and the worklist is empty)
+  bool ConcurrentMarkingStep();
+  void ScheduleConcurrentMarking();
+  void PerformConcurrentMark();
+
   // Schedule helpers.
   void ScheduleIdleLazySweep();
   void ScheduleConcurrentAndLazySweep();
+
+  void NotifySweepDone();
+  void PostSweep();
 
   // See |DetachCurrentThread|.
   void RunTerminationGC();
@@ -607,6 +611,7 @@ class PLATFORM_EXPORT ThreadState final {
   template <typename T>
   friend class PreFinalizerRegistration;
   friend class TestGCScope;
+  friend class TestSupportingGC;
   friend class ThreadStateSchedulingTest;
   friend class UnifiedHeapController;
 

@@ -49,7 +49,7 @@ class BottomSheet extends FrameLayout
      * released. This is the value used when there are 3 active states. A smaller value here means
      * a smaller swipe is needed to move the sheet around.
      */
-    private static final float THRESHOLD_TO_NEXT_STATE_3 = 0.5f;
+    private static final float THRESHOLD_TO_NEXT_STATE_3 = 0.4f;
 
     /** This is similar to {@link #THRESHOLD_TO_NEXT_STATE_3} but for 2 states instead of 3. */
     private static final float THRESHOLD_TO_NEXT_STATE_2 = 0.3f;
@@ -113,6 +113,10 @@ class BottomSheet extends FrameLayout
     /** The target sheet state. This is the state that the sheet is currently moving to. */
     @SheetState
     private int mTargetState = SheetState.NONE;
+
+    /** While scrolling, this holds the state the scrolling started in. Otherwise, it's NONE. */
+    @SheetState
+    int mScrollingStartState = SheetState.NONE;
 
     /** A handle to the content being shown by the sheet. */
     @Nullable
@@ -398,6 +402,13 @@ class BottomSheet extends FrameLayout
      */
     private boolean swipeToDismissEnabled() {
         return mSheetContent != null ? mSheetContent.swipeToDismissEnabled() : true;
+    }
+
+    /**
+     * @return Whether the half state should be skipped when moving the sheet down.
+     */
+    private boolean shouldSkipHalfStateOnScrollingDown() {
+        return mSheetContent == null || mSheetContent.skipHalfStateOnScrollingDown();
     }
 
     /**
@@ -875,6 +886,10 @@ class BottomSheet extends FrameLayout
             return;
         }
 
+        // Remember which state precedes the scrolling.
+        mScrollingStartState = state == SheetState.SCROLLING
+                ? mCurrentState != SheetState.SCROLLING ? mCurrentState : SheetState.NONE
+                : SheetState.NONE; // Not scrolling anymore.
         mCurrentState = state;
 
         if (mCurrentState == SheetState.HALF || mCurrentState == SheetState.FULL) {
@@ -977,9 +992,8 @@ class BottomSheet extends FrameLayout
     /**
      * Gets the target state of the sheet based on the sheet's height and velocity.
      * @param sheetHeight The current height of the sheet.
-     * @param yVelocity The current Y velocity of the sheet. This is only used for determining the
-     *                  scroll or fling direction. If this value is positive, the movement is from
-     *                  bottom to top.
+     * @param yVelocity The current Y velocity of the sheet. If this value is positive, the movement
+     *                  is from bottom to top.
      * @return The target state of the bottom sheet.
      */
     @SheetState
@@ -988,40 +1002,109 @@ class BottomSheet extends FrameLayout
         if (sheetHeight >= getMaxOffsetPx()) return SheetState.FULL;
 
         boolean isMovingDownward = yVelocity < 0;
-        boolean shouldSkipHalfState = isMovingDownward || !isHalfStateEnabled();
 
-        // First, find the two states that the sheet height is between.
-        @SheetState
-        int nextState = getMinSwipableSheetState();
+        // If velocity shouldn't affect dismissing the sheet, reverse effect on the sheet height.
+        if (isMovingDownward && !swipeToDismissEnabled()) sheetHeight -= yVelocity;
 
+        // Find the two states that the sheet height is between.
         @SheetState
-        int prevState = nextState;
-        for (@SheetState int i = getMinSwipableSheetState(); i <= SheetState.FULL; i++) {
-            if (i == SheetState.HALF && shouldSkipHalfState) continue;
+        int prevState = mScrollingStartState;
+        @SheetState
+        int nextState = isMovingDownward ? getLargestCollapsingState(isMovingDownward, sheetHeight)
+                                         : getSmallestExpandingState(isMovingDownward, sheetHeight);
+
+        // Go into the next state only if the threshold for minimal change has been cleared.
+        return hasCrossedThresholdToNextState(prevState, nextState, sheetHeight, isMovingDownward)
+                ? nextState
+                : prevState;
+    }
+
+    /**
+     * Returns whether the sheet was scrolled far enough to transition into the next state.
+     * @param prev The state before the scrolling transition happened.
+     * @param next The state before the scrolling transitions into.
+     * @param sheetMovesDown True if the sheet moves down.
+     * @param sheetHeight The current sheet height in flux.
+     * @return True, iff the sheet was scrolled far enough to transition from |prev| to |next|.
+     */
+    private boolean hasCrossedThresholdToNextState(
+            @SheetState int prev, @SheetState int next, float sheetHeight, boolean sheetMovesDown) {
+        if (next == prev) return false;
+        float lowerBound = getSheetHeightForState(prev);
+        float distance = getSheetHeightForState(next) - lowerBound;
+        return Math.abs((sheetHeight - lowerBound) / distance)
+                > getThresholdToNextState(prev, next, sheetMovesDown);
+    }
+
+    /**
+     * The threshold to enter a state depends on whether a transition skips the half state. The more
+     * states to cross, the smaller the (percentual) threshold. A small threshold is used iff:
+     *   * It doesn't move into the HALF state,
+     *   * Skipping the HALF state is allowed, and
+     *   * The is large enough to skip the HALF state
+     * @param prev The state before the scrolling transition happened.
+     * @param next The state before the scrolling transitions into.
+     * @param sheetMovesDown True if the sheet is being moved down.
+     * @return a threshold (as percentage of the scroll distance covered).
+     */
+    private float getThresholdToNextState(
+            @SheetState int prev, @SheetState int next, boolean sheetMovesDown) {
+        if (next == SheetState.HALF) return THRESHOLD_TO_NEXT_STATE_3;
+        boolean crossesHalf = sheetMovesDown && prev > SheetState.HALF && next < SheetState.HALF
+                || !sheetMovesDown && prev < SheetState.HALF && next > SheetState.HALF;
+        if (!crossesHalf) return THRESHOLD_TO_NEXT_STATE_3;
+        if (!shouldSkipHalfStateOnScrollingDown()) return THRESHOLD_TO_NEXT_STATE_3;
+        return THRESHOLD_TO_NEXT_STATE_2;
+    }
+
+    /**
+     * Returns the largest, acceptable state whose height is smaller than the given sheet height.
+     * E.g. if a sheet is between FULL and HALF, collapsing states are PEEK and HALF. Although HALF
+     * is closer to the sheet's height, it might have to be skipped. Then, PEEK is returned instead.
+     * @param sheetMovesDown If the sheet moves down, some smaller states might be skipped.
+     * @param sheetHeight The current sheet height in flux.
+     * @return The largest, acceptable, collapsing state.
+     */
+    private @SheetState int getLargestCollapsingState(boolean sheetMovesDown, float sheetHeight) {
+        @SheetState
+        int largestCollapsingState = getMinSwipableSheetState();
+        boolean skipHalfState = !isHalfStateEnabled() || shouldSkipHalfStateOnScrollingDown();
+        for (@SheetState int i = largestCollapsingState + 1; i < SheetState.FULL; i++) {
             if (i == SheetState.PEEK && !isPeekStateEnabled()) continue;
-            prevState = nextState;
-            nextState = i;
-            // The values in PanelState are ascending, they should be kept that way in order for
-            // this to work.
-            if (sheetHeight >= getSheetHeightForState(prevState)
-                    && sheetHeight < getSheetHeightForState(nextState)) {
-                break;
+            if (i == SheetState.HALF && skipHalfState) continue;
+
+            if (sheetHeight > getSheetHeightForState(i)
+                    || sheetHeight == getSheetHeightForState(i) && !sheetMovesDown) {
+                largestCollapsingState = i;
+            }
+        }
+        return largestCollapsingState;
+    }
+
+    /**
+     * Returns the smallest, acceptable state whose height is larger than the given sheet height.
+     * E.g. if the sheet is between PEEK and HALF, expanding states are HALF and FULL. Although HALF
+     * is closer to the sheet's height, it might not be enabled. Then, FULL is returned instead.
+     * @param sheetMovesDown If the sheet moves down, some collapsing states might be skipped. This
+     *                       affects the smallest possible expanding state as well.
+     * @param sheetHeight The current sheet height in flux.
+     * @return The smallest, acceptable, expanding state.
+     */
+    private @SheetState int getSmallestExpandingState(boolean sheetMovesDown, float sheetHeight) {
+        @SheetState
+        int largestCollapsingState = getLargestCollapsingState(sheetMovesDown, sheetHeight);
+        @SheetState
+        int smallestExpandingState = SheetState.FULL;
+        for (@SheetState int i = smallestExpandingState - 1; i > largestCollapsingState + 1; i--) {
+            if (i == SheetState.HALF && !isHalfStateEnabled()) continue;
+            if (i == SheetState.PEEK && !isPeekStateEnabled()) continue;
+
+            if (sheetHeight <= getSheetHeightForState(i)) {
+                smallestExpandingState = i;
             }
         }
 
-        // If the desired height is close enough to a certain state, depending on the direction of
-        // the velocity, move to that state.
-        float lowerBound = getSheetHeightForState(prevState);
-        float distance = getSheetHeightForState(nextState) - lowerBound;
-
-        float threshold =
-                shouldSkipHalfState ? THRESHOLD_TO_NEXT_STATE_2 : THRESHOLD_TO_NEXT_STATE_3;
-        float thresholdToNextState = yVelocity < 0.0f ? 1 - threshold : threshold;
-
-        if ((sheetHeight - lowerBound) / distance > thresholdToNextState) {
-            return nextState;
-        }
-        return prevState;
+        return smallestExpandingState;
     }
 
     @VisibleForTesting
@@ -1123,5 +1206,21 @@ class BottomSheet extends FrameLayout
 
     private void invalidateContentDesiredHeight() {
         mContentDesiredHeight = HEIGHT_UNSPECIFIED;
+    }
+
+    /**
+     * WARNING: This destroys the state of the BottomSheet. Only use in tests and only use once.
+     * Puts the sheet into a scrolling state that can't be reached in tests otherwise.
+     *
+     * @param sheetHeightInPx The height in px that the sheet should be "scrolled" to.
+     * @param yUpwardsVelocity The sheet's upwards y velocity when reaching the scrolled height.
+     * @return The state the bottom sheet would target when the scrolling ends.
+     */
+    @VisibleForTesting
+    @SheetState
+    int forceScrollingStateForTesting(float sheetHeightInPx, float yUpwardsVelocity) {
+        mScrollingStartState = mCurrentState;
+        mCurrentState = SheetState.SCROLLING;
+        return getTargetSheetState(sheetHeightInPx, yUpwardsVelocity);
     }
 }

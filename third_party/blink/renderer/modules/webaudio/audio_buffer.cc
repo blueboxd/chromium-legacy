@@ -237,22 +237,23 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (buffer_offset >= channel_data->length()) {
+  if (buffer_offset >= channel_data->deprecatedLengthAsUnsigned()) {
     // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned int count = channel_data->length() - buffer_offset;
+  unsigned int count =
+      channel_data->deprecatedLengthAsUnsigned() - buffer_offset;
 
-  count = std::min(destination.View()->length(), count);
+  count = std::min(destination.View()->deprecatedLengthAsUnsigned(), count);
 
   const float* src = channel_data->Data();
   float* dst = destination.View()->Data();
 
   DCHECK(src);
   DCHECK(dst);
-  DCHECK_LE(count, channel_data->length());
-  DCHECK_LE(buffer_offset + count, channel_data->length());
+  DCHECK_LE(count, channel_data->deprecatedLengthAsUnsigned());
+  DCHECK_LE(buffer_offset + count, channel_data->deprecatedLengthAsUnsigned());
 
   memcpy(dst, src + buffer_offset, count * sizeof(*src));
 }
@@ -281,21 +282,22 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (buffer_offset >= channel_data->length()) {
+  if (buffer_offset >= channel_data->deprecatedLengthAsUnsigned()) {
     // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned int count = channel_data->length() - buffer_offset;
+  unsigned int count =
+      channel_data->deprecatedLengthAsUnsigned() - buffer_offset;
 
-  count = std::min(source.View()->length(), count);
+  count = std::min(source.View()->deprecatedLengthAsUnsigned(), count);
   const float* src = source.View()->Data();
   float* dst = channel_data->Data();
 
   DCHECK(src);
   DCHECK(dst);
-  DCHECK_LE(buffer_offset + count, channel_data->length());
-  DCHECK_LE(count, source.View()->length());
+  DCHECK_LE(buffer_offset + count, channel_data->deprecatedLengthAsUnsigned());
+  DCHECK_LE(count, source.View()->deprecatedLengthAsUnsigned());
 
   memcpy(dst + buffer_offset, src, count * sizeof(*dst));
 }

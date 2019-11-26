@@ -1230,12 +1230,7 @@ void NavigationRequest::BeginNavigation() {
       GetContentClient()->browser()->DetermineAllowedPreviews(
           common_params_->previews_state, this, common_params_->url);
 
-  // It's safe to use base::Unretained because this NavigationRequest owns
-  // the NavigationHandle where the callback will be stored.
-  // TODO(clamy): pass the method to the NavigationHandle instead of a
-  // boolean.
-  WillStartRequest(base::BindOnce(&NavigationRequest::OnStartChecksComplete,
-                                  base::Unretained(this)));
+  WillStartRequest();
 }
 
 void NavigationRequest::SetWaitingForRendererResponse() {
@@ -1428,10 +1423,7 @@ void NavigationRequest::OnRequestRedirected(
     // Update the navigation handle to point to the new url to ensure
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
-    UpdateStateFollowingRedirect(
-        GURL(redirect_info.new_referrer),
-        base::BindOnce(&NavigationRequest::OnRedirectChecksComplete,
-                       base::Unretained(this)));
+    UpdateStateFollowingRedirect(GURL(redirect_info.new_referrer));
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
@@ -1574,12 +1566,7 @@ void NavigationRequest::OnRequestRedirected(
   RenderProcessHost* expected_process =
       site_instance->HasProcess() ? site_instance->GetProcess() : nullptr;
 
-  // It's safe to use base::Unretained because this NavigationRequest owns the
-  // NavigationHandle where the callback will be stored.
-  WillRedirectRequest(
-      common_params_->referrer->url, expected_process,
-      base::BindOnce(&NavigationRequest::OnRedirectChecksComplete,
-                     base::Unretained(this)));
+  WillRedirectRequest(common_params_->referrer->url, expected_process);
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -1676,6 +1663,52 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
+  auto cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
+  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+    // Parse the Cross-Origin-Opener-Policy header.
+    {
+      std::string header_value;
+      if (response_head->head.headers &&
+          response_head->head.headers->GetNormalizedHeader(
+              "cross-origin-embedder-policy", &header_value) &&
+          header_value == "require-corp") {
+        cross_origin_embedder_policy =
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      }
+    }
+    // https://mikewest.github.io/corpp/#process-navigation-response.
+    if (GetParentFrame() &&
+        GetParentFrame()->cross_origin_embedder_policy() ==
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
+      // Some special URLs not loaded using the network are inheriting the
+      // Cross-Origin-Embedder-Policy header from their parent.
+      //
+      // TODO(ahemery): Find a way for navigation with no responses to
+      // inherit the COEP header. Example of such a URLs:
+      //  - about:blank
+      //  - about:srcdoc.
+      // Currently, it is possible for a main document with the COEP header to
+      // host an iframe without it by adding an about:srcdoc iframe in
+      // between.
+      if (common_params_->url.SchemeIsBlob() ||
+          common_params_->url.SchemeIs(url::kDataScheme)) {
+        cross_origin_embedder_policy =
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      }
+      if (cross_origin_embedder_policy ==
+          network::mojom::CrossOriginEmbedderPolicy::kNone) {
+        OnRequestFailedInternal(
+            network::URLLoaderCompletionStatus(net::ERR_FAILED),
+            false /* skip_throttles */, base::nullopt /* error_page_content */,
+            false /* collapse_frame */);
+        // DO NOT ADD CODE after this. The previous call to
+        // OnRequestFailedInternal has destroyed the NavigationRequest.
+        return;
+      }
+    }
+  }
+
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller =
@@ -1701,6 +1734,11 @@ void NavigationRequest::OnResponseStarted(
     render_frame_host_ = nullptr;
   }
   DCHECK(render_frame_host_ || !response_should_be_rendered_);
+
+  if (render_frame_host_) {
+    render_frame_host_->set_cross_origin_embedder_policy(
+        cross_origin_embedder_policy);
+  }
 
   if (!browser_initiated_ && render_frame_host_ &&
       render_frame_host_ != frame_tree_node_->current_frame_host()) {
@@ -1826,46 +1864,8 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
-  // https://mikewest.github.io/corpp/#process-navigation-response
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation) &&
-      render_frame_host_) {
-    auto cross_origin_embedder_policy =
-        network::mojom::CrossOriginEmbedderPolicy::kNone;
-    std::string header_value;
-    if (response_head->head.headers &&
-        response_head->head.headers->GetNormalizedHeader(
-            "cross-origin-embedder-policy", &header_value) &&
-        header_value == "require-corp") {
-      cross_origin_embedder_policy =
-          network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-    } else {
-      if (render_frame_host_->GetParent() &&
-          render_frame_host_->GetParent()->cross_origin_embedder_policy() ==
-              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
-        if (common_params_->url.SchemeIsBlob() ||
-            common_params_->url.SchemeIs("data")) {
-          cross_origin_embedder_policy =
-              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-        } else {
-          OnRequestFailedInternal(
-              network::URLLoaderCompletionStatus(net::ERR_FAILED),
-              false /* skip_throttles */,
-              base::nullopt /* error_page_content */,
-              false /* collapse_frame */);
-          // DO NOT ADD CODE after this. The previous call to
-          // OnRequestFailedInternal has destroyed the NavigationRequest.
-          return;
-        }
-      }
-    }
-    render_frame_host_->set_cross_origin_embedder_policy(
-        cross_origin_embedder_policy);
-  }
-
   // Check if the navigation should be allowed to proceed.
-  WillProcessResponse(
-      base::BindOnce(&NavigationRequest::OnWillProcessResponseChecksComplete,
-                     base::Unretained(this)));
+  WillProcessResponse();
 }
 
 void NavigationRequest::OnRequestFailed(
@@ -1974,8 +1974,7 @@ void NavigationRequest::OnRequestFailedInternal(
     CommitErrorPage(error_page_content);
   } else {
     // Check if the navigation should be allowed to proceed.
-    WillFailRequest(base::BindOnce(&NavigationRequest::OnFailureChecksComplete,
-                                   base::Unretained(this)));
+    WillFailRequest();
   }
 }
 
@@ -2949,9 +2948,14 @@ void NavigationRequest::OnWillStartRequestProcessed(
   if (result.action() != NavigationThrottle::PROCEED)
     state_ = CANCELING;
 
-  // TODO(zetamoo): Remove CompleteCallback, and call NavigationRequest methods
-  // directly.
-  RunCompleteCallback(result);
+  if (complete_callback_for_testing_ &&
+      std::move(complete_callback_for_testing_).Run(result)) {
+    return;
+  }
+  OnStartChecksComplete(result);
+
+  // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+  // deleted by the previous calls.
 }
 
 void NavigationRequest::OnWillRedirectRequestProcessed(
@@ -2967,7 +2971,15 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
   } else {
     state_ = CANCELING;
   }
-  RunCompleteCallback(result);
+
+  if (complete_callback_for_testing_ &&
+      std::move(complete_callback_for_testing_).Run(result)) {
+    return;
+  }
+  OnRedirectChecksComplete(result);
+
+  // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+  // deleted by the previous calls.
 }
 
 void NavigationRequest::OnWillFailRequestProcessed(
@@ -2982,7 +2994,15 @@ void NavigationRequest::OnWillFailRequestProcessed(
   } else {
     state_ = CANCELING;
   }
-  RunCompleteCallback(result);
+
+  if (complete_callback_for_testing_ &&
+      std::move(complete_callback_for_testing_).Run(result)) {
+    return;
+  }
+  OnFailureChecksComplete(result);
+
+  // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+  // deleted by the previous calls.
 }
 
 void NavigationRequest::OnWillProcessResponseProcessed(
@@ -3001,7 +3021,15 @@ void NavigationRequest::OnWillProcessResponseProcessed(
   } else {
     state_ = CANCELING;
   }
-  RunCompleteCallback(result);
+
+  if (complete_callback_for_testing_ &&
+      std::move(complete_callback_for_testing_).Run(result)) {
+    return;
+  }
+  OnWillProcessResponseChecksComplete(result);
+
+  // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+  // deleted by the previous calls.
 }
 
 NavigatorDelegate* NavigationRequest::GetDelegate() const {
@@ -3059,21 +3087,49 @@ void NavigationRequest::CancelDeferredNavigationInternal(
 
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "CancelDeferredNavigation");
+  NavigationState old_state = state_;
   state_ = CANCELING;
-  RunCompleteCallback(result);
+  if (complete_callback_for_testing_ &&
+      std::move(complete_callback_for_testing_).Run(result)) {
+    return;
+  }
+
+  switch (old_state) {
+    case WILL_START_REQUEST:
+      OnStartChecksComplete(result);
+      return;
+    case WILL_REDIRECT_REQUEST:
+      OnRedirectChecksComplete(result);
+      return;
+    case WILL_FAIL_REQUEST:
+      OnFailureChecksComplete(result);
+      return;
+    case WILL_PROCESS_RESPONSE:
+      OnWillProcessResponseChecksComplete(result);
+      return;
+    default:
+      NOTREACHED();
+  }
+  // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+  // deleted by the previous calls.
 }
 
-void NavigationRequest::WillStartRequest(
-    ThrottleChecksFinishedCallback callback) {
+void NavigationRequest::WillStartRequest() {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillStartRequest");
   DCHECK_EQ(state_, WILL_START_REQUEST);
 
-  complete_callback_ = std::move(callback);
-
   if (IsSelfReferentialURL()) {
     state_ = CANCELING;
-    RunCompleteCallback(NavigationThrottle::CANCEL);
+    if (complete_callback_for_testing_ &&
+        std::move(complete_callback_for_testing_)
+            .Run(NavigationThrottle::CANCEL)) {
+      return;
+    }
+    OnWillProcessResponseChecksComplete(NavigationThrottle::CANCEL);
+
+    // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+    // deleted by the previous calls.
     return;
   }
 
@@ -3096,17 +3152,24 @@ void NavigationRequest::WillStartRequest(
 
 void NavigationRequest::WillRedirectRequest(
     const GURL& new_referrer_url,
-    RenderProcessHost* post_redirect_process,
-    ThrottleChecksFinishedCallback callback) {
+    RenderProcessHost* post_redirect_process) {
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "WillRedirectRequest", "url",
                                common_params_->url.possibly_invalid_spec());
-  UpdateStateFollowingRedirect(new_referrer_url, std::move(callback));
+  UpdateStateFollowingRedirect(new_referrer_url);
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
     state_ = CANCELING;
-    RunCompleteCallback(NavigationThrottle::CANCEL);
+    if (complete_callback_for_testing_ &&
+        std::move(complete_callback_for_testing_)
+            .Run(NavigationThrottle::CANCEL)) {
+      return;
+    }
+    OnWillProcessResponseChecksComplete(NavigationThrottle::CANCEL);
+
+    // DO NOT ADD CODE AFTER THIS, as the NavigationRequest might have been
+    // deleted by the previous calls.
     return;
   }
 
@@ -3117,12 +3180,10 @@ void NavigationRequest::WillRedirectRequest(
   // by the previous call.
 }
 
-void NavigationRequest::WillFailRequest(
-    ThrottleChecksFinishedCallback callback) {
+void NavigationRequest::WillFailRequest() {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillFailRequest");
 
-  complete_callback_ = std::move(callback);
   state_ = WILL_FAIL_REQUEST;
   processing_navigation_throttle_ = true;
 
@@ -3133,13 +3194,11 @@ void NavigationRequest::WillFailRequest(
   // by the previous call.
 }
 
-void NavigationRequest::WillProcessResponse(
-    ThrottleChecksFinishedCallback callback) {
+void NavigationRequest::WillProcessResponse() {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillProcessResponse");
   DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
-  complete_callback_ = std::move(callback);
   processing_navigation_throttle_ = true;
 
   // Notify each throttle of the response.
@@ -3245,8 +3304,7 @@ GURL NavigationRequest::GetSiteForCommonParamsURL() const {
 
 // TODO(zetamoo): Try to merge this function inside its callers.
 void NavigationRequest::UpdateStateFollowingRedirect(
-    const GURL& new_referrer_url,
-    ThrottleChecksFinishedCallback callback) {
+    const GURL& new_referrer_url) {
   // The navigation should not redirect to a "renderer debug" url. It should be
   // blocked in NavigationRequest::OnRequestRedirected or in
   // ResourceLoader::OnReceivedRedirect.
@@ -3272,8 +3330,6 @@ void NavigationRequest::UpdateStateFollowingRedirect(
 #if defined(OS_ANDROID)
   navigation_handle_proxy_->DidRedirect();
 #endif
-
-  complete_callback_ = std::move(callback);
 }
 
 void NavigationRequest::SetNavigationClient(
@@ -3348,22 +3404,6 @@ NavigationRequest::TakeAppCacheHandle() {
 
 bool NavigationRequest::IsWaitingToCommit() {
   return state_ == READY_TO_COMMIT;
-}
-
-void NavigationRequest::RunCompleteCallback(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result.action() != NavigationThrottle::DEFER);
-
-  ThrottleChecksFinishedCallback callback = std::move(complete_callback_);
-
-  if (!complete_callback_for_testing_.is_null())
-    std::move(complete_callback_for_testing_).Run(result);
-
-  if (!callback.is_null())
-    std::move(callback).Run(result);
-
-  // No code after running the callback, as it might have resulted in our
-  // destruction.
 }
 
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {

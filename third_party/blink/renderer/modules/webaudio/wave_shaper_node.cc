@@ -106,10 +106,12 @@ void WaveShaperNode::setCurve(NotShared<DOMFloat32Array> curve,
                               ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (curve)
-    SetCurveImpl(curve.View()->Data(), curve.View()->length(), exception_state);
-  else
+  if (curve) {
+    SetCurveImpl(curve.View()->Data(),
+                 curve.View()->deprecatedLengthAsUnsigned(), exception_state);
+  } else {
     SetCurveImpl(nullptr, 0, exception_state);
+  }
 }
 
 void WaveShaperNode::setCurve(const Vector<float>& curve,

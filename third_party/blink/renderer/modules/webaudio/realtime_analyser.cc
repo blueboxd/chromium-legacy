@@ -183,8 +183,8 @@ void RealtimeAnalyser::DoFFTAnalysis() {
 
 void RealtimeAnalyser::ConvertFloatToDb(DOMFloat32Array* destination_array) {
   // Convert from linear magnitude to floating-point decibels.
-  unsigned source_length = MagnitudeBuffer().size();
-  size_t len = std::min(source_length, destination_array->length());
+  size_t source_length = MagnitudeBuffer().size();
+  size_t len = std::min(source_length, destination_array->lengthAsSizeT());
   if (len > 0) {
     const float* source = MagnitudeBuffer().Data();
     float* destination = destination_array->Data();
@@ -216,8 +216,8 @@ void RealtimeAnalyser::GetFloatFrequencyData(DOMFloat32Array* destination_array,
 
 void RealtimeAnalyser::ConvertToByteData(DOMUint8Array* destination_array) {
   // Convert from linear magnitude to unsigned-byte decibels.
-  unsigned source_length = MagnitudeBuffer().size();
-  size_t len = std::min(source_length, destination_array->length());
+  size_t source_length = MagnitudeBuffer().size();
+  size_t len = std::min(source_length, destination_array->lengthAsSizeT());
   if (len > 0) {
     const double range_scale_factor = max_decibels_ == min_decibels_
                                           ? 1
@@ -273,7 +273,8 @@ void RealtimeAnalyser::GetFloatTimeDomainData(
   DCHECK(destination_array);
 
   unsigned fft_size = this->FftSize();
-  size_t len = std::min(fft_size, destination_array->length());
+  size_t len =
+      std::min(fft_size, destination_array->deprecatedLengthAsUnsigned());
   if (len > 0) {
     DCHECK_EQ(input_buffer_.size(), kInputBufferSize);
     DCHECK_GT(input_buffer_.size(), fft_size);
@@ -299,7 +300,8 @@ void RealtimeAnalyser::GetByteTimeDomainData(DOMUint8Array* destination_array) {
   DCHECK(destination_array);
 
   unsigned fft_size = this->FftSize();
-  size_t len = std::min(fft_size, destination_array->length());
+  size_t len =
+      std::min(fft_size, destination_array->deprecatedLengthAsUnsigned());
   if (len > 0) {
     DCHECK_EQ(input_buffer_.size(), kInputBufferSize);
     DCHECK_GT(input_buffer_.size(), fft_size);

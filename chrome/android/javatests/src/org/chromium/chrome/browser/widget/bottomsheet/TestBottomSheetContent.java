@@ -44,6 +44,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** The full height of this content. */
     private float mFullHeight;
 
+    /** If set to true, the half state will be skipped when scrolling down the FULL sheet. */
+    private boolean mSkipHalfStateScrollingDown;
+
     /**
      * @param context A context to inflate views with.
      * @param priority The content's priority.
@@ -107,6 +110,15 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public boolean swipeToDismissEnabled() {
         return false;
+    }
+
+    public void setSkipHalfStateScrollingDown(boolean skiphalfStateScrollingDown) {
+        mSkipHalfStateScrollingDown = skiphalfStateScrollingDown;
+    }
+
+    @Override
+    public boolean skipHalfStateOnScrollingDown() {
+        return mSkipHalfStateScrollingDown;
     }
 
     public void setPeekHeight(int height) {

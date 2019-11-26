@@ -124,6 +124,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "../testing/run_all_tests.cc",
     "blink_gc_memory_dump_provider_test.cc",
     "cancelable_task_scheduler_test.cc",
+    "concurrent_marking_test.cc",
     "gc_info_test.cc",
     "heap_compact_test.cc",
     "heap_stats_collector_test.cc",

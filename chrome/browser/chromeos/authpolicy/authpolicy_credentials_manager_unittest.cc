@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -111,7 +112,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   void CancelNotificationById(int message_id) {
     const std::string notification_id = kProfileSigninNotificationId +
                                         profile()->GetProfileUserName() +
-                                        std::to_string(message_id);
+                                        base::NumberToString(message_id);
     EXPECT_TRUE(display_service_->GetNotification(notification_id));
     display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
                                          notification_id, false);

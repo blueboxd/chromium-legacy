@@ -31,15 +31,15 @@ ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-UDPSocket::UDPSocket(mojo::PendingRemote<network::mojom::UDPSocket> socket,
-                     network::mojom::UDPSocketListenerRequest listener_request,
-                     const std::string& owner_extension_id)
+UDPSocket::UDPSocket(
+    mojo::PendingRemote<network::mojom::UDPSocket> socket,
+    mojo::PendingReceiver<network::mojom::UDPSocketListener> listener_receiver,
+    const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       socket_(std::move(socket)),
       socket_options_(network::mojom::UDPSocketOptions::New()),
-      is_bound_(false),
-      listener_binding_(this) {
-  listener_binding_.Bind(std::move(listener_request));
+      is_bound_(false) {
+  listener_receiver_.Bind(std::move(listener_receiver));
 }
 
 UDPSocket::~UDPSocket() {
@@ -387,10 +387,10 @@ const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
 
 ResumableUDPSocket::ResumableUDPSocket(
     mojo::PendingRemote<network::mojom::UDPSocket> socket,
-    network::mojom::UDPSocketListenerRequest listener_request,
+    mojo::PendingReceiver<network::mojom::UDPSocketListener> listener_receiver,
     const std::string& owner_extension_id)
     : UDPSocket(std::move(socket),
-                std::move(listener_request),
+                std::move(listener_receiver),
                 owner_extension_id),
       persistent_(false),
       buffer_size_(0),

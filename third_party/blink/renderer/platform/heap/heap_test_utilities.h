@@ -156,6 +156,13 @@ class IncrementalMarkingTestDriver {
                        BlinkGC::StackState::kNoHeapPointersOnStack);
   void FinishGC(bool complete_sweep = true);
 
+  // Methods for forcing a concurrent marking step without any assistance from
+  // mutator thread (i.e. without incremental marking on the mutator thread).
+  bool SingleConcurrentStep(BlinkGC::StackState stack_state =
+                                BlinkGC::StackState::kNoHeapPointersOnStack);
+  void FinishConcurrentSteps(BlinkGC::StackState stack_state =
+                                 BlinkGC::StackState::kNoHeapPointersOnStack);
+
   size_t GetHeapCompactLastFixupCount() const;
 
  private:

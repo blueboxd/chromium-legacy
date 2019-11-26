@@ -214,7 +214,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Sets |last_throttle_check_result_| and calls both the
   // |wait_closure_| and the |throttle_checks_complete_closure_|, if they are
   // set.
-  void OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
+  bool OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   // Helper method to set the OnThrottleChecksComplete callback on the
   // NavigationRequest.

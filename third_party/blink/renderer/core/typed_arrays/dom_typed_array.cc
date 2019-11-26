@@ -36,10 +36,10 @@ v8::Local<v8::Object> DOMTypedArray<TypedArray, V8TypedArray>::Wrap(
   v8::Local<v8::Object> wrapper;
   if (IsShared()) {
     wrapper = V8TypedArray::New(v8_buffer.As<v8::SharedArrayBuffer>(),
-                                byteOffsetAsSizeT(), length());
+                                byteOffsetAsSizeT(), lengthAsSizeT());
   } else {
     wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(),
-                                byteOffsetAsSizeT(), length());
+                                byteOffsetAsSizeT(), lengthAsSizeT());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);

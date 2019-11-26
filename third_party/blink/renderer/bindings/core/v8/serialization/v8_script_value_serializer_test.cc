@@ -769,7 +769,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageData) {
   ImageData* new_image_data = V8ImageData::ToImpl(result.As<v8::Object>());
   EXPECT_NE(image_data, new_image_data);
   EXPECT_EQ(image_data->Size(), new_image_data->Size());
-  EXPECT_EQ(image_data->data()->length(), new_image_data->data()->length());
+  EXPECT_EQ(image_data->data()->lengthAsSizeT(),
+            new_image_data->data()->lengthAsSizeT());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
 
@@ -814,7 +815,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV9) {
   ASSERT_TRUE(V8ImageData::HasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(2, 1), new_image_data->Size());
-  EXPECT_EQ(8u, new_image_data->data()->length());
+  EXPECT_EQ(8u, new_image_data->data()->lengthAsSizeT());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
 
@@ -829,7 +830,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV16) {
   ASSERT_TRUE(V8ImageData::HasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(2, 1), new_image_data->Size());
-  EXPECT_EQ(8u, new_image_data->data()->length());
+  EXPECT_EQ(8u, new_image_data->data()->lengthAsSizeT());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
 

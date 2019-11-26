@@ -17,7 +17,7 @@ WGPUShaderModuleDescriptor AsDawnType(
 
   dawn_desc.nextInChain = nullptr;
   dawn_desc.code = webgpu_desc->code().View()->Data();
-  dawn_desc.codeSize = webgpu_desc->code().View()->length();
+  dawn_desc.codeSize = webgpu_desc->code().View()->deprecatedLengthAsUnsigned();
   if (webgpu_desc->hasLabel()) {
     dawn_desc.label = webgpu_desc->label().Utf8().data();
   }

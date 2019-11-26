@@ -1,7 +1,7 @@
 (async function(testRunner) {
   const {page, session, dp} = await testRunner.startBlank('Tests that setTimeout callback will not fire while script execution is paused. Bug 377926.');
 
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
                            flatten: true});
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-suspend-setTimeout.js')}');

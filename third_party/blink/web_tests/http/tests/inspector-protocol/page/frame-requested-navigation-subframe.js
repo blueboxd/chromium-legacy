@@ -10,11 +10,11 @@
   }
   dp.Page.onFrameNavigated(onFrameNavigated);
 
-  dp.Target.onAttachedToTarget(e => {
+  dp.Target.onAttachedToTarget(async e => {
     const dp2 = session.createChild(e.params.sessionId).protocol;
-    dp2.Page.enable();
+    await dp2.Page.enable();
     dp2.Page.onFrameNavigated(onFrameNavigated);
-    dp2.Runtime.runIfWaitingForDebugger();
+    await dp2.Runtime.runIfWaitingForDebugger();
   });
 
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true, flatten: true});

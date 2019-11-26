@@ -9,9 +9,9 @@
   testRunner.log('Setup page session');
   const pageDebuggerId = (await dp.Debugger.enable()).result.debuggerId;
   debuggers.set(pageDebuggerId, dp.Debugger);
-  dp.Debugger.setAsyncCallStackDepth({maxDepth: 32});
+  await dp.Debugger.setAsyncCallStackDepth({maxDepth: 32});
   testRunner.log('Set breakpoint before postMessage');
-  dp.Debugger.setBreakpointByUrl(
+  await dp.Debugger.setBreakpointByUrl(
       {url: 'test.js', lineNumber: 3, columnNumber: 7});
   session.evaluate(`
 var blob = new Blob(['onmessage = (e) => console.log(e.data);//# sourceURL=worker.js'], {type: 'application/javascript'});
@@ -21,7 +21,7 @@ worker.postMessage(42);
 
   testRunner.log('Run stepInto with breakOnAsyncCall flag');
   await dp.Debugger.oncePaused();
-  dp.Debugger.stepInto({breakOnAsyncCall: true});
+  await dp.Debugger.stepInto({breakOnAsyncCall: true});
 
   testRunner.log('Setup worker session');
   const childSession = session.createChild(
@@ -30,9 +30,9 @@ worker.postMessage(42);
   const workerDebuggerId =
         (await childSession.protocol.Debugger.enable()).result.debuggerId;
   debuggers.set(workerDebuggerId, childSession.protocol.Debugger);
-  childSession.protocol.Debugger.setAsyncCallStackDepth({maxDepth: 32});
+  await childSession.protocol.Debugger.setAsyncCallStackDepth({maxDepth: 32});
   testRunner.log('Run worker');
-  childSession.protocol.Runtime.runIfWaitingForDebugger();
+  await childSession.protocol.Runtime.runIfWaitingForDebugger();
   const {callFrames, asyncStackTrace, asyncStackTraceId} =
       (await childSession.protocol.Debugger.oncePaused()).params;
   await testRunner.logStackTrace(

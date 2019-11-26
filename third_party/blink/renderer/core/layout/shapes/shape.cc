@@ -292,7 +292,7 @@ static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
   unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
   uint8_t alpha_pixel_threshold = threshold * 255;
 
-  DCHECK_EQ(image_rect.Size().Area() * 4, pixel_array->length());
+  DCHECK_EQ(image_rect.Size().Area() * 4, pixel_array->lengthAsSizeT());
 
   int min_buffer_y = std::max(0, margin_rect.Y() - image_rect.Y());
   int max_buffer_y =

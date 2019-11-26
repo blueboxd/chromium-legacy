@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -143,7 +144,10 @@ class ToolbarActionErrorTestObserver
 }  // namespace
 
 ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
-    : toolbar_model_(nullptr) {}
+    : toolbar_model_(nullptr) {
+  // The ToolbarActionsBar is not used when kExtensionsToolbarMenu is enabled.
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+}
 
 ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 

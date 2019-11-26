@@ -103,7 +103,7 @@ RTCQuicStreamReadResult* RTCQuicStream::readInto(
     return 0;
   }
   uint32_t read_amount = static_cast<uint32_t>(receive_buffer_.ReadInto(
-      base::make_span(data.View()->Data(), data.View()->length())));
+      base::make_span(data.View()->Data(), data.View()->lengthAsSizeT())));
   if (!received_fin_ && read_amount > 0) {
     proxy_->MarkReceivedDataConsumed(read_amount);
   }
@@ -126,7 +126,8 @@ RTCQuicStreamReadResult* RTCQuicStream::readInto(
 void RTCQuicStream::write(const RTCQuicStreamWriteParameters* data,
                           ExceptionState& exception_state) {
   bool finish = data->finish();
-  bool has_write_data = data->hasData() && data->data().View()->length() > 0;
+  bool has_write_data =
+      data->hasData() && data->data().View()->lengthAsSizeT() > 0;
   if (!has_write_data && !finish) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
@@ -139,19 +140,21 @@ void RTCQuicStream::write(const RTCQuicStreamWriteParameters* data,
   Vector<uint8_t> data_vector;
   if (has_write_data) {
     DOMUint8Array* write_data = data->data().View();
-    uint32_t remaining_write_buffer_size =
+    size_t remaining_write_buffer_size =
         kWriteBufferSize - writeBufferedAmount();
-    if (write_data->length() > remaining_write_buffer_size) {
+    if (write_data->lengthAsSizeT() > remaining_write_buffer_size) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kOperationError,
-          "The write data size of " + String::Number(write_data->length()) +
+          "The write data size of " +
+              String::Number(write_data->lengthAsSizeT()) +
               " bytes would exceed the remaining write buffer size of " +
               String::Number(remaining_write_buffer_size) + " bytes.");
       return;
     }
-    data_vector.resize(write_data->length());
-    memcpy(data_vector.data(), write_data->Data(), write_data->length());
-    write_buffered_amount_ += write_data->length();
+    data_vector.resize(static_cast<wtf_size_t>(write_data->lengthAsSizeT()));
+    memcpy(data_vector.data(), write_data->Data(), write_data->lengthAsSizeT());
+    write_buffered_amount_ +=
+        static_cast<uint32_t>(write_data->lengthAsSizeT());
   }
   proxy_->WriteData(std::move(data_vector), finish);
   if (finish) {

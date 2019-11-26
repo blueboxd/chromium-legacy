@@ -216,10 +216,6 @@
       <if expr="desktop_linux">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
       </if>
-      <include name="IDR_POLICY_CSS" file="resources\policy\policy.css" preprocess="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_POLICY_HTML" file="resources\policy\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_POLICY_BASE_JS" file="resources\policy\policy_base.js" type="BINDATA" compress="gzip" preprocess="true" />
-      <include name="IDR_POLICY_JS" file="resources\policy\policy.js" type="BINDATA" compress="gzip" />
       <if expr="not is_android">
         <include name="IDR_MANAGEMENT_HTML" file="resources\management\management.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_MANAGEMENT_UI_JS" file="${root_gen_dir}/chrome/browser/resources/management/management_ui.js" use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true" />

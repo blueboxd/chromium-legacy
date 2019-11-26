@@ -450,6 +450,7 @@ public class PkpTest {
         return sha256;
     }
 
+    @SuppressWarnings("ArrayAsKeyOfSetOrMap")
     private void addPkpSha256(
             String host, byte[] pinHashValue, boolean includeSubdomain, int maxAgeInSec) {
         Set<byte[]> hashes = new HashSet<>();
@@ -498,6 +499,7 @@ public class PkpTest {
         fail("Expected IllegalArgumentException when passing " + hostName + " host name");
     }
 
+    @SuppressWarnings("ArrayAsKeyOfSetOrMap")
     private void verifyExceptionWhenAddPkpArgumentIsNull(
             boolean hostNameIsNull, boolean pinsAreNull, boolean expirationDataIsNull) {
         String hostName = hostNameIsNull ? null : "some-host.com";

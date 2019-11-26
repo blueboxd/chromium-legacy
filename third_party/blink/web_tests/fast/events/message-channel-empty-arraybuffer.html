@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<title>Verify media element's "src" attribute on "loadstart" event.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function(t) {
+  const arrayBuffer = new ArrayBuffer(0);
+  const { port1 } = new MessageChannel();
+
+  port1.postMessage(arrayBuffer, [ arrayBuffer ]);
+}, "Calling postMessage with an empty ArrayBuffer is valid.");
+</script>

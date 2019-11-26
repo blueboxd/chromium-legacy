@@ -5,14 +5,20 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
@@ -21,14 +27,45 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/test/test_extension_dir.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
+
+namespace {
+
+// Manages a Browser instance created by BrowserWithTestWindowTest beyond the
+// default instance it creates in SetUp.
+class AdditionalBrowser {
+ public:
+  explicit AdditionalBrowser(std::unique_ptr<Browser> browser)
+      : browser_(std::move(browser)),
+        browser_view_(BrowserView::GetBrowserViewForBrowser(browser_.get())) {}
+
+  ~AdditionalBrowser() {
+    // Tear down |browser_|, similar to TestWithBrowserView::TearDown.
+    browser_.release();
+    browser_view_->GetWidget()->CloseNow();
+  }
+
+  ExtensionsToolbarContainer* extensions_container() {
+    return browser_view_->toolbar()->extensions_container();
+  }
+
+ private:
+  std::unique_ptr<Browser> browser_;
+  BrowserView* browser_view_;
+};
+
+}  // namespace
 
 class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
  public:
@@ -44,7 +81,7 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
 
   // Adds a simple extension to the profile.
   scoped_refptr<const extensions::Extension> AddSimpleExtension(
-      const char* name);
+      const std::string& name);
 
   extensions::ExtensionService* extension_service() {
     return extension_service_;
@@ -58,7 +95,18 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
     return ExtensionsMenuView::GetExtensionsMenuViewForTesting();
   }
 
+  // Asserts there is exactly 1 menu item and then returns it.
+  ExtensionsMenuItemView* GetOnlyMenuItem();
+
   void ClickPinButton(ExtensionsMenuItemView* menu_item) const;
+
+  std::vector<ToolbarActionView*> GetPinnedExtensionViews();
+
+  ToolbarActionView* GetPinnedExtensionView(const std::string& name);
+
+  // Returns a list of the names of the currently pinned extensions, in order
+  // from left to right.
+  std::vector<std::string> GetPinnedExtensionNames();
 
  private:
   base::AutoReset<bool> allow_extension_menu_instances_;
@@ -87,12 +135,22 @@ void ExtensionsMenuViewUnitTest::SetUp() {
 }
 
 scoped_refptr<const extensions::Extension>
-ExtensionsMenuViewUnitTest::AddSimpleExtension(const char* name) {
+ExtensionsMenuViewUnitTest::AddSimpleExtension(const std::string& name) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name).Build();
   extension_service()->AddExtension(extension.get());
 
   return extension;
+}
+
+ExtensionsMenuItemView* ExtensionsMenuViewUnitTest::GetOnlyMenuItem() {
+  std::vector<ExtensionsMenuItemView*> menu_items =
+      extensions_menu()->extensions_menu_items_for_testing();
+  if (menu_items.size() != 1u) {
+    ADD_FAILURE() << "Not exactly one item; size is: " << menu_items.size();
+    return nullptr;
+  }
+  return menu_items[0];
 }
 
 void ExtensionsMenuViewUnitTest::ClickPinButton(
@@ -106,6 +164,43 @@ void ExtensionsMenuViewUnitTest::ClickPinButton(
                                gfx::Point(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   pin_button->OnMouseReleased(release_event);
+}
+
+std::vector<ToolbarActionView*>
+ExtensionsMenuViewUnitTest::GetPinnedExtensionViews() {
+  std::vector<ToolbarActionView*> result;
+  for (views::View* child : extensions_container()->children()) {
+    // Ensure we don't downcast the ExtensionsToolbarButton.
+    if (child->GetVisible() &&
+        child->GetClassName() == ToolbarActionView::kClassName) {
+      result.push_back(static_cast<ToolbarActionView*>(child));
+    }
+  }
+  return result;
+}
+
+ToolbarActionView* ExtensionsMenuViewUnitTest::GetPinnedExtensionView(
+    const std::string& name) {
+  std::vector<ToolbarActionView*> actions = GetPinnedExtensionViews();
+  auto it = std::find_if(
+      actions.begin(), actions.end(), [name](ToolbarActionView* action) {
+        return base::UTF16ToUTF8(action->view_controller()->GetActionName()) ==
+               name;
+      });
+  if (it == actions.end())
+    return nullptr;
+  return *it;
+}
+
+std::vector<std::string> ExtensionsMenuViewUnitTest::GetPinnedExtensionNames() {
+  std::vector<ToolbarActionView*> views = GetPinnedExtensionViews();
+  std::vector<std::string> result;
+  result.resize(views.size());
+  std::transform(
+      views.begin(), views.end(), result.begin(), [](ToolbarActionView* view) {
+        return base::UTF16ToUTF8(view->view_controller()->GetActionName());
+      });
+  return result;
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
@@ -128,18 +223,212 @@ TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
-  AddSimpleExtension("Test Name");
+  constexpr char kName[] = "Test Name";
+  AddSimpleExtension(kName);
 
-  ExtensionsMenuItemView* menu_item =
-      extensions_menu()->extensions_menu_items_for_testing()[0];
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
   ToolbarActionViewController* controller =
       menu_item->view_controller_for_testing();
   EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(controller));
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 
   ClickPinButton(menu_item);
 
   EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(controller));
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName));
+
+  ClickPinButton(menu_item);  // Unpin.
+
+  EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(
+      menu_item->view_controller_for_testing()));
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 }
 
-// TODO(crbug.com/984654): Add tests for multiple extensions, reordering
-// extensions, and showing in multiple windows.
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
+  AddSimpleExtension("Test Name");
+
+  AdditionalBrowser browser2(
+      CreateBrowser(browser()->profile(), browser()->type(),
+                    /* hosted_app */ false, /* browser_window */ nullptr));
+
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
+  ClickPinButton(menu_item);
+
+  // Window that was already open gets the pinned extension.
+  browser2.extensions_container()->IsActionVisibleOnToolbar(
+      menu_item->view_controller_for_testing());
+
+  AdditionalBrowser browser3(
+      CreateBrowser(browser()->profile(), browser()->type(),
+                    /* hosted_app */ false, /* browser_window */ nullptr));
+
+  // Brand-new window also gets the pinned extension.
+  browser3.extensions_container()->IsActionVisibleOnToolbar(
+      menu_item->view_controller_for_testing());
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
+  constexpr char kName1[] = "Test 1";
+  AddSimpleExtension(kName1);
+  constexpr char kName2[] = "Test 2";
+  AddSimpleExtension(kName2);
+  constexpr char kName3[] = "Test 3";
+  AddSimpleExtension(kName3);
+
+  std::vector<ExtensionsMenuItemView*> menu_items =
+      extensions_menu()->extensions_menu_items_for_testing();
+  ASSERT_EQ(3u, menu_items.size());
+  for (auto* menu_item : menu_items) {
+    ClickPinButton(menu_item);
+    EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
+        menu_item->view_controller_for_testing()));
+  }
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+
+  // Simulate dragging "Test 3" to the first slot.
+  ToolbarActionView* drag_view = GetPinnedExtensionView(kName3);
+  ui::OSExchangeData drag_data;
+  extensions_container()->WriteDragDataForView(drag_view, gfx::Point(),
+                                               &drag_data);
+  gfx::PointF drop_point(GetPinnedExtensionView(kName1)->origin());
+  ui::DropTargetEvent drop_event(drag_data, drop_point, drop_point,
+                                 ui::DragDropTypes::DRAG_MOVE);
+  extensions_container()->OnDragUpdated(drop_event);
+  extensions_container()->OnPerformDrop(drop_event);
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName3, kName1, kName2));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionsReorderOnPrefChange) {
+  constexpr char kName1[] = "Test 1";
+  const extensions::ExtensionId id1 = AddSimpleExtension(kName1)->id();
+  constexpr char kName2[] = "Test 2";
+  const extensions::ExtensionId id2 = AddSimpleExtension(kName2)->id();
+  constexpr char kName3[] = "Test 3";
+  const extensions::ExtensionId id3 = AddSimpleExtension(kName3)->id();
+  for (auto* menu_item :
+       extensions_menu()->extensions_menu_items_for_testing()) {
+    ClickPinButton(menu_item);
+  }
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+
+  extensions::ExtensionPrefs::Get(profile())->SetPinnedExtensions(
+      {id2, id3, id1});
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName2, kName3, kName1));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionLayout) {
+  for (int i = 0; i < 3; i++)
+    AddSimpleExtension(base::StringPrintf("Test %d", i));
+  for (auto* menu_item :
+       extensions_menu()->extensions_menu_items_for_testing()) {
+    ClickPinButton(menu_item);
+  }
+
+  std::vector<ToolbarActionView*> action_views = GetPinnedExtensionViews();
+  ASSERT_EQ(3u, action_views.size());
+  ExtensionsToolbarButton* menu_button =
+      extensions_container()->extensions_button();
+
+  // All views should be lined up horizontally with the menu button.
+  EXPECT_EQ(action_views[0]->y(), action_views[1]->y());
+  EXPECT_EQ(action_views[1]->y(), action_views[2]->y());
+  EXPECT_EQ(action_views[2]->y(), menu_button->y());
+
+  // Views are ordered left-to-right (in LTR mode).
+  EXPECT_LE(action_views[0]->x() + action_views[0]->width(),
+            action_views[1]->x());
+  EXPECT_LE(action_views[1]->x() + action_views[1]->width(),
+            action_views[2]->x());
+  EXPECT_LE(action_views[2]->x() + action_views[2]->width(), menu_button->x());
+}
+
+// Tests that when an extension is reloaded it remains visible in the toolbar
+// and extensions menu.
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtension) {
+  // The extension must have a manifest to be reloaded.
+  extensions::TestExtensionDir extension_directory;
+  constexpr char kManifest[] = R"({
+        "name": "Test",
+        "version": "1",
+        "manifest_version": 2
+      })";
+  extension_directory.WriteManifest(kManifest);
+  extensions::ChromeTestExtensionLoader loader(profile());
+  scoped_refptr<const extensions::Extension> extension =
+      loader.LoadExtension(extension_directory.UnpackedPath());
+  ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
+
+  {
+    ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+    ClickPinButton(menu_item);
+    EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
+        menu_item->view_controller_for_testing()));
+    // |menu_item| will not be valid after the extension reloads.
+  }
+
+  extensions::TestExtensionRegistryObserver registry_observer(
+      extensions::ExtensionRegistry::Get(profile()));
+  extension_service()->ReloadExtension(extension->id());
+  ASSERT_TRUE(registry_observer.WaitForExtensionLoaded());
+
+  ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
+  EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
+      GetOnlyMenuItem()->view_controller_for_testing()));
+}
+
+// Tests that a when an extension is reloaded with manifest errors, and
+// therefore fails to be loaded into Chrome, it's removed from the toolbar and
+// extensions menu.
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtensionFailed) {
+  extensions::TestExtensionDir extension_directory;
+  constexpr char kManifest[] = R"({
+        "name": "Test",
+        "version": "1",
+        "manifest_version": 2
+      })";
+  extension_directory.WriteManifest(kManifest);
+  extensions::ChromeTestExtensionLoader loader(profile());
+  scoped_refptr<const extensions::Extension> extension =
+      loader.LoadExtension(extension_directory.UnpackedPath());
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
+  ClickPinButton(menu_item);
+
+  // Replace the extension's valid manifest with one containing errors. In this
+  // case, the error is that both the 'browser_action' and 'page_action' keys
+  // are specified instead of only one.
+  constexpr char kManifestWithErrors[] = R"({
+        "name": "Test",
+        "version": "1",
+        "manifest_version": 2,
+        "page_action" : {},
+        "browser_action" : {}
+      })";
+  extension_directory.WriteManifest(kManifestWithErrors);
+
+  // Reload the extension. It should fail due to the manifest errors.
+  extension_service()->ReloadExtensionWithQuietFailure(extension->id());
+  base::RunLoop().RunUntilIdle();
+
+  // Since the extension is removed it's no longer visible on the toolbar or in
+  // the menu.
+  for (views::View* child : extensions_container()->children())
+    EXPECT_NE(ToolbarActionView::kClassName, child->GetClassName());
+  EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
+}
+
+// TODO(crbug.com/984654): When supported, add a test to verify the
+// ExtensionsToolbarContainer shrinks when the window is too small to show all
+// pinned extensions.
+// TODO(crbug.com/984654): When supported, add a test to verify an extension
+// is shown when a bubble pops up and needs to draw attention to it.

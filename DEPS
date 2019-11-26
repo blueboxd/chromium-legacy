@@ -176,7 +176,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5069a6c93b8365adecb4fb152619ba5fbe82eac8',
+  'v8_revision': 'e78d04ebf99e5cc12d1579b069e6e68d7b7d96cf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -1494,7 +1494,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd5e2f215d65d635012015212741f1c03330b3e72',
+    Var('webrtc_git') + '/src.git' + '@' + 'a88655daf934f481a81f358640012c1135c91597',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1561,7 +1561,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@da4c7cba65d0bb424c7c16ed9354074cc36b637f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a1cb75450db1aea36a9872e457a4bcf2ac7d6390',
     'condition': 'checkout_src_internal',
   },
 

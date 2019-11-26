@@ -180,13 +180,13 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   DOMUint8ClampedArray* data_u8 =
       DOMUint8ClampedArray::Create(u8_pixels, data_length);
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->length());
+  EXPECT_EQ(data_length, data_u8->deprecatedLengthAsUnsigned());
   DOMUint16Array* data_u16 = DOMUint16Array::Create(u16_pixels, data_length);
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->length());
+  EXPECT_EQ(data_length, data_u16->deprecatedLengthAsUnsigned());
   DOMFloat32Array* data_f32 = DOMFloat32Array::Create(f32_pixels, data_length);
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->length());
+  EXPECT_EQ(data_length, data_f32->deprecatedLengthAsUnsigned());
 
   ImageData* image_data = nullptr;
   ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
@@ -425,13 +425,13 @@ TEST_F(ImageDataTest, TestCropRect) {
   DOMUint8ClampedArray* data_u8 =
       DOMUint8ClampedArray::Create(u8_pixels, data_length);
   DCHECK(data_u8);
-  EXPECT_EQ(data_length, data_u8->length());
+  EXPECT_EQ(data_length, data_u8->deprecatedLengthAsUnsigned());
   DOMUint16Array* data_u16 = DOMUint16Array::Create(u16_pixels, data_length);
   DCHECK(data_u16);
-  EXPECT_EQ(data_length, data_u16->length());
+  EXPECT_EQ(data_length, data_u16->deprecatedLengthAsUnsigned());
   DOMFloat32Array* data_f32 = DOMFloat32Array::Create(f32_pixels, data_length);
   DCHECK(data_f32);
-  EXPECT_EQ(data_length, data_f32->length());
+  EXPECT_EQ(data_length, data_f32->deprecatedLengthAsUnsigned());
 
   ImageData* image_data = nullptr;
   ImageData* cropped_image_data = nullptr;

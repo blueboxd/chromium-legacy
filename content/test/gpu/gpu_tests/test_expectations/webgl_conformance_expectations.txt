@@ -256,6 +256,7 @@ crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/sh
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/* [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/* [ RetryOnFailure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]

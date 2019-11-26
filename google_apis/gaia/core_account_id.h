@@ -29,8 +29,6 @@ struct CoreAccountId {
   explicit CoreAccountId(const std::string& id);
 
   // Checks if the account is valid or not.
-  // TODO(triploblastic): Possibly rename of remove this after
-  // refactoring.
   bool empty() const;
 
   std::string id;

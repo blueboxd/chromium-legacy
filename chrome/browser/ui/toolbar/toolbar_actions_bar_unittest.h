@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
@@ -92,6 +93,8 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   // The associated ToolbarActionsModel (owned by the keyed service setup).
   ToolbarActionsModel* toolbar_model_;
 

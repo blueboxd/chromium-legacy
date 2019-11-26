@@ -88,6 +88,15 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // Returns net::ERR_ABORTED or any applicable net error.
   int Cancel();
 
+  // Set fetch metadata headers ( only `Sec-Fetch-Dest` for now ) for secure
+  // resources.
+  // TODO(lyf): Remove this function after moving `Sec-Fetch-Dest` to the
+  // network service.
+  void SetFetchMetadataHeaders() {
+    if (GetURL().SchemeIsCryptographic())
+      request_.headers.SetHeader("Sec-Fetch-Dest", "empty");
+  }
+
   // network::mojom::URLLoaderClient implementation.
   // These methods are called by the network loader.
   void OnReceiveResponse(

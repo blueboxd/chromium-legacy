@@ -11,10 +11,12 @@
 #include <string>
 #include <tuple>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,24 +25,32 @@
 
 namespace base {
 
-// A basic test harness that creates a temporary directory during setup and
-// deletes it during teardown.
+// A basic test harness that creates a temporary directory during test case
+// setup and deletes it during teardown.
 class OsValidationTest : public ::testing::Test {
  protected:
-  OsValidationTest() = default;
-
   // ::testing::Test:
-  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
-  void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
+  static void SetUpTestCase() {
+    temp_dir_ = std::make_unique<ScopedTempDir>().release();
+    ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
+  }
+
+  static void TearDownTestCase() {
+    // Explicitly delete the dir to catch any deletion errors.
+    ASSERT_TRUE(temp_dir_->Delete());
+    auto temp_dir = base::WrapUnique(temp_dir_);
+    temp_dir_ = nullptr;
+  }
 
   // Returns the path to the test's temporary directory.
-  const FilePath& temp_path() const { return temp_dir_.GetPath(); }
+  static const FilePath& temp_path() { return temp_dir_->GetPath(); }
 
  private:
-  ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(OsValidationTest);
+  static ScopedTempDir* temp_dir_;
 };
+
+// static
+ScopedTempDir* OsValidationTest::temp_dir_ = nullptr;
 
 // A test harness for exhaustively evaluating the conditions under which an open
 // file may be operated on. Template parameters are used to turn off or on
@@ -148,12 +158,13 @@ class OpenFileTest : public OsValidationTest,
   }
 
   // Returns true if we expect that a file opened with |access| access rights
-  // and |share_mode| sharing can be deleted via DeleteFile and/or moved via
-  // MoveFileEx.
-  static bool CanDeleteFile(DWORD access, DWORD share_mode) {
-    // A file can be deleted as long as it is opened with FILE_SHARE_DELETE or
+  // and |share_mode| sharing can be moved via MoveFileEx, and can be deleted
+  // via DeleteFile so long as it is not mapped into a process.
+  static bool CanMoveFile(DWORD access, DWORD share_mode) {
+    // A file can be moved as long as it is opened with FILE_SHARE_DELETE or
     // if nothing beyond the standard access rights (save DELETE) has been
-    // requested.
+    // requested. It can be deleted under those same circumstances as long as
+    // it has not been mapped into a process.
     constexpr DWORD kStandardNoDelete = STANDARD_RIGHTS_ALL & ~DELETE;
     return ((share_mode & FILE_SHARE_DELETE) != 0) ||
            ((access & ~kStandardNoDelete) == 0);
@@ -176,21 +187,35 @@ class OpenFileTest : public OsValidationTest,
     scoped_trace_ = std::make_unique<::testing::ScopedTrace>(
         __FILE__, __LINE__, access_string + ", " + share_mode_string);
 
-    // Create a file on which to operate.
+    // Make a copy of imm32.dll in the temp dir for fiddling.
     ASSERT_TRUE(CreateTemporaryFileInDir(temp_path(), &temp_file_path_));
+    ASSERT_TRUE(CopyFile(FilePath(FPL("c:\\windows\\system32\\imm32.dll")),
+                         temp_file_path_));
 
     // Open the file
     file_handle_.Set(::CreateFileW(temp_file_path_.value().c_str(), access_,
                                    share_mode_, nullptr, OPEN_EXISTING,
                                    FILE_ATTRIBUTE_NORMAL, nullptr));
     ASSERT_TRUE(file_handle_.IsValid()) << ::GetLastError();
+
+    // Get a second unique name in the temp dir to which the file might be
+    // moved.
+    temp_file_dest_path_ = temp_file_path_.InsertBeforeExtension(FPL("bla"));
   }
 
-  void TearDown() override { file_handle_.Close(); }
+  void TearDown() override {
+    file_handle_.Close();
+
+    // Manually delete the temp files since the temp dir is reused across tests.
+    ASSERT_TRUE(DeleteFile(temp_file_path_, false));
+    ASSERT_TRUE(DeleteFile(temp_file_dest_path_, false));
+  }
 
   DWORD access() const { return access_; }
   DWORD share_mode() const { return share_mode_; }
   const FilePath& temp_file_path() const { return temp_file_path_; }
+  const FilePath& temp_file_dest_path() const { return temp_file_dest_path_; }
+  HANDLE file_handle() const { return file_handle_.Get(); }
 
  private:
   struct BitAndName {
@@ -221,14 +246,15 @@ class OpenFileTest : public OsValidationTest,
   DWORD share_mode_ = 0;
   std::unique_ptr<::testing::ScopedTrace> scoped_trace_;
   FilePath temp_file_path_;
+  FilePath temp_file_dest_path_;
   win::ScopedHandle file_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenFileTest);
 };
 
-// Tests that an opened file can be deleted as expected.
+// Tests that an opened but not mapped file can be deleted as expected.
 TEST_P(OpenFileTest, DeleteFile) {
-  if (CanDeleteFile(access(), share_mode())) {
+  if (CanMoveFile(access(), share_mode())) {
     EXPECT_NE(::DeleteFileW(temp_file_path().value().c_str()), 0)
         << "Last error code: " << ::GetLastError();
   } else {
@@ -238,15 +264,14 @@ TEST_P(OpenFileTest, DeleteFile) {
 
 // Tests that an opened file can be moved as expected.
 TEST_P(OpenFileTest, MoveFileEx) {
-  const FilePath dest_path = temp_file_path().InsertBeforeExtension(FPL("bla"));
-  if (CanDeleteFile(access(), share_mode())) {
+  if (CanMoveFile(access(), share_mode())) {
     EXPECT_NE(::MoveFileExW(temp_file_path().value().c_str(),
-                            dest_path.value().c_str(), 0),
+                            temp_file_dest_path().value().c_str(), 0),
               0)
         << "Last error code: " << ::GetLastError();
   } else {
     EXPECT_EQ(::MoveFileExW(temp_file_path().value().c_str(),
-                            dest_path.value().c_str(), 0),
+                            temp_file_dest_path().value().c_str(), 0),
               0);
   }
 }
@@ -255,20 +280,84 @@ TEST_P(OpenFileTest, MoveFileEx) {
 // deletion.
 TEST_P(OpenFileTest, DeleteThenMove) {
   // Don't test combinations that cannot be deleted.
-  if (!CanDeleteFile(access(), share_mode()))
+  if (!CanMoveFile(access(), share_mode()))
     return;
   ASSERT_NE(::DeleteFileW(temp_file_path().value().c_str()), 0)
       << "Last error code: " << ::GetLastError();
-  const FilePath dest_path = temp_file_path().InsertBeforeExtension(FPL("bla"));
   // Move fails with ERROR_ACCESS_DENIED (STATUS_DELETE_PENDING under the
   // covers).
   EXPECT_EQ(::MoveFileExW(temp_file_path().value().c_str(),
-                          dest_path.value().c_str(), 0),
+                          temp_file_dest_path().value().c_str(), 0),
             0);
 }
 
+// Tests that an open file that is mapped into memory can be moved but not
+// deleted.
+TEST_P(OpenFileTest, MapThenDelete) {
+  // There is nothing to test if the file can't be read.
+  if (!(access() & FILE_READ_DATA))
+    return;
+
+  // Pick the protection option that matches the access rights used to open the
+  // file.
+  static constexpr struct {
+    DWORD access_bits;
+    DWORD protection;
+  } kAccessToProtection[] = {
+      // Sorted from most- to least-bits used for logic below.
+      {FILE_READ_DATA | FILE_WRITE_DATA | FILE_EXECUTE, PAGE_EXECUTE_READWRITE},
+      {FILE_READ_DATA | FILE_WRITE_DATA, PAGE_READWRITE},
+      {FILE_READ_DATA | FILE_EXECUTE, PAGE_EXECUTE_READ},
+      {FILE_READ_DATA, PAGE_READONLY},
+  };
+
+  DWORD protection = 0;
+  for (const auto& scan : kAccessToProtection) {
+    if ((access() & scan.access_bits) == scan.access_bits) {
+      protection = scan.protection;
+      break;
+    }
+  }
+  ASSERT_NE(protection, DWORD{0});
+
+  win::ScopedHandle mapping(::CreateFileMappingA(
+      file_handle(), nullptr, protection | SEC_IMAGE, 0, 0, nullptr));
+  auto result = ::GetLastError();
+  ASSERT_TRUE(mapping.IsValid()) << result;
+
+  auto* view = ::MapViewOfFile(mapping.Get(), FILE_MAP_READ, 0, 0, 0);
+  result = ::GetLastError();
+  ASSERT_NE(view, nullptr) << result;
+  ScopedClosureRunner unmapper(
+      BindOnce([](const void* view) { ::UnmapViewOfFile(view); }, view));
+
+  // Mapped files cannot be deleted under any circumstances.
+  EXPECT_EQ(::DeleteFileW(as_wcstr(temp_file_path().value())), 0);
+
+  // But can still be moved under the same conditions as if it weren't mapped.
+  if (CanMoveFile(access(), share_mode())) {
+    EXPECT_NE(::MoveFileExW(as_wcstr(temp_file_path().value()),
+                            as_wcstr(temp_file_dest_path().value()), 0),
+              0)
+        << "Last error code: " << ::GetLastError();
+  } else {
+    EXPECT_EQ(::MoveFileExW(as_wcstr(temp_file_path().value()),
+                            as_wcstr(temp_file_dest_path().value()), 0),
+              0);
+  }
+}
+
+// These tests are intentionally disabled by default. They were created as an
+// educational tool to understand the restrictions on moving and deleting files
+// on Windows. There is every expectation that once they pass, they will always
+// pass. It might be interesting to run them manually on new versions of the OS,
+// but there is no need to run them on every try/CQ run. Here is one possible
+// way to run them all locally:
+//
+// base_unittests.exe --single-process-tests --gtest_also_run_disabled_tests \
+//     --gtest_filter=*OpenFileTest*
 INSTANTIATE_TEST_CASE_P(
-    ,
+    DISABLED_Test,
     OpenFileTest,
     ::testing::Combine(
         // Standard access rights except for WRITE_OWNER, which requires admin.

@@ -1209,12 +1209,12 @@ class NavigationHandleGrabber : public WebContentsObserver {
                        base::Unretained(this), navigation_handle));
   }
 
-  void SendingNavigationCommitted(
+  bool SendingNavigationCommitted(
       NavigationHandle* navigation_handle,
       NavigationThrottle::ThrottleCheckResult result) {
-    if (navigation_handle->GetURL().path() != "/title2.html")
-      return;
-    ExecuteScriptAsync(web_contents(), "document.open();");
+    if (navigation_handle->GetURL().path() == "/title2.html")
+      ExecuteScriptAsync(web_contents(), "document.open();");
+    return false;
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {

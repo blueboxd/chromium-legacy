@@ -6,12 +6,12 @@ package org.chromium.net.impl;
 import static android.os.Process.THREAD_PRIORITY_LOWEST;
 
 import android.content.Context;
+import android.util.Base64;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.net.CronetEngine;
-import org.chromium.net.CronetEngine.Builder;
 import org.chromium.net.ICronetEngineBuilder;
 
 import java.io.File;
@@ -19,9 +19,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.IDN;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -100,7 +101,7 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         enableQuic(false);
         enableHttp2(true);
         enableBrotli(false);
-        enableHttpCache(Builder.HTTP_CACHE_DISABLED, 0);
+        enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISABLED, 0);
         enableNetworkQualityEstimator(false);
         enablePublicKeyPinningBypassForLocalTrustAnchors(true);
     }
@@ -196,14 +197,15 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         return mBrotiEnabled;
     }
 
-    @IntDef({Builder.HTTP_CACHE_DISABLED, Builder.HTTP_CACHE_IN_MEMORY,
-            Builder.HTTP_CACHE_DISK_NO_HTTP, Builder.HTTP_CACHE_DISK})
+    @IntDef({CronetEngine.Builder.HTTP_CACHE_DISABLED, CronetEngine.Builder.HTTP_CACHE_IN_MEMORY,
+            CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, CronetEngine.Builder.HTTP_CACHE_DISK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HttpCacheSetting {}
 
     @Override
     public CronetEngineBuilderImpl enableHttpCache(@HttpCacheSetting int cacheMode, long maxSize) {
-        if (cacheMode == Builder.HTTP_CACHE_DISK || cacheMode == Builder.HTTP_CACHE_DISK_NO_HTTP) {
+        if (cacheMode == CronetEngine.Builder.HTTP_CACHE_DISK
+                || cacheMode == CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP) {
             if (storagePath() == null) {
                 throw new IllegalArgumentException("Storage path must be set");
             }
@@ -212,19 +214,19 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
                 throw new IllegalArgumentException("Storage path must not be set");
             }
         }
-        mDisableCache = (cacheMode == Builder.HTTP_CACHE_DISABLED
-                || cacheMode == Builder.HTTP_CACHE_DISK_NO_HTTP);
+        mDisableCache = (cacheMode == CronetEngine.Builder.HTTP_CACHE_DISABLED
+                || cacheMode == CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP);
         mHttpCacheMaxSize = maxSize;
 
         switch (cacheMode) {
-            case Builder.HTTP_CACHE_DISABLED:
+            case CronetEngine.Builder.HTTP_CACHE_DISABLED:
                 mHttpCacheMode = HttpCacheType.DISABLED;
                 break;
-            case Builder.HTTP_CACHE_DISK_NO_HTTP:
-            case Builder.HTTP_CACHE_DISK:
+            case CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP:
+            case CronetEngine.Builder.HTTP_CACHE_DISK:
                 mHttpCacheMode = HttpCacheType.DISK;
                 break;
-            case Builder.HTTP_CACHE_IN_MEMORY:
+            case CronetEngine.Builder.HTTP_CACHE_IN_MEMORY:
                 mHttpCacheMode = HttpCacheType.MEMORY;
                 break;
             default:
@@ -271,17 +273,17 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
             throw new NullPointerException("The pin expiration date cannot be null");
         }
         String idnHostName = validateHostNameForPinningAndConvert(hostName);
-        // Convert the pin to BASE64 encoding. The hash set will eliminate duplications.
-        Set<byte[]> hashes = new HashSet<>(pinsSha256.size());
+        // Convert the pin to BASE64 encoding to remove duplicates.
+        Map<String, byte[]> hashes = new HashMap<>();
         for (byte[] pinSha256 : pinsSha256) {
             if (pinSha256 == null || pinSha256.length != 32) {
                 throw new IllegalArgumentException("Public key pin is invalid");
             }
-            hashes.add(pinSha256);
+            hashes.put(Base64.encodeToString(pinSha256, 0), pinSha256);
         }
         // Add new element to PKP list.
-        mPkps.add(new Pkp(idnHostName, hashes.toArray(new byte[hashes.size()][]), includeSubdomains,
-                expirationDate));
+        mPkps.add(new Pkp(idnHostName, hashes.values().toArray(new byte[hashes.size()][]),
+                includeSubdomains, expirationDate));
         return this;
     }
 

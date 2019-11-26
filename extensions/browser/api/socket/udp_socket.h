@@ -13,8 +13,8 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "extensions/browser/api/socket/socket.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -24,7 +24,8 @@ namespace extensions {
 class UDPSocket : public Socket, public network::mojom::UDPSocketListener {
  public:
   UDPSocket(mojo::PendingRemote<network::mojom::UDPSocket> socket,
-            network::mojom::UDPSocketListenerRequest listener_request,
+            mojo::PendingReceiver<network::mojom::UDPSocketListener>
+                listener_receiver,
             const std::string& owner_extension_id);
   ~UDPSocket() override;
 
@@ -102,7 +103,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketListener {
   network::mojom::UDPSocketOptionsPtr socket_options_;
 
   bool is_bound_;
-  mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
+  mojo::Receiver<network::mojom::UDPSocketListener> listener_receiver_{this};
   base::Optional<net::IPEndPoint> local_addr_;
   base::Optional<net::IPEndPoint> peer_addr_;
 
@@ -119,7 +120,8 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketListener {
 class ResumableUDPSocket : public UDPSocket {
  public:
   ResumableUDPSocket(mojo::PendingRemote<network::mojom::UDPSocket> socket,
-                     network::mojom::UDPSocketListenerRequest listener_request,
+                     mojo::PendingReceiver<network::mojom::UDPSocketListener>
+                         listener_receiver,
                      const std::string& owner_extension_id);
 
   // Overriden from ApiResource

@@ -621,7 +621,7 @@ TEST_F(
 // maxReadBufferedAmount().
 
 static base::span<const uint8_t> GetSpan(NotShared<DOMUint8Array> data) {
-  return base::make_span(data.View()->Data(), data.View()->length());
+  return base::make_span(data.View()->Data(), data.View()->lengthAsSizeT());
 }
 
 // Test that readInto() with an empty data buffer succeeds but does not post

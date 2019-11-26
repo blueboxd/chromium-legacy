@@ -76,7 +76,7 @@ static bool IsAcceptableCSSStyleSheetParent(const Node& parent_node) {
   // Only these nodes can be parents of StyleSheets, and they need to call
   // clearOwnerNode() when moved out of document. Note that destructor of
   // the nodes don't call clearOwnerNode() with Oilpan.
-  return parent_node.IsDocumentNode() || IsHTMLLinkElement(parent_node) ||
+  return parent_node.IsDocumentNode() || IsA<HTMLLinkElement>(parent_node) ||
          IsA<HTMLStyleElement>(parent_node) || IsSVGStyleElement(parent_node) ||
          parent_node.getNodeType() == Node::kProcessingInstructionNode;
 }
@@ -601,15 +601,15 @@ bool CSSStyleSheet::CanBeActivated(
     if (IsA<HTMLStyleElement>(owner_node_.Get()) ||
         IsSVGStyleElement(owner_node_))
       return true;
-    if (IsHTMLLinkElement(owner_node_) &&
-        ToHTMLLinkElement(owner_node_.Get())->IsImport())
+    auto* html_link_element = DynamicTo<HTMLLinkElement>(owner_node_.Get());
+    if (html_link_element && html_link_element->IsImport())
       return !IsAlternate();
   }
 
+  auto* html_link_element = DynamicTo<HTMLLinkElement>(owner_node_.Get());
   if (!owner_node_ ||
       owner_node_->getNodeType() == Node::kProcessingInstructionNode ||
-      !IsHTMLLinkElement(owner_node_) ||
-      !ToHTMLLinkElement(owner_node_.Get())->IsEnabledViaScript()) {
+      !html_link_element || !html_link_element->IsEnabledViaScript()) {
     if (!title_.IsEmpty() && title_ != current_preferrable_name)
       return false;
   }

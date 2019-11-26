@@ -32,8 +32,7 @@ views::BubbleDialogDelegateView* NativeFileSystemAccessIconView::GetBubble()
   return NativeFileSystemUsageBubbleView::GetBubble();
 }
 
-bool NativeFileSystemAccessIconView::Update() {
-  const bool was_visible = GetVisible();
+void NativeFileSystemAccessIconView::UpdateImpl() {
   const bool had_write_access = has_write_access_;
 
   has_write_access_ = GetWebContents() &&
@@ -56,8 +55,6 @@ bool NativeFileSystemAccessIconView::Update() {
   // it was still open.
   if (!GetVisible())
     NativeFileSystemUsageBubbleView::CloseCurrentBubble();
-
-  return GetVisible() != was_visible || had_write_access != has_write_access_;
 }
 
 base::string16

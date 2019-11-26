@@ -456,4 +456,10 @@ ui::Layer* AssistantContainerView::GetNonClientViewLayer() {
   return GetBubbleFrameView()->layer();
 }
 
+void AssistantContainerView::OpenUrl(const GURL& url) {
+  // This should only be called when in Assistant kWebUi mode.
+  DCHECK_EQ(AssistantUiMode::kWebUi, delegate_->GetUiModel()->ui_mode());
+  assistant_web_view_->OpenUrl(url);
+}
+
 }  // namespace ash

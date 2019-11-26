@@ -1041,6 +1041,11 @@ bool FrameFetchContext::CalculateIfAdSubresource(
       known_ad);
 }
 
+mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+FrameFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
+  return MasterDocumentLoader()->TakePendingWorkerTimingReceiver(request_id);
+}
+
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     ResourceType type,
     const ResourceRequest& resource_request,

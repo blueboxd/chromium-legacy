@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -25,12 +27,12 @@ class EmptyURLLoaderClient : public mojom::URLLoaderClient,
   // been completed.
   static void DrainURLRequest(
       mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-      mojom::URLLoaderPtr url_loader);
+      mojo::PendingRemote<mojom::URLLoader> url_loader);
 
  private:
   EmptyURLLoaderClient(
       mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-      mojom::URLLoaderPtr url_loader);
+      mojo::PendingRemote<mojom::URLLoader> url_loader);
 
   ~EmptyURLLoaderClient() override;
   void DeleteSelf();
@@ -56,7 +58,7 @@ class EmptyURLLoaderClient : public mojom::URLLoaderClient,
 
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
 
-  mojom::URLLoaderPtr url_loader_;
+  mojo::Remote<mojom::URLLoader> url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyURLLoaderClient);
 };

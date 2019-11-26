@@ -14,7 +14,6 @@ const VolumeManagerCommon = {};
  */
 const AllowedPaths = {
   NATIVE_PATH: 'nativePath',
-  NATIVE_OR_DRIVE_PATH: 'nativeOrDrivePath',
   ANY_PATH: 'anyPath',
   ANY_PATH_OR_URL: 'anyPathOrUrl',
 };
@@ -239,6 +238,7 @@ VolumeManagerCommon.Source = {
  */
 VolumeManagerCommon.VolumeType.isNative = type => {
   return type === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+      type === VolumeManagerCommon.VolumeType.DRIVE ||
       type === VolumeManagerCommon.VolumeType.ANDROID_FILES ||
       type === VolumeManagerCommon.VolumeType.CROSTINI ||
       type === VolumeManagerCommon.VolumeType.REMOVABLE ||

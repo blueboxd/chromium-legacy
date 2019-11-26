@@ -151,13 +151,12 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
 };
 
 TEST_P(SignedExchangeLoaderTest, Simple) {
-  network::mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client;
-  MockURLLoader mock_loader(mojo::MakeRequest(&loader));
+  MockURLLoader mock_loader(loader.InitWithNewPipeAndPassReceiver());
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          std::move(loader).PassInterface(),
-          loader_client.BindNewPipeAndPassReceiver());
+          std::move(loader), loader_client.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<network::mojom::URLLoaderClient> client;
   MockURLLoaderClient mock_client(client.InitWithNewPipeAndPassReceiver());

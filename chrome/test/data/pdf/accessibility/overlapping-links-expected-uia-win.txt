@@ -3,11 +3,7 @@ group
 ++++region Name='Page 1'
 ++++++group
 ++++++++link Name='start first link start second link end second link end first link<newline>'
-++++++++++description Name='start first link start second link end second link end first link<newline>' IsControlElement=false
 ++++++group
 ++++++++link Name=' start second link end second link'
-++++++++++description Name=' start second link end second link' IsControlElement=false
 ++++++++link Name='START FIRST LINK START SECOND LINK END FIRST LINK'
-++++++++++description Name='START FIRST LINK START SECOND LINK END FIRST LINK' IsControlElement=false
 ++++++++link Name='START SECOND LINK END FIRST LINK END SECOND LINK'
-++++++++++description Name='START SECOND LINK END FIRST LINK END SECOND LINK' IsControlElement=false

@@ -4,4 +4,3 @@ document
 ++++++description Name='Static fallback'
 ++++img
 ++++++link Name='Interactive fallback'
-++++++++description Name='Interactive fallback' IsControlElement=false

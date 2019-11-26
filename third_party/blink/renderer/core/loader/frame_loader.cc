@@ -1596,9 +1596,9 @@ void FrameLoader::ModifyRequestForCSP(
                                         "1");
   }
 
-  MixedContentChecker::UpgradeInsecureRequest(resource_request,
-                                              fetch_client_settings_object,
-                                              document_for_logging, frame_type);
+  MixedContentChecker::UpgradeInsecureRequest(
+      resource_request, fetch_client_settings_object, document_for_logging,
+      frame_type, frame_->GetContentSettingsClient());
 }
 
 void FrameLoader::ReportLegacyTLSVersion(const KURL& url,

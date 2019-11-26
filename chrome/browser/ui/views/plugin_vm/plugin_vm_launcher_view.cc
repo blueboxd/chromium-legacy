@@ -17,6 +17,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -275,6 +276,8 @@ void PluginVmLauncherView::OnDownloadProgressUpdated(
 
   download_progress_message_label_->SetText(
       GetDownloadProgressMessage(bytes_downloaded, content_length));
+  download_progress_message_label_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
   UpdateOperationProgress(bytes_downloaded, content_length, elapsed_time);
 }
 
@@ -495,16 +498,22 @@ void PluginVmLauncherView::UpdateOperationProgress(
   time_left_message_label_->SetText(
       ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
                              ui::TimeFormat::LENGTH_SHORT, remaining));
+  time_left_message_label_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
 }
 
 void PluginVmLauncherView::SetBigMessageLabel() {
   big_message_label_->SetText(GetBigMessage());
   big_message_label_->SetVisible(true);
+  big_message_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                                               true);
 }
 
 void PluginVmLauncherView::SetMessageLabel() {
   message_label_->SetText(GetMessage());
   message_label_->SetVisible(true);
+  message_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                                           true);
 }
 
 void PluginVmLauncherView::SetBigImage() {

@@ -126,7 +126,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       url_loader_client_receiver_;
 
   // URLLoader for sending out the request.
-  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
 
   // Whether this is a new download.
   bool is_new_download_;

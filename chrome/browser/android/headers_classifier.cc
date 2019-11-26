@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_string.h"
+#include "base/hash/hash.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "chrome/android/chrome_jni_headers/IntentHeadersRecorder_jni.h"
 #include "services/network/public/cpp/cors/cors.h"
 
@@ -18,7 +21,14 @@ jboolean JNI_IntentHeadersRecorder_IsCorsSafelistedHeader(
   std::string header_name(ConvertJavaStringToUTF8(env, j_header_name));
   std::string header_value(ConvertJavaStringToUTF8(env, j_header_value));
 
-  return network::cors::IsCorsSafelistedHeader(header_name, header_value);
+  if (network::cors::IsCorsSafelistedHeader(header_name, header_value))
+    return true;
+
+  base::UmaHistogramSparse(
+      "Android.IntentNonSafelistedHeaderNames",
+      base::PersistentHash(base::ToLowerASCII(header_name)));
+
+  return false;
 }
 
 }  // namespace android

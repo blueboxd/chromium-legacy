@@ -38,7 +38,7 @@ class AffiliationTestHelper {
   // Directory accounts). The pointers must outlive this object.
   static AffiliationTestHelper CreateForActiveDirectory(
       chromeos::FakeSessionManagerClient* fake_session_manager_client,
-      chromeos::FakeAuthPolicyClient* fake_auth_policy_client);
+      chromeos::FakeAuthPolicyClient* fake_authpolicy_client);
 
   // Allow move construction, so the static constructors can be used despite
   // DISALLOW_COPY_AND_ASSIGN.
@@ -85,7 +85,7 @@ class AffiliationTestHelper {
   AffiliationTestHelper(
       ManagementType management_type,
       chromeos::FakeSessionManagerClient* fake_session_manager_client,
-      chromeos::FakeAuthPolicyClient* fake_auth_policy_client);
+      chromeos::FakeAuthPolicyClient* fake_authpolicy_client);
 
   // ASSERTs on pointer validity.
   void CheckPreconditions();
@@ -93,7 +93,7 @@ class AffiliationTestHelper {
   ManagementType management_type_;
   chromeos::FakeSessionManagerClient*
       fake_session_manager_client_;                          // Not owned.
-  chromeos::FakeAuthPolicyClient* fake_auth_policy_client_;  // Not owned.
+  chromeos::FakeAuthPolicyClient* fake_authpolicy_client_;   // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationTestHelper);
 };

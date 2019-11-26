@@ -99,7 +99,7 @@ class TestAnimationEffect : public AnimationEffect {
       double time_to_next_iteration) const override {
     DCHECK(!local_time || !IsNull(local_time.value()));
     local_time_ = local_time;
-    time_to_next_iteration_ = time_to_next_iteration;
+    time_to_next_iteration_ = ValueOrUnresolved(time_to_next_iteration);
     return AnimationTimeDelta::FromSecondsD(-1);
   }
   double TakeLocalTime() {
@@ -109,9 +109,9 @@ class TestAnimationEffect : public AnimationEffect {
     return result;
   }
 
-  double TakeTimeToNextIteration() {
-    const double result = time_to_next_iteration_;
-    time_to_next_iteration_ = NullValue();
+  base::Optional<double> TakeTimeToNextIteration() {
+    const base::Optional<double> result = time_to_next_iteration_;
+    time_to_next_iteration_.reset();
     return result;
   }
 
@@ -123,7 +123,7 @@ class TestAnimationEffect : public AnimationEffect {
  private:
   Member<TestAnimationEffectEventDelegate> event_delegate_;
   mutable base::Optional<double> local_time_;
-  mutable double time_to_next_iteration_;
+  mutable base::Optional<double> time_to_next_iteration_;
 };
 
 TEST(AnimationAnimationEffectTest, Sanity) {
@@ -696,31 +696,40 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange) {
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0, animation_node->TakeLocalTime());
-  EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
+  base::Optional<double> time_to_next_iteration =
+      animation_node->TakeTimeToNextIteration();
+  EXPECT_TRUE(time_to_next_iteration);
+  EXPECT_TRUE(std::isinf(time_to_next_iteration.value()));
 
   // Normal iteration.
   animation_node->UpdateInheritedTime(1.75);
   EXPECT_EQ(1.75, animation_node->TakeLocalTime());
-  EXPECT_NEAR(0.05, animation_node->TakeTimeToNextIteration(),
-              0.000000000000001);
+  time_to_next_iteration = animation_node->TakeTimeToNextIteration();
+  EXPECT_TRUE(time_to_next_iteration);
+  EXPECT_NEAR(0.05, time_to_next_iteration.value(), 0.000000000000001);
 
   // Reverse iteration.
   animation_node->UpdateInheritedTime(2.75);
   EXPECT_EQ(2.75, animation_node->TakeLocalTime());
-  EXPECT_NEAR(0.05, animation_node->TakeTimeToNextIteration(),
-              0.000000000000001);
+  time_to_next_iteration = animation_node->TakeTimeToNextIteration();
+  EXPECT_TRUE(time_to_next_iteration);
+  EXPECT_NEAR(0.05, time_to_next_iteration.value(), 0.000000000000001);
 
   // Item ends before iteration finishes.
   animation_node->UpdateInheritedTime(3.4);
   EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_EQ(3.4, animation_node->TakeLocalTime());
-  EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
+  time_to_next_iteration = animation_node->TakeTimeToNextIteration();
+  EXPECT_TRUE(time_to_next_iteration);
+  EXPECT_TRUE(std::isinf(time_to_next_iteration.value()));
 
   // Item has finished.
   animation_node->UpdateInheritedTime(3.5);
   EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_EQ(3.5, animation_node->TakeLocalTime());
-  EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
+  time_to_next_iteration = animation_node->TakeTimeToNextIteration();
+  EXPECT_TRUE(time_to_next_iteration);
+  EXPECT_TRUE(std::isinf(time_to_next_iteration.value()));
 }
 
 TEST(AnimationAnimationEffectTest, UpdateTiming) {

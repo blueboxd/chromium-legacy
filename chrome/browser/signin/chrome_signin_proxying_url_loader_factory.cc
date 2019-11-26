@@ -171,7 +171,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
 
   // Messages received by |loader_receiver_| are forwarded to |target_loader_|.
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_;
-  network::mojom::URLLoaderPtr target_loader_;
+  mojo::Remote<network::mojom::URLLoader> target_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
 };
@@ -322,8 +322,8 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
 
   if (modified_headers.IsEmpty() && removed_headers.empty()) {
     factory_->target_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&target_loader_), routing_id, request_id, options,
-        request, std::move(proxy_client), traffic_annotation);
+        target_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
+        options, request, std::move(proxy_client), traffic_annotation);
 
     // We need to keep a full copy of the request headers in case there is a
     // redirect and the request headers need to be modified again.
@@ -335,8 +335,8 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       request_copy.headers.RemoveHeader(name);
 
     factory_->target_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&target_loader_), routing_id, request_id, options,
-        request_copy, std::move(proxy_client), traffic_annotation);
+        target_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
+        options, request_copy, std::move(proxy_client), traffic_annotation);
 
     headers_.Swap(&request_copy.headers);
   }

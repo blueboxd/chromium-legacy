@@ -112,17 +112,18 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
     // Disconnect from the network loader first.
     local_client_receiver_.reset();
-    network_loader_ = nullptr;
+    network_loader_.reset();
 
-    std::move(handler).Run(request_, mojo::MakeRequest(&appcache_loader_),
+    std::move(handler).Run(request_,
+                           appcache_loader_.BindNewPipeAndPassReceiver(),
                            local_client_receiver_.BindNewPipeAndPassRemote());
   }
 
   void CreateAndStartNetworkLoader() {
     DCHECK(!appcache_loader_);
     network_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
-        request_, local_client_receiver_.BindNewPipeAndPassRemote(),
+        network_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+        options_, request_, local_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation_);
     if (has_set_priority_)
       network_loader_->SetPriority(priority_, intra_priority_value_);
@@ -309,8 +310,8 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // The local receiver to either our network or appcache loader,
   // we only use one of them at any given time.
   mojo::Receiver<network::mojom::URLLoaderClient> local_client_receiver_{this};
-  network::mojom::URLLoaderPtr network_loader_;
-  network::mojom::URLLoaderPtr appcache_loader_;
+  mojo::Remote<network::mojom::URLLoader> network_loader_;
+  mojo::Remote<network::mojom::URLLoader> appcache_loader_;
 
   base::WeakPtr<AppCacheHost> host_;
 

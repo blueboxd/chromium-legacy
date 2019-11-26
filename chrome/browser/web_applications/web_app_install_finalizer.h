@@ -15,10 +15,6 @@
 class Profile;
 struct WebApplicationInfo;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace web_app {
 
 class WebApp;
@@ -31,8 +27,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                          WebAppSyncBridge* sync_bridge,
                          WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,

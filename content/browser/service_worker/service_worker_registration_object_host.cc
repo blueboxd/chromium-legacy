@@ -484,8 +484,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     return false;
   }
 
-  if (!container_host_->provider_host()->AllowServiceWorker(
-          registration_->scope(), GURL())) {
+  if (!container_host_->AllowServiceWorker(registration_->scope(), GURL())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         error_prefix + ServiceWorkerConsts::kUserDeniedPermissionMessage,

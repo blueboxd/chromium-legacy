@@ -87,10 +87,6 @@ FetchClientSettingsObjectImpl::GetUpgradeInsecureNavigationsSet() const {
       .InsecureNavigationsToUpgrade();
 }
 
-bool FetchClientSettingsObjectImpl::GetMixedAutoUpgradeOptOut() const {
-  return execution_context_->GetSecurityContext().GetMixedAutoUpgradeOptOut();
-}
-
 void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   FetchClientSettingsObject::Trace(visitor);

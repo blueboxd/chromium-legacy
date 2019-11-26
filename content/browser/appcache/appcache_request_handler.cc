@@ -19,7 +19,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -579,7 +578,7 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceRequest& request,
     const network::ResourceResponseHead& response,
     mojo::ScopedDataPipeConsumerHandle* response_body,
-    network::mojom::URLLoaderPtr* loader,
+    mojo::PendingRemote<network::mojom::URLLoader>* loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
     blink::ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors,
@@ -591,7 +590,7 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
   bool was_called = false;
   loader_callback_ = base::BindOnce(
       [](const network::ResourceRequest& resource_request,
-         network::mojom::URLLoaderPtr* loader,
+         mojo::PendingRemote<network::mojom::URLLoader>* loader,
          mojo::PendingReceiver<network::mojom::URLLoaderClient>*
              client_receiver,
          bool* was_called,
@@ -599,7 +598,8 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
         *was_called = true;
         mojo::PendingRemote<network::mojom::URLLoaderClient> client;
         *client_receiver = client.InitWithNewPipeAndPassReceiver();
-        std::move(handler).Run(resource_request, mojo::MakeRequest(loader),
+        std::move(handler).Run(resource_request,
+                               loader->InitWithNewPipeAndPassReceiver(),
                                std::move(client));
       },
       *(request_->GetResourceRequest()), loader, client_receiver, &was_called);

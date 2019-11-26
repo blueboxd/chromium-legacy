@@ -146,7 +146,7 @@ class CONTENT_EXPORT FrameTree {
   // Adds a new child frame to the frame tree. |process_id| is required to
   // disambiguate |new_routing_id|, and it must match the process of the
   // |parent| node. Otherwise no child is added and this method returns false.
-  // |interface_provider_request| is the request end of the InterfaceProvider
+  // |interface_provider_receiver| is the receiver end of the InterfaceProvider
   // interface through which the child RenderFrame can access Mojo services
   // exposed by the corresponding RenderFrameHost. The caller takes care of
   // sending the client end of the interface down to the RenderFrame.
@@ -154,8 +154,8 @@ class CONTENT_EXPORT FrameTree {
       FrameTreeNode* parent,
       int process_id,
       int new_routing_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,

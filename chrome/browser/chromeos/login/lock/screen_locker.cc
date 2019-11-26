@@ -596,7 +596,8 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     // screen while remaining secure in the case the user walks away during
     // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
     VLOG(1) << "The user session cannot be locked, logging out";
-    SessionTerminationManager::Get()->StopSession();
+    SessionTerminationManager::Get()->StopSession(
+        login_manager::SessionStopReason::FAILED_TO_LOCK);
   }
 }
 

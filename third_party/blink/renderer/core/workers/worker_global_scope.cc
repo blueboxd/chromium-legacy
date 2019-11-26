@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -486,9 +487,9 @@ WorkerGlobalScope::WorkerGlobalScope(
   // worker types provide a valid |creation_params->interface_provider|.
   if (creation_params->interface_provider.is_valid()) {
     interface_provider_.Bind(
-        mojo::MakeProxy(service_manager::mojom::InterfaceProviderPtrInfo(
+        mojo::PendingRemote<service_manager::mojom::InterfaceProvider>(
             creation_params->interface_provider.PassHandle(),
-            service_manager::mojom::InterfaceProvider::Version_)));
+            service_manager::mojom::InterfaceProvider::Version_));
   }
 
   if (creation_params->browser_interface_broker.is_valid()) {

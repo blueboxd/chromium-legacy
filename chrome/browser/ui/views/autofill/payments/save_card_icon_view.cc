@@ -45,11 +45,9 @@ views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
       controller->GetSaveCardBubbleView());
 }
 
-bool SaveCardIconView::Update() {
+void SaveCardIconView::UpdateImpl() {
   if (!GetWebContents())
-    return false;
-
-  const bool was_visible = GetVisible();
+    return;
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleController* controller = GetController();
@@ -69,8 +67,6 @@ bool SaveCardIconView::Update() {
 
   if (command_enabled && controller->ShouldShowCardSavedLabelAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
-
-  return was_visible != GetVisible();
 }
 
 void SaveCardIconView::OnExecuting(

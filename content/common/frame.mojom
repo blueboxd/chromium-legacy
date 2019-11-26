@@ -49,7 +49,8 @@ const string kNavigation_FrameSpec = "navigation:frame";
 
 // Implemented by the frame provider (e.g. renderer processes).
 interface Frame {
-  GetInterfaceProvider(service_manager.mojom.InterfaceProvider& interfaces);
+  GetInterfaceProvider(
+      pending_receiver<service_manager.mojom.InterfaceProvider> interfaces);
   GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
 
   // Causes all new subresource requests to be blocked (not being started) until

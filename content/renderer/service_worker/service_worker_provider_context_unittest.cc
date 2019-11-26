@@ -20,7 +20,6 @@
 #include "content/public/common/resource_type.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -288,11 +287,12 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.resource_type = static_cast<int>(ResourceType::kSubResource);
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, loader_client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        NextRequestId(), network::mojom::kURLLoadOptionNone, request,
+        loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -305,6 +305,11 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   base::test::TaskEnvironment task_environment;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+ private:
+  int NextRequestId() { return request_id_++; }
+
+  int request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };
@@ -821,11 +826,11 @@ TEST_F(ServiceWorkerProviderContextTest,
   network::ResourceRequest request;
   request.url = GURL("https://www.example.com/random.js");
   request.resource_type = static_cast<int>(ResourceType::kSubResource);
-  network::mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
   network::TestURLLoaderClient loader_client;
   wrapped_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-      request, loader_client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+      network::mojom::kURLLoadOptionNone, request, loader_client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 

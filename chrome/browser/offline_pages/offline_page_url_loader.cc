@@ -90,7 +90,6 @@ OfflinePageURLLoader::OfflinePageURLLoader(
       frame_tree_node_id_(frame_tree_node_id),
       transition_type_(tentative_resource_request.transition_type),
       loader_callback_(std::move(callback)),
-      binding_(this),
       is_offline_preview_allowed_(tentative_resource_request.previews_state &
                                   content::OFFLINE_PAGE_ON) {
   // TODO(crbug.com/876527): Figure out how offline page interception should
@@ -195,7 +194,7 @@ void OfflinePageURLLoader::TransferRawData() {
 void OfflinePageURLLoader::SetOfflinePageNavigationUIData(
     bool is_offline_page) {
   // This method should be called before the response data is received.
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
 
   ChromeNavigationUIData* navigation_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data_);
@@ -251,11 +250,10 @@ void OfflinePageURLLoader::OnReceiveResponse(
   // interact with URLLoaderThrottles. It might be incorrect to ignore
   // |resource_request| here, since it's the current request after
   // throttles.
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(receiver));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&OfflinePageURLLoader::OnConnectionError,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &OfflinePageURLLoader::OnMojoDisconnect, weak_ptr_factory_.GetWeakPtr()));
   client_.Bind(std::move(client));
 
   mojo::DataPipe pipe(kBufferSize);
@@ -323,14 +321,14 @@ void OfflinePageURLLoader::Finish(int error) {
   MaybeDeleteSelf();
 }
 
-void OfflinePageURLLoader::OnConnectionError() {
-  binding_.Close();
+void OfflinePageURLLoader::OnMojoDisconnect() {
+  receiver_.reset();
   client_.reset();
   MaybeDeleteSelf();
 }
 
 void OfflinePageURLLoader::MaybeDeleteSelf() {
-  if (!binding_.is_bound() && !client_.is_bound())
+  if (!receiver_.is_bound() && !client_.is_bound())
     delete this;
 }
 

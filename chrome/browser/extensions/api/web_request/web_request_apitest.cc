@@ -1898,12 +1898,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       ->CreateURLLoaderFactory(std::move(pending_receiver), std::move(params));
 
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
   network::ResourceRequest resource_request;
   resource_request.url = embedded_test_server()->GetURL("/hung");
   factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-      resource_request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+      network::mojom::kURLLoadOptionNone, resource_request,
+      client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Destroy profile, unbind client to cause a connection error, and delete the

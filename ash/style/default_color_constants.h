@@ -26,7 +26,6 @@ constexpr SkColor kUnifiedMenuButtonColor =
     SkColorSetA(gfx::kGoogleGrey200, 0x14);
 constexpr SkColor kUnifiedMenuButtonColorActive = gfx::kGoogleBlueDark600;
 constexpr SkColor kProminentIconButtonColor = gfx::kGoogleGreen700;
-constexpr SkColor kLogoutButtonTrayColor = gfx::kGoogleRed700;
 
 //----------------------------------End----------------------------------------
 

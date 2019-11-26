@@ -219,17 +219,17 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   auto client = std::make_unique<TestURLLoaderClient>();
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      url_loader_options, request, client->CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, url_loader_options, request, client->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client->RunUntilComplete();
   return client;
 }
 
-// Creates a URLLoaderPtr and fetches |request| after going through
+// Creates a remote for URLLoader and fetches |request| after going through
 // |redirect_counts| redirects.
 std::unique_ptr<TestURLLoaderClient> FetchRedirectedRequest(
     size_t redirect_counts,
@@ -243,10 +243,10 @@ std::unique_ptr<TestURLLoaderClient> FetchRedirectedRequest(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
   auto client = std::make_unique<TestURLLoaderClient>();
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   while (redirect_counts > 0) {
@@ -551,11 +551,11 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilResponseReceived();
@@ -1212,11 +1212,11 @@ TEST_F(NetworkContextTest, CertReporting) {
     network_context->CreateURLLoaderFactory(
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -1276,11 +1276,11 @@ TEST_F(NetworkContextTest, Referrers) {
       request.referrer = kReferrer;
       request.referrer_policy = referrer_policy;
 
-      mojom::URLLoaderPtr loader;
+      mojo::PendingRemote<mojom::URLLoader> loader;
       TestURLLoaderClient client;
       loader_factory->CreateLoaderAndStart(
-          mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-          0 /* options */, request, client.CreateRemote(),
+          loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+          0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -3972,11 +3972,11 @@ TEST_F(NetworkContextTest, TrustedParams) {
     ResourceRequest request;
     request.url = test_server.GetURL("/echo");
     request.trusted_params = ResourceRequest::TrustedParams();
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4031,11 +4031,11 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
     request.load_flags = net::LOAD_BYPASS_CACHE;
     request.trusted_params = ResourceRequest::TrustedParams();
     request.trusted_params->disable_secure_dns = disable_secure_dns;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4461,11 +4461,11 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfProxyConnection) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed due to an unreachable proxy.
@@ -4516,11 +4516,11 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed.
@@ -4657,11 +4657,11 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(loader_params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed.
@@ -4738,11 +4738,11 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     ResourceRequest request;
     request.url = proxy_data.url;
 
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4854,11 +4854,12 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
 
   // First, do a request with kURLLoadOptionUseHeaderClient set.
   {
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4877,11 +4878,11 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
   // Next, do a request without kURLLoadOptionUseHeaderClient set, headers
   // should not be modified.
   {
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4921,11 +4922,12 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
   // First, fail request on OnBeforeSendHeaders.
   {
     header_client.set_on_before_send_headers_result(net::ERR_FAILED);
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4936,11 +4938,12 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
   {
     header_client.set_on_before_send_headers_result(net::OK);
     header_client.set_on_headers_received_result(net::ERR_FAILED);
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+        client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -5070,11 +5073,12 @@ TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+      client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5120,11 +5124,12 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+      client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5169,11 +5174,12 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, mojom::kURLLoadOptionUseHeaderClient, request,
+      client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5746,28 +5752,28 @@ TEST_F(NetworkContextTest, MaximumCount) {
   ResourceRequest request;
   request.url = test_server.GetURL(kPath1);
   auto client1 = std::make_unique<TestURLLoaderClient>();
-  mojom::URLLoaderPtr loader1;
+  mojo::PendingRemote<mojom::URLLoader> loader1;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader1), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client1->CreateRemote(),
+      loader1.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client1->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   request.url = test_server.GetURL(kPath2);
   auto client2 = std::make_unique<TestURLLoaderClient>();
-  mojom::URLLoaderPtr loader2;
+  mojo::PendingRemote<mojom::URLLoader> loader2;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader2), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client2->CreateRemote(),
+      loader2.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client2->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // A third request should fail, since the first two are outstanding and the
   // limit is 2.
   request.url = test_server.GetURL(kPath3);
   auto client3 = std::make_unique<TestURLLoaderClient>();
-  mojom::URLLoaderPtr loader3;
+  mojo::Remote<mojom::URLLoader> loader3;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client3->CreateRemote(),
+      loader3.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client3->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client3->RunUntilComplete();
@@ -5783,9 +5789,10 @@ TEST_F(NetworkContextTest, MaximumCount) {
   ASSERT_EQ(client1->completion_status().error_code, net::OK);
 
   client3 = std::make_unique<TestURLLoaderClient>();
+  loader3.reset();
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client3->CreateRemote(),
+      loader3.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, 0 /* options */, request, client3->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client3->RunUntilComplete();
@@ -6409,10 +6416,11 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
     network_context_->CreateURLLoaderFactory(
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
     auto client = std::make_unique<TestURLLoaderClient>();
-    mojom::URLLoaderPtr loader;
+    mojo::Remote<mojom::URLLoader> loader;
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionNone, request, client->CreateRemote(),
+        loader.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, mojom::kURLLoadOptionNone, request,
+        client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     if (expect_redirect) {

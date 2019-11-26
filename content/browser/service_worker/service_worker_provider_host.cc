@@ -208,7 +208,7 @@ ServiceWorkerProviderHost::CreateForWebWorker(
       FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
       std::move(container_remote), /*running_hosted_version=*/nullptr,
       context));
-  host->SetRenderProcessId(process_id);
+  host->container_host()->SetContainerProcessId(process_id);
 
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
@@ -237,9 +237,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     scoped_refptr<ServiceWorkerVersion> running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
-      create_time_(base::TimeTicks::Now()),
-      render_process_id_(ChildProcessHost::kInvalidUniqueID),
-      frame_id_(MSG_ROUTING_NONE),
       running_hosted_version_(std::move(running_hosted_version)),
       context_(context),
       interface_provider_binding_(this),
@@ -275,7 +272,8 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
       IsProviderForClient()) {
-    auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
+    auto* rfh = RenderFrameHostImpl::FromID(container_host_->process_id(),
+                                            container_host_->frame_id());
     if (rfh)
       rfh->RemoveServiceWorkerProviderHost(this);
   }
@@ -437,14 +435,6 @@ ServiceWorkerRegistration* ServiceWorkerProviderHost::MatchRegistration()
   return nullptr;
 }
 
-// TODO(https://crbug.com/931087): Move |render_process_id_|, |frame_id_|, and
-// AllowServiceWorker() to ServiceWorkerContainerHost.
-bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
-                                                   const GURL& script_url) {
-  return container_host_->AllowServiceWorker(scope, script_url,
-                                             render_process_id_, frame_id_);
-}
-
 void ServiceWorkerProviderHost::NotifyControllerLost() {
   container_host_->SetControllerRegistration(
       nullptr, true /* notify_controllerchange */);
@@ -468,13 +458,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
             provider_type());
 
-  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id);
-  SetRenderProcessId(render_process_id);
-
-  DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
-  DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
-  frame_id_ = render_frame_id;
+  container_host_->OnBeginNavigationCommit(render_process_id, render_frame_id,
+                                           cross_origin_embedder_policy);
 
   DCHECK(!cross_origin_embedder_policy_.has_value());
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
@@ -490,7 +475,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
       provider_type() == blink::mojom::ServiceWorkerProviderType::kForWindow) {
-    auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
+    auto* rfh = RenderFrameHostImpl::FromID(container_host_->process_id(),
+                                            container_host_->frame_id());
     // |rfh| may be null in tests (but it should not happen in production).
     if (rfh)
       rfh->AddServiceWorkerProviderHost(this);
@@ -502,19 +488,19 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         broker_receiver) {
   DCHECK(context_);
-  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, worker_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
-            provider_type());
-  SetRenderProcessId(process_id);
+  DCHECK(IsProviderForServiceWorker());
+  SetWorkerProcessId(process_id);
 
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
-      std::move(interface_provider_request)));
+      std::move(interface_provider_receiver)));
 
   broker_receiver_.Bind(std::move(broker_receiver));
 }
@@ -1017,7 +1003,7 @@ void ServiceWorkerProviderHost::GetInterface(
                         base::BindOnce(&GetInterfaceImpl, interface_name,
                                        std::move(interface_pipe),
                                        running_hosted_version_->script_origin(),
-                                       render_process_id_));
+                                       worker_process_id_));
 }
 
 template <typename CallbackType, typename... Args>
@@ -1047,7 +1033,7 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
     return false;
   }
 
-  if (!AllowServiceWorker(scope, script_url)) {
+  if (!container_host_->AllowServiceWorker(scope, script_url)) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +
@@ -1065,7 +1051,7 @@ void ServiceWorkerProviderHost::CreateQuicTransportConnector(
   DCHECK(IsProviderForServiceWorker());
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreateQuicTransportConnectorImpl, render_process_id_,
+      base::BindOnce(&CreateQuicTransportConnectorImpl, worker_process_id_,
                      running_hosted_version_->script_origin(),
                      std::move(receiver)));
 }
@@ -1082,7 +1068,8 @@ void ServiceWorkerProviderHost::EvictFromBackForwardCache() {
   DCHECK_EQ(provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForWindow);
   is_in_back_forward_cache_ = false;
-  auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
+  auto* rfh = RenderFrameHostImpl::FromID(container_host_->process_id(),
+                                          container_host_->frame_id());
   // |rfh| could be evicted before this function is called.
   if (!rfh || !rfh->is_in_back_forward_cache())
     return;
@@ -1113,10 +1100,9 @@ void ServiceWorkerProviderHost::OnRestoreFromBackForwardCache() {
   is_in_back_forward_cache_ = false;
 }
 
-void ServiceWorkerProviderHost::SetRenderProcessId(int process_id) {
-  render_process_id_ = process_id;
-  if (container_host_->controller())
-    container_host_->controller()->UpdateForegroundPriority();
+void ServiceWorkerProviderHost::SetWorkerProcessId(int worker_process_id) {
+  DCHECK(IsProviderForServiceWorker());
+  worker_process_id_ = worker_process_id;
 }
 
 }  // namespace content

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,18 +72,18 @@ public class CustomTabStatusBarColorProviderTest {
     public void useTabThemeColor_enable() {
         mColorProvider.setUseTabThemeColor(true);
         Assert.assertEquals(UNDEFINED_STATUS_BAR_COLOR, getStatusBarColor());
-        verify(mStatusBarColorController).updateStatusBarColor(any(Tab.class));
+        verify(mStatusBarColorController).updateStatusBarColor();
     }
 
     @Test
     public void useTabThemeColor_disable() {
         mColorProvider.setUseTabThemeColor(true);
         Assert.assertEquals(UNDEFINED_STATUS_BAR_COLOR, getStatusBarColor());
-        verify(mStatusBarColorController).updateStatusBarColor(any(Tab.class));
+        verify(mStatusBarColorController).updateStatusBarColor();
 
         mColorProvider.setUseTabThemeColor(false);
         Assert.assertEquals(USER_PROVIDED_COLOR, getStatusBarColor());
-        verify(mStatusBarColorController, times(2)).updateStatusBarColor(any(Tab.class));
+        verify(mStatusBarColorController, times(2)).updateStatusBarColor();
     }
 
     @Test
@@ -93,7 +92,7 @@ public class CustomTabStatusBarColorProviderTest {
         mColorProvider.setUseTabThemeColor(true);
 
         Assert.assertEquals(UNDEFINED_STATUS_BAR_COLOR, getStatusBarColor());
-        verify(mStatusBarColorController).updateStatusBarColor(any(Tab.class));
+        verify(mStatusBarColorController).updateStatusBarColor();
     }
 
     private int getStatusBarColor() {

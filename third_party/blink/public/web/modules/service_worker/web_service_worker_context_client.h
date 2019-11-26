@@ -55,7 +55,7 @@ class WebString;
 // Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
 // boundary between //content and Blink.
 struct WebFetchEventPreloadHandle {
-  // For network::mojom::URLLoaderPtrInfo.
+  // For mojo::PendingRemote<network::mojom::URLLoader>.
   mojo::ScopedMessagePipeHandle url_loader;
   // For mojo::PendingReceiver<network::mojom::URLLoaderClient>.
   mojo::ScopedMessagePipeHandle url_loader_client_receiver;

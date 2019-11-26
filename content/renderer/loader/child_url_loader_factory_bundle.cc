@@ -23,7 +23,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
                        public network::mojom::URLLoader {
  public:
   URLLoaderRelay(
-      network::mojom::URLLoaderPtr loader_sink,
+      mojo::PendingRemote<network::mojom::URLLoader> loader_sink,
       mojo::PendingReceiver<network::mojom::URLLoaderClient> client_source,
       mojo::Remote<network::mojom::URLLoaderClient> client_sink)
       : loader_sink_(std::move(loader_sink)),
@@ -93,7 +93,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   }
 
  private:
-  network::mojom::URLLoaderPtr loader_sink_;
+  mojo::Remote<network::mojom::URLLoader> loader_sink_;
   mojo::Receiver<network::mojom::URLLoaderClient> client_source_receiver_;
   mojo::Remote<network::mojom::URLLoaderClient> client_sink_;
 };
@@ -216,8 +216,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     client_remote->OnReceiveResponse(std::move(transferrable_loader->head));
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<URLLoaderRelay>(
-            network::mojom::URLLoaderPtr(
-                std::move(transferrable_loader->url_loader)),
+            std::move(transferrable_loader->url_loader),
             std::move(transferrable_loader->url_loader_client),
             std::move(client_remote)),
         std::move(loader));

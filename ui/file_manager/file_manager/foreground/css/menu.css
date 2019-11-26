@@ -37,6 +37,10 @@ cr-menu > [shortcutText]::after {
   padding-inline-start: 30px;
 }
 
+html[dir='rtl'] cr-menu > [shortcutText]::after {
+  float: left;
+}
+
 cr-menu > [sub-menu]::after {
   color: rgb(100, 100, 100);
   content: '\25b6';
@@ -44,12 +48,13 @@ cr-menu > [sub-menu]::after {
   font-size: 0.7em;
 }
 
-cr-menu > [sub-menu][disabled]::after {
-  color: rgba(51, 51, 51, 0.20);
+html[dir='rtl'] cr-menu > [sub-menu]::after {
+  content: '\25c0';
+  float: left;
 }
 
-html[dir='rtl'] cr-menu > [shortcutText]::after {
-  float: left;
+cr-menu > [sub-menu][disabled]::after {
+  color: rgba(51, 51, 51, 0.20);
 }
 
 /* Keeps menu visibile while animating. Fade out animation is performed by

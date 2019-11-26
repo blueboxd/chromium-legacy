@@ -359,6 +359,11 @@ void WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo(
     return;
   }
 
+  if (result == WebAppUrlLoader::Result::kFailedPageTookTooLong) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadTimeOut);
+    return;
+  }
+
   if (result != WebAppUrlLoader::Result::kUrlLoaded) {
     CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadFailed);
     return;
@@ -380,6 +385,12 @@ void WebAppInstallTask::OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
     CallInstallCallback(AppId(), InstallResultCode::kInstallURLRedirected);
     return;
   }
+
+  if (result == WebAppUrlLoader::Result::kFailedPageTookTooLong) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadTimeOut);
+    return;
+  }
+
   if (result != WebAppUrlLoader::Result::kUrlLoaded) {
     CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadFailed);
     return;
@@ -401,12 +412,10 @@ void WebAppInstallTask::OnWebAppInstallabilityChecked(
 
   if (is_installable) {
     DCHECK(manifest);
-    // TODO(loyso): Consider generalizing this class slightly to avoid abusing
-    // kSuccessNewInstall and kFailedUnknownReason to indicate installability.
     CallInstallCallback(GenerateAppIdFromURL(manifest->start_url),
                         InstallResultCode::kSuccessNewInstall);
   } else {
-    CallInstallCallback(AppId(), InstallResultCode::kFailedUnknownReason);
+    CallInstallCallback(AppId(), InstallResultCode::kNotInstallable);
   }
 }
 

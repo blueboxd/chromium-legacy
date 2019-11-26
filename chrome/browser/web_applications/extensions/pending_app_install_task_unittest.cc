@@ -790,7 +790,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderFails) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
+        EXPECT_EQ(InstallResultCode::kFailedPlaceholderUninstall, result.code);
         EXPECT_FALSE(result.app_id.has_value());
         EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
 
@@ -862,7 +862,7 @@ TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
                       {WebAppUrlLoader::Result::kFailedUnknownReason,
                        InstallResultCode::kInstallURLLoadFailed},
                       {WebAppUrlLoader::Result::kFailedPageTookTooLong,
-                       InstallResultCode::kInstallURLLoadFailed}};
+                       InstallResultCode::kInstallURLLoadTimeOut}};
 
   for (const auto& result_pair : result_pairs) {
     base::RunLoop run_loop;

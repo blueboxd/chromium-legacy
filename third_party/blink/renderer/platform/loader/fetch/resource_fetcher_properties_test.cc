@@ -27,8 +27,7 @@ class DetachableResourceFetcherPropertiesTest : public testing::Test {
         "https://example.com/foo.html", HttpsState::kModern,
         AllowedByNosniff::MimeTypeCheck::kStrict, address_space,
         kLeaveInsecureRequestsAlone,
-        FetchClientSettingsObject::InsecureNavigationsSet(),
-        false /* mixed_autoupgrade_opt_out */);
+        FetchClientSettingsObject::InsecureNavigationsSet());
   }
 };
 

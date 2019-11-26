@@ -63,11 +63,11 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -217,7 +217,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // through Blink and Create.
   static void CreateFrame(
       int routing_id,
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+          interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       int previous_routing_id,
@@ -239,13 +240,13 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Constructor parameters are bundled into a struct.
   struct CONTENT_EXPORT CreateParams {
-    CreateParams(
-        RenderViewImpl* render_view,
-        int32_t routing_id,
-        service_manager::mojom::InterfaceProviderPtr interface_provider,
-        mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-            browser_interface_broker,
-        const base::UnguessableToken& devtools_frame_token);
+    CreateParams(RenderViewImpl* render_view,
+                 int32_t routing_id,
+                 mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+                     interface_provider,
+                 mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+                     browser_interface_broker,
+                 const base::UnguessableToken& devtools_frame_token);
     ~CreateParams();
 
     CreateParams(CreateParams&&);
@@ -253,7 +254,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
     RenderViewImpl* render_view;
     int32_t routing_id;
-    service_manager::mojom::InterfaceProviderPtr interface_provider;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider;
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker;
     base::UnguessableToken devtools_frame_token;
@@ -501,7 +503,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
-      service_manager::mojom::InterfaceProviderRequest request) override;
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
+      override;
   void GetCanonicalUrlForSharing(
       GetCanonicalUrlForSharingCallback callback) override;
   void BlockRequests() override;
@@ -1039,7 +1042,8 @@ class CONTENT_EXPORT RenderFrameImpl
   static RenderFrameImpl* Create(
       RenderViewImpl* render_view,
       int32_t routing_id,
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+          interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       const base::UnguessableToken& devtools_frame_token);
@@ -1601,8 +1605,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool enable_mojo_js_bindings_ = false;
 
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
-  mojo::BindingSet<service_manager::mojom::InterfaceProvider>
-      interface_provider_bindings_;
+  mojo::ReceiverSet<service_manager::mojom::InterfaceProvider>
+      interface_provider_receivers_;
 
   // URLLoaderFactory instances used for subresource loading.
   // Depending on how the frame was created, |loader_factories_| could be:

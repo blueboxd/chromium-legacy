@@ -59,6 +59,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
@@ -445,8 +446,8 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect(
       base::BindOnce(&ConnectAsync, std::move(pipe.handle1),
                      GetServiceProcessServerName(), mojo_connection));
   ServiceProcessControl::GetInstance()->SetMojoHandle(
-      mojo::MakeProxy(service_manager::mojom::InterfaceProviderPtrInfo(
-          std::move(pipe.handle0), 0U)));
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>(
+          std::move(pipe.handle0), 0U));
 }
 
 void CloudPrintProxyPolicyStartupTest::ShutdownAndWaitForExitWithTimeout(

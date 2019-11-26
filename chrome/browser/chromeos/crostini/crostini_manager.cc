@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -81,6 +82,10 @@ chromeos::CiceroneClient* GetCiceroneClient() {
 
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+}
+
+chromeos::AnomalyDetectorClient* GetAnomalyDetectorClient() {
+  return chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient();
 }
 
 // Find any callbacks for the specified |vm_name|, invoke them with
@@ -697,6 +702,7 @@ CrostiniManager::CrostiniManager(Profile* profile)
   GetCiceroneClient()->AddObserver(this);
   GetConciergeClient()->AddVmObserver(this);
   GetConciergeClient()->AddContainerObserver(this);
+  GetAnomalyDetectorClient()->AddObserver(this);
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->AddObserver(this);
   }
@@ -714,6 +720,7 @@ void CrostiniManager::RemoveDBusObservers() {
   dbus_observers_removed_ = true;
   GetCiceroneClient()->RemoveObserver(this);
   GetConciergeClient()->RemoveContainerObserver(this);
+  GetAnomalyDetectorClient()->RemoveObserver(this);
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   }
@@ -1008,6 +1015,12 @@ void CrostiniManager::StartTerminaVm(std::string name,
   std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
     LOG(ERROR) << "Disk path cannot be empty";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  if (!GetAnomalyDetectorClient()->IsGuestFileCorruptionSignalConnected()) {
+    LOG(ERROR) << "GuestFileCorruptionSignal not connected, will not be "
+                  "able to detect file system corruption.";
     std::move(callback).Run(/*success=*/false);
     return;
   }
@@ -1723,41 +1736,6 @@ void CrostiniManager::OnDetachUsbDevice(
   std::move(callback).Run(/*success=*/true);
 }
 
-void CrostiniManager::ListUsbDevices(const std::string& vm_name,
-                                     ListUsbDevicesCallback callback) {
-  vm_tools::concierge::ListUsbDeviceRequest request;
-  request.set_vm_name(vm_name);
-  request.set_owner_id(CryptohomeIdForProfile(profile_));
-
-  GetConciergeClient()->ListUsbDevices(
-      std::move(request), base::BindOnce(&CrostiniManager::OnListUsbDevices,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         vm_name, std::move(callback)));
-}
-
-void CrostiniManager::OnListUsbDevices(
-    const std::string& vm_name,
-    ListUsbDevicesCallback callback,
-    base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response) {
-  if (!response) {
-    LOG(ERROR) << "Failed to list USB devices, empty dbus response";
-    std::move(callback).Run(/*success=*/false, {});
-    return;
-  }
-
-  if (!response->success()) {
-    LOG(ERROR) << "Failed to list USB devices";
-    std::move(callback).Run(/*success=*/false, {});
-    return;
-  }
-
-  std::vector<std::pair<std::string, uint8_t>> mount_points;
-  for (const auto& dev : response->usb_devices()) {
-    mount_points.push_back(std::make_pair(vm_name, dev.guest_port()));
-  }
-  std::move(callback).Run(/*success=*/true, std::move(mount_points));
-}
-
 CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     std::string vm_name,
     std::string container_name,
@@ -2006,6 +1984,19 @@ void CrostiniManager::OnStartTerminaVm(
     return;
   }
 
+  switch (response->mount_result()) {
+    case vm_tools::concierge::StartVmResponse::PARTIAL_DATA_LOSS:
+      base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
+                                    CorruptionStates::MOUNT_ROLLED_BACK);
+      break;
+    case vm_tools::concierge::StartVmResponse::FAILURE:
+      base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
+                                    CorruptionStates::MOUNT_FAILED);
+      break;
+    default:
+      break;
+  }
+
   // If the vm is already marked "running" run the callback.
   if (response->status() == vm_tools::concierge::VM_STATUS_RUNNING) {
     running_vms_[vm_name] =
@@ -2167,6 +2158,12 @@ void CrostiniManager::OnDefaultContainerConfigured(bool success) {
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, kCrostiniDefaultVmName,
       kCrostiniDefaultContainerName, result);
+}
+
+void CrostiniManager::OnGuestFileCorruption(
+    const anomaly_detector::GuestFileCorruptionSignal& signal) {
+  base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
+                                CorruptionStates::OTHER_CORRUPTION);
 }
 
 void CrostiniManager::OnVmStarted(

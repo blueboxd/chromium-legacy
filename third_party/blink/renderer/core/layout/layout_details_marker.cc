@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_details_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/paint/details_marker_painter.h"
@@ -55,11 +56,10 @@ bool LayoutDetailsMarker::IsOpen() const {
     const auto* node = layout_object->GetNode();
     if (!node)
       continue;
-    if (IsHTMLDetailsElement(*node)) {
-      return !To<Element>(node)
-                  ->FastGetAttribute(html_names::kOpenAttr)
-                  .IsNull();
-    }
+
+    if (auto* details = DynamicTo<HTMLDetailsElement>(node))
+      return details->FastHasAttribute(html_names::kOpenAttr);
+
     if (IsHTMLInputElement(*node))
       return true;
   }

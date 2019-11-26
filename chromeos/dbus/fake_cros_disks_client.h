@@ -150,6 +150,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
     return get_device_properties_success_count_;
   }
 
+  // Prevent subsequent Mount() calls from taking any action or responding via
+  // its callback.
+  void BlockMount() { block_mount_ = true; }
+
  private:
   // Continuation of Mount().
   void DidMount(const std::string& source_path,
@@ -176,6 +180,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   std::vector<CustomMountPointCallback> custom_mount_point_callbacks_;
   const DiskInfo* next_get_device_properties_disk_info_ = nullptr;
   int get_device_properties_success_count_ = 0;
+  bool block_mount_ = false;
 
   base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_{this};
 

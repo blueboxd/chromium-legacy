@@ -932,8 +932,10 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
   auto* service = safe_browsing::ChromePasswordProtectionService::
       GetPasswordProtectionService(profile_);
+  std::vector<size_t> placeholder_offsets;
   security_description->details = service->GetWarningDetailText(
-      service->reused_password_account_type_for_last_shown_warning());
+      service->reused_password_account_type_for_last_shown_warning(),
+      &placeholder_offsets);
   security_description->type = SecurityDescriptionType::SAFE_BROWSING;
   return security_description;
 }

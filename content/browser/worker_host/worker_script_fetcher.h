@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -87,7 +88,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // URLLoader instance for handling a response received from the default
   // network loader. This can be provided by an interceptor. For example,
   // AppCache's interceptor creates this for AppCache's fallback case.
-  network::mojom::URLLoaderPtr response_url_loader_;
+  mojo::PendingRemote<network::mojom::URLLoader> response_url_loader_;
   mojo::Receiver<network::mojom::URLLoaderClient> response_url_loader_receiver_{
       this};
 

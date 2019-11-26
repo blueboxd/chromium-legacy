@@ -52,14 +52,12 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return PasswordBubbleViewBase::manage_password_bubble();
 }
 
-bool ManagePasswordsIconViews::Update() {
+void ManagePasswordsIconViews::UpdateImpl() {
   if (!GetWebContents())
-    return false;
+    return;
 
-  const bool was_visible = GetVisible();
   ManagePasswordsUIController::FromWebContents(GetWebContents())
       ->UpdateIconAndBubbleState(this);
-  return was_visible != GetVisible();
 }
 
 void ManagePasswordsIconViews::OnExecuting(

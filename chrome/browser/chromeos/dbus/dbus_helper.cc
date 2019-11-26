@@ -13,7 +13,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/arc_camera_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"

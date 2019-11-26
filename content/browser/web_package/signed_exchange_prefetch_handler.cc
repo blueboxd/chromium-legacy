@@ -11,7 +11,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -24,7 +23,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     const network::ResourceRequest& resource_request,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
-    network::mojom::URLLoaderPtr network_loader,
+    mojo::PendingRemote<network::mojom::URLLoader> network_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         network_client_receiver,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
@@ -35,8 +34,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     : forwarding_client_(forwarding_client) {
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          std::move(network_loader).PassInterface(),
-          std::move(network_client_receiver));
+          std::move(network_loader), std::move(network_client_receiver));
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       std::move(network_loader_factory);
 

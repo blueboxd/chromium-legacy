@@ -103,17 +103,15 @@ WebBundleBlobDataSource::WebBundleBlobDataSource(
     int64_t content_length,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
-    BrowserContext::BlobContextGetter blob_context_getter,
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-        pending_receiver) {
+    BrowserContext::BlobContextGetter blob_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(content_length, 0);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &WebBundleBlobDataSource::CreateCoreOnIO, weak_factory_.GetWeakPtr(),
-          content_length, std::move(outer_response_body), std::move(endpoints),
-          std::move(blob_context_getter), std::move(pending_receiver)));
+      base::BindOnce(&WebBundleBlobDataSource::CreateCoreOnIO,
+                     weak_factory_.GetWeakPtr(), content_length,
+                     std::move(outer_response_body), std::move(endpoints),
+                     std::move(blob_context_getter)));
 }
 
 WebBundleBlobDataSource::~WebBundleBlobDataSource() {
@@ -127,19 +125,35 @@ WebBundleBlobDataSource::~WebBundleBlobDataSource() {
   }
 }
 
+void WebBundleBlobDataSource::AddReceiver(
+    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+        pending_receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WaitForCore(base::BindOnce(&WebBundleBlobDataSource::AddReceiverImpl,
+                             base::Unretained(this),
+                             std::move(pending_receiver)));
+}
+
+void WebBundleBlobDataSource::AddReceiverImpl(
+    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+        pending_receiver) {
+  if (!core_)
+    return;
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BlobDataSourceCore::AddReceiver, weak_core_,
+                                std::move(pending_receiver)));
+}
+
 // static
 void WebBundleBlobDataSource::CreateCoreOnIO(
     base::WeakPtr<WebBundleBlobDataSource> weak_ptr,
     int64_t content_length,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
-    BrowserContext::BlobContextGetter blob_context_getter,
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-        pending_receiver) {
+    BrowserContext::BlobContextGetter blob_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto core = std::make_unique<BlobDataSourceCore>(
-      content_length, std::move(endpoints), std::move(blob_context_getter),
-      std::move(pending_receiver));
+      content_length, std::move(endpoints), std::move(blob_context_getter));
   core->Start(std::move(outer_response_body));
   auto weak_core = core->GetWeakPtr();
   base::PostTask(
@@ -223,12 +237,9 @@ void WebBundleBlobDataSource::ReadToDataPipeImpl(
 WebBundleBlobDataSource::BlobDataSourceCore::BlobDataSourceCore(
     int64_t content_length,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
-    BrowserContext::BlobContextGetter blob_context_getter,
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-        pending_receiver)
+    BrowserContext::BlobContextGetter blob_context_getter)
     : content_length_(content_length),
       endpoints_(std::move(endpoints)),
-      receiver_(this, std::move(pending_receiver)),
       blob_builder_from_stream_(std::make_unique<
                                 storage::BlobBuilderFromStream>(
           std::move(blob_context_getter).Run(),
@@ -253,6 +264,12 @@ void WebBundleBlobDataSource::BlobDataSourceCore::Start(
   blob_builder_from_stream_->Start(
       content_length_, std::move(outer_response_body),
       mojo::NullAssociatedRemote() /*  progress_client */);
+}
+
+void WebBundleBlobDataSource::BlobDataSourceCore::AddReceiver(
+    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+        pending_receiver) {
+  receivers_.Add(this, std::move(pending_receiver));
 }
 
 void WebBundleBlobDataSource::BlobDataSourceCore::ReadToDataPipe(

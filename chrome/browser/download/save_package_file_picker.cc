@@ -145,7 +145,7 @@ SavePackageFilePicker::SavePackageFilePicker(
   ui::SelectFileDialog::FileTypeInfo file_type_info;
 
   file_type_info.allowed_paths =
-      ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
+      ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
 
   if (can_save_as_complete_) {
     // The option index is not zero-based. Put a dummy entry.

@@ -174,6 +174,16 @@ void ServiceWorkerNetworkProviderForFrame::DispatchNetworkQuiet() {
   context()->DispatchNetworkQuiet();
 }
 
+mojo::ScopedMessagePipeHandle
+ServiceWorkerNetworkProviderForFrame::TakePendingWorkerTimingReceiver(
+    int request_id) {
+  if (!context())
+    return {};
+  auto worker_timing_receiver =
+      context()->TakePendingWorkerTimingReceiver(request_id);
+  return worker_timing_receiver.PassPipe();
+}
+
 void ServiceWorkerNetworkProviderForFrame::NotifyExecutionReady() {
   if (context())
     context()->NotifyExecutionReady();

@@ -415,7 +415,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // that was partially handled on the IO thread (to allocate |new_routing_id|
   // and |devtools_frame_token|), and is forwarded here. The renderer has
   // already been told to create a RenderFrame with the specified ID values.
-  // |interface_provider_request| is the request end of the InterfaceProvider
+  // |interface_provider_receiver| is the receiver end of the InterfaceProvider
   // interface that the RenderFrameHost corresponding to the child frame should
   // bind to expose services to the renderer process. The caller takes care of
   // sending down the client end of the pipe to the child RenderFrame to use.
@@ -426,8 +426,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrame to use.
   void OnCreateChildFrame(
       int new_routing_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,
@@ -873,13 +873,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // sending a mojo overlay factory.
   const base::UnguessableToken& GetOverlayRoutingToken();
 
-  // Binds the request end of the InterfaceProvider interface through which
+  // Binds the receiver end of the InterfaceProvider interface through which
   // services provided by this RenderFrameHost are exposed to the corresponding
   // RenderFrame. The caller is responsible for plumbing the client end to the
   // the renderer process.
-  void BindInterfaceProviderRequest(
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+  void BindInterfaceProviderReceiver(
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver);
 
   // Binds the receiver end of the BrowserInterfaceBroker interface through
   // which services provided by this RenderFrameHost are exposed to the
@@ -2337,9 +2337,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // 1) For the initial empty document, the call site that creates this
   //    RenderFrameHost is responsible for creating a message pipe, binding its
-  //    request end to this instance by calling BindInterfaceProviderRequest(),
-  //    and plumbing the client end to the renderer process, and ultimately
-  //    supplying it to the RenderFrame synchronously at construction time.
+  //    receiver end to this instance by calling
+  //    BindInterfaceProviderReceiver(), and plumbing the client end to the
+  //    renderer process, and ultimately supplying it to the RenderFrame
+  //    synchronously at construction time.
   //
   //    The only exception to this rule are out-of-process child frames, whose
   //    RenderFrameHosts take care of this internally in CreateRenderFrame().

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -44,43 +46,54 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   base::flat_map<SystemAppType, SystemAppInfo> infos;
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
-  if (SystemWebAppManager::IsAppEnabled(SystemAppType::DISCOVER))
-    infos[SystemAppType::DISCOVER].install_url =
-        GURL(chrome::kChromeUIDiscoverURL);
+  // SystemAppInfo's |name| field should be defined. These names are persisted
+  // to logs and should not be renamed.
+  // If new names are added, update tool/metrics/histograms/histograms.xml:
+  // "SystemWebAppName"
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::DISCOVER)) {
+    infos.emplace(
+        SystemAppType::DISCOVER,
+        SystemAppInfo("Discover", GURL(chrome::kChromeUIDiscoverURL)));
+  }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::CAMERA)) {
-    constexpr char kCameraAppPWAURL[] = "chrome://camera/pwa.html";
-    infos[SystemAppType::CAMERA].install_url = GURL(kCameraAppPWAURL);
-    infos[SystemAppType::CAMERA].uninstall_and_replace = {
+    infos.emplace(SystemAppType::CAMERA,
+                  SystemAppInfo("Camera", GURL("chrome://camera/pwa.html")));
+    infos.find(SystemAppType::CAMERA)->second.uninstall_and_replace = {
         ash::kInternalAppIdCamera};
   }
 
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    constexpr char kChromeSettingsPWAURL[] = "chrome://os-settings/pwa.html";
-    infos[SystemAppType::SETTINGS].install_url = GURL(kChromeSettingsPWAURL);
-    infos[SystemAppType::SETTINGS].uninstall_and_replace = {
+    infos.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo("OSSettings", GURL("chrome://os-settings/pwa.html")));
+    infos.find(SystemAppType::SETTINGS)->second.uninstall_and_replace = {
         chromeos::default_web_apps::kSettingsAppId,
         ash::kInternalAppIdSettings};
   } else {
-    constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
-    infos[SystemAppType::SETTINGS].install_url = GURL(kChromeSettingsPWAURL);
-    infos[SystemAppType::SETTINGS].uninstall_and_replace = {
+    infos.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo("BrowserSettings", GURL("chrome://settings/pwa.html")));
+    infos.find(SystemAppType::SETTINGS)->second.uninstall_and_replace = {
         ash::kInternalAppIdSettings};
   }
   // Large enough to see the heading text "Settings" in the top-left.
-  infos[SystemAppType::SETTINGS].minimum_window_size = {300, 100};
+  infos.find(SystemAppType::SETTINGS)->second.minimum_window_size = {300, 100};
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
-    constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
-    infos[SystemAppType::TERMINAL].install_url = GURL(kChromeTerminalPWAURL);
+    infos.emplace(
+        SystemAppType::TERMINAL,
+        SystemAppInfo("Terminal", GURL("chrome://terminal/html/pwa.html")));
   }
+
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::HELP)) {
-    constexpr char kChromeHelpAppPWAURL[] = "chrome://help-app/pwa.html";
-    infos[SystemAppType::HELP].install_url = {GURL(kChromeHelpAppPWAURL)};
+    infos.emplace(SystemAppType::HELP,
+                  SystemAppInfo("Help", GURL("chrome://help-app/pwa.html")));
   }
+
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {
-    constexpr char kChromeMediaAppURL[] = "chrome://media-app/pwa.html";
-    infos[SystemAppType::MEDIA].install_url = {GURL(kChromeMediaAppURL)};
+    infos.emplace(SystemAppType::MEDIA,
+                  SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
   }
 #endif  // OS_CHROMEOS
 
@@ -106,10 +119,9 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
 
 }  // namespace
 
-SystemAppInfo::SystemAppInfo() = default;
-
-SystemAppInfo::SystemAppInfo(const GURL& install_url)
-    : install_url(install_url) {}
+SystemAppInfo::SystemAppInfo(const std::string& name_for_logging,
+                             const GURL& install_url)
+    : name_for_logging(name_for_logging), install_url(install_url) {}
 
 SystemAppInfo::SystemAppInfo(const SystemAppInfo& other) = default;
 
@@ -117,6 +129,7 @@ SystemAppInfo::~SystemAppInfo() = default;
 
 // static
 const char SystemWebAppManager::kInstallResultHistogramName[];
+const char SystemWebAppManager::kInstallDurationHistogramName[];
 
 // static
 bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
@@ -142,6 +155,9 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
 }
 SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
+      install_result_per_profile_histogram_name_(
+          std::string(kInstallResultHistogramName) + ".Profiles." +
+          GetProfileCategoryForLogging(profile)),
       pref_service_(profile->GetPrefs()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
@@ -163,6 +179,10 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
+void SystemWebAppManager::Shutdown() {
+  shutting_down_ = true;
+}
+
 void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
                                         AppRegistrar* registrar,
                                         WebAppUiManager* ui_manager) {
@@ -172,6 +192,8 @@ void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
 }
 
 void SystemWebAppManager::Start() {
+  const base::TimeTicks install_start_time = base::TimeTicks::Now();
+
   std::vector<ExternalInstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
@@ -180,11 +202,10 @@ void SystemWebAppManager::Start() {
           CreateInstallOptionsForSystemApp(app.second, NeedsUpdate()));
     }
   }
-
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(install_options_list), ExternalInstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), install_start_time));
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
@@ -262,9 +283,53 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
+void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
+    const std::map<GURL, InstallResultCode>& install_results,
+    const base::TimeDelta& install_duration) const {
+  // Record the time spent to install system web apps.
+  if (!shutting_down_) {
+    base::UmaHistogramMediumTimes(kInstallDurationHistogramName,
+                                  install_duration);
+  }
+
+  // Record aggregate result.
+  for (const auto& url_and_result : install_results)
+    base::UmaHistogramEnumeration(kInstallResultHistogramName,
+                                  shutting_down_
+                                      ? InstallResultCode::kFailedShuttingDown
+                                      : url_and_result.second);
+
+  // Record per-app result.
+  for (const auto type_and_app_info : system_app_infos_) {
+    const GURL& install_url = type_and_app_info.second.install_url;
+    const auto url_and_result = install_results.find(install_url);
+    if (url_and_result != install_results.cend()) {
+      const std::string app_histogram_name =
+          std::string(kInstallResultHistogramName) + ".Apps." +
+          type_and_app_info.second.name_for_logging;
+      base::UmaHistogramEnumeration(app_histogram_name,
+                                    shutting_down_
+                                        ? InstallResultCode::kFailedShuttingDown
+                                        : url_and_result->second);
+    }
+  }
+
+  // Record per-profile result.
+  for (const auto url_and_result : install_results) {
+    base::UmaHistogramEnumeration(install_result_per_profile_histogram_name_,
+                                  shutting_down_
+                                      ? InstallResultCode::kFailedShuttingDown
+                                      : url_and_result.second);
+  }
+}
+
 void SystemWebAppManager::OnAppsSynchronized(
+    const base::TimeTicks& install_start_time,
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
+  const base::TimeDelta install_duration =
+      install_start_time - base::TimeTicks::Now();
+
   if (IsEnabled()) {
     // TODO(qjw): Figure out where install_results come from, decide if
     // installation failures need to be handled
@@ -274,8 +339,7 @@ void SystemWebAppManager::OnAppsSynchronized(
                              CurrentLocale());
   }
 
-  RecordExternalAppInstallResultCode(kInstallResultHistogramName,
-                                     install_results);
+  RecordSystemWebAppInstallMetrics(install_results, install_duration);
 
   // Build the map from installed app id to app type.
   for (const auto& it : system_app_infos_) {

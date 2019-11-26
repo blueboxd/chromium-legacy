@@ -40,31 +40,20 @@ views::BubbleDialogDelegateView* QRCodeGeneratorIconView::GetBubble() const {
       bubble_controller->qrcode_generator_bubble_view());
 }
 
-bool QRCodeGeneratorIconView::Update() {
+void QRCodeGeneratorIconView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
-    return false;
+    return;
 
-  const bool was_visible = GetVisible();
   const OmniboxView* omnibox_view = delegate()->GetOmniboxView();
   if (!omnibox_view)
-    return false;
+    return;
 
-  if (was_visible) {
+  if (!GetVisible() && omnibox_view->model()->has_focus()) {
     // TODO(skare): Finch variation params here.
-    // Don't show icon if URL is being edited.
-    if (omnibox_view->model()->user_input_in_progress()) {
-      SetVisible(false);
-    }
-  } else {
     // TODO(skare): Check if this is feature-gated.
-    if (omnibox_view->model()->has_focus() &&
-        !omnibox_view->model()->user_input_in_progress()) {
-      SetVisible(true);
-    }
+    SetVisible(true);
   }
-
-  return was_visible != GetVisible();
 }
 
 void QRCodeGeneratorIconView::OnExecuting(

@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace chromeos {

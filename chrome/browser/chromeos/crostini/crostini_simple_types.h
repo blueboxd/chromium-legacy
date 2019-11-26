@@ -171,6 +171,17 @@ struct LinuxPackageInfo {
   std::string description;
 };
 
+constexpr char kCrostiniCorruptionHistogram[] = "Crostini.FilesystemCorruption";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CorruptionStates {
+  MOUNT_FAILED = 0,
+  MOUNT_ROLLED_BACK = 1,
+  OTHER_CORRUPTION = 2,
+  kMaxValue = OTHER_CORRUPTION,
+};
+
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SIMPLE_TYPES_H_

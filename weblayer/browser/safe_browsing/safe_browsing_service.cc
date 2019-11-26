@@ -7,17 +7,11 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
-#include "components/prefs/in_memory_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
-#include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -44,30 +38,13 @@ SafeBrowsingService::SafeBrowsingService(const std::string& user_agent)
 
 SafeBrowsingService::~SafeBrowsingService() {}
 
-void SafeBrowsingService::Initialize(content::BrowserContext* browser_context) {
+void SafeBrowsingService::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (network_context_) {
     // already initialized
     return;
   }
-
-  DCHECK(browser_context);
-
-  // Create a simple in-memory pref service, and register safe-browsing
-  // preferences. Currently this is only required for safebrowsing to work (due
-  // to RealTimePolicyEngine::IsEnabledByPolicy being checked during
-  // safebrowsing throttle creation).
-  // TODO(timvolodine): separate this out into general persistent pref service.
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  safe_browsing::RegisterProfilePrefs(pref_registry.get());
-  PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
-  user_pref_service_ = pref_service_factory.Create(pref_registry);
-  // Note: UserPrefs::Set also ensures that the user_pref_service_ has not been
-  // set previously.
-  user_prefs::UserPrefs::Set(browser_context, user_pref_service_.get());
 
   safe_browsing_api_handler_.reset(
       new safe_browsing::SafeBrowsingApiHandlerBridge());

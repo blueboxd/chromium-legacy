@@ -15,8 +15,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace chromecast {
@@ -69,8 +69,8 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     network_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-        request, network_client_receiver_.BindNewPipeAndPassRemote(),
+        network_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
+        options, request, network_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation);
 
     network_client_receiver_.set_disconnect_handler(base::BindOnce(
@@ -160,7 +160,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
       this};
 
   // This is the URLLoader from the network URLLoaderFactory.
-  network::mojom::URLLoaderPtr network_loader_;
+  mojo::Remote<network::mojom::URLLoader> network_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(CastExtensionURLLoader);
 };

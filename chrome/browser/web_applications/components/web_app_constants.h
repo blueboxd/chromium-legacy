@@ -44,7 +44,6 @@ enum class InstallResultCode {
   kSuccessNewInstall = 0,
   kSuccessAlreadyInstalled = 1,
   // Failure category:
-  kFailedUnknownReason = 2,
   // An inter-process request to blink renderer failed.
   kGetWebApplicationInfoFailed = 3,
   // A user previously uninstalled the app, user doesn't want to see it again.
@@ -67,11 +66,26 @@ enum class InstallResultCode {
   kWebAppDisabled = 12,
   // The network request for the install URL was redirected.
   kInstallURLRedirected = 13,
-  // The network request for the install URL failed or timed out.
+  // The network request for the install URL failed.
   kInstallURLLoadFailed = 14,
   // The requested app_id check failed: actual resulting app_id doesn't match.
   kExpectedAppIdCheckFailed = 15,
-  kMaxValue = kExpectedAppIdCheckFailed
+  // The network request for the install URL timed out.
+  kInstallURLLoadTimeOut = 16,
+  // Placeholder uninstall fails (in PendingAppManager).
+  kFailedPlaceholderUninstall = 17,
+  // Web App is not considered installable, i.e. missing manifest fields, no
+  // service worker, etc.
+  kNotInstallable = 18,
+  // Bookmark App extension install or update fails.
+  kBookmarkExtensionInstallError = 19,
+  // Apk Web App install fails.
+  kApkWebAppInstallFailed = 20,
+  // App managers are shutting down. For example, when user logs out immediately
+  // after login.
+  kFailedShuttingDown = 21,
+
+  kMaxValue = kFailedShuttingDown
 };
 
 // Checks if InstallResultCode is not a failure.

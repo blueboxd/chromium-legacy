@@ -1,4 +1,3 @@
 document
 ++heading Name='Image'
-++++description Name='Image' IsControlElement=false
 ++img Name='ImageAlt'

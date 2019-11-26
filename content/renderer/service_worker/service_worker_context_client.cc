@@ -484,7 +484,7 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
       this, fetch_event_id, GURL(url),
       blink::mojom::FetchEventPreloadHandle::New(
-          network::mojom::URLLoaderPtrInfo(
+          mojo::PendingRemote<network::mojom::URLLoader>(
               std::move(preload_handle->url_loader),
               network::mojom::URLLoader::Version_),
           mojo::PendingReceiver<network::mojom::URLLoaderClient>(

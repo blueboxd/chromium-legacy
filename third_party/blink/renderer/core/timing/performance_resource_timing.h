@@ -135,6 +135,11 @@ class CORE_EXPORT PerformanceResourceTiming
   bool is_secure_context_ = false;
   HeapVector<Member<PerformanceServerTiming>> server_timing_;
   HeapVector<Member<PerformanceEntry>> worker_timing_;
+
+  // Used for getting entries from a service worker to add to
+  // PerformanceResourceTiming#workerTiming. Null when no service worker handles
+  // a request for the resource.
+  mojo::Receiver<mojom::blink::WorkerTimingContainer> worker_timing_receiver_;
 };
 
 }  // namespace blink

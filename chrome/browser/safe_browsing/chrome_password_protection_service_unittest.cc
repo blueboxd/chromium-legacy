@@ -1194,7 +1194,9 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+  std::vector<size_t> placeholder_offsets;
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
+                                                         &placeholder_offsets));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -1212,14 +1214,17 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::string16 warning_text = l10n_util::GetStringFUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN,
       base::UTF8ToUTF16(domains[0]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+  std::vector<size_t> placeholder_offsets;
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
+                                                         &placeholder_offsets));
 
   domains.push_back("www.2.example.com");
   service_->set_saved_passwords_matching_domains(domains);
   warning_text = l10n_util::GetStringFUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS,
       base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
+                                                         &placeholder_offsets));
 
   domains.push_back("www.3.example.com");
   service_->set_saved_passwords_matching_domains(domains);
@@ -1227,7 +1232,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS,
       base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]),
       base::UTF8ToUTF16(domains[2]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
+                                                         &placeholder_offsets));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -1245,20 +1251,23 @@ TEST_F(ChromePasswordProtectionServiceTest,
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
   reused_password_type.set_is_account_syncing(true);
-  EXPECT_EQ(warning_text_sync,
-            service_->GetWarningDetailText(reused_password_type));
+  std::vector<size_t> placeholder_offsets;
+  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
+                                   reused_password_type, &placeholder_offsets));
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   reused_password_type.set_is_account_syncing(false);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(reused_password_type));
+            service_->GetWarningDetailText(reused_password_type,
+                                           &placeholder_offsets));
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         safe_browsing::kPasswordProtectionForSignedInUsers);
     reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
     EXPECT_EQ(warning_text_non_sync,
-              service_->GetWarningDetailText(reused_password_type));
+              service_->GetWarningDetailText(reused_password_type,
+                                             &placeholder_offsets));
   }
 
   reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
@@ -1266,11 +1275,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
   CoreAccountInfo core_account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(std::string("example.com"), core_account_info);
   EXPECT_EQ(warning_text_with_org_name,
-            service_->GetWarningDetailText(reused_password_type));
+            service_->GetWarningDetailText(reused_password_type,
+                                           &placeholder_offsets));
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(reused_password_type));
+            service_->GetWarningDetailText(reused_password_type,
+                                           &placeholder_offsets));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
@@ -1284,11 +1295,13 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       safe_browsing::kPasswordProtectionForSignedInUsers);
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
+  std::vector<size_t> placeholder_offsets;
   EXPECT_EQ(warning_text_non_sync,
-            service_->GetWarningDetailText(reused_password_type));
+            service_->GetWarningDetailText(reused_password_type,
+                                           &placeholder_offsets));
   reused_password_type.set_is_account_syncing(true);
-  EXPECT_EQ(warning_text_sync,
-            service_->GetWarningDetailText(reused_password_type));
+  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
+                                   reused_password_type, &placeholder_offsets));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {

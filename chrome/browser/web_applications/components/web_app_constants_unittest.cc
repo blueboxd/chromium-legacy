@@ -12,7 +12,6 @@ TEST(WebAppConstants, IsSuccess) {
   EXPECT_TRUE(IsSuccess(InstallResultCode::kSuccessNewInstall));
   EXPECT_TRUE(IsSuccess(InstallResultCode::kSuccessAlreadyInstalled));
 
-  EXPECT_FALSE(IsSuccess(InstallResultCode::kFailedUnknownReason));
   EXPECT_FALSE(IsSuccess(InstallResultCode::kExpectedAppIdCheckFailed));
 }
 

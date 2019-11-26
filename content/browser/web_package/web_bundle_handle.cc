@@ -24,6 +24,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -187,7 +188,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
@@ -445,7 +446,7 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
@@ -516,13 +517,22 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
               network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
-
-    // TODO(crbug.com/1018640): Check the scope to see if it's allowed to load
-    // the URL.
     if (primary_url_.GetOrigin() != reader_->source().url().GetOrigin()) {
       AddErrorMessageToConsole(frame_tree_node_id_,
                                "The origin of primary URL doesn't match with "
                                "the origin of the web bundle.");
+      std::move(forwarding_client_)
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      return;
+    }
+    if (!reader_->source().IsNavigationPathRestrictionSatisfied(primary_url_)) {
+      AddErrorMessageToConsole(
+          frame_tree_node_id_,
+          base::StringPrintf("Path restriction mismatch: Can't navigate to %s "
+                             "in the web bundle served from %s.",
+                             primary_url_.spec().c_str(),
+                             reader_->source().url().spec().c_str()));
       std::move(forwarding_client_)
           ->OnComplete(
               network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
@@ -564,27 +574,36 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
 };
 
 // A class to inherit NavigationLoaderInterceptor for a navigation within a
-// trustable Web Bundle file.
+// trustable Web Bundle file or within a Web Bundle from network.
 // For example:
-//   A user opened "file:///tmp/a.wbn", and InterceptorForTrustableFile
-//   redirected to "https://example.com/a.html" and "a.html" in "a.wbn" was
-//   loaded. And the user clicked a link to "https://example.com/b.html" from
-//   "a.html".
+//   A user opened a trustable Web Bundle file "file:///tmp/a.wbn", and
+//   InterceptorForTrustableFile redirected to "https://example.com/a.html" and
+//   "a.html" in "a.wbn" was loaded. Or, a user opened a Web Bundle
+//   "https://example.com/a.wbn", and InterceptorForNetwork redirected to
+//   "https://example.com/a.html" and "a.html" in "a.wbn" was loaded. And the
+//   user clicked a link to "https://example.com/b.html" from "a.html".
+//
 // In this case, this interceptor intecepts the navigation request to "b.html",
 // and creates a URLLoader using the WebBundleURLLoaderFactory to load
 // the response of "b.html" in "a.wbn".
-class InterceptorForTrackedNavigationFromTrustableFile final
+class InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork final
     : public NavigationLoaderInterceptor {
  public:
-  InterceptorForTrackedNavigationFromTrustableFile(
+  InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork(
       scoped_refptr<WebBundleReader> reader,
       DoneCallback done_callback,
       int frame_tree_node_id)
       : url_loader_factory_(
             std::make_unique<WebBundleURLLoaderFactory>(std::move(reader),
                                                         frame_tree_node_id)),
-        done_callback_(std::move(done_callback)) {}
-  ~InterceptorForTrackedNavigationFromTrustableFile() override {
+        done_callback_(std::move(done_callback)) {
+    DCHECK((base::CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kTrustableWebBundleFileUrl) &&
+            url_loader_factory_->reader()->source().is_trusted_file()) ||
+           (base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork) &&
+            url_loader_factory_->reader()->source().is_network()));
+  }
+  ~InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
@@ -596,9 +615,15 @@ class InterceptorForTrackedNavigationFromTrustableFile final
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(url_loader_factory_->reader()->HasEntry(resource_request.url));
+    DCHECK(url_loader_factory_->reader()->source().is_trusted_file() ||
+           (url_loader_factory_->reader()->source().is_network() &&
+            url_loader_factory_->reader()
+                ->source()
+                .IsNavigationPathRestrictionSatisfied(resource_request.url)));
     std::move(callback).Run(
         base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
-            &InterceptorForTrackedNavigationFromTrustableFile::CreateURLLoader,
+            &InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork::
+                CreateURLLoader,
             weak_factory_.GetWeakPtr())));
   }
 
@@ -620,10 +645,12 @@ class InterceptorForTrackedNavigationFromTrustableFile final
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<InterceptorForTrackedNavigationFromTrustableFile>
+  base::WeakPtrFactory<
+      InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork>
       weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromTrustableFile);
+  DISALLOW_COPY_AND_ASSIGN(
+      InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork);
 };
 
 // A class to inherit NavigationLoaderInterceptor for a navigation within a
@@ -868,8 +895,10 @@ std::unique_ptr<WebBundleHandle> WebBundleHandle::CreateForTrackedNavigation(
   auto handle = base::WrapUnique(new WebBundleHandle());
   switch (reader->source().type()) {
     case WebBundleSource::Type::kTrustedFile:
+    case WebBundleSource::Type::kNetwork:
       handle->SetInterceptor(
-          std::make_unique<InterceptorForTrackedNavigationFromTrustableFile>(
+          std::make_unique<
+              InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork>(
               std::move(reader),
               base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
                              handle->weak_factory_.GetWeakPtr()),
@@ -882,11 +911,6 @@ std::unique_ptr<WebBundleHandle> WebBundleHandle::CreateForTrackedNavigation(
               base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
                              handle->weak_factory_.GetWeakPtr()),
               frame_tree_node_id));
-      break;
-    case WebBundleSource::Type::kNetwork:
-      // Currently navigation within web bundles from network is not supported.
-      // TODO(crbug.com/1018640): Implement this.
-      NOTREACHED();
       break;
   }
   return handle;

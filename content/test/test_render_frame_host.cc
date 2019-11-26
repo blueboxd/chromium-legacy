@@ -30,6 +30,7 @@
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
@@ -134,7 +135,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(
-      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
+      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderReceiver(),
       CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
@@ -432,7 +433,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
 void TestRenderFrameHost::SimulateCommitProcessed(
     NavigationRequest* navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
     bool same_document) {
@@ -449,7 +451,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         std::move(callback_it->second)
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
-                     std::move(interface_provider_request),
+                     std::move(interface_provider_receiver),
                      std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
@@ -460,7 +462,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         std::move(callback_it->second)
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
-                     std::move(interface_provider_request),
+                     std::move(interface_provider_receiver),
                      std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
@@ -471,7 +473,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     SendNavigateWithParamsAndInterfaceParams(
         params.get(),
         mojom::DidCommitProvisionalLoadInterfaceParams::New(
-            std::move(interface_provider_request),
+            std::move(interface_provider_receiver),
             std::move(browser_interface_broker_receiver)),
         same_document);
   }
@@ -591,21 +593,24 @@ TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
 
 mojom::DidCommitProvisionalLoadInterfaceParamsPtr
 TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  service_manager::mojom::InterfaceProviderRequest interface_provider_request;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver;
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver;
 
   if (!is_same_document) {
-    interface_provider_request = mojo::MakeRequest(&interface_provider);
+    interface_provider_receiver =
+        interface_provider.InitWithNewPipeAndPassReceiver();
     browser_interface_broker_receiver =
         mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
             .InitWithNewPipeAndPassReceiver();
   }
 
   auto interface_params = mojom::DidCommitProvisionalLoadInterfaceParams::New(
-      std::move(interface_provider_request),
+      std::move(interface_provider_receiver),
       std::move(browser_interface_broker_receiver));
   return interface_params;
 }
@@ -616,10 +621,11 @@ void TestRenderFrameHost::AbortCommit(NavigationRequest* navigation_request) {
 }
 
 // static
-service_manager::mojom::InterfaceProviderRequest
-TestRenderFrameHost::CreateStubInterfaceProviderRequest() {
-  ::service_manager::mojom::InterfaceProviderPtr dead_interface_provider_proxy;
-  return mojo::MakeRequest(&dead_interface_provider_proxy);
+mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+TestRenderFrameHost::CreateStubInterfaceProviderReceiver() {
+  mojo::PendingRemote<::service_manager::mojom::InterfaceProvider>
+      dead_interface_provider_proxy;
+  return dead_interface_provider_proxy.InitWithNewPipeAndPassReceiver();
 }
 
 // static

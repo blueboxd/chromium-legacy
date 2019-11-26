@@ -267,7 +267,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner"),
         TestCase("fileDisplayCheckSelectWithFakeItemSelected"),
         TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
-        TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads")));
+        TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads"),
+        TestCase("fileDisplayCheckNoReadOnlyIconOnLinuxFiles")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */
@@ -426,6 +427,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("openQuickView"),
+        TestCase("openQuickViewDialog"),
         TestCase("openQuickViewAndEscape"),
         TestCase("openQuickView").InGuestMode(),
         TestCase("openQuickView").TabletMode(),

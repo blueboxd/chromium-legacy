@@ -182,9 +182,10 @@ void ServiceWorkerStorage::FindRegistrationForClientUrl(
     return;
   }
 
-  // To connect this TRACE_EVENT with the callback, TimeTicks is used for
+  // To connect this TRACE_EVENT with the callback, Time is used for
   // callback id.
-  int64_t callback_id = base::TimeTicks::Now().ToInternalValue();
+  int64_t callback_id =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerStorage::FindRegistrationForClientUrl",
                            callback_id, "URL", client_url.spec());

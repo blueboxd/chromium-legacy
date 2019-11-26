@@ -91,8 +91,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) override;
-  void SetInterfaceProviderRequest(
-      service_manager::mojom::InterfaceProviderRequest request) override;
+  void SetInterfaceProviderReceiver(
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
+      override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
   void SetAutoAdvance(bool auto_advance) override;
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
@@ -282,7 +283,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   ReloadType reload_type_ = ReloadType::NONE;
   int session_history_offset_ = 0;
   bool has_user_gesture_ = true;
-  service_manager::mojom::InterfaceProviderRequest interface_provider_request_;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver_;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;

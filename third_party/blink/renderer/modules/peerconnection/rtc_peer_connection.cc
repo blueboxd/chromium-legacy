@@ -111,7 +111,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -121,6 +120,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/webrtc/api/data_channel_interface.h"
 
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/jsep.h"
@@ -2331,21 +2331,24 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
 
-  RTCDataChannelInitPlatform init;
+  webrtc::DataChannelInit init;
+  // TODO(jiayl): remove the deprecated reliable field once Libjingle is updated
+  // to handle that.
+  init.reliable = false;
   init.ordered = data_channel_dict->ordered();
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (data_channel_dict->hasMaxPacketLifeTime()) {
     UseCounter::Count(
         context,
         WebFeature::kRTCPeerConnectionCreateDataChannelMaxPacketLifeTime);
-    init.max_retransmit_time = data_channel_dict->maxPacketLifeTime();
+    init.maxRetransmitTime = data_channel_dict->maxPacketLifeTime();
   }
   if (data_channel_dict->hasMaxRetransmits()) {
     UseCounter::Count(
         context, WebFeature::kRTCPeerConnectionCreateDataChannelMaxRetransmits);
-    init.max_retransmits = data_channel_dict->maxRetransmits();
+    init.maxRetransmits = data_channel_dict->maxRetransmits();
   }
-  init.protocol = data_channel_dict->protocol();
+  init.protocol = data_channel_dict->protocol().Utf8();
   init.negotiated = data_channel_dict->negotiated();
   if (data_channel_dict->hasId())
     init.id = data_channel_dict->id();
@@ -2358,7 +2361,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   }
   // If [[DataChannelProtocol]] is longer than 65535 bytes long, throw a
   // TypeError.
-  if (init.protocol.Utf8().length() > 65535) {
+  if (init.protocol.length() > 65535) {
     exception_state.ThrowTypeError("RTCDataChannel protocol too long");
     return nullptr;
   }
@@ -2370,7 +2373,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   }
   // If both [[MaxPacketLifeTime]] and [[MaxRetransmits]] attributes are set
   // (not null), throw a TypeError.
-  if (init.max_retransmit_time >= 0 && init.max_retransmits >= 0) {
+  if (init.maxRetransmitTime >= 0 && init.maxRetransmits >= 0) {
     exception_state.ThrowTypeError(
         "RTCDataChannel cannot have both max retransmits and max lifetime");
     return nullptr;

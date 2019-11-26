@@ -56,7 +56,25 @@ inline bool IsHTMLTableSectionElement(const HTMLElement& element) {
          element.HasTagName(html_names::kTheadTag);
 }
 
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
+template <>
+struct DowncastTraits<HTMLTableSectionElement> {
+  static bool AllowFrom(const HTMLElement& element) {
+    return IsHTMLTableSectionElement(element);
+  }
+  static bool AllowFrom(const HTMLElement* element) {
+    return element && IsHTMLTableSectionElement(*element);
+  }
+  static bool AllowFrom(const Node& node) {
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    return html_element ? IsHTMLTableSectionElement(*html_element) : false;
+  }
+  static bool AllowFrom(const Node* node) {
+    return node && IsA<HTMLTableSectionElement>(*node);
+  }
+  static bool AllowFrom(const Element* element) {
+    return element && IsA<HTMLTableSectionElement>(*element);
+  }
+};
 
 }  // namespace blink
 

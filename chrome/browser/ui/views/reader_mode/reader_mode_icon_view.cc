@@ -24,18 +24,17 @@ void ReaderModeIconView::DidFinishNavigation(
     AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
-bool ReaderModeIconView::Update() {
+void ReaderModeIconView::UpdateImpl() {
   content::WebContents* contents = GetWebContents();
   if (!contents) {
     SetVisible(false);
-    return false;
+    return;
   }
 
   // Notify the icon when navigation to and from a distilled page occurs so that
   // it can hide the inkdrop.
   Observe(contents);
 
-  const bool was_previously_active = active();
   if (IsDistilledPage(contents->GetLastCommittedURL())) {
     SetVisible(true);
     SetActive(true);
@@ -46,7 +45,6 @@ bool ReaderModeIconView::Update() {
     SetVisible(distillability && distillability.value().is_distillable);
     SetActive(false);
   }
-  return active() != was_previously_active;
 }
 
 const gfx::VectorIcon& ReaderModeIconView::GetVectorIcon() const {

@@ -81,10 +81,13 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       allow_negative_value_(info.allow_negative_values),
       is_secure_context_(info.is_secure_context),
       server_timing_(
-          PerformanceServerTiming::FromParsedServerTiming(info.server_timing)) {
-}
+          PerformanceServerTiming::FromParsedServerTiming(info.server_timing)),
+      worker_timing_receiver_(this, std::move(worker_timing_receiver)) {}
 
 // This constructor is for PerformanceNavigationTiming.
+// TODO(https://crbug.com/900700): Set a Mojo pending receiver for
+// WorkerTimingContainer in |worker_timing_receiver_| when a service worker
+// controls a page.
 PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
@@ -94,7 +97,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       time_origin_(time_origin),
       is_secure_context_(is_secure_context),
       server_timing_(
-          PerformanceServerTiming::FromParsedServerTiming(server_timing)) {}
+          PerformanceServerTiming::FromParsedServerTiming(server_timing)),
+      worker_timing_receiver_(this, mojo::NullReceiver()) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;
 

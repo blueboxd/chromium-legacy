@@ -265,15 +265,15 @@ void CompositeEditCommand::InsertParagraphSeparator(
 
 bool CompositeEditCommand::IsRemovableBlock(const Node* node) {
   DCHECK(node);
-  if (!IsHTMLDivElement(*node))
+  const auto* element = DynamicTo<HTMLDivElement>(node);
+  if (!element)
     return false;
 
-  const HTMLDivElement& element = ToHTMLDivElement(*node);
-  ContainerNode* parent_node = element.parentNode();
+  ContainerNode* parent_node = element->parentNode();
   if (parent_node && parent_node->firstChild() != parent_node->lastChild())
     return false;
 
-  if (!element.hasAttributes())
+  if (!element->hasAttributes())
     return true;
 
   return false;

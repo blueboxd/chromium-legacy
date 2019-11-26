@@ -16,7 +16,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -102,10 +101,10 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest, NetworkContext) {
   network::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/set-header?foo: bar");
   request.method = "GET";
-  network::mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateRemote(),
+      loader.InitWithNewPipeAndPassReceiver(), 2, 1,
+      network::mojom::kURLLoadOptionNone, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Just wait until headers are received - if the right headers are received,

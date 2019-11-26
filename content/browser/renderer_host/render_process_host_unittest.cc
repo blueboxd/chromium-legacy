@@ -133,7 +133,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
-      TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
+      TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),

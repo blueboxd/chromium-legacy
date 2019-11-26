@@ -47,6 +47,8 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
@@ -1470,7 +1472,7 @@ IN_PROC_BROWSER_TEST_F(
 
 namespace {
 
-// Allows injecting a fake, test-provided |interface_provider_request| into
+// Allows injecting a fake, test-provided |interface_provider_receiver| into
 // DidCommitProvisionalLoad messages in a given |web_contents| instead of the
 // real one coming from the renderer process.
 class ScopedFakeInterfaceProviderRequestInjector
@@ -1480,18 +1482,19 @@ class ScopedFakeInterfaceProviderRequestInjector
       : DidCommitNavigationInterceptor(web_contents) {}
   ~ScopedFakeInterfaceProviderRequestInjector() override = default;
 
-  // Sets the fake InterfaceProvider |request| to inject into the next incoming
+  // Sets the fake InterfaceProvider |receiver| to inject into the next incoming
   // DidCommitProvisionalLoad message.
-  void set_fake_request_for_next_commit(
-      service_manager::mojom::InterfaceProviderRequest request) {
-    next_fake_request_ = std::move(request);
+  void set_fake_receiver_for_next_commit(
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          receiver) {
+    next_fake_receiver_ = std::move(receiver);
   }
 
   const GURL& url_of_last_commit() const { return url_of_last_commit_; }
 
-  const service_manager::mojom::InterfaceProviderRequest&
-  original_request_of_last_commit() const {
-    return original_request_of_last_commit_;
+  const mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>&
+  original_receiver_of_last_commit() const {
+    return original_receiver_of_last_commit_;
   }
 
  protected:
@@ -1503,18 +1506,19 @@ class ScopedFakeInterfaceProviderRequestInjector
       override {
     url_of_last_commit_ = params->url;
     if (*interface_params) {
-      original_request_of_last_commit_ =
-          std::move((*interface_params)->interface_provider_request);
-      (*interface_params)->interface_provider_request =
-          std::move(next_fake_request_);
+      original_receiver_of_last_commit_ =
+          std::move((*interface_params)->interface_provider_receiver);
+      (*interface_params)->interface_provider_receiver =
+          std::move(next_fake_receiver_);
     }
     return true;
   }
 
  private:
-  service_manager::mojom::InterfaceProviderRequest next_fake_request_;
-  service_manager::mojom::InterfaceProviderRequest
-      original_request_of_last_commit_;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      next_fake_receiver_;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      original_receiver_of_last_commit_;
   GURL url_of_last_commit_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeInterfaceProviderRequestInjector);
@@ -1590,17 +1594,18 @@ class DidFinishNavigationObserver : public WebContentsObserver {
 }  // namespace
 
 // For cross-document navigations, the DidCommitProvisionalLoad message from
-// the renderer process will have its |interface_provider_request| argument set
-// to the request end of a new InterfaceProvider interface connection that will
+// the renderer process will have its |interface_provider_receiver| argument set
+// to the receiver end of a new InterfaceProvider interface connection that will
 // be used by the newly committed document to access services exposed by the
 // RenderFrameHost.
 //
-// This test verifies that even if that |interface_provider_request| already has
-// pending interface requests, the RenderFrameHost binds the InterfaceProvider
-// request in such a way that these pending interface requests are dispatched
-// strictly after WebContentsObserver::DidFinishNavigation has fired, so that
-// the requests will be served correctly in the security context of the newly
-// committed document (i.e. GetLastCommittedURL/Origin will have been updated).
+// This test verifies that even if that |interface_provider_receiver| already
+// has pending interface receivers, the RenderFrameHost binds the
+// InterfaceProvider receiver in such a way that these pending interface
+// receivers are dispatched strictly after
+// WebContentsObserver::DidFinishNavigation has fired, so that the receivers
+// will be served correctly in the security context of the newly committed
+// document (i.e. GetLastCommittedURL/Origin will have been updated).
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTest,
     EarlyInterfaceRequestsFromNewDocumentDispatchedAfterNavigationFinished) {
@@ -1611,23 +1616,24 @@ IN_PROC_BROWSER_TEST_F(
   // sure the second navigation will not be cross-process.
   ASSERT_TRUE(NavigateToURL(shell(), first_url));
 
-  // Prepare an InterfaceProviderRequest with pending interface requests.
-  service_manager::mojom::InterfaceProviderPtr
-      interface_provider_with_pending_request;
-  service_manager::mojom::InterfaceProviderRequest
-      interface_provider_request_with_pending_request =
-          mojo::MakeRequest(&interface_provider_with_pending_request);
+  // Prepare an PendingReceiver<InterfaceProvider> with pending interface
+  // requests.
+  mojo::Remote<service_manager::mojom::InterfaceProvider>
+      interface_provider_with_pending_requests;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver_with_pending_receiver =
+          interface_provider_with_pending_requests.BindNewPipeAndPassReceiver();
   mojo::Remote<mojom::FrameHostTestInterface> test_interface;
-  interface_provider_with_pending_request->GetInterface(
+  interface_provider_with_pending_requests->GetInterface(
       mojom::FrameHostTestInterface::Name_,
       test_interface.BindNewPipeAndPassReceiver().PassPipe());
 
-  // Replace the |interface_provider_request| argument in the next
+  // Replace the |interface_provider_receiver| argument in the next
   // DidCommitProvisionalLoad message coming from the renderer with the
-  // rigged |interface_provider_with_pending_request| from above.
+  // rigged |interface_provider_with_pending_requests| from above.
   ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
-  injector.set_fake_request_for_next_commit(
-      std::move(interface_provider_request_with_pending_request));
+  injector.set_fake_receiver_for_next_commit(
+      std::move(interface_provider_receiver_with_pending_receiver));
 
   // Expect that by the time the interface request for FrameHostTestInterface is
   // dispatched to the RenderFrameHost, WebContentsObserver::DidFinishNavigation
@@ -1652,7 +1658,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(NavigateToURL(shell(), second_url));
   EXPECT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
   EXPECT_EQ(second_url, injector.url_of_last_commit());
-  EXPECT_TRUE(injector.original_request_of_last_commit().is_pending());
+  EXPECT_TRUE(injector.original_receiver_of_last_commit().is_valid());
 
   // Wait until the interface request for FrameHostTestInterface is dispatched.
   wait_until_interface_request_is_dispatched.Run();
@@ -1674,24 +1680,25 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
   // Prepare an InterfaceProviderRequest with no pending requests.
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  service_manager::mojom::InterfaceProviderRequest interface_provider_request =
-      mojo::MakeRequest(&interface_provider);
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver =
+          interface_provider.BindNewPipeAndPassReceiver();
 
-  // Set up a cunning mechnism to replace the |interface_provider_request|
+  // Set up a cunning mechanism to replace the |interface_provider_receiver|
   // argument in next DidCommitProvisionalLoad message with the rigged
-  // |interface_provider_request| from above, whose client end is controlled by
+  // |interface_provider_receiver| from above, whose client end is controlled by
   // this test; then trigger a navigation.
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
     test::ScopedInterfaceFilterBypass filter_bypass;
-    injector.set_fake_request_for_next_commit(
-        std::move(interface_provider_request));
+    injector.set_fake_receiver_for_next_commit(
+        std::move(interface_provider_receiver));
 
     ASSERT_TRUE(NavigateToURL(shell(), first_url));
     ASSERT_EQ(first_url, injector.url_of_last_commit());
-    ASSERT_TRUE(injector.original_request_of_last_commit().is_pending());
+    ASSERT_TRUE(injector.original_receiver_of_last_commit().is_valid());
   }
 
   // Prepare an interface receiver for FrameHostTestInterface.
@@ -1760,21 +1767,23 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL subframe_url(embedded_test_server()->GetURL("/title2.html"));
 
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  auto stub_interface_provider_request = mojo::MakeRequest(&interface_provider);
-  service_manager::mojom::InterfaceProviderRequest
-      null_interface_provider_request(nullptr);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  auto stub_interface_provider_receiver =
+      interface_provider.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      null_interface_provider_receiver((mojo::NullReceiver()));
 
-  for (auto* interface_provider_request :
-       {&stub_interface_provider_request, &null_interface_provider_request}) {
-    SCOPED_TRACE(interface_provider_request->is_pending());
+  for (auto* interface_provider_receiver :
+       {&stub_interface_provider_receiver, &null_interface_provider_receiver}) {
+    SCOPED_TRACE(interface_provider_receiver->is_valid());
 
     ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
 
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        std::move(*interface_provider_request));
+    injector.set_fake_receiver_for_next_commit(
+        std::move(*interface_provider_receiver));
 
     // Must set 'src` before adding the iframe element to the DOM, otherwise it
     // will load `about:blank` as the first real load instead of |subframe_url|.
@@ -1797,7 +1806,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     ASSERT_EQ(1u, root->child_count());
     FrameTreeNode* child = root->child_at(0u);
 
-    EXPECT_FALSE(injector.original_request_of_last_commit().is_pending());
+    EXPECT_FALSE(injector.original_receiver_of_last_commit().is_valid());
     EXPECT_TRUE(child->has_committed_real_load());
     EXPECT_EQ(subframe_url, child->current_url());
   }
@@ -1860,12 +1869,11 @@ IN_PROC_BROWSER_TEST_F(
 
   TestFrameNavigationObserver commit_observer(child->current_frame_host());
   ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
-  injector.set_fake_request_for_next_commit(nullptr);
+  injector.set_fake_receiver_for_next_commit(mojo::NullReceiver());
 
   ASSERT_TRUE(ExecuteScript(shell(), kNavigateToThreeScript));
   commit_observer.WaitForCommit();
-
-  EXPECT_FALSE(injector.original_request_of_last_commit().is_pending());
+  EXPECT_FALSE(injector.original_receiver_of_last_commit().is_valid());
 
   EXPECT_TRUE(child->has_committed_real_load());
   EXPECT_EQ(kSubframeURLThree, child->current_url());
@@ -2030,10 +2038,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // The 31-bit hash of the string "content.mojom.MojoWebTestHelper".
   const int32_t kHashOfContentMojomMojoWebTestHelper = 0x77b7b3d6;
 
-  // Client ends of the fake interface provider requests injected for the first
+  // Client ends of the fake interface provider receivers injected for the first
   // and second navigations.
-  service_manager::mojom::InterfaceProviderPtr interface_provider_1;
-  service_manager::mojom::InterfaceProviderPtr interface_provider_2;
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_1;
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_2;
 
   base::RunLoop wait_until_connection_error_loop_1;
   base::RunLoop wait_until_connection_error_loop_2;
@@ -2041,9 +2049,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        mojo::MakeRequest(&interface_provider_1));
-    interface_provider_1.set_connection_error_handler(
+    injector.set_fake_receiver_for_next_commit(
+        interface_provider_1.BindNewPipeAndPassReceiver());
+    interface_provider_1.set_disconnect_handler(
         wait_until_connection_error_loop_1.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl1));
   }
@@ -2051,9 +2059,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        mojo::MakeRequest(&interface_provider_2));
-    interface_provider_2.set_connection_error_handler(
+    injector.set_fake_receiver_for_next_commit(
+        interface_provider_2.BindNewPipeAndPassReceiver());
+    interface_provider_2.set_disconnect_handler(
         wait_until_connection_error_loop_2.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl2));
   }

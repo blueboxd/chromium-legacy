@@ -2021,7 +2021,8 @@ void UserSessionManager::OnRestoreActiveSessions(
     LOG(ERROR) << "Could not get list of active user sessions after crash.";
     // If we could not get list of active user sessions it is safer to just
     // sign out so that we don't get in the inconsistent state.
-    SessionTerminationManager::Get()->StopSession();
+    SessionTerminationManager::Get()->StopSession(
+        login_manager::SessionStopReason::RESTORE_ACTIVE_SESSIONS);
     return;
   }
 

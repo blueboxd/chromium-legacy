@@ -75,8 +75,8 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetDidAddMessageToConsoleCallback(
       base::OnceCallback<void(const base::string16& msg)> callback);
 
-  service_manager::mojom::InterfaceProviderRequest
-  TakeLastInterfaceProviderRequest();
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+  TakeLastInterfaceProviderReceiver();
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();

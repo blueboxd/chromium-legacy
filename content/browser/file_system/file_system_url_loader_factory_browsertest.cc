@@ -24,6 +24,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/mime_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
@@ -405,7 +406,7 @@ class FileSystemURLLoaderFactoryTest
 
   // |temp_dir_| must be deleted last.
   base::ScopedTempDir temp_dir_;
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
 
  private:
   static void OnOpenFileSystem(base::OnceClosure done_closure,
@@ -461,9 +462,10 @@ class FileSystemURLLoaderFactoryTest
         storage_domain);
 
     auto client = std::make_unique<network::TestURLLoaderClient>();
+    loader_.reset();
     factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, client->CreateRemote(),
+        loader_.BindNewPipeAndPassReceiver(), 0, 0,
+        network::mojom::kURLLoadOptionNone, request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     return client;

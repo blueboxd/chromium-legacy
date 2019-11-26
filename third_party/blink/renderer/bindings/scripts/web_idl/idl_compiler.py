@@ -174,10 +174,11 @@ class IdlCompiler(object):
                       default_value=True)
 
         old_irs = self._ir_map.irs_of_kinds(
-            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.INTERFACE_MIXIN,
-            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
+            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
             IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
-            IRMap.IR.Kind.PARTIAL_DICTIONARY)
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 

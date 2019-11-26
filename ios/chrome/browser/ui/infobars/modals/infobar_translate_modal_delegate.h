@@ -12,6 +12,14 @@
 // Delegate to handle Translate Infobar Modal actions.
 @protocol InfobarTranslateModalDelegate <InfobarModalDelegate>
 
+// Indicates the user chose to show options to change the source target
+// language.
+- (void)showChangeSourceLanguageOptions;
+
+// Indicates the user chose to show options to change the source target
+// language.
+- (void)showChangeTargetLanguageOptions;
+
 // Indicates the user chose to always translate sites in the source language.
 // Triggers a translate as well.
 - (void)alwaysTranslateSourceLanguage;

@@ -20,7 +20,7 @@ class TranslateIconView : public PageActionIconView {
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
 
  protected:
   // PageActionIconView:

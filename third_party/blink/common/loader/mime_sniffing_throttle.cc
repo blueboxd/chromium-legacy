@@ -42,7 +42,7 @@ void MimeSniffingThrottle::WillProcessResponse(
 
     mojo::PendingRemote<network::mojom::URLLoader> new_remote;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_receiver;
-    network::mojom::URLLoaderPtr source_loader;
+    mojo::PendingRemote<network::mojom::URLLoader> source_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         source_client_receiver;
     MimeSniffingURLLoader* mime_sniffing_loader;
@@ -50,10 +50,9 @@ void MimeSniffingThrottle::WillProcessResponse(
         MimeSniffingURLLoader::CreateLoader(
             weak_factory_.GetWeakPtr(), response_url, response_head->Clone(),
             task_runner_);
-    delegate_->InterceptResponse(
-        network::mojom::URLLoaderPtr(std::move(new_remote)),
-        std::move(new_receiver), &source_loader, &source_client_receiver);
-    mime_sniffing_loader->Start(source_loader.PassInterface(),
+    delegate_->InterceptResponse(std::move(new_remote), std::move(new_receiver),
+                                 &source_loader, &source_client_receiver);
+    mime_sniffing_loader->Start(std::move(source_loader),
                                 std::move(source_client_receiver));
   }
 }

@@ -88,8 +88,6 @@ class PLATFORM_EXPORT FetchClientSettingsObject
   virtual const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
       const = 0;
 
-  virtual bool GetMixedAutoUpgradeOptOut() const = 0;
-
   virtual void Trace(Visitor*) {}
 };
 

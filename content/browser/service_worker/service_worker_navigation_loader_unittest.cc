@@ -25,9 +25,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
@@ -410,7 +407,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
             helper_->context()->loader_factory_getter()));
 
     // Load |request.url|.
-    loader_->StartRequest(*request, mojo::MakeRequest(&loader_ptr_),
+    loader_->StartRequest(*request, loader_remote_.BindNewPipeAndPassReceiver(),
                           client_.CreateRemote());
   }
 
@@ -477,7 +474,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   storage::BlobStorageContext blob_context_;
   network::TestURLLoaderClient client_;
   std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
-  network::mojom::URLLoaderPtr loader_ptr_;
+  mojo::Remote<network::mojom::URLLoader> loader_remote_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   ServiceWorkerRemoteProviderEndpoint provider_endpoints_;
 
@@ -763,7 +760,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
-  loader_ptr_.reset();
+  loader_remote_.reset();
   base::RunLoop().RunUntilIdle();
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
@@ -915,9 +912,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Lifetime) {
   loader_.release()->DetachedFromRequest();
   EXPECT_TRUE(loader);
 
-  // When the interface pointer to |loader_| is disconnected, its weak pointers
-  // (|loader|) are invalidated.
-  loader_ptr_.reset();
+  // When the remote for |loader_| is disconnected, its weak pointers (|loader|)
+  // are invalidated.
+  loader_remote_.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(loader);
 
@@ -932,7 +929,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
   service_worker_->RunUntilFetchEvent();
 
   // Break the Mojo connection. The loader should return an aborted status.
-  loader_ptr_.reset();
+  loader_remote_.reset();
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
 

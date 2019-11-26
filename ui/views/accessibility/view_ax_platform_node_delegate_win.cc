@@ -25,29 +25,13 @@
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/screen_win.h"
+#include "ui/views/accessibility/views_utilities_aura.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
-#include "ui/wm/core/window_util.h"
 
 namespace views {
-
-namespace {
-
-// Return the parent of |window|, first checking to see if it has a
-// transient parent. This allows us to walk up the aura::Window
-// hierarchy when it spans multiple window tree hosts, each with
-// their own HWND.
-aura::Window* GetWindowParentIncludingTransient(aura::Window* window) {
-  aura::Window* transient_parent = wm::GetTransientParent(window);
-  if (transient_parent)
-    return transient_parent;
-
-  return window->parent();
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {

@@ -1102,8 +1102,9 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   // Do the remote-to-local transition for the proxy, which is to create a
   // provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
-  mojo::MakeRequest(&stub_interface_provider);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      stub_interface_provider;
+  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
@@ -1170,8 +1171,9 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // Do the first step of a remote-to-local transition for the child proxy,
   // which is to create a provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
-  mojo::MakeRequest(&stub_interface_provider);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      stub_interface_provider;
+  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());

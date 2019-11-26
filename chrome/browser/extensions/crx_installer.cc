@@ -1081,4 +1081,8 @@ void CrxInstaller::ConfirmReEnable() {
   }
 }
 
+void CrxInstaller::set_installer_callback(InstallerResultCallback callback) {
+  installer_callback_ = std::move(callback);
+}
+
 }  // namespace extensions

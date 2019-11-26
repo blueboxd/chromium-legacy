@@ -1072,7 +1072,8 @@ void WizardController::OnTermsOfServiceScreenExit(
       break;
     case TermsOfServiceScreen::Result::DECLINED:
       // End the session and return to the login screen.
-      SessionManagerClient::Get()->StopSession();
+      SessionManagerClient::Get()->StopSession(
+          login_manager::SessionStopReason::TERMS_DECLINED);
       break;
   }
 }

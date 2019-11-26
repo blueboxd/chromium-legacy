@@ -1134,10 +1134,11 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
           browser_.get(), toolbar_button_provider_);
 }
 
-bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
+void BrowserView::UpdatePageActionIcon(PageActionIconType type) {
   PageActionIconView* icon =
       toolbar_button_provider_->GetPageActionIconView(type);
-  return icon ? icon->Update() : false;
+  if (icon)
+    icon->Update();
 }
 
 autofill::AutofillBubbleHandler* BrowserView::GetAutofillBubbleHandler() {

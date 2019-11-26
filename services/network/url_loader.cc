@@ -1575,15 +1575,13 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // populated.  Otherwise we can cancel the request.
   if (corb_detachable_) {
     // Discard any remaining callbacks or data by rerouting the pipes to
-    // EmptyURLLoaderClient (deleting |self_ptr| when the URL request
-    // completes).
-    mojom::URLLoaderPtr self_ptr;
+    // EmptyURLLoaderClient.
     receiver_.reset();
-    receiver_.Bind(mojo::MakeRequest(&self_ptr));
+    EmptyURLLoaderClient::DrainURLRequest(
+        url_loader_client_.BindNewPipeAndPassReceiver(),
+        receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
-    EmptyURLLoaderClient::DrainURLRequest(
-        url_loader_client_.BindNewPipeAndPassReceiver(), std::move(self_ptr));
 
     // Ask the caller to continue processing the request.
     return kContinueRequest;

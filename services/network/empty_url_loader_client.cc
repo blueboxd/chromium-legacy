@@ -14,7 +14,7 @@ namespace network {
 // static
 void EmptyURLLoaderClient::DrainURLRequest(
     mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-    mojom::URLLoaderPtr url_loader) {
+    mojo::PendingRemote<mojom::URLLoader> url_loader) {
   // Raw |new| is okay, because the newly constructed EmptyURLLoaderClient will
   // delete itself after consuming all the data/callbacks.
   new EmptyURLLoaderClient(std::move(client_receiver), std::move(url_loader));
@@ -22,7 +22,7 @@ void EmptyURLLoaderClient::DrainURLRequest(
 
 EmptyURLLoaderClient::EmptyURLLoaderClient(
     mojo::PendingReceiver<mojom::URLLoaderClient> receiver,
-    mojom::URLLoaderPtr url_loader)
+    mojo::PendingRemote<mojom::URLLoader> url_loader)
     : receiver_(this, std::move(receiver)), url_loader_(std::move(url_loader)) {
   receiver_.set_disconnect_handler(base::BindOnce(
       &EmptyURLLoaderClient::DeleteSelf, base::Unretained(this)));

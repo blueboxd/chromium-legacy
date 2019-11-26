@@ -209,7 +209,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/dbus/audio",
-    "//chromeos/dbus/auth_policy",
+    "//chromeos/dbus/authpolicy",
     "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
@@ -228,7 +228,7 @@ source_set("unit_tests") {
   ]
   sources = [
     "audio/cras_audio_client_unittest.cc",
-    "auth_policy/fake_auth_policy_client_unittest.cc",
+    "authpolicy/fake_authpolicy_client_unittest.cc",
     "biod/biod_client_unittest.cc",
     "biod/fake_biod_client_unittest.cc",
     "blocking_method_caller_unittest.cc",

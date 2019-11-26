@@ -144,6 +144,12 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
 
   // Returns the current list of user prefered languages.
   virtual blink::WebString GetAcceptLanguages() const = 0;
+
+  // Returns mojo::PendingReceiver<blink::mojom::blink::WorkerTimingContainer>
+  // for the blink::ResourceResponse with the given |request_id|. Null if the
+  // request has not been intercepted by a service worker.
+  virtual mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
+      int request_id) = 0;
 };
 
 }  // namespace blink

@@ -144,7 +144,6 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     enum AllowedPaths {
       ANY_PATH,
       NATIVE_PATH,
-      NATIVE_OR_DRIVE_PATH,
       ANY_PATH_OR_URL
     };
     AllowedPaths allowed_paths;

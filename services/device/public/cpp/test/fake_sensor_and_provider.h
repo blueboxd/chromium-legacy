@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -141,7 +141,7 @@ class FakeSensorProvider : public mojom::SensorProvider {
   bool gyroscope_is_available_ = true;
   bool relative_orientation_sensor_is_available_ = true;
   bool absolute_orientation_sensor_is_available_ = true;
-  mojo::Receiver<mojom::SensorProvider> receiver_{this};
+  mojo::ReceiverSet<mojom::SensorProvider> receivers_{};
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
 

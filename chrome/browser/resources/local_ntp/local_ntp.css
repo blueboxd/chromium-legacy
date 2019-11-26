@@ -349,7 +349,7 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
   width: 100%;
 }
 
-#realbox-matches a:-webkit-any(:hover, :focus-within) .remove-icon {
+#realbox-matches a:-webkit-any(:hover, :focus-within, .selected) .remove-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;

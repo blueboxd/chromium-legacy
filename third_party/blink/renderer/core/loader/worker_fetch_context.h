@@ -82,6 +82,8 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
+  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+  TakePendingWorkerTimingReceiver(int request_id) override;
 
   WorkerSettings* GetWorkerSettings() const;
   WebWorkerFetchContext* GetWebWorkerFetchContext() const {

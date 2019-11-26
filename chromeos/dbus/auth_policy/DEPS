@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "fake_auth_policy_client.*\.cc": [
-    "+chromeos/tpm",
-  ],
-}

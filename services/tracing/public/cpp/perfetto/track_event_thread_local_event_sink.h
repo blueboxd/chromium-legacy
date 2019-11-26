@@ -71,12 +71,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   // (e.g. interning index entries and a ThreadDescriptor) to be emitted again.
   static void ClearIncrementalState();
 
-  // Returns true if the current |trace_event| is part of a COMPLETE event
-  // phase. As part of this we will update any stack information to keep track
-  // of the information when we can pop something off the stack.
-  bool MaybeHandleCompleteEvent(base::trace_event::TraceEvent* trace_event,
-                                base::trace_event::TraceEventHandle* handle);
-
   // If we need to perform an incremental reset we will do so, and also emit all
   // the relevant descriptors to start a new fresh sequence.
   void ResetIncrementalStateIfNeeded(
@@ -99,10 +93,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   void AddTraceEvent(base::trace_event::TraceEvent* trace_event,
                      base::trace_event::TraceEventHandle* handle,
                      TrackEventArgumentFunction arg_func) {
-    if (MaybeHandleCompleteEvent(trace_event, handle)) {
-      return;
-    }
-
     ResetIncrementalStateIfNeeded(trace_event);
 
     auto trace_packet = trace_writer_->NewTracePacket();
@@ -117,7 +107,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   }
 
   void UpdateDuration(
+      const unsigned char* category_group_enabled,
+      const char* name,
       base::trace_event::TraceEventHandle handle,
+      int thread_id,
+      bool explicit_timestamps,
       const base::TimeTicks& now,
       const base::ThreadTicks& thread_now,
       base::trace_event::ThreadInstructionCount thread_instruction_now);
@@ -167,9 +161,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   std::string thread_name_;
   perfetto::protos::pbzero::ThreadDescriptor::ChromeThreadType thread_type_ =
       perfetto::protos::pbzero::ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
-
-  base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
-  uint32_t current_stack_depth_ = 0;
 
   const bool privacy_filtering_enabled_;
 

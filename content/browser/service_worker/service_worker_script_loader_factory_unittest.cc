@@ -55,17 +55,17 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   }
 
  protected:
-  network::mojom::URLLoaderPtr CreateTestLoaderAndStart(
+  mojo::PendingRemote<network::mojom::URLLoader> CreateTestLoaderAndStart(
       network::TestURLLoaderClient* client) {
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::ResourceRequest resource_request;
     resource_request.url = script_url_;
     resource_request.resource_type =
         static_cast<int>(ResourceType::kServiceWorker);
     factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        network::mojom::kURLLoadOptionNone, resource_request,
-        client->CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, network::mojom::kURLLoadOptionNone,
+        resource_request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     return loader;
   }
@@ -86,7 +86,8 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, Success) {
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client);
   client.RunUntilComplete();
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 }
@@ -95,7 +96,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
   version_->SetStatus(ServiceWorkerVersion::REDUNDANT);
 
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client);
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
@@ -104,7 +106,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
   helper_->context()->RemoveProviderHost(provider_host_->provider_id());
 
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client);
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
@@ -114,7 +117,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, ContextDestroyed) {
   base::RunLoop().RunUntilIdle();
 
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client);
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
@@ -171,7 +175,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest, CopyScript) {
       ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical, nullptr,
       version_.get());
 
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client_);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client_);
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
@@ -201,7 +206,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
       version_.get());
 
-  network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client_);
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateTestLoaderAndStart(&client_);
   network_producer.reset();
   client_.RunUntilComplete();
 

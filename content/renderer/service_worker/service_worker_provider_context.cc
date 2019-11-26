@@ -39,7 +39,11 @@ void CreateSubresourceLoaderFactoryForProviderContext(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
         connector_receiver,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> worker_timing_callback_task_runner,
+    base::RepeatingCallback<
+        void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
+        worker_timing_callback) {
   auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
       std::move(remote_container_host), std::move(remote_controller),
       client_id);
@@ -47,7 +51,9 @@ void CreateSubresourceLoaderFactoryForProviderContext(
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
-      std::move(receiver), std::move(task_runner));
+      std::move(receiver), std::move(task_runner),
+      std::move(worker_timing_callback_task_runner),
+      std::move(worker_timing_callback));
 }
 
 }  // namespace
@@ -125,15 +131,20 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
     auto task_runner = base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    auto current_task_runner =
+        base::CreateSequencedTaskRunner({base::CurrentThread()});
     task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
-                       std::move(remote_container_host),
-                       std::move(remote_controller_), client_id_,
-                       fallback_loader_factory_->Clone(),
-                       controller_connector_.BindNewPipeAndPassReceiver(),
-                       subresource_loader_factory_.BindNewPipeAndPassReceiver(),
-                       task_runner));
+        base::BindOnce(
+            &CreateSubresourceLoaderFactoryForProviderContext,
+            std::move(remote_container_host), std::move(remote_controller_),
+            client_id_, fallback_loader_factory_->Clone(),
+            controller_connector_.BindNewPipeAndPassReceiver(),
+            subresource_loader_factory_.BindNewPipeAndPassReceiver(),
+            task_runner, std::move(current_task_runner),
+            base::BindRepeating(
+                &ServiceWorkerProviderContext::AddPendingWorkerTimingReceiver,
+                weak_factory_.GetWeakPtr())));
 
     DCHECK(!weak_wrapped_subresource_loader_factory_);
     weak_wrapped_subresource_loader_factory_ =
@@ -250,6 +261,26 @@ void ServiceWorkerProviderContext::NotifyExecutionReady() {
   }
   sent_execution_ready_ = true;
   container_host_->OnExecutionReady();
+}
+
+void ServiceWorkerProviderContext::AddPendingWorkerTimingReceiver(
+    int request_id,
+    mojo::PendingReceiver<blink::mojom::WorkerTimingContainer> receiver) {
+  // TODO(https://crbug.com/900700): Handle redirects properly. Currently on
+  // redirect, the receiver is replaced with a new one, discarding the timings
+  // before the redirect.
+  worker_timing_container_receivers_[request_id] = std::move(receiver);
+}
+
+mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>
+ServiceWorkerProviderContext::TakePendingWorkerTimingReceiver(int request_id) {
+  auto iter = worker_timing_container_receivers_.find(request_id);
+  if (iter == worker_timing_container_receivers_.end()) {
+    return mojo::NullReceiver();
+  }
+  auto worker_timing_receiver = std::move(iter->second);
+  worker_timing_container_receivers_.erase(iter);
+  return worker_timing_receiver;
 }
 
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(

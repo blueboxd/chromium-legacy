@@ -1015,7 +1015,8 @@ void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
 }
 
 base::string16 ChromePasswordProtectionService::GetWarningDetailText(
-    ReusedPasswordAccountType password_type) const {
+    ReusedPasswordAccountType password_type,
+    std::vector<size_t>* placeholder_offsets) const {
   DCHECK(password_type.account_type() == ReusedPasswordAccountType::GSUITE ||
          password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
          password_type.account_type() ==
@@ -1034,7 +1035,7 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
           ReusedPasswordAccountType::SAVED_PASSWORD &&
       base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionForSavedPasswords)) {
-    return GetWarningDetailTextForSavedPasswords();
+    return GetWarningDetailTextForSavedPasswords(placeholder_offsets);
   }
 
   bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
@@ -1060,8 +1061,14 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
 }
 
 base::string16
-ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords() const {
-  std::vector<std::string> domains = saved_passwords_matching_domains();
+ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
+    std::vector<size_t>* placeholder_offsets) const {
+  const std::vector<std::string>& domains = saved_passwords_matching_domains();
+
+  std::vector<base::string16> placeholders;
+  for (size_t idx = 0; idx < domains.size() && idx < 3; idx++) {
+    placeholders.push_back(base::UTF8ToUTF16(domains[idx]));
+  }
   // If showing the saved passwords domain experiment is not on or if there is
   // are no saved domains, default to original saved passwords reuse warning.
   if (!base::FeatureList::IsEnabled(
@@ -1071,17 +1078,16 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords() const {
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
   } else if (domains.size() == 1) {
     return l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN,
-        base::UTF8ToUTF16(domains[0]));
+        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN, placeholders,
+        placeholder_offsets);
   } else if (domains.size() == 2) {
     return l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS,
-        base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]));
+        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS, placeholders,
+        placeholder_offsets);
   } else {
     return l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS,
-        base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]),
-        base::UTF8ToUTF16(domains[2]));
+        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS, placeholders,
+        placeholder_offsets);
   }
 }
 

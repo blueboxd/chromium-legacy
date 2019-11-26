@@ -837,7 +837,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     } else {
       url_loader_client_endpoints =
           network::mojom::URLLoaderClientEndpoints::New(
-              response_url_loader_.PassInterface(),
+              std::move(response_url_loader_),
               response_loader_receiver_.Unbind());
     }
 
@@ -1168,9 +1168,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   mojo::Receiver<network::mojom::URLLoaderClient> response_loader_receiver_{
       this};
 
-  // URLLoader instance for response loaders, i.e loaders created for handing
+  // URLLoader instance for response loaders, i.e loaders created for handling
   // responses received from the network URLLoader.
-  network::mojom::URLLoaderPtr response_url_loader_;
+  mojo::PendingRemote<network::mojom::URLLoader> response_url_loader_;
 
   // Set to true if we receive a valid response from a URLLoader, i.e.
   // URLLoaderClient::OnReceivedResponse() is called.

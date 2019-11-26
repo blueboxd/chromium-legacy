@@ -67,6 +67,14 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.operations = list(operations)
             self.operation_groups = []
 
+        def iter_all_members(self):
+            for attribute in self.attributes:
+                yield attribute
+            for constant in self.constants:
+                yield constant
+            for operation in self.operations:
+                yield operation
+
     def __init__(self, ir):
         assert isinstance(ir, Namespace.IR)
         assert not ir.is_partial

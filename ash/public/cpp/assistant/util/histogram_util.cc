@@ -12,6 +12,35 @@ namespace ash {
 namespace assistant {
 namespace metrics {
 
+void RecordProactiveSuggestionsCardClick(base::Optional<int> category,
+                                         base::Optional<int> index,
+                                         base::Optional<int> veId) {
+  constexpr char kCardClickHistogram[] =
+      "Assistant.ProactiveSuggestions.CardClick";
+
+  // Record the top level histogram for every click event.
+  base::UmaHistogramBoolean(kCardClickHistogram, true);
+
+  // If possible, record by |category| so we can slice during analysis.
+  if (category.has_value()) {
+    base::UmaHistogramSparse(
+        base::StringPrintf("%s.ByCategory", kCardClickHistogram),
+        category.value());
+  }
+
+  // If possible, record by |index| so we can slice during analysis.
+  if (index.has_value()) {
+    base::UmaHistogramSparse(
+        base::StringPrintf("%s.ByIndex", kCardClickHistogram), index.value());
+  }
+
+  // If possible, record by |veId| so we can slice during analysis.
+  if (veId.has_value()) {
+    base::UmaHistogramSparse(
+        base::StringPrintf("%s.ByVeId", kCardClickHistogram), veId.value());
+  }
+}
+
 void RecordProactiveSuggestionsRequestResult(
     int category,
     ProactiveSuggestionsRequestResult result) {

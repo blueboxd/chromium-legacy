@@ -527,10 +527,7 @@ TEST(ValuesTest, Append) {
 TEST(ValuesTest, Insert) {
   ListValue value;
   auto GetList = [&value]() -> decltype(auto) { return value.GetList(); };
-  auto GetConstList = [&value] {
-    const ListValue& const_value = value;
-    return const_value.GetList();
-  };
+  auto GetConstList = [&value] { return as_const(value).GetList(); };
 
   auto storage_iter = value.Insert(GetList().end(), Value(true));
   EXPECT_TRUE(GetList().begin() == storage_iter);

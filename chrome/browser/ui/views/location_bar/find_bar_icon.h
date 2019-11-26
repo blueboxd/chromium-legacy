@@ -20,7 +20,7 @@ class FindBarIcon : public PageActionIconView {
 
  protected:
   // PageActionIconView:
-  bool Update() override;
+  void UpdateImpl() override;
   void OnExecuting(ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;

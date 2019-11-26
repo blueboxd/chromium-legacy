@@ -111,6 +111,12 @@ class CONTENT_EXPORT WebBundleReader final
   };
   class SharedFileDataSource;
 
+  enum class State {
+    kInitial,
+    kMetadataReady,
+    kDisconnected,
+  };
+
   ~WebBundleReader();
 
   void ReadMetadataInternal(MetadataCallback callback, base::File file);
@@ -121,12 +127,17 @@ class CONTENT_EXPORT WebBundleReader final
   void OnResponseParsed(ResponseCallback callback,
                         data_decoder::mojom::BundleResponsePtr response,
                         data_decoder::mojom::BundleResponseParseErrorPtr error);
+  void OnParserDisconnected();
+  void Reconnect();
+  void ReconnectForFile(base::File file);
+  void DidReconnect(base::Optional<std::string> error);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  State state_ = State::kInitial;
   const std::unique_ptr<WebBundleSource> source_;
 
-  data_decoder::SafeWebBundleParser parser_;
+  std::unique_ptr<data_decoder::SafeWebBundleParser> parser_;
   // Used when loading a web bundle from file.
   scoped_refptr<SharedFile> file_;
   // Used when loading a web bundle from network.
@@ -134,7 +145,8 @@ class CONTENT_EXPORT WebBundleReader final
 
   GURL primary_url_;
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
-  bool metadata_ready_ = false;
+  // Accumulates ReadResponse() requests while the parser is disconnected.
+  std::vector<std::pair<GURL, ResponseCallback>> pending_read_responses_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleReader);
 };

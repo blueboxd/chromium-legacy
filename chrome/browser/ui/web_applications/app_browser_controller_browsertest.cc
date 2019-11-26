@@ -48,7 +48,7 @@ class AppBrowserControllerBrowserTest
 
     auto* provider = WebAppProvider::Get(profile());
     provider->system_web_app_manager().SetSystemAppsForTesting(
-        {{SystemAppType::TERMINAL, SystemAppInfo(app_url)}});
+        {{SystemAppType::TERMINAL, SystemAppInfo("Terminal", app_url)}});
     ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
         .Insert(app_url, app_id, ExternalInstallSource::kInternalDefault);
     ASSERT_EQ(

@@ -63,7 +63,7 @@ static int FindIndexInRowCollection(const HTMLCollection& rows,
 
 int HTMLTableRowElement::rowIndex() const {
   ContainerNode* maybe_table = parentNode();
-  if (maybe_table && IsHTMLTableSectionElement(maybe_table)) {
+  if (maybe_table && IsA<HTMLTableSectionElement>(maybe_table)) {
     // Skip THEAD, TBODY and TFOOT.
     maybe_table = maybe_table->parentNode();
   }
@@ -78,7 +78,7 @@ int HTMLTableRowElement::sectionRowIndex() const {
   if (!maybe_table)
     return -1;
   HTMLCollection* rows = nullptr;
-  if (auto* section = ToHTMLTableSectionElementOrNull(maybe_table))
+  if (auto* section = DynamicTo<HTMLTableSectionElement>(maybe_table))
     rows = section->rows();
   else if (auto* table = DynamicTo<HTMLTableElement>(maybe_table))
     rows = table->rows();

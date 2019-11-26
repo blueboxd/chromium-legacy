@@ -173,7 +173,7 @@ class TranslatePrefs {
   std::string GetCountry() const;
 
   // Resets the blocked languages list, the sites blacklist, the languages
-  // whitelist, and the accepted/denied counts.
+  // whitelist, the accepted/denied counts, and whether Translate is enabled.
   void ResetToDefaults();
 
   bool IsBlockedLanguage(const std::string& original_language) const;

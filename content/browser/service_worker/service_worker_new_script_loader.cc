@@ -150,9 +150,9 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
   loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      resource_request, network_client_receiver_.BindNewPipeAndPassRemote(),
-      traffic_annotation);
+      network_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
+      options, resource_request,
+      network_client_receiver_.BindNewPipeAndPassRemote(), traffic_annotation);
   DCHECK_EQ(LoaderState::kNotStarted, network_loader_state_);
   network_loader_state_ = LoaderState::kLoadingHeader;
 }

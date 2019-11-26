@@ -67,6 +67,10 @@ void AssistantWebContainerView::OnBackButtonPressed() {
   assistant_web_view_->OnCaptionButtonPressed(AssistantButtonId::kBack);
 }
 
+void AssistantWebContainerView::OpenUrl(const GURL& url) {
+  assistant_web_view_->OpenUrl(url);
+}
+
 views::View* AssistantWebContainerView::GetCaptionBarForTesting() {
   return assistant_web_view_->caption_bar_for_testing();
 }

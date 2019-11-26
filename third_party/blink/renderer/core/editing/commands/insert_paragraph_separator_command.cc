@@ -56,7 +56,7 @@ static Element* HighestVisuallyEquivalentDivBelowRoot(Element* start_block) {
   // We don't want to return a root node (if it happens to be a div, e.g., in a
   // document fragment) because there are no siblings for us to append to.
   while (!cur_block->nextSibling() &&
-         IsHTMLDivElement(*cur_block->parentElement()) &&
+         IsA<HTMLDivElement>(*cur_block->parentElement()) &&
          cur_block->parentElement()->parentElement()) {
     if (cur_block->parentElement()->hasAttributes())
       break;
@@ -322,7 +322,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
         // startBlock (e.g., when nesting within lists). However, for div nodes,
         // this can result in nested div tags that are hard to break out of.
         Element* sibling_element = start_block;
-        if (IsHTMLDivElement(*block_to_insert))
+        if (IsA<HTMLDivElement>(*block_to_insert))
           sibling_element = HighestVisuallyEquivalentDivBelowRoot(start_block);
         InsertNodeAfter(block_to_insert, sibling_element, editing_state);
       }

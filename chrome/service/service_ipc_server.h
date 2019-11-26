@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/common/service_process.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -96,7 +96,7 @@ class ServiceIPCServer : public service_manager::mojom::InterfaceProvider,
   std::unique_ptr<base::HistogramDeltaSerialization>
       histogram_delta_serializer_;
 
-  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_{this};
   mojo::ReceiverSet<chrome::mojom::ServiceProcess> service_process_receivers_;
 
   service_manager::BinderRegistry binder_registry_;

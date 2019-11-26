@@ -78,7 +78,7 @@ PrefetchURLLoader::PrefetchURLLoader(
   }
 
   network_loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader_), routing_id, request_id, options,
+      loader_.BindNewPipeAndPassReceiver(), routing_id, request_id, options,
       resource_request_, client_receiver_.BindNewPipeAndPassRemote(),
       traffic_annotation);
   client_receiver_.set_disconnect_handler(base::BindOnce(
@@ -112,7 +112,7 @@ void PrefetchURLLoader::FollowRedirect(
 
     // Rebind |client_receiver_| and |loader_|.
     client_receiver_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
-        mojo::MakeRequest(&loader_)));
+        loader_.BindNewPipeAndPassReceiver()));
     return;
   }
 
@@ -159,7 +159,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
             frame_tree_node_id_, resource_request_, response,
-            mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
+            mojo::ScopedDataPipeConsumerHandle(), loader_.Unbind(),
             client_receiver_.Unbind(), network_loader_factory_,
             url_loader_throttles_getter_, this,
             signed_exchange_prefetch_metric_recorder_, accept_langs_);

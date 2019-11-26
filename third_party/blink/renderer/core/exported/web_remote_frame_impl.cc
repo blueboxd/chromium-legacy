@@ -313,8 +313,11 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
   HTMLFrameOwnerElement* owner_element =
       To<HTMLFrameOwnerElement>(frame_->Owner());
   DCHECK(owner_element);
+  // TODO(https://crbug.com/900700): Take a Mojo pending receiver for
+  // WorkerTimingContainer for navigation from the calling function.
   DOMWindowPerformance::performance(*parent_frame->GetFrame()->DomWindow())
-      ->AddResourceTiming(info, owner_element->localName());
+      ->AddResourceTiming(info, owner_element->localName(),
+                          mojo::NullReceiver() /* worker_timing_receiver */);
 }
 
 void WebRemoteFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {

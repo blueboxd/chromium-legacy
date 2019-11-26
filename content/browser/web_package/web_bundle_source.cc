@@ -80,6 +80,13 @@ std::unique_ptr<base::File> WebBundleSource::OpenFile() const {
       file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
+bool WebBundleSource::IsNavigationPathRestrictionSatisfied(
+    const GURL& url) const {
+  DCHECK(is_network());
+  return base::StartsWith(url.spec(), url_.GetWithoutFilename().spec(),
+                          base::CompareCase::SENSITIVE);
+}
+
 WebBundleSource::WebBundleSource(Type type,
                                  const base::FilePath& file_path,
                                  const GURL& url)

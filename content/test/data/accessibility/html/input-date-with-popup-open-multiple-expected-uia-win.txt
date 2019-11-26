@@ -36,35 +36,34 @@ document
 ++++++++++spinbutton Name='Year Third date picker' RangeValue.IsReadOnly=false RangeValue.LargeChange=0.00 RangeValue.SmallChange=0.00 RangeValue.Maximum=275760.00 RangeValue.Minimum=1.00 RangeValue.Value=2008.00 Value.Value='2008'
 ++++++++++++description Name='2008'
 ++++++menu Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
-++++++Name='Chrome Legacy Window' IsControlElement=false
-++++++++document
+++++++document
+++++++++group
 ++++++++++group
 ++++++++++++group
+++++++++++++++button Name='Show month selection panel'
+++++++++++++++++img
+++++++++++++button Name='Show previous month'
+++++++++++++++img
+++++++++++++button Name='Today'
 ++++++++++++++group
-++++++++++++++++button Name='Show month selection panel'
-++++++++++++++++++description IsControlElement=false
-++++++++++++++++++img
-++++++++++++++button Name='Show previous month'
-++++++++++++++++img
-++++++++++++++button Name='Today'
+++++++++++++button Name='Show next month'
+++++++++++++++img
+++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
+++++++++++++++group
 ++++++++++++++++group
-++++++++++++++button Name='Show next month'
-++++++++++++++++img
-++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Table.RowOrColumnMajor='RowMajor'
+++++++++++++++++++description Name='Sun'
 ++++++++++++++++group
-++++++++++++++++++group
-++++++++++++++++++++description Name='Sun'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Mon'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Tue'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Wed'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Thu'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Fri'
-++++++++++++++++++group
-++++++++++++++++++++description Name='Sat'
+++++++++++++++++++description Name='Mon'
 ++++++++++++++++group
-++++++++++++++++++group
+++++++++++++++++++description Name='Tue'
+++++++++++++++++group
+++++++++++++++++++description Name='Wed'
+++++++++++++++++group
+++++++++++++++++++description Name='Thu'
+++++++++++++++++group
+++++++++++++++++++description Name='Fri'
+++++++++++++++++group
+++++++++++++++++++description Name='Sat'
+++++++++++++++group
+++++++++++++++++group
+

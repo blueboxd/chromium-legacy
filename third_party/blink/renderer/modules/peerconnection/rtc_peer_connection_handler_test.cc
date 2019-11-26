@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -55,6 +54,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/webrtc/api/data_channel_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/stats/test/rtc_test_stats.h"
@@ -1275,7 +1275,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
               TrackCreateDataChannel(pc_handler_.get(), testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
   scoped_refptr<webrtc::DataChannelInterface> channel =
-      pc_handler_->CreateDataChannel("d1", RTCDataChannelInitPlatform());
+      pc_handler_->CreateDataChannel("d1", webrtc::DataChannelInit());
   EXPECT_TRUE(channel.get());
   EXPECT_EQ(label.Utf8(), channel->label());
 }

@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
+#include "chromeos/dbus/anomaly_detector/anomaly_detector.pb.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
@@ -119,6 +121,7 @@ class VmShutdownObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
+                        public chromeos::AnomalyDetectorClient::Observer,
                         public chromeos::ConciergeClient::VmObserver,
                         public chromeos::ConciergeClient::ContainerObserver,
                         public chromeos::CiceroneClient::Observer,
@@ -397,14 +400,6 @@ class CrostiniManager : public KeyedService,
                        uint8_t guest_port,
                        BoolCallback callback);
 
-  // Lists USB devices attached to a guest VM.
-  // TODO(jopra): Rename to reflect that this now lists the mount points for USB
-  // devices.
-  using ListUsbDevicesCallback = base::OnceCallback<
-      void(bool success, std::vector<std::pair<std::string, uint8_t>> devices)>;
-  void ListUsbDevices(const std::string& vm_name,
-                      ListUsbDevicesCallback callback);
-
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
@@ -475,6 +470,10 @@ class CrostiniManager : public KeyedService,
   // Add/remove vm starting observers.
   void AddVmStartingObserver(chromeos::VmStartingObserver* observer);
   void RemoveVmStartingObserver(chromeos::VmStartingObserver* observer);
+
+  // AnomalyDetectorClient::Observer:
+  void OnGuestFileCorruption(
+      const anomaly_detector::GuestFileCorruptionSignal& signal) override;
 
   // ConciergeClient::VmObserver:
   void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
@@ -755,12 +754,6 @@ class CrostiniManager : public KeyedService,
       device::mojom::UsbDeviceInfoPtr device,
       BoolCallback callback,
       base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> response);
-
-  // Callback for CrostiniManager::ListUsbDevices
-  void OnListUsbDevices(
-      const std::string& vm_name,
-      ListUsbDevicesCallback callback,
-      base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
   // Callback for AnsibleManagementService::ConfigureDefaultContainer
   void OnDefaultContainerConfigured(bool success);

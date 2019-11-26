@@ -10,6 +10,7 @@
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
@@ -79,10 +80,10 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // Replaces the URLLoader and URLLoaderClient endpoints held by the
     // ThrottlingURLLoader instance.
     virtual void InterceptResponse(
-        network::mojom::URLLoaderPtr new_loader,
+        mojo::PendingRemote<network::mojom::URLLoader> new_loader,
         mojo::PendingReceiver<network::mojom::URLLoaderClient>
             new_client_receiver,
-        network::mojom::URLLoaderPtr* original_loader,
+        mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
             original_client_receiver);
 

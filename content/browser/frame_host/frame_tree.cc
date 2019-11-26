@@ -177,7 +177,8 @@ FrameTreeNode* FrameTree::AddFrame(
     FrameTreeNode* parent,
     int process_id,
     int new_routing_id,
-    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
@@ -218,9 +219,9 @@ FrameTreeNode* FrameTree::AddFrame(
   FrameTreeNode* added_node = parent->current_frame_host()->AddChild(
       std::move(new_node), process_id, new_routing_id);
 
-  DCHECK(interface_provider_request.is_pending());
-  added_node->current_frame_host()->BindInterfaceProviderRequest(
-      std::move(interface_provider_request));
+  DCHECK(interface_provider_receiver.is_valid());
+  added_node->current_frame_host()->BindInterfaceProviderReceiver(
+      std::move(interface_provider_receiver));
 
   DCHECK(browser_interface_broker_receiver.is_valid());
   added_node->current_frame_host()->BindBrowserInterfaceBrokerReceiver(

@@ -565,7 +565,7 @@ void DeleteSelectionCommand::
   Node* node = range->FirstNode();
   while (node && node != range->PastLastNode()) {
     Node* next_node = NodeTraversal::Next(*node);
-    if (IsA<HTMLStyleElement>(*node) || IsHTMLLinkElement(*node)) {
+    if (IsA<HTMLStyleElement>(*node) || IsA<HTMLLinkElement>(*node)) {
       next_node = NodeTraversal::NextSkippingChildren(*node);
       Element* element = RootEditableElement(*node);
       if (element) {

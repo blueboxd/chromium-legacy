@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -82,16 +82,16 @@ AffiliationTestHelper AffiliationTestHelper::CreateForCloud(
     chromeos::FakeSessionManagerClient* fake_session_manager_client) {
   return AffiliationTestHelper(ManagementType::kCloud,
                                fake_session_manager_client,
-                               nullptr /* fake_auth_policy_client */);
+                               nullptr /* fake_authpolicy_client */);
 }
 
 // static
 AffiliationTestHelper AffiliationTestHelper::CreateForActiveDirectory(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client) {
+    chromeos::FakeAuthPolicyClient* fake_authpolicy_client) {
   return AffiliationTestHelper(ManagementType::kActiveDirectory,
                                fake_session_manager_client,
-                               fake_auth_policy_client);
+                               fake_authpolicy_client);
 }
 
 AffiliationTestHelper::AffiliationTestHelper(AffiliationTestHelper&& other) =
@@ -100,17 +100,17 @@ AffiliationTestHelper::AffiliationTestHelper(AffiliationTestHelper&& other) =
 AffiliationTestHelper::AffiliationTestHelper(
     ManagementType management_type,
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client)
+    chromeos::FakeAuthPolicyClient* fake_authpolicy_client)
     : management_type_(management_type),
       fake_session_manager_client_(fake_session_manager_client),
-      fake_auth_policy_client_(fake_auth_policy_client) {
+      fake_authpolicy_client_(fake_authpolicy_client) {
   DCHECK(fake_session_manager_client);
 }
 
 void AffiliationTestHelper::CheckPreconditions() {
   ASSERT_TRUE(fake_session_manager_client_);
   ASSERT_TRUE(management_type_ != ManagementType::kActiveDirectory ||
-              fake_auth_policy_client_);
+              fake_authpolicy_client_);
 }
 
 void AffiliationTestHelper::SetDeviceAffiliationIDs(
@@ -133,10 +133,8 @@ void AffiliationTestHelper::SetDeviceAffiliationIDs(
   fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
   fake_session_manager_client_->OnPropertyChangeComplete(true);
 
-  if (management_type_ == ManagementType::kActiveDirectory) {
-    fake_auth_policy_client_->set_device_affiliation_ids(
-        device_affiliation_ids);
-  }
+  if (management_type_ == ManagementType::kActiveDirectory)
+    fake_authpolicy_client_->set_device_affiliation_ids(device_affiliation_ids);
 }
 
 void AffiliationTestHelper::SetUserAffiliationIDs(
@@ -163,7 +161,7 @@ void AffiliationTestHelper::SetUserAffiliationIDs(
       user_policy->GetBlob());
 
   if (management_type_ == ManagementType::kActiveDirectory)
-    fake_auth_policy_client_->set_user_affiliation_ids(user_affiliation_ids);
+    fake_authpolicy_client_->set_user_affiliation_ids(user_affiliation_ids);
 }
 
 // static

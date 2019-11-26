@@ -21,9 +21,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -909,8 +906,9 @@ class NetworkServiceTestWithService : public testing::Test {
     network_context_->CreateURLLoaderFactory(
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
+    loader_.reset();
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 1, 1, options, request,
+        loader_.BindNewPipeAndPassReceiver(), 1, 1, options, request,
         client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -931,7 +929,7 @@ class NetworkServiceTestWithService : public testing::Test {
   std::unique_ptr<TestURLLoaderClient> client_;
   mojo::Remote<mojom::NetworkService> network_service_;
   mojo::Remote<mojom::NetworkContext> network_context_;
-  mojom::URLLoaderPtr loader_;
+  mojo::Remote<mojom::URLLoader> loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestWithService);
 };
@@ -1612,8 +1610,9 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
     network_context_->CreateURLLoaderFactory(
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
+    loader_.reset();
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 1, 1, options, request,
+        loader_.BindNewPipeAndPassReceiver(), 1, 1, options, request,
         client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -1660,7 +1659,7 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<TestURLLoaderClient> client_;
   mojo::Remote<mojom::NetworkContext> network_context_;
-  mojom::URLLoaderPtr loader_;
+  mojo::Remote<mojom::URLLoader> loader_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };

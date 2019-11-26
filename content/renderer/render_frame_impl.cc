@@ -1358,7 +1358,8 @@ blink::WebLocalFrame* RenderFrameImpl::UniqueNameFrameAdapter::GetWebFrame()
 RenderFrameImpl* RenderFrameImpl::Create(
     RenderViewImpl* render_view,
     int32_t routing_id,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     const base::UnguessableToken& devtools_frame_token) {
@@ -1400,8 +1401,9 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   DCHECK_NE(MSG_ROUTING_NONE, params->main_frame_widget_routing_id);
 
   CHECK(params->main_frame_interface_bundle);
-  service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
-      std::move(params->main_frame_interface_bundle->interface_provider));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      main_frame_interface_provider(
+          std::move(params->main_frame_interface_bundle->interface_provider));
 
   RenderFrameImpl* render_frame = RenderFrameImpl::Create(
       render_view, params->main_frame_routing_id,
@@ -1460,7 +1462,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 // static
 void RenderFrameImpl::CreateFrame(
     int routing_id,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     int previous_routing_id,
@@ -1777,7 +1780,8 @@ blink::WebURL RenderFrameImpl::OverrideFlashEmbedWithHTML(
 RenderFrameImpl::CreateParams::CreateParams(
     RenderViewImpl* render_view,
     int32_t routing_id,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     const base::UnguessableToken& devtools_frame_token)
@@ -1826,7 +1830,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
   DCHECK(RenderThread::IsMainThread());
   // The InterfaceProvider to access Mojo services exposed by the RFHI must be
   // provided at construction time. See: https://crbug.com/729021/.
-  CHECK(params.interface_provider.is_bound());
+  CHECK(params.interface_provider.is_valid());
   remote_interfaces_.Bind(std::move(params.interface_provider));
   blink_interface_registry_.reset(new BlinkInterfaceRegistryImpl(
       registry_.GetWeakPtr(), associated_interfaces_.GetWeakPtr()));
@@ -3175,8 +3179,8 @@ void RenderFrameImpl::AddAutoplayFlags(const url::Origin& origin,
 // mojom::Frame implementation -------------------------------------------------
 
 void RenderFrameImpl::GetInterfaceProvider(
-    service_manager::mojom::InterfaceProviderRequest request) {
-  interface_provider_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver) {
+  interface_provider_receivers_.Add(this, std::move(receiver));
 }
 
 void RenderFrameImpl::GetCanonicalUrlForSharing(
@@ -4125,12 +4129,10 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   }
 
   DCHECK(params_reply.new_interface_provider.is_valid());
-  service_manager::mojom::InterfaceProviderPtr child_interface_provider;
-  child_interface_provider.Bind(
-      service_manager::mojom::InterfaceProviderPtrInfo(
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      child_interface_provider(
           mojo::ScopedMessagePipeHandle(params_reply.new_interface_provider),
-          0u),
-      GetTaskRunner(blink::TaskType::kInternalDefault));
+          0u);
 
   DCHECK(params_reply.browser_interface_broker_handle.is_valid());
 
@@ -4484,21 +4486,23 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
         frame_->GetDocument().GetUkmSourceId(), GetLoadingUrl());
   }
 
-  service_manager::mojom::InterfaceProviderRequest
-      remote_interface_provider_request;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      remote_interface_provider_receiver;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver;
 
   // blink passes true when the new pipe needs to be bound.
   if (should_reset_browser_interface_broker) {
     // If we're navigating to a new document, bind |remote_interfaces_| to a new
-    // message pipe. The request end of the new InterfaceProvider interface will
-    // be sent over as part of DidCommitProvisionalLoad. After the RFHI receives
-    // the commit confirmation, it will immediately close the old message pipe
-    // to avoid GetInterface calls racing with navigation commit, and bind the
-    // request end of the message pipe created here.
-    service_manager::mojom::InterfaceProviderPtr interfaces_provider;
-    remote_interface_provider_request = mojo::MakeRequest(&interfaces_provider);
+    // message pipe. The receiver end of the new InterfaceProvider interface
+    // will be sent over as part of DidCommitProvisionalLoad. After the RFHI
+    // receives the commit confirmation, it will immediately close the old
+    // message pipe to avoid GetInterface calls racing with navigation commit,
+    // and bind the receiver end of the message pipe created here.
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interfaces_provider;
+    remote_interface_provider_receiver =
+        interfaces_provider.InitWithNewPipeAndPassReceiver();
 
     // Must initialize |remote_interfaces_| with a new working pipe *before*
     // observers receive DidCommitProvisionalLoad, so they can already request
@@ -4560,7 +4564,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       item, commit_type, false /* was_within_same_document */, transition,
       should_reset_browser_interface_broker
           ? mojom::DidCommitProvisionalLoadInterfaceParams::New(
-                std::move(remote_interface_provider_request),
+                std::move(remote_interface_provider_receiver),
                 std::move(browser_interface_broker_receiver))
           : nullptr);
 

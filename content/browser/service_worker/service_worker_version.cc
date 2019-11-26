@@ -378,9 +378,10 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
         host->container_host()->client_uuid(),
-        ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
+        ServiceWorkerClientInfo(host->container_host()->process_id(),
+                                host->container_host()->frame_id(),
                                 host->container_host()->web_contents_getter(),
-                                host->provider_type())));
+                                host->container_host()->type())));
   }
 
   info.script_response_time = script_response_time_for_devtools_;
@@ -740,9 +741,10 @@ void ServiceWorkerVersion::AddControllee(
       base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                      weak_factory_.GetWeakPtr(), uuid,
                      ServiceWorkerClientInfo(
-                         provider_host->process_id(), provider_host->frame_id(),
+                         provider_host->container_host()->process_id(),
+                         provider_host->container_host()->frame_id(),
                          provider_host->container_host()->web_contents_getter(),
-                         provider_host->provider_type())));
+                         provider_host->container_host()->type())));
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
@@ -1064,7 +1066,7 @@ void ServiceWorkerVersion::OnStopping() {
   DCHECK(stop_time_.is_null());
   RestartTick(&stop_time_);
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::StopWorker",
-                           stop_time_.ToInternalValue(), "Script",
+                           stop_time_.since_origin().InMicroseconds(), "Script",
                            script_url_.spec(), "Version Status",
                            VersionStatusToString(status_));
 
@@ -1132,7 +1134,8 @@ void ServiceWorkerVersion::OnStartSent(blink::ServiceWorkerStatusCode status) {
 
 void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
                                              base::span<const uint8_t> data) {
-  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
+  int64_t callback_id =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::SetCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1143,7 +1146,8 @@ void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
 }
 
 void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
-  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
+  int64_t callback_id =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::ClearCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1406,8 +1410,9 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   }
 
   service_worker_client_utils::NavigateClient(
-      url, script_url_, provider_host->process_id(), provider_host->frame_id(),
-      context_, base::BindOnce(&DidNavigateClient, std::move(callback), url));
+      url, script_url_, provider_host->container_host()->process_id(),
+      provider_host->container_host()->frame_id(), context_,
+      base::BindOnce(&DidNavigateClient, std::move(callback), url));
 }
 
 void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
@@ -2043,8 +2048,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
   if (!stop_time_.is_null()) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::StopWorker",
-                           stop_time_.ToInternalValue(), "Restart",
-                           should_restart);
+                           stop_time_.since_origin().InMicroseconds(),
+                           "Restart", should_restart);
     ClearTick(&stop_time_);
   }
   StopTimeoutTimer();
@@ -2215,8 +2220,8 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
   // service workers.  The impact of foreground service workers is further
   // limited by the automatic shutdown mechanism.
   for (const auto& controllee : controllee_map_) {
-    const ServiceWorkerProviderHost* host = controllee.second;
-    if (host->process_id() != worker_process_id)
+    ServiceWorkerProviderHost* host = controllee.second;
+    if (host->container_host()->process_id() != worker_process_id)
       return true;
   }
   return false;

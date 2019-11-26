@@ -25,7 +25,7 @@ constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMinutes(1);
 // How long to wait while doing more complex operations like starting or
 // creating a container.
 constexpr base::TimeDelta kLongOperationTimeout =
-    base::TimeDelta::FromMinutes(2);
+    base::TimeDelta::FromMinutes(3);
 }  // namespace
 
 class CiceroneClientImpl : public CiceroneClient {

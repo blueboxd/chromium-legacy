@@ -77,7 +77,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
 
   void CreateLoaderAndStart(const ResourceRequest& request) {
     cors_url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_), kRouteId, kRequestId,
+        url_loader_.BindNewPipeAndPassReceiver(), kRouteId, kRequestId,
         mojom::kURLLoadOptionNone, request,
         test_cors_loader_client_.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -101,8 +101,8 @@ class CorsURLLoaderFactoryTest : public testing::Test {
   std::unique_ptr<mojom::URLLoaderFactory> cors_url_loader_factory_;
   mojo::Remote<mojom::URLLoaderFactory> cors_url_loader_factory_remote_;
 
-  // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
-  mojom::URLLoaderPtr url_loader_;
+  // Holds URLLoader that CreateLoaderAndStart() creates.
+  mojo::Remote<mojom::URLLoader> url_loader_;
 
   // TestURLLoaderClient that records callback activities.
   TestURLLoaderClient test_cors_loader_client_;

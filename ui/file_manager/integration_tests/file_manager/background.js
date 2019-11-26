@@ -55,6 +55,16 @@ const BASIC_LOCAL_ENTRY_SET = [
 ];
 
 /**
+ * Expected files shown in Downloads with hidden enabled
+ *
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = BASIC_LOCAL_ENTRY_SET.concat([
+  ENTRIES.hiddenFile,
+]);
+
+/**
  * Basic entry set for the drive volume that only includes read-write entries
  * (no read-only or similar entries).
  *
@@ -75,6 +85,32 @@ const BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.unsupported,
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument,
+  ENTRIES.testSharedFile,
+];
+
+/**
+ * Expected files shown in Drive with hidden enabled
+ *
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+const BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = BASIC_DRIVE_ENTRY_SET.concat([
+  ENTRIES.hiddenFile,
+]);
+
+
+/**
+ * Expected files shown in Drive with Google Docs disabled
+ *
+ * @type {!Array<!TestEntryInfo>}
+ */
+const BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+  ENTRIES.beautiful,
+  ENTRIES.photos,
+  ENTRIES.unsupported,
   ENTRIES.testSharedFile,
 ];
 
@@ -198,6 +234,9 @@ const SHARED_DRIVE_ENTRY_SET = [
 /**
  * Entry set for Drive that includes Computers, including nested computers with
  * files and nested "USB and External Devices" with nested devices.
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
  */
 let COMPUTERS_ENTRY_SET = [
   ENTRIES.hello,
@@ -205,6 +244,31 @@ let COMPUTERS_ENTRY_SET = [
   ENTRIES.computerAFile,
   ENTRIES.computerAdirectoryA,
 ];
+
+/**
+ * Basic entry set for the android volume.
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
+const BASIC_ANDROID_ENTRY_SET = [
+  ENTRIES.directoryDocuments,
+  ENTRIES.directoryMovies,
+  ENTRIES.directoryMusic,
+  ENTRIES.directoryPictures,
+];
+
+/**
+ * Expected files shown in Android with hidden enabled
+ *
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+const BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN = BASIC_ANDROID_ENTRY_SET.concat([
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.directoryA,
+]);
 
 /**
  * Opens a Files app's main window.

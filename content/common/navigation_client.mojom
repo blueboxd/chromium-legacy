@@ -27,8 +27,8 @@ interface NavigationClient {
   // Note: |url_loader_client_endpoints| will be empty iff the navigation URL
   // wasn't handled by the network stack (i.e. about:blank, ...)
   //
-  // Note: |response_body| is only used when NavigationImmediateResponseBody is
-  // enabled. It contains the datapipe used to read the response body.
+  // Note: |response_body| will be invalid iff the navigation URL wasn't handled
+  // by the network stack (i.e. about:blank, ...)
   //
   // When the Network Service is enabled, |subresource_loader_factories| may
   // also be provided by the browser as a a means for the renderer to load

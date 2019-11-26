@@ -569,6 +569,17 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   }
 }
 
+mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+DocumentLoader::TakePendingWorkerTimingReceiver(int request_id) {
+  if (!GetServiceWorkerNetworkProvider())
+    return mojo::NullReceiver();
+  mojo::ScopedMessagePipeHandle pipe =
+      GetServiceWorkerNetworkProvider()->TakePendingWorkerTimingReceiver(
+          request_id);
+  return mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>(
+      std::move(pipe));
+}
+
 void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
   if (cached_metadata_handler_) {
     cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
@@ -631,6 +642,9 @@ void DocumentLoader::BodyLoadingFinished(
           // which will be fixed with synchronous commit.
           // Main resource timing information is reported through the owner
           // to be passed to the parent frame, if appropriate.
+
+          // TODO(https://crbug.com/900700): Set a Mojo pending receiver for
+          // WorkerTimingContainer in |navigation_timing_info|.
           frame_->Owner()->AddResourceTiming(*navigation_timing_info_);
         }
         frame_->SetShouldSendResourceTimingInfoToParent(false);
@@ -1643,15 +1657,6 @@ void DocumentLoader::CreateParserPostCommit() {
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
         document, &initiator_origin_trial_features_);
   }
-
-  bool opted_out_mixed_autoupgrade = EqualIgnoringASCIICase(
-      response_.HttpHeaderField("mixed-content"), "noupgrade");
-
-  if (opted_out_mixed_autoupgrade) {
-    document->SetMixedAutoupgradeOptOut(true);
-  }
-  UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.Navigation.OptedOut",
-                        opted_out_mixed_autoupgrade);
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
   if (loading_url_as_javascript_ ||

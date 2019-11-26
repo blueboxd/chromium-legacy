@@ -337,8 +337,13 @@ class TraceEventDataSourceTest : public testing::Test {
       last_thread_time_ += packet->track_event().thread_time_delta_us();
     }
 
-    EXPECT_EQ(packet->track_event().category_iids_size(), 1);
-    EXPECT_EQ(packet->track_event().category_iids(0), category_iid);
+    if (category_iid > 0) {
+      EXPECT_EQ(packet->track_event().category_iids_size(), 1);
+      EXPECT_EQ(packet->track_event().category_iids(0), category_iid);
+    } else {
+      EXPECT_EQ(packet->track_event().category_iids_size(), 0);
+    }
+
     EXPECT_TRUE(packet->track_event().has_legacy_event());
 
     const auto& legacy_event = packet->track_event().legacy_event();
@@ -932,44 +937,56 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   trace_event_internal::TraceID trace_event_trace_id =
       trace_event_internal::kNoId;
 
+  // COMPLETE events are split into a BEGIN/END event pair. Adding the event
+  // writes the BEGIN event immediately.
   auto handle = trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
       TRACE_EVENT_PHASE_COMPLETE, category_group_enabled, kEventName,
       trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),
-      1 /* thread_id */,
+      /*thread_id=*/1,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
       trace_event_trace_id.id_flags() | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
       trace_event_internal::kNoId);
 
-  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
-      category_group_enabled, kEventName, handle,
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
-      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50),
-      base::trace_event::ThreadInstructionCount());
-
-  // The call to UpdateTraceEventDurationExplicit should have successfully
-  // updated the duration of the event which was added in the
-  // AddTraceEventWithThreadIdAndTimestamp call.
   EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
-  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  auto* b_packet = producer_client()->GetFinalizedPacket(1);
   ExpectTraceEvent(
-      e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
-      TRACE_EVENT_PHASE_COMPLETE,
+      b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
       TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/0u,
-      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0,
-      /*duration=*/20);
+      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0);
 
-  // Updating the duration of an invalid event should cause no further events to
-  // be emitted.
-  handle.event_index = 0;
-
+  // Updating the duration of the event as it goes out of scope results in the
+  // corresponding END event being written. These END events don't contain any
+  // event names or categories in the proto format.
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
-      category_group_enabled, kEventName, handle,
+      category_group_enabled, kEventName, handle, /*thread_id=*/1,
+      /*explicit_timestamps=*/true,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
       base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50),
       base::trace_event::ThreadInstructionCount());
 
-  // No further packets should have been emitted.
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(
+      e_packet, /*category_iid=*/0u, /*name_iid=*/0u, TRACE_EVENT_PHASE_END,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, /*id=*/0u,
+      /*absolute_timestamp=*/30, /*tid_override=*/1, /*pid_override=*/0);
+
+  // Updating the duration of an event that wasn't added before tracing begun
+  // will only emit an END event, again without category or name.
+  handle.event_index = 0;
+  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
+      category_group_enabled, "other_event_name", handle, /*thread_id=*/1,
+      /*explicit_timestamps=*/true,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(40),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(60),
+      base::trace_event::ThreadInstructionCount());
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 4u);
+  auto* e2_packet = producer_client()->GetFinalizedPacket(3);
+  ExpectTraceEvent(
+      e2_packet, /*category_iid=*/0u, /*name_iid=*/0u, TRACE_EVENT_PHASE_END,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, /*id=*/0u,
+      /*absolute_timestamp=*/40, /*tid_override=*/1, /*pid_override=*/0);
 }
 
 // TODO(eseckler): Add a test with multiple events + same strings (cat, name,

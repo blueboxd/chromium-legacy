@@ -1091,6 +1091,7 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
     security_state::MaliciousContentStatus malicious_content_status,
     PageInfo::SafeBrowsingStatus* status,
     base::string16* details) {
+  std::vector<size_t> placeholder_offsets;
   switch (malicious_content_status) {
     case security_state::MALICIOUS_CONTENT_STATUS_NONE:
       NOTREACHED();
@@ -1117,7 +1118,8 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
           password_protection_service_
               ? password_protection_service_->GetWarningDetailText(
                     password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning())
+                        ->reused_password_account_type_for_last_shown_warning(),
+                    &placeholder_offsets)
               : base::string16();
 #endif
       break;
@@ -1129,7 +1131,8 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
           password_protection_service_
               ? password_protection_service_->GetWarningDetailText(
                     password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning())
+                        ->reused_password_account_type_for_last_shown_warning(),
+                    &placeholder_offsets)
               : base::string16();
 #endif
       break;
@@ -1143,7 +1146,8 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
           password_protection_service_
               ? password_protection_service_->GetWarningDetailText(
                     password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning())
+                        ->reused_password_account_type_for_last_shown_warning(),
+                    &placeholder_offsets)
               : base::string16();
 #endif
       break;
@@ -1155,7 +1159,8 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
           password_protection_service_
               ? password_protection_service_->GetWarningDetailText(
                     password_protection_service_
-                        ->reused_password_account_type_for_last_shown_warning())
+                        ->reused_password_account_type_for_last_shown_warning(),
+                    &placeholder_offsets)
               : base::string16();
 #endif
       break;

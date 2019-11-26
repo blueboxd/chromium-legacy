@@ -713,16 +713,16 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   mojo::PendingRemote<network::mojom::URLLoaderClient>
       url_loader_client_to_pass;
   url_loader_client->Bind(&url_loader_client_to_pass);
-  network::mojom::URLLoaderPtr url_loader;
+  mojo::PendingRemote<network::mojom::URLLoader> url_loader;
 
   factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader), -1 /* routing_id? */, request_id,
-      network::mojom::kURLLoadOptionNone, resource_request,
+      url_loader.InitWithNewPipeAndPassReceiver(), -1 /* routing_id? */,
+      request_id, network::mojom::kURLLoadOptionNone, resource_request,
       std::move(url_loader_client_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           kNavigationPreloadTrafficAnnotation));
 
-  preload_handle_->url_loader = url_loader.PassInterface();
+  preload_handle_->url_loader = std::move(url_loader);
 
   DCHECK(!url_loader_assets_);
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(

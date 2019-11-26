@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -39,6 +41,11 @@ namespace {
 const GURL kWebAppUrl("https://foo.example");
 const GURL kAlternateWebAppUrl("https://bar.example");
 const char kWebAppTitle[] = "Foo Title";
+
+const char kSystemAppExtensionInstalErrorHistogramName[] =
+    "Webapp.InstallResultExtensionError.System.Profiles.Other";
+const char kSystemAppExtensionDisableReasonHistogramName[] =
+    "Webapp.InstallResultExtensionDisabledReason.System.Profiles.Other";
 
 }  // namespace
 
@@ -79,6 +86,46 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop_;
 
     DISALLOW_COPY_AND_ASSIGN(FakeCrxInstaller);
+  };
+
+  class TestCrxInstallerToDisableExtension : public CrxInstaller {
+   public:
+    explicit TestCrxInstallerToDisableExtension(
+        Profile* profile,
+        int disable_reason = disable_reason::DisableReason::DISABLE_NONE)
+        : CrxInstaller(
+              ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr(),
+              nullptr,
+              nullptr),
+          disable_reason_(disable_reason),
+          profile_(profile) {}
+
+    void set_installer_callback(InstallerResultCallback callback) override {
+      real_callback_ = std::move(callback);
+    }
+
+    void InstallWebApp(const WebApplicationInfo& web_app) override {
+      CrxInstaller::set_installer_callback(base::BindOnce(
+          &TestCrxInstallerToDisableExtension::OnCrxInstalled, this));
+      CrxInstaller::InstallWebApp(web_app);
+    }
+
+   private:
+    ~TestCrxInstallerToDisableExtension() override = default;
+
+    void OnCrxInstalled(const base::Optional<CrxInstallError>& result) {
+      ExtensionSystem::Get(profile_)->extension_service()->DisableExtension(
+          extension()->id(), disable_reason_);
+      std::move(real_callback_).Run(result);
+    }
+
+    int disable_reason_;
+
+    Profile* profile_;
+
+    InstallerResultCallback real_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestCrxInstallerToDisableExtension);
   };
 
   BookmarkAppInstallFinalizerTest() = default;
@@ -175,7 +222,47 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
   EXPECT_TRUE(callback_called);
 }
 
+TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallButExtensionIsDisabled) {
+  base::HistogramTester histograms;
+
+  auto test_crx_installer_to_disable_extension = base::MakeRefCounted<
+      BookmarkAppInstallFinalizerTest::TestCrxInstallerToDisableExtension>(
+      profile(), disable_reason::DisableReason::DISABLE_BLOCKED_BY_POLICY);
+
+  finalizer().SetCrxInstallerFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile) {
+        scoped_refptr<CrxInstaller> crx_installer =
+            test_crx_installer_to_disable_extension;
+        return crx_installer;
+      }));
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
+
+  base::RunLoop run_loop;
+  finalizer().FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kWebAppDisabled, code);
+
+        // Non System Web App disable reason is not recorded.
+        histograms.ExpectTotalCount(
+            kSystemAppExtensionDisableReasonHistogramName, 0);
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
+  base::HistogramTester histograms;
+
   auto fake_crx_installer =
       base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
           profile());
@@ -199,8 +286,12 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code);
+        EXPECT_EQ(web_app::InstallResultCode::kBookmarkExtensionInstallError,
+                  code);
         EXPECT_TRUE(installed_app_id.empty());
+        // Non System Web App install failures are not recorded.
+        histograms.ExpectTotalCount(kSystemAppExtensionInstalErrorHistogramName,
+                                    0);
         callback_called = true;
         run_loop.Quit();
       }));
@@ -317,6 +408,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
+  base::HistogramTester histograms;
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -338,8 +430,91 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
         EXPECT_EQ(Manifest::EXTERNAL_COMPONENT, extension->location());
         EXPECT_TRUE(extension->was_installed_by_default());
 
+        // Successful install does not record histogram.
+        histograms.ExpectTotalCount(kSystemAppExtensionInstalErrorHistogramName,
+                                    0);
+
         run_loop.Quit();
       }));
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledButExtensionIsDisabled) {
+  base::HistogramTester histograms;
+
+  auto test_crx_installer_to_disable_extension = base::MakeRefCounted<
+      BookmarkAppInstallFinalizerTest::TestCrxInstallerToDisableExtension>(
+      profile(), disable_reason::DisableReason::DISABLE_BLOCKED_BY_POLICY);
+
+  finalizer().SetCrxInstallerFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile) {
+        scoped_refptr<CrxInstaller> crx_installer =
+            test_crx_installer_to_disable_extension;
+        return crx_installer;
+      }));
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::SYSTEM_DEFAULT;
+
+  base::RunLoop run_loop;
+  finalizer().FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kWebAppDisabled, code);
+
+        histograms.ExpectBucketCount(
+            kSystemAppExtensionDisableReasonHistogramName,
+            disable_reason::DisableReason::DISABLE_BLOCKED_BY_POLICY, 1);
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledFails) {
+  base::HistogramTester histograms;
+
+  auto fake_crx_installer =
+      base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
+          profile());
+
+  finalizer().SetCrxInstallerFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile) {
+        scoped_refptr<CrxInstaller> crx_installer = fake_crx_installer;
+        return crx_installer;
+      }));
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::SYSTEM_DEFAULT;
+
+  base::RunLoop run_loop;
+  finalizer().FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kBookmarkExtensionInstallError,
+                  code);
+
+        histograms.ExpectBucketCount(
+            kSystemAppExtensionInstalErrorHistogramName,
+            CrxInstallErrorDetail::INSTALL_NOT_ENABLED, 1);
+
+        run_loop.Quit();
+      }));
+
+  fake_crx_installer->WaitForInstallToTrigger();
+  fake_crx_installer->SimulateInstallFailed();
+
   run_loop.Run();
 }
 

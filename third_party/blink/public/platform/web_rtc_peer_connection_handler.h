@@ -44,6 +44,7 @@
 
 namespace webrtc {
 enum class RTCErrorType;
+struct DataChannelInit;
 }
 
 namespace blink {
@@ -61,7 +62,6 @@ class WebMediaStream;
 class WebMediaStreamTrack;
 class RTCStatsRequest;
 class WebString;
-struct RTCDataChannelInitPlatform;
 
 class WebRTCPeerConnectionHandler {
  public:
@@ -125,7 +125,7 @@ class WebRTCPeerConnectionHandler {
                         const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
-      const RTCDataChannelInitPlatform&) = 0;
+      const webrtc::DataChannelInit&) = 0;
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) = 0;

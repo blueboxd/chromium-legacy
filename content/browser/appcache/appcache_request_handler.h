@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
@@ -74,7 +75,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,

@@ -30,6 +30,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
@@ -46,7 +48,8 @@ constexpr base::TimeDelta kInitialConnectionRetryDelay =
     base::TimeDelta::FromMilliseconds(20);
 
 void ConnectAsyncWithBackoff(
-    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver,
     mojo::NamedPlatformChannel::ServerName server_name,
     size_t num_retries_left,
     base::TimeDelta retry_delay,
@@ -65,7 +68,7 @@ void ConnectAsyncWithBackoff(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT},
           base::BindOnce(
-              &ConnectAsyncWithBackoff, std::move(interface_provider_request),
+              &ConnectAsyncWithBackoff, std::move(interface_provider_receiver),
               server_name, num_retries_left - 1, retry_delay * 2,
               std::move(response_task_runner), std::move(response_callback)),
           retry_delay);
@@ -73,7 +76,7 @@ void ConnectAsyncWithBackoff(
   } else {
     auto mojo_connection = std::make_unique<mojo::IsolatedConnection>();
     mojo::FuseMessagePipes(mojo_connection->Connect(std::move(endpoint)),
-                           interface_provider_request.PassMessagePipe());
+                           interface_provider_receiver.PassPipe());
     response_task_runner->PostTask(FROM_HERE,
                                    base::BindOnce(std::move(response_callback),
                                                   std::move(mojo_connection)));
@@ -103,14 +106,16 @@ void ServiceProcessControl::ConnectInternal() {
   // Actually going to connect.
   DVLOG(1) << "Connecting to Service Process IPC Server";
 
-  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
-  auto interface_provider_request = mojo::MakeRequest(&remote_interfaces);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      remote_interfaces;
+  auto interface_provider_receiver =
+      remote_interfaces.InitWithNewPipeAndPassReceiver();
   SetMojoHandle(std::move(remote_interfaces));
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
-          &ConnectAsyncWithBackoff, std::move(interface_provider_request),
+          &ConnectAsyncWithBackoff, std::move(interface_provider_receiver),
           GetServiceProcessServerName(), kMaxConnectionAttempts,
           kInitialConnectionRetryDelay, base::ThreadTaskRunnerHandle::Get(),
           base::BindOnce(&ServiceProcessControl::OnPeerConnectionComplete,
@@ -124,7 +129,7 @@ void ServiceProcessControl::OnPeerConnectionComplete(
 }
 
 void ServiceProcessControl::SetMojoHandle(
-    service_manager::mojom::InterfaceProviderPtr handle) {
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> handle) {
   remote_interfaces_.Close();
   remote_interfaces_.Bind(std::move(handle));
   remote_interfaces_.SetConnectionLostClosure(base::Bind(

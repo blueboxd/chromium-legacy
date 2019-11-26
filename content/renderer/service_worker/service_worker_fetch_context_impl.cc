@@ -191,4 +191,11 @@ blink::WebString ServiceWorkerFetchContextImpl::GetAcceptLanguages() const {
   return blink::WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
 
+mojo::ScopedMessagePipeHandle
+ServiceWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
+  // No receiver exists because requests from service workers are never handled
+  // by a service worker.
+  return {};
+}
+
 }  // namespace content

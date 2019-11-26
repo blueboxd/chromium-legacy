@@ -321,9 +321,12 @@ cr.define('cr.ui', () => {
             } else if (e.button == 0) {  // Only show the menu when using left
                                          // mouse button.
               this.showMenu(false, {x: e.screenX, y: e.screenY});
-
-              // Prevent the button from stealing focus on mousedown.
-              e.preventDefault();
+              // Prevent the button from stealing focus on mousedown unless
+              // focus is on another button.
+              if (!(document.hasFocus() &&
+                    document.activeElement.tagName === 'BUTTON')) {
+                e.preventDefault();
+              }
             }
           }
 

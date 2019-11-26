@@ -2,4 +2,3 @@ document
 ++form
 ++++group Name='Browser Engines:'
 ++++++description
-++++++++description Name='Browser Engines:' IsControlElement=false

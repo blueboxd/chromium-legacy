@@ -180,11 +180,4 @@ void AssistantViewDelegateImpl::OpenUrlFromView(const GURL& url) {
   assistant_controller_->OpenUrl(url);
 }
 
-void AssistantViewDelegateImpl::NotifyDeepLinkReceived(
-    assistant::util::DeepLinkType type,
-    const std::map<std::string, std::string>& params) {
-  for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
-    observer.OnDeepLinkReceived(type, params);
-}
-
 }  // namespace ash

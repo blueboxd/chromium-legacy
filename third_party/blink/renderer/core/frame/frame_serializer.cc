@@ -404,7 +404,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
       ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
       AddImageToResources(cached_image, image_url);
     }
-  } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
+  } else if (const auto* link = DynamicTo<HTMLLinkElement>(element)) {
     if (CSSStyleSheet* sheet = link->sheet()) {
       KURL sheet_url =
           document.CompleteURL(link->FastGetAttribute(html_names::kHrefAttr));

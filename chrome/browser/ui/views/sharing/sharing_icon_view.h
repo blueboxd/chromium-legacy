@@ -32,7 +32,7 @@ class SharingIconView : public PageActionIconView {
   bool IsTriggerableEvent(const ui::Event& event) override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

@@ -374,7 +374,8 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
     ServiceWorkerProviderHost* provider_host =
         provider_host_iterator.GetProviderHost();
     render_frames->push_back(
-        std::make_pair(provider_host->process_id(), provider_host->frame_id()));
+        std::make_pair(provider_host->container_host()->process_id(),
+                       provider_host->container_host()->frame_id()));
     provider_host_iterator.Advance();
   }
 

@@ -230,7 +230,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
                               bool thread_will_flush,
                               base::trace_event::TraceEventHandle* handle);
   static void OnUpdateDuration(
+      const unsigned char* category_group_enabled,
+      const char* name,
       base::trace_event::TraceEventHandle handle,
+      int thread_id,
+      bool explicit_timestamps,
       const base::TimeTicks& now,
       const base::ThreadTicks& thread_now,
       base::trace_event::ThreadInstructionCount thread_instruction_now);

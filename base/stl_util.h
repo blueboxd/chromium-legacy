@@ -158,6 +158,16 @@ constexpr const T* data(const std::array<T, N>& array) noexcept {
   return !array.empty() ? &array[0] : nullptr;
 }
 
+// C++14 implementation of C++17's std::as_const():
+// https://en.cppreference.com/w/cpp/utility/as_const
+template <typename T>
+constexpr std::add_const_t<T>& as_const(T& t) noexcept {
+  return t;
+}
+
+template <typename T>
+void as_const(const T&& t) = delete;
+
 // Returns a const reference to the underlying container of a container adapter.
 // Works for std::priority_queue, std::queue, and std::stack.
 template <class A>

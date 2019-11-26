@@ -957,7 +957,11 @@ void LocationBarView::UpdateContentSettingsIcons() {
 inline bool LocationBarView::UpdateSendTabToSelfIcon() {
   PageActionIconView* icon = page_action_icon_container_->GetIconView(
       PageActionIconType::kSendTabToSelf);
-  return icon && icon->Update();
+  if (!icon)
+    return false;
+  bool was_visible = icon->GetVisible();
+  icon->Update();
+  return was_visible != icon->GetVisible();
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {

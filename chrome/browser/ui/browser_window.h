@@ -257,8 +257,8 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void SetContentsSize(const gfx::Size& size) = 0;
 
   // Updates the visual state of the specified page action icon if present on
-  // the window. Returns whether any change occurred.
-  virtual bool UpdatePageActionIcon(PageActionIconType type) = 0;
+  // the window.
+  virtual void UpdatePageActionIcon(PageActionIconType type) = 0;
 
   // Returns the AutofillBubbleHandler responsible for handling all
   // Autofill-related bubbles.

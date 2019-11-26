@@ -153,7 +153,14 @@ class LiveSignInTest : public signin::test::LiveTest {
 // Sings in an account through the settings page and checks that the account is
 // added to Chrome. Sync should be disabled because the test doesn't pass
 // through the Sync confirmation dialog.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, SimpleSignInFlow) {
+
+// crbug/1025335 Flaky on Win7 builders.
+#if defined(OS_WIN)
+#define MAYBE_SimpleSignInFlow DISABLED_SimpleSignInFlow
+#else
+#define MAYBE_SimpleSignInFlow SimpleSignInFlow
+#endif
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_SimpleSignInFlow) {
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
   SignInFromSettings(ta);

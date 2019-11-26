@@ -7,6 +7,21 @@ import("//android_webview/variables.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
+# TODO(crbug.com/951275): Clean this up once internal code is upstreamed.
+android_library("webview_chromium_for_q_upstream_java") {
+  # Needed for android.webkit.WebViewDelegate.
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
+
+  deps = [
+    ":glue",
+  ]
+
+  java_files = [ "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForQ.java" ]
+
+  jacoco_never_instrument = true
+}
+
 android_library("glue") {
   deps = [
     "//android_webview:android_webview_java",
@@ -20,7 +35,6 @@ android_library("glue") {
     "//base:jni_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
-    "//components/content_capture/android:java",
     "//components/embedder_support/android:application_java",
     "//content/public/android:content_java",
     "//net/android:net_java",
@@ -69,7 +83,6 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForO.java",
     "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForOMR1.java",
     "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForP.java",
-    "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForQ.java",
     "java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDatabaseAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDelegateFactory.java",

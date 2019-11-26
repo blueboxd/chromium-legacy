@@ -659,8 +659,11 @@ bool MixedContentChecker::IsMixedFormAction(
   return true;
 }
 
-bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
-                                            mojom::RequestContextType type) {
+bool MixedContentChecker::ShouldAutoupgrade(
+    HttpsState context_https_state,
+    mojom::RequestContextType type,
+    WebContentSettingsClient* settings_client,
+    const KURL& url) {
   // We are currently not autoupgrading plugin loaded content, which is why
   // strict_mixed_content_for_plugin is hardcoded to true.
   if (!base::FeatureList::IsEnabled(
@@ -668,6 +671,9 @@ bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
       context_https_state == HttpsState::kNone ||
       WebMixedContent::ContextTypeFromRequestContext(type, true) !=
           WebMixedContentContextType::kOptionallyBlockable) {
+    return false;
+  }
+  if (settings_client && !settings_client->ShouldAutoupgradeMixedContent()) {
     return false;
   }
 
@@ -764,8 +770,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure element '%s'. This request was "
       "automatically upgraded to HTTPS, For more information see "
-      "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
-      "autoupgrade-mixed.md",
+      "https://blog.chromium.org/2019/10/"
+      "no-more-mixed-messages-about-https.html",
       main_resource_url.ElidedString().Utf8().c_str(),
       mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
@@ -791,7 +797,8 @@ void MixedContentChecker::UpgradeInsecureRequest(
     ResourceRequest& resource_request,
     const FetchClientSettingsObject* fetch_client_settings_object,
     ExecutionContext* execution_context_for_logging,
-    network::mojom::RequestContextFrameType frame_type) {
+    network::mojom::RequestContextFrameType frame_type,
+    WebContentSettingsClient* settings_client) {
   // We always upgrade requests that meet any of the following criteria:
   //  1. Are for subresources.
   //  2. Are for nested frames.
@@ -813,9 +820,9 @@ void MixedContentChecker::UpgradeInsecureRequest(
     mojom::RequestContextType context = resource_request.GetRequestContext();
     if (context != mojom::RequestContextType::UNSPECIFIED &&
         resource_request.Url().ProtocolIs("http") &&
-        !fetch_client_settings_object->GetMixedAutoUpgradeOptOut() &&
         MixedContentChecker::ShouldAutoupgrade(
-            fetch_client_settings_object->GetHttpsState(), context)) {
+            fetch_client_settings_object->GetHttpsState(), context,
+            settings_client, fetch_client_settings_object->GlobalObjectUrl())) {
       if (execution_context_for_logging->IsDocument()) {
         Document* document =
             static_cast<Document*>(execution_context_for_logging);

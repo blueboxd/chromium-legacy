@@ -91,6 +91,11 @@ mojom::WebBundleParserFactory* SafeWebBundleParser::GetFactory() {
   return factory_.get();
 }
 
+void SafeWebBundleParser::SetDisconnectCallback(base::OnceClosure callback) {
+  DCHECK(!disconnect_callback_);
+  disconnect_callback_ = std::move(callback);
+}
+
 void SafeWebBundleParser::OnDisconnect() {
   disconnected_ = true;
   if (!metadata_callback_.is_null())
@@ -104,6 +109,8 @@ void SafeWebBundleParser::OnDisconnect() {
                           mojom::BundleParseErrorType::kParserInternalError,
                           kConnectionError));
   response_callbacks_.clear();
+  if (disconnect_callback_)
+    std::move(disconnect_callback_).Run();
 }
 
 void SafeWebBundleParser::OnMetadataParsed(

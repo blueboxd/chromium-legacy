@@ -96,10 +96,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       const vm_tools::concierge::DetachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback)
       override;
-  void ListUsbDevices(
-      const vm_tools::concierge::ListUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
-      override;
   void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
                   DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                       callback) override;
@@ -137,7 +133,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   }
   bool attach_usb_device_called() const { return attach_usb_device_called_; }
   bool detach_usb_device_called() const { return detach_usb_device_called_; }
-  bool list_usb_devices_called() const { return list_usb_devices_called_; }
   bool start_arc_vm_called() const { return start_arc_vm_called_; }
   void set_vm_started_signal_connected(bool connected) {
     is_vm_started_signal_connected_ = connected;
@@ -225,11 +220,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
           detach_usb_device_response) {
     detach_usb_device_response_ = detach_usb_device_response;
   }
-  void set_list_usb_devices_response(
-      base::Optional<vm_tools::concierge::ListUsbDeviceResponse>
-          list_usb_devices_response) {
-    list_usb_devices_response_ = list_usb_devices_response;
-  }
   void set_disk_image_status_signals(
       const std::vector<vm_tools::concierge::DiskImageStatusResponse>&
           disk_image_status_signals) {
@@ -270,7 +260,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool get_container_ssh_keys_called_ = false;
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
-  bool list_usb_devices_called_ = false;
   bool start_arc_vm_called_ = false;
   bool is_vm_started_signal_connected_ = true;
   bool is_vm_stopped_signal_connected_ = true;
@@ -303,8 +292,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       attach_usb_device_response_;
   base::Optional<vm_tools::concierge::DetachUsbDeviceResponse>
       detach_usb_device_response_;
-  base::Optional<vm_tools::concierge::ListUsbDeviceResponse>
-      list_usb_devices_response_;
 
   // Can be set to fake a series of disk image status signals.
   std::vector<vm_tools::concierge::DiskImageStatusResponse>

@@ -21,7 +21,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -214,8 +213,8 @@ class CONTENT_EXPORT SharedWorkerHost
   // starting or running.
   mojo::Remote<blink::mojom::SharedWorkerFactory> factory_;
 
-  mojo::Binding<service_manager::mojom::InterfaceProvider>
-      interface_provider_binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver_{this};
 
   BrowserInterfaceBrokerImpl<SharedWorkerHost, const url::Origin&> broker_{
       this};

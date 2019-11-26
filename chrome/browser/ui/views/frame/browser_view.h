@@ -335,7 +335,7 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
-  bool UpdatePageActionIcon(PageActionIconType type) override;
+  void UpdatePageActionIcon(PageActionIconType type) override;
   autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
   LocationBar* GetLocationBar() const override;

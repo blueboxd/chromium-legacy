@@ -16,7 +16,7 @@ TEST_F(HTMLCanvasElementTest, CreateLayerUpdatesCompositing) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
 
   SetBodyInnerHTML("<canvas id='canvas'></canvas>");
-  auto* canvas = ToHTMLCanvasElement(GetDocument().getElementById("canvas"));
+  auto* canvas = To<HTMLCanvasElement>(GetDocument().getElementById("canvas"));
   auto* layer = ToLayoutBoxModelObject(canvas->GetLayoutObject())->Layer();
   ASSERT_TRUE(layer);
   EXPECT_EQ(CompositingReason::kNone, layer->DirectCompositingReasons());

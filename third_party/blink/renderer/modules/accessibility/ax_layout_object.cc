@@ -972,7 +972,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   if (auto* image = ToHTMLImageElementOrNull(node)) {
     image_bitmap = ImageBitmap::Create(image, base::Optional<IntRect>(),
                                        document, options);
-  } else if (auto* canvas = ToHTMLCanvasElementOrNull(node)) {
+  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
     image_bitmap =
         ImageBitmap::Create(canvas, base::Optional<IntRect>(), options);
   } else if (auto* video = ToHTMLVideoElementOrNull(node)) {

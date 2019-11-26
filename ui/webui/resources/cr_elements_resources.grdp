@@ -179,6 +179,10 @@
              file="cr_elements/cr_view_manager/cr_view_manager.js"
              type="chrome_html" />
   <if expr="chromeos">
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CROS_COLOR_OVERRIDES_HTML"
+               file="cr_elements/chromeos/cros_color_overrides.html"
+               type="chrome_html"
+               compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_CAMERA_HTML"
                file="cr_elements/chromeos/cr_picture/cr_camera.html"
                type="chrome_html"

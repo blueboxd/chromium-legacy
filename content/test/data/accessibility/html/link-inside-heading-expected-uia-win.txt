@@ -1,4 +1,3 @@
 document
 ++heading Name='Link In Heading'
 ++++link Name='Link In Heading'
-++++++description Name='Link In Heading' IsControlElement=false

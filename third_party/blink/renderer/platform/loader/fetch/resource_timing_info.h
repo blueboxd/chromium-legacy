@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -88,6 +89,17 @@ class PLATFORM_EXPORT ResourceTimingInfo
   }
   bool NegativeAllowed() const { return negative_allowed_; }
 
+  void SetWorkerTimingReceiver(
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver) {
+    worker_timing_receiver_ = std::move(worker_timing_receiver);
+  }
+
+  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+  TakeWorkerTimingReceiver() const {
+    return std::move(worker_timing_receiver_);
+  }
+
  private:
   ResourceTimingInfo(const AtomicString& type, const base::TimeTicks time)
       : type_(type), initial_time_(time) {}
@@ -101,6 +113,16 @@ class PLATFORM_EXPORT ResourceTimingInfo
   uint64_t transfer_size_ = 0;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
+
+  // Mutable since it must be passed to blink::PerformanceResourceTiming by move
+  // semantics but ResourceTimingInfo is passed only by const reference.
+  // ResourceTimingInfo can't be changed to pass by value because it can
+  // actually be a large object.
+  // It can be null when service worker doesn't serve a response for the
+  // resource. In that case, PerformanceResourceTiming#workerTiming is kept
+  // empty.
+  mutable mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+      worker_timing_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTimingInfo);
 };

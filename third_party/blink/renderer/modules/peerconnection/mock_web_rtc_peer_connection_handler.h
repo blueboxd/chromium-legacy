@@ -72,7 +72,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       RTCRtpSenderPlatform*) override;
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
-      const RTCDataChannelInitPlatform&) override;
+      const webrtc::DataChannelInit&) override;
   void Stop() override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(

@@ -109,7 +109,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* response_url_loader,
+      mojo::PendingRemote<network::mojom::URLLoader>* response_url_loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>*
           response_client_receiver,
       blink::ThrottlingURLLoader* url_loader);
@@ -153,7 +153,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
 
-  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
   mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
       this};
   // The factory used to request the script. This is the same as

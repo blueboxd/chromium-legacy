@@ -4277,7 +4277,9 @@ bool Element::SupportsSpatialNavigationFocus() const {
   if (HasJSBasedEventListeners(event_type_names::kClick) ||
       HasJSBasedEventListeners(event_type_names::kKeydown) ||
       HasJSBasedEventListeners(event_type_names::kKeypress) ||
-      HasJSBasedEventListeners(event_type_names::kKeyup))
+      HasJSBasedEventListeners(event_type_names::kKeyup) ||
+      HasJSBasedEventListeners(event_type_names::kMouseover) ||
+      HasJSBasedEventListeners(event_type_names::kMouseenter))
     return true;
 
   // Some web apps use click-handlers to react on clicks within rects that are
@@ -5440,7 +5442,7 @@ KURL Element::HrefURL() const {
   // FIXME: These all have href() or url(), but no common super class. Why
   // doesn't <link> implement URLUtils?
   if (IsA<HTMLAnchorElement>(*this) || IsA<HTMLAreaElement>(*this) ||
-      IsHTMLLinkElement(*this))
+      IsA<HTMLLinkElement>(*this))
     return GetURLAttribute(html_names::kHrefAttr);
   if (auto* svg_a = ToSVGAElementOrNull(*this))
     return svg_a->LegacyHrefURL(GetDocument());

@@ -54,6 +54,7 @@ class KURL;
 class ResourceResponse;
 class SecurityOrigin;
 class SourceLocation;
+class WebContentSettingsClient;
 class WorkerFetchContext;
 
 // Checks resource loads for mixed content. If PlzNavigate is enabled then this
@@ -95,7 +96,9 @@ class CORE_EXPORT MixedContentChecker final {
                                     SecurityViolationReportingPolicy::kReport);
 
   static bool ShouldAutoupgrade(HttpsState context_https_state,
-                                mojom::RequestContextType type);
+                                mojom::RequestContextType type,
+                                WebContentSettingsClient* settings_client,
+                                const KURL& url);
 
   static void CheckMixedPrivatePublic(LocalFrame*,
                                       const AtomicString& resource_ip_address);
@@ -130,7 +133,8 @@ class CORE_EXPORT MixedContentChecker final {
       ResourceRequest&,
       const FetchClientSettingsObject* fetch_client_settings_object,
       ExecutionContext* execution_context_for_logging,
-      network::mojom::RequestContextFrameType);
+      network::mojom::RequestContextFrameType,
+      WebContentSettingsClient* settings_client);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);

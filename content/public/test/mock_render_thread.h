@@ -108,11 +108,11 @@ class MockRenderThread : public RenderThread {
   // The Widget expects to be returned a valid route_id.
   void OnCreateWidget(int opener_id, int* route_id);
 
-  // Returns the request end of the InterfaceProvider interface whose client end
-  // was passed in to construct RenderFrame with |routing_id|; if any. The
-  // client end will be used by the RenderFrame to service interface requests
+  // Returns the receiver end of the InterfaceProvider interface whose client
+  // end was passed in to construct RenderFrame with |routing_id|; if any. The
+  // client end will be used by the RenderFrame to service interface receivers
   // originating from the initial empty document.
-  service_manager::mojom::InterfaceProviderRequest
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
   TakeInitialInterfaceProviderRequestForFrame(int32_t routing_id);
 
   // Returns the receiver end of the BrowserInterfaceBroker interface whose
@@ -122,13 +122,13 @@ class MockRenderThread : public RenderThread {
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeInitialBrowserInterfaceBrokerReceiverForFrame(int32_t routing_id);
 
-  // Called from the RenderViewTest harness to supply the request end of the
+  // Called from the RenderViewTest harness to supply the receiver end of the
   // InterfaceProvider interface connection that the harness used to service the
   // initial empty document in the RenderFrame with |routing_id|.
-  void PassInitialInterfaceProviderRequestForFrame(
+  void PassInitialInterfaceProviderReceiverForFrame(
       int32_t routing_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver);
 
  protected:
   // This function operates as a regular IPC listener. Subclasses
@@ -145,8 +145,9 @@ class MockRenderThread : public RenderThread {
   // Routing ID what will be assigned to the next view, widget, or frame.
   int32_t next_routing_id_;
 
-  std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
-      frame_routing_id_to_initial_interface_provider_requests_;
+  std::map<int32_t,
+           mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>>
+      frame_routing_id_to_initial_interface_provider_receivers_;
 
   std::map<int32_t, mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>>
       frame_routing_id_to_initial_browser_broker_receivers_;

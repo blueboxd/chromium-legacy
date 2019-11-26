@@ -167,9 +167,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   GURL GetDefaultChangePasswordURL() const;
 
   // Gets the detailed warning text that should show in the modal warning dialog
-  // and page info bubble.
+  // and page info bubble. |placeholder_offsets| are the start points/indices of
+  // the placeholders that are passed into the resource string. It is only set
+  // for saved passwords.
   base::string16 GetWarningDetailText(
-      ReusedPasswordAccountType password_type) const;
+      ReusedPasswordAccountType password_type,
+      std::vector<size_t>* placeholder_offsets) const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
@@ -469,7 +472,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void OnWarningTriggerChanged();
 
   // Gets the warning text for saved password reuse warnings.
-  base::string16 GetWarningDetailTextForSavedPasswords() const;
+  // |placeholder_offsets| are the start points/indices of the placeholders that
+  // are passed into the resource string.
+  base::string16 GetWarningDetailTextForSavedPasswords(
+      std::vector<size_t>* placeholder_offsets) const;
 
   // Informs PasswordReuseDetector that enterprise password URLs (login URL or
   // change password URL) have been changed.

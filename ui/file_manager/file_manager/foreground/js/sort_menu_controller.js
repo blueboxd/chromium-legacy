@@ -4,7 +4,7 @@
 
 class SortMenuController {
   /**
-   * @param {!cr.ui.MenuButton} sortButton
+   * @param {!cr.ui.MultiMenuButton} sortButton
    * @param {!FilesToggleRipple} toggleRipple
    * @param {!FileListModel} fileListModel
    */

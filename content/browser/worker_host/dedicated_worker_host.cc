@@ -554,7 +554,7 @@ class DedicatedWorkerHostFactoryImpl final
   // blink::mojom::DedicatedWorkerHostFactory:
   void CreateWorkerHost(
       const url::Origin& origin,
-      service_manager::mojom::InterfaceProviderRequest request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)
@@ -576,7 +576,7 @@ class DedicatedWorkerHostFactoryImpl final
     mojo::MakeSelfOwnedReceiver(
         std::move(host), FilterRendererExposedInterfaces(
                              blink::mojom::kNavigation_DedicatedWorkerSpec,
-                             creator_process_id_, std::move(request)));
+                             creator_process_id_, std::move(receiver)));
   }
 
   // PlzDedicatedWorker:
@@ -612,12 +612,13 @@ class DedicatedWorkerHostFactoryImpl final
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());
     auto* host_raw = host.get();
-    service_manager::mojom::InterfaceProviderPtr interface_provider;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider;
     mojo::MakeSelfOwnedReceiver(
         std::move(host),
         FilterRendererExposedInterfaces(
             blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,
-            mojo::MakeRequest(&interface_provider)));
+            interface_provider.InitWithNewPipeAndPassReceiver()));
 
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> remote_client(
         std::move(client));

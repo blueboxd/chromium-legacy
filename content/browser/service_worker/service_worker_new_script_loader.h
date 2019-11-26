@@ -182,7 +182,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   // Used for fetching the script from network (or other loaders like extensions
   // sometimes).
-  network::mojom::URLLoaderPtr network_loader_;
+  mojo::Remote<network::mojom::URLLoader> network_loader_;
 
   mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
       this};

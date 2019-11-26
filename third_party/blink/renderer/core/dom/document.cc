@@ -4908,7 +4908,7 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
                            result.InnerElement());
   }
 
-  if (auto* canvas = ToHTMLCanvasElementOrNull(result.InnerNode())) {
+  if (auto* canvas = DynamicTo<HTMLCanvasElement>(result.InnerNode())) {
     HitTestCanvasResult* hit_test_canvas_result =
         canvas->GetControlAndIdIfHitRegionExists(
             result.PointInInnerNodeFrame());

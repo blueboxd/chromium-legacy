@@ -801,3 +801,29 @@ testcase.fileDisplayCheckNoReadOnlyIconOnDownloads = async () => {
   // Make sure read-only indicator on toolbar is NOT visible.
   await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
 };
+
+/**
+ * Tests to make sure read-only indicator is NOT visible when the current
+ * directory is the "Linux files" fake root.
+ */
+testcase.fileDisplayCheckNoReadOnlyIconOnLinuxFiles = async () => {
+  const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
+
+  // Block mounts from progressing. This should cause the file manager to always
+  // show the loading bar for linux files.
+  await sendTestMessage({name: 'blockMounts'});
+
+  // Open files app on Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Linux files fake root is shown.
+  await remoteCall.waitForElement(appId, fakeRoot);
+
+  // Click on Linux files.
+  await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeRoot]);
+  await remoteCall.waitForElement(appId, 'paper-progress:not([hidden])');
+
+  // Make sure read-only indicator on toolbar is NOT visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
+};

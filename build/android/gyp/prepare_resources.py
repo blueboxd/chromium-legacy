@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import sys
+import zipfile
 
 from util import build_utils
 from util import manifest_utils
@@ -108,16 +109,26 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   # files that should not be part of the final resource zip.
   files_to_zip = dict()
   files_to_zip_without_generated = dict()
-  for path, archive_path in resource_utils.IterResourceFilesInDirectories(
-      resource_dirs, ignore_pattern):
-    # We want the original resource dirs in the .info file rather than the
-    # generated overridden path.
-    if not path.startswith('/tmp'):
-      files_to_zip_without_generated[archive_path] = path
-    files_to_zip[archive_path] = path
+  for index, resource_dir in enumerate(resource_dirs):
+    for path, archive_path in resource_utils.IterResourceFilesInDirectories(
+        [resource_dir], ignore_pattern):
+      resource_dir_name = os.path.basename(resource_dir)
+      archive_path = '{}_{}/{}'.format(index, resource_dir_name, archive_path)
+      # We want the original resource dirs in the .info file rather than the
+      # generated overridden path.
+      if not path.startswith('/tmp'):
+        files_to_zip_without_generated[archive_path] = path
+      files_to_zip[archive_path] = path
   resource_utils.CreateResourceInfoFile(files_to_zip_without_generated,
                                         zip_path)
-  build_utils.DoZip(files_to_zip.iteritems(), zip_path)
+  with zipfile.ZipFile(zip_path, 'w') as z:
+    # This magic comment signals to resource_utils.ExtractDeps that this zip is
+    # not just the contents of a single res dir, without the encapsulating res/
+    # (like the outputs of android_generated_resources targets), but instead has
+    # the contents of possibly multiple res/ dirs each within an encapsulating
+    # directory within the zip.
+    z.comment = resource_utils.MULTIPLE_RES_MAGIC_STRING
+    build_utils.DoZip(files_to_zip.iteritems(), z)
 
 
 def _GenerateRTxt(options, dep_subdirs, gen_dir):

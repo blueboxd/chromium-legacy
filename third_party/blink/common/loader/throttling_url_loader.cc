@@ -98,12 +98,13 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->ResumeReadingBodyFromNet(throttle_);
   }
 
-  void InterceptResponse(network::mojom::URLLoaderPtr new_loader,
-                         mojo::PendingReceiver<network::mojom::URLLoaderClient>
-                             new_client_receiver,
-                         network::mojom::URLLoaderPtr* original_loader,
-                         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
-                             original_client_receiver) override {
+  void InterceptResponse(
+      mojo::PendingRemote<network::mojom::URLLoader> new_loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>
+          new_client_receiver,
+      mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+          original_client_receiver) override {
     if (!loader_)
       return;
 
@@ -833,16 +834,16 @@ void ThrottlingURLLoader::ResumeReadingBodyFromNet(
 }
 
 void ThrottlingURLLoader::InterceptResponse(
-    network::mojom::URLLoaderPtr new_loader,
+    mojo::PendingRemote<network::mojom::URLLoader> new_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver,
-    network::mojom::URLLoaderPtr* original_loader,
+    mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>*
         original_client_receiver) {
   response_intercepted_ = true;
 
   if (original_loader)
-    *original_loader = network::mojom::URLLoaderPtr(url_loader_.Unbind());
-  url_loader_.Bind(new_loader.PassInterface());
+    *original_loader = url_loader_.Unbind();
+  url_loader_.Bind(std::move(new_loader));
 
   if (original_client_receiver)
     *original_client_receiver = client_receiver_.Unbind();

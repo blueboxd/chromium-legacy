@@ -31,12 +31,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOADER_H_
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -68,8 +70,6 @@
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-
-#include <memory>
 
 namespace base {
 class TickClock;
@@ -308,6 +308,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void SetHistoryItemStateForCommit(HistoryItem* old_item,
                                     WebFrameLoadType,
                                     HistoryNavigationType);
+
+  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+  TakePendingWorkerTimingReceiver(int request_id);
 
  protected:
   Vector<KURL> redirect_chain_;

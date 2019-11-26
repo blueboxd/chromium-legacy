@@ -14,6 +14,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -37,7 +38,8 @@ class FakeServiceIPCServerClient : public ServiceIPCServer::Client {
   int shutdown_calls_ = 0;
   int update_available_calls_ = 0;
   int ipc_client_disconnect_calls_ = 0;
-  service_manager::mojom::InterfaceProviderPtr interface_provider_;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider_;
 };
 
 void FakeServiceIPCServerClient::OnShutdown() {
@@ -58,7 +60,7 @@ bool FakeServiceIPCServerClient::OnIPCClientDisconnect() {
 
 mojo::ScopedMessagePipeHandle
 FakeServiceIPCServerClient::CreateChannelMessagePipe() {
-  return mojo::MakeRequest(&interface_provider_).PassMessagePipe();
+  return interface_provider_.InitWithNewPipeAndPassReceiver().PassPipe();
 }
 
 }  // namespace

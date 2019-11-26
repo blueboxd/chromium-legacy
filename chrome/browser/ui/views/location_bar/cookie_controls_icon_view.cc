@@ -24,8 +24,7 @@ CookieControlsIconView::CookieControlsIconView(
 
 CookieControlsIconView::~CookieControlsIconView() = default;
 
-bool CookieControlsIconView::Update() {
-  bool was_visible = GetVisible();
+void CookieControlsIconView::UpdateImpl() {
   auto* web_contents = delegate()->GetWebContentsForPageActionIconView();
   if (web_contents) {
     if (!controller_) {
@@ -35,8 +34,6 @@ bool CookieControlsIconView::Update() {
     controller_->Update(web_contents);
   }
   SetVisible(ShouldBeVisible());
-
-  return GetVisible() != was_visible;
 }
 
 void CookieControlsIconView::OnStatusChanged(

@@ -122,6 +122,10 @@ class WebContentSettingsClient {
       base::TimeDelta duration,
       const blink::WebURL& url) {}
 
+  // Controls whether mixed content autoupgrades should be allowed in this
+  // frame.
+  virtual bool ShouldAutoupgradeMixedContent() { return true; }
+
   virtual ~WebContentSettingsClient() = default;
 };
 

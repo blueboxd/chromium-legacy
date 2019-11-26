@@ -14543,12 +14543,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       navigation_request, blink::mojom::CommitResult::Ok);
 
   // Simulate a commit IPC.
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
   static_cast<mojom::FrameHost*>(root->current_frame_host())
       ->DidCommitProvisionalLoad(
           std::move(params),
           mojom::DidCommitProvisionalLoadInterfaceParams::New(
-              mojo::MakeRequest(&interface_provider),
+              interface_provider.InitWithNewPipeAndPassReceiver(),
               mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
                   .InitWithNewPipeAndPassReceiver()));
 

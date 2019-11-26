@@ -331,7 +331,7 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
     if (element->GetPseudoElement(kPseudoIdAfter))
       Unbind(element->GetPseudoElement(kPseudoIdAfter), nodes_map);
 
-    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
       if (link_element->IsImport() && link_element->import())
         Unbind(link_element->import(), nodes_map);
     }
@@ -1526,7 +1526,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
       if (link_element->IsImport() && link_element->import() &&
           InnerParentNode(link_element->import()) == link_element) {
         value->setImportedDocument(BuildObjectForNode(
@@ -1806,7 +1806,7 @@ void InspectorDOMAgent::CollectNodes(
     if (pierce && root)
       CollectNodes(root, depth, pierce, filter, result);
 
-    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element)) {
       if (link_element->IsImport() && link_element->import() &&
           InnerParentNode(link_element->import()) == link_element) {
         CollectNodes(link_element->import(), depth, pierce, filter, result);

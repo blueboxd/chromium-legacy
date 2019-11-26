@@ -36,7 +36,8 @@ class SessionTerminationManagerTest : public testing::Test {
 // The device is not locked to single user. Check that no reboot is triggered
 // on sign out.
 TEST_F(SessionTerminationManagerTest, NoRebootTest) {
-  session_termination_manager_.StopSession();
+  session_termination_manager_.StopSession(
+      login_manager::SessionStopReason::OWNER_REQUIRED);
   EXPECT_EQ(0, power_client_->num_request_restart_calls());
 }
 
@@ -44,7 +45,8 @@ TEST_F(SessionTerminationManagerTest, NoRebootTest) {
 // sign out.
 TEST_F(SessionTerminationManagerTest, RebootTest) {
   session_termination_manager_.SetDeviceLockedToSingleUser();
-  session_termination_manager_.StopSession();
+  session_termination_manager_.StopSession(
+      login_manager::SessionStopReason::REQUEST_FROM_SESSION_MANAGER);
   EXPECT_EQ(1, power_client_->num_request_restart_calls());
 }
 

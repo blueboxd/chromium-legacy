@@ -201,7 +201,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
   // work for them.
-  if (IsHTMLDivElement(element) || IsA<HTMLSpanElement>(element))
+  if (IsA<HTMLDivElement>(element) || IsA<HTMLSpanElement>(element))
     return;
 
   if (IsHTMLTableCellElement(element)) {

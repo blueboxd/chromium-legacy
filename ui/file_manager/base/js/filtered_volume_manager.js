@@ -116,10 +116,6 @@ class FilteredVolumeManager extends cr.EventTarget {
       case AllowedPaths.ANY_PATH:
       case AllowedPaths.ANY_PATH_OR_URL:
         return true;
-      case AllowedPaths.NATIVE_OR_DRIVE_PATH:
-        return (
-            VolumeManagerCommon.VolumeType.isNative(volumeType) ||
-            volumeType == VolumeManagerCommon.VolumeType.DRIVE);
       case AllowedPaths.NATIVE_PATH:
         return VolumeManagerCommon.VolumeType.isNative(volumeType);
     }

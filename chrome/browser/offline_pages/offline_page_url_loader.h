@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -94,7 +94,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   void OnHandleReady(MojoResult result, const mojo::HandleSignalsState& state);
   void Finish(int error);
   void TransferRawData();
-  void OnConnectionError();
+  void OnMojoDisconnect();
   void MaybeDeleteSelf();
 
   // Not owned. The owner of this should outlive this class instance.
@@ -107,7 +107,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   std::unique_ptr<OfflinePageRequestHandler> request_handler_;
   scoped_refptr<net::IOBuffer> buffer_;
 
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
   mojo::Remote<network::mojom::URLLoaderClient> client_;
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   int bytes_of_raw_data_to_transfer_ = 0;

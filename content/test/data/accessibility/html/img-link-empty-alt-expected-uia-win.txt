@@ -1,11 +1,7 @@
 document
 ++group
 ++++link Name='unread '
-++++++description Name='unread ' IsControlElement=false
 ++++link Name='read '
-++++++description Name='read ' IsControlElement=false
 ++++link Name='read '
-++++++description Name='read ' IsControlElement=false
 ++++link Name='read'
 ++++++img
-++++++description Name='read' IsControlElement=false

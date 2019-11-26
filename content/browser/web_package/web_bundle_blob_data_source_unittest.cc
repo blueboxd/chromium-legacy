@@ -56,10 +56,11 @@ class WebBundleBlobDataSourceTest : public testing::Test {
     mojo::BlockingCopyFromString(test_data, producer);
     producer.reset();
 
-    return std::make_unique<WebBundleBlobDataSource>(
+    auto source = std::make_unique<WebBundleBlobDataSource>(
         content_length ? *content_length : test_data.size(),
-        std::move(consumer), nullptr, ContextGetter(),
-        remote_source->BindNewPipeAndPassReceiver());
+        std::move(consumer), nullptr, ContextGetter());
+    source->AddReceiver(remote_source->BindNewPipeAndPassReceiver());
+    return source;
   }
   std::unique_ptr<storage::BlobStorageContext> context_;
 

@@ -36,15 +36,13 @@ IntentPickerView::IntentPickerView(Browser* browser,
 
 IntentPickerView::~IntentPickerView() = default;
 
-bool IntentPickerView::Update() {
+void IntentPickerView::UpdateImpl() {
   bool was_visible = GetVisible();
 
   SetVisible(ShouldShowIcon());
 
   if (was_visible && !GetVisible())
     IntentPickerBubbleView::CloseCurrentBubble();
-
-  return was_visible != GetVisible();
 }
 
 void IntentPickerView::OnExecuting(

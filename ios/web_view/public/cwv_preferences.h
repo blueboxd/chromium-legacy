@@ -25,9 +25,10 @@ CWV_EXPORT
 - (instancetype)init NS_UNAVAILABLE;
 
 // Resets all translation settings back to default. In particular, this will
-// change all translation policies back to CWVTranslationPolicyAsk.
-// Because translate settings are shared from incognito to non-incognito, this
-// has no effect if this instance is from an incognito CWVWebViewConfiguration.
+// change all translation policies back to CWVTranslationPolicyAsk, and set
+// |translationEnabled| to YES. Because translate settings are shared from
+// incognito to non-incognito, this has no effect if this instance is from an
+// incognito CWVWebViewConfiguration.
 - (void)resetTranslationSettings;
 
 @end

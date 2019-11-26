@@ -107,17 +107,12 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
 }
 
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
-// Also crbug/1027940: Fails on linux-chromeos-rel.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_DataPersists DISABLED_DataPersists
-#else
-#define MAYBE_DataPersists DataPersists
-#endif
+// Also crbug/1027940: Fails on linux-chromeos-rel and other platforms.
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_DataPersists) {
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DISABLED_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
 

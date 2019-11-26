@@ -215,12 +215,6 @@ class ConciergeClientImpl : public ConciergeClient {
     CallMethod(concierge::kDetachUsbDeviceMethod, request, std::move(callback));
   }
 
-  void ListUsbDevices(
-      const concierge::ListUsbDeviceRequest& request,
-      DBusMethodCallback<concierge::ListUsbDeviceResponse> callback) override {
-    CallMethod(concierge::kListUsbDeviceMethod, request, std::move(callback));
-  }
-
   void StartArcVm(
       const concierge::StartArcVmRequest& request,
       DBusMethodCallback<concierge::StartVmResponse> callback) override {

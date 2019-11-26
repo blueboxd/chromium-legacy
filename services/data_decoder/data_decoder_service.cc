@@ -70,8 +70,12 @@ void DataDecoderService::BindXmlParser(
 
 void DataDecoderService::BindWebBundleParserFactory(
     mojo::PendingReceiver<mojom::WebBundleParserFactory> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<WebBundleParserFactory>(),
-                              std::move(receiver));
+  if (web_bundle_parser_factory_binder_) {
+    web_bundle_parser_factory_binder_.Run(std::move(receiver));
+  } else {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<WebBundleParserFactory>(),
+                                std::move(receiver));
+  }
 }
 
 #ifdef OS_CHROMEOS

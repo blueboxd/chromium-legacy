@@ -35,6 +35,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -450,9 +451,13 @@ void Performance::GenerateAndAddResourceTiming(
   const SecurityOrigin* security_origin = GetSecurityOrigin(context);
   if (!security_origin)
     return;
+  // |info| is taken const-ref but this can make destructive changes to
+  // WorkerTimingContainer on |info| when a page is controlled by a service
+  // worker.
   AddResourceTiming(
       GenerateResourceTiming(*security_origin, info, *context),
-      !initiator_type.IsNull() ? initiator_type : info.InitiatorType());
+      !initiator_type.IsNull() ? initiator_type : info.InitiatorType(),
+      info.TakeWorkerTimingReceiver());
 }
 
 WebResourceTimingInfo Performance::GenerateResourceTiming(
@@ -526,13 +531,13 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   return result;
 }
 
-void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
-                                    const AtomicString& initiator_type) {
-  // TODO(https://crbug.com/900700): Implement this, making the receiver
-  // connected to a remote which is passed to blink::FetchEvent for subresouces
-  // and finding the path for navigation.
+void Performance::AddResourceTiming(
+    const WebResourceTimingInfo& info,
+    const AtomicString& initiator_type,
+    mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+        worker_timing_receiver) {
   auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
-      info, time_origin_, initiator_type, mojo::NullReceiver());
+      info, time_origin_, initiator_type, std::move(worker_timing_receiver));
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&

@@ -1256,7 +1256,6 @@ jumbo_component("platform") {
     "peerconnection/audio_codec_factory.cc",
     "peerconnection/audio_codec_factory.h",
     "peerconnection/rtc_answer_options_platform.h",
-    "peerconnection/rtc_data_channel_init_platform.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",
     "peerconnection/rtc_dtmf_sender_handler.h",
     "peerconnection/rtc_event_log_output_sink.h",

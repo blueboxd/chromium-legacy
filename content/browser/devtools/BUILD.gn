@@ -29,7 +29,7 @@ grit("devtools_resources") {
   grit_flags = [
     "-E",
     "protocol_file=" + rebase_path(
-            "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
+            "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
             root_build_dir),
   ]
 
@@ -37,7 +37,7 @@ grit("devtools_resources") {
       [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir) ]
 
   deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
+    "//third_party/blink/renderer/core/inspector:protocol_version",
 
     # This is the action that generates out .grd input file.
     "//third_party/blink/public:blink_generate_devtools_grd",
@@ -47,10 +47,10 @@ grit("devtools_resources") {
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//content/browser" ]
   deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
+    "//third_party/blink/renderer/core/inspector:protocol_version",
   ]
   _blink_protocol_path = rebase_path(
-          "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
+          "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
           root_build_dir)
 
   inspector_protocol_dir = "//third_party/inspector_protocol"
@@ -59,7 +59,7 @@ inspector_protocol_generate("protocol_sources") {
   config_values = [ "protocol.path=$_blink_protocol_path" ]
 
   inputs = [
-    "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
+    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
     config_file,
   ]
 

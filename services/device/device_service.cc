@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/bluetooth/bluetooth_system_factory.h"
 #include "services/device/fingerprint/fingerprint.h"
@@ -377,10 +378,11 @@ void DeviceService::BindUsbDeviceManagerTestReceiver(
 #if defined(OS_ANDROID)
 service_manager::InterfaceProvider* DeviceService::GetJavaInterfaceProvider() {
   if (!java_interface_provider_initialized_) {
-    service_manager::mojom::InterfaceProviderPtr provider;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrar_createInterfaceRegistryForContext(
-        env, mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
+        env,
+        provider.InitWithNewPipeAndPassReceiver().PassPipe().release().value(),
         java_nfc_delegate_);
     java_interface_provider_.Bind(std::move(provider));
 

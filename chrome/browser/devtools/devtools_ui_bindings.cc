@@ -584,10 +584,19 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 #endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
+    case base::TERMINATION_STATUS_OOM:
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+#endif
       if (devtools_bindings_->agent_host_.get())
         devtools_bindings_->Detach();
       break;
-    default:
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+    case base::TERMINATION_STATUS_MAX_ENUM:
       crashed = false;
       break;
   }

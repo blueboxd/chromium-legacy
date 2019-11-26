@@ -31,6 +31,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -99,18 +100,191 @@ class DownloadObserver : public DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(DownloadObserver);
 };
 
+class MockParserFactory;
+
+class MockParser final : public data_decoder::mojom::WebBundleParser {
+ public:
+  using Index = base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr>;
+
+  MockParser(
+      MockParserFactory* factory,
+      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
+      const Index& index,
+      const GURL& primary_url,
+      bool simulate_parse_metadata_crash,
+      bool simulate_parse_response_crash)
+      : factory_(factory),
+        receiver_(this, std::move(receiver)),
+        index_(index),
+        primary_url_(primary_url),
+        simulate_parse_metadata_crash_(simulate_parse_metadata_crash),
+        simulate_parse_response_crash_(simulate_parse_response_crash) {}
+  ~MockParser() override = default;
+
+ private:
+  // data_decoder::mojom::WebBundleParser implementation.
+  void ParseMetadata(ParseMetadataCallback callback) override;
+  void ParseResponse(uint64_t response_offset,
+                     uint64_t response_length,
+                     ParseResponseCallback callback) override;
+
+  MockParserFactory* factory_;
+  mojo::Receiver<data_decoder::mojom::WebBundleParser> receiver_;
+  const Index& index_;
+  const GURL primary_url_;
+  const bool simulate_parse_metadata_crash_;
+  const bool simulate_parse_response_crash_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockParser);
+};
+
+class MockParserFactory final
+    : public data_decoder::mojom::WebBundleParserFactory {
+ public:
+  MockParserFactory(std::vector<GURL> urls,
+                    const base::FilePath& response_body_file)
+      : primary_url_(urls[0]) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    int64_t response_body_file_size;
+    EXPECT_TRUE(
+        base::GetFileSize(response_body_file, &response_body_file_size));
+    for (const auto& url : urls) {
+      data_decoder::mojom::BundleIndexValuePtr item =
+          data_decoder::mojom::BundleIndexValue::New();
+      item->response_locations.push_back(
+          data_decoder::mojom::BundleResponseLocation::New(
+              0u, response_body_file_size));
+      index_.insert({url, std::move(item)});
+    }
+    in_process_data_decoder_.service()
+        .SetWebBundleParserFactoryBinderForTesting(
+            base::BindRepeating(&MockParserFactory::BindWebBundleParserFactory,
+                                base::Unretained(this)));
+  }
+  MockParserFactory(
+      const std::vector<std::pair<GURL, const std::string&>> items)
+      : primary_url_(items[0].first) {
+    uint64_t offset = 0;
+    for (const auto& item : items) {
+      data_decoder::mojom::BundleIndexValuePtr index_value =
+          data_decoder::mojom::BundleIndexValue::New();
+      index_value->response_locations.push_back(
+          data_decoder::mojom::BundleResponseLocation::New(
+              offset, item.second.length()));
+      offset += item.second.length();
+      index_.insert({item.first, std::move(index_value)});
+    }
+    in_process_data_decoder_.service()
+        .SetWebBundleParserFactoryBinderForTesting(
+            base::BindRepeating(&MockParserFactory::BindWebBundleParserFactory,
+                                base::Unretained(this)));
+  }
+  ~MockParserFactory() override = default;
+
+  int GetParserCreationCount() const { return parser_creation_count_; }
+  void SimulateParserDisconnect() { parser_ = nullptr; }
+  void SimulateParseMetadataCrash() { simulate_parse_metadata_crash_ = true; }
+  void SimulateParseResponseCrash() { simulate_parse_response_crash_ = true; }
+
+ private:
+  void BindWebBundleParserFactory(
+      mojo::PendingReceiver<data_decoder::mojom::WebBundleParserFactory>
+          receiver) {
+    receivers_.Add(this, std::move(receiver));
+  }
+
+  // data_decoder::mojom::WebBundleParserFactory implementation.
+  void GetParserForFile(
+      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
+      base::File file) override {
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      file.Close();
+    }
+    DCHECK(!parser_);
+    parser_ = std::make_unique<MockParser>(
+        this, std::move(receiver), index_, primary_url_,
+        simulate_parse_metadata_crash_, simulate_parse_response_crash_);
+    parser_creation_count_++;
+  }
+
+  void GetParserForDataSource(
+      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
+      mojo::PendingRemote<data_decoder::mojom::BundleDataSource> data_source)
+      override {
+    DCHECK(!parser_);
+    parser_ = std::make_unique<MockParser>(
+        this, std::move(receiver), index_, primary_url_,
+        simulate_parse_metadata_crash_, simulate_parse_response_crash_);
+    parser_creation_count_++;
+  }
+
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+  mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
+  bool simulate_parse_metadata_crash_ = false;
+  bool simulate_parse_response_crash_ = false;
+  std::unique_ptr<MockParser> parser_;
+  int parser_creation_count_ = 0;
+  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> index_;
+  const GURL primary_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockParserFactory);
+};
+
+void MockParser::ParseMetadata(ParseMetadataCallback callback) {
+  if (simulate_parse_metadata_crash_) {
+    factory_->SimulateParserDisconnect();
+    return;
+  }
+
+  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
+  for (const auto& item : index_) {
+    items.insert({item.first, item.second.Clone()});
+  }
+
+  data_decoder::mojom::BundleMetadataPtr metadata =
+      data_decoder::mojom::BundleMetadata::New();
+  metadata->primary_url = primary_url_;
+  metadata->requests = std::move(items);
+
+  std::move(callback).Run(std::move(metadata), nullptr);
+}
+
+void MockParser::ParseResponse(uint64_t response_offset,
+                               uint64_t response_length,
+                               ParseResponseCallback callback) {
+  if (simulate_parse_response_crash_) {
+    factory_->SimulateParserDisconnect();
+    return;
+  }
+  data_decoder::mojom::BundleResponsePtr response =
+      data_decoder::mojom::BundleResponse::New();
+  response->response_code = 200;
+  response->response_headers.insert({"content-type", "text/html"});
+  response->payload_offset = response_offset;
+  response->payload_length = response_length;
+  std::move(callback).Run(std::move(response), nullptr);
+}
+
 class WebBundleBrowserTestBase : public ContentBrowserTest {
  protected:
   WebBundleBrowserTestBase() = default;
   ~WebBundleBrowserTestBase() override = default;
 
-  void NavigateToBundleAndWaitForReady(const GURL& test_data_url,
-                                       const GURL& expected_commit_url) {
-    base::string16 expected_title = base::ASCIIToUTF16("Ready");
+  void NavigateToBundleAndWaitForTitle(const GURL& test_data_url,
+                                       const GURL& expected_commit_url,
+                                       base::StringPiece ascii_title) {
+    base::string16 expected_title = base::ASCIIToUTF16(ascii_title);
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     EXPECT_TRUE(NavigateToURL(shell()->web_contents(), test_data_url,
                               expected_commit_url));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void NavigateToBundleAndWaitForReady(const GURL& test_data_url,
+                                       const GURL& expected_commit_url) {
+    NavigateToBundleAndWaitForTitle(test_data_url, expected_commit_url,
+                                    "Ready");
   }
 
   void RunTestScript(const std::string& script) {
@@ -611,6 +785,94 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NoLocalFileScheme) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, DataDecoderRestart) {
+  // The content of this file will be read as response body of any exchange.
+  base::FilePath test_file_path = GetTestDataPath("mocked.wbn");
+  MockParserFactory mock_factory(
+      {GURL(kTestPageUrl), GURL(kTestPage1Url), GURL(kTestPage2Url)},
+      test_file_path);
+  const GURL test_data_url = GetTestUrlForFile(test_file_path);
+  NavigateToBundleAndWaitForTitle(
+      test_data_url,
+      web_bundle_utils::GetSynthesizedUrlForWebBundle(test_data_url,
+                                                      GURL(kTestPageUrl)),
+      kTestPageUrl);
+
+  EXPECT_EQ(1, mock_factory.GetParserCreationCount());
+  mock_factory.SimulateParserDisconnect();
+
+  NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), kTestPage1Url);
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                test_data_url, GURL(kTestPage1Url)));
+
+  EXPECT_EQ(2, mock_factory.GetParserCreationCount());
+  mock_factory.SimulateParserDisconnect();
+
+  NavigateToURLAndWaitForTitle(GURL(kTestPage2Url), kTestPage2Url);
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                test_data_url, GURL(kTestPage2Url)));
+
+  EXPECT_EQ(3, mock_factory.GetParserCreationCount());
+}
+
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseMetadataCrash) {
+  base::FilePath test_file_path = GetTestDataPath("mocked.wbn");
+  MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
+  mock_factory.SimulateParseMetadataCrash();
+
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(web_contents,
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(web_contents, GetTestUrlForFile(test_file_path)));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
+            *finish_navigation_observer.error_code());
+
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ(
+      "Failed to read metadata of Web Bundle file: Cannot connect to the "
+      "remote parser service",
+      console_delegate.message());
+}
+
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
+  base::FilePath test_file_path = GetTestDataPath("mocked.wbn");
+  MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
+  mock_factory.SimulateParseResponseCrash();
+
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(web_contents,
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(web_contents, GetTestUrlForFile(test_file_path)));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
+            *finish_navigation_observer.error_code());
+
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ(
+      "Failed to read response header of Web Bundle file: Cannot connect to "
+      "the remote parser service",
+      console_delegate.message());
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
                          WebBundleFileBrowserTest,
                          testing::Values(TestFilePathMode::kNormalFilePath
@@ -811,6 +1073,153 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, InvalidFile) {
   TestNavigationFailure(
       GetTestUrl("localhost"),
       "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DataDecoderRestart) {
+  const GURL primary_url(base::StringPrintf(
+      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
+  const GURL script_url(base::StringPrintf(
+      "http://localhost:%d/web_bundle/network/script.js", kNetworkTestPort));
+  const std::string primary_url_content = "<title>Ready</title>";
+  const std::string script_url_content = "document.title = 'OK'";
+  std::vector<std::pair<GURL, const std::string&>> items = {
+      {primary_url, primary_url_content}, {script_url, script_url_content}};
+  const std::string test_bundle = primary_url_content + script_url_content;
+  RegisterRequestHandler(
+      "/web_bundle/test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+
+  MockParserFactory mock_factory(items);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  const GURL test_data_url = GetTestUrl("localhost");
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      GURL(base::StringPrintf("http://localhost:%d/web_bundle/network/",
+                              kNetworkTestPort)));
+
+  EXPECT_EQ(1, mock_factory.GetParserCreationCount());
+  mock_factory.SimulateParserDisconnect();
+
+  ExecuteScriptAndWaitForTitle(R"(
+    const script = document.createElement("script");
+    script.src = "script.js";
+    document.body.appendChild(script);)",
+                               "OK");
+
+  EXPECT_EQ(2, mock_factory.GetParserCreationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseMetadataCrash) {
+  const GURL primary_url(base::StringPrintf(
+      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
+  const std::string test_bundle = "<title>Ready</title>";
+  std::vector<std::pair<GURL, const std::string&>> items = {
+      {primary_url, test_bundle}};
+  RegisterRequestHandler(
+      "/web_bundle/test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  MockParserFactory mock_factory(items);
+  mock_factory.SimulateParseMetadataCrash();
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  const GURL test_data_url = GetTestUrl("localhost");
+  TestNavigationFailure(test_data_url,
+                        "Failed to read metadata of Web Bundle file: Cannot "
+                        "connect to the remote parser service");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseResponseCrash) {
+  const GURL primary_url(base::StringPrintf(
+      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
+  const std::string test_bundle = "<title>Ready</title>";
+  std::vector<std::pair<GURL, const std::string&>> items = {
+      {primary_url, test_bundle}};
+  RegisterRequestHandler(
+      "/web_bundle/test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  MockParserFactory mock_factory(items);
+  mock_factory.SimulateParseResponseCrash();
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  const GURL test_data_url = GetTestUrl("localhost");
+  TestNavigationFailure(test_data_url,
+                        "Failed to read response header of Web Bundle file: "
+                        "Cannot connect to the remote parser service");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PathMismatch) {
+  const std::string test_bundle =
+      GetTestFile("web_bundle_browsertest_network.wbn");
+  RegisterRequestHandler(
+      "/other_dir/test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+  TestNavigationFailure(
+      GURL(base::StringPrintf("http://localhost:%d/other_dir/"
+                              "test.wbn",
+                              kNetworkTestPort)),
+      base::StringPrintf(
+          "Path restriction mismatch: Can't navigate to "
+          "http://localhost:%d/web_bundle/network/ in the web bundle served "
+          "from http://localhost:%d/other_dir/test.wbn.",
+          kNetworkTestPort, kNetworkTestPort));
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RegisterRequestHandler(
+      "/web_bundle/path_test/in_scope/path_test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  NavigateToBundleAndWaitForReady(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
+          kNetworkTestPort)),
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/",
+          kNetworkTestPort)));
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+          kNetworkTestPort)),
+      "In scope page in Web Bundle / in scope script in Web Bundle");
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
+          kNetworkTestPort)),
+      "Out scope page from server / out scope script from server");
+
+  // TODO(crbug.com/1027050): Add this test after isolating memory cache.
+  //
+  // NavigateToURLAndWaitForTitle(
+  //     GURL(base::StringPrintf(
+  //         "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+  //         kNetworkTestPort)),
+  //     "In scope page from server / in scope script from server");
 }
 
 }  // namespace content

@@ -164,8 +164,11 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       const SecurityOrigin& destination_origin,
       const ResourceTimingInfo&,
       ExecutionContext& context_for_use_counter);
-  void AddResourceTiming(const WebResourceTimingInfo&,
-                         const AtomicString& initiator_type);
+  void AddResourceTiming(
+      const WebResourceTimingInfo&,
+      const AtomicString& initiator_type,
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver);
 
   void NotifyNavigationTimingToObservers();
 

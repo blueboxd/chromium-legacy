@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"

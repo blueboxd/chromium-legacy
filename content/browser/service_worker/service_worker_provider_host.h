@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -163,13 +162,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // May return nullptr.
   RenderProcessHost* GetProcessHost() {
-    return RenderProcessHost::FromID(render_process_id_);
+    DCHECK(IsProviderForServiceWorker());
+    return RenderProcessHost::FromID(worker_process_id_);
   }
 
-  base::TimeTicks create_time() const { return create_time_; }
-  int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
-  int frame_id() const { return frame_id_; }
 
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until
@@ -244,8 +241,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the worker.
   void CompleteStartWorkerPreparation(
       int process_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
 
@@ -273,13 +270,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // An optimized implementation of [[Match Service Worker Registration]]
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
-
-  // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
-  // settings allows service workers to run at |scope|. If this provider is for
-  // a window client, the check involves the topmost frame url as well as
-  // |scope|, and may display tab-level UI.
-  // If non-empty, |script_url| is the script the service worker will run.
-  bool AllowServiceWorker(const GURL& scope, const GURL& script_url);
 
   // Called when our controller has been terminated and doomed due to an
   // exceptional condition like it could no longer be read from the script
@@ -438,7 +428,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
-  void SetRenderProcessId(int process_id);
+  // For service worker execution contexts. Sets the process ID of the service
+  // worker execution context.
+  void SetWorkerProcessId(int process_id);
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
   void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
@@ -446,12 +438,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Unique among all provider hosts.
   const int provider_id_;
 
-  const base::TimeTicks create_time_;
-  int render_process_id_;
-
-  // The window's RenderFrame id, if this is a service worker window client.
-  // Otherwise, |MSG_ROUTING_NONE|.
-  int frame_id_;
+  int worker_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =

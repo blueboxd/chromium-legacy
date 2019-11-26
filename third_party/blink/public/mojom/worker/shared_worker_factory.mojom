@@ -69,9 +69,10 @@ interface SharedWorkerFactory {
       pending_receiver<SharedWorker> shared_worker,
 
       // TODO(crbug.com/990845): remove when no longer used.
-      service_manager.mojom.InterfaceProvider interface_provider,
+      pending_remote<service_manager.mojom.InterfaceProvider>
+          interface_provider,
 
       // BrowserInterfaceBroker for providing browser interfaces.
       pending_remote<blink.mojom.BrowserInterfaceBroker>
-        browser_interface_broker);
+          browser_interface_broker);
 };

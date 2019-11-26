@@ -33,12 +33,13 @@ SessionTerminationManager* SessionTerminationManager::Get() {
   return g_instance;
 }
 
-void SessionTerminationManager::StopSession() {
+void SessionTerminationManager::StopSession(
+    login_manager::SessionStopReason reason) {
   // If the device is locked to single user, it must reboot on sign out.
   if (is_locked_to_single_user_) {
     Reboot();
   } else {
-    SessionManagerClient::Get()->StopSession();
+    SessionManagerClient::Get()->StopSession(reason);
   }
 }
 

@@ -26,6 +26,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -126,6 +127,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
+      int request_id) override;
 
   // blink::mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
@@ -171,8 +174,18 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   blink::WebString GetAcceptLanguages() const override;
 
+  // Sets up |receiver| to receive resource performance timings for the given
+  // |request_id|. This receiver will be taken later by
+  // TakePendingWorkerTimingReceiver().
+  void AddPendingWorkerTimingReceiver(
+      int request_id,
+      mojo::PendingReceiver<blink::mojom::WorkerTimingContainer> receiver);
+
  private:
   class Factory;
+  using WorkerTimingContainerReceiverMap =
+      std::map<int /* request_id */,
+               mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>>;
 
   // - |service_worker_client_receiver| receives OnControllerChanged()
   //   notifications.
@@ -345,6 +358,13 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
+
+  // Contains pending receivers whose corresponding requests are still
+  // in-flight. The pending receivers are taken by
+  // TakePendingWorkerTimingReceiver() when the request is completed.
+  WorkerTimingContainerReceiverMap worker_timing_container_receivers_;
+
+  base::WeakPtrFactory<WebWorkerFetchContextImpl> weak_factory_{this};
 };
 
 }  // namespace content

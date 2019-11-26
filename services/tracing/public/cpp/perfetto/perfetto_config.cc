@@ -42,7 +42,7 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
 
   size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
   if (size_limit == 0) {
-    size_limit = 100 * 1024;
+    size_limit = 150 * 1024;
   }
   auto* buffer_config = perfetto_config.add_buffers();
   buffer_config->set_size_kb(size_limit);

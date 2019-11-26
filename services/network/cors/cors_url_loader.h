@@ -7,7 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -129,7 +128,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   mojom::URLLoaderFactory* network_loader_factory_;
 
   // For the actual request.
-  mojom::URLLoaderPtr network_loader_;
+  mojo::Remote<mojom::URLLoader> network_loader_;
   mojo::Receiver<mojom::URLLoaderClient> network_client_receiver_{this};
   ResourceRequest request_;
 

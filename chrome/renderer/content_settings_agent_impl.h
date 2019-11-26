@@ -106,6 +106,7 @@ class ContentSettingsAgentImpl
   void GetAllowedClientHintsFromSource(
       const blink::WebURL& url,
       blink::WebEnabledClientHints* client_hints) const override;
+  bool ShouldAutoupgradeMixedContent() override;
 
   bool allow_running_insecure_content() const {
     return allow_running_insecure_content_;

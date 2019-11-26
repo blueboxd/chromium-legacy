@@ -16,7 +16,7 @@ class IntentPickerView : public PageActionIconView {
   ~IntentPickerView() override;
 
   // PageActionIconView:
-  bool Update() override;
+  void UpdateImpl() override;
 
  protected:
   // PageActionIconView:

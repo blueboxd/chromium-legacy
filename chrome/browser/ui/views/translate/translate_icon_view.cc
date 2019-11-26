@@ -31,11 +31,10 @@ views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
 }
 
-bool TranslateIconView::Update() {
+void TranslateIconView::UpdateImpl() {
   if (!GetWebContents())
-    return false;
+    return;
 
-  const bool was_visible = GetVisible();
   const translate::LanguageState& language_state =
       ChromeTranslateClient::FromWebContents(GetWebContents())
           ->GetLanguageState();
@@ -46,8 +45,6 @@ bool TranslateIconView::Update() {
   SetVisible(enabled);
   if (!enabled)
     TranslateBubbleView::CloseCurrentBubble();
-
-  return was_visible != GetVisible();
 }
 
 void TranslateIconView::OnExecuting(

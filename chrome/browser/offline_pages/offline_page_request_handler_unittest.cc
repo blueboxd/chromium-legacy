@@ -45,6 +45,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_request_headers.h"
@@ -278,7 +279,7 @@ class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
   std::unique_ptr<OfflinePageURLLoader> url_loader_;
   std::unique_ptr<TestURLLoaderClient> client_;
   std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
   std::string mime_type_;
   std::string body_;
 };
@@ -1016,8 +1017,10 @@ void OfflinePageURLLoaderBuilder::MaybeStartLoader(
   // and URLLoaderClient are alive.
   url_loader_.release();
 
+  loader_.reset();
   std::move(request_handler)
-      .Run(request, mojo::MakeRequest(&loader_), client_->CreateRemote());
+      .Run(request, loader_.BindNewPipeAndPassReceiver(),
+           client_->CreateRemote());
 }
 
 void OfflinePageURLLoaderBuilder::ReadBody() {

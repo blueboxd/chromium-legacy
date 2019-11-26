@@ -537,6 +537,16 @@ void ContentSettingsAgentImpl::GetAllowedClientHintsFromSource(
       url, content_setting_rules_->client_hints_rules, client_hints);
 }
 
+bool ContentSettingsAgentImpl::ShouldAutoupgradeMixedContent() {
+  if (content_setting_rules_) {
+    auto setting =
+        GetContentSettingFromRules(content_setting_rules_->mixed_content_rules,
+                                   render_frame()->GetWebFrame(), GURL());
+    return setting != CONTENT_SETTING_ALLOW;
+  }
+  return false;
+}
+
 void ContentSettingsAgentImpl::DidNotAllowPlugins() {
   DidBlockContentType(ContentSettingsType::PLUGINS);
 }

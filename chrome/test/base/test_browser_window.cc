@@ -143,10 +143,6 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
 
-bool TestBrowserWindow::UpdatePageActionIcon(PageActionIconType type) {
-  return false;
-}
-
 autofill::AutofillBubbleHandler* TestBrowserWindow::GetAutofillBubbleHandler() {
   return &autofill_bubble_handler_;
 }

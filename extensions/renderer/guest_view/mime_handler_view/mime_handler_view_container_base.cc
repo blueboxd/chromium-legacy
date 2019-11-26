@@ -77,18 +77,18 @@ class MimeHandlerViewContainerBase::PluginResourceThrottle
       // called (see https://crbug.com/878359).
       return;
     }
-    network::mojom::URLLoaderPtr dummy_new_loader;
-    mojo::MakeRequest(&dummy_new_loader);
+    mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
+    ignore_result(dummy_new_loader.InitWithNewPipeAndPassReceiver());
     mojo::PendingRemote<network::mojom::URLLoaderClient> new_client;
 
-    network::mojom::URLLoaderPtr original_loader;
+    mojo::PendingRemote<network::mojom::URLLoader> original_loader;
     mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
     delegate_->InterceptResponse(std::move(dummy_new_loader),
                                  new_client.InitWithNewPipeAndPassReceiver(),
                                  &original_loader, &original_client);
 
     auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
-    transferrable_loader->url_loader = original_loader.PassInterface();
+    transferrable_loader->url_loader = std::move(original_loader);
     transferrable_loader->url_loader_client = std::move(original_client);
 
     // Make a deep copy of URLResponseHead before passing it cross-thread.

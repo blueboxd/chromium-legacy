@@ -37,6 +37,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : type_(type),
+      create_time_(base::TimeTicks::Now()),
       is_parent_frame_secure_(is_parent_frame_secure),
       frame_tree_node_id_(frame_tree_node_id),
       web_contents_getter_(
@@ -270,6 +271,20 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
   return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
+void ServiceWorkerContainerHost::OnBeginNavigationCommit(
+    int container_process_id,
+    int container_frame_id,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type());
+
+  SetContainerProcessId(container_process_id);
+
+  DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
+  DCHECK_NE(MSG_ROUTING_NONE, container_frame_id);
+  frame_id_ = container_frame_id;
+}
+
 void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
     const GURL& site_for_cookies,
@@ -341,22 +356,20 @@ void ServiceWorkerContainerHost::SetControllerRegistration(
 }
 
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
-                                                    const GURL& script_url,
-                                                    int render_process_id,
-                                                    int frame_id) {
+                                                    const GURL& script_url) {
   DCHECK(context_);
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
         scope, site_for_cookies(), top_frame_origin(), script_url,
         context_->wrapper()->browser_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
-                            render_process_id, frame_id));
+                            process_id_, frame_id_));
   } else {
     return GetContentClient()->browser()->AllowServiceWorkerOnIO(
         scope, site_for_cookies(), top_frame_origin(), script_url,
         context_->wrapper()->resource_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
-                            render_process_id, frame_id));
+                            process_id_, frame_id_));
   }
 }
 
@@ -453,6 +466,15 @@ bool ServiceWorkerContainerHost::IsControllerDecided() const {
 
   NOTREACHED();
   return true;
+}
+
+void ServiceWorkerContainerHost::SetContainerProcessId(
+    int container_process_id) {
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, process_id_);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, container_process_id);
+  process_id_ = container_process_id;
+  if (controller_)
+    controller_->UpdateForegroundPriority();
 }
 
 blink::mojom::ControllerServiceWorkerMode

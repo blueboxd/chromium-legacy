@@ -686,6 +686,23 @@ class _IRBuilder(object):
         assert len(type_nodes) == 1
         body_node = type_nodes[0]
 
+        buffer_source_types = set([
+            'ArrayBuffer',
+            'DataView',
+            'Int8Array',
+            'Int16Array',
+            'Int32Array',
+            'Uint8Array',
+            'Uint16Array',
+            'Uint32Array',
+            'Uint8ClampedArray',
+            'Float32Array',
+            'Float64Array',
+        ])
+        if body_node.GetName() in buffer_source_types:
+            return build_simple_type(
+                body_node, extended_attributes=extended_attributes)
+
         build_functions = {
             'Any': build_simple_type,
             'FrozenArray': build_frozen_array_type,

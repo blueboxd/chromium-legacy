@@ -90,9 +90,6 @@ ExampleVector CreateExamples() {
   examples.push_back(std::make_unique<TreeViewExample>());
   examples.push_back(std::make_unique<VectorExample>());
   examples.push_back(std::make_unique<WidgetExample>());
-
-  for (auto& example : examples)
-    example->CreateExampleView(example->example_view());
   return examples;
 }
 
@@ -107,6 +104,9 @@ ExampleVector GetExamplesToShow(ExampleVector extra) {
   ExampleVector examples = CreateExamples();
   std::move(extra.begin(), extra.end(), std::back_inserter(examples));
   std::sort(examples.begin(), examples.end(), ExampleTitleCompare());
+
+  for (auto& example : examples)
+    example->CreateExampleView(example->example_view());
   return examples;
 }
 

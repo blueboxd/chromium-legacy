@@ -1,6 +1,6 @@
 {
     "protocol": {
-        "path": "../../../public/devtools_protocol/browser_protocol.pdl",
+        "path": "browser_protocol.pdl",
         "package": "third_party/blink/renderer/core/inspector/protocol",
         "output": "inspector/protocol",
         "namespace": ["blink", "protocol"],

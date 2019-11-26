@@ -660,7 +660,8 @@ class DetachToBrowserTabDragControllerTest
       auto* provider = web_app::WebAppProvider::Get(browser()->profile());
       provider->system_web_app_manager().SetSystemAppsForTesting(
           {{web_app::SystemAppType::TERMINAL,
-            web_app::SystemAppInfo(app_url)}});
+            // "Terminal" can be any string.
+            web_app::SystemAppInfo("Terminal", app_url)}});
       web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
           .Insert(app_url, *terminal_app_id_,
                   web_app::ExternalInstallSource::kInternalDefault);

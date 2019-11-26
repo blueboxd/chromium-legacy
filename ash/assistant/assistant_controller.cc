@@ -174,6 +174,7 @@ void AssistantController::OnDeepLinkReceived(
     case DeepLinkType::kLists:
     case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:
+    case DeepLinkType::kProactiveSuggestions:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
     case DeepLinkType::kSettings:
@@ -300,11 +301,8 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   const std::map<std::string, std::string> params =
       assistant::util::GetDeepLinkParams(deep_link);
 
-  // TODO(wutao): Remove AssistantControllerObserver::OnDeepLinkReceived.
   for (AssistantControllerObserver& observer : observers_)
     observer.OnDeepLinkReceived(type, params);
-
-  view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
 void AssistantController::NotifyOpeningUrl(const GURL& url,

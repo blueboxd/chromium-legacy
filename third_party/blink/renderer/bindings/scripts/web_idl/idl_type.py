@@ -286,12 +286,34 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
 
     @property
     def is_boolean(self):
-        """Returns True if this is a boolean type."""
+        """Returns True if this is boolean."""
         return False
 
     @property
     def is_string(self):
-        """Returns True if this is a DOMString, ByteString, or USVString."""
+        """
+        Returns True if this is one of DOMString, ByteString, or USVString.
+        """
+        return False
+
+    @property
+    def is_buffer_source_type(self):
+        """Returns True if this is a buffer source type."""
+        return False
+
+    @property
+    def is_array_buffer(self):
+        """Returns True if this is ArrayBuffer."""
+        return False
+
+    @property
+    def is_data_view(self):
+        """Returns True if this is DataView."""
+        return False
+
+    @property
+    def is_typed_array_type(self):
+        """Returns True if this is a typed array type."""
         return False
 
     @property
@@ -514,8 +536,13 @@ class SimpleType(IdlType):
                                      'unrestricted double')
     _NUMERIC_TYPES = _FLOATING_POINT_NUMERIC_TYPES + _INTEGER_TYPES
     _STRING_TYPES = ('DOMString', 'ByteString', 'USVString')
-    _VALID_TYPES = ('any', 'boolean', 'object', 'symbol',
-                    'void') + _NUMERIC_TYPES + _STRING_TYPES
+    _TYPED_ARRAY_TYPES = ('Int8Array', 'Int16Array', 'Int32Array',
+                          'Uint8Array', 'Uint16Array', 'Uint32Array',
+                          'Uint8ClampedArray', 'Float32Array', 'Float64Array')
+    _BUFFER_SOURCE_TYPES = ('ArrayBuffer', 'DataView') + _TYPED_ARRAY_TYPES
+    _MISC_TYPES = ('any', 'boolean', 'object', 'symbol', 'void')
+    _VALID_TYPES = set(_NUMERIC_TYPES + _STRING_TYPES + _BUFFER_SOURCE_TYPES +
+                       _MISC_TYPES)
 
     def __init__(self,
                  name,
@@ -574,6 +601,22 @@ class SimpleType(IdlType):
     @property
     def is_string(self):
         return self._name in SimpleType._STRING_TYPES
+
+    @property
+    def is_buffer_source_type(self):
+        return self._name in SimpleType._BUFFER_SOURCE_TYPES
+
+    @property
+    def is_array_buffer(self):
+        return self._name == 'ArrayBuffer'
+
+    @property
+    def is_data_view(self):
+        return self._name == 'DataView'
+
+    @property
+    def is_typed_array_type(self):
+        return self._name in SimpleType._TYPED_ARRAY_TYPES
 
     @property
     def is_object(self):

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_JAVA_INTERFACES_IMPL_H_
 
 #include "content/public/browser/android/java_interfaces.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace content {
@@ -13,11 +14,11 @@ class RenderFrameHostImpl;
 class WebContents;
 
 void BindInterfaceRegistryForWebContents(
-    service_manager::mojom::InterfaceProviderRequest request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
     WebContents* web_contents);
 
 void BindInterfaceRegistryForRenderFrameHost(
-    service_manager::mojom::InterfaceProviderRequest request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
     RenderFrameHostImpl* render_frame_host);
 
 }  // namespace content

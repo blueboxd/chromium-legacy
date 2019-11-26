@@ -45,7 +45,7 @@ message ServiceWorkerRegistrationData {
   required bool is_active = 5;
   required bool has_fetch_handler = 6;
 
-  // Serialized by Time::ToInternalValue().
+  // Serialized by Time::FromDeltaSinceWindowsEpoch().
   required int64 last_update_check_time = 7;
 
   optional uint64 resources_total_size_bytes = 8;

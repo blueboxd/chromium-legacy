@@ -203,7 +203,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Stops the current session. Don't call directly unless there's no user on
   // the device. Use SessionTerminationManager::StopSession instead.
-  virtual void StopSession() = 0;
+  virtual void StopSession(login_manager::SessionStopReason reason) = 0;
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;

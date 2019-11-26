@@ -47,6 +47,8 @@ function setUp() {
     '  <cr-menu-item id="first" class="custom-appearance"></cr-menu-item>',
     '  <cr-menu-item id="second" class="custom-appearance"></cr-menu-item>',
     '</cr-menu>',
+    '<div id="focus-div" tabindex="1"/>',
+    '<button id="focus-button" tabindex="2"/>',
   ].join('');
 
   // Initialize cr.ui.Command with the <command>s.
@@ -63,6 +65,20 @@ function setUp() {
  */
 function sendMouseOver(targetQuery) {
   const event = new MouseEvent('mouseover', {
+    bubbles: true,
+    composed: true,  // Allow the event to bubble past shadow DOM root.
+  });
+  const target = document.querySelector(targetQuery);
+  assertTrue(!!target);
+  return target.dispatchEvent(event);
+}
+
+/**
+ * Send a 'mousedown' event to the element target of a query.
+ * @param {string} targetQuery Query to specify the element.
+ */
+function sendMouseDown(targetQuery) {
+  const event = new MouseEvent('mousedown', {
     bubbles: true,
     composed: true,  // Allow the event to bubble past shadow DOM root.
   });
@@ -347,4 +363,34 @@ function testShrinkWindowSizesTopMenu() {
   menubutton.showMenu(true);
   const shrunkPosition = topMenu.getBoundingClientRect();
   assertTrue(shrunkPosition.bottom < window.innerHeight);
+}
+
+/**
+ * Tests that mousedown the menu button grabs focus.
+ */
+function testFocusMenuButtonWithMouse() {
+  // Set focus on a div element.
+  //* @type {HTMLElement} */
+  const divElement = document.querySelector('#focus-div');
+  divElement.focus();
+
+  // Send mousedown event to the menu button.
+  sendMouseDown('#test-menu-button');
+
+  // Verify that the previously focused element still has focus.
+  assertTrue(document.hasFocus() && document.activeElement === divElement);
+
+  // Set focus on a button element.
+  //* @type {HTMLElement} */
+  const buttonElement = document.querySelector('#focus-button');
+  buttonElement.focus();
+
+  // Send mousedown event to the menu button.
+  sendMouseDown('#test-menu-button');
+
+  // Verify that the previously focused button has lost focus.
+  assertFalse(document.hasFocus() && document.activeElement === buttonElement);
+
+  // Verify the menu button has taken focus.
+  assertTrue(document.hasFocus() && document.activeElement === menubutton);
 }

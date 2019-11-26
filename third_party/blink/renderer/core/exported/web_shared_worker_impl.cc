@@ -183,8 +183,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
           AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
           creation_address_space,
           /*insecure_request_policy=*/kBlockAllMixedContent,
-          FetchClientSettingsObject::InsecureNavigationsSet(),
-          /*mixed_autoupgrade_opt_out=*/false);
+          FetchClientSettingsObject::InsecureNavigationsSet());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();

@@ -47,10 +47,13 @@ enum class SystemAppType {
 
 // The configuration options for a System App.
 struct SystemAppInfo {
-  SystemAppInfo();
-  explicit SystemAppInfo(const GURL& install_url);
+  SystemAppInfo(const std::string& name_for_logging, const GURL& install_url);
   SystemAppInfo(const SystemAppInfo& other);
   ~SystemAppInfo();
+
+  // A developer-friendly name for reporting metrics. Should follow UMA naming
+  // conventions.
+  std::string name_for_logging;
 
   // The URL that the System App will be installed from.
   GURL install_url;
@@ -78,6 +81,8 @@ class SystemWebAppManager {
 
   static constexpr char kInstallResultHistogramName[] =
       "Webapp.InstallResult.System";
+  static constexpr char kInstallDurationHistogramName[] =
+      "Webapp.InstallDuration.System";
 
   // Returns whether the given app type is enabled.
   static bool IsAppEnabled(SystemAppType type);
@@ -128,16 +133,27 @@ class SystemWebAppManager {
 
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+  void Shutdown();
+
  protected:
   virtual const base::Version& CurrentVersion() const;
   virtual const std::string& CurrentLocale() const;
 
  private:
-  void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,
+  void OnAppsSynchronized(const base::TimeTicks& install_start_time,
+                          std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
 
+  void RecordSystemWebAppInstallMetrics(
+      const std::map<GURL, InstallResultCode>& install_results,
+      const base::TimeDelta& install_duration) const;
+
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
+
+  bool shutting_down_ = false;
+
+  std::string install_result_per_profile_histogram_name_;
 
   UpdatePolicy update_policy_;
 

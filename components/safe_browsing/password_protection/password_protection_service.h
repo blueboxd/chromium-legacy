@@ -255,6 +255,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   }
 #endif
 
+  const std::vector<std::string>& saved_passwords_matching_domains() const {
+    return saved_passwords_matching_domains_;
+  }
 #if defined(UNIT_TEST)
   void set_saved_passwords_matching_domains(
       const std::vector<std::string>& matching_domains) {
@@ -387,10 +390,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
-
-  const std::vector<std::string>& saved_passwords_matching_domains() const {
-    return saved_passwords_matching_domains_;
-  }
 
  private:
   friend class PasswordProtectionServiceTest;

@@ -70,9 +70,8 @@ class PageActionIconView : public IconLabelBubbleView {
   // "call to action" color.
   void SetActive(bool active);
 
-  // Updates the visibility of the icon based on the associated model state,
-  // returns whether any change occurred.
-  virtual bool Update() = 0;
+  // Hide the icon on user input in progress and invokes UpdateImpl().
+  void Update();
 
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
@@ -162,6 +161,10 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Delegate accessor for subclasses.
   Delegate* delegate() const { return delegate_; }
+
+  // Update the icon and sets visibility appropriate for the associated model
+  // state.
+  virtual void UpdateImpl() = 0;
 
  private:
   void UpdateBorder();

@@ -58,7 +58,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
     return;
   partition_->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled()
       ->CreateLoaderAndStart(
-          mojo::MakeRequest(&url_loader_), -1, -1,
+          url_loader_.BindNewPipeAndPassReceiver(), -1, -1,
           network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
           client_receiver_.BindNewPipeAndPassRemote(),
           net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
@@ -121,7 +121,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Read() {
 
 int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
   client_receiver_.reset();
-  url_loader_ = nullptr;
+  url_loader_.reset();
   handle_watcher_.Cancel();
   handle_.reset();
   response_ = network::ResourceResponseHead();

@@ -63,7 +63,9 @@ class BackForwardCacheMetrics
     kConflictingBrowsingInstance = 20,
     kCacheFlushed = 21,
     kServiceWorkerVersionActivation = 22,
-    kMaxValue = kServiceWorkerVersionActivation,
+    kSessionRestored = 23,
+    kUnknown = 24,
+    kMaxValue = kUnknown,
   };
 
   using NotRestoredReasons =
@@ -153,7 +155,8 @@ class BackForwardCacheMetrics
   void CollectFeatureUsageFromSubtree(RenderFrameHostImpl* rfh,
                                       const url::Origin& main_frame_origin);
 
-  void RecordMetricsForHistoryNavigationCommit(NavigationRequest* navigation);
+  void RecordMetricsForHistoryNavigationCommit(
+      NavigationRequest* navigation) const;
 
   // Main frame document sequence number that identifies all NavigationEntries
   // this metrics object is associated with.

@@ -49,6 +49,10 @@ class SafeWebBundleParser {
   void SetWebBundleParserFactoryForTesting(
       mojo::Remote<mojom::WebBundleParserFactory> factory);
 
+  // Sets a callback to be called when the data_decoder service connection is
+  // terminated.
+  void SetDisconnectCallback(base::OnceClosure callback);
+
  private:
   mojom::WebBundleParserFactory* GetFactory();
   void OnDisconnect();
@@ -64,6 +68,7 @@ class SafeWebBundleParser {
   mojom::WebBundleParser::ParseMetadataCallback metadata_callback_;
   base::flat_map<size_t, mojom::WebBundleParser::ParseResponseCallback>
       response_callbacks_;
+  base::OnceClosure disconnect_callback_;
   size_t response_callback_next_id_ = 0;
   bool disconnected_ = true;
 

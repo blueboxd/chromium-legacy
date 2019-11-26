@@ -1856,8 +1856,9 @@ void RenderThreadImpl::DestroyView(int32_t view_id) {
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
-  service_manager::mojom::InterfaceProviderPtr interface_provider(
-      std::move(params->interface_bundle->interface_provider));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider(
+          std::move(params->interface_bundle->interface_provider));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker(
           std::move(params->interface_bundle->browser_interface_broker));

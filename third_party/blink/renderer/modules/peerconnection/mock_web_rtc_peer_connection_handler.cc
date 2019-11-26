@@ -389,7 +389,7 @@ MockWebRTCPeerConnectionHandler::RemoveTrack(RTCRtpSenderPlatform* sender) {
 scoped_refptr<webrtc::DataChannelInterface>
 MockWebRTCPeerConnectionHandler::CreateDataChannel(
     const WebString& label,
-    const RTCDataChannelInitPlatform&) {
+    const webrtc::DataChannelInit&) {
   return nullptr;
 }
 

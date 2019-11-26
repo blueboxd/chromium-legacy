@@ -26,6 +26,7 @@
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
+#include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
@@ -435,7 +436,9 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   void ShowSSLInterstitial(const GURL& support_url) override;
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state) override;
+  void ShowBlockedInterceptionInterstitial() override;
   void ReportNetworkConnectivity(base::OnceClosure callback) override;
+  bool HasBlockedInterception() const override;
 
  private:
   // Calls the |blocking_page_ready_callback_| if it's not null, else calls
@@ -543,6 +546,13 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
       std::move(ssl_cert_reporter_)));
 }
 
+void SSLErrorHandlerDelegateImpl::ShowBlockedInterceptionInterstitial() {
+  // Show interception blocking page. The interstitial owns the blocking page.
+  OnBlockingPageReady(new BlockedInterceptionBlockingPage(
+      web_contents_, cert_error_, request_url_, std::move(ssl_cert_reporter_),
+      ssl_info_));
+}
+
 void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
     base::OnceClosure callback) {
 #if defined(OS_ANDROID)
@@ -553,6 +563,11 @@ void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
 #endif
   if (callback)
     std::move(callback).Run();
+}
+
+bool SSLErrorHandlerDelegateImpl::HasBlockedInterception() const {
+  return ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_) ==
+         ssl_errors::ErrorInfo::CERT_KNOWN_INTERCEPTION_BLOCKED;
 }
 
 void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
@@ -702,6 +717,10 @@ SSLErrorHandler::~SSLErrorHandler() {
 
 void SSLErrorHandler::StartHandlingError() {
   RecordUMA(HANDLE_ALL);
+
+  if (delegate_->HasBlockedInterception()) {
+    return ShowBlockedInterceptionInterstitial();
+  }
 
   if (ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_) ==
       ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
@@ -893,6 +912,15 @@ void SSLErrorHandler::ShowDynamicInterstitial(
           g_config.Pointer()->IsEnterpriseManaged());
       return;
   }
+}
+
+void SSLErrorHandler::ShowBlockedInterceptionInterstitial() {
+  // Show a blocking page. The interstitial owns the blocking page.
+  RecordUMA(SHOW_BLOCKED_INTERCEPTION_INTERSTITIAL);
+  delegate_->ShowBlockedInterceptionInterstitial();
+  // Once an interstitial is displayed, no need to keep the handler around.
+  // This is the equivalent of "delete this".
+  web_contents_->RemoveUserData(UserDataKey());
 }
 
 void SSLErrorHandler::CommonNameMismatchHandlerCallback(

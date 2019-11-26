@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/manifest_update_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_file_handler_manager.h"
@@ -149,6 +150,7 @@ void WebAppProvider::Shutdown() {
   pending_app_manager_->Shutdown();
   install_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
+  system_web_app_manager_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {
@@ -241,12 +243,9 @@ void WebAppProvider::StartRegistryController() {
 void WebAppProvider::OnRegistryControllerReady() {
   DCHECK(!on_registry_ready_.is_signaled());
 
-  // TODO(crbug.com/877898): Port all these managers to support BMO. Start them.
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    external_web_app_manager_->Start();
-    web_app_policy_manager_->Start();
-    system_web_app_manager_->Start();
-  }
+  external_web_app_manager_->Start();
+  web_app_policy_manager_->Start();
+  system_web_app_manager_->Start();
   manifest_update_manager_->Start();
   file_handler_manager_->Start();
 
@@ -262,9 +261,9 @@ void WebAppProvider::CheckIsConnected() const {
 void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
-  WebAppInstallFinalizer::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
   SystemWebAppManager::RegisterProfilePrefs(registry);
+  WebAppPrefsUtilsRegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
 }
 

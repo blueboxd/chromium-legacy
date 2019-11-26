@@ -2193,6 +2193,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "blockMounts") {
+    chromeos::DBusThreadManager* dbus_thread_manager =
+        chromeos::DBusThreadManager::Get();
+    static_cast<chromeos::FakeCrosDisksClient*>(
+        dbus_thread_manager->GetCrosDisksClient())
+        ->BlockMount();
+    return;
+  }
+
   FAIL() << "Unknown test message: " << name;
 }
 

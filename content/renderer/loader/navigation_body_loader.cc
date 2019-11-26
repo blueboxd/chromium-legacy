@@ -330,8 +330,9 @@ void NavigationBodyLoader::
   // method calls from the remote. That causes the flakiness of some layout
   // tests.
   // TODO(minggang): The binding was executed after OnStartLoadingResponseBody
-  // originally (prior to the launch of NavigationImmediateResponse), we should
-  // try to put it back if all the webkit_layout_tests can pass in that way.
+  // originally (prior to passing the response body from the browser process
+  // during navigation), we should try to put it back if all the
+  // webkit_layout_tests can pass in that way.
   BindURLLoaderAndContinue();
 
   DCHECK(response_body_.is_valid());

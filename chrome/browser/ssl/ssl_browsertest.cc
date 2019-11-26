@@ -401,8 +401,8 @@ void ExpectInterstitialElementHidden(WebContents* tab,
             result);
 }
 
-void ExpectInterstitialHeading(WebContents* tab,
-                               const std::string& expected_heading) {
+void ExpectInterstitialText(WebContents* tab,
+                            const std::string& expected_heading) {
   content::RenderFrameHost* frame = tab->GetMainFrame();
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       frame, expected_heading));
@@ -417,19 +417,23 @@ void ExpectInterstitialHeading(WebContents* tab,
 // of different types of interstitials, not just the type being tested for.
 
 void ExpectCaptivePortalInterstitial(WebContents* tab) {
-  ExpectInterstitialHeading(tab, "Connect to");
+  ExpectInterstitialText(tab, "Connect to");
 }
 
 void ExpectSSLInterstitial(WebContents* tab) {
-  ExpectInterstitialHeading(tab, "Your connection is not private");
+  ExpectInterstitialText(tab, "Your connection is not private");
 }
 
 void ExpectMITMInterstitial(WebContents* tab) {
-  ExpectInterstitialHeading(tab, "An application is stopping");
+  ExpectInterstitialText(tab, "An application is stopping");
 }
 
 void ExpectBadClockInterstitial(WebContents* tab) {
-  ExpectInterstitialHeading(tab, "Your clock is");
+  ExpectInterstitialText(tab, "Your clock is");
+}
+
+void ExpectBlockedInterceptionInterstitial(WebContents* tab) {
+  ExpectInterstitialText(tab, "Anything you type, any pages you view");
 }
 
 // Runs |quit_callback| on the UI thread once a URL request has been seen.
@@ -1806,7 +1810,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCRLSetBlockedInterception) {
                                https_server_.GetURL("/ssl/google.html"));
 
   WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(
+  ASSERT_NO_FATAL_FAILURE(ExpectBlockedInterceptionInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents()));
 
   CheckAuthenticationBrokenState(
@@ -1915,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(CRLSetInterceptionSSLUITest,
       net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED | net::CERT_STATUS_REVOKED,
       security_state::DANGEROUS, AuthState::SHOWING_INTERSTITIAL);
 
-  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
+  ASSERT_NO_FATAL_FAILURE(ExpectBlockedInterceptionInterstitial(tab));
 
   // Expect there to be a proceed link, even for HSTS.
   int result = security_interstitials::CMD_ERROR;

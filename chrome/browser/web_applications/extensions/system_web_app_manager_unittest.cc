@@ -38,6 +38,9 @@ namespace web_app {
 
 namespace {
 
+const char kSettingsAppNameForLogging[] = "OSSettings";
+const char kDiscoverAppNameForLogging[] = "Discover";
+
 const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
 const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
 const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
@@ -128,8 +131,9 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
                                  ExternalInstallSource::kSystemInstalled);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -147,8 +151,12 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
-  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+  system_apps.emplace(
+      SystemAppType::DISCOVER,
+      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -169,7 +177,9 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   SimulatePreviouslyInstalledApp(kAppUrl3,
                                  ExternalInstallSource::kInternalDefault);
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -193,7 +203,9 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -204,7 +216,9 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
+  system_apps.emplace(
+      SystemAppType::DISCOVER,
+      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
 
@@ -237,7 +251,9 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -251,7 +267,9 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // Create another app. The version hasn't changed, but we should immediately
   // install anyway, as if a user flipped a chrome://flag. The first app won't
   // force reinstall.
-  system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
+  system_apps.emplace(
+      SystemAppType::DISCOVER,
+      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -299,7 +317,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   // Changing the install URL of a system app propagates even without a version
   // change.
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl3);
+  system_apps.find(SystemAppType::SETTINGS)->second.install_url = kAppUrl3;
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -320,7 +338,9 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
   system_web_app_manager()->SetSystemApps(system_apps);
 
   // Simulate first execution.
@@ -354,13 +374,30 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
 
 TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   base::HistogramTester histograms;
+  const std::string settings_app_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
+      kSettingsAppNameForLogging;
+  const std::string discover_app_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
+      kDiscoverAppNameForLogging;
+  // Profile category for Chrome OS testing environment is "Other".
+  const std::string profile_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) +
+      ".Profiles.Other";
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+    system_apps.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
     system_web_app_manager()->SetSystemApps(system_apps);
 
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 0);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 0);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 0);
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 0);
+
     system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
 
@@ -369,22 +406,76 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     histograms.ExpectBucketCount(
         SystemWebAppManager::kInstallResultHistogramName,
         InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 1);
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 1);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
+                                 InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 1);
   }
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
-    system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
+    system_apps.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+    system_apps.emplace(
+        SystemAppType::DISCOVER,
+        SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
+
     system_web_app_manager()->SetSystemApps(system_apps);
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kProfileDestroyed);
 
     system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
+
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 3);
     histograms.ExpectBucketCount(
         SystemWebAppManager::kInstallResultHistogramName,
         InstallResultCode::kProfileDestroyed, 2);
+    histograms.ExpectTotalCount(settings_app_install_result_histogram, 2);
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kProfileDestroyed, 1);
+    histograms.ExpectBucketCount(discover_app_install_result_histogram,
+                                 InstallResultCode::kProfileDestroyed, 1);
+  }
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps.emplace(
+        SystemAppType::SETTINGS,
+        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+    system_web_app_manager()->SetSystemApps(system_apps);
+    pending_app_manager()->SetInstallResultCode(
+        InstallResultCode::kProfileDestroyed);
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 2);
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 0);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 0);
+
+    system_web_app_manager()->Start();
+    system_web_app_manager()->Shutdown();
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kFailedShuttingDown, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kProfileDestroyed, 2);
+
+    histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 1);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 1);
+    // If install was interrupted by shutdown, do not report duration.
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallDurationHistogramName, 2);
   }
 }
 

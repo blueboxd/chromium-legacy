@@ -79,7 +79,7 @@ void HTMLTableElement::setCaption(HTMLTableCaptionElement* new_caption,
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const {
-  return ToHTMLTableSectionElement(Traversal<HTMLElement>::FirstChild(
+  return To<HTMLTableSectionElement>(Traversal<HTMLElement>::FirstChild(
       *this, HasHTMLTagName(html_names::kTheadTag)));
 }
 
@@ -107,7 +107,7 @@ void HTMLTableElement::setTHead(HTMLTableSectionElement* new_head,
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const {
-  return ToHTMLTableSectionElement(Traversal<HTMLElement>::FirstChild(
+  return To<HTMLTableSectionElement>(Traversal<HTMLElement>::FirstChild(
       *this, HasHTMLTagName(html_names::kTfootTag)));
 }
 
@@ -173,7 +173,7 @@ void HTMLTableElement::deleteCaption() {
 }
 
 HTMLTableSectionElement* HTMLTableElement::LastBody() const {
-  return ToHTMLTableSectionElement(Traversal<HTMLElement>::LastChild(
+  return To<HTMLTableSectionElement>(Traversal<HTMLElement>::LastChild(
       *this, HasHTMLTagName(html_names::kTbodyTag)));
 }
 

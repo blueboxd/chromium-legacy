@@ -491,9 +491,10 @@ void CorsURLLoader::StartNetworkRequest(
 
   // Binding |this| as an unretained pointer is safe because
   // |network_client_receiver_| shares this object's lifetime.
+  network_loader_.reset();
   network_loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
-      request_, network_client_receiver_.BindNewPipeAndPassRemote(),
+      network_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+      options_, request_, network_client_receiver_.BindNewPipeAndPassRemote(),
       traffic_annotation_);
   network_client_receiver_.set_disconnect_handler(
       base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));

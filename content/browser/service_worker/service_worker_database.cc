@@ -1493,8 +1493,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   out->version_id = data.version_id();
   out->is_active = data.is_active();
   out->has_fetch_handler = data.has_fetch_handler();
-  out->last_update_check =
-      base::Time::FromInternalValue(data.last_update_check_time());
+  out->last_update_check = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(data.last_update_check_time()));
   out->resources_total_size_bytes = data.resources_total_size_bytes();
   if (data.has_origin_trial_tokens()) {
     const ServiceWorkerOriginTrialInfo& info = data.origin_trial_tokens();
@@ -1571,7 +1571,8 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   data.set_is_active(registration.is_active);
   data.set_has_fetch_handler(registration.has_fetch_handler);
   data.set_last_update_check_time(
-      registration.last_update_check.ToInternalValue());
+      registration.last_update_check.ToDeltaSinceWindowsEpoch()
+          .InMicroseconds());
   data.set_script_response_time(
       registration.script_response_time.ToDeltaSinceWindowsEpoch()
           .InMicroseconds());

@@ -18,7 +18,7 @@ class PwaInstallView : public PageActionIconView {
 
  protected:
   // PageActionIconView:
-  bool Update() override;
+  void UpdateImpl() override;
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;

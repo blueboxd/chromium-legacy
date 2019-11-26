@@ -63,7 +63,6 @@ chrome.fileManagerPrivate = {
   token_: 'token',
   SourceRestriction: {
     ANY_SOURCE: 'any_source',
-    NATIVE_OR_DRIVE_SOURCE: 'native_or_drive_source',
     NATIVE_SOURCE: 'native_source',
   },
   addFileWatch: (entry, callback) => {

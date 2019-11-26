@@ -509,6 +509,13 @@ void D3D11VideoDecoder::DoDecode() {
     if (state_ == State::kError)
       return;
 
+    // If somebody cleared the buffer, then stop and post.
+    // TODO(liberato): It's unclear to me how this might happen.  If it does
+    // fix the crash, then more investigation is required.  Please see
+    // crbug.com/1012464 for more information.
+    if (!current_buffer_)
+      break;
+
     media::AcceleratedVideoDecoder::DecodeResult result =
         accelerated_video_decoder_->Decode();
     // TODO(liberato): switch + class enum.

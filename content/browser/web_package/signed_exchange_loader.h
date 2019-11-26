@@ -152,8 +152,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // This client is alive until OnHTTPExchangeFound() is called.
   mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
-  // This |url_loader_| is the pointer of the network URL loader.
-  network::mojom::URLLoaderPtr url_loader_;
+  // This |url_loader_| is the remote of the network URL loader.
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
   // This receiver connects |this| with the network URL loader.
   mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
       this};

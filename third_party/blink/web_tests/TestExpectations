@@ -5873,6 +5873,9 @@ crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
+# Sheriff 2019-11-26
+crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
+
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]

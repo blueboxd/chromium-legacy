@@ -21,6 +21,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -146,15 +147,19 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   if (service_)
     service_->AddObserver(this);
 
-  views::Label* message_body_label = CreateMessageBodyLabel(
-      service_
-          ? service_->GetWarningDetailText(password_type)
-          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
-
+  std::vector<size_t> placeholder_offsets;
   if (password_type.account_type() ==
       ReusedPasswordAccountType::SAVED_PASSWORD) {
-    CreateSavedPasswordReuseModalWarningDialog(message_body_label);
+    const base::string16 message_body =
+        service_->GetWarningDetailText(password_type, &placeholder_offsets);
+    CreateSavedPasswordReuseModalWarningDialog(message_body,
+                                               placeholder_offsets);
   } else {
+    views::Label* message_body_label = CreateMessageBodyLabel(
+        service_
+            ? service_->GetWarningDetailText(password_type,
+                                             &placeholder_offsets)
+            : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
     CreateGaiaPasswordReuseModalWarningDialog(message_body_label);
   }
 }
@@ -166,7 +171,8 @@ PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
 
 void PasswordReuseModalWarningDialog::
     CreateSavedPasswordReuseModalWarningDialog(
-        views::Label* message_body_label) {
+        const base::string16 message_body,
+        std::vector<size_t> placeholder_offsets) {
   SetLayoutManager(std::make_unique<BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* between_child_spacing */));
@@ -174,7 +180,27 @@ void PasswordReuseModalWarningDialog::
       SafeBrowsingCreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
   std::unique_ptr<views::View> content = SetupContent(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY));
-  content->AddChildView(std::move(message_body_label));
+
+  // Bold the domains in the message body label.
+  views::StyledLabel* const styled_message_body_label =
+      new views::StyledLabel(message_body, nullptr);
+  views::StyledLabel::RangeStyleInfo bold_style;
+  bold_style.text_style = STYLE_EMPHASIZED;
+  const std::vector<std::string>& domains =
+      service_->saved_passwords_matching_domains();
+  std::vector<base::string16> converted_domains;
+  for (size_t idx = 0; idx < placeholder_offsets.size() && idx < 3; idx++) {
+    converted_domains.push_back(base::UTF8ToUTF16(domains[idx]));
+  }
+  for (size_t idx = 0; idx < placeholder_offsets.size(); idx++) {
+    styled_message_body_label->AddStyleRange(
+        gfx::Range(
+            placeholder_offsets[idx],
+            placeholder_offsets[idx] + converted_domains.at(idx).length()),
+        bold_style);
+  }
+  styled_message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  content->AddChildView(std::move(styled_message_body_label));
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }

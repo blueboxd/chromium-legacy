@@ -144,6 +144,26 @@
 
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Check the open button is shown.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button:not([hidden])']);
+  };
+
+  /**
+   * Tests opening Quick View on a local downloads file in an open file dialog.
+   */
+  testcase.openQuickViewDialog = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.hello], [], {type: 'open-file'});
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Check the open button is not shown as we're in an open file dialog.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button[hidden]']);
   };
 
   /**

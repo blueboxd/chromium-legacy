@@ -1,21 +1,15 @@
 document
 ++link Name='Empty anchor'
-++++description Name='Empty anchor' IsControlElement=false
 ++description Name=' '
 ++link Name='Anchor with content'
-++++description Name='Anchor with content' IsControlElement=false
 ++description Name=' '
 ++link Name='Anchor with ID'
-++++description Name='Anchor with ID' IsControlElement=false
 ++description Name=' '
 ++link Name='Empty span'
-++++description Name='Empty span' IsControlElement=false
 ++description Name=' '
 ++link Name='Span with content'
-++++description Name='Span with content' IsControlElement=false
 ++description Name=' '
 ++link Name='Paragraph with content'
-++++description Name='Paragraph with content' IsControlElement=false
 ++group
 ++++link
 ++++description Name='After empty anchor'

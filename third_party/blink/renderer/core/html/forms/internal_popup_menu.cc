@@ -275,7 +275,7 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
       AddOption(context, *option);
     else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);
-    else if (auto* hr = ToHTMLHRElementOrNull(child))
+    else if (auto* hr = DynamicTo<HTMLHRElement>(child))
       AddSeparator(context, *hr);
   }
   context.FinishGroupIfNecessary();
@@ -545,7 +545,7 @@ void InternalPopupMenu::Update() {
       AddOption(context, *option);
     else if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(child))
       AddOptGroup(context, *optgroup);
-    else if (auto* hr = ToHTMLHRElementOrNull(child))
+    else if (auto* hr = DynamicTo<HTMLHRElement>(child))
       AddSeparator(context, *hr);
   }
   context.FinishGroupIfNecessary();

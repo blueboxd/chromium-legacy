@@ -559,8 +559,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   enclosing_node = enclosing_node->GetLowestAccessibleElement();
   DCHECK(enclosing_node);
 
-  while (ui::IsIgnored(enclosing_node->GetData()) ||
-         enclosing_node->GetData().role == ax::mojom::Role::kInlineTextBox) {
+  while (ui::IsIgnored(enclosing_node->GetData())) {
     AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
         AXPlatformNode::FromNativeViewAccessible(enclosing_node->GetParent()));
     DCHECK(parent);

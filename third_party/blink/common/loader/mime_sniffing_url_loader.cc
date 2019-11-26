@@ -300,7 +300,7 @@ void MimeSniffingURLLoader::SendReceivedBodyToClient() {
       break;
     case MOJO_RESULT_FAILED_PRECONDITION:
       // The pipe is closed unexpectedly. |this| should be deleted once
-      // URLLoaderPtr on the destination is released.
+      // URLLoader on the destination is released.
       Abort();
       return;
     case MOJO_RESULT_SHOULD_WAIT:
@@ -343,7 +343,7 @@ void MimeSniffingURLLoader::ForwardBodyToClient() {
       break;
     case MOJO_RESULT_FAILED_PRECONDITION:
       // The pipe is closed unexpectedly. |this| should be deleted once
-      // URLLoaderPtr on the destination is released.
+      // URLLoader on the destination is released.
       Abort();
       return;
     case MOJO_RESULT_SHOULD_WAIT:

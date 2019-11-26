@@ -48,8 +48,6 @@ inline bool IsHTMLUnknownElement(const HTMLElement& element) {
   return element.IsHTMLUnknownElement();
 }
 
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_UNKNOWN_ELEMENT_H_

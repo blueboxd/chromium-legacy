@@ -815,6 +815,12 @@ jumbo_component("views") {
       "accessibility/view_ax_platform_node_delegate_win.cc",
       "accessibility/view_ax_platform_node_delegate_win.h",
     ]
+    if (use_aura) {
+      sources += [
+        "accessibility/views_utilities_aura.cc",
+        "accessibility/views_utilities_aura.h",
+      ]
+    }
   }
 
   if (is_fuchsia) {

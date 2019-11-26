@@ -105,16 +105,18 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                                         ->GetProperties()
                                         .GetFetchClientSettingsObject();
   }
+  LocalFrame* frame = frame_request.OriginDocument()
+                          ? frame_request.OriginDocument()->GetFrame()
+                          : nullptr;
   MixedContentChecker::UpgradeInsecureRequest(
       frame_request.GetResourceRequest(), fetch_client_settings_object,
-      frame_request.OriginDocument(), frame_request.GetFrameType());
+      frame_request.OriginDocument(), frame_request.GetFrameType(),
+      frame ? frame->GetContentSettingsClient() : nullptr);
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
   bool initiator_frame_is_ad = false;
-  LocalFrame* frame = frame_request.OriginDocument()
-                          ? frame_request.OriginDocument()->GetFrame()
-                          : nullptr;
+
   if (frame) {
     is_opener_navigation = frame->Client()->Opener() == this;
     initiator_frame_has_download_sandbox_flag =

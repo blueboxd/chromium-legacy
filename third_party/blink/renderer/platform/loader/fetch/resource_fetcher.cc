@@ -1816,6 +1816,9 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       info->AddFinalTransferSize(
           encoded_data_length == -1 ? 0 : encoded_data_length);
 
+      auto receiver = Context().TakePendingWorkerTimingReceiver(
+          resource->GetResponse().RequestId());
+      info->SetWorkerTimingReceiver(std::move(receiver));
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
     }

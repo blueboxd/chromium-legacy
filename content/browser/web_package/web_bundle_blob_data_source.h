@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
@@ -37,11 +37,11 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
       int64_t content_length,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
-      BrowserContext::BlobContextGetter blob_context_getter,
-      mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-          pending_receiver);
+      BrowserContext::BlobContextGetter blob_context_getter);
   ~WebBundleBlobDataSource();
 
+  void AddReceiver(mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+                       pending_receiver);
   void ReadToDataPipe(uint64_t offset,
                       uint64_t length,
                       mojo::ScopedDataPipeProducerHandle producer_handle,
@@ -51,15 +51,15 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
   // This class lives on the IO thread.
   class BlobDataSourceCore : public data_decoder::mojom::BundleDataSource {
    public:
-    BlobDataSourceCore(
-        int64_t content_length,
-        network::mojom::URLLoaderClientEndpointsPtr endpoints,
-        BrowserContext::BlobContextGetter blob_context_getter,
-        mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-            pending_receiver);
+    BlobDataSourceCore(int64_t content_length,
+                       network::mojom::URLLoaderClientEndpointsPtr endpoints,
+                       BrowserContext::BlobContextGetter blob_context_getter);
     ~BlobDataSourceCore() override;
 
     void Start(mojo::ScopedDataPipeConsumerHandle outer_response_body);
+    void AddReceiver(
+        mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+            pending_receiver);
 
     void ReadToDataPipe(uint64_t offset,
                         uint64_t length,
@@ -89,7 +89,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
     const int64_t content_length_;
     // Used to keep the ongoing network request.
     network::mojom::URLLoaderClientEndpointsPtr endpoints_;
-    mojo::Receiver<data_decoder::mojom::BundleDataSource> receiver_;
+    mojo::ReceiverSet<data_decoder::mojom::BundleDataSource> receivers_;
     std::unique_ptr<storage::BlobBuilderFromStream> blob_builder_from_stream_;
 
     std::unique_ptr<storage::BlobDataHandle> blob_;
@@ -107,9 +107,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
       int64_t content_length,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
-      BrowserContext::BlobContextGetter blob_context_getter,
-      mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-          pending_receiver);
+      BrowserContext::BlobContextGetter blob_context_getter);
 
   static void SetCoreOnUI(base::WeakPtr<WebBundleBlobDataSource> weak_ptr,
                           base::WeakPtr<BlobDataSourceCore> weak_core,
@@ -124,6 +122,10 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
   void SetCoreOnUIImpl(base::WeakPtr<BlobDataSourceCore> weak_core,
                        std::unique_ptr<BlobDataSourceCore> core);
+
+  void AddReceiverImpl(
+      mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+          pending_receiver);
 
   // Used to call BlobDataSourceCore's method on the IO thread.
   base::WeakPtr<BlobDataSourceCore> weak_core_;

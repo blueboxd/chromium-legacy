@@ -125,9 +125,10 @@ void WorkerScriptLoader::MaybeStartLoader(
   if (single_request_factory) {
     // The interceptor elected to handle the request. Use it.
     url_loader_factory_ = std::move(single_request_factory);
+    url_loader_.reset();
     url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
-        resource_request_,
+        url_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+        options_, resource_request_,
         url_loader_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation_);
     // We continue in URLLoaderClient calls.
@@ -151,9 +152,11 @@ void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
   default_loader_used_ = true;
   url_loader_client_receiver_.reset();
   url_loader_factory_ = default_loader_factory_;
+  url_loader_.reset();
   url_loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
-      resource_request_, url_loader_client_receiver_.BindNewPipeAndPassRemote(),
+      url_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+      options_, resource_request_,
+      url_loader_client_receiver_.BindNewPipeAndPassRemote(),
       traffic_annotation_);
   // We continue in URLLoaderClient calls.
 }
@@ -277,7 +280,7 @@ void WorkerScriptLoader::OnComplete(
 bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle* response_body,
-    network::mojom::URLLoaderPtr* response_url_loader,
+    mojo::PendingRemote<network::mojom::URLLoader>* response_url_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>*
         response_client_receiver,
     blink::ThrottlingURLLoader* url_loader) {

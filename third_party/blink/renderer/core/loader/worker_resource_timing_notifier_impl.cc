@@ -64,34 +64,40 @@ WorkerResourceTimingNotifierImpl::WorkerResourceTimingNotifierImpl(
 
 void WorkerResourceTimingNotifierImpl::AddResourceTiming(
     const WebResourceTimingInfo& info,
-    const AtomicString& initiator_type) {
+    const AtomicString& initiator_type,
+    mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+        worker_timing_receiver) {
   if (task_runner_->RunsTasksInCurrentSequence()) {
     DCHECK(inside_execution_context_);
     if (inside_execution_context_->IsContextDestroyed())
       return;
     DCHECK(inside_execution_context_->IsContextThread());
     GetPerformance(*inside_execution_context_)
-        ->AddResourceTiming(info, initiator_type);
+        ->AddResourceTiming(info, initiator_type,
+                            std::move(worker_timing_receiver));
   } else {
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
         CrossThreadBindOnce(
             &WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming,
             WrapCrossThreadWeakPersistent(this), info,
-            initiator_type.GetString()));
+            initiator_type.GetString(), std::move(worker_timing_receiver)));
   }
 }
 
 void WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming(
     const WebResourceTimingInfo& info,
-    const String& initiator_type) {
+    const String& initiator_type,
+    mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+        worker_timing_receiver) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!outside_execution_context_ ||
       outside_execution_context_->IsContextDestroyed())
     return;
   DCHECK(outside_execution_context_->IsContextThread());
   GetPerformance(*outside_execution_context_)
-      ->AddResourceTiming(info, AtomicString(initiator_type));
+      ->AddResourceTiming(info, AtomicString(initiator_type),
+                          std::move(worker_timing_receiver));
 }
 
 void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) {

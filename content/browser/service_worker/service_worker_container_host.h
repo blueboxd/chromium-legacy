@@ -10,7 +10,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -139,6 +141,15 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // Can only be called when IsContainerForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
+  // For service worker window clients. Called when the navigation is ready to
+  // commit. Updates this host with information about the frame committed to.
+  // After this is called, is_response_committed() and is_execution_ready()
+  // return true.
+  void OnBeginNavigationCommit(
+      int container_process_id,
+      int container_frame_id,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+
   // For service worker clients. Sets |url_|, |site_for_cookies_| and
   // |top_frame_origin_|.
   void UpdateUrls(const GURL& url,
@@ -192,10 +203,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // a window client, the check involves the topmost frame url as well as
   // |scope|, and may display tab-level UI.
   // If non-empty, |script_url| is the script the service worker will run.
-  bool AllowServiceWorker(const GURL& scope,
-                          const GURL& script_url,
-                          int render_process_id,
-                          int frame_id);
+  bool AllowServiceWorker(const GURL& scope, const GURL& script_url);
 
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
@@ -257,6 +265,11 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
     return fetch_request_window_id_;
   }
 
+  void SetContainerProcessId(int process_id);
+
+  base::TimeTicks create_time() const { return create_time_; }
+  int process_id() const { return process_id_; }
+  int frame_id() const { return frame_id_; }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   const WebContentsGetter& web_contents_getter() const {
@@ -314,6 +327,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // right now because this gets reset on redirects, and potentially sites rely
   // on the GUID format.
   base::UnguessableToken fetch_request_window_id_;
+
+  // The time when the container host is created.
+  const base::TimeTicks create_time_;
+
+  // The identifier of the process where the container lives.
+  int process_id_ = ChildProcessHost::kInvalidUniqueID;
+
+  // The window's RenderFrame id, if this is a service worker window client.
+  // Otherwise, |MSG_ROUTING_NONE|.
+  int frame_id_ = MSG_ROUTING_NONE;
 
   // |is_parent_frame_secure_| is false if the container host is created for a
   // document whose parent frame is not secure. This doesn't mean the document

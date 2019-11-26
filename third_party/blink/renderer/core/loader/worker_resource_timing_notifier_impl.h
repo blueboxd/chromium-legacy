@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -37,14 +38,20 @@ class CORE_EXPORT WorkerResourceTimingNotifierImpl final
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WorkerResourceTimingNotifierImpl() override = default;
 
-  void AddResourceTiming(const WebResourceTimingInfo&,
-                         const AtomicString& initiator_type) override;
+  void AddResourceTiming(
+      const WebResourceTimingInfo&,
+      const AtomicString& initiator_type,
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver) override;
 
   void Trace(Visitor*) override;
 
  private:
-  void AddCrossThreadResourceTiming(const WebResourceTimingInfo&,
-                                    const String& initiator_type);
+  void AddCrossThreadResourceTiming(
+      const WebResourceTimingInfo&,
+      const String& initiator_type,
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -72,8 +79,11 @@ class CORE_EXPORT NullWorkerResourceTimingNotifier final
   NullWorkerResourceTimingNotifier() = default;
   ~NullWorkerResourceTimingNotifier() override = default;
 
-  void AddResourceTiming(const WebResourceTimingInfo&,
-                         const AtomicString& initiator_type) override {}
+  void AddResourceTiming(
+      const WebResourceTimingInfo&,
+      const AtomicString& initiator_type,
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullWorkerResourceTimingNotifier);

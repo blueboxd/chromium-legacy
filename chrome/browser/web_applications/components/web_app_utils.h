@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UTILS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UTILS_H_
 
+#include <string>
+
 class Profile;
 
 namespace base {
@@ -34,6 +36,11 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
     content::BrowserContext* context);
 
 base::FilePath GetWebAppsDirectory(Profile* profile);
+
+// The return value (profile categories) are used to report metrics. They are
+// persisted to logs and should not be renamed. If new names are added, update
+// tool/metrics/histograms/histograms.xml: "SystemWebAppProfileCategory".
+std::string GetProfileCategoryForLogging(Profile* profile);
 
 }  // namespace web_app
 

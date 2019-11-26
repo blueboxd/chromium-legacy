@@ -13,9 +13,9 @@
 #include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
@@ -145,8 +145,8 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   // intends to intercept the request.
   HandleRequest callback_;
 
-  // Binding to the URLLoader interface.
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  // Receiver for the URLLoader interface.
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
 
   // The owning client. Used for serving redirects.
   mojo::Remote<network::mojom::URLLoaderClient> client_;

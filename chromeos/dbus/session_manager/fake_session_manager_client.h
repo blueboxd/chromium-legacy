@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
 
   void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) override;
-  void StopSession() override;
+  void StopSession(login_manager::SessionStopReason reason) override;
   void StartDeviceWipe() override;
   void StartRemoteDeviceWipe(
       const enterprise_management::SignedData& signed_command) override;

@@ -146,7 +146,7 @@ class WebRequestProxyingURLLoaderFactory
 
     mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{
         this};
-    network::mojom::URLLoaderPtr target_loader_;
+    mojo::Remote<network::mojom::URLLoader> target_loader_;
 
     // NOTE: This is state which ExtensionWebRequestEventRouter needs to have
     // persisted across some phases of this request -- namely between

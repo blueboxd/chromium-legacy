@@ -63,3 +63,10 @@ gen-bundle \
   -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/network/not_found.html \
   -dir web_bundle_browsertest/ \
   -o web_bundle_browsertest_network_primary_url_not_found.wbn
+
+gen-bundle \
+  -version b1 \
+  -baseURL http://localhost:$NETWORK_TEST_PORT/web_bundle/path_test/ \
+  -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/path_test/in_scope/ \
+  -dir path_test_wbn/ \
+  -o path_test.wbn

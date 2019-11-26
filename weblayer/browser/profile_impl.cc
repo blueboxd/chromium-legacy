@@ -11,6 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/user_prefs/user_prefs.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -97,6 +103,8 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   BrowserContextImpl(const base::FilePath& path) : path_(path) {
     resource_context_ = std::make_unique<ResourceContextImpl>();
     content::BrowserContext::Initialize(this, path_);
+
+    CreateUserPrefService();
   }
 
   ~BrowserContextImpl() override { NotifyWillBeDestroyed(this); }
@@ -170,10 +178,32 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   }
 
  private:
+  // Creates a simple in-memory pref service.
+  // TODO(timvolodine): Investigate whether WebLayer needs persistent pref
+  // service.
+  void CreateUserPrefService() {
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    RegisterPrefs(pref_registry.get());
+
+    PrefServiceFactory pref_service_factory;
+    pref_service_factory.set_user_prefs(
+        base::MakeRefCounted<InMemoryPrefStore>());
+    user_pref_service_ = pref_service_factory.Create(pref_registry);
+    // Note: UserPrefs::Set also ensures that the user_pref_service_ has not
+    // been set previously.
+    user_prefs::UserPrefs::Set(this, user_pref_service_.get());
+  }
+
+  // Registers the preferences that WebLayer accesses.
+  void RegisterPrefs(PrefRegistrySimple* pref_registry) {
+    safe_browsing::RegisterProfilePrefs(pref_registry);
+  }
+
   base::FilePath path_;
   std::unique_ptr<ResourceContextImpl> resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
   SSLHostStateDelegateImpl ssl_host_state_delegate_;
+  std::unique_ptr<PrefService> user_pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
 };

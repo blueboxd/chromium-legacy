@@ -37,8 +37,6 @@ AssistantWebView::AssistantWebView(
   SetID(AssistantViewID::kWebView);
   InitLayout();
 
-  assistant_view_delegate_->AddObserver(this);
-
   // |AssistantWebView| has its own separate container when Assistant web
   // container is enabled. The container will handle its own lifecycle.
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
@@ -48,8 +46,6 @@ AssistantWebView::AssistantWebView(
 AssistantWebView::~AssistantWebView() {
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
     assistant_view_delegate_->RemoveUiModelObserver(this);
-
-  assistant_view_delegate_->RemoveObserver(this);
 }
 
 const char* AssistantWebView::GetClassName() const {
@@ -135,33 +131,6 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
       ->OnCaptionButtonPressed(id);
 }
 
-void AssistantWebView::OnDeepLinkReceived(
-    assistant::util::DeepLinkType type,
-    const std::map<std::string, std::string>& params) {
-  if (!assistant::util::IsWebDeepLinkType(type, params))
-    return;
-
-  RemoveContents();
-
-  if (!contents_factory_.is_bound()) {
-    assistant_view_delegate_->GetNavigableContentsFactoryForView(
-        contents_factory_.BindNewPipeAndPassReceiver());
-  }
-
-  auto contents_params = content::mojom::NavigableContentsParams::New();
-  contents_params->suppress_navigations = true;
-
-  contents_ = std::make_unique<content::NavigableContents>(
-      contents_factory_.get(), std::move(contents_params));
-
-  // We observe |contents_| so that we can handle events from the underlying
-  // web contents.
-  contents_->AddObserver(this);
-
-  // Navigate to the url associated with the received deep link.
-  contents_->Navigate(assistant::util::GetWebUrl(type, params).value());
-}
-
 void AssistantWebView::DidStopLoading() {
   // We should only respond to the |DidStopLoading| event the first time, to add
   // the view for the navigable contents to our view hierarchy and perform other
@@ -225,6 +194,28 @@ void AssistantWebView::OnUiVisibilityChanged(
   // to free the memory.
   if (new_visibility == AssistantVisibility::kClosed)
     RemoveContents();
+}
+
+void AssistantWebView::OpenUrl(const GURL& url) {
+  RemoveContents();
+
+  if (!contents_factory_.is_bound()) {
+    assistant_view_delegate_->GetNavigableContentsFactoryForView(
+        contents_factory_.BindNewPipeAndPassReceiver());
+  }
+
+  auto contents_params = content::mojom::NavigableContentsParams::New();
+  contents_params->suppress_navigations = true;
+
+  contents_ = std::make_unique<content::NavigableContents>(
+      contents_factory_.get(), std::move(contents_params));
+
+  // We observe |contents_| so that we can handle events from the underlying
+  // web contents.
+  contents_->AddObserver(this);
+
+  // Navigate to the specified |url|.
+  contents_->Navigate(url);
 }
 
 void AssistantWebView::OnUsableWorkAreaChanged(

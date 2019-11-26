@@ -4,7 +4,7 @@
 
 class SelectionMenuController {
   /**
-   * @param {!cr.ui.MenuButton} selectionMenuButton
+   * @param {!cr.ui.MultiMenuButton} selectionMenuButton
    * @param {!cr.ui.Menu} menu
    */
   constructor(selectionMenuButton, menu) {

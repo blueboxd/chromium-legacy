@@ -45,7 +45,7 @@ public class CustomTabStatusBarColorProvider {
         if (mUseTabThemeColor == useTabThemeColor) return;
 
         mUseTabThemeColor = useTabThemeColor;
-        mStatusBarColorController.updateStatusBarColor(mActivityTabProvider.get());
+        mStatusBarColorController.updateStatusBarColor();
     }
 
     int getBaseStatusBarColor(int fallbackStatusBarColor) {

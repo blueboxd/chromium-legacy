@@ -190,10 +190,6 @@ bool IsAllowedSource(storage::FileSystemType type,
 
     case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_SOURCE:
       return type == storage::kFileSystemTypeNativeLocal;
-
-    case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_OR_DRIVE_SOURCE:
-      return type == storage::kFileSystemTypeNativeLocal ||
-             type == storage::kFileSystemTypeDrive;
   }
 }
 

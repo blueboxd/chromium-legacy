@@ -432,7 +432,7 @@ PointerEventManager::ComputePointerEventTarget(
     Element* target = hit_test_tesult.InnerElement();
     if (target) {
       pointer_event_target.target_frame = target->GetDocument().GetFrame();
-      if (auto* canvas = ToHTMLCanvasElementOrNull(target)) {
+      if (auto* canvas = DynamicTo<HTMLCanvasElement>(target)) {
         HitTestCanvasResult* hit_test_canvas_result =
             canvas->GetControlAndIdIfHitRegionExists(
                 hit_test_tesult.PointInInnerNodeFrame());

@@ -40,7 +40,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
   // Bound to the lifetime of the underlying blink::WebSharedWorker instance.

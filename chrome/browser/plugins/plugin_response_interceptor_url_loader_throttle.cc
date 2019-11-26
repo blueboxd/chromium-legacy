@@ -19,6 +19,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -57,8 +58,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   // The string passed down to the original client with the response body.
   std::string payload = view_id;
 
-  network::mojom::URLLoaderPtr dummy_new_loader;
-  mojo::MakeRequest(&dummy_new_loader);
+  mojo::PendingRemote<network::mojom::URLLoader> dummy_new_loader;
+  ignore_result(dummy_new_loader.InitWithNewPipeAndPassReceiver());
   mojo::Remote<network::mojom::URLLoaderClient> new_client;
   mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
       new_client.BindNewPipeAndPassReceiver();
@@ -86,7 +87,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   status.decoded_body_length = len;
   new_client->OnComplete(status);
 
-  network::mojom::URLLoaderPtr original_loader;
+  mojo::PendingRemote<network::mojom::URLLoader> original_loader;
   mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
   delegate_->InterceptResponse(std::move(dummy_new_loader),
                                std::move(new_client_receiver), &original_loader,
@@ -104,7 +105,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->url = GURL(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id).spec() +
       base::GenerateGUID());
-  transferrable_loader->url_loader = original_loader.PassInterface();
+  transferrable_loader->url_loader = std::move(original_loader);
   transferrable_loader->url_loader_client = std::move(original_client);
   transferrable_loader->head = std::move(deep_copied_response);
   transferrable_loader->head->intercepted_by_plugin = true;

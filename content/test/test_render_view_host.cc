@@ -30,6 +30,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
@@ -280,10 +281,10 @@ bool TestRenderViewHost::CreateRenderView(
   RenderFrameHostImpl* main_frame =
       static_cast<RenderFrameHostImpl*>(GetMainFrame());
   if (main_frame && is_active()) {
-    service_manager::mojom::InterfaceProviderPtr
-        stub_interface_provider_request;
-    main_frame->BindInterfaceProviderRequest(
-        mojo::MakeRequest(&stub_interface_provider_request));
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        stub_interface_provider_remote;
+    main_frame->BindInterfaceProviderReceiver(
+        stub_interface_provider_remote.InitWithNewPipeAndPassReceiver());
     main_frame->SetRenderFrameCreated(true);
   }
 

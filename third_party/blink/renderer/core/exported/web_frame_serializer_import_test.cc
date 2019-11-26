@@ -32,7 +32,7 @@ TEST_F(WebFrameSerializerImportTest,
   import_resource.Complete("<style>div { color: blue; }</style>");
 
   Document* import_doc =
-      ToHTMLLinkElement(GetDocument().getElementById("link"))->import();
+      To<HTMLLinkElement>(GetDocument().getElementById("link"))->import();
   ASSERT_TRUE(import_doc);
   import_doc->GetStyleEngine().StyleSheetsForStyleSheetList(*import_doc);
 
@@ -55,7 +55,7 @@ TEST_F(WebFrameSerializerImportTest, AddStylesheetFromLinkElementInHtmlImport) {
   import_css.Complete("<style>div { color: red; }</style>");
 
   Document* import_doc =
-      ToHTMLLinkElement(GetDocument().getElementById("link"))->import();
+      To<HTMLLinkElement>(GetDocument().getElementById("link"))->import();
   ASSERT_TRUE(import_doc);
   import_doc->GetStyleEngine().StyleSheetsForStyleSheetList(*import_doc);
 

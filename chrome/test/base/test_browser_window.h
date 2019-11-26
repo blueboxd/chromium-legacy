@@ -100,7 +100,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
-  bool UpdatePageActionIcon(PageActionIconType type) override;
+  void UpdatePageActionIcon(PageActionIconType type) override {}
   autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override {}
   void SetFocusToLocationBar(bool is_user_initiated) override {}

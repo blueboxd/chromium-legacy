@@ -20,7 +20,7 @@ namespace util {
 namespace {
 
 const char kAllowedPaths[] = "allowedPaths";
-const char kNativeOrDrivePath[] = "nativeOrDrivePath";
+const char kNativePath[] = "nativePath";
 const char kAnyPath[] = "anyPath";
 const char kAnyPathOrUrl[] = "anyPathOrUrl";
 
@@ -115,13 +115,10 @@ GURL GetFileManagerMainPageUrlWithParams(
     arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
   }
 
-  // If the caller cannot handle Drive path, the file chooser dialog need to
-  // return resolved local native paths to the selected files.
   if (file_types) {
     switch (file_types->allowed_paths) {
       case ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH:
-      case ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH:
-        arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
+        arg_value.SetString(kAllowedPaths, kNativePath);
         break;
       case ui::SelectFileDialog::FileTypeInfo::ANY_PATH:
         arg_value.SetString(kAllowedPaths, kAnyPath);
@@ -131,7 +128,7 @@ GURL GetFileManagerMainPageUrlWithParams(
         break;
     }
   } else {
-    arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
+    arg_value.SetString(kAllowedPaths, kNativePath);
   }
 
   std::string json_args;

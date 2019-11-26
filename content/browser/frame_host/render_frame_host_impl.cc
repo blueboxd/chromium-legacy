@@ -177,6 +177,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -593,9 +594,9 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
     : public service_manager::mojom::InterfaceProvider {
  public:
   DroppedInterfaceRequestLogger(
-      service_manager::mojom::InterfaceProviderRequest request)
-      : binding_(this) {
-    binding_.Bind(std::move(request));
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   ~DroppedInterfaceRequestLogger() override {
@@ -617,7 +618,7 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
   }
 
  private:
-  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_{this};
   int num_dropped_requests_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DroppedInterfaceRequestLogger);
@@ -2009,8 +2010,10 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 
   DCHECK(GetProcess()->IsInitializedAndNotDead());
 
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  BindInterfaceProviderRequest(mojo::MakeRequest(&interface_provider));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  BindInterfaceProviderReceiver(
+      interface_provider.InitWithNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -2019,7 +2022,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
   params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New(
-      interface_provider.PassInterface(), std::move(browser_interface_broker));
+      std::move(interface_provider), std::move(browser_interface_broker));
 
   params->routing_id = routing_id_;
   params->previous_routing_id = previous_routing_id;
@@ -2217,8 +2220,8 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
 
 void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
-    service_manager::mojom::InterfaceProviderRequest
-        new_interface_provider_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        new_interface_provider_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
@@ -2231,7 +2234,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const blink::FrameOwnerElementType owner_type) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
-  DCHECK(new_interface_provider_provider_request.is_pending());
+  DCHECK(new_interface_provider_provider_receiver.is_valid());
   DCHECK(browser_interface_broker_receiver.is_valid());
   if (owner_type == blink::FrameOwnerElementType::kNone) {
     // Any child frame must have a HTMLFrameOwnerElement in its parent document
@@ -2248,12 +2251,12 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   if (!is_active() || !IsCurrent() || !render_frame_created_)
     return;
 
-  // |new_routing_id|, |new_interface_provider_provider_request|,
+  // |new_routing_id|, |new_interface_provider_provider_receiver|,
   // |browser_interface_broker_receiver| and |devtools_frame_token| were
   // generated on the browser's IO thread and not taken from the renderer
   // process.
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
-                        std::move(new_interface_provider_provider_request),
+                        std::move(new_interface_provider_provider_receiver),
                         std::move(browser_interface_broker_receiver), scope,
                         frame_name, frame_unique_name, is_created_by_script,
                         devtools_frame_token, frame_policy,
@@ -4231,15 +4234,15 @@ void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
                                            *overlay_routing_token_));
 }
 
-void RenderFrameHostImpl::BindInterfaceProviderRequest(
-    service_manager::mojom::InterfaceProviderRequest
-        interface_provider_request) {
+void RenderFrameHostImpl::BindInterfaceProviderReceiver(
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver) {
   DCHECK(!document_scoped_interface_provider_binding_.is_bound());
-  DCHECK(interface_provider_request.is_pending());
+  DCHECK(interface_provider_receiver.is_valid());
   document_scoped_interface_provider_binding_.Bind(
       FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
                                       GetProcess()->GetID(),
-                                      std::move(interface_provider_request)));
+                                      std::move(interface_provider_receiver)));
   document_scoped_interface_provider_binding_.SetFilter(
       std::make_unique<ActiveURLMessageFilter>(this));
 }
@@ -4420,10 +4423,10 @@ void RenderFrameHostImpl::CreateNewWindow(
     main_frame->frame_->BlockRequests();
   }
 
-  service_manager::mojom::InterfaceProviderPtrInfo
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
       main_frame_interface_provider_info;
-  main_frame->BindInterfaceProviderRequest(
-      mojo::MakeRequest(&main_frame_interface_provider_info));
+  main_frame->BindInterfaceProviderReceiver(
+      main_frame_interface_provider_info.InitWithNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -5781,8 +5784,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
       ->CreateFrame(routing_id_, frame_.BindNewPipeAndPassReceiver());
 
-  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
-  frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      remote_interfaces;
+  frame_->GetInterfaceProvider(
+      remote_interfaces.InitWithNewPipeAndPassReceiver());
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
@@ -6819,8 +6824,8 @@ class RenderFrameHostImpl::JavaInterfaceProvider
 
   JavaInterfaceProvider(
       const BindCallback& bind_callback,
-      service_manager::mojom::InterfaceProviderRequest request)
-      : bind_callback_(bind_callback), binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
+      : bind_callback_(bind_callback), receiver_(this, std::move(receiver)) {}
   ~JavaInterfaceProvider() override = default;
 
  private:
@@ -6831,7 +6836,7 @@ class RenderFrameHostImpl::JavaInterfaceProvider
   }
 
   const BindCallback bind_callback_;
-  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaInterfaceProvider);
 };
@@ -6842,14 +6847,15 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
       static_cast<RenderFrameHostAndroid*>(
           GetUserData(kRenderFrameHostAndroidKey));
   if (!render_frame_host_android) {
-    service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+        interface_provider_remote;
     java_interface_registry_ = std::make_unique<JavaInterfaceProvider>(
         base::BindRepeating(
             &RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
             weak_ptr_factory_.GetWeakPtr()),
-        mojo::MakeRequest(&interface_provider_ptr));
+        interface_provider_remote.InitWithNewPipeAndPassReceiver());
     render_frame_host_android =
-        new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
+        new RenderFrameHostAndroid(this, std::move(interface_provider_remote));
     SetUserData(kRenderFrameHostAndroidKey,
                 base::WrapUnique(render_frame_host_android));
   }
@@ -6858,8 +6864,9 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
 
 service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
   if (!java_interfaces_) {
-    service_manager::mojom::InterfaceProviderPtr provider;
-    BindInterfaceRegistryForRenderFrameHost(mojo::MakeRequest(&provider), this);
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
+    BindInterfaceRegistryForRenderFrameHost(
+        provider.InitWithNewPipeAndPassReceiver(), this);
     java_interfaces_.reset(new service_manager::InterfaceProvider);
     java_interfaces_->Bind(std::move(provider));
   }
@@ -7457,16 +7464,16 @@ void RenderFrameHostImpl::DidCommitNavigation(
   DCHECK(document_scoped_interface_provider_binding_.is_bound());
   if (interface_params) {
     // As a general rule, expect the RenderFrame to have supplied the
-    // request end of a new InterfaceProvider connection that will be used by
-    // the new document to issue interface requests to access RenderFrameHost
+    // receiver end of a new InterfaceProvider connection that will be used by
+    // the new document to issue interface receivers to access RenderFrameHost
     // services.
     auto interface_provider_request_of_previous_document =
         document_scoped_interface_provider_binding_.Unbind();
     dropped_interface_request_logger_ =
         std::make_unique<DroppedInterfaceRequestLogger>(
             std::move(interface_provider_request_of_previous_document));
-    BindInterfaceProviderRequest(
-        std::move(interface_params->interface_provider_request));
+    BindInterfaceProviderReceiver(
+        std::move(interface_params->interface_provider_receiver));
     broker_receiver_.reset();
     BindBrowserInterfaceBrokerReceiver(
         std::move(interface_params->browser_interface_broker_receiver));

@@ -96,6 +96,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     WWW_MISMATCH_FOUND_IN_SAN = 10,
     SHOW_MITM_SOFTWARE_INTERSTITIAL = 11,
     OS_REPORTS_CAPTIVE_PORTAL = 12,
+    SHOW_BLOCKED_INTERCEPTION_INTERSTITIAL = 13,
     SSL_ERROR_HANDLER_EVENT_COUNT
   };
 
@@ -121,7 +122,9 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     virtual void ShowBadClockInterstitial(
         const base::Time& now,
         ssl_errors::ClockState clock_state) = 0;
+    virtual void ShowBlockedInterceptionInterstitial() = 0;
     virtual void ReportNetworkConnectivity(base::OnceClosure callback) = 0;
+    virtual bool HasBlockedInterception() const = 0;
   };
 
   // Entry point for the class. All parameters except
@@ -191,6 +194,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state);
   void ShowDynamicInterstitial(const DynamicInterstitialInfo interstitial);
+  void ShowBlockedInterceptionInterstitial();
 
   // Gets the result of whether the suggested URL is valid. Displays
   // common name mismatch interstitial or ssl interstitial accordingly.

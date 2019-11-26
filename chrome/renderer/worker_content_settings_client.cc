@@ -113,6 +113,17 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
   return true;
 }
 
+bool WorkerContentSettingsClient::ShouldAutoupgradeMixedContent() {
+  if (content_setting_rules_) {
+    for (const auto& rule : content_setting_rules_->mixed_content_rules) {
+      if (rule.primary_pattern.Matches(top_frame_origin_.GetURL())) {
+        return rule.GetContentSetting() != CONTENT_SETTING_ALLOW;
+      }
+    }
+  }
+  return false;
+}
+
 bool WorkerContentSettingsClient::AllowStorageAccess(
     chrome::mojom::ContentSettingsManager::StorageType storage_type) {
   if (is_unique_origin_)

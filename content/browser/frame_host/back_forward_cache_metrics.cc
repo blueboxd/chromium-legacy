@@ -194,7 +194,7 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
-    NavigationRequest* navigation) {
+    NavigationRequest* navigation) const {
   HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotRestored;
   if (navigation->IsServedFromBackForwardCache()) {
     outcome = HistoryNavigationOutcome::kRestored;
@@ -207,8 +207,29 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
                             outcome);
 
+  NotRestoredReasons not_restored_reasons = not_restored_reasons_;
+
+  DCHECK(!navigation->IsServedFromBackForwardCache() ||
+         not_restored_reasons.none());
+  if (not_restored_reasons.none() &&
+      !navigation->IsServedFromBackForwardCache()) {
+    // |last_committed_main_frame_navigation_id_| is -1 when navigation history
+    // has never been initialized. This can happen only when the session history
+    // has been restored.
+    if (last_committed_main_frame_navigation_id_ == -1) {
+      not_restored_reasons.set(
+          static_cast<size_t>(NotRestoredReason::kSessionRestored));
+    }
+    // This should not happen, but record this as an 'unknown' reason just in
+    // case.
+    if (not_restored_reasons.none()) {
+      not_restored_reasons.set(
+          static_cast<size_t>(NotRestoredReason::kUnknown));
+    }
+  }
+
   for (int i = 0; i <= static_cast<int>(NotRestoredReason::kMaxValue); i++) {
-    if (!not_restored_reasons_.test(static_cast<size_t>(i)))
+    if (!not_restored_reasons.test(static_cast<size_t>(i)))
       continue;
     DCHECK(!navigation->IsServedFromBackForwardCache());
     NotRestoredReason reason = static_cast<NotRestoredReason>(i);

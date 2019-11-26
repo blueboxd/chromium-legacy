@@ -680,8 +680,8 @@ TEST_F(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
 
-  EXPECT_FALSE(
-      host->AllowServiceWorker(GURL("https://www.example.com/scope"), GURL()));
+  EXPECT_FALSE(host->container_host()->AllowServiceWorker(
+      GURL("https://www.example.com/scope"), GURL()));
 
   ASSERT_EQ(1ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/scope"),

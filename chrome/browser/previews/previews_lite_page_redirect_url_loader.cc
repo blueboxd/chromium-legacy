@@ -35,7 +35,6 @@ PreviewsLitePageRedirectURLLoader::PreviewsLitePageRedirectURLLoader(
     HandleRequest callback)
     : modified_resource_request_(tentative_resource_request),
       callback_(std::move(callback)),
-      binding_(this),
       origin_probe_finished_successfully_(false),
       litepage_request_finished_successfully_(false) {
   pref_service_ = browser_context
@@ -309,9 +308,9 @@ void PreviewsLitePageRedirectURLLoader::StartHandlingRedirect(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(receiver));
-  binding_.set_connection_error_handler(
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   client_.Bind(std::move(client));
@@ -355,9 +354,9 @@ void PreviewsLitePageRedirectURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void PreviewsLitePageRedirectURLLoader::OnConnectionClosed() {
-  // This happens when content cancels the navigation. Close the network request
+  // This happens when content cancels the navigation. Reset the network request
   // and client handle and destroy |this|.
-  binding_.Close();
+  receiver_.reset();
   client_.reset();
   delete this;
 }

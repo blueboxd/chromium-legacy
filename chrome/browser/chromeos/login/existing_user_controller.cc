@@ -880,7 +880,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&SessionTerminationManager::StopSession,
-                       base::Unretained(SessionTerminationManager::Get())),
+                       base::Unretained(SessionTerminationManager::Get()),
+                       login_manager::SessionStopReason::OWNER_REQUIRED),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();

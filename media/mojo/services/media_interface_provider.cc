@@ -7,8 +7,8 @@
 namespace media {
 
 MediaInterfaceProvider::MediaInterfaceProvider(
-    service_manager::mojom::InterfaceProviderRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MediaInterfaceProvider::~MediaInterfaceProvider() = default;
 

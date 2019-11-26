@@ -343,11 +343,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                        base::DoNothing());
   }
 
-  void StopSession() override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerStopSession);
+  void StopSession(login_manager::SessionStopReason reason) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStopSessionWithReason);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString("");  // Unique ID is deprecated
+    writer.AppendUint32(static_cast<uint32_t>(reason));
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());

@@ -570,11 +570,15 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
       # '--no-crunch',
   ]
   pool = multiprocessing.pool.ThreadPool(10)
-  def compile_partial(directory):
-    dirname = os.path.basename(directory)
-    partial_path = os.path.join(partials_dir, dirname + '.zip')
-    compile_command = (partial_compile_command +
-                       ['--dir', directory, '-o', partial_path])
+
+  def compile_partial(params):
+    index, dep_path = params
+    basename = os.path.basename(dep_path)
+    unique_name = '{}_{}'.format(index, basename)
+    partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
+    compile_command = (
+        partial_compile_command + ['--dir', dep_path, '-o', partial_path])
+
     # There are resources targeting API-versions lower than our minapi. For
     # various reasons it's easier to let aapt2 ignore these than for us to
     # remove them from our build (e.g. it's from a 3rd party library).
@@ -586,12 +590,13 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
 
     # Sorting the files in the partial ensures deterministic output from the
     # aapt2 link step which uses order of files in the partial.
-    sorted_partial_path = os.path.join(partials_dir, dirname + '.sorted.zip')
+    sorted_partial_path = os.path.join(partials_dir,
+                                       unique_name + '.sorted.zip')
     _SortZip(partial_path, sorted_partial_path)
 
     return sorted_partial_path
 
-  partials = pool.map(compile_partial, dep_subdirs)
+  partials = pool.map(compile_partial, enumerate(dep_subdirs))
   pool.close()
   pool.join()
   return partials
@@ -935,11 +940,11 @@ def main(args):
   debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
   if debug_temp_resources_dir:
     path = os.path.join(debug_temp_resources_dir, os.path.basename(path))
-    build_utils.DeleteDirectory(path)
   else:
     # Use a deterministic temp directory since .pb files embed the absolute
     # path of resources: crbug.com/939984
     path = path + '.tmpdir'
+  build_utils.DeleteDirectory(path)
   build_utils.MakeDirectory(path)
 
   with resource_utils.BuildContext(

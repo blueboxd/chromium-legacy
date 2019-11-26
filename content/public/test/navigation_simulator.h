@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -270,15 +271,17 @@ class NavigationSimulator {
   virtual void SetIsSignedExchangeInnerResponse(
       bool is_signed_exchange_inner_response) = 0;
 
-  // Sets the InterfaceProvider interface request to pass in as an argument to
+  // Sets the InterfaceProvider interface receiver to pass in as an argument to
   // DidCommitProvisionalLoad for cross-document navigations. If not called,
-  // a stub will be passed in (which will never receive any interface requests).
+  // a stub will be passed in (which will never receive any interface
+  // receivers).
   //
   // This interface connection would normally be created by the RenderFrame,
   // with the client end bound to |remote_interfaces_| to allow the new document
   // to access services exposed by the RenderFrameHost.
-  virtual void SetInterfaceProviderRequest(
-      service_manager::mojom::InterfaceProviderRequest request) = 0;
+  virtual void SetInterfaceProviderReceiver(
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          receiver) = 0;
 
   // Provides the contents mime type to be set at commit. It should be
   // specified before calling |Commit|.

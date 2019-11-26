@@ -14,7 +14,6 @@
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -114,7 +113,7 @@ class PreviewsLitePageRedirectServingURLLoader
       mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client);
 
   // The network URLLoader that fetches the LitePage URL and its receiver.
-  network::mojom::URLLoaderPtr network_url_loader_;
+  mojo::Remote<network::mojom::URLLoader> network_url_loader_;
   mojo::Receiver<network::mojom::URLLoaderClient> url_loader_receiver_{this};
 
   // When a result is determined, this callback should be run with the
@@ -136,8 +135,8 @@ class PreviewsLitePageRedirectServingURLLoader
   // The timer that triggers a timeout when the request takes too long.
   base::OneShotTimer timeout_timer_;
 
-  // Forwarding client binding.
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  // Forwarding client receiver.
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
   mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
   SEQUENCE_CHECKER(sequence_checker_);

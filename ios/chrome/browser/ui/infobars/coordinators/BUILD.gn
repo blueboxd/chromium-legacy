@@ -44,6 +44,7 @@ source_set("coordinators") {
 source_set("translate_public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_translate_language_selection_consumer.h",
     "infobar_translate_modal_consumer.h",
   ]
   deps = []
@@ -69,6 +70,7 @@ source_set("translate") {
     "//ios/chrome/browser/ui/infobars:public",
     "//ios/chrome/browser/ui/infobars/banners",
     "//ios/chrome/browser/ui/infobars/modals",
+    "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/table_view",
     "//ui/base",
   ]

@@ -223,10 +223,7 @@ enum SourceRestriction {
   any_source,
 
   // Allows source with native local file system only.
-  native_source,
-
-  // Allows native source and Drive source.
-  native_or_drive_source
+  native_source
 };
 
 enum CrostiniEventType {

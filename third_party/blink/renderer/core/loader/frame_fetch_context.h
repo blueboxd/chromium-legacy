@@ -109,6 +109,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;
 
+  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+  TakePendingWorkerTimingReceiver(int request_id) override;
+
  private:
   class FrameConsoleLogger;
   friend class FrameFetchContextTest;

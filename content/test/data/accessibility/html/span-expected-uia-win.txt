@@ -13,30 +13,24 @@ document
 ++++description Name='E1. Eat'
 ++++description Name=' '
 ++++link Name='space'
-++++++description Name='space' IsControlElement=false
 ++group
 ++++description Name='E2. Eat'
 ++++description Name=' '
 ++++link Name='space'
-++++++description Name='space' IsControlElement=false
 ++group
 ++++description Name='E3. Eat'
 ++++description Name=' '
 ++++link Name='space'
-++++++description Name='space' IsControlElement=false
 ++group
 ++++link Name='E4. Eat'
-++++++description Name='E4. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
 ++group
 ++++link Name='E5. Eat'
-++++++description Name='E5. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
 ++group
 ++++link Name='E6. Eat'
-++++++description Name='E6. Eat' IsControlElement=false
 ++++description Name=' '
 ++++description Name='space'
 ++group

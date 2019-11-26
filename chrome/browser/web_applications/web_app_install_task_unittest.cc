@@ -5,6 +5,8 @@
 #include "chrome/browser/web_applications/web_app_install_task.h"
 
 #include <memory>
+#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -808,12 +810,12 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
 TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
   PrepareTestAppInstall();
   test_install_finalizer().SetNextFinalizeInstallResult(
-      AppId(), InstallResultCode::kFailedUnknownReason);
+      AppId(), InstallResultCode::kBookmarkExtensionInstallError);
 
   InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
 
   EXPECT_TRUE(result.app_id.empty());
-  EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
+  EXPECT_EQ(InstallResultCode::kBookmarkExtensionInstallError, result.code);
 
   EXPECT_EQ(0u, test_shortcut_manager().num_create_shortcuts_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
@@ -1249,7 +1251,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
         url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
 
     InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
-    EXPECT_EQ(InstallResultCode::kInstallURLLoadFailed, result.code);
+    EXPECT_EQ(InstallResultCode::kInstallURLLoadTimeOut, result.code);
     EXPECT_TRUE(result.app_id.empty());
     EXPECT_FALSE(registrar().GetAppById(app_id));
   }

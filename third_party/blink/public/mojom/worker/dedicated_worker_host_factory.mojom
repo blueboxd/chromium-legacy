@@ -31,11 +31,12 @@ interface DedicatedWorkerHostFactoryClient {
   OnWorkerHostCreated(
       // Used for accessing services from the worker.
       // TODO(crbug.com/990845): remove when no longer used.
-      service_manager.mojom.InterfaceProvider interface_provider,
+      pending_remote<service_manager.mojom.InterfaceProvider>
+          interface_provider,
       // Used for accessing services from the worker.
       // should replace the |interface_provider| above
       pending_remote<blink.mojom.BrowserInterfaceBroker>
-       browser_interface_broker);
+          browser_interface_broker);
 
   // Called when the worker host started loading the main worker script. This
   // is called after OnWorkerHostCreated(). This is never called when
@@ -87,9 +88,10 @@ interface DedicatedWorkerHostFactory {
   CreateWorkerHost(
       url.mojom.Origin origin,
       // TODO(crbug.com/990845): remove when no longer used.
-      service_manager.mojom.InterfaceProvider& worker_interface_provider,
+      pending_receiver<service_manager.mojom.InterfaceProvider>
+          worker_interface_provider,
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
-        browser_interface_broker,
+          browser_interface_broker,
       pending_receiver<DedicatedWorkerHost> host);
 
   // PlzDedicatedWorker:

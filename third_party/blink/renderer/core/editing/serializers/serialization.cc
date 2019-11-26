@@ -500,20 +500,21 @@ static void FillContainerFromString(ContainerNode* paragraph,
 
 bool IsPlainTextMarkup(Node* node) {
   DCHECK(node);
-  if (!IsHTMLDivElement(*node))
+  auto* element = DynamicTo<HTMLDivElement>(*node);
+  if (!element)
     return false;
 
-  HTMLDivElement& element = ToHTMLDivElement(*node);
-  if (!element.hasAttributes())
+  if (!element->hasAttributes())
     return false;
 
-  if (element.HasOneChild())
-    return element.firstChild()->IsTextNode() ||
-           element.firstChild()->hasChildren();
+  if (element->HasOneChild()) {
+    return element->firstChild()->IsTextNode() ||
+           element->firstChild()->hasChildren();
+  }
 
-  return element.HasChildCount(2) &&
-         IsTabHTMLSpanElementTextNode(element.firstChild()->firstChild()) &&
-         element.lastChild()->IsTextNode();
+  return element->HasChildCount(2) &&
+         IsTabHTMLSpanElementTextNode(element->firstChild()->firstChild()) &&
+         element->lastChild()->IsTextNode();
 }
 
 static bool ShouldPreserveNewline(const EphemeralRange& range) {

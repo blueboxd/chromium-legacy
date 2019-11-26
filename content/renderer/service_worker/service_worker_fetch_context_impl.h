@@ -70,6 +70,8 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   blink::WebString GetAcceptLanguages() const override;
+  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
+      int request_id) override;
 
  private:
   ~ServiceWorkerFetchContextImpl() override;

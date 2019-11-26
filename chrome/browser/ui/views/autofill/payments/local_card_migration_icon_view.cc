@@ -58,9 +58,9 @@ views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
   }
 }
 
-bool LocalCardMigrationIconView::Update() {
+void LocalCardMigrationIconView::UpdateImpl() {
   if (!GetWebContents())
-    return false;
+    return;
 
   // |controller| may be nullptr due to lazy initialization.
   ManageMigrationUiController* controller = GetController();
@@ -121,10 +121,6 @@ bool LocalCardMigrationIconView::Update() {
     // Handle corner cases where users navigate away or close the tab.
     UnpauseAnimation();
   }
-
-  // Need to return true since in both MIGRATION_RESULT_PENDING and
-  // MIGRATION_FINISHED cases the credit card icon is visible.
-  return true;
 }
 
 void LocalCardMigrationIconView::OnExecuting(

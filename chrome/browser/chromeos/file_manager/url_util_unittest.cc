@@ -61,7 +61,7 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   // With DriveFS, Drive is always allowed where native paths are.
   EXPECT_EQ(base::StringPrintf(
                 "{\n"
-                "   \"allowedPaths\": \"nativeOrDrivePath\",\n"
+                "   \"allowedPaths\": \"nativePath\",\n"
                 "   \"currentDirectoryURL\": "
                 "\"filesystem:chrome-extension://abc/Downloads/\",\n"
                 "   \"defaultExtension\": \"txt\",\n"

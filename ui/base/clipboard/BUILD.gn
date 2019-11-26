@@ -6,17 +6,34 @@ import("///ui/ozone/ozone.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("clipboard_types") {
   output_name = "ui_base_clipboard_types"
   sources = [
     "clipboard_buffer.h",
     "clipboard_constants.cc",
     "clipboard_constants.h",
-    "clipboard_constants_mac.mm",
-    "clipboard_format_type_android.cc",
-    "clipboard_format_type_mac.mm",
-    "clipboard_format_type_win.cc",
   ]
+
+  if (is_android) {
+    sources += [ "clipboard_format_type_android.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "clipboard_constants_mac.mm",
+      "clipboard_format_type_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [ "clipboard_format_type_win.cc" ]
+  }
 
   if (!is_ios) {
     if (use_aura) {
@@ -49,24 +66,39 @@ jumbo_component("clipboard") {
   sources = [
     "clipboard.cc",
     "clipboard.h",
-    "clipboard_android.cc",
-    "clipboard_android.h",
-    "clipboard_mac.h",
-    "clipboard_mac.mm",
     "clipboard_monitor.cc",
     "clipboard_monitor.h",
     "clipboard_observer.h",
-    "clipboard_util_mac.h",
-    "clipboard_util_mac.mm",
-    "clipboard_util_win.cc",
-    "clipboard_util_win.h",
-    "clipboard_win.cc",
-    "clipboard_win.h",
     "custom_data_helper.cc",
     "custom_data_helper.h",
     "scoped_clipboard_writer.cc",
     "scoped_clipboard_writer.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "clipboard_android.cc",
+      "clipboard_android.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "clipboard_mac.h",
+      "clipboard_mac.mm",
+      "clipboard_util_mac.h",
+      "clipboard_util_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "clipboard_util_win.cc",
+      "clipboard_util_win.h",
+      "clipboard_win.cc",
+      "clipboard_win.h",
+    ]
+  }
 
   defines = [ "IS_BASE_CLIPBOARD_IMPL" ]
 
@@ -163,11 +195,15 @@ jumbo_source_set("clipboard_test_support") {
 source_set("clipboard_test") {
   testonly = true
 
+  sources = []
   output_name = "ui_base_clipboard_test"
-  sources = [
-    "clipboard_mac_unittest.mm",
-    "clipboard_util_mac_unittest.mm",
-  ]
+
+  if (is_mac) {
+    sources += [
+      "clipboard_mac_unittest.mm",
+      "clipboard_util_mac_unittest.mm",
+    ]
+  }
 
   if (!is_ios) {
     sources += [

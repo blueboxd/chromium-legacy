@@ -586,7 +586,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void onInitialLayoutInflationComplete() {
         mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
 
-        getStatusBarColorController().updateStatusBarColor(true);
+        getStatusBarColorController().updateStatusBarColor();
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);

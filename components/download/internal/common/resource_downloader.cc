@@ -172,7 +172,7 @@ void ResourceDownloader::Start(
 
   // Set up the URLLoader
   url_loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_),
+      url_loader_.BindNewPipeAndPassReceiver(),
       0,  // routing_id
       0,  // request_id
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse,

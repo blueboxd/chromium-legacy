@@ -226,7 +226,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     base::HistogramTester histogram_tester;
 
     test_pending_app_manager_->SetInstallResultCode(
-        web_app::InstallResultCode::kFailedUnknownReason);
+        web_app::InstallResultCode::kGetWebApplicationInfoFailed);
 
     setup_controller_->SetUpApp(
         app_url, install_url,

@@ -98,8 +98,8 @@ class MODULES_EXPORT FetchEvent final
   Member<PreloadResponseProperty> preload_response_property_;
   std::unique_ptr<WebURLResponse> preload_response_;
   Member<DataPipeBytesConsumer::CompletionNotifier> body_completion_notifier_;
-  // This is currently always null while https://crbug.com/900700 is being
-  // implemented.
+  // This is currently null for navigation while https://crbug.com/900700 is
+  // being implemented.
   mojo::Remote<mojom::blink::WorkerTimingContainer> worker_timing_remote_;
   String client_id_;
   String resulting_client_id_;

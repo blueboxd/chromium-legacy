@@ -27,6 +27,7 @@ enum class DeepLinkType {
   kLists,
   kNotes,
   kOnboarding,
+  kProactiveSuggestions,
   kQuery,
   kReminders,
   kScreenshot,
@@ -36,26 +37,37 @@ enum class DeepLinkType {
 };
 
 // Enumeration of deep link parameters.
+// Examples of usage in comments. Note that actual Assistant deeplinks are
+// prefixed w/ "googleassistant"; "ga" is only used here to avoid line wrapping.
 enum class DeepLinkParam {
-  kAction,
-  kClientId,
-  kDurationMs,
-  kId,
-  kPage,
-  kQuery,
-  kRelaunch,
+  kAction,      // ga://proactive-suggestions?action=cardClick
+  kCategory,    // ga://proactive-suggestions?category=1
+  kClientId,    // ga://reminders?action=edit&clientId=1
+  kDurationMs,  // ga://alarm-timer?action=addTimeToTimer&durationMs=60000
+  kHref,      // ga://proactive-suggestions?action=cardClick&href=https://g.co/
+  kIndex,     // ga://proactive-suggestions?action=cardClick&index=1
+  kId,        // ga://alarm-timer?action=addTimeToTimer&id=1
+  kPage,      // ga://settings?page=googleAssistant
+  kQuery,     // ga://send-query?query=weather
+  kRelaunch,  // ga://onboarding?relaunch=true
+  kVeId,      // ga://proactive-suggestions?action=cardClick&veId=1
 };
 
-// Enumeration of deep link parameter reminder action.
-enum class ReminderAction {
-  kCreate,
-  kEdit,
-};
-
-// Enumeration of deep link parameter alarm/timer action.
+// Enumeration of alarm/timer deep link actions.
 enum class AlarmTimerAction {
   kAddTimeToTimer,
   kStopRinging,
+};
+
+// Enumeration of proactive suggestions deep link actions.
+enum class ProactiveSuggestionsAction {
+  kCardClick,
+};
+
+// Enumeration of reminder deep link actions.
+enum class ReminderAction {
+  kCreate,
+  kEdit,
 };
 
 // Returns a deep link to perform an alarm/timer action.
@@ -102,11 +114,18 @@ base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
-// Returns a specific ReminderAction |param| from the given parameters. If the
-// desired parameter is not found, an empty value is returned.
+// Returns a specific GURL |param| from the given parameters. If the desired
+// parameter is not found, an absent value is returned.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
-    const std::map<std::string, std::string> params,
+base::Optional<GURL> GetDeepLinkParamAsGURL(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific int |param| from the given parameters. If the desired
+// parameter is not found or is not an int, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<int32_t> GetDeepLinkParamAsInt(
+    const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
 // Returns a specific int64 |param| from the given parameters. If the desired
@@ -114,6 +133,22 @@ base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 base::Optional<int64_t> GetDeepLinkParamAsInt64(
     const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific ProactiveSuggestionsAction |param| from the given
+// parameters. If the desired parameter is not found, an empty value is
+// returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<ProactiveSuggestionsAction>
+GetDeepLinkParamAsProactiveSuggestionsAction(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific ReminderAction |param| from the given parameters. If the
+// desired parameter is not found, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
+    const std::map<std::string, std::string> params,
     DeepLinkParam param);
 
 // Returns TimeDelta from the given parameters. If the desired parameter is not

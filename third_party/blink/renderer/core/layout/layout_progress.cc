@@ -35,7 +35,7 @@ LayoutProgress::LayoutProgress(Element* element)
           element->GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
           &LayoutProgress::AnimationTimerFired) {
-  DCHECK(IsHTMLProgressElement(element));
+  DCHECK(IsA<HTMLProgressElement>(element));
 }
 
 LayoutProgress::~LayoutProgress() = default;

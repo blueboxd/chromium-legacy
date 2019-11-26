@@ -6,7 +6,8 @@
 #define MEDIA_MOJO_SERVICES_MEDIA_INTERFACE_PROVIDER_H_
 
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
@@ -16,7 +17,8 @@ class MEDIA_MOJO_EXPORT MediaInterfaceProvider
     : public service_manager::mojom::InterfaceProvider {
  public:
   explicit MediaInterfaceProvider(
-      service_manager::mojom::InterfaceProviderRequest request);
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          receiver);
   ~MediaInterfaceProvider() override;
 
   service_manager::BinderRegistry* registry() { return &registry_; }
@@ -28,7 +30,7 @@ class MEDIA_MOJO_EXPORT MediaInterfaceProvider
 
   service_manager::BinderRegistry registry_;
 
-  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProvider);
 };

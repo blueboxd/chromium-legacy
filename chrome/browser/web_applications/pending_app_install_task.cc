@@ -94,15 +94,28 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
   if (load_url_result == WebAppUrlLoader::Result::kFailedWebContentsDestroyed)
     return;
 
+  InstallResultCode code = InstallResultCode::kInstallURLLoadFailed;
+
+  switch (load_url_result) {
+    case WebAppUrlLoader::Result::kUrlLoaded:
+    case WebAppUrlLoader::Result::kFailedWebContentsDestroyed:
+      // Handled above.
+      NOTREACHED();
+      break;
+    case WebAppUrlLoader::Result::kRedirectedUrlLoaded:
+      code = InstallResultCode::kInstallURLRedirected;
+      break;
+    case WebAppUrlLoader::Result::kFailedUnknownReason:
+      code = InstallResultCode::kInstallURLLoadFailed;
+      break;
+    case WebAppUrlLoader::Result::kFailedPageTookTooLong:
+      code = InstallResultCode::kInstallURLLoadTimeOut;
+      break;
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          std::move(result_callback),
-          Result(
-              load_url_result == WebAppUrlLoader::Result::kRedirectedUrlLoaded
-                  ? InstallResultCode::kInstallURLRedirected
-                  : InstallResultCode::kInstallURLLoadFailed,
-              base::nullopt)));
+      base::BindOnce(std::move(result_callback), Result(code, base::nullopt)));
 }
 
 void PendingAppInstallTask::UninstallPlaceholderApp(
@@ -135,7 +148,8 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
     LOG(ERROR) << "Failed to uninstall placeholder for: "
                << install_options_.url;
     std::move(result_callback)
-        .Run(Result(InstallResultCode::kFailedUnknownReason, base::nullopt));
+        .Run(Result(InstallResultCode::kFailedPlaceholderUninstall,
+                    base::nullopt));
     return;
   }
   ContinueWebAppInstall(web_contents, std::move(result_callback));

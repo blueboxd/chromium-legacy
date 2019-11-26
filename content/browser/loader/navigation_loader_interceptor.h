@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -97,7 +98,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // |response_body| passed.  |request| is the latest request whose request URL
   // may include URL fragment.  An example of where this is used is AppCache,
   // where the handler returns fallback content for the response passed in.
-  // The URLLoader interface pointer is returned in the |loader| parameter.
+  // The URLLoader remote is returned in the |loader| parameter.
   // The mojo::PendingReceiver for the URLLoaderClient is returned in the
   // |client_receiver| parameter.
   // The |url_loader| points to the ThrottlingURLLoader that currently controls
@@ -119,7 +120,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,

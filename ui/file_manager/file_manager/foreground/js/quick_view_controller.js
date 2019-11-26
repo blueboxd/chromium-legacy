@@ -12,7 +12,7 @@ class QuickViewController {
    * @param {!MetadataModel} metadataModel File system metadata.
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!ListContainer} listContainer
-   * @param {!cr.ui.MenuButton} selectionMenuButton
+   * @param {!cr.ui.MultiMenuButton} selectionMenuButton
    * @param {!QuickViewModel} quickViewModel
    * @param {!TaskController} taskController
    * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
@@ -319,7 +319,7 @@ class QuickViewController {
       type: type,
       subtype: typeInfo.subtype,
       filePath: label,
-      hasTask: tasks.length > 0,
+      hasTask: tasks.length > 0 && this.dialogType_ === DialogType.FULL_PAGE,
     };
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);

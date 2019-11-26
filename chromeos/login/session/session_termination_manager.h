@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
 namespace chromeos {
 
@@ -22,7 +23,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_SESSION) SessionTerminationManager {
   static SessionTerminationManager* Get();
 
   // To be called instead of SessionManagerClient::StopSession.
-  void StopSession();
+  void StopSession(login_manager::SessionStopReason reason);
 
   // To be called on login screen if the policy is set.
   void RebootIfNecessary();

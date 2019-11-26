@@ -892,8 +892,9 @@ ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
                origin, false /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    provider_host_ids->push_back(GlobalFrameRoutingId(
-        provider_host->process_id(), provider_host->frame_id()));
+    provider_host_ids->push_back(
+        GlobalFrameRoutingId(provider_host->container_host()->process_id(),
+                             provider_host->container_host()->frame_id()));
   }
 
   return provider_host_ids;

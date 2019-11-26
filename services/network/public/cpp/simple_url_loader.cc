@@ -358,7 +358,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   std::unique_ptr<BodyHandler> body_handler_;
 
   mojo::Receiver<mojom::URLLoaderClient> client_receiver_{this};
-  mojom::URLLoaderPtr url_loader_;
+  mojo::Remote<mojom::URLLoader> url_loader_;
 
   std::unique_ptr<StringUploadDataPipeGetter> string_upload_data_pipe_getter_;
 
@@ -1515,8 +1515,8 @@ void SimpleURLLoaderImpl::StartRequest(
         string_upload_data_pipe_getter_->GetRemoteForNewUpload());
   }
   url_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-      url_loader_factory_options_, *resource_request_,
+      url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+      0 /* request_id */, url_loader_factory_options_, *resource_request_,
       client_receiver_.BindNewPipeAndPassRemote(),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
   client_receiver_.set_disconnect_handler(base::BindOnce(

@@ -50,7 +50,7 @@ class HTMLVideoElementPersistentTest : public PageTestBase {
   }
 
   HTMLDivElement* DivElement() {
-    return ToHTMLDivElement(GetDocument().QuerySelector("div"));
+    return To<HTMLDivElement>(GetDocument().QuerySelector("div"));
   }
 
   Element* FullscreenElement() {

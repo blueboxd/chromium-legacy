@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -206,8 +206,8 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   ActiveDirectoryJoinTest() = default;
 
   void SetUp() override {
-    mock_auth_policy_client_ = new MockAuthPolicyClient();
-    mock_auth_policy_client()->DisableOperationDelayForTesting();
+    mock_authpolicy_client_ = new MockAuthPolicyClient();
+    mock_authpolicy_client()->DisableOperationDelayForTesting();
 
     EnterpriseEnrollmentTestBase::SetUp();
   }
@@ -380,11 +380,11 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     if (!dm_token.empty())
       request->set_dm_token(dm_token);
     request->set_kerberos_encryption_types(encryption_types);
-    mock_auth_policy_client()->set_expected_request(std::move(request));
+    mock_authpolicy_client()->set_expected_request(std::move(request));
   }
 
-  MockAuthPolicyClient* mock_auth_policy_client() {
-    return mock_auth_policy_client_;
+  MockAuthPolicyClient* mock_authpolicy_client() {
+    return mock_authpolicy_client_;
   }
 
   void SetupActiveDirectoryJSNotifications() {
@@ -430,7 +430,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
 
  private:
   // Owned by the AuthPolicyClient global instance.
-  MockAuthPolicyClient* mock_auth_policy_client_ = nullptr;
+  MockAuthPolicyClient* mock_authpolicy_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };

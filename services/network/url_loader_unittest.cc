@@ -33,6 +33,7 @@
 #include "build/build_config.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -467,7 +468,7 @@ class URLLoaderTest : public testing::Test {
       request.request_body = request_body_;
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::Remote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
     static mojom::URLLoaderFactoryParams params;
     params.process_id = mojom::kBrowserProcessId;
@@ -479,9 +480,10 @@ class URLLoaderTest : public testing::Test {
         context(), nullptr /* network_service_client */,
         network_context_client.get(),
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), options, request, client_.CreateRemote(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-        0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+        loader.BindNewPipeAndPassReceiver(), options, request,
+        client_.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, 0 /* keepalive_request_size */,
+        resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
 
@@ -1042,7 +1044,7 @@ TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
       CreateResourceRequest("GET", server.GetURL("/hello.html"));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1051,9 +1053,10 @@ TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -1096,7 +1099,7 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       CreateResourceRequest("GET", server.GetURL("/hello.html"));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1105,9 +1108,10 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -1152,7 +1156,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1161,7 +1165,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -1230,7 +1234,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1239,7 +1243,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -1297,7 +1301,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1306,7 +1310,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -1359,7 +1363,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   ResourceRequest request = CreateResourceRequest("GET", server.GetURL(kPath));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1368,7 +1372,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -1612,7 +1616,7 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
       file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   static mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
   params.is_corb_enabled = false;
@@ -1622,7 +1626,7 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
       context(), nullptr /* network_service_client */,
       network_context_client.get(),
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -1799,7 +1803,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       data_pipe_getter.GetDataPipeGetterRemote());
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1808,7 +1812,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, nullptr /* resource_scheduler_client */,
       nullptr /* keepalive_statistics_reporter */,
@@ -1869,7 +1873,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1878,7 +1882,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -1924,7 +1928,7 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
         "GET", test_server()->GetURL("/redirect307-to-echo"));
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::Remote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = mojom::kBrowserProcessId;
@@ -1933,7 +1937,7 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
         client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
@@ -1963,7 +1967,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
       "GET", test_server()->GetURL("/redirect307-to-echo"));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -1972,7 +1976,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2017,7 +2021,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
   request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2026,7 +2030,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2061,7 +2065,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
   request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2070,7 +2074,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2110,7 +2114,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
   ResourceRequest request = CreateResourceRequest("GET", url);
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2118,7 +2122,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2160,7 +2164,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
   request.headers.SetHeader("Other-Header", "Value3");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2168,7 +2172,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2219,7 +2223,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   request.headers.SetHeader("Other-Header", "Value3");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2227,7 +2231,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2350,20 +2354,21 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   request.priority = net::IDLE;
 
   // Fill up the ResourceScheduler with delayable requests.
-  std::vector<std::pair<std::unique_ptr<URLLoader>, mojom::URLLoaderPtr>>
+  std::vector<
+      std::pair<std::unique_ptr<URLLoader>, mojo::Remote<mojom::URLLoader>>>
       loaders;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   for (int i = 0; i < kRepeat; ++i) {
     TestURLLoaderClient client;
-    mojom::URLLoaderPtr loaderInterfacePtr;
+    mojo::PendingRemote<mojom::URLLoader> loader_remote;
 
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
         NeverInvokedDeleteLoaderCallback(),
-        mojo::MakeRequest(&loaderInterfacePtr), 0, request,
+        loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
         client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
@@ -2371,7 +2376,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
         nullptr /* origin_policy_manager */);
 
     loaders.emplace_back(
-        std::make_pair(std::move(url_loader), std::move(loaderInterfacePtr)));
+        std::make_pair(std::move(url_loader), std::move(loader_remote)));
   }
 
   base::RunLoop().RunUntilIdle();
@@ -2382,11 +2387,11 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
               loader->GetLoadStateForTesting());
   }
 
-  mojom::URLLoaderPtr loader_interface_ptr;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
   std::unique_ptr<URLLoader> loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */, NeverInvokedDeleteLoaderCallback(),
-      mojo::MakeRequest(&loader_interface_ptr), 0, request,
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -2415,7 +2420,7 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
       "GET", EternalSyncReadsInterceptor::GetSingleByteURL());
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2424,8 +2429,8 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -2647,8 +2652,8 @@ class MockNetworkContextClient : public TestNetworkContextClient {
         NOTREACHED();
         break;
       case CertificateResponse::URL_LOADER_REQUEST_CANCELLED:
-        ASSERT_TRUE(url_loader_ptr_);
-        url_loader_ptr_->reset();
+        ASSERT_TRUE(url_loader_remote_);
+        url_loader_remote_->reset();
         break;
       case CertificateResponse::CANCEL_CERTIFICATE_SELECTION:
         client_cert_responder->CancelRequest();
@@ -2758,8 +2763,9 @@ class MockNetworkContextClient : public TestNetworkContextClient {
     return on_certificate_requested_counter_;
   }
 
-  void set_url_loader_ptr(mojom::URLLoaderPtr* url_loader_ptr) {
-    url_loader_ptr_ = url_loader_ptr;
+  void set_url_loader_remote(
+      mojo::Remote<mojom::URLLoader>* url_loader_remote) {
+    url_loader_remote_ = url_loader_remote;
   }
 
   const std::vector<CookieInfo>& reported_request_cookies() const {
@@ -2783,7 +2789,7 @@ class MockNetworkContextClient : public TestNetworkContextClient {
   std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
   int on_certificate_requested_counter_ = 0;
-  mojom::URLLoaderPtr* url_loader_ptr_ = nullptr;
+  mojo::Remote<mojom::URLLoader>* url_loader_remote_ = nullptr;
   std::vector<CookieInfo> reported_request_cookies_;
   std::vector<CookieInfo> reported_response_cookies_;
   base::OnceClosure wait_for_reported_request_cookies_;
@@ -2803,16 +2809,17 @@ TEST_F(URLLoaderTest, SetAuth) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
   base::RunLoop().RunUntilIdle();
@@ -2847,16 +2854,17 @@ TEST_F(URLLoaderTest, CancelAuth) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
   base::RunLoop().RunUntilIdle();
@@ -2891,16 +2899,17 @@ TEST_F(URLLoaderTest, TwoChallenges) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
   base::RunLoop().RunUntilIdle();
@@ -2936,16 +2945,17 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL(kFaviconTestPage));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
   base::RunLoop().RunUntilIdle();
@@ -2980,16 +2990,17 @@ TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
   base::RunLoop().RunUntilIdle();
@@ -3022,16 +3033,17 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3060,7 +3072,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = 123;
@@ -3069,9 +3081,10 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3102,7 +3115,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   request.corb_excluded = true;
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = 234;
@@ -3112,9 +3125,10 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3138,7 +3152,7 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
   request.headers.SetHeader("Header2", "Value2");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -3147,8 +3161,8 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -3242,7 +3256,7 @@ TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
                                test_server_2.GetURL("/echo").spec(), true)));
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
@@ -3250,7 +3264,7 @@ TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
   url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -3295,19 +3309,19 @@ TEST_F(URLLoaderTest, ClientAuthDestroyResponder) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
-  network_context_client.set_url_loader_ptr(&loader);
+  network_context_client.set_url_loader_remote(&loader);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3337,19 +3351,19 @@ TEST_F(URLLoaderTest, ClientAuthCancelConnection) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
-  network_context_client.set_url_loader_ptr(&loader);
+  network_context_client.set_url_loader_remote(&loader);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3378,16 +3392,17 @@ TEST_F(URLLoaderTest, ClientAuthCancelCertificateSelection) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3428,16 +3443,17 @@ TEST_F(URLLoaderTest, ClientAuthNoCertificate) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3483,16 +3499,17 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3540,16 +3557,17 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), 0, request, client()->CreateRemote(),
-      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3577,17 +3595,17 @@ TEST_F(URLLoaderTest, BlockAllCookies) {
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockAllCookies, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-      0 /* request_id */, 0 /* keepalive_request_size */,
-      resource_scheduler_client(), nullptr,
+      loader.InitWithNewPipeAndPassReceiver(),
+      mojom::kURLLoadOptionBlockAllCookies, request, client()->CreateRemote(),
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
@@ -3604,15 +3622,16 @@ TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockThirdPartyCookies,
-      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(),
+      mojom::kURLLoadOptionBlockThirdPartyCookies, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -3631,15 +3650,15 @@ TEST_F(URLLoaderTest, AllowAllCookies) {
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -3660,16 +3679,16 @@ TEST_F(URLLoaderTest, CookieReporting) {
         CreateResourceRequest("GET", test_server()->GetURL("/set-cookie?a=b"));
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3695,16 +3714,16 @@ TEST_F(URLLoaderTest, CookieReporting) {
         CreateResourceRequest("GET", test_server()->GetURL("/nocontent"));
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3737,14 +3756,14 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
   ResourceRequest request = CreateResourceRequest("GET", redirecting_url);
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::Remote<mojom::URLLoader> loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = kProcessId;
   params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client, &network_context_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
       loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
@@ -3788,16 +3807,16 @@ TEST_F(URLLoaderTest, CookieReportingAuth) {
     ResourceRequest request = CreateResourceRequest("GET", url);
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3836,16 +3855,16 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
         net::CookieOptions::MakeAllInclusive(), base::DoNothing());
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3886,16 +3905,16 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
         net::CookieOptions::MakeAllInclusive(), base::DoNothing());
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3929,16 +3948,16 @@ TEST_F(URLLoaderTest, RawResponseCookies) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -3975,16 +3994,16 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4020,14 +4039,14 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::Remote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
         loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
@@ -4071,14 +4090,14 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::Remote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+        loader.BindNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone, request,
         loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
@@ -4118,16 +4137,16 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4162,16 +4181,16 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4204,16 +4223,16 @@ TEST_F(URLLoaderTest, RawResponseQUIC) {
     request.devtools_request_id = "TEST";
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4249,16 +4268,16 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     request.site_for_cookies = GURL("http://www.example.com");
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4303,16 +4322,16 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     request.site_for_cookies = GURL("http://www.example.com");
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4346,16 +4365,16 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         "GET", test_server()->GetURL("/set-cookie?a=b;Secure&d=e"));
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     mojom::URLLoaderFactoryParams params;
     params.process_id = kProcessId;
     params.is_corb_enabled = false;
     std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
         context(), &network_service_client, &network_context_client,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0 /* request_id */, 0 /* keepalive_request_size */,
+        loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+        request, loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS,
+        &params, 0 /* request_id */, 0 /* keepalive_request_size */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         nullptr /* origin_policy_manager */);
@@ -4425,7 +4444,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     request.obey_origin_policy = true;
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
     mojom::URLLoaderFactoryParams params;
     TestURLLoaderClient loader_client;
@@ -4435,9 +4454,10 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), 0, request, loader_client.CreateRemote(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-        0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+        loader.InitWithNewPipeAndPassReceiver(), 0, request,
+        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, 0 /* keepalive_request_size */,
+        resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         &mock_origin_policy_manager);
 
@@ -4462,7 +4482,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     request.obey_origin_policy = true;
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
     mojom::URLLoaderFactoryParams params;
     TestURLLoaderClient loader_client;
@@ -4472,9 +4492,10 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), 0, request, loader_client.CreateRemote(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-        0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+        loader.InitWithNewPipeAndPassReceiver(), 0, request,
+        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, 0 /* keepalive_request_size */,
+        resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         &mock_origin_policy_manager);
 
@@ -4499,7 +4520,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     request.obey_origin_policy = false;
 
     base::RunLoop delete_run_loop;
-    mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<mojom::URLLoader> loader;
     std::unique_ptr<URLLoader> url_loader;
     mojom::URLLoaderFactoryParams params;
     TestURLLoaderClient loader_client;
@@ -4509,9 +4530,10 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        mojo::MakeRequest(&loader), 0, request, loader_client.CreateRemote(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
-        0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+        loader.InitWithNewPipeAndPassReceiver(), 0, request,
+        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, 0 /* keepalive_request_size */,
+        resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
         &mock_origin_policy_manager);
 

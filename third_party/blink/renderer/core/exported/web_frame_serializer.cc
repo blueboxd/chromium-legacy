@@ -145,9 +145,9 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
     return true;
   }
   // Remove <link> for stylesheets that do not load.
-  if (IsHTMLLinkElement(element) &&
-      ToHTMLLinkElement(element).RelAttribute().IsStyleSheet() &&
-      !ToHTMLLinkElement(element).sheet()) {
+  auto* html_link_element = DynamicTo<HTMLLinkElement>(element);
+  if (html_link_element && html_link_element->RelAttribute().IsStyleSheet() &&
+      !html_link_element->sheet()) {
     return true;
   }
   return false;
@@ -262,8 +262,9 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
     return false;
 
   //  Drop integrity attribute for those links with subresource loaded.
+  auto* html_link_element = DynamicTo<HTMLLinkElement>(element);
   if (attribute.LocalName() == html_names::kIntegrityAttr &&
-      IsHTMLLinkElement(element) && ToHTMLLinkElement(element).sheet()) {
+      html_link_element && html_link_element->sheet()) {
     return true;
   }
 

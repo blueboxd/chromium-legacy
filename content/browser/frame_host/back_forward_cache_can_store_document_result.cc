@@ -104,6 +104,10 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "cache flushed";
     case Reason::kServiceWorkerVersionActivation:
       return "service worker version is activated";
+    case Reason::kSessionRestored:
+      return "session restored";
+    case Reason::kUnknown:
+      return "unknown";
   }
 }
 

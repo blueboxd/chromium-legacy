@@ -205,7 +205,7 @@ const net::NetworkTrafficAnnotationTag kPreviewsTrafficAnnotation =
 
 PreviewsLitePageRedirectServingURLLoader::
     PreviewsLitePageRedirectServingURLLoader(ResultCallback result_callback)
-    : result_callback_(std::move(result_callback)), binding_(this) {}
+    : result_callback_(std::move(result_callback)) {}
 
 void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
     const network::ResourceRequest& request,
@@ -217,7 +217,7 @@ void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
 
   // Create a network service URL loader with passed in params.
   network_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_url_loader_), frame_tree_node_id_, 0,
+      network_url_loader_.BindNewPipeAndPassReceiver(), frame_tree_node_id_, 0,
       network::mojom::kURLLoadOptionNone, request,
       url_loader_receiver_.BindNewPipeAndPassRemote(
           base::ThreadTaskRunnerHandle::Get()),
@@ -267,9 +267,9 @@ void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client) {
   // Bind to the content/ navigation code.
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(receiver));
-  binding_.set_connection_error_handler(base::BindOnce(
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
       weak_ptr_factory_.GetWeakPtr()));
   forwarding_client_.Bind(std::move(forwarding_client));
@@ -277,7 +277,7 @@ void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
   // If there was an URLLoader error between handing off this handler and
   // running it, don't handle the request.
   if (!network_url_loader_) {
-    binding_.Close();
+    receiver_.reset();
     forwarding_client_.reset();
     delete this;
     return;
@@ -503,8 +503,8 @@ void PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect() {
   network_url_loader_.reset();
   url_loader_receiver_.reset();
 
-  if (binding_.is_bound()) {
-    binding_.Close();
+  if (receiver_.is_bound()) {
+    receiver_.reset();
     forwarding_client_.reset();
     delete this;
   }

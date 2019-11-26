@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 from xml.etree import ElementTree
 
 import util.build_utils as build_utils
@@ -55,6 +56,8 @@ AAPT_IGNORE_PATTERN = ':'.join([
     '.*',  # Never makes sense to include dot(files/dirs).
     '*.d.stamp',  # Ignore stamp files
 ])
+
+MULTIPLE_RES_MAGIC_STRING = b'magic'
 
 
 def ToAndroidLocaleName(chromium_locale):
@@ -699,6 +702,31 @@ def ExtractArscPackage(aapt2_path, apk_path):
   raise Exception('Failed to find arsc package name')
 
 
+def _RenameSubdirsWithPrefix(dir_path, prefix):
+  subdirs = [
+      d for d in os.listdir(dir_path)
+      if os.path.isdir(os.path.join(dir_path, d))
+  ]
+  renamed_subdirs = []
+  for d in subdirs:
+    old_path = os.path.join(dir_path, d)
+    new_path = os.path.join(dir_path, '{}_{}'.format(prefix, d))
+    renamed_subdirs.append(new_path)
+    os.rename(old_path, new_path)
+  return renamed_subdirs
+
+
+def _HasMultipleResDirs(zip_path):
+  """Checks for magic comment set by prepare_resources.py
+
+  Returns: True iff the zipfile has the magic comment that means it contains
+  multiple res/ dirs inside instead of just contents of a single res/ dir
+  (without a wrapping res/).
+  """
+  with zipfile.ZipFile(zip_path) as z:
+    return z.comment == MULTIPLE_RES_MAGIC_STRING
+
+
 def ExtractDeps(dep_zips, deps_dir):
   """Extract a list of resource dependency zip files.
 
@@ -720,7 +748,16 @@ def ExtractDeps(dep_zips, deps_dir):
     if os.path.exists(subdir):
       raise Exception('Resource zip name conflict: ' + subdirname)
     build_utils.ExtractAll(z, path=subdir)
-    dep_subdirs.append(subdir)
+    if _HasMultipleResDirs(z):
+      # basename of the directory is used to create a zip during resource
+      # compilation, include the path in the basename to help blame errors on
+      # the correct target. For example directory 0_res may be renamed
+      # chrome_android_chrome_app_java_resources_0_res pointing to the name and
+      # path of the android_resources target from whence it came.
+      subdir_subdirs = _RenameSubdirsWithPrefix(subdir, subdirname)
+      dep_subdirs.extend(subdir_subdirs)
+    else:
+      dep_subdirs.append(subdir)
   return dep_subdirs
 
 
@@ -773,11 +810,13 @@ class _ResourceBuildContext(object):
 @contextlib.contextmanager
 def BuildContext(temp_dir=None, keep_files=False):
   """Generator for a _ResourceBuildContext instance."""
+  context = None
   try:
     context = _ResourceBuildContext(temp_dir, keep_files)
     yield context
   finally:
-    context.Close()
+    if context:
+      context.Close()
 
 
 def ResourceArgsParser():

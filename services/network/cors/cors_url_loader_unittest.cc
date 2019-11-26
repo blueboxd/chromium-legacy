@@ -21,7 +21,6 @@
 #include "base/test/task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -187,9 +186,10 @@ class CorsURLLoaderTest : public testing::Test {
 
   void CreateLoaderAndStart(const ResourceRequest& request) {
     test_cors_loader_client_ = std::make_unique<TestURLLoaderClient>();
+    url_loader_.reset();
     cors_url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionNone, request,
+        url_loader_.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, mojom::kURLLoadOptionNone, request,
         test_cors_loader_client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -381,8 +381,8 @@ class CorsURLLoaderTest : public testing::Test {
   // TestURLLoaderFactory instance owned by CorsURLLoaderFactory.
   base::WeakPtr<TestURLLoaderFactory> test_url_loader_factory_;
 
-  // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
-  mojom::URLLoaderPtr url_loader_;
+  // Holds URLLoader that CreateLoaderAndStart() creates.
+  mojo::Remote<mojom::URLLoader> url_loader_;
 
   // TestURLLoaderClient that records callback activities.
   std::unique_ptr<TestURLLoaderClient> test_cors_loader_client_;

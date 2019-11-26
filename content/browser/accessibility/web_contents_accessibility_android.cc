@@ -1154,7 +1154,7 @@ void WebContentsAccessibilityAndroid::MoveAccessibilityFocus(
 
   // Auto-focus links, because some websites have skip links that are
   // only visible when focused. See http://crbug.com/657157
-  if (node->IsLink())
+  if (node->IsLink() && node->manager()->GetFocus() != node)
     node->manager()->SetFocus(*node);
 }
 

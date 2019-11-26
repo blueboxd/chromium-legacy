@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
@@ -206,11 +207,12 @@ class BlobURLTest : public testing::Test {
     url_store.ResolveAsURLLoaderFactory(
         url, url_loader_factory.BindNewPipeAndPassReceiver());
 
-    network::mojom::URLLoaderPtr url_loader;
+    mojo::PendingRemote<network::mojom::URLLoader> url_loader;
     network::TestURLLoaderClient url_loader_client;
     url_loader_factory->CreateLoaderAndStart(
-        MakeRequest(&url_loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, url_loader_client.CreateRemote(),
+        url_loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+        network::mojom::kURLLoadOptionNone, request,
+        url_loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     url_loader_client.RunUntilComplete();
 

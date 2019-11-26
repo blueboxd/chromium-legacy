@@ -126,11 +126,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
     return insecure_request_policy_;
   }
 
-  void SetMixedAutoupgradeOptOut(bool opt_out) {
-    mixed_autoupgrade_opt_out_ = opt_out;
-  }
-  bool GetMixedAutoUpgradeOptOut() const { return mixed_autoupgrade_opt_out_; }
-
   const FeaturePolicy* GetFeaturePolicy() const {
     return feature_policy_.get();
   }
@@ -193,7 +188,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   network::mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;
-  bool mixed_autoupgrade_opt_out_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);

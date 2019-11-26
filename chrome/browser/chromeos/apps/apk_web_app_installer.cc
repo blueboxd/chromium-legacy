@@ -61,7 +61,7 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!weak_owner_.get()) {
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kFailedUnknownReason);
+                         web_app::InstallResultCode::kApkWebAppInstallFailed);
     return;
   }
 
@@ -70,7 +70,7 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   if (web_app_info.is_null() || icon_png_data.empty()) {
     LOG(ERROR) << "Insufficient data to install a web app";
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kFailedUnknownReason);
+                         web_app::InstallResultCode::kApkWebAppInstallFailed);
     return;
   }
 

@@ -584,7 +584,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
 
 TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
-      kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
+      kFooWebAppUrl, InstallResultCode::kWebAppDisabled);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   pending_app_manager_impl()->SetNextInstallationTaskResult(
@@ -599,7 +599,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
   pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kFailedUnknownReason, code);
+        EXPECT_EQ(InstallResultCode::kWebAppDisabled, code);
         EXPECT_EQ(kFooWebAppUrl, url);
 
         EXPECT_EQ(1u, install_run_count());
@@ -791,7 +791,7 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
 
 TEST_F(PendingAppManagerImplTest, Install_InstallationFails) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
-      kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
+      kFooWebAppUrl, InstallResultCode::kWebAppDisabled);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -800,7 +800,7 @@ TEST_F(PendingAppManagerImplTest, Install_InstallationFails) {
   std::tie(url, code) =
       InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
-  EXPECT_EQ(InstallResultCode::kFailedUnknownReason, code);
+  EXPECT_EQ(InstallResultCode::kWebAppDisabled, code);
   EXPECT_EQ(kFooWebAppUrl, url);
 
   EXPECT_EQ(1u, install_run_count());
@@ -849,7 +849,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_Succeeds) {
 
 TEST_F(PendingAppManagerImplTest, InstallApps_FailsInstallationFails) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
-      kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
+      kFooWebAppUrl, InstallResultCode::kWebAppDisabled);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -861,7 +861,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_FailsInstallationFails) {
 
   EXPECT_EQ(results,
             InstallAppsResults(
-                {{kFooWebAppUrl, InstallResultCode::kFailedUnknownReason}}));
+                {{kFooWebAppUrl, InstallResultCode::kWebAppDisabled}}));
 
   EXPECT_EQ(1u, install_run_count());
 }

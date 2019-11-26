@@ -15,6 +15,8 @@ class AssistantViewDelegate;
 class AssistantWebViewDelegate;
 class AssistantWebView;
 
+// TODO(dmblack): Merge AssistantWebView and AssistantWebContainerView once
+// standalone Assistant UI has been removed.
 // The container of assistant_web_view when Assistant web container is enabled.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
     : public views::WidgetDelegateView {
@@ -29,6 +31,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   gfx::Size CalculatePreferredSize() const override;
 
   void OnBackButtonPressed();
+
+  // Invoke to open the specified |url|.
+  void OpenUrl(const GURL& url);
 
   views::View* GetCaptionBarForTesting();
 

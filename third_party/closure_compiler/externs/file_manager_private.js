@@ -239,7 +239,6 @@ chrome.fileManagerPrivate.Verb = {
 chrome.fileManagerPrivate.SourceRestriction = {
   ANY_SOURCE: 'any_source',
   NATIVE_SOURCE: 'native_source',
-  NATIVE_OR_DRIVE_SOURCE: 'native_or_drive_source',
 };
 
 /** @enum {string} */

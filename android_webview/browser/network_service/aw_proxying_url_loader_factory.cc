@@ -34,7 +34,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -151,7 +150,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
   mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{
       this};
-  network::mojom::URLLoaderPtr target_loader_;
+  mojo::Remote<network::mojom::URLLoader> target_loader_;
   mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
   base::WeakPtrFactory<InterceptedRequest> weak_factory_{this};
@@ -427,8 +426,8 @@ void InterceptedRequest::ContinueAfterIntercept() {
 
   if (!target_loader_ && target_factory_) {
     target_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&target_loader_), routing_id_, request_id_, options_,
-        request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
+        target_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+        options_, request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation_);
   }
 }

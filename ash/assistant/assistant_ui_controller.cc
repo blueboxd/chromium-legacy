@@ -247,6 +247,7 @@ void AssistantUiController::OnAssistantControllerDestroying() {
   }
 }
 
+// TODO(dmblack): Remove after deprecating standalone UI.
 void AssistantUiController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
@@ -261,6 +262,9 @@ void AssistantUiController::OnDeepLinkReceived(
 
   ShowUi(AssistantEntryPoint::kDeepLink);
   UpdateUiMode(AssistantUiMode::kWebUi);
+
+  // Open the url associated w/ the deep link in Assistant UI.
+  container_view_->OpenUrl(assistant::util::GetWebUrl(type, params).value());
 }
 
 void AssistantUiController::OnOpeningUrl(const GURL& url,

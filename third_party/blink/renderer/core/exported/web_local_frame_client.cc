@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -14,8 +15,8 @@ service_manager::InterfaceProvider*
 WebLocalFrameClient::GetInterfaceProvider() {
   static service_manager::InterfaceProvider* interface_provider = []() {
     auto* interface_provider = new service_manager::InterfaceProvider();
-    service_manager::mojom::InterfaceProviderPtr provider;
-    mojo::MakeRequest(&provider);
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
+    ignore_result(provider.InitWithNewPipeAndPassReceiver());
     interface_provider->Bind(std::move(provider));
     return interface_provider;
   }();

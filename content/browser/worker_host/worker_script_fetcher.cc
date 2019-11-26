@@ -154,7 +154,7 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
     DCHECK(response_url_loader_receiver_.is_bound());
     main_script_load_params->url_loader_client_endpoints =
         network::mojom::URLLoaderClientEndpoints::New(
-            response_url_loader_.PassInterface(),
+            std::move(response_url_loader_),
             response_url_loader_receiver_.Unbind());
   }
 

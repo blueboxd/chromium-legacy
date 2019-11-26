@@ -45,6 +45,15 @@ class DataDecoderService : public mojom::DataDecoderService {
     drop_json_parsers_ = drop;
   }
 
+  // Configures the service to use |binder| to bind
+  // WebBundleParserFactory in subsequent
+  // BindWebBundleParserFactory() calls.
+  void SetWebBundleParserFactoryBinderForTesting(
+      base::RepeatingCallback<
+          void(mojo::PendingReceiver<mojom::WebBundleParserFactory>)> binder) {
+    web_bundle_parser_factory_binder_ = binder;
+  }
+
  private:
   // mojom::DataDecoderService implementation:
   void BindImageDecoder(
@@ -66,6 +75,9 @@ class DataDecoderService : public mojom::DataDecoderService {
 
   bool drop_image_decoders_ = false;
   bool drop_json_parsers_ = false;
+  base::RepeatingCallback<void(
+      mojo::PendingReceiver<mojom::WebBundleParserFactory>)>
+      web_bundle_parser_factory_binder_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };

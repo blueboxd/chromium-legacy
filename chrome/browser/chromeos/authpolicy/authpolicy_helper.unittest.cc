@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 
 #include "base/bind.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -321,7 +321,8 @@ void FakeSessionManagerClient::StartSession(
   user_sessions_[cryptohome_id.account_id()] = user_id_hash;
 }
 
-void FakeSessionManagerClient::StopSession() {
+void FakeSessionManagerClient::StopSession(
+    login_manager::SessionStopReason reason) {
   session_stopped_ = true;
 }
 

@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_ASSISTANT_UTIL_HISTOGRAM_UTIL_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/optional.h"
 
 namespace ash {
 
@@ -41,6 +42,15 @@ enum class ProactiveSuggestionsShowResult {
   kCloseByUser = 3,
   kMaxValue = kCloseByUser,
 };
+
+// Records a click on a proactive suggestions card. If provided, the opaque
+// |category| of the associated content (e.g. news, shopping, etc.), the |index|
+// of the card within its list, as well as the |veId| associated w/ the type of
+// card are also recorded.
+ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsCardClick(
+    base::Optional<int> category,
+    base::Optional<int> index,
+    base::Optional<int> veId);
 
 // Records a |result| for a proactive suggestions server request in the
 // specified content |category|. Note that |category| is an opaque int that is

@@ -18797,7 +18797,7 @@
 
           This policy can be overridden for specific URL patterns using the 'InsecureContentAllowedForUrls' and 'InsecureContentBlockedForUrls' policies.
 
-          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content.''',
+          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content and disable autoupgrades for optionally blockable mixed content.''',
     },
     {
       'name': 'InsecureContentAllowedForUrls',
@@ -18816,9 +18816,9 @@
       'id': 634,
       'caption': '''Allow insecure content on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites) and for which optionally blockable mixed content upgrades will be disabled.
 
-          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
+          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, and users will be allowed to set exceptions to allow it for specific sites.''',
     },
     {
       'name': 'InsecureContentBlockedForUrls',
@@ -18837,9 +18837,9 @@
       'id': 635,
       'caption': '''Block insecure content on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites), and for which optionally blockable (i.e. passive) mixed content will be upgraded.
 
-          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
+          If this policy is left not set blockable mixed content will be blocked and optionally blockable mixed content will be upgraded, but users will be allowed to set exceptions to allow it for specific sites.''',
     },
     {
       'name': 'DeviceWebBasedAttestationAllowedUrls',

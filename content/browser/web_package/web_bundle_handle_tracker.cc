@@ -47,9 +47,11 @@ WebBundleHandleTracker::MaybeCreateWebBundleHandle(const GURL& url,
       }
       break;
     case WebBundleSource::Type::kNetwork:
-      // Currently navigation within a Web Bundle from network is not supported.
-      // TODO(crbug.com/1018640): Implement this.
-      return nullptr;
+      if (reader_->HasEntry(url) &&
+          reader_->source().IsNavigationPathRestrictionSatisfied(url)) {
+        return WebBundleHandle::CreateForTrackedNavigation(reader_,
+                                                           frame_tree_node_id);
+      }
       break;
   }
   return nullptr;

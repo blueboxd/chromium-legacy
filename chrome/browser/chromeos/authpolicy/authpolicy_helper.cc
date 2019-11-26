@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"

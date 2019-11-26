@@ -57,10 +57,10 @@ void SharingIconView::StopLoadingAnimation() {
 // TODO(knollr): Introduce IconState / ControllerState {eg, Hidden, Success,
 // Sending} to define the various cases instead of a number of if else
 // statements.
-bool SharingIconView::Update() {
+void SharingIconView::UpdateImpl() {
   auto* controller = GetController();
   if (!controller)
-    return false;
+    return;
 
   // To ensure that we reset error icon badge.
   if (!GetVisible()) {
@@ -82,11 +82,9 @@ bool SharingIconView::Update() {
   const bool is_bubble_showing = IsBubbleShowing();
   const bool is_visible =
       is_bubble_showing || IsLoadingAnimationVisible() || label()->GetVisible();
-  const bool visibility_changed = GetVisible() != is_visible;
 
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);
-  return visibility_changed;
 }
 
 void SharingIconView::AnimationProgressed(const gfx::Animation* animation) {

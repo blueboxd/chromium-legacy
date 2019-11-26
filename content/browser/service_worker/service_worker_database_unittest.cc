@@ -2203,7 +2203,8 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
   data.set_version_id(1);
   data.set_is_active(true);
   data.set_has_fetch_handler(true);
-  data.set_last_update_check_time(base::Time::Now().ToInternalValue());
+  data.set_last_update_check_time(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
   data.add_used_features(
       static_cast<uint32_t>(blink::mojom::WebFeature::kFetch));

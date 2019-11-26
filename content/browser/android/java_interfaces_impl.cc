@@ -24,10 +24,11 @@ namespace {
 class JavaInterfaceProviderHolder {
  public:
   JavaInterfaceProviderHolder() {
-    service_manager::mojom::InterfaceProviderPtr provider;
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrarImpl_createInterfaceRegistryForContext(
-        env, mojo::MakeRequest(&provider).PassMessagePipe().release().value());
+        env,
+        provider.InitWithNewPipeAndPassReceiver().PassPipe().release().value());
     interface_provider_.Bind(std::move(provider));
   }
 
@@ -51,20 +52,20 @@ service_manager::InterfaceProvider* GetGlobalJavaInterfaces() {
 }
 
 void BindInterfaceRegistryForWebContents(
-    service_manager::mojom::InterfaceProviderRequest request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
     WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForWebContents(
-      env, request.PassMessagePipe().release().value(),
+      env, receiver.PassPipe().release().value(),
       web_contents->GetJavaWebContents());
 }
 
 void BindInterfaceRegistryForRenderFrameHost(
-    service_manager::mojom::InterfaceProviderRequest request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
     RenderFrameHostImpl* render_frame_host) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForRenderFrameHost(
-      env, request.PassMessagePipe().release().value(),
+      env, receiver.PassPipe().release().value(),
       render_frame_host->GetJavaRenderFrameHost());
 }
 

@@ -63,8 +63,9 @@ class CRLSetComponentInstallerTest : public PlatformTest {
     params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
         loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
+    loader_.reset();
     loader_factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 1, 1,
+        loader_.BindNewPipeAndPassReceiver(), 1, 1,
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse |
             network::mojom::kURLLoadOptionSendSSLInfoForCertificateError,
         request, client_->CreateRemote(),
@@ -89,7 +90,7 @@ class CRLSetComponentInstallerTest : public PlatformTest {
   std::unique_ptr<network::TestURLLoaderClient> client_;
   std::unique_ptr<network::NetworkService> network_service_;
   mojo::Remote<network::mojom::NetworkContext> network_context_;
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
   base::ScopedTempDir temp_dir_;
 
  private:

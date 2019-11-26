@@ -573,7 +573,7 @@ void ListedElement::UpdateAncestorDisabledState() const {
       last_legend_ancestor = ancestor;
       continue;
     }
-    if (!IsHTMLFieldSetElement(*ancestor))
+    if (!IsA<HTMLFieldSetElement>(*ancestor))
       continue;
     may_have_field_set_ancestor_ = true;
     if (ancestor->IsDisabledFormControl()) {

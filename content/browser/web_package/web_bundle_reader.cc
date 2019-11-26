@@ -135,6 +135,7 @@ class WebBundleReader::SharedFileDataSource final
 
 WebBundleReader::WebBundleReader(std::unique_ptr<WebBundleSource> source)
     : source_(std::move(source)),
+      parser_(std::make_unique<data_decoder::SafeWebBundleParser>()),
       file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {
   DCHECK(source_->is_trusted_file() || source_->is_file());
 }
@@ -145,14 +146,16 @@ WebBundleReader::WebBundleReader(
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     BrowserContext::BlobContextGetter blob_context_getter)
-    : source_(std::move(source)) {
+    : source_(std::move(source)),
+      parser_(std::make_unique<data_decoder::SafeWebBundleParser>()) {
   DCHECK(source_->is_network());
   mojo::PendingRemote<data_decoder::mojom::BundleDataSource> pending_remote;
   blob_data_source_ = std::make_unique<WebBundleBlobDataSource>(
       content_length, std::move(outer_response_body), std::move(endpoints),
-      std::move(blob_context_getter),
+      std::move(blob_context_getter));
+  blob_data_source_->AddReceiver(
       pending_remote.InitWithNewPipeAndPassReceiver());
-  parser_.OpenDataSource(std::move(pending_remote));
+  parser_->OpenDataSource(std::move(pending_remote));
 }
 
 WebBundleReader::~WebBundleReader() {
@@ -161,7 +164,8 @@ WebBundleReader::~WebBundleReader() {
 
 void WebBundleReader::ReadMetadata(MetadataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!metadata_ready_);
+  DCHECK_EQ(state_, State::kInitial);
+
   if (!blob_data_source_) {
     DCHECK(source_->is_trusted_file() || source_->is_file());
     file_->DuplicateFile(base::BindOnce(&WebBundleReader::ReadMetadataInternal,
@@ -169,14 +173,14 @@ void WebBundleReader::ReadMetadata(MetadataCallback callback) {
     return;
   }
   DCHECK(source_->is_network());
-  parser_.ParseMetadata(base::BindOnce(&WebBundleReader::OnMetadataParsed,
-                                       base::Unretained(this),
-                                       std::move(callback)));
+  parser_->ParseMetadata(base::BindOnce(&WebBundleReader::OnMetadataParsed,
+                                        base::Unretained(this),
+                                        std::move(callback)));
 }
 
 void WebBundleReader::ReadResponse(const GURL& url, ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(metadata_ready_);
+  DCHECK_NE(state_, State::kInitial);
 
   auto it = entries_.find(net::SimplifyUrlForRequest(url));
   if (it == entries_.end() || it->second->response_locations.empty()) {
@@ -190,15 +194,79 @@ void WebBundleReader::ReadResponse(const GURL& url, ResponseCallback callback) {
     return;
   }
 
+  if (state_ == State::kDisconnected) {
+    // Try reconnecting, if not attempted yet.
+    if (pending_read_responses_.empty())
+      Reconnect();
+    pending_read_responses_.emplace_back(url, std::move(callback));
+    return;
+  }
+
   // For now, this always reads the first response in |response_locations|.
   // TODO(crbug.com/966753): This method should take request headers and choose
   // the most suitable response based on the variant matching algorithm
   // (https://tools.ietf.org/html/draft-ietf-httpbis-variants-05#section-4).
-  parser_.ParseResponse(
+  parser_->ParseResponse(
       it->second->response_locations[0]->offset,
       it->second->response_locations[0]->length,
       base::BindOnce(&WebBundleReader::OnResponseParsed, base::Unretained(this),
                      std::move(callback)));
+}
+
+void WebBundleReader::Reconnect() {
+  DCHECK(!parser_);
+  parser_ = std::make_unique<data_decoder::SafeWebBundleParser>();
+
+  if (!blob_data_source_) {
+    DCHECK(source_->is_trusted_file() || source_->is_file());
+    file_->DuplicateFile(
+        base::BindOnce(&WebBundleReader::ReconnectForFile, this));
+    return;
+  }
+  DCHECK(source_->is_network());
+  mojo::PendingRemote<data_decoder::mojom::BundleDataSource> pending_remote;
+  blob_data_source_->AddReceiver(
+      pending_remote.InitWithNewPipeAndPassReceiver());
+  parser_->OpenDataSource(std::move(pending_remote));
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&WebBundleReader::DidReconnect, this,
+                                base::nullopt /* error */));
+}
+
+void WebBundleReader::ReconnectForFile(base::File file) {
+  base::File::Error file_error = parser_->OpenFile(std::move(file));
+  base::Optional<std::string> error;
+  if (file_error != base::File::FILE_OK)
+    error = base::File::ErrorToString(file_error);
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&WebBundleReader::DidReconnect, this, std::move(error)));
+}
+
+void WebBundleReader::DidReconnect(base::Optional<std::string> error) {
+  DCHECK_EQ(state_, State::kDisconnected);
+  DCHECK(parser_);
+  auto read_tasks = std::move(pending_read_responses_);
+
+  if (error) {
+    for (auto& pair : read_tasks) {
+      PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(pair.second), nullptr,
+                         data_decoder::mojom::BundleResponseParseError::New(
+                             data_decoder::mojom::BundleParseErrorType::
+                                 kParserInternalError,
+                             *error)));
+    }
+    return;
+  }
+
+  state_ = State::kMetadataReady;
+  parser_->SetDisconnectCallback(base::BindOnce(
+      &WebBundleReader::OnParserDisconnected, base::Unretained(this)));
+  for (auto& pair : read_tasks)
+    ReadResponse(pair.first, std::move(pair.second));
 }
 
 void WebBundleReader::ReadResponseBody(
@@ -206,7 +274,7 @@ void WebBundleReader::ReadResponseBody(
     mojo::ScopedDataPipeProducerHandle producer_handle,
     BodyCompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(metadata_ready_);
+  DCHECK_NE(state_, State::kInitial);
 
   if (!blob_data_source_) {
     DCHECK(source_->is_trusted_file() || source_->is_file());
@@ -234,14 +302,14 @@ void WebBundleReader::ReadResponseBody(
 
 bool WebBundleReader::HasEntry(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(metadata_ready_);
+  DCHECK_NE(state_, State::kInitial);
 
   return entries_.contains(net::SimplifyUrlForRequest(url));
 }
 
 const GURL& WebBundleReader::GetPrimaryURL() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(metadata_ready_);
+  DCHECK_NE(state_, State::kInitial);
 
   return primary_url_;
 }
@@ -255,13 +323,13 @@ void WebBundleReader::SetWebBundleParserFactoryForTesting(
     mojo::Remote<data_decoder::mojom::WebBundleParserFactory> factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  parser_.SetWebBundleParserFactoryForTesting(std::move(factory));
+  parser_->SetWebBundleParserFactoryForTesting(std::move(factory));
 }
 
 void WebBundleReader::ReadMetadataInternal(MetadataCallback callback,
                                            base::File file) {
   DCHECK(source_->is_trusted_file() || source_->is_file());
-  base::File::Error error = parser_.OpenFile(std::move(file));
+  base::File::Error error = parser_->OpenFile(std::move(file));
   if (base::File::FILE_OK != error) {
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
@@ -271,9 +339,9 @@ void WebBundleReader::ReadMetadataInternal(MetadataCallback callback,
                 data_decoder::mojom::BundleParseErrorType::kParserInternalError,
                 GURL() /* fallback_url */, base::File::ErrorToString(error))));
   } else {
-    parser_.ParseMetadata(base::BindOnce(&WebBundleReader::OnMetadataParsed,
-                                         base::Unretained(this),
-                                         std::move(callback)));
+    parser_->ParseMetadata(base::BindOnce(&WebBundleReader::OnMetadataParsed,
+                                          base::Unretained(this),
+                                          std::move(callback)));
   }
 }
 
@@ -282,9 +350,11 @@ void WebBundleReader::OnMetadataParsed(
     data_decoder::mojom::BundleMetadataPtr metadata,
     data_decoder::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!metadata_ready_);
+  DCHECK_EQ(state_, State::kInitial);
 
-  metadata_ready_ = true;
+  state_ = State::kMetadataReady;
+  parser_->SetDisconnectCallback(base::BindOnce(
+      &WebBundleReader::OnParserDisconnected, base::Unretained(this)));
 
   if (metadata) {
     primary_url_ = metadata->primary_url;
@@ -298,9 +368,17 @@ void WebBundleReader::OnResponseParsed(
     data_decoder::mojom::BundleResponsePtr response,
     data_decoder::mojom::BundleResponseParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(metadata_ready_);
+  DCHECK_NE(state_, State::kInitial);
 
   std::move(callback).Run(std::move(response), std::move(error));
+}
+
+void WebBundleReader::OnParserDisconnected() {
+  DCHECK_EQ(state_, State::kMetadataReady);
+
+  state_ = State::kDisconnected;
+  parser_ = nullptr;
+  // Reconnection will be attempted on next ReadResponse() call.
 }
 
 }  // namespace content

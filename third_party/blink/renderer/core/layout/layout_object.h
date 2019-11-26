@@ -152,7 +152,7 @@ const int kShowTreeCharacterOffset = 39;
 // The purpose of the layout tree is to do layout (aka reflow) and store its
 // results for painting and hit-testing. Layout is the process of sizing and
 // positioning Nodes on the page. In Blink, layouts always start from a relayout
-// boundary (see objectIsRelayoutBoundary in LayoutObject.cpp). As such, we
+// boundary (see ObjectIsRelayoutBoundary in layout_object.cc). As such, we
 // need to mark the ancestors all the way to the enclosing relayout boundary in
 // order to do a correct layout.
 //

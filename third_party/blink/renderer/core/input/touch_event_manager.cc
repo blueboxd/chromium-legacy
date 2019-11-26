@@ -539,7 +539,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
       Node* node = result.InnerNode();
       if (!node)
         return;
-      if (auto* canvas = ToHTMLCanvasElementOrNull(node)) {
+      if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
         HitTestCanvasResult* hit_test_canvas_result =
             canvas->GetControlAndIdIfHitRegionExists(
                 result.PointInInnerNodeFrame());

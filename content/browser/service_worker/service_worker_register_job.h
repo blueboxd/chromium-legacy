@@ -182,8 +182,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   ServiceWorkerContextCore* const context_;
 
   std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
-  std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-      compared_script_info_map_;
 
   RegistrationJobType job_type_;
   const GURL scope_;

@@ -200,8 +200,7 @@ class OverloadGroup(WithIdentifier):
 
         # step 4. Consider the two "innermost" types ...
         def is_interface_like(idl_type):
-            # TODO(yukishiino): Add buffer source types into IdlType.
-            return idl_type.is_interface  # or buffer source types
+            return idl_type.is_interface or idl_type.is_buffer_source_type
 
         def is_dictionary_like(idl_type):
             return (idl_type.is_dictionary or idl_type.is_record
@@ -235,8 +234,8 @@ class OverloadGroup(WithIdentifier):
             # Additional requirements: The two identified interface-like types
             # are not the same, and no single platform object implements both
             # interface-like types.
-            if not (type1.is_interface and type2.is_interface):
-                return type1.identifier != type2.identifier
+            if type1.keyword_typename or type2.keyword_typename:
+                return type1.keyword_typename != type2.keyword_typename
             interface1 = type1.type_definition_object
             interface2 = type2.type_definition_object
             return not (

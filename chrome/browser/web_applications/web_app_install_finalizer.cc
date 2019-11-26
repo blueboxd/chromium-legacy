@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -18,17 +17,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/preferences/public/cpp/dictionary_value_update.h"
-#include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
@@ -112,75 +107,6 @@ void SetWebAppIcons(const std::vector<WebApplicationIconInfo>& icon_infos,
   web_app->SetIcons(std::move(web_app_icons));
 }
 
-// The stored preferences look like:
-// "web_apps": {
-//   "web_app_ids": {
-//     "<app_id_1>": {
-//       "was_external_app_uninstalled_by_user": true,
-//     },
-//     "<app_id_N>": {
-//       "was_external_app_uninstalled_by_user": false,
-//     }
-//   }
-// }
-//
-
-constexpr char kWasExternalAppUninstalledByUser[] =
-    "was_external_app_uninstalled_by_user";
-
-const base::DictionaryValue* GetWebAppDictionary(
-    const PrefService* pref_service,
-    const AppId& app_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::DictionaryValue* web_apps_prefs =
-      pref_service->GetDictionary(prefs::kWebAppsPreferences);
-  if (!web_apps_prefs)
-    return nullptr;
-
-  const base::Value* web_app_prefs = web_apps_prefs->FindDictKey(app_id);
-  if (!web_app_prefs)
-    return nullptr;
-
-  return &base::Value::AsDictionaryValue(*web_app_prefs);
-}
-
-std::unique_ptr<prefs::DictionaryValueUpdate> UpdateWebAppDictionary(
-    std::unique_ptr<prefs::DictionaryValueUpdate> web_apps_prefs_update,
-    const AppId& app_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs_update;
-  if (!web_apps_prefs_update->GetDictionaryWithoutPathExpansion(
-          app_id, &web_app_prefs_update)) {
-    web_app_prefs_update =
-        web_apps_prefs_update->SetDictionaryWithoutPathExpansion(
-            app_id, std::make_unique<base::DictionaryValue>());
-  }
-  return web_app_prefs_update;
-}
-
-bool GetBoolWebAppPref(const PrefService* pref_service,
-                       const AppId& app_id,
-                       base::StringPiece path) {
-  const base::DictionaryValue* web_app_prefs =
-      GetWebAppDictionary(pref_service, app_id);
-  bool pref_value = false;
-  if (web_app_prefs)
-    web_app_prefs->GetBoolean(path, &pref_value);
-  return pref_value;
-}
-
-void UpdateBoolWebAppPref(PrefService* pref_service,
-                          const AppId& app_id,
-                          base::StringPiece path,
-                          bool value) {
-  prefs::ScopedDictionaryPrefUpdate update(pref_service,
-                                           prefs::kWebAppsPreferences);
-
-  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
-      UpdateWebAppDictionary(update.Get(), app_id);
-  web_app_prefs->SetBoolean(path, value);
-}
-
 }  // namespace
 
 WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
@@ -191,12 +117,6 @@ WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
       icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
-
-// static
-void WebAppInstallFinalizer::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kWebAppsPreferences);
-}
 
 void WebAppInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,

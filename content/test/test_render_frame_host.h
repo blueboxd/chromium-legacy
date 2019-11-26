@@ -153,8 +153,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateCommitProcessed(
       NavigationRequest* navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       bool same_document);
@@ -173,10 +173,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Exposes the interface registry to be manipulated for testing.
   service_manager::BinderRegistry& binder_registry() { return *registry_; }
 
-  // Returns a pending InterfaceProvider request that is safe to bind to an
-  // implementation, but will never receive any interface requests.
-  static service_manager::mojom::InterfaceProviderRequest
-  CreateStubInterfaceProviderRequest();
+  // Returns a PendingReceiver<InterfaceProvider> that is safe to bind to an
+  // implementation, but will never receive any interface receivers.
+  static mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+  CreateStubInterfaceProviderReceiver();
 
   // Returns a PendingReceiver<BrowserInterfaceBroker> that is safe to bind to
   // an implementation, but will never receive any interface requests.

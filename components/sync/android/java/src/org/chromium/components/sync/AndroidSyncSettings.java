@@ -320,6 +320,8 @@ public class AndroidSyncSettings {
     }
 
     private void notifyObservers() {
+        // TODO(crbug.com/1028568): This should post tasks to the UI thread to prevent individual
+        // observers from having to post tasks themselves.
         for (AndroidSyncSettingsObserver observer : mObservers) {
             observer.androidSyncSettingsChanged();
         }

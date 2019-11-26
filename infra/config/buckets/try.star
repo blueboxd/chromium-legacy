@@ -642,6 +642,7 @@ def gpu_builder(*, name, builderless=False, execution_timeout=6 * time.hour, **k
 def gpu_android_builder(*, name, **kwargs):
   return gpu_builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.android',
       **kwargs
   )
@@ -669,52 +670,42 @@ gpu_android_builder(
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-l-nexus-5-32',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-l-nexus-6-32',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-m-nexus-5x-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-m-nexus-5x-deqp-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-m-nexus-5x-skgl-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-m-nexus-6p-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-m-nexus-9-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-n-nvidia-shield-tv-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-p-pixel-2-32',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-p-pixel-2-skv-32',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         # Some locations disabled due to limited capacity.
         location_regexp = [
@@ -734,27 +725,22 @@ gpu_android_builder(
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-32',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-q-pixel-2-vk-32',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-fyi-try-android-q-pixel-2-vk-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_android_builder(
     name = 'gpu-try-android-m-nexus-5x-64',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 

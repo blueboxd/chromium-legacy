@@ -421,14 +421,14 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (current_role == ax::mojom::Role::kMenuItemCheckBox ||
       current_role == ax::mojom::Role::kMenuItem ||
       current_role == ax::mojom::Role::kMenuItemRadio)
-    return IsHTMLMenuElement(*parent_node);
+    return IsA<HTMLMenuElement>(*parent_node);
 
   if (!current_element)
     return false;
   if (IsHTMLTableCellElement(*current_element))
     return IsA<HTMLTableRowElement>(*parent_node);
   if (IsA<HTMLTableRowElement>(*current_element))
-    return IsHTMLTableSectionElement(parent_html_element);
+    return IsA<HTMLTableSectionElement>(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
   // presentation role is handled in AXListBoxOption because ListBoxOption Role
@@ -624,7 +624,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLButtonElement>(*GetNode()))
     return ButtonRoleType();
 
-  if (IsHTMLDetailsElement(*GetNode()))
+  if (IsA<HTMLDetailsElement>(*GetNode()))
     return ax::mojom::Role::kDetails;
 
   if (IsHTMLSummaryElement(*GetNode())) {
@@ -653,7 +653,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kTextFieldWithComboBox;
     if (type == input_type_names::kButton) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItem;
@@ -661,7 +661,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     }
     if (type == input_type_names::kCheckbox) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItemCheckBox;
@@ -677,7 +677,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kButton;
     if (type == input_type_names::kRadio) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItemRadio;
@@ -720,7 +720,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (HeadingLevel())
     return ax::mojom::Role::kHeading;
 
-  if (IsHTMLDivElement(*GetNode()))
+  if (IsA<HTMLDivElement>(*GetNode()))
     return ax::mojom::Role::kGenericContainer;
 
   if (IsA<HTMLMeterElement>(*GetNode()))
@@ -819,7 +819,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kIgnored;
 
   // Treat <iframe> and <frame> the same.
-  if (IsA<HTMLIFrameElement>(*GetNode()) || IsHTMLFrameElement(*GetNode())) {
+  if (IsA<HTMLIFrameElement>(*GetNode()) || IsA<HTMLFrameElement>(*GetNode())) {
     const AtomicString& aria_role =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
     if (aria_role == "none" || aria_role == "presentation")
@@ -1169,7 +1169,7 @@ bool AXNodeObject::IsInPageLinkTarget() const {
 
   if (element->HasID() &&
       (IsLandmarkRelated() || IsA<HTMLSpanElement>(element) ||
-       IsHTMLDivElement(element))) {
+       IsA<HTMLDivElement>(element))) {
     return true;
   }
   return false;

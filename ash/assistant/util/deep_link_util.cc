@@ -25,17 +25,24 @@ namespace {
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
 constexpr char kActionParamKey[] = "action";
+constexpr char kCategoryParamKey[] = "category";
 constexpr char kClientIdParamKey[] = "clientId";
 constexpr char kDurationMsParamKey[] = "durationMs";
+constexpr char kHrefParamKey[] = "href";
 constexpr char kIdParamKey[] = "id";
+constexpr char kIndexParamKey[] = "index";
 constexpr char kQueryParamKey[] = "q";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 constexpr char kSourceParamKey[] = "source";
+constexpr char kVeIdParamKey[] = "veId";
 
 // Supported alarm/timer action deep link param values.
 constexpr char kAddTimeToTimer[] = "addTimeToTimer";
 constexpr char kStopAlarmTimerRinging[] = "stopAlarmTimerRinging";
+
+// Supported proactive suggestions action deep link param values.
+constexpr char kCardClick[] = "cardClick";
 
 // Supported reminder action deep link param values.
 constexpr char kCreateReminder[] = "create";
@@ -49,6 +56,8 @@ constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantListsPrefix[] = "googleassistant://lists";
 constexpr char kAssistantNotesPrefix[] = "googleassistant://notes";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
+constexpr char kAssistantProactiveSuggestionsPrefix[] =
+    "googleassistant://proactive-suggestions";
 constexpr char kAssistantQueryPrefix[] = "googleassistant://send-query";
 constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
 constexpr char kAssistantScreenshotPrefix[] =
@@ -140,12 +149,16 @@ base::Optional<std::string> GetDeepLinkParam(
   // Map of supported deep link params to their keys.
   static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
       {DeepLinkParam::kAction, kActionParamKey},
+      {DeepLinkParam::kCategory, kCategoryParamKey},
       {DeepLinkParam::kClientId, kClientIdParamKey},
       {DeepLinkParam::kDurationMs, kDurationMsParamKey},
+      {DeepLinkParam::kHref, kHrefParamKey},
       {DeepLinkParam::kId, kIdParamKey},
+      {DeepLinkParam::kIndex, kIndexParamKey},
       {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
-      {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
+      {DeepLinkParam::kRelaunch, kRelaunchParamKey},
+      {DeepLinkParam::kVeId, kVeIdParamKey}};
 
   const std::string& key = kDeepLinkParamKeys.at(param);
   const auto it = params.find(key);
@@ -153,57 +166,6 @@ base::Optional<std::string> GetDeepLinkParam(
              ? base::Optional<std::string>(net::UnescapeBinaryURLComponent(
                    it->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
              : base::nullopt;
-}
-
-base::Optional<bool> GetDeepLinkParamAsBool(
-    const std::map<std::string, std::string>& params,
-    DeepLinkParam param) {
-  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
-  if (value == "true")
-    return true;
-
-  if (value == "false")
-    return false;
-
-  return base::nullopt;
-}
-
-base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
-    const std::map<std::string, std::string> params,
-    DeepLinkParam param) {
-  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
-  if (value == kCreateReminder)
-    return ReminderAction::kCreate;
-
-  if (value == kEditReminder)
-    return ReminderAction::kEdit;
-
-  return base::nullopt;
-}
-
-DeepLinkType GetDeepLinkType(const GURL& url) {
-  // Map of supported deep link types to their prefixes.
-  static const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
-      {DeepLinkType::kAlarmTimer, kAssistantAlarmTimerPrefix},
-      {DeepLinkType::kChromeSettings, kChromeSettingsPrefix},
-      {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
-      {DeepLinkType::kLists, kAssistantListsPrefix},
-      {DeepLinkType::kNotes, kAssistantNotesPrefix},
-      {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
-      {DeepLinkType::kQuery, kAssistantQueryPrefix},
-      {DeepLinkType::kReminders, kAssistantRemindersPrefix},
-      {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
-      {DeepLinkType::kSettings, kAssistantSettingsPrefix},
-      {DeepLinkType::kTaskManager, kAssistantTaskManagerPrefix},
-      {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
-
-  for (const auto& supported_deep_link : kSupportedDeepLinks) {
-    if (base::StartsWith(url.spec(), supported_deep_link.second,
-                         base::CompareCase::SENSITIVE)) {
-      return supported_deep_link.first;
-    }
-  }
-  return DeepLinkType::kUnsupported;
 }
 
 base::Optional<AlarmTimerAction> GetDeepLinkParamAsAlarmTimerAction(
@@ -222,6 +184,39 @@ base::Optional<AlarmTimerAction> GetDeepLinkParamAsAlarmTimerAction(
   return base::nullopt;
 }
 
+base::Optional<bool> GetDeepLinkParamAsBool(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+  if (value == "true")
+    return true;
+
+  if (value == "false")
+    return false;
+
+  return base::nullopt;
+}
+
+base::Optional<GURL> GetDeepLinkParamAsGURL(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& spec = GetDeepLinkParam(params, param);
+  return spec.has_value() ? base::Optional<GURL>(spec.value()) : base::nullopt;
+}
+
+base::Optional<int> GetDeepLinkParamAsInt(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+  if (value.has_value()) {
+    int result;
+    if (base::StringToInt(value.value(), &result))
+      return result;
+  }
+
+  return base::nullopt;
+}
+
 base::Optional<int64_t> GetDeepLinkParamAsInt64(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param) {
@@ -231,6 +226,29 @@ base::Optional<int64_t> GetDeepLinkParamAsInt64(
     if (base::StringToInt64(value.value(), &result))
       return result;
   }
+
+  return base::nullopt;
+}
+
+base::Optional<ProactiveSuggestionsAction>
+GetDeepLinkParamAsProactiveSuggestionsAction(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+  if (value == kCardClick)
+    return ProactiveSuggestionsAction::kCardClick;
+  return base::nullopt;
+}
+
+base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
+    const std::map<std::string, std::string> params,
+    DeepLinkParam param) {
+  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
+  if (value == kCreateReminder)
+    return ReminderAction::kCreate;
+
+  if (value == kEditReminder)
+    return ReminderAction::kEdit;
 
   return base::nullopt;
 }
@@ -247,6 +265,33 @@ base::Optional<base::TimeDelta> GetDeepLinkParamAsTimeDelta(
     return base::nullopt;
 
   return base::TimeDelta::FromMilliseconds(duration_ms.value());
+}
+
+DeepLinkType GetDeepLinkType(const GURL& url) {
+  // Map of supported deep link types to their prefixes.
+  static const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
+      {DeepLinkType::kAlarmTimer, kAssistantAlarmTimerPrefix},
+      {DeepLinkType::kChromeSettings, kChromeSettingsPrefix},
+      {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
+      {DeepLinkType::kLists, kAssistantListsPrefix},
+      {DeepLinkType::kNotes, kAssistantNotesPrefix},
+      {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
+      {DeepLinkType::kProactiveSuggestions,
+       kAssistantProactiveSuggestionsPrefix},
+      {DeepLinkType::kQuery, kAssistantQueryPrefix},
+      {DeepLinkType::kReminders, kAssistantRemindersPrefix},
+      {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
+      {DeepLinkType::kSettings, kAssistantSettingsPrefix},
+      {DeepLinkType::kTaskManager, kAssistantTaskManagerPrefix},
+      {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
+
+  for (const auto& supported_deep_link : kSupportedDeepLinks) {
+    if (base::StartsWith(url.spec(), supported_deep_link.second,
+                         base::CompareCase::SENSITIVE)) {
+      return supported_deep_link.first;
+    }
+  }
+  return DeepLinkType::kUnsupported;
 }
 
 bool IsDeepLinkType(const GURL& url, DeepLinkType type) {
@@ -335,6 +380,7 @@ base::Optional<GURL> GetWebUrl(
     case DeepLinkType::kChromeSettings:
     case DeepLinkType::kFeedback:
     case DeepLinkType::kOnboarding:
+    case DeepLinkType::kProactiveSuggestions:
     case DeepLinkType::kQuery:
     case DeepLinkType::kScreenshot:
     case DeepLinkType::kTaskManager:

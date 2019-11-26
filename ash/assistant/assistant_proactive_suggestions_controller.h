@@ -48,6 +48,9 @@ class AssistantProactiveSuggestionsController
   void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
   void OnAssistantReady() override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
 
   // ProactiveSuggestionsClient::Delegate:
   void OnProactiveSuggestionsClientDestroying() override;

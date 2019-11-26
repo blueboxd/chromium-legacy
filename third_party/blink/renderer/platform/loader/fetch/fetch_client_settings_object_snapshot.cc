@@ -20,8 +20,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
           fetch_client_setting_object.MimeTypeCheckForClassicWorkerScript(),
           fetch_client_setting_object.GetAddressSpace(),
           fetch_client_setting_object.GetInsecureRequestsPolicy(),
-          fetch_client_setting_object.GetUpgradeInsecureNavigationsSet(),
-          fetch_client_setting_object.GetMixedAutoUpgradeOptOut()) {}
+          fetch_client_setting_object.GetUpgradeInsecureNavigationsSet()) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
@@ -35,8 +34,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
           data->mime_type_check_for_classic_worker_script,
           data->address_space,
           data->insecure_requests_policy,
-          data->insecure_navigations_set,
-          data->mixed_autoupgrade_opt_out) {}
+          data->insecure_navigations_set) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const KURL& global_object_url,
@@ -48,8 +46,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
     network::mojom::IPAddressSpace address_space,
     WebInsecureRequestPolicy insecure_requests_policy,
-    InsecureNavigationsSet insecure_navigations_set,
-    bool mixed_autoupgrade_opt_out)
+    InsecureNavigationsSet insecure_navigations_set)
     : global_object_url_(global_object_url),
       base_url_(base_url),
       security_origin_(std::move(security_origin)),
@@ -60,7 +57,6 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
           mime_type_check_for_classic_worker_script),
       address_space_(address_space),
       insecure_requests_policy_(insecure_requests_policy),
-      insecure_navigations_set_(std::move(insecure_navigations_set)),
-      mixed_autoupgrade_opt_out_(mixed_autoupgrade_opt_out) {}
+      insecure_navigations_set_(std::move(insecure_navigations_set)) {}
 
 }  // namespace blink

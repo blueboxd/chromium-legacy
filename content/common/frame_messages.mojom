@@ -11,7 +11,8 @@ import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 struct DidCommitProvisionalLoadParams;
 
 struct DidCommitProvisionalLoadInterfaceParams {
-  service_manager.mojom.InterfaceProvider& interface_provider_request;
+  pending_receiver<service_manager.mojom.InterfaceProvider>
+      interface_provider_receiver;
   pending_receiver<blink.mojom.BrowserInterfaceBroker>
       browser_interface_broker_receiver;
 };

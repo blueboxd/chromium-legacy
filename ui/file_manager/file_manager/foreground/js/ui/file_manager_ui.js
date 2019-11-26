@@ -187,11 +187,11 @@ class FileManagerUI {
 
     /**
      * The button to sort the file list.
-     * @type {!cr.ui.MenuButton}
+     * @type {!cr.ui.MultiMenuButton}
      * @const
      */
     this.sortButton =
-        util.queryDecoratedElement('#sort-button', cr.ui.MenuButton);
+        util.queryDecoratedElement('#sort-button', cr.ui.MultiMenuButton);
 
     /**
      * Ripple effect of sort button.
@@ -227,11 +227,11 @@ class FileManagerUI {
 
     /**
      * The button to open context menu in the check-select mode.
-     * @type {!cr.ui.MenuButton}
+     * @type {!cr.ui.MultiMenuButton}
      * @const
      */
-    this.selectionMenuButton =
-        util.queryDecoratedElement('#selection-menu-button', cr.ui.MenuButton);
+    this.selectionMenuButton = util.queryDecoratedElement(
+        '#selection-menu-button', cr.ui.MultiMenuButton);
 
     /**
      * Directory tree.

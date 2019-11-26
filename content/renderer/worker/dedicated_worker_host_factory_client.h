@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_WORKER_DEDICATED_WORKER_HOST_FACTORY_CLIENT_H_
 
 #include <memory>
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -64,7 +65,8 @@ class DedicatedWorkerHostFactoryClient final
  private:
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
+      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+          interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;
   void OnScriptLoadStarted(

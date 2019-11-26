@@ -855,7 +855,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtStartOfInsertedContent()
 static void RemoveHeadContents(ReplacementFragment& fragment) {
   Node* next = nullptr;
   for (Node* node = fragment.FirstChild(); node; node = next) {
-    if (IsA<HTMLBaseElement>(*node) || IsHTMLLinkElement(*node) ||
+    if (IsA<HTMLBaseElement>(*node) || IsA<HTMLLinkElement>(*node) ||
         IsA<HTMLMetaElement>(*node) || IsA<HTMLStyleElement>(*node) ||
         IsA<HTMLTitleElement>(*node) || IsA<SVGStyleElement>(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
@@ -2077,7 +2077,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   if (node_after_insertion_pos && node_after_insertion_pos->parentNode() &&
       IsA<HTMLBRElement>(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
-          ToHTMLBRElement(node_after_insertion_pos),
+          To<HTMLBRElement>(node_after_insertion_pos),
           VisiblePosition::BeforeNode(*node_after_insertion_pos))) {
     RemoveNodeAndPruneAncestors(node_after_insertion_pos, editing_state);
     if (editing_state->IsAborted())

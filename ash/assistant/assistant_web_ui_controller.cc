@@ -98,6 +98,10 @@ void AssistantWebUiController::OnDeepLinkReceived(
     return;
 
   ShowUi();
+
+  // Open the url associated w/ the deep link.
+  web_container_view_->OpenUrl(
+      assistant::util::GetWebUrl(type, params).value());
 }
 
 void AssistantWebUiController::ShowUi() {

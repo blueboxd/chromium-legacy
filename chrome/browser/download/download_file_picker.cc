@@ -56,7 +56,7 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
   }
   file_type_info.include_all_files = true;
   file_type_info.allowed_paths =
-      ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
+      ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH;
   gfx::NativeWindow owning_window =
       web_contents ? platform_util::GetTopLevel(web_contents->GetNativeView())
                    : gfx::kNullNativeWindow;

@@ -1629,6 +1629,10 @@ Unknown properties are collapsed to zero. -->
   <int value="257" label="GATT_FAILURE"/>
 </enum>
 
+<enum name="AndroidIntentNonSafelistedHeaderNameHashes">
+  <int value="4229679564" label="user-agent"/>
+</enum>
+
 <enum name="AndroidKernelVersion">
   <int value="131078" label="2.6"/>
   <int value="196608" label="3.0"/>
@@ -4921,7 +4925,7 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BackForwardCacheNotRestoredReason">
-  <int value="0" label="Not main frame. This shouldn't be recorded."/>
+  <int value="0" label="Not main frame (should not be happening)"/>
   <int value="1" label="Back forward cache disabled"/>
   <int value="2" label="Related active contents exist"/>
   <int value="3" label="HTTP status not OK"/>
@@ -4942,6 +4946,10 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Granted media stream access"/>
   <int value="19" label="Scheduler tracked feature used"/>
   <int value="20" label="Conflicting BrowsingInstance"/>
+  <int value="21" label="Cache flushed"/>
+  <int value="22" label="Service worker version activation"/>
+  <int value="23" label="Session restored"/>
+  <int value="24" label="Unknown (should not be happening)"/>
 </enum>
 
 <enum name="BackForwardNavigationType">
@@ -11223,6 +11231,12 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Hash Mismatch"/>
 </enum>
 
+<enum name="CorruptionStates">
+  <int value="0" label="Corruption Detected After Mount"/>
+  <int value="1" label="Mount Failed"/>
+  <int value="2" label="Rolled Back During Mount"/>
+</enum>
+
 <enum name="CorsAccessCheckError">
   <summary>The CORS check results for each request.</summary>
   <int value="0" label="CORS request was permitted"/>
@@ -11448,6 +11462,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="CRAS_CLIENT_TYPE_CHROME"/>
   <int value="5" label="CRAS_CLIENT_TYPE_ARC"/>
   <int value="6" label="CRAS_CLIENT_TYPE_CROSVM"/>
+  <int value="7" label="CRAS_CLIENT_TYPE_SERVER_STREAM"/>
 </enum>
 
 <enum name="CrasDeviceType">
@@ -51219,6 +51234,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="kCloseByUser"/>
 </enum>
 
+<enum name="ProactiveSuggestionsVeId">
+  <int value="76953" label="kRelatedNewsTimelineCard"/>
+  <int value="76954" label="kRelatedNewsVideoCard"/>
+  <int value="76955" label="kRelatedPageCard"/>
+  <int value="76958" label="kRelatedYoutubeVideoCard"/>
+</enum>
+
 <enum name="ProbeResult">
   <int value="0" label="No internet"/>
   <int value="1" label="Server error"/>
@@ -59655,6 +59677,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="WWW_MISMATCH_FOUND_IN_SAN"/>
   <int value="11" label="SHOW_MITM_SOFTWARE_INTERSTITIAL"/>
   <int value="12" label="OS_REPORTS_CAPTIVE_PORTAL"/>
+  <int value="13" label="SHOW_BLOCKED_INTERCEPTION_INTERSTITIAL"/>
 </enum>
 
 <enum name="SSLErrorLearnMoreNavigationResult">
@@ -65038,7 +65061,7 @@ Full version information for the fingerprint enum values:
 <enum name="WebAppInstallResultCode">
   <int value="0" label="Success"/>
   <int value="1" label="AlreadyInstalled"/>
-  <int value="2" label="FailedUnknownReason"/>
+  <int value="2" label="DEPRECATED: FailedUnknownReason"/>
   <int value="3" label="GetWebApplicationInfoFailed"/>
   <int value="4" label="PreviouslyUninstalled"/>
   <int value="5" label="WebContentsDestroyed"/>
@@ -65052,6 +65075,12 @@ Full version information for the fingerprint enum values:
   <int value="13" label="InstallURLRedirected"/>
   <int value="14" label="InstallURLLoadFailed"/>
   <int value="15" label="ExpectedAppIdCheckFailed"/>
+  <int value="16" label="InstallURLLoadTimeout"/>
+  <int value="17" label="FailedPlaceholderUninstall"/>
+  <int value="18" label="NotInstallable"/>
+  <int value="19" label="BookmarkExtensionInstallError"/>
+  <int value="20" label="ApkWebInstallFailed"/>
+  <int value="21" label="FailedShuttingDown"/>
 </enum>
 
 <enum name="WebAppInstallSource">

@@ -5,23 +5,27 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -36,6 +40,11 @@
 #endif
 
 namespace extensions {
+
+static constexpr char kInstallResultExtensionErrorHistogramName[] =
+    "Webapp.InstallResultExtensionError.System.Profiles";
+static constexpr char kInstallResultExtensionDisabledReasonHistogramName[] =
+    "Webapp.InstallResultExtensionDisabledReason.System.Profiles";
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
     : externally_installed_app_prefs_(profile->GetPrefs()), profile_(profile) {
@@ -62,7 +71,9 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
       weak_ptr_factory_.GetWeakPtr(), web_app_info.app_url, launch_type,
-      options.locally_installed, std::move(callback), crx_installer));
+      options.locally_installed,
+      options.install_source == WebappInstallSource::SYSTEM_DEFAULT,
+      std::move(callback), crx_installer));
 
   switch (options.install_source) {
       // TODO(nigeltao/ortuno): should these two cases lead to different
@@ -262,12 +273,21 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     const GURL& app_url,
     LaunchType launch_type,
     bool is_locally_installed,
+    bool is_system_app,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(web_app::AppId(),
-                            web_app::InstallResultCode::kFailedUnknownReason);
+    if (is_system_app) {
+      std::string extension_install_error_histogram_name =
+          std::string(kInstallResultExtensionErrorHistogramName) + "." +
+          web_app::GetProfileCategoryForLogging(profile_);
+      base::UmaHistogramEnumeration(extension_install_error_histogram_name,
+                                    error.value().detail());
+    }
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
     return;
   }
 
@@ -275,9 +295,17 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
   DCHECK(extension);
 
   if (extension != GetEnabledExtension(extension->id())) {
+    int extension_disabled_reasons =
+        ExtensionPrefs::Get(profile_)->GetDisableReasons(extension->id());
     LOG(ERROR) << "Installed extension was disabled: "
-               << ExtensionPrefs::Get(profile_)->GetDisableReasons(
-                      extension->id());
+               << extension_disabled_reasons;
+    if (is_system_app) {
+      std::string extension_disabled_reason_histogram_name =
+          std::string(kInstallResultExtensionDisabledReasonHistogramName) +
+          "." + web_app::GetProfileCategoryForLogging(profile_);
+      base::UmaHistogramSparse(extension_disabled_reason_histogram_name,
+                               extension_disabled_reasons);
+    }
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;
@@ -301,8 +329,9 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(web_app::AppId(),
-                            web_app::InstallResultCode::kFailedUnknownReason);
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
     return;
   }
 

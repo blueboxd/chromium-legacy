@@ -97,9 +97,10 @@ class InterceptAndCancelDidCommitProvisionalLoad
     return intercepted_messages_;
   }
 
-  std::vector<::service_manager::mojom::InterfaceProviderRequest>&
-  intercepted_requests() {
-    return intercepted_requests_;
+  std::vector<
+      mojo::PendingReceiver<::service_manager::mojom::InterfaceProvider>>&
+  intercepted_receivers() {
+    return intercepted_receivers_;
   }
 
  protected:
@@ -111,10 +112,10 @@ class InterceptAndCancelDidCommitProvisionalLoad
       override {
     intercepted_navigations_.push_back(navigation_request);
     intercepted_messages_.push_back(*params);
-    intercepted_requests_.push_back(
+    intercepted_receivers_.push_back(
         *interface_params
-            ? std::move((*interface_params)->interface_provider_request)
-            : nullptr);
+            ? std::move((*interface_params)->interface_provider_receiver)
+            : mojo::NullReceiver());
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -126,8 +127,9 @@ class InterceptAndCancelDidCommitProvisionalLoad
   std::vector<NavigationRequest*> intercepted_navigations_;
   std::vector<::FrameHostMsg_DidCommitProvisionalLoad_Params>
       intercepted_messages_;
-  std::vector<::service_manager::mojom::InterfaceProviderRequest>
-      intercepted_requests_;
+  std::vector<
+      mojo::PendingReceiver<::service_manager::mojom::InterfaceProvider>>
+      intercepted_receivers_;
   std::unique_ptr<base::RunLoop> loop_;
 };
 

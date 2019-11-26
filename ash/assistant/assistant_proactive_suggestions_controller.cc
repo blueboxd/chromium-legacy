@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -17,6 +18,9 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+using DeepLinkParam = assistant::util::DeepLinkParam;
+using DeepLinkType = assistant::util::DeepLinkType;
 
 AssistantProactiveSuggestionsController::
     AssistantProactiveSuggestionsController(
@@ -53,6 +57,45 @@ void AssistantProactiveSuggestionsController::OnAssistantReady() {
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
     client->SetDelegate(this);
+}
+
+void AssistantProactiveSuggestionsController::OnDeepLinkReceived(
+    DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  // This controller only handles proactive suggestions deep links.
+  if (type != DeepLinkType::kProactiveSuggestions)
+    return;
+
+  // Currently, the only supported deep link action is |kCardClick|.
+  const base::Optional<assistant::util::ProactiveSuggestionsAction> action =
+      assistant::util::GetDeepLinkParamAsProactiveSuggestionsAction(
+          params, DeepLinkParam::kAction);
+  if (action != assistant::util::ProactiveSuggestionsAction::kCardClick)
+    return;
+
+  // A deep link of action type |kCardClick| should specify an |kHref| value
+  // which is a URL to be handled by Assistant (likely opened in the browser).
+  const base::Optional<GURL> url =
+      assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
+  if (url)
+    assistant_controller_->OpenUrl(url.value());
+
+  // For metrics tracking, obtain the |category| of the content associated w/
+  // the proactive suggestion card that was clicked...
+  const base::Optional<int> category =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kCategory);
+
+  // ...as well as the |index| of the card within its list...
+  const base::Optional<int> index =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kIndex);
+
+  // ...and finally the VE ID associated w/ the type of card itself.
+  const base::Optional<int> veId =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kVeId);
+
+  // We record all of these metrics in UMA to track engagement.
+  assistant::metrics::RecordProactiveSuggestionsCardClick(category, index,
+                                                          veId);
 }
 
 void AssistantProactiveSuggestionsController::

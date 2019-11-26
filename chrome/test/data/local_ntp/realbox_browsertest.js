@@ -185,14 +185,14 @@ test.realbox1.testInputSentAsQuery = function() {
 };
 
 test.realbox1.testReplyWithMatches = function() {
-  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.value = '      hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(1, test.realbox.queries.length);
-  assertEquals('hello world', test.realbox.queries[0].input);
+  assertEquals(test.realbox.realboxEl.value, test.realbox.queries[0].input);
 
   const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
   chrome.embeddedSearch.searchBox.autocompleteresultchanged(
-      {input: test.realbox.realboxEl.value, matches});
+      {input: test.realbox.realboxEl.value.trimLeft(), matches});
 
   assertTrue(test.realbox.areMatchesShowing());
 

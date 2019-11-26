@@ -98,23 +98,21 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   }
   void PauseReadingBodyFromNet() override { NOTIMPLEMENTED(); }
   void ResumeReadingBodyFromNet() override { NOTIMPLEMENTED(); }
-  void InterceptResponse(network::mojom::URLLoaderPtr new_loader,
-                         mojo::PendingReceiver<network::mojom::URLLoaderClient>
-                             new_client_receiver,
-                         network::mojom::URLLoaderPtr* original_loader,
-                         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
-                             original_client_receiver) override {
+  void InterceptResponse(
+      mojo::PendingRemote<network::mojom::URLLoader> new_loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>
+          new_client_receiver,
+      mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+          original_client_receiver) override {
     is_intercepted_ = true;
 
-    destination_loader_ptr_ = std::move(new_loader);
+    destination_loader_remote_.Bind(std::move(new_loader));
     ASSERT_TRUE(
         mojo::FusePipes(std::move(new_client_receiver),
                         mojo::PendingRemote<network::mojom::URLLoaderClient>(
                             destination_loader_client_.CreateRemote())));
-
-    mojo::PendingRemote<network::mojom::URLLoader> pending_remote;
-    pending_receiver_ = pending_remote.InitWithNewPipeAndPassReceiver();
-    original_loader->Bind(std::move(pending_remote));
+    pending_receiver_ = original_loader->InitWithNewPipeAndPassReceiver();
 
     *original_client_receiver =
         source_loader_client_remote_.BindNewPipeAndPassReceiver();
@@ -179,7 +177,7 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   network::mojom::URLResponseHeadPtr updated_response_head_;
 
   // A pair of a loader and a loader client for destination of the response.
-  network::mojom::URLLoaderPtr destination_loader_ptr_;
+  mojo::Remote<network::mojom::URLLoader> destination_loader_remote_;
   network::TestURLLoaderClient destination_loader_client_;
 
   // A pair of a receiver and a remote for source of the response.

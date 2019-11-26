@@ -35,7 +35,7 @@ class ReaderModeIconView : public PageActionIconView,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  bool Update() override;
+  void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

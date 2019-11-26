@@ -71,4 +71,25 @@ base::FilePath GetWebAppsDirectory(Profile* profile) {
   return profile->GetPath().Append(base::FilePath(kWebAppsDirectoryName));
 }
 
+std::string GetProfileCategoryForLogging(Profile* profile) {
+#ifdef OS_CHROMEOS
+  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return "SigninOrLockScreen";
+  } else if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
+    return "Kiosk";
+  } else if (chromeos::ProfileHelper::IsEphemeralUserProfile(profile)) {
+    return "Ephemeral";
+  } else if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    return "Primary";
+  } else {
+    return "Other";
+  }
+#else
+  // Chrome OS profiles are different from non-ChromeOS ones. Because System Web
+  // Apps are not installed on non Chrome OS, "Other" is returned here.
+  return "Other";
+#endif
+}
+
 }  // namespace web_app

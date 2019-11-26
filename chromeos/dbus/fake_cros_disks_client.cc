@@ -76,6 +76,10 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 MountAccessMode access_mode,
                                 RemountOption remount,
                                 VoidDBusMethodCallback callback) {
+  if (block_mount_) {
+    return;
+  }
+
   // This fake implementation assumes mounted path is device when source_format
   // is empty, or an archive otherwise.
   MountType type =

@@ -211,7 +211,9 @@ public final class NdefMessageUtils {
                         new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
                 break;
         }
-        record.id = new String(ndefRecord.getId(), "UTF-8");
+        if (record != null) {
+            record.id = new String(ndefRecord.getId(), "UTF-8");
+        }
         return record;
     }
 

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,8 +158,8 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
         base::BindRepeating(
             &TestCloudPrintProxyService::HandleCloudPrintProxyRequest,
             base::Unretained(this)));
-    service_manager::mojom::InterfaceProviderPtr handle;
-    mojo::MakeRequest(&handle);
+    mojo::PendingRemote<service_manager::mojom::InterfaceProvider> handle;
+    ignore_result(handle.InitWithNewPipeAndPassReceiver());
     process_control_.SetMojoHandle(std::move(handle));
   }
 

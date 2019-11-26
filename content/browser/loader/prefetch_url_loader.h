@@ -133,7 +133,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   // For the actual request.
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
   mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
 
   // To be a URLLoader for the client.

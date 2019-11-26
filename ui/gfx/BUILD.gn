@@ -13,6 +13,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 # Several targets want to include this header file, and some of them are
 # child dependencies of "gfx". Therefore, we separate it out here so multiple
 # targets can all have a dependency for header checking purposes without
@@ -64,10 +70,6 @@ jumbo_component("geometry_skia") {
 
 jumbo_component("gfx") {
   sources = [
-    "android/java_bitmap.cc",
-    "android/java_bitmap.h",
-    "android/view_configuration.cc",
-    "android/view_configuration.h",
     "break_list.h",
     "color_analysis.cc",
     "color_analysis.h",
@@ -75,8 +77,6 @@ jumbo_component("gfx") {
     "color_transform.h",
     "decorated_text.cc",
     "decorated_text.h",
-    "decorated_text_mac.h",
-    "decorated_text_mac.mm",
     "extension_set.cc",
     "extension_set.h",
     "favicon_size.cc",
@@ -84,20 +84,12 @@ jumbo_component("gfx") {
     "font.cc",
     "font.h",
     "font_fallback.h",
-    "font_fallback_linux.cc",
-    "font_fallback_linux.h",
-    "font_fallback_mac.mm",
-    "font_fallback_win.cc",
-    "font_fallback_win.h",
     "font_list.cc",
     "font_list.h",
     "font_list_impl.cc",
     "font_list_impl.h",
     "font_render_params.cc",
     "font_render_params.h",
-    "font_render_params_linux.cc",
-    "font_render_params_mac.cc",
-    "font_render_params_win.cc",
     "font_util.cc",
     "font_util.h",
     "gdi_util.cc",
@@ -110,8 +102,6 @@ jumbo_component("gfx") {
     "image/image.h",
     "image/image_family.cc",
     "image/image_family.h",
-    "image/image_ios.mm",
-    "image/image_mac.mm",
     "image/image_platform.h",
     "image/image_png_rep.cc",
     "image/image_png_rep.h",
@@ -120,50 +110,15 @@ jumbo_component("gfx") {
     "image/image_skia_rep.h",
     "image/image_skia_source.cc",
     "image/image_skia_source.h",
-    "image/image_skia_util_ios.h",
-    "image/image_skia_util_ios.mm",
-    "image/image_skia_util_mac.h",
-    "image/image_skia_util_mac.mm",
     "image/image_util.cc",
     "image/image_util.h",
-    "image/image_util_ios.mm",
-    "image/image_util_mac.mm",
     "interpolated_transform.cc",
     "interpolated_transform.h",
-    "ios/NSString+CrStringDrawing.h",
-    "ios/NSString+CrStringDrawing.mm",
-    "ios/uikit_util.h",
-    "ios/uikit_util.mm",
-    "linux/fontconfig_util.cc",
-    "linux/fontconfig_util.h",
-    "mac/cocoa_scrollbar_painter.cc",
-    "mac/cocoa_scrollbar_painter.h",
-    "mac/coordinate_conversion.h",
-    "mac/coordinate_conversion.mm",
-    "mac/nswindow_frame_controls.h",
-    "mac/nswindow_frame_controls.mm",
-    "mac/scoped_cocoa_disable_screen_updates.h",
-    "mac/scoped_cocoa_disable_screen_updates.mm",
     "nine_image_painter.cc",
     "nine_image_painter.h",
     "overlay_transform_utils.cc",
     "overlay_transform_utils.h",
-    "path_mac.h",
-    "path_mac.mm",
-    "path_win.cc",
-    "path_win.h",
     "platform_font.h",
-    "platform_font_ios.h",
-    "platform_font_ios.mm",
-    "platform_font_mac.h",
-    "platform_font_mac.mm",
-    "platform_font_win.cc",
-    "platform_font_win.h",
-    "scoped_cg_context_save_gstate_mac.h",
-    "scoped_ns_graphics_context_save_gstate_mac.h",
-    "scoped_ns_graphics_context_save_gstate_mac.mm",
-    "scoped_ui_graphics_push_context_ios.h",
-    "scoped_ui_graphics_push_context_ios.mm",
     "scrollbar_size.cc",
     "scrollbar_size.h",
     "selection_model.cc",
@@ -176,52 +131,124 @@ jumbo_component("gfx") {
     "skbitmap_operations.h",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
-    "system_fonts_win.cc",
-    "system_fonts_win.h",
     "text_constants.h",
     "text_elider.cc",
     "text_elider.h",
     "text_utils.cc",
     "text_utils.h",
-    "text_utils_ios.mm",
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
     "video_types.h",
     "vsync_provider.cc",
     "vsync_provider.h",
-    "win/crash_id_helper.cc",
-    "win/crash_id_helper.h",
-    "win/direct_write.cc",
-    "win/direct_write.h",
-    "win/hwnd_util.cc",
-    "win/hwnd_util.h",
-    "win/msg_util.h",
-    "win/physical_size.cc",
-    "win/physical_size.h",
-    "win/rendering_window_manager.cc",
-    "win/rendering_window_manager.h",
-    "win/scoped_set_map_mode.h",
-    "win/singleton_hwnd.cc",
-    "win/singleton_hwnd.h",
-    "win/singleton_hwnd_hot_key_observer.cc",
-    "win/singleton_hwnd_hot_key_observer.h",
-    "win/singleton_hwnd_observer.cc",
-    "win/singleton_hwnd_observer.h",
-    "win/text_analysis_source.cc",
-    "win/text_analysis_source.h",
-    "win/window_impl.cc",
-    "win/window_impl.h",
   ]
-  deps = []
+  if (is_android) {
+    sources += [
+      "android/java_bitmap.cc",
+      "android/java_bitmap.h",
+      "android/view_configuration.cc",
+      "android/view_configuration.h",
+    ]
+  }
+  if (is_linux) {
+    sources += [
+      "font_fallback_linux.cc",
+      "font_fallback_linux.h",
+      "font_render_params_linux.cc",
+      "linux/fontconfig_util.cc",
+      "linux/fontconfig_util.h",
+    ]
+  }
+  if (is_mac) {
+    sources += [
+      "canvas_paint_mac.h",
+      "canvas_paint_mac.mm",
+      "decorated_text_mac.h",
+      "decorated_text_mac.mm",
+      "font_fallback_mac.mm",
+      "font_render_params_mac.cc",
+      "image/image_mac.mm",
+      "image/image_skia_util_mac.h",
+      "image/image_skia_util_mac.mm",
+      "image/image_util_mac.mm",
+      "mac/cocoa_scrollbar_painter.cc",
+      "mac/cocoa_scrollbar_painter.h",
+      "mac/coordinate_conversion.h",
+      "mac/coordinate_conversion.mm",
+      "mac/nswindow_frame_controls.h",
+      "mac/nswindow_frame_controls.mm",
+      "mac/scoped_cocoa_disable_screen_updates.h",
+      "mac/scoped_cocoa_disable_screen_updates.mm",
+      "path_mac.h",
+      "path_mac.mm",
+      "platform_font_mac.h",
+      "platform_font_mac.mm",
+      "scoped_cg_context_save_gstate_mac.h",
+      "scoped_ns_graphics_context_save_gstate_mac.h",
+      "scoped_ns_graphics_context_save_gstate_mac.mm",
+    ]
+  }
+  if (is_win) {
+    sources += [
+      "font_fallback_win.cc",
+      "font_fallback_win.h",
+      "font_render_params_win.cc",
+      "path_win.cc",
+      "path_win.h",
+      "platform_font_win.cc",
+      "platform_font_win.h",
+      "system_fonts_win.cc",
+      "system_fonts_win.h",
+      "win/crash_id_helper.cc",
+      "win/crash_id_helper.h",
+      "win/direct_write.cc",
+      "win/direct_write.h",
+      "win/hwnd_util.cc",
+      "win/hwnd_util.h",
+      "win/msg_util.h",
+      "win/physical_size.cc",
+      "win/physical_size.h",
+      "win/rendering_window_manager.cc",
+      "win/rendering_window_manager.h",
+      "win/scoped_set_map_mode.h",
+      "win/singleton_hwnd.cc",
+      "win/singleton_hwnd.h",
+      "win/singleton_hwnd_hot_key_observer.cc",
+      "win/singleton_hwnd_hot_key_observer.h",
+      "win/singleton_hwnd_observer.cc",
+      "win/singleton_hwnd_observer.h",
+      "win/text_analysis_source.cc",
+      "win/text_analysis_source.h",
+      "win/window_impl.cc",
+      "win/window_impl.h",
+    ]
+  }
+  if (is_ios) {
+    sources += [
+      "image/image_ios.mm",
+      "image/image_skia_rep_ios.cc",
+      "image/image_skia_rep_ios.h",
+      "image/image_skia_util_ios.h",
+      "image/image_skia_util_ios.mm",
+      "image/image_util_ios.mm",
+      "ios/NSString+CrStringDrawing.h",
+      "ios/NSString+CrStringDrawing.mm",
+      "ios/uikit_util.h",
+      "ios/uikit_util.mm",
+      "platform_font_ios.h",
+      "platform_font_ios.mm",
+      "scoped_ui_graphics_push_context_ios.h",
+      "scoped_ui_graphics_push_context_ios.mm",
+      "text_utils_ios.mm",
+    ]
+  }
   if (!is_ios) {
     sources += [
       "blit.cc",
       "blit.h",
       "canvas.cc",
       "canvas.h",
-      "canvas_paint_mac.h",
-      "canvas_paint_mac.mm",
       "canvas_skia.cc",
       "canvas_skia_paint.h",
       "image/canvas_image_source.cc",
@@ -242,11 +269,6 @@ jumbo_component("gfx") {
       "skia_vector_animation.cc",
       "skia_vector_animation.h",
       "skia_vector_animation_observer.h",
-    ]
-  } else {
-    sources += [
-      "image/image_skia_rep_ios.cc",
-      "image/image_skia_rep_ios.h",
     ]
   }
 
@@ -276,7 +298,7 @@ jumbo_component("gfx") {
     "//ui/gfx/geometry",
     "//ui/gfx/range",
   ]
-  deps += [
+  deps = [
     ":gfx_export",
     ":resize_image_dimensions",
     "//base",
@@ -299,9 +321,7 @@ jumbo_component("gfx") {
 
   # iOS.
   if (is_ios) {
-    set_sources_assignment_filter([])
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
-    set_sources_assignment_filter(sources_assignment_filter)
   } else {
     public_deps += [ "//cc/paint" ]
     deps += [ "//third_party:freetype_harfbuzz" ]
@@ -403,13 +423,17 @@ jumbo_component("color_space") {
     "color_space.cc",
     "color_space.h",
     "color_space_export.h",
-    "color_space_win.cc",
-    "color_space_win.h",
     "icc_profile.cc",
     "icc_profile.h",
     "skia_color_space_util.cc",
     "skia_color_space_util.h",
   ]
+  if (is_win) {
+    sources += [
+      "color_space_win.cc",
+      "color_space_win.h",
+    ]
+  }
   deps = [
     "//skia:skcms",
   ]
@@ -623,8 +647,6 @@ jumbo_static_library("test_support") {
     "geometry/test/rect_test_util.h",
     "image/image_unittest_util.cc",
     "image/image_unittest_util.h",
-    "image/image_unittest_util_ios.mm",
-    "image/image_unittest_util_mac.mm",
     "test/font_fallback_test_data.cc",
     "test/font_fallback_test_data.h",
     "test/gfx_util.cc",
@@ -632,6 +654,12 @@ jumbo_static_library("test_support") {
     "test/icc_profiles.cc",
     "test/icc_profiles.h",
   ]
+  if (is_ios) {
+    sources += [ "image/image_unittest_util_ios.mm" ]
+  }
+  if (is_mac) {
+    sources += [ "image/image_unittest_util_mac.mm" ]
+  }
 
   public_deps = [
     ":gfx",
@@ -657,19 +685,44 @@ test("gfx_unittests") {
   sources = [
     "font_names_testing.cc",
     "font_names_testing.h",
-    "font_render_params_linux_unittest.cc",
     "font_unittest.cc",
     "image/image_family_unittest.cc",
-    "image/image_ios_unittest.mm",
     "image/image_skia_unittest.cc",
     "image/image_unittest.cc",
-    "ios/NSString+CrStringDrawing_unittest.mm",
-    "ios/uikit_util_unittest.mm",
     "rrect_f_unittest.cc",
     "test/run_all_unittests.cc",
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
   ]
+  if (is_linux) {
+    sources += [
+      "font_fallback_linux_unittest.cc",
+      "font_render_params_linux_unittest.cc",
+    ]
+  }
+  if (is_mac) {
+    sources += [
+      "font_fallback_mac_unittest.cc",
+      "image/image_mac_unittest.mm",
+      "mac/coordinate_conversion_unittest.mm",
+      "path_mac_unittest.mm",
+      "platform_font_mac_unittest.mm",
+      "range/range_mac_unittest.mm",
+    ]
+  }
+  if (is_win) {
+    sources += [
+      "font_fallback_win_unittest.cc",
+      "range/range_win_unittest.cc",
+    ]
+  }
+  if (is_ios) {
+    sources += [
+      "image/image_ios_unittest.mm",
+      "ios/NSString+CrStringDrawing_unittest.mm",
+      "ios/uikit_util_unittest.mm",
+    ]
+  }
 
   include_dirs = [ "//third_party/skia/include/private" ]
 
@@ -694,10 +747,7 @@ test("gfx_unittests") {
       "color_space_unittest.cc",
       "color_transform_unittest.cc",
       "color_utils_unittest.cc",
-      "font_fallback_linux_unittest.cc",
-      "font_fallback_mac_unittest.cc",
       "font_fallback_unittest.cc",
-      "font_fallback_win_unittest.cc",
       "font_list_unittest.cc",
       "geometry/axis_transform2d_unittest.cc",
       "geometry/box_unittest.cc",
@@ -717,19 +767,12 @@ test("gfx_unittests") {
       "geometry/vector3d_unittest.cc",
       "half_float_unittest.cc",
       "icc_profile_unittest.cc",
-      "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
-      "mac/coordinate_conversion_unittest.mm",
       "mojom/mojom_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
       "overlay_transform_utils_unittest.cc",
       "paint_vector_icon_unittest.cc",
-      "path_mac_unittest.mm",
-      "platform_font_mac_unittest.mm",
-      "platform_font_win_unittest.cc",
-      "range/range_mac_unittest.mm",
       "range/range_unittest.cc",
-      "range/range_win_unittest.cc",
       "selection_bound_unittest.cc",
       "sequential_id_generator_unittest.cc",
       "shadow_value_unittest.cc",
@@ -737,11 +780,17 @@ test("gfx_unittests") {
       "skia_util_unittest.cc",
       "skia_vector_animation_unittest.cc",
       "skrect_conversion_unittest.cc",
-      "system_fonts_win_unittest.cc",
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
     data += [ "$root_out_dir/ui_test.pak" ]
+  }
+
+  if (is_win) {
+    sources += [
+      "platform_font_win_unittest.cc",
+      "system_fonts_win_unittest.cc",
+    ]
   }
 
   if (is_linux || is_android || is_fuchsia || is_win) {

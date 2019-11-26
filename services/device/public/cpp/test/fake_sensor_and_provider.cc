@@ -188,8 +188,7 @@ void FakeSensorProvider::GetSensor(mojom::SensorType type,
 
 void FakeSensorProvider::Bind(
     mojo::PendingReceiver<mojom::SensorProvider> receiver) {
-  DCHECK(!receiver_.is_bound());
-  receiver_.Bind(std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeSensorProvider::SetAmbientLightSensorData(double value) {

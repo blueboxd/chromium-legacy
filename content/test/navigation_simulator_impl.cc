@@ -342,8 +342,10 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
       transition_ = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   }
 
-  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
-  interface_provider_request_ = mojo::MakeRequest(&stub_interface_provider);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      stub_interface_provider;
+  interface_provider_receiver_ =
+      stub_interface_provider.InitWithNewPipeAndPassReceiver();
   browser_interface_broker_receiver_ =
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
           .InitWithNewPipeAndPassReceiver();
@@ -589,7 +591,7 @@ void NavigationSimulatorImpl::Commit() {
       render_frame_host_->frame_tree_node()->current_frame_host();
 
   if (same_document_) {
-    interface_provider_request_ = nullptr;
+    interface_provider_receiver_.reset();
     browser_interface_broker_receiver_.reset();
   }
 
@@ -607,7 +609,7 @@ void NavigationSimulatorImpl::Commit() {
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
-      request_, std::move(params), std::move(interface_provider_request_),
+      request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), same_document_);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
@@ -752,7 +754,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, true /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
-      request_, std::move(params), std::move(interface_provider_request_),
+      request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), false /* same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
@@ -784,11 +786,12 @@ void NavigationSimulatorImpl::CommitSameDocument() {
   auto params = BuildDidCommitProvisionalLoadParams(
       true /* same_document */, false /* failed_navigation */);
 
-  interface_provider_request_ = nullptr;
+  interface_provider_receiver_.reset();
   browser_interface_broker_receiver_.reset();
 
   render_frame_host_->SimulateCommitProcessed(
-      request_, std::move(params), nullptr /* interface_provider_request_ */,
+      request_, std::move(params),
+      mojo::NullReceiver() /* interface_provider_receiver_ */,
       mojo::NullReceiver() /* browser_interface_broker_receiver */,
       true /* same_document */);
 
@@ -899,12 +902,12 @@ void NavigationSimulatorImpl::SetIsSignedExchangeInnerResponse(
   is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
 }
 
-void NavigationSimulatorImpl::SetInterfaceProviderRequest(
-    service_manager::mojom::InterfaceProviderRequest request) {
-  CHECK_LE(state_, STARTED) << "The InterfaceProviderRequest cannot be set "
+void NavigationSimulatorImpl::SetInterfaceProviderReceiver(
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver) {
+  CHECK_LE(state_, STARTED) << "The InterfaceProvider cannot be set "
                                "after the navigation has committed or failed";
-  CHECK(request.is_pending());
-  interface_provider_request_ = std::move(request);
+  CHECK(receiver.is_valid());
+  interface_provider_receiver_ = std::move(receiver);
 }
 
 void NavigationSimulatorImpl::SetContentsMimeType(

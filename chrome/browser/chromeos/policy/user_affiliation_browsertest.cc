@@ -20,7 +20,7 @@
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -159,11 +159,11 @@ class UserAffiliationBrowserTest
     // shutdown in ChromeBrowserMain.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     chromeos::UpstartClient::InitializeFake();
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
+    chromeos::FakeAuthPolicyClient* fake_authpolicy_client = nullptr;
     if (GetParam().active_directory) {
       chromeos::AuthPolicyClient::InitializeFake();
-      fake_auth_policy_client = chromeos::FakeAuthPolicyClient::Get();
-      fake_auth_policy_client->DisableOperationDelayForTesting();
+      fake_authpolicy_client = chromeos::FakeAuthPolicyClient::Get();
+      fake_authpolicy_client->DisableOperationDelayForTesting();
     }
 
     DevicePolicyCrosTestHelper test_helper;
@@ -176,7 +176,7 @@ class UserAffiliationBrowserTest
     AffiliationTestHelper affiliation_helper =
         GetParam().active_directory
             ? AffiliationTestHelper::CreateForActiveDirectory(
-                  session_manager_client, fake_auth_policy_client)
+                  session_manager_client, fake_authpolicy_client)
             : AffiliationTestHelper::CreateForCloud(session_manager_client);
 
     ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(

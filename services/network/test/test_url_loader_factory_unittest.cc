@@ -31,8 +31,10 @@ class TestURLLoaderFactoryTest : public testing::Test {
     request.url = GURL(url);
     request.load_flags = load_flags;
     request.report_raw_headers = report_raw_headers;
+    loader_.reset();
     factory_.CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 0, 0, 0, request, client->CreateRemote(),
+        loader_.BindNewPipeAndPassReceiver(), 0, 0, 0, request,
+        client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -53,7 +55,7 @@ class TestURLLoaderFactoryTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   TestURLLoaderFactory factory_;
-  mojom::URLLoaderPtr loader_;
+  mojo::Remote<mojom::URLLoader> loader_;
   TestURLLoaderClient client_;
 };
 
@@ -68,7 +70,6 @@ TEST_F(TestURLLoaderFactoryTest, Simple) {
   EXPECT_EQ(GetData(client()), data);
 
   // Data can be fetched multiple times.
-  mojom::URLLoaderPtr loader2;
   TestURLLoaderClient client2;
   StartRequest(url, &client2);
   client2.RunUntilComplete();

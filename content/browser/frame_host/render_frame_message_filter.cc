@@ -80,7 +80,7 @@ void CreateChildFrameOnUI(
     const FrameOwnerProperties& frame_owner_properties,
     blink::FrameOwnerElementType owner_type,
     int new_routing_id,
-    mojo::ScopedMessagePipeHandle interface_provider_request_handle,
+    mojo::ScopedMessagePipeHandle interface_provider_receiver_handle,
     mojo::ScopedMessagePipeHandle browser_interface_broker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
@@ -90,8 +90,8 @@ void CreateChildFrameOnUI(
   if (render_frame_host) {
     render_frame_host->OnCreateChildFrame(
         new_routing_id,
-        service_manager::mojom::InterfaceProviderRequest(
-            std::move(interface_provider_request_handle)),
+        mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>(
+            std::move(interface_provider_receiver_handle)),
         mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>(
             std::move(browser_interface_broker_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
@@ -267,10 +267,12 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
     FrameHostMsg_CreateChildFrame_Params_Reply* params_reply) {
   params_reply->child_routing_id = render_widget_helper_->GetNextRoutingID();
 
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  auto interface_provider_request(mojo::MakeRequest(&interface_provider));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  auto interface_provider_receiver(
+      interface_provider.InitWithNewPipeAndPassReceiver());
   params_reply->new_interface_provider =
-      interface_provider.PassInterface().PassHandle().release();
+      interface_provider.PassPipe().release();
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -289,7 +291,7 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.is_created_by_script, params_reply->devtools_frame_token,
           params.frame_policy, params.frame_owner_properties,
           params.frame_owner_element_type, params_reply->child_routing_id,
-          interface_provider_request.PassMessagePipe(),
+          interface_provider_receiver.PassPipe(),
           browser_interface_broker_receiver.PassPipe()));
 }
 

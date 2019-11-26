@@ -323,7 +323,8 @@ function areRealboxMatchesVisible() {
 
 /** @param {!AutocompleteResult} result */
 function autocompleteResultChanged(result) {
-  if (result.input !== lastQueriedInput) {
+  if (lastQueriedInput === undefined ||
+      result.input !== lastQueriedInput.trimLeft()) {
     return;  // Stale result; ignore.
   }
 

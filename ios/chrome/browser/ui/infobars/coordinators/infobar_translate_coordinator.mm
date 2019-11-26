@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_delegate.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -24,9 +26,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslateInfobarCoordinator () <InfobarCoordinatorImplementation,
-                                           TranslateInfobarDelegateObserving,
-                                           InfobarTranslateModalDelegate> {
+@interface TranslateInfobarCoordinator () <
+    InfobarCoordinatorImplementation,
+    TranslateInfobarDelegateObserving,
+    InfobarTranslateModalDelegate,
+    InfobarTranslateLanguageSelectionDelegate> {
   // Observer to listen for changes to the TranslateStep.
   std::unique_ptr<TranslateInfobarDelegateObserverBridge>
       _translateInfobarDelegateObserver;
@@ -257,6 +261,34 @@
 
 #pragma mark - InfobarTranslateModalDelegate
 
+- (void)showChangeSourceLanguageOptions {
+  InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
+      [[InfobarTranslateLanguageSelectionTableViewController alloc]
+                 initWithDelegate:self
+          selectingSourceLanguage:YES];
+  languageSelectionTVC.title = l10n_util::GetNSString(
+      IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE);
+  self.mediator.sourceLanguageSelectionConsumer = languageSelectionTVC;
+
+  [self.modalViewController.navigationController
+      pushViewController:languageSelectionTVC
+                animated:YES];
+}
+
+- (void)showChangeTargetLanguageOptions {
+  InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
+      [[InfobarTranslateLanguageSelectionTableViewController alloc]
+                 initWithDelegate:self
+          selectingSourceLanguage:YES];
+  languageSelectionTVC.title = l10n_util::GetNSString(
+      IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE);
+  self.mediator.targetLanguageSelectionConsumer = languageSelectionTVC;
+
+  [self.modalViewController.navigationController
+      pushViewController:languageSelectionTVC
+                animated:YES];
+}
+
 - (void)alwaysTranslateSourceLanguage {
   DCHECK(!self.translateInfoBarDelegate->ShouldAlwaysTranslate());
   self.userAction |= UserActionAlwaysTranslate;
@@ -318,6 +350,18 @@
   self.translateInfoBarDelegate->ToggleSiteBlacklist();
   [self dismissInfobarModal:self animated:YES completion:nil];
   // TODO(crbug.com/1014959): implement else logic. Should aything be done?
+}
+
+#pragma mark - InfobarTranslateLanguageSelectionDelegate
+
+- (void)didSelectSourceLanguageIndex:(int)languageIndex
+                            withName:(NSString*)languageName {
+  // TODO(crbug.com/1014959): Implement.
+}
+
+- (void)didSelectTargetLanguageIndex:(int)languageIndex
+                            withName:(NSString*)languageName {
+  // TODO(crbug.com/1014959): Implement.
 }
 
 #pragma mark - Private

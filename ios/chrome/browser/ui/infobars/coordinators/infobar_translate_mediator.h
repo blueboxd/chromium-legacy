@@ -11,6 +11,7 @@ namespace translate {
 class TranslateInfoBarDelegate;
 }  // namespace translate
 
+@protocol InfobarTranslateLanguageSelectionConsumer;
 @protocol InfobarTranslateModalConsumer;
 
 @interface InfobarTranslateMediator : NSObject
@@ -21,7 +22,18 @@ class TranslateInfoBarDelegate;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
+// The consumer for the Infobar Modal.
 @property(nonatomic, weak) id<InfobarTranslateModalConsumer> modalConsumer;
+
+// The consumer selecting the source language to be configured with this
+// mediator.
+@property(nonatomic, weak) id<InfobarTranslateLanguageSelectionConsumer>
+    sourceLanguageSelectionConsumer;
+
+// The consumer selecting the target language to be configured with this
+// mediator.
+@property(nonatomic, weak) id<InfobarTranslateLanguageSelectionConsumer>
+    targetLanguageSelectionConsumer;
 
 @end
 

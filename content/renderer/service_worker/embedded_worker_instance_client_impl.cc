@@ -73,8 +73,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
              blink::features::kEagerCacheStorageSetupForServiceWorkers));
   mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage =
       std::move(params->provider_info->cache_storage);
-  service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
-      std::move(params->provider_info->interface_provider);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider = std::move(params->provider_info->interface_provider);
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker =
@@ -119,7 +119,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(worker), std::move(start_data),
       std::move(installed_scripts_manager_params),
       params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
-      interface_provider.PassHandle(), browser_interface_broker.PassPipe());
+      interface_provider.PassPipe(), browser_interface_broker.PassPipe());
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {

@@ -12,7 +12,7 @@ import "url/mojom/url.mojom";
 // on the URLLoaderClient.
 struct TransferrableURLLoader {
   url.mojom.Url url;
-  network.mojom.URLLoader url_loader;
+  pending_remote<network.mojom.URLLoader> url_loader;
   pending_receiver<network.mojom.URLLoaderClient> url_loader_client;
   network.mojom.URLResponseHead head;
 };

@@ -3,13 +3,13 @@
  * found in the LICENSE file. */
 
 /*
-Chrome OS semantic colors.
-
-All colors used in Chrome OS WebUIs and System Web Apps should be semantically
-represented here.
-*/
+ * Chrome OS semantic colors.
+ *
+ * All colors used in Chrome OS WebUIs and System Web Apps should be
+ * semantically represented here.
+ */
 html {
-  /**
+  /*
    * Recommended colors.
    */
   --cros-default-text-color: var(--google-grey-900);
@@ -21,6 +21,12 @@ html {
   --cros-default-toolbar-search-bg-color: var(--google-grey-refresh-100);
 
   --cros-default-button-color: var(--google-blue-600);
+
+  /* TODO(crbug.com/1018654): Extract more unified 'inactive' colors */
+  --cros-toggle-color: var(--cros-default-button-color);
+  --cros-toggle-bg-color-inactive: var(--google-grey-400);
+  --cros-toggle-button-color-inactive: #fff;
+  --cros-toggle-ink-color-inactive: var(--google-grey-600);
 
   --cros-menu-button-bg-color-active: var(--google-blue-50);
   --cros-menu-button-bg-color-hover: var(--google-grey-refresh-100);

@@ -378,7 +378,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_{this};
 
   mojo::Remote<network::mojom::URLLoaderClient> client_;
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
   mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
@@ -1173,7 +1173,7 @@ void InterceptionJob::StartRequest() {
   state_ = State::kRequestSent;
 
   target_factory_->CreateLoaderAndStart(
-      MakeRequest(&loader_), create_loader_params_->routing_id,
+      loader_.BindNewPipeAndPassReceiver(), create_loader_params_->routing_id,
       create_loader_params_->request_id, create_loader_params_->options,
       create_loader_params_->request,
       client_receiver_.BindNewPipeAndPassRemote(),

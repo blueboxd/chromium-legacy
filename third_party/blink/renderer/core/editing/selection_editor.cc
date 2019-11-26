@@ -30,6 +30,10 @@
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_caret.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_adjuster.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
@@ -92,6 +96,18 @@ VisibleSelectionInFlatTree SelectionEditor::ComputeVisibleSelectionInFlatTree()
   return cached_visible_selection_in_flat_tree_;
 }
 
+bool SelectionEditor::ComputeAbsoluteBounds(IntRect& anchor,
+                                            IntRect& focus) const {
+  DCHECK_EQ(GetFrame()->GetDocument(), GetDocument());
+  DCHECK_EQ(GetFrame(), GetDocument().GetFrame());
+  UpdateCachedAbsoluteBoundsIfNeeded();
+  if (!has_selection_bounds_)
+    return has_selection_bounds_;
+  anchor = cached_anchor_bounds_;
+  focus = cached_focus_bounds_;
+  return has_selection_bounds_;
+}
+
 SelectionInDOMTree SelectionEditor::GetSelectionInDOMTree() const {
   AssertSelectionValid();
   return selection_;
@@ -105,6 +121,12 @@ void SelectionEditor::MarkCacheDirty() {
   if (!cached_visible_selection_in_flat_tree_is_dirty_) {
     cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
     cached_visible_selection_in_flat_tree_is_dirty_ = true;
+  }
+  if (!cached_absolute_bounds_are_dirty_) {
+    cached_absolute_bounds_are_dirty_ = true;
+    has_selection_bounds_ = false;
+    cached_anchor_bounds_ = IntRect();
+    cached_focus_bounds_ = IntRect();
   }
 }
 
@@ -153,11 +175,16 @@ void SelectionEditor::ContextDestroyed(Document*) {
   Dispose();
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
   style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
+  style_version_for_absolute_bounds_ = static_cast<uint64_t>(-1);
   selection_ = SelectionInDOMTree();
   cached_visible_selection_in_dom_tree_ = VisibleSelection();
   cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
   cached_visible_selection_in_dom_tree_is_dirty_ = false;
   cached_visible_selection_in_flat_tree_is_dirty_ = false;
+  cached_absolute_bounds_are_dirty_ = false;
+  has_selection_bounds_ = false;
+  cached_anchor_bounds_ = IntRect();
+  cached_focus_bounds_ = IntRect();
 }
 
 static Position ComputePositionForChildrenRemoval(const Position& position,
@@ -424,6 +451,52 @@ void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
   style_version_for_dom_tree_ = GetDocument().StyleVersion();
   cached_visible_selection_in_dom_tree_is_dirty_ = false;
   cached_visible_selection_in_dom_tree_ = VisibleSelection();
+}
+
+bool SelectionEditor::NeedsUpdateAbsoluteBounds() const {
+  return cached_absolute_bounds_are_dirty_ ||
+         style_version_for_absolute_bounds_ != GetDocument().StyleVersion();
+}
+
+void SelectionEditor::UpdateCachedAbsoluteBoundsIfNeeded() const {
+  // Note: Since we |FrameCaret::updateApperance()| is called from
+  // |FrameView::performPostLayoutTasks()|, we check lifecycle against
+  // |AfterPerformLayout| instead of |LayoutClean|.
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
+  AssertSelectionValid();
+  if (!NeedsUpdateAbsoluteBounds())
+    return;
+
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      frame_->GetDocument()->Lifecycle());
+
+  style_version_for_absolute_bounds_ = GetDocument().StyleVersion();
+  cached_absolute_bounds_are_dirty_ = false;
+
+  const VisibleSelection selection = ComputeVisibleSelectionInDOMTree();
+
+  if (selection.IsCaret()) {
+    DCHECK(selection.IsValidFor(*frame_->GetDocument()));
+    const PositionWithAffinity caret(selection.Start(), selection.Affinity());
+    cached_anchor_bounds_ = cached_focus_bounds_ = AbsoluteCaretBoundsOf(caret);
+  } else {
+    const EphemeralRange selected_range =
+        selection.ToNormalizedEphemeralRange();
+    if (selected_range.IsNull()) {
+      has_selection_bounds_ = false;
+      return;
+    }
+    cached_anchor_bounds_ =
+        FirstRectForRange(EphemeralRange(selected_range.StartPosition()));
+    cached_focus_bounds_ =
+        FirstRectForRange(EphemeralRange(selected_range.EndPosition()));
+  }
+
+  if (!selection.IsBaseFirst())
+    std::swap(cached_anchor_bounds_, cached_focus_bounds_);
+
+  has_selection_bounds_ = true;
 }
 
 void SelectionEditor::CacheRangeOfDocument(Range* range) {

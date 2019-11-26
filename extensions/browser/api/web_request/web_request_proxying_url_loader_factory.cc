@@ -599,7 +599,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     if (has_any_extra_headers_listeners_)
       options |= network::mojom::kURLLoadOptionUseHeaderClient;
     factory_->target_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&target_loader_), info_->routing_id,
+        target_loader_.BindNewPipeAndPassReceiver(), info_->routing_id,
         network_service_request_id_, options, request_,
         proxied_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation_);

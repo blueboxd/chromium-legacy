@@ -213,13 +213,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse>
           callback) = 0;
 
-  // Lists all the USB devices currently attached to a given VM.
-  // |callback| is called once the method call has finished.
-  virtual void ListUsbDevices(
-      const vm_tools::concierge::ListUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
-          callback) = 0;
-
   // Starts ARCVM if there is not already one running.
   // |callback| is called after the method call finishes.
   virtual void StartArcVm(

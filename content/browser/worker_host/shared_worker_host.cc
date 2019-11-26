@@ -84,8 +84,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
     : service_(service),
       instance_(instance),
       worker_process_id_(worker_process_id),
-      next_connection_request_id_(1),
-      interface_provider_binding_(this) {
+      next_connection_request_id_(1) {
   // Set up the worker pending receiver. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
   // when two clients call new SharedWorker() at around the same time.
@@ -182,10 +181,11 @@ void SharedWorkerHost::Start(
       instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
   // Set up interface provider interface.
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  interface_provider_receiver_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_SharedWorkerSpec, worker_process_id_,
-      mojo::MakeRequest(&interface_provider)));
+      interface_provider.InitWithNewPipeAndPassReceiver()));
 
   // Set up BrowserInterfaceBroker interface
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>

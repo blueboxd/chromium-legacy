@@ -111,6 +111,10 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
     return base::Optional<WebSecurityOrigin>();
   }
   WebString GetAcceptLanguages() const override { return WebString(); }
+  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
+      int request_id) override {
+    return {};
+  }
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;

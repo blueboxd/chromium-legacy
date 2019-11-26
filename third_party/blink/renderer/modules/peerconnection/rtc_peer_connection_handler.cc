@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
@@ -54,6 +53,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/webrtc/api/data_channel_interface.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 #include "third_party/webrtc/pc/media_session.h"
 #include "third_party/webrtc/pc/session_description.h"
@@ -2051,24 +2051,13 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(const String& output) {
 
 scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
     const blink::WebString& label,
-    const RTCDataChannelInitPlatform& init) {
+    const webrtc::DataChannelInit& init) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
   DVLOG(1) << "createDataChannel label " << label.Utf8();
 
-  webrtc::DataChannelInit config;
-  // TODO(jiayl): remove the deprecated reliable field once Libjingle is updated
-  // to handle that.
-  config.reliable = false;
-  config.id = init.id;
-  config.ordered = init.ordered;
-  config.negotiated = init.negotiated;
-  config.maxRetransmits = init.max_retransmits;
-  config.maxRetransmitTime = init.max_retransmit_time;
-  config.protocol = init.protocol.Utf8();
-
   rtc::scoped_refptr<DataChannelInterface> webrtc_channel(
-      native_peer_connection_->CreateDataChannel(label.Utf8(), &config));
+      native_peer_connection_->CreateDataChannel(label.Utf8(), &init));
   if (!webrtc_channel) {
     DLOG(ERROR) << "Could not create native data channel.";
     return nullptr;

@@ -871,7 +871,7 @@ void XRSession::OnSubscribeToHitTestResult(
   }
 
   XRHitTestSource* hit_test_source =
-      MakeGarbageCollected<XRHitTestSource>(subscription_id);
+      MakeGarbageCollected<XRHitTestSource>(subscription_id, this);
 
   hit_test_source_ids_to_hit_test_sources_.insert(subscription_id,
                                                   hit_test_source);
@@ -896,7 +896,8 @@ void XRSession::OnSubscribeToHitTestForTransientInputResult(
   }
 
   XRTransientInputHitTestSource* hit_test_source =
-      MakeGarbageCollected<XRTransientInputHitTestSource>(subscription_id);
+      MakeGarbageCollected<XRTransientInputHitTestSource>(subscription_id,
+                                                          this);
 
   hit_test_source_ids_to_transient_input_hit_test_sources_.insert(
       subscription_id, hit_test_source);
@@ -1719,6 +1720,29 @@ bool XRSession::ValidateHitTestSourceExists(
   return ValidateHitTestSourceExistsHelper(
       &hit_test_source_ids_to_transient_input_hit_test_sources_,
       hit_test_source);
+}
+
+bool XRSession::RemoveHitTestSource(XRHitTestSource* hit_test_source) {
+  DCHECK(hit_test_source);
+  bool result = ValidateHitTestSourceExistsHelper(
+      &hit_test_source_ids_to_hit_test_sources_, hit_test_source);
+
+  hit_test_source_ids_to_hit_test_sources_.erase(hit_test_source->id());
+
+  return result;
+}
+
+bool XRSession::RemoveHitTestSource(
+    XRTransientInputHitTestSource* hit_test_source) {
+  DCHECK(hit_test_source);
+  bool result = ValidateHitTestSourceExistsHelper(
+      &hit_test_source_ids_to_transient_input_hit_test_sources_,
+      hit_test_source);
+
+  hit_test_source_ids_to_transient_input_hit_test_sources_.erase(
+      hit_test_source->id());
+
+  return result;
 }
 
 void XRSession::SetXRDisplayInfo(

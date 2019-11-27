@@ -4031,11 +4031,6 @@
           'gtest_tests': 'webrtc_chromium_simple_gtests',
         },
       },
-      'WebRTC Chromium FYI Linux Builder': {
-        'additional_compile_targets': [
-          'remoting/webapp:webapp',
-        ],
-      },
       'WebRTC Chromium FYI Linux Builder (dbg)': {
         'additional_compile_targets': [
           'browser_tests',
@@ -4044,7 +4039,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'WebRTC Chromium FYI Linux Tester': {
@@ -4056,11 +4050,6 @@
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'WebRTC Chromium FYI Mac Builder': {
-        'additional_compile_targets': [
-          'remoting/webapp:webapp',
-        ],
-      },
       'WebRTC Chromium FYI Mac Builder (dbg)': {
         'additional_compile_targets': [
           'browser_tests',
@@ -4069,7 +4058,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'WebRTC Chromium FYI Mac Tester': {
@@ -4080,11 +4068,6 @@
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'WebRTC Chromium FYI Win Builder': {
-        'additional_compile_targets': [
-          'remoting/webapp:webapp',
-        ],
-      },
       'WebRTC Chromium FYI Win Builder (dbg)': {
         'additional_compile_targets': [
           'browser_tests',
@@ -4093,7 +4076,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'WebRTC Chromium FYI Win10 Tester': {
@@ -4526,7 +4508,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'linux_chromium_compile_dbg': {
@@ -4538,7 +4519,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'mac_chromium_compile': {
@@ -4550,7 +4530,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'win_chromium_compile': {
@@ -4562,7 +4541,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
       'win_chromium_compile_dbg': {
@@ -4574,7 +4552,6 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
-          'remoting/webapp:webapp',
         ],
       },
     },

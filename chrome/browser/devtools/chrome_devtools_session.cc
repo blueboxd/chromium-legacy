@@ -23,28 +23,26 @@
 ChromeDevToolsSession::ChromeDevToolsSession(
     content::DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client)
-    : agent_host_(agent_host),
-      client_(client),
-      dispatcher_(std::make_unique<protocol::UberDispatcher>(this)) {
+    : agent_host_(agent_host), client_(client), dispatcher_(this) {
   if (agent_host->GetWebContents() &&
       agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
-                                                  dispatcher_.get());
+                                                  &dispatcher_);
     security_handler_ = std::make_unique<SecurityHandler>(
-        agent_host->GetWebContents(), dispatcher_.get());
+        agent_host->GetWebContents(), &dispatcher_);
     if (client->MayAttachToBrowser()) {
       cast_handler_ = std::make_unique<CastHandler>(
-          agent_host->GetWebContents(), dispatcher_.get());
+          agent_host->GetWebContents(), &dispatcher_);
     }
   }
-  target_handler_ = std::make_unique<TargetHandler>(dispatcher_.get());
+  target_handler_ = std::make_unique<TargetHandler>(&dispatcher_);
   if (client->MayAttachToBrowser()) {
-    browser_handler_ = std::make_unique<BrowserHandler>(dispatcher_.get(),
-                                                        agent_host->GetId());
+    browser_handler_ =
+        std::make_unique<BrowserHandler>(&dispatcher_, agent_host->GetId());
   }
 #if defined(OS_CHROMEOS)
-  window_manager_protocl_handler_ =
-      std::make_unique<WindowManagerHandler>(dispatcher_.get());
+  window_manager_handler_ =
+      std::make_unique<WindowManagerHandler>(&dispatcher_);
 #endif
 }
 
@@ -54,7 +52,7 @@ void ChromeDevToolsSession::HandleCommand(
     const std::string& method,
     const std::string& message,
     content::DevToolsManagerDelegate::NotHandledCallback callback) {
-  if (!dispatcher_->canDispatch(method)) {
+  if (!dispatcher_.canDispatch(method)) {
     std::move(callback).Run(message);
     return;
   }
@@ -64,10 +62,10 @@ void ChromeDevToolsSession::HandleCommand(
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(
           protocol::StringUtil::parseMessage(message, /*binary=*/true));
-  if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
+  if (!dispatcher_.parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);
-  dispatcher_->dispatch(call_id, method, std::move(value), message);
+  dispatcher_.dispatch(call_id, method, std::move(value), message);
 }
 
 // The following methods handle responses or notifications coming from

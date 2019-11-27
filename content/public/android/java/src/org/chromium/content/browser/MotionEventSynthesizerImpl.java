@@ -156,7 +156,7 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
                 assert pointerCount == 1;
                 MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                         MotionEvent.ACTION_SCROLL, pointerCount, mPointerProperties, mPointerCoords,
-                        0, 0, 1, 1, 0, 0, 0, 0);
+                        0, 0, 1, 1, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
                 mTarget.dispatchGenericMotionEvent(event);
                 event.recycle();
                 break;

@@ -238,15 +238,15 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   ipc_server_.reset(new ServiceIPCServer(this /* client */, io_task_runner(),
                                          &shutdown_event_));
-  ipc_server_->binder_registry().AddInterface(
-      base::Bind(&cloud_print::CloudPrintMessageHandler::Create, this));
+  ipc_server_->binder_registry().AddInterface(base::BindRepeating(
+      &cloud_print::CloudPrintMessageHandler::Create, this));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is
   // ready.
   if (!service_process_state_->SignalReady(
           io_task_runner().get(),
-          base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
+          base::BindOnce(&ServiceProcess::Terminate, base::Unretained(this)))) {
     return false;
   }
 

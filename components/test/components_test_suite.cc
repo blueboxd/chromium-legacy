@@ -163,6 +163,6 @@ base::RunTestSuiteCallback GetLaunchCallback(int argc, char** argv) {
   return base::BindOnce(&content::UnitTestTestSuite::Run,
                         std::move(test_suite));
 #else
-  return base::Bind(&base::TestSuite::Run, std::move(test_suite));
+  return base::BindOnce(&base::TestSuite::Run, std::move(test_suite));
 #endif
 }

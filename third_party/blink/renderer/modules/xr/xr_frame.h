@@ -54,11 +54,13 @@ class XRFrame final : public ScriptWrappable {
   }
 
   HeapVector<Member<XRHitTestResult>> getHitTestResults(
-      XRHitTestSource* hit_test_source);
+      XRHitTestSource* hit_test_source,
+      ExceptionState& exception_state);
 
   HeapVector<Member<XRTransientInputHitTestResult>>
   getHitTestResultsForTransientInput(
-      XRTransientInputHitTestSource* hit_test_source);
+      XRTransientInputHitTestSource* hit_test_source,
+      ExceptionState& exception_state);
 
   bool EmulatedPosition() const { return emulated_position_; }
 

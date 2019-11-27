@@ -50,19 +50,6 @@ public class BookmarkModel extends BookmarkBridge {
     }
 
     /**
-     * Clean up all the bridges. This must be called after done using this class.
-     */
-    @Override
-    public void destroy() {
-        super.destroy();
-    }
-
-    @Override
-    public boolean isBookmarkModelLoaded() {
-        return super.isBookmarkModelLoaded();
-    }
-
-    /**
      * Add an observer that listens to delete events that go through the bookmark model.
      * @param observer The observer to add.
      */

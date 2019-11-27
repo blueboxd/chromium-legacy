@@ -20,6 +20,7 @@
 
 #include "rlz/lib/rlz_api.h"
 #include "rlz/lib/rlz_enums.h"
+#include "rlz/lib/supplementary_branding.h"
 
 // Define one of
 // + RLZ_NETWORK_IMPLEMENTATION_WIN_INET: Uses win inet to send financial pings.
@@ -66,12 +67,8 @@ namespace rlz_lib {
 //             need be passed when running as SYSTEM.
 // Functions which do not access registry will be marked with "no restrictions".
 
-class ScopedRlzValueStoreLock;
-
 // The maximum length of an access points RLZ in bytes.
 const size_t kMaxRlzLength = 64;
-// The maximum length of an access points RLZ in bytes.
-const size_t kMaxDccLength = 128;
 // The maximum length of a CGI string in bytes.
 const size_t kMaxCgiLength = 2048;
 
@@ -107,22 +104,6 @@ bool RLZ_LIB_API ClearProductEvent(Product product, AccessPoint point,
 // This should be called on complete uninstallation of the product.
 // Access: HKCU write.
 bool RLZ_LIB_API ClearAllProductEvents(Product product);
-
-// Clears all product-specifc state from the RLZ registry.
-// Should be called during product uninstallation.
-// This removes outstanding product events, product financial ping times,
-// the product RLS argument (if any), and any RLZ's for access points being
-// uninstalled with the product.
-// access_points is an array terminated with NO_ACCESS_POINT.
-// IMPORTANT: These are the access_points the product is removing as part
-// of the uninstallation, not necessarily all the access points passed to
-// SendFinancialPing() and GetPingParams().
-// access_points can be NULL if no points are being uninstalled.
-// No return value - this is best effort. Will assert in debug mode on
-// failed attempts.
-// Access: HKCU write.
-void RLZ_LIB_API ClearProductState(Product product,
-                                   const AccessPoint* access_points);
 
 // Get the RLZ value of the access point. If the access point is not Google, the
 // RLZ will be the empty string and the function will return false.
@@ -238,82 +219,6 @@ bool RLZ_LIB_API ParsePingResponse(Product product, const char* response);
 bool RLZ_LIB_API GetPingParams(Product product,
                                const AccessPoint* access_points,
                                char* unescaped_cgi, size_t unescaped_cgi_size);
-
-#if defined(OS_WIN)
-// OEM Deal confirmation storage functions. OEM Deals are windows-only.
-
-// Makes the OEM Deal Confirmation code writable by all users on the machine.
-// This should be called before calling SetMachineDealCode from a non-admin
-// account.
-// Access: HKLM write.
-bool RLZ_LIB_API CreateMachineState(void);
-
-// Set the OEM Deal Confirmation Code (DCC). This information is used for RLZ
-// initalization.
-// Access: HKLM write, or
-// HKCU read if rlz_lib::CreateMachineState() has been successfully called.
-bool RLZ_LIB_API SetMachineDealCode(const char* dcc);
-
-// Get the DCC cgi argument string to append to a daily ping.
-// Should be used only by OEM deal trackers. Applications should use the
-// GetMachineDealCode method which has an AccessPoint paramter.
-// Access: HKLM read.
-bool RLZ_LIB_API GetMachineDealCodeAsCgi(char* cgi, size_t cgi_size);
-
-// Get the DCC value stored in registry.
-// Should be used only by OEM deal trackers. Applications should use the
-// GetMachineDealCode method which has an AccessPoint paramter.
-// Access: HKLM read.
-bool RLZ_LIB_API GetMachineDealCode(char* dcc, size_t dcc_size);
-
-// Parses a ping response, checks if it is valid and sets the machine DCC
-// from the response. The ping must also contain the current DCC value in
-// order to be considered valid.
-// Access: HKLM write;
-//         HKCU write if CreateMachineState() has been successfully called.
-bool RLZ_LIB_API SetMachineDealCodeFromPingResponse(const char* response);
-
-#endif
-
-// Segment RLZ persistence based on branding information.
-// All information for a given product is persisted under keys with the either
-// product's name or its access point's name.  This assumes that only
-// one instance of the product is installed on the machine, and that only one
-// product brand is associated with it.
-//
-// In some cases, a given product may be using supplementary brands.  The RLZ
-// information must be kept separately for each of these brands.  To achieve
-// this segmentation, scope all RLZ library calls that deal with supplementary
-// brands within the lifetime of an rlz_lib::ProductBranding instance.
-//
-// For example, to record events for a supplementary brand, do the following:
-//
-//  {
-//    rlz_lib::SupplementaryBranding branding("AAAA");
-//    // This call to RecordProductEvent is scoped to the AAAA brand.
-//    rlz_lib::RecordProductEvent(rlz_lib::DESKTOP, rlz_lib::GD_DESKBAND,
-//                                rlz_lib::INSTALL);
-//  }
-//
-//  // This call to RecordProductEvent is not scoped to any supplementary brand.
-//  rlz_lib::RecordProductEvent(rlz_lib::DESKTOP, rlz_lib::GD_DESKBAND,
-//                              rlz_lib::INSTALL);
-//
-// In particular, this affects the recording of stateful events and the sending
-// of financial pings.  In the former case, a stateful event recorded while
-// scoped to a supplementary brand will be recorded again when scoped to a
-// different supplementary brand (or not scoped at all).  In the latter case,
-// the time skip check is specific to each supplementary brand.
-class SupplementaryBranding {
- public:
-  explicit SupplementaryBranding(const char* brand);
-  ~SupplementaryBranding();
-
-  static const std::string& GetBrand();
-
- private:
-  ScopedRlzValueStoreLock* lock_;
-};
 
 }  // namespace rlz_lib
 

@@ -86,10 +86,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
         database_id_(0) {}
   ~TestableIndexedDBBackingStore() override = default;
 
-  const std::vector<IndexedDBBackingStore::Transaction::WriteDescriptor>&
-  writes() const {
-    return writes_;
-  }
+  const std::vector<WriteDescriptor>& writes() const { return writes_; }
   void ClearWrites() { writes_.clear(); }
   const std::vector<int64_t>& removals() const { return removals_; }
   void ClearRemovals() { removals_.clear(); }
@@ -99,10 +96,9 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   }
 
  protected:
-  bool WriteBlobFile(
-      int64_t database_id,
-      const Transaction::WriteDescriptor& descriptor,
-      Transaction::ChainedBlobWriter* chained_blob_writer) override {
+  bool WriteBlobFile(int64_t database_id,
+                     const WriteDescriptor& descriptor,
+                     ChainedBlobWriter* chained_blob_writer) override {
     if (KeyPrefix::IsValidDatabaseId(database_id_)) {
       if (database_id_ != database_id) {
         return false;
@@ -112,9 +108,8 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     }
     writes_.push_back(descriptor);
     task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&Transaction::ChainedBlobWriter::ReportWriteCompletion,
-                       chained_blob_writer, true, 1));
+        FROM_HERE, base::BindOnce(&ChainedBlobWriter::ReportWriteCompletion,
+                                  chained_blob_writer, true, 1));
     return true;
   }
 
@@ -129,7 +124,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 
  private:
   int64_t database_id_;
-  std::vector<Transaction::WriteDescriptor> writes_;
+  std::vector<WriteDescriptor> writes_;
 
   // This is modified in an overridden virtual function that is properly const
   // in the real implementation, therefore must be mutable here.
@@ -390,8 +385,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     if (backing_store_->writes().size() != blob_info_.size())
       return false;
     for (size_t i = 0; i < backing_store_->writes().size(); ++i) {
-      const IndexedDBBackingStore::Transaction::WriteDescriptor& desc =
-          backing_store_->writes()[i];
+      const WriteDescriptor& desc = backing_store_->writes()[i];
       const IndexedDBBlobInfo& info = blob_info_[i];
       if (desc.is_file() != info.is_file()) {
         if (!info.is_file() || !info.file_path().empty())
@@ -439,23 +433,21 @@ class TestCallback {
   TestCallback() = default;
   ~TestCallback() = default;
 
-  IndexedDBBackingStore::BlobWriteCallback CreateCallback() {
-    return base::BindLambdaForTesting(
-        [this](IndexedDBBackingStore::BlobWriteResult result) {
-          this->called = true;
-          switch (result) {
-            case IndexedDBBackingStore::BlobWriteResult::kFailure:
-              // Not tested.
-              this->succeeded = false;
-              break;
-            case IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAsync:
-            case IndexedDBBackingStore::BlobWriteResult::
-                kRunPhaseTwoAndReturnResult:
-              this->succeeded = true;
-              break;
-          }
-          return leveldb::Status::OK();
-        });
+  BlobWriteCallback CreateCallback() {
+    return base::BindLambdaForTesting([this](BlobWriteResult result) {
+      this->called = true;
+      switch (result) {
+        case BlobWriteResult::kFailure:
+          // Not tested.
+          this->succeeded = false;
+          break;
+        case BlobWriteResult::kRunPhaseTwoAsync:
+        case BlobWriteResult::kRunPhaseTwoAndReturnResult:
+          this->succeeded = true;
+          break;
+      }
+      return leveldb::Status::OK();
+    });
   }
   bool called = false;
   bool succeeded = false;
@@ -978,8 +970,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
         EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
         EXPECT_EQ(0U, backing_store()->removals().size());
         for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
-          read_result_value.blob_info[i].release_callback().Run(
-              read_result_value.blob_info[i].file_path());
+          read_result_value.blob_info[i].release_callback().Run();
         }
       }));
   RunAllTasksUntilIdle();

@@ -271,36 +271,55 @@ void Animation::RemoveFromTicking() {
   animation_host_->RemoveFromTicking(this);
 }
 
-void Animation::NotifyKeyframeModelStarted(const AnimationEvent& event) {
-  if (animation_delegate_) {
-    animation_delegate_->NotifyAnimationStarted(
-        event.monotonic_time, event.target_property, event.group_id);
+void Animation::DispatchAndDelegateAnimationEvent(const AnimationEvent& event) {
+  if (event.ShouldDispatchToKeyframeEffectAndModel()) {
+    KeyframeEffect* keyframe_effect =
+        GetKeyframeEffectById(event.uid.effect_id);
+    if (!keyframe_effect ||
+        !keyframe_effect->DispatchAnimationEventToKeyframeModel(event)) {
+      // If we fail to dispatch the event, it is to clean up an obsolete
+      // animation and should not notify the delegate.
+      // TODO(gerchiko): Determine when we expect the referenced animations not
+      // to exist.
+      return;
+    }
   }
+  DelegateAnimationEvent(event);
 }
 
-void Animation::NotifyKeyframeModelFinished(const AnimationEvent& event) {
+void Animation::DelegateAnimationEvent(const AnimationEvent& event) {
   if (animation_delegate_) {
-    animation_delegate_->NotifyAnimationFinished(
-        event.monotonic_time, event.target_property, event.group_id);
-  }
-}
+    switch (event.type) {
+      case AnimationEvent::STARTED:
+        animation_delegate_->NotifyAnimationStarted(
+            event.monotonic_time, event.target_property, event.group_id);
+        break;
 
-void Animation::NotifyKeyframeModelAborted(const AnimationEvent& event) {
-  if (animation_delegate_) {
-    animation_delegate_->NotifyAnimationAborted(
-        event.monotonic_time, event.target_property, event.group_id);
-  }
-}
+      case AnimationEvent::FINISHED:
+        animation_delegate_->NotifyAnimationFinished(
+            event.monotonic_time, event.target_property, event.group_id);
+        break;
 
-void Animation::NotifyKeyframeModelTakeover(const AnimationEvent& event) {
-  DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
+      case AnimationEvent::ABORTED:
+        animation_delegate_->NotifyAnimationAborted(
+            event.monotonic_time, event.target_property, event.group_id);
+        break;
 
-  if (animation_delegate_) {
-    DCHECK(event.curve);
-    std::unique_ptr<AnimationCurve> animation_curve = event.curve->Clone();
-    animation_delegate_->NotifyAnimationTakeover(
-        event.monotonic_time, event.target_property, event.animation_start_time,
-        std::move(animation_curve));
+      case AnimationEvent::TAKEOVER:
+        // TODO(crbug.com/1018213): Routing TAKEOVER events is broken.
+        DCHECK(!event.is_impl_only);
+        DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
+        DCHECK(event.curve);
+        animation_delegate_->NotifyAnimationTakeover(
+            event.monotonic_time, event.target_property,
+            event.animation_start_time, event.curve->Clone());
+        break;
+
+      case AnimationEvent::TIME_UPDATED:
+        DCHECK(!event.is_impl_only);
+        animation_delegate_->NotifyLocalTimeUpdated(event.local_time);
+        break;
+    }
   }
 }
 

@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Soldan sağa</translation>
 <translation id="1383876407941801731">Axtar</translation>
 <translation id="1398853756734560583">Artırın</translation>
-<translation id="1409544243779336081">Tətbiq tövsiyəsi</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün deyil</translation>
 <translation id="1498028757988366001">Bunu əvvəl axtarmısınız. Tarixçədən "<ph name="QUERY" />" sorğusunun silinməsi onu bütün cihazlardakı hesabınızdan həmişəlik siləcək.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dəqiqə və }other{# dəqiqə və }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ay}other{# ay}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144"><ph name="RATING_SCORE" /> ulduzlu qiymətləndirmə</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 saat və }other{# saat və }}</translation>
 <translation id="1842960171412779397">seçin</translation>
 <translation id="1859234291848436338">Yazı istiqaməti</translation>

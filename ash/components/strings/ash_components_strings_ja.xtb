@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> キーまたは <ph name="ENTER" /> キーを押す</translation>
 <translation id="4240486403425279990">複数画面モード</translation>
 <translation id="4382340674111381977">前のページに戻る</translation>
+<translation id="4458670250301149821">アプリグリッド内のフォルダにアプリアイコンを移動または取り出します</translation>
 <translation id="4472417192667361414">システムと表示の設定</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> キーを押してから、<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />、<ph name="DOWN" />のいずれかのキーを押します</translation>
 <translation id="4556221320735744018">キーボード ショートカットのヘルプを表示する</translation>
 <translation id="4628718545549558538">ステータス領域（アカウント画像が表示されている部分）を開く</translation>
 <translation id="4642092649622328492">画面の一部のスクリーンショットを撮影する</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">次の文字を削除する（カーソルの右側を削除する）</translation>
 <translation id="7500368597227394048">ハイフン</translation>
 <translation id="7611271430932669992">ポップアップとダイアログにフォーカスを移動します</translation>
+<translation id="7635348532214572995">アプリグリッド内でアプリアイコンを移動します</translation>
 <translation id="766326951329901120">クリップボードの内容をプレーン テキストとして貼り付ける</translation>
 <translation id="7703010453515335249">左角かっこ</translation>
 <translation id="7724603315864178912">切り取り</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">クリップボードの内容を貼り付けます</translation>
 <translation id="9052808072970550123">次のユーザーに切り替えます</translation>
 <translation id="906458777597946297">ウィンドウを最大化</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> キーを押してから、<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />、<ph name="DOWN" />のいずれかのキーを押します</translation>
 <translation id="9091855755813503076">行の先頭に移動します</translation>
 <translation id="9106898733795143799">ページとウェブブラウザ</translation>
 <translation id="9162942292291287644">「<ph name="QUERY" />」の検索結果はありません</translation>

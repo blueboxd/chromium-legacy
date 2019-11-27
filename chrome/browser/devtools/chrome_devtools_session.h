@@ -32,8 +32,6 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
                         content::DevToolsAgentHostClient* client);
   ~ChromeDevToolsSession() override;
 
-  protocol::UberDispatcher* dispatcher() { return dispatcher_.get(); }
-
   void HandleCommand(
       const std::string& method,
       const std::string& message,
@@ -58,14 +56,14 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
       pending_commands_;
 
-  std::unique_ptr<protocol::UberDispatcher> dispatcher_;
+  protocol::UberDispatcher dispatcher_;
   std::unique_ptr<BrowserHandler> browser_handler_;
   std::unique_ptr<CastHandler> cast_handler_;
   std::unique_ptr<PageHandler> page_handler_;
   std::unique_ptr<SecurityHandler> security_handler_;
   std::unique_ptr<TargetHandler> target_handler_;
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<WindowManagerHandler> window_manager_protocl_handler_;
+  std::unique_ptr<WindowManagerHandler> window_manager_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsSession);

@@ -27,7 +27,7 @@ class ApplicationMediaCapabilities
   void AddReceiver(
       mojo::PendingReceiver<mojom::ApplicationMediaCapabilities> receiver);
 
-  void SetSupportedBitstreamAudioCodecs(int codecs);
+  void SetSupportedBitstreamAudioCodecs(const BitstreamAudioCodecsInfo& info);
 
  private:
   // mojom::ApplicationMediaCapabilities implementation:
@@ -37,7 +37,7 @@ class ApplicationMediaCapabilities
 
   mojo::ReceiverSet<mojom::ApplicationMediaCapabilities> receivers_;
   mojo::RemoteSet<mojom::ApplicationMediaCapabilitiesObserver> observers_;
-  int supported_bitstream_audio_codecs_;
+  BitstreamAudioCodecsInfo supported_bitstream_audio_codecs_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationMediaCapabilities);
 };

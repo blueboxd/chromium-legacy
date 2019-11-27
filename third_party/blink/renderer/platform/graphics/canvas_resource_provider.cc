@@ -453,13 +453,14 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
       const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
-      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
+      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+      bool is_origin_top_left)
       : CanvasResourceProvider(kPassThrough,
                                size,
                                /*msaa_sample_count=*/0,
                                filter_quality,
                                color_params,
-                               /*is_origin_top_left=*/true,
+                               is_origin_top_left,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
 
@@ -487,8 +488,10 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
   }
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
-    NOTREACHED();
-    return nullptr;
+    auto resource = GetImportedResource();
+    if (IsGpuContextLost() || !resource)
+      return nullptr;
+    return resource->Bitmap();
   }
 };
 
@@ -754,14 +757,14 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           continue;
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
             size, filter_quality, color_params, context_provider_wrapper,
-            resource_dispatcher);
+            resource_dispatcher, is_origin_top_left);
         break;
       case CanvasResourceType::kDirect3DGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
           continue;
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
             size, filter_quality, color_params, context_provider_wrapper,
-            resource_dispatcher);
+            resource_dispatcher, is_origin_top_left);
         break;
       case CanvasResourceType::kSharedBitmap:
         if (!resource_dispatcher)
@@ -1207,6 +1210,16 @@ bool CanvasResourceProvider::ImportResource(
   canvas_resources_.clear();
   canvas_resources_.push_back(std::move(resource));
   return true;
+}
+
+scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
+    const {
+  if (!IsSingleBuffered() || !SupportsSingleBuffering())
+    return nullptr;
+  DCHECK_LE(canvas_resources_.size(), 1u);
+  if (canvas_resources_.IsEmpty())
+    return nullptr;
+  return canvas_resources_.back();
 }
 
 }  // namespace blink

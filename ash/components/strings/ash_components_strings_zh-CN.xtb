@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 或 <ph name="ENTER" /> 键</translation>
 <translation id="4240486403425279990">概览模式</translation>
 <translation id="4382340674111381977">返回上一页</translation>
+<translation id="4458670250301149821">将某个应用图标移入到应用网格内的某个文件夹中或从中移出</translation>
 <translation id="4472417192667361414">系统设置和显示设置</translation>
+<translation id="449214506787633354">按 <ph name="CTRL" /> 键，然后按 <ph name="LEFT" /> 或 <ph name="RIGHT" /> 或 <ph name="UP" /> 或 <ph name="DOWN" /> 键</translation>
 <translation id="4556221320735744018">查看键盘快捷键助手</translation>
 <translation id="4628718545549558538">打开状态区（其中显示了您的帐号头像）</translation>
 <translation id="4642092649622328492">截取局部屏幕截图</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>
 <translation id="7500368597227394048">连字符</translation>
 <translation id="7611271430932669992">将焦点移至弹出式窗口和对话框</translation>
+<translation id="7635348532214572995">在应用网格内随意移动某个应用图标</translation>
 <translation id="766326951329901120">以纯文本形式粘贴剪贴板中的内容</translation>
 <translation id="7703010453515335249">左方括号</translation>
 <translation id="7724603315864178912">剪切</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">粘贴剪贴板中的内容</translation>
 <translation id="9052808072970550123">切换到下一位用户</translation>
 <translation id="906458777597946297">最大化窗口</translation>
+<translation id="9072882242928138086">按 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 组合键，然后按 <ph name="LEFT" /> 或 <ph name="RIGHT" /> 或 <ph name="UP" /> 或 <ph name="DOWN" /> 键</translation>
 <translation id="9091855755813503076">转至行首</translation>
 <translation id="9106898733795143799">网页和网络浏览器</translation>
 <translation id="9162942292291287644">找不到与“<ph name="QUERY" />”相符的搜索结果</translation>

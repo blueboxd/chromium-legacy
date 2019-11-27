@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">De gauche à droite</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1398853756734560583">Agrandir</translation>
-<translation id="1409544243779336081">Recommandation d'application</translation>
 <translation id="1450753235335490080">Impossible de partager l'élément suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Vous avez déjà effectué cette recherche. La suppression de « <ph name="QUERY" /> » de votre historique la supprimera de manière permanente de votre compte sur tous vos appareils.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et }one{# minute et }other{# minutes et }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Point</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{Un mois}one{# mois}other{# mois}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> Mo/s</translation>
-<translation id="1812519734428420144">Note : <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 heure et }one{# heure et }other{# heures et }}</translation>
 <translation id="1842960171412779397">sélectionner</translation>
 <translation id="1859234291848436338">Direction de l'écriture</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7781829728241885113">Hier</translation>
 <translation id="7814458197256864873">&amp;Copier</translation>
+<translation id="7848989271541991537">Déplacée à la page <ph name="PAGE_NUMBER" />, ligne <ph name="ROW_NUMBER" />, colonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Ne pas bloquer</translation>
 <translation id="7907591526440419938">Ouvrir un fichier</translation>
 <translation id="7969046989155602842">Commande</translation>

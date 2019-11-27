@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overview mode</translation>
 <translation id="4382340674111381977">Bumalik sa nakaraang page</translation>
+<translation id="4458670250301149821">Ilipat ang icon ng isang app sa/mula sa folder sa app grid</translation>
 <translation id="4472417192667361414">Mga Setting ng System at Display</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, pagkatapos ay <ph name="LEFT" /> o <ph name="RIGHT" /> o <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Tingnan ang Helper sa Keyboard Shortcut</translation>
 <translation id="4628718545549558538">Buksan ang lugar ng status (kung saan lumalabas ang iyong larawan sa account)</translation>
 <translation id="4642092649622328492">Kumuha ng screenshot ng bahagi ng screen</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">I-delete ang susunod na titik (forward na pag-delete)</translation>
 <translation id="7500368597227394048">gitling</translation>
 <translation id="7611271430932669992">Inililipat ang focus sa mga popup at dialog</translation>
+<translation id="7635348532214572995">Ilipat ang icon ng isang app sa isang bahagi ng app grid</translation>
 <translation id="766326951329901120">I-paste ang content mula sa clipboard bilang plain text</translation>
 <translation id="7703010453515335249">kaliwang bracket</translation>
 <translation id="7724603315864178912">I-cut</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">I-paste ang content mula sa clipboard</translation>
 <translation id="9052808072970550123">Lumipat sa susunod na user</translation>
 <translation id="906458777597946297">I-maximize ang window</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, pagkatapos ay <ph name="LEFT" /> o <ph name="RIGHT" /> o <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Pumunta sa simula ng linya</translation>
 <translation id="9106898733795143799">Page at Web Browser</translation>
 <translation id="9162942292291287644">Walang resulta ng paghahanap para sa <ph name="QUERY" /></translation>

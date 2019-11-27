@@ -60,7 +60,7 @@ void SSLHostStateDelegateImpl::AllowCert(const std::string& host,
 }
 
 void SSLHostStateDelegateImpl::Clear(
-    const base::Callback<bool(const std::string&)>& host_filter) {
+    base::RepeatingCallback<bool(const std::string&)> host_filter) {
   if (host_filter.is_null()) {
     cert_policy_for_host_.clear();
     return;

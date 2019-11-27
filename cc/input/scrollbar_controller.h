@@ -177,7 +177,7 @@ class CC_EXPORT ScrollbarController {
   // pointermoves are not VSync aligned).
   bool drag_processed_for_current_frame_;
 
-  std::unique_ptr<base::CancelableClosure> cancelable_autoscroll_task_;
+  std::unique_ptr<base::CancelableOnceClosure> cancelable_autoscroll_task_;
 };
 
 }  // namespace cc

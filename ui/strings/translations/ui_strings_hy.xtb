@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Ձախից աջ</translation>
 <translation id="1383876407941801731">Որոնում</translation>
 <translation id="1398853756734560583">Առավելացնել</translation>
-<translation id="1409544243779336081">Հավելվածի առաջարկ</translation>
 <translation id="1450753235335490080">Չհաջողվեց ուղարկել բովանդակությունը (<ph name="CONTENT_TYPE" />)</translation>
 <translation id="1498028757988366001">Դուք նախկինում որոնել եք սա: Եթե ջնջեք «<ph name="QUERY" />» հարցումը պատմությունից, այն ընդմիշտ կհեռացվի ձեր բոլոր սարքերից, որտեղ մուտք եք գործել հաշիվ։</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 րոպե }one{# րոպե }other{# րոպե }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Վերջակետ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ամիս}one{# months}other{# ամիս}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ՄԲ/վ</translation>
-<translation id="1812519734428420144">Վարկանիշ՝ <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ժամ }one{# ժամ }other{# ժամ }}</translation>
 <translation id="1842960171412779397">ընտրել</translation>
 <translation id="1859234291848436338">Գրելու ուղղություն</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="7781829728241885113">Երեկ</translation>
 <translation id="7814458197256864873">&amp;Պատճենել</translation>
+<translation id="7848989271541991537">Հավելվածը տեղափոխվել է էջ <ph name="PAGE_NUMBER" />, շարք <ph name="ROW_NUMBER" />, սյունակ <ph name="COLUMN_NUMBER" />։</translation>
 <translation id="7879499977785298635">Չարգելափակել</translation>
 <translation id="7907591526440419938">Ֆայլի բացում</translation>
 <translation id="7969046989155602842">Command</translation>

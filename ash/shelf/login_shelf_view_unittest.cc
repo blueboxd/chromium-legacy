@@ -58,9 +58,9 @@ class LoginShelfViewTest : public LoginTestBase {
   ~LoginShelfViewTest() override = default;
 
   void SetUp() override {
-    action_background_controller_factory_ =
-        base::Bind(&LoginShelfViewTest::CreateActionBackgroundController,
-                   base::Unretained(this));
+    action_background_controller_factory_ = base::BindRepeating(
+        &LoginShelfViewTest::CreateActionBackgroundController,
+        base::Unretained(this));
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(
         &action_background_controller_factory_);
 

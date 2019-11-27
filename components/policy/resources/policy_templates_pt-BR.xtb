@@ -157,6 +157,7 @@
       Se a política for definida como "False", o estado da chave dev não será informado.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Desativa a continuação na página de aviso de "Navegação segura"</translation>
+<translation id="1163080558183062209">Desativar tipos de impressora na lista de proibições</translation>
 <translation id="117059611145966538">Servidores de impressão externos</translation>
 <translation id="1189817621108632689">Permite que você defina uma lista de padrões de URL que especifica sites que têm permissão para exibir imagens.
 
@@ -440,11 +441,6 @@ Cada item da lista da política é uma string que contém um código de extensã
 
           Se esta política não for definida, o ditado ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="1675002386741412210">Com suporte em:</translation>
-<translation id="1676141669324989554">Permite definir se os usuários podem adicionar exceções para permitir conteúdo combinado em sites específicos.
-
-          Esta política pode ser modificada para padrões de URL específicos usando as políticas "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
-
-          Se esta política não for definida, os usuários poderão adicionar exceções para permitir conteúdo combinado bloqueável.</translation>
 <translation id="1695708467571967752">Esta política controla se os usuários podem executar mídia enquanto o dispositivo está bloqueado.
 
       Se esta política for definida como falsa, os controles de mídia na tela de bloqueio serão desativados.
@@ -863,6 +859,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Modelos formatados incorretamente serão ignorados.</translation>
 <translation id="2345547870894930157">Ativar DNS sobre HTTPS sem substituto inseguro</translation>
+<translation id="2347264058558503729">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para o <ph name="CLOUD_PRINT_NAME" /> para impressão.  OBSERVAÇÃO: isso apenas afeta compatibilidade do <ph name="CLOUD_PRINT_NAME" /> com o <ph name="PRODUCT_NAME" />.  Isso não impede que os usuários enviem trabalhos de impressão em sites.
+
+      Se essa configuração for ativada ou não for configurada, os usuários poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> pela caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.
+
+      Se essa configuração for desativada, os usuários não poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> pela caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.
+
+      Para manter os destinos do <ph name="CLOUD_PRINT_NAME" /> detectáveis, é necessário que essa política seja definida como verdadeira e que "nuvem" não esteja incluído na política PrinterTypeDenyList.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2398554235599593694"> Esta política controla se a caixa de seleção "Sempre aberto" é exibida ou não em prompts de confirmação de inicialização de protocolo externo.
@@ -971,6 +974,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se a política for ativada ou não for definida, serão exibidos avisos de segurança quando algumas sinalizações da linha de comando forem usadas para iniciar o Chrome.
 
           No Windows, essa política está disponível apenas em instâncias associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
+<translation id="247658312644322296">O destino "Salvar como PDF"</translation>
 <translation id="2480971699591919564">Ativar o recurso "Clique para ligar", que permite que os usuários enviem números de telefone de computadores com Chrome para um dispositivo Android quando o usuário está conectado. Para mais informações, acesse o artigo de Central de Ajuda: https://support.google.com/chrome/answer/9430554?hl=pt-BR.
 
       Se esta política estiver ativada, a capacidade de enviar números de telefone para dispositivos Android estará ativada para o usuário do Chrome.
@@ -2341,7 +2345,19 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Essas solicitações são criadas quando os usuários tentam instalar uma extensão que não foi autorizada na <ph name="EXTENSION_INSTALL_WHITELIST" /> nem nas <ph name="EXTENSION_SETTINGS" />.
 
       Esta política só é eficaz quando a máquina está inscrita no <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e se <ph name="CLOUD_REPORTING_ENABLED" /> está ativado.</translation>
+<translation id="4638162097046412832">As impressoras colocadas na lista de proibições terão a descoberta desativada ou não terão as funcionalidades buscadas.
+
+      Colocar todos os tipos de impressora na lista de proibições desativa a impressão de modo eficaz, uma vez que não haveria destinos disponíveis para enviar um documento para impressão.
+
+      Incluir "nuvem" na lista de proibições tem o mesmo efeito que definir a política CloudPrintSubmitEnabled como falsa. Para que os destinos do <ph name="CLOUD_PRINT_NAME" /> continuem disponíveis, é necessário que a política CloudPrintSubmitEnabled seja definida como verdadeira e "nuvem" não esteja na lista de proibições.
+
+      Se a política não for configurada ou for configurada como uma lista vazia, todos os tipos de impressora estarão disponíveis para descoberta.
+
+      As impressoras de extensão também são conhecidas como destinos de provedores de impressão e incluem qualquer destino que pertença a uma extensão do <ph name="PRODUCT_NAME" />.
+
+      As impressoras locais também são conhecidas como destinos de impressão nativos e incluem destinos disponíveis para as máquinas locais e impressoras de rede compartilhada.</translation>
 <translation id="4639407427807680016">Nomes dos hosts de mensagens nativas a serem mantidos fora da lista de proibições</translation>
+<translation id="4649395978608361979">Destinos de impressoras locais</translation>
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>
 <translation id="465099050592230505">URL da loja on-line da empresa (uso suspenso)</translation>
 <translation id="4661889655253181651">As configurações de conteúdo permitem que você especifique como o conteúdo de um tipo específico (por exemplo, cookies, imagens ou JavaScript) é tratado.</translation>
@@ -2368,6 +2384,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Se esta política estiver ativada, os sites terão permissão para navegar e abrir novas janelas/guias simultaneamente.
       Se esta política estiver desativada ou não for configurada, os sites não terão permissão para navegar e abrir uma nova janela/guia simultaneamente.</translation>
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
+<translation id="4693779768620889402">Destinos baseados em extensões</translation>
 <translation id="4703402283970867140">Ativar modelo de escurecimento inteligente para aumentar o tempo que a tela permanece ativa</translation>
 <translation id="4722122254122249791">Ativar o isolamento de sites para origens específicas</translation>
 <translation id="4722399051042571387">Se definida como false, os usuários não conseguirão configurar PINs que sejam fracos e fáceis de adivinhar.
@@ -2986,6 +3003,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5656177735561364047">Ativa o recurso de área de transferência compartilhada</translation>
 <translation id="5666457529647159548">Permite que o usuário gerencie certificados do cliente instalados.</translation>
+<translation id="5676740747107495269">Exibir opções de acessibilidade no menu da bandeja do sistema na tela de login</translation>
 <translation id="5689430183304951538">Tamanho da página de impressão padrão</translation>
 <translation id="5693469654327063861">Permitir migração de dados</translation>
 <translation id="5694594914843889579">Quando esta política é definida como "true", o armazenamento externo não fica disponível no navegador de arquivos.
@@ -3134,9 +3152,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5961137303188584693">Endereço MAC da placa de rede integrada do dispositivo</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
-<translation id="5997107377032983906">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir conteúdo combinado bloqueável (ativo), por exemplo, conteúdo HTTP em sites HTTPS.
-
-          Se esta política não for definida, o conteúdo combinado bloqueável será bloqueado, mas os usuários poderão definir exceções para exibi-lo para sites específicos.</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="5997846976342452720">Especifica se o localizador de plug-ins deve ser desativado (uso suspenso)</translation>
 <translation id="5998198091336830580">Esta política faz parte do seguinte grupo atômico (apenas as políticas da fonte de maior prioridade presentes no grupo são aplicadas):</translation>
@@ -3529,12 +3544,10 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6795485990775913659">Permitir impressão apenas sem PIN</translation>
-<translation id="6800064234889290465">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir conteúdo combinado bloqueável (ativo), por exemplo, conteúdo HTTP em sites HTTPS.
-
-          Se esta política não for definida, o conteúdo combinado bloqueável será bloqueado, mas os usuários poderão definir exceções para exibi-lo para sites específicos.</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="6813263547126514821">Ligar e desligar</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
+<translation id="6821268164692776674">Destinos do <ph name="CLOUD_PRINT_NAME" /> e "Salvar no Google Drive"</translation>
 <translation id="6833988859168635883">Inicialização, página inicial e página "Nova guia"</translation>
 <translation id="6835883744948188639">Mostrar um prompt recorrente ao usuário indicando que a reinicialização é necessária</translation>
 <translation id="683688607121170501">Esta configuração permite que os usuários alternem entre Contas do Google na área de conteúdo da janela do navegador e nos aplicativos Android, depois de fazer login no dispositivo <ph name="PRODUCT_OS_NAME" />.
@@ -3959,6 +3972,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="747275827471712187">Reverter para comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado para os cookies nesses sites</translation>
 <translation id="7477231245051133709">Ativar o recurso de acessibilidade de áudio mono</translation>
+<translation id="7477239290070847560">Destinos de protocolos baseados em Zeroconf (mDNS + DNS-SD)</translation>
 <translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>
 <translation id="7485730741952775732">Se esta política for definida, o host do acesso remoto usará este URL para validar os tokens de autenticação de clientes de acesso remoto, de modo a aceitar as conexões. Ela precisa ser usada em conjunto com RemoteAccessHostTokenUrl.
 

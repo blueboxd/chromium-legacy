@@ -34,10 +34,23 @@ struct MediaLogPropertyTypeConverter {};
 _VALUE_CONSTRUCTOR_TYPE(std::string, const std::string&);
 _VALUE_CONSTRUCTOR_TYPE(bool, bool);
 _VALUE_CONSTRUCTOR_TYPE(int, int);
-_VALUE_CONSTRUCTOR_TYPE(double, double);
-_VALUE_CONSTRUCTOR_TYPE(float, float);
-
 #undef _VALUE_CONSTRUCTOR_TYPE
+
+// Can't send non-finite double values to a base::Value.
+template <>
+struct MediaLogPropertyTypeConverter<double> {
+  static base::Value Convert(double value) {
+    return std::isfinite(value) ? base::Value(value) : base::Value("unknown");
+  }
+};
+
+// Just upcast this to get the NaN check.
+template <>
+struct MediaLogPropertyTypeConverter<float> {
+  static base::Value Convert(float value) {
+    return MediaLogPropertyTypeConverter<double>::Convert(value);
+  }
+};
 
 /* Support serializing for a selection of types */
 // support 64 bit ints, this is a weird workaround for the base::Value

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 鍵或 <ph name="ENTER" /> 鍵</translation>
 <translation id="4240486403425279990">總覽模式</translation>
 <translation id="4382340674111381977">返回上一頁</translation>
+<translation id="4458670250301149821">將應用程式圖示移入或移出應用程式格線中的資料夾</translation>
 <translation id="4472417192667361414">系統與顯示設定</translation>
+<translation id="449214506787633354">先按 <ph name="CTRL" /> 鍵，再按<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />或<ph name="DOWN" /></translation>
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">刪除下一個字母 (向前刪除)</translation>
 <translation id="7500368597227394048">連字號</translation>
 <translation id="7611271430932669992">將焦點移至彈出式視窗和對話方塊</translation>
+<translation id="7635348532214572995">將應用程式圖示沿著應用程式格線四周移動</translation>
 <translation id="766326951329901120">以純文字貼上剪貼簿中的內容</translation>
 <translation id="7703010453515335249">左方括號</translation>
 <translation id="7724603315864178912">剪下</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">貼上剪貼簿中的內容</translation>
 <translation id="9052808072970550123">切換至下一個使用者</translation>
 <translation id="906458777597946297">將視窗放到最大</translation>
+<translation id="9072882242928138086">先按 <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 鍵，再按<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />或<ph name="DOWN" /></translation>
 <translation id="9091855755813503076">移到行首</translation>
 <translation id="9106898733795143799">網頁與網路瀏覽器</translation>
 <translation id="9162942292291287644">找不到與「<ph name="QUERY" />」相符的搜尋結果</translation>

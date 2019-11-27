@@ -794,8 +794,13 @@ TEST_F(ScreenOrientationControllerTest,
        ApplyAppsRequestedLocksOnlyInUITabletMode) {
   std::unique_ptr<aura::Window> window(CreateAppWindowInShellWithId(0));
   TabletModeControllerTestApi tablet_mode_controller_test_api;
-  // To prevent flakes, detach all external mouse devices first.
-  tablet_mode_controller_test_api.DettachAllMouseDevices();
+  // Unit tests are supposed to be in reference to a hypothetical computer, but
+  // they can detect a mouse connected to the actual computer on which they are
+  // run. That is relevant here because external pointing devices prevent tablet
+  // mode. Detach all mice, so that this unit test will produce the same results
+  // whether the host machine has a mouse or not.
+  tablet_mode_controller_test_api.DetachAllMice();
+
   tablet_mode_controller_test_api.OpenLidToAngle(270);
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
@@ -827,7 +832,7 @@ TEST_F(ScreenOrientationControllerTest,
 
   // When UI tablet mode triggers again, the most recent app requested
   // orientation lock for the active window will be applied.
-  tablet_mode_controller_test_api.DettachAllMouseDevices();
+  tablet_mode_controller_test_api.DetachAllMice();
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());

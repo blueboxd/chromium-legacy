@@ -30,11 +30,5 @@
   Promise<void> delete(CookieStoreDeleteOptions options);
 
   // https://wicg.github.io/cookie-store/explainer.html#the-change-events-api
-  [Exposed=ServiceWorker, CallWith=ScriptState, Measure, RaisesException]
-  Promise<void> subscribeToChanges(
-      sequence<CookieStoreGetOptions> subscriptions);
-  [Exposed=ServiceWorker, CallWith=ScriptState, Measure, RaisesException]
-  Promise<sequence<CookieStoreGetOptions>> getChangeSubscriptions();
-
   [Exposed=Window] attribute EventHandler onchange;
 };

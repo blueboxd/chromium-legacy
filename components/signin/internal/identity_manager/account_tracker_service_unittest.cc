@@ -110,8 +110,7 @@ std::string AccountKeyToPictureURL(AccountKey account_key) {
 std::string AccountKeyToPictureURLWithSize(AccountKey account_key) {
   return signin::GetAvatarImageURLWithOptions(
              GURL(AccountKeyToPictureURL(account_key)),
-             AccountFetcherService::kAccountImageDownloadSize,
-             true /* no_silhouette */)
+             signin::kAccountInfoImageSize, true /* no_silhouette */)
       .spec();
 }
 

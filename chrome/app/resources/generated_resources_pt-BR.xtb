@@ -934,7 +934,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2326931316514688470">&amp;Recarregar aplicativo</translation>
 <translation id="2327492829706409234">Ativar aplicativo</translation>
 <translation id="2329597144923131178">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos.</translation>
-<translation id="2330129964253841015">Avisar sobre senhas comprometidas</translation>
 <translation id="2332131598580221120">Ver na loja</translation>
 <translation id="2332192922827071008">Abrir preferências</translation>
 <translation id="2332742915001411729">Redefinir para os valores padrão</translation>
@@ -4101,6 +4100,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6990778048354947307">Tema escuro</translation>
 <translation id="6991665348624301627">Selecione um destino</translation>
 <translation id="6992554835374084304">Ativar a verificação ortográfica aprimorada</translation>
+<translation id="6995899638241819463">Avisar se suas senhas forem expostas em uma violação de dados</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />: registro de atividades</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
 <translation id="6998793565256476099">Cadastre o dispositivo para videoconferência</translation>

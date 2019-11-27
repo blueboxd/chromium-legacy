@@ -4,6 +4,16 @@
 
 #include "google_apis/gaia/core_account_id.h"
 
+#include "base/logging.h"
+
+namespace {
+// Returns whether the string looks like an email (the test is
+// crude an only checks whether it includes an '@').
+bool IsEmail(const std::string& string) {
+  return string.find('@') != std::string::npos;
+}
+}  // anonymous namespace
+
 CoreAccountId::CoreAccountId() = default;
 
 CoreAccountId::CoreAccountId(const CoreAccountId&) = default;
@@ -16,11 +26,31 @@ CoreAccountId& CoreAccountId::operator=(const CoreAccountId&) = default;
 
 CoreAccountId& CoreAccountId::operator=(CoreAccountId&&) noexcept = default;
 
-CoreAccountId::CoreAccountId(const char* id) : id(id) {}
+// static
+CoreAccountId CoreAccountId::FromGaiaId(const std::string& gaia_id) {
+  if (gaia_id.empty())
+    return CoreAccountId();
 
-CoreAccountId::CoreAccountId(std::string&& id) : id(std::move(id)) {}
+  DCHECK(!IsEmail(gaia_id))
+      << "Expected a Gaia ID and got an email [actual = " << gaia_id << "]";
+  return CoreAccountId::FromString(gaia_id);
+}
 
-CoreAccountId::CoreAccountId(const std::string& id) : id(id) {}
+// static
+CoreAccountId CoreAccountId::FromEmail(const std::string& email) {
+  if (email.empty())
+    return CoreAccountId();
+
+  DCHECK(IsEmail(email)) << "Expected an email [actual = " << email << "]";
+  return CoreAccountId::FromString(email);
+}
+
+// static
+CoreAccountId CoreAccountId::FromString(const std::string value) {
+  CoreAccountId account_id;
+  account_id.id = value;
+  return account_id;
+}
 
 bool CoreAccountId::empty() const {
   return id.empty();

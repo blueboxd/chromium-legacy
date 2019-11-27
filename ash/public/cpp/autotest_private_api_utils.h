@@ -29,7 +29,7 @@ ASH_EXPORT std::vector<aura::Window*> GetAppWindowList();
 // correctly isn't trivial).
 // Returns true if the closure is already invoked.
 ASH_EXPORT bool WaitForLauncherState(AppListViewState state,
-                                     base::Closure closure);
+                                     base::OnceClosure closure);
 
 }  // namespace ash
 

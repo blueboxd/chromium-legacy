@@ -174,8 +174,10 @@ void SharingDeviceRegistration::UnregisterDevice(
 void SharingDeviceRegistration::OnVapidFCMTokenDeleted(
     RegistrationCallback callback,
     SharingDeviceRegistrationResult result) {
-  if (result != SharingDeviceRegistrationResult::kSuccess)
+  if (result != SharingDeviceRegistrationResult::kSuccess) {
     std::move(callback).Run(result);
+    return;
+  }
 
   DeleteFCMToken(kSharingSenderID, std::move(callback));
 }

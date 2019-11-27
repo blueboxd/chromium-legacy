@@ -4,7 +4,9 @@
 
 #include "ash/assistant/test/test_assistant_service.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -170,20 +172,14 @@ class InteractionResponse::Response {
   Response() = default;
   virtual ~Response() = default;
 
-  virtual std::unique_ptr<Response> Clone() const = 0;
-
   virtual void SendTo(
       chromeos::assistant::mojom::AssistantInteractionSubscriber* receiver) = 0;
 };
 
 class TextResponse : public InteractionResponse::Response {
  public:
-  TextResponse(const std::string& text) : text_(text) {}
+  explicit TextResponse(const std::string& text) : text_(text) {}
   ~TextResponse() override = default;
-
-  std::unique_ptr<Response> Clone() const override {
-    return std::make_unique<TextResponse>(text_);
-  }
 
   void SendTo(chromeos::assistant::mojom::AssistantInteractionSubscriber*
                   receiver) override {
@@ -200,12 +196,9 @@ class ResolutionResponse : public InteractionResponse::Response {
  public:
   using Resolution = InteractionResponse::Resolution;
 
-  ResolutionResponse(Resolution resolution) : resolution_(resolution) {}
+  explicit ResolutionResponse(Resolution resolution)
+      : resolution_(resolution) {}
   ~ResolutionResponse() override = default;
-
-  std::unique_ptr<Response> Clone() const override {
-    return std::make_unique<ResolutionResponse>(resolution_);
-  }
 
   void SendTo(chromeos::assistant::mojom::AssistantInteractionSubscriber*
                   receiver) override {
@@ -236,7 +229,7 @@ TestAssistantService::CreateRemoteAndBind() {
 }
 
 void TestAssistantService::SetInteractionResponse(
-    InteractionResponse&& response) {
+    std::unique_ptr<InteractionResponse> response) {
   interaction_response_ = std::move(response);
 }
 
@@ -263,12 +256,14 @@ void TestAssistantService ::StartTextInteraction(
     chromeos::assistant::mojom::AssistantQuerySource source,
     bool allow_tts) {
   StartInteraction(AssistantInteractionType::kText, source, query);
-  SendInteractionResponse();
+  if (interaction_response_)
+    SendInteractionResponse();
 }
 
 void TestAssistantService ::StartVoiceInteraction() {
   StartInteraction(AssistantInteractionType::kVoice);
-  SendInteractionResponse();
+  if (interaction_response_)
+    SendInteractionResponse();
 }
 
 void TestAssistantService ::StartWarmerWelcomeInteraction(
@@ -278,6 +273,10 @@ void TestAssistantService ::StartWarmerWelcomeInteraction(
 }
 
 void TestAssistantService ::StopActiveInteraction(bool cancel_conversation) {
+  if (!running_active_interaction_)
+    return;
+
+  running_active_interaction_ = false;
   for (auto& subscriber : interaction_subscribers_) {
     subscriber->OnInteractionFinished(
         AssistantInteractionResolution::kInterruption);
@@ -328,44 +327,36 @@ void TestAssistantService::StartInteraction(
     chromeos::assistant::mojom::AssistantInteractionType type,
     chromeos::assistant::mojom::AssistantQuerySource source,
     const std::string& query) {
+  DCHECK(!running_active_interaction_);
   for (auto& subscriber : interaction_subscribers_) {
     subscriber->OnInteractionStarted(
         AssistantInteractionMetadata::New(type, source, query));
   }
+  running_active_interaction_ = true;
 }
 
 void TestAssistantService::SendInteractionResponse() {
-  InteractionResponse response = PopInteractionResponse();
+  DCHECK(interaction_response_);
+  DCHECK(running_active_interaction_);
   for (auto& subscriber : interaction_subscribers_)
-    response.SendTo(subscriber.get());
-}
-
-InteractionResponse TestAssistantService::PopInteractionResponse() {
-  return std::move(interaction_response_);
+    interaction_response_->SendTo(subscriber.get());
+  DCHECK(!current_interaction());
+  interaction_response_.reset();
+  running_active_interaction_ = false;
 }
 
 InteractionResponse::InteractionResponse() = default;
-InteractionResponse::InteractionResponse(InteractionResponse&& other) = default;
-InteractionResponse& InteractionResponse::operator=(
-    InteractionResponse&& other) = default;
 InteractionResponse::~InteractionResponse() = default;
 
-InteractionResponse InteractionResponse::Clone() const {
-  InteractionResponse result{};
-  for (const auto& response : responses_)
-    result.AddResponse(response->Clone());
-  return result;
-}
-
-InteractionResponse& InteractionResponse::AddTextResponse(
+InteractionResponse* InteractionResponse::AddTextResponse(
     const std::string& text) {
   AddResponse(std::make_unique<TextResponse>(text));
-  return *this;
+  return this;
 }
 
-InteractionResponse& InteractionResponse::AddResolution(Resolution resolution) {
+InteractionResponse* InteractionResponse::AddResolution(Resolution resolution) {
   AddResponse(std::make_unique<ResolutionResponse>(resolution));
-  return *this;
+  return this;
 }
 
 void InteractionResponse::AddResponse(std::unique_ptr<Response> response) {

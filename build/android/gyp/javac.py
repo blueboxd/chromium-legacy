@@ -27,89 +27,121 @@ sys.path.insert(
 import colorama
 
 
+# Full list of checks: https://errorprone.info/bugpatterns
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
-  # TODO(crbug.com/834807): Follow steps in bug
-  'DoubleBraceInitialization',
-  # TODO(crbug.com/834790): Follow steps in bug.
-  'CatchAndPrintStackTrace',
-  # TODO(crbug.com/801210): Follow steps in bug.
-  'SynchronizeOnNonFinalField',
-  # TODO(crbug.com/802073): Follow steps in bug.
-  'TypeParameterUnusedInFormals',
-  # TODO(crbug.com/803484): Follow steps in bug.
-  'CatchFail',
-  # TODO(crbug.com/803485): Follow steps in bug.
-  'JUnitAmbiguousTestClass',
-  # Android platform default is always UTF-8.
-  # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
-  'DefaultCharset',
-  # Low priority since the alternatives still work.
-  'JdkObsolete',
-  # We don't use that many lambdas.
-  'FunctionalInterfaceClash',
-  # There are lots of times when we just want to post a task.
-  'FutureReturnValueIgnored',
-  # Nice to be explicit about operators, but not necessary.
-  'OperatorPrecedence',
-  # Just false positives in our code.
-  'ThreadJoinLoop',
-  # Low priority corner cases with String.split.
-  # Linking Guava and using Splitter was rejected
-  # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
-  'StringSplitter',
-  # Preferred to use another method since it propagates exceptions better.
-  'ClassNewInstance',
-  # Nice to have static inner classes but not necessary.
-  'ClassCanBeStatic',
-  # Explicit is better than implicit.
-  'FloatCast',
-  # Results in false positives.
-  'ThreadLocalUsage',
-  # Also just false positives.
-  'Finally',
-  # False positives for Chromium.
-  'FragmentNotInstantiable',
-  # Low priority to fix.
-  'HidingField',
-  # Low priority.
-  'IntLongMath',
-  # Low priority.
-  'BadComparable',
-  # Low priority.
-  'EqualsHashCode',
-  # Nice to fix but low priority.
-  'TypeParameterShadowing',
-  # Good to have immutable enums, also low priority.
-  'ImmutableEnumChecker',
-  # False positives for testing.
-  'InputStreamSlowMultibyteRead',
-  # Nice to have better primitives.
-  'BoxedPrimitiveConstructor',
-  # Not necessary for tests.
-  'OverrideThrowableToString',
-  # Nice to have better type safety.
-  'CollectionToArraySafeParameter',
-  # Makes logcat debugging more difficult, and does not provide obvious
-  # benefits in the Chromium codebase.
-  'ObjectToString',
+    # This one should really be turned on.
+    'ParameterNotNullable',
+    # TODO(crbug.com/834807): Follow steps in bug
+    'DoubleBraceInitialization',
+    # TODO(crbug.com/834790): Follow steps in bug.
+    'CatchAndPrintStackTrace',
+    # TODO(crbug.com/801210): Follow steps in bug.
+    'SynchronizeOnNonFinalField',
+    # TODO(crbug.com/802073): Follow steps in bug.
+    'TypeParameterUnusedInFormals',
+    # TODO(crbug.com/803484): Follow steps in bug.
+    'CatchFail',
+    # TODO(crbug.com/803485): Follow steps in bug.
+    'JUnitAmbiguousTestClass',
+    # TODO(crbug.com/1027683): Follow steps in bug.
+    'UnnecessaryParentheses',
+    # Android platform default is always UTF-8.
+    # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
+    'DefaultCharset',
+    # Low priority since the alternatives still work.
+    'JdkObsolete',
+    # We don't use that many lambdas.
+    'FunctionalInterfaceClash',
+    # There are lots of times when we just want to post a task.
+    'FutureReturnValueIgnored',
+    # Nice to be explicit about operators, but not necessary.
+    'OperatorPrecedence',
+    # Just false positives in our code.
+    'ThreadJoinLoop',
+    # Low priority corner cases with String.split.
+    # Linking Guava and using Splitter was rejected
+    # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
+    'StringSplitter',
+    # Preferred to use another method since it propagates exceptions better.
+    'ClassNewInstance',
+    # Nice to have static inner classes but not necessary.
+    'ClassCanBeStatic',
+    # Explicit is better than implicit.
+    'FloatCast',
+    # Results in false positives.
+    'ThreadLocalUsage',
+    # Also just false positives.
+    'Finally',
+    # False positives for Chromium.
+    'FragmentNotInstantiable',
+    # Low priority to fix.
+    'HidingField',
+    # Low priority.
+    'IntLongMath',
+    # Low priority.
+    'BadComparable',
+    # Low priority.
+    'EqualsHashCode',
+    # Nice to fix but low priority.
+    'TypeParameterShadowing',
+    # Good to have immutable enums, also low priority.
+    'ImmutableEnumChecker',
+    # False positives for testing.
+    'InputStreamSlowMultibyteRead',
+    # Nice to have better primitives.
+    'BoxedPrimitiveConstructor',
+    # Not necessary for tests.
+    'OverrideThrowableToString',
+    # Nice to have better type safety.
+    'CollectionToArraySafeParameter',
+    # Makes logcat debugging more difficult, and does not provide obvious
+    # benefits in the Chromium codebase.
+    'ObjectToString',
+    # Triggers on private methods that are @CalledByNative.
+    'UnusedMethod',
+    # Triggers on generated R.java files.
+    'UnusedVariable',
+    # Not that useful.
+    'UnsafeReflectiveConstructionCast',
+    # Not that useful.
+    'MixedMutabilityReturnType',
+    # Nice to have.
+    'EqualsGetClass',
+    # A lot of false-positives from CharSequence.equals().
+    'UndefinedEquals',
+    # Nice to have.
+    'ExtendingJUnitAssert',
+    # Nice to have.
+    'SystemExitOutsideMain',
+    # Nice to have.
+    'TypeParameterNaming',
+    # Nice to have.
+    'UnusedException',
+    # Nice to have.
+    'UngroupedOverloads',
+    # Nice to have.
+    'FunctionalInterfaceClash',
+    # Nice to have.
+    'InconsistentOverloads',
 ]
 
+# Full list of checks: https://errorprone.info/bugpatterns
+# Only those marked as "experimental" need to be listed here in order to be
+# enabled. We build with -Werror, so all default checks cause builds to fail.
 ERRORPRONE_WARNINGS_TO_ERROR = [
-  # Add warnings to this after fixing/suppressing all instances in our codebase.
-  'ArgumentSelectionDefectChecker',
-  'AssertionFailureIgnored',
-  'FloatingPointLiteralPrecision',
-  'JavaLangClash',
-  'MissingFail',
-  'MissingOverride',
-  'NarrowingCompoundAssignment',
-  'OrphanedFormatString',
-  'ParameterName',
-  'ParcelableCreator',
-  'ReferenceEquality',
-  'StaticGuardedByInstance',
-  'StaticQualifiedUsingExpression',
-  'UseCorrectAssertInTests',
+    'BinderIdentityRestoredDangerously',
+    'EmptyIf',
+    'EqualsBrokenForNull',
+    'InvalidThrows',
+    'LongLiteralLowerCaseSuffix',
+    'RedundantOverride',
+    'RemoveUnusedImports',
+    'StaticQualifiedUsingExpression',
+    'StringEquality',
+    'TimeUnitMismatch',
+    'UnnecessaryStaticImport',
+    'UseBinds',
+    'WildcardImport',
 ]
 
 
@@ -511,6 +543,7 @@ def main(argv):
   ]
 
   if options.enable_errorprone:
+    # All errorprone args are passed space-separated in a single arg.
     errorprone_flags = ['-Xplugin:ErrorProne']
     for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
       errorprone_flags.append('-Xep:{}:OFF'.format(warning))

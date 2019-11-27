@@ -8,6 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
+#include "components/history/core/browser/domain_mixing_metrics.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/test/history_service_test_util.h"
@@ -152,7 +153,11 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsOnStart) {
   emitter_->Start();
 
   base::HistogramTester tester;
-  task_environment_.FastForwardUntilNoTasksRemain();
+
+  // Fast forward far enough that histograms have been written to for all
+  // intervals.
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromDays(history::kOneMonth));
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
   VerifyHistograms(tester);
 }
@@ -173,8 +178,10 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsWhenTimerFires) {
   // Start the emitter.
   emitter_->Start();
 
-  // Wait for the first run to be done.
-  task_environment_.FastForwardUntilNoTasksRemain();
+  // Fast forward far enough that histograms have been written to for all
+  // intervals.
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromDays(history::kOneMonth));
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
 
   // last_metrics_time is expected to have been incremented.
@@ -195,7 +202,10 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsWhenTimerFires) {
   timer_->Fire();
 
   base::HistogramTester tester;
-  task_environment_.FastForwardUntilNoTasksRemain();
+  // Fast forward far enough that histograms have been written to for all
+  // intervals.
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromDays(history::kOneMonth));
   BlockUntilHistoryProcessesPendingRequests(history_service_.get());
   VerifyHistograms(tester);
 

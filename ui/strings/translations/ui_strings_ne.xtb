@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">बायाँ देखि दायाँ सम्म</translation>
 <translation id="1383876407941801731">खोज्नुहोस्</translation>
 <translation id="1398853756734560583">अधिकतम बनाउनुहोस्</translation>
-<translation id="1409544243779336081">अनुप्रयोगको सिफारिस</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> आदान प्रदान गर्न सकिएन</translation>
 <translation id="1498028757988366001">तपाईंले यसअघि यो कुरा खोज्नुभएको थियो। आफ्नो इतिहासबाट "<ph name="QUERY" />" मेटाउनुले तपाईंका सबै यन्त्रमा रहेको तपाईंको खाताबाट यसलाई सदाका लागि हटाउने छ।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{ १ मिनेट र }other{ # मिनेट र }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">अवधि</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{१ महिना}other{# महिना}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">तारे मूल्याङ्कन <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ १ घन्टा र }other{ # घन्टा र }}</translation>
 <translation id="1842960171412779397">चयन गर्नुहोस्</translation>
 <translation id="1859234291848436338">लेखन निर्देशन</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
 <translation id="7781829728241885113">हिजो</translation>
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाउनुहोस्</translation>
+<translation id="7848989271541991537">पृष्ठ <ph name="PAGE_NUMBER" />, पङ्क्ति <ph name="ROW_NUMBER" />, स्तम्भ <ph name="COLUMN_NUMBER" /> मा सारियो।</translation>
 <translation id="7879499977785298635">रोक नलगाउनुहोस्</translation>
 <translation id="7907591526440419938">फाइल खोल्नुहोस्</translation>
 <translation id="7969046989155602842">आदेश</translation>

@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Geser ukuran teks sampai Anda dapat membacanya dengan nyaman. Teks akan terlihat setidaknya sebesar ini setelah Anda mengetuk sebuah paragraf dua kali.</translation>
 <translation id="2323763861024343754">Penyimpanan situs</translation>
 <translation id="2328985652426384049">Tidak dapat login</translation>
-<translation id="2330129964253841015">Berikan peringatan jika sandi disusupi</translation>
 <translation id="2349710944427398404">Total data yang digunakan oleh Chrome, termasuk akun, bookmark, dan setelan yang tersimpan</translation>
 <translation id="2353636109065292463">Memeriksa sambungan internet Anda</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="290376772003165898">Halaman tidak dalam bahasa <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Daftar perangkat yang dapat digunakan untuk berbagi tab terbuka dalam layar penuh.</translation>
+<translation id="2905036901251765993">Untuk berbagi dengan orang-orang di sekitar, izinkan mereka memindai kode QR ini</translation>
 <translation id="2909615210195135082">Platform Notifikasi Google</translation>
 <translation id="2910701580606108292">Tanyakan sebelum mengizinkan situs untuk memutar konten yang dilindungi</translation>
 <translation id="2913331724188855103">Izinkan situs untuk menyimpan dan membaca data cookie (disarankan)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Tampilkan sandi</translation>
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
 <translation id="3658159451045945436">Penyetalan ulang akan menghapus histori penyimpanan data, termasuk daftar situs yang dibuka.</translation>
+<translation id="3682730288090679318">Aktifkan untuk memblokir situs secara otomatis agar tidak meminta Anda untuk menampilkan notifikasi. Jika situs meminta notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
@@ -542,6 +543,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5048398596102334565">Mengizinkan situs mengakses sensor gerakan (disarankan)</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5087580092889165836">Tambahkan kartu</translation>
+<translation id="5096950519211870196">Situs akan diblokir agar tidak meminta untuk menampilkan notifikasi kepada Anda. Jika situs meminta notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5123685120097942451">Tab samaran</translation>
@@ -589,6 +591,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5414836363063783498">Memverifikasi...</translation>
 <translation id="5423934151118863508">Halaman yang paling sering dikunjungi akan muncul di sini</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tersedia</translation>
+<translation id="5427766642345310212">Oke. Permintaan notifikasi baru secara default akan muncul di sini.</translation>
 <translation id="543338862236136125">Edit sandi</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="543509235395288790">Mendownload <ph name="COUNT" /> file (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +690,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="6111020039983847643">data digunakan</translation>
 <translation id="6112702117600201073">Menyegarkan halaman</translation>
+<translation id="6113400363611269907">Tampilkan permintaan izin diam-diam</translation>
 <translation id="6127379762771434464">Item dihapus</translation>
 <translation id="6140912465461743537">Negara/Wilayah</translation>
 <translation id="614940544461990577">Coba:</translation>
@@ -811,6 +815,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6989267951144302301">Tidak dapat mendownload</translation>
 <translation id="6990079615885386641">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Tanya terlebih dahulu sebelum mengizinkan situs menggunakan mikrofon Anda (disarankan)</translation>
+<translation id="6995899638241819463">Berikan peringatan jika sandi terungkap saat terjadi pelanggaran data</translation>
 <translation id="7015203776128479407">Penyiapan sinkronisasi awal belum selesai. Sinkronisasi nonaktif.</translation>
 <translation id="7016516562562142042">Diizinkan untuk mesin telusur yang sedang digunakan</translation>
 <translation id="7022756207310403729">Buka di browser</translation>
@@ -1019,6 +1024,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8514477925623180633">Ekspor sandi yang disimpan dengan Chrome</translation>
 <translation id="8514577642972634246">Masuki mode samaran</translation>
+<translation id="8516012719330875537">Editor Gambar</translation>
 <translation id="851751545965956758">Blokir situs agar tidak terhubung ke perangkat</translation>
 <translation id="8523928698583292556">Hapus sandi tersimpan</translation>
 <translation id="854522910157234410">Buka halaman ini</translation>

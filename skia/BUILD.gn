@@ -198,6 +198,7 @@ config("skia_library_config") {
     cflags_cc = [ "/std:c++17" ]
   } else {
     cflags_cc = [ "-std=c++17" ]
+    cflags_objcc = [ "-std=c++17" ]
   }
 }
 
@@ -469,10 +470,9 @@ component("skia") {
       "ext/fontmgr_default_fuchsia.cc",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fonts",
-      "//third_party/fuchsia-sdk/sdk:fonts",
-      "//third_party/fuchsia-sdk/sdk:io",
-      "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:zx",
       "//third_party/icu:icuuc",
@@ -599,9 +599,11 @@ component("skia") {
 
   if (skia_support_skottie) {
     import("//third_party/skia/modules/skottie/skottie.gni")
+    import("//third_party/skia/modules/skresources/skresources.gni")
     import("//third_party/skia/modules/sksg/sksg.gni")
     import("//third_party/skia/modules/skshaper/skshaper.gni")
     sources += skia_skottie_sources + skia_skottie_public
+    sources += skia_skresources_sources
     sources += skia_sksg_sources
     sources += skia_shaper_primitive_sources
   }
@@ -637,6 +639,14 @@ template("skia_source_set") {
     # cost.
     if (using_mismatched_sample_profile) {
       configs -= [ "//build/config/compiler:afdo_optimize_size" ]
+    }
+    if (is_win) {
+      cflags_cc = [
+        "/std:c++17",
+        "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+      ]
+    } else {
+      cflags_cc = [ "-std=c++17" ]
     }
   }
 }
@@ -890,9 +900,9 @@ source_set("test_fonts") {
       "ext/test_fonts_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fonts",
-      "//third_party/fuchsia-sdk/sdk:io",
-      "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
     ]
   }
@@ -943,7 +953,7 @@ test("skia_unittests") {
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
       "//third_party/test_fonts",
     ]
     data_deps = [

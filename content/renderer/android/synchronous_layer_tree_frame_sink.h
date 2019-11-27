@@ -27,7 +27,9 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/transform.h"
 
@@ -90,8 +92,10 @@ class SynchronousLayerTreeFrameSink
       std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
       SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
-      viz::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      viz::mojom::CompositorFrameSinkClientRequest client_request);
+      mojo::PendingRemote<viz::mojom::CompositorFrameSink>
+          compositor_frame_sink_remote,
+      mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
+          client_receiver);
   ~SynchronousLayerTreeFrameSink() override;
 
   void SetSyncClient(SynchronousLayerTreeFrameSinkClient* compositor);
@@ -174,10 +178,11 @@ class SynchronousLayerTreeFrameSink
   bool fallback_tick_pending_ = false;
   bool fallback_tick_running_ = false;
 
-  viz::mojom::CompositorFrameSinkPtrInfo unbound_compositor_frame_sink_;
-  viz::mojom::CompositorFrameSinkClientRequest unbound_client_;
+  mojo::PendingRemote<viz::mojom::CompositorFrameSink>
+      unbound_compositor_frame_sink_;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> unbound_client_;
   viz::mojom::CompositorFrameSinkPtr compositor_frame_sink_;
-  mojo::Binding<viz::mojom::CompositorFrameSinkClient> client_binding_;
+  mojo::Receiver<viz::mojom::CompositorFrameSinkClient> client_receiver_{this};
   viz::LocalSurfaceId local_surface_id_;
 
   class StubDisplayClient : public viz::DisplayClient {

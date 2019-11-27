@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi;
+import org.chromium.chrome.browser.feed.library.api.host.scheduler.SchedulerApi;
 
 /**
  * An extension of the {@link SchedulerApi} with additional methods needed for scheduling logic

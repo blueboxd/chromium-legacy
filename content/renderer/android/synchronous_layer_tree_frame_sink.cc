@@ -150,8 +150,10 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     std::unique_ptr<viz::BeginFrameSource> synthetic_begin_frame_source,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
-    viz::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    viz::mojom::CompositorFrameSinkClientRequest client_request)
+    mojo::PendingRemote<viz::mojom::CompositorFrameSink>
+        compositor_frame_sink_remote,
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
+        client_receiver)
     : cc::LayerTreeFrameSink(std::move(context_provider),
                              std::move(worker_context_provider),
                              std::move(compositor_task_runner),
@@ -162,9 +164,8 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
       sender_(sender),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
-      unbound_compositor_frame_sink_(std::move(compositor_frame_sink_info)),
-      unbound_client_(std::move(client_request)),
-      client_binding_(this),
+      unbound_compositor_frame_sink_(std::move(compositor_frame_sink_remote)),
+      unbound_client_(std::move(client_receiver)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       viz_for_webview_enabled_(features::IsUsingVizForWebView()) {
   DCHECK(registry_);
@@ -189,7 +190,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
 
   if (viz_for_webview_enabled_) {
     compositor_frame_sink_.Bind(std::move(unbound_compositor_frame_sink_));
-    client_binding_.Bind(std::move(unbound_client_), compositor_task_runner_);
+    client_receiver_.Bind(std::move(unbound_client_), compositor_task_runner_);
   }
 
   // The SharedBitmapManager is null since software compositing is not supported
@@ -265,7 +266,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   display_ = nullptr;
   frame_sink_manager_ = nullptr;
 
-  client_binding_.Close();
+  client_receiver_.reset();
   compositor_frame_sink_.reset();
 
   cc::LayerTreeFrameSink::DetachFromClient();

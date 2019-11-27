@@ -7,7 +7,6 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

@@ -206,5 +206,15 @@ bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
       kOptimizationTargetPrediction, "painful_page_load_metrics_only", false);
 }
 
+int PredictionModelFetchRandomMinDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
+                                          "fetch_random_min_delay_secs", 30);
+}
+
+int PredictionModelFetchRandomMaxDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
+                                          "fetch_random_max_delay_secs", 180);
+}
+
 }  // namespace features
 }  // namespace optimization_guide

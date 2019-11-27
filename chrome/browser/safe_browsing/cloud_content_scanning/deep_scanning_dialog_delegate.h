@@ -14,9 +14,12 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "components/policy/core/common/cloud/dm_token.h"
@@ -155,9 +158,11 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   // in the background.
   //
   // Whether the UI is enabled or not, verdicts of the scan will be reported.
-  static void ShowForWebContents(content::WebContents* web_contents,
-                                 Data data,
-                                 CompletionCallback callback);
+  static void ShowForWebContents(
+      content::WebContents* web_contents,
+      Data data,
+      CompletionCallback callback,
+      base::Optional<DeepScanAccessPoint> access_point = base::nullopt);
 
   // In tests, sets a factory function for creating fake
   // DeepScanningDialogDelegates.
@@ -172,9 +177,11 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
                                 const base::FilePath& path);
 
  protected:
-  DeepScanningDialogDelegate(content::WebContents* web_contents,
-                             Data data,
-                             CompletionCallback callback);
+  DeepScanningDialogDelegate(
+      content::WebContents* web_contents,
+      Data data,
+      CompletionCallback callback,
+      base::Optional<DeepScanAccessPoint> access_point = base::nullopt);
 
   // Callbacks from uploading data.  Protected so they can be called from
   // testing derived classes.
@@ -257,6 +264,12 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
 
   // Pointer to UI when enabled.
   TabModalConfirmDialog* dialog_ = nullptr;
+
+  // Access point to use to record UMA metrics. base::nullopt implies no metrics
+  // are to be recorded.
+  base::Optional<DeepScanAccessPoint> access_point_;
+
+  base::TimeTicks upload_start_time_;
 
   base::WeakPtrFactory<DeepScanningDialogDelegate> weak_ptr_factory_{this};
 };

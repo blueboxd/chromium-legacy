@@ -1331,6 +1331,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
+// Overscroll is only enabled on Aura platforms currently, and even then only
+// when a specific feature (OverscrollHistoryNavigation) is enabled.
+#if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInRegularWindows) {
   ASSERT_TRUE(browser()->is_type_normal());
   EXPECT_TRUE(browser()->CanOverscrollContent());
@@ -1349,6 +1352,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollDisabledInDevToolsWindows) {
   ASSERT_EQ(dev_tools_browser->app_name(), DevToolsWindow::kDevToolsApp);
   EXPECT_FALSE(dev_tools_browser->CanOverscrollContent());
 }
+#endif
 
 // Open an app window and the dev tools window and ensure that the location
 // bar settings are correct.

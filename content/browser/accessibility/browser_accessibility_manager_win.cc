@@ -415,8 +415,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-    return;
   if (!ShouldFireEventForNode(node))
     return;
   // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE.

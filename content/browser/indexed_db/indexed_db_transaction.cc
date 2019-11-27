@@ -259,14 +259,14 @@ void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
 }
 
 leveldb::Status IndexedDBTransaction::BlobWriteComplete(
-    IndexedDBBackingStore::BlobWriteResult result) {
+    BlobWriteResult result) {
   IDB_TRACE("IndexedDBTransaction::BlobWriteComplete");
   if (state_ == FINISHED)  // aborted
     return leveldb::Status::OK();
   DCHECK_EQ(state_, COMMITTING);
 
   switch (result) {
-    case IndexedDBBackingStore::BlobWriteResult::kFailure: {
+    case BlobWriteResult::kFailure: {
       leveldb::Status status = Abort(IndexedDBDatabaseError(
           blink::mojom::IDBException::kDataError, "Failed to write blobs."));
       if (!status.ok())
@@ -274,11 +274,11 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
       // The result is ignored.
       return leveldb::Status::OK();
     }
-    case IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAsync:
+    case BlobWriteResult::kRunPhaseTwoAsync:
       ScheduleTask(base::BindOnce(&CommitPhaseTwoProxy));
       run_tasks_callback_.Run();
       return leveldb::Status::OK();
-    case IndexedDBBackingStore::BlobWriteResult::kRunPhaseTwoAndReturnResult: {
+    case BlobWriteResult::kRunPhaseTwoAndReturnResult: {
       return CommitPhaseTwo();
     }
   }
@@ -331,7 +331,7 @@ leveldb::Status IndexedDBTransaction::Commit() {
     // to write.
     s = transaction_->CommitPhaseOne(base::BindOnce(
         [](base::WeakPtr<IndexedDBTransaction> transaction,
-           IndexedDBBackingStore::BlobWriteResult result) {
+           BlobWriteResult result) {
           if (!transaction)
             return leveldb::Status::OK();
           return transaction->BlobWriteComplete(result);

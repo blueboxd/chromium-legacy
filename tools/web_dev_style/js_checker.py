@@ -68,7 +68,9 @@ class JSChecker(object):
     for f in affected_js_files:
       affected_js_files_paths.append(f.AbsoluteLocalPath())
 
-    args = ["--color", "--format", format, "--ignore-pattern '!.eslintrc.js'"]
+    from os import isatty as os_isatty
+    args = ["--color"] if os_isatty(self.input_api.sys.stdout.fileno()) else []
+    args += ["--format", format, "--ignore-pattern '!.eslintrc.js'"]
     args += affected_js_files_paths
 
     import eslint

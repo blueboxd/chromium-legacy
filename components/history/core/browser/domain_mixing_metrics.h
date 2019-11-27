@@ -13,6 +13,11 @@
 
 namespace history {
 
+constexpr int kOneDay = 1;
+constexpr int kOneWeek = 7;
+constexpr int kTwoWeeks = 14;
+constexpr int kOneMonth = 30;
+
 // Emits domain mixing metrics given a list of domain visits and the start of
 // the first day to compute metrics for.
 //
@@ -32,4 +37,4 @@ void EmitDomainMixingMetrics(const std::vector<DomainVisit>& domain_visits,
 
 }  // namespace history
 
-#endif
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_DOMAIN_MIXING_METRICS_H_

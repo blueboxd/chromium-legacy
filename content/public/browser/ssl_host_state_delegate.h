@@ -49,7 +49,7 @@ class SSLHostStateDelegate {
   // Clear allow preferences matched by |host_filter|. If the filter is null,
   // clear all preferences.
   virtual void Clear(
-      const base::Callback<bool(const std::string&)>& host_filter) = 0;
+      base::RepeatingCallback<bool(const std::string&)> host_filter) = 0;
 
   // Queries whether |cert| is allowed for |host| and |error|. Returns true in
   virtual CertJudgment QueryPolicy(const std::string& host,

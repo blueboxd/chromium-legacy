@@ -31,7 +31,8 @@ using CreateVideoDecodersCB =
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
  public:
-  using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
+  using GetGpuFactoriesCB =
+      base::RepeatingCallback<GpuVideoAcceleratorFactories*()>;
 
   DefaultRendererFactory(MediaLog* media_log,
                          DecoderFactory* decoder_factory,

@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include "rlz/lib/machine_deal_win.h"
 #include "rlz/lib/net_response_check.h"
 #include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/rlz_lib_clear.h"
 
 #define RLZ_DLL_EXPORT extern "C" __declspec(dllexport)
 

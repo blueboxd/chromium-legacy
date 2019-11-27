@@ -1,1 +1,2 @@
 AutomationFocusChanged on role=combobox
+AutomationFocusChanged on role=combobox

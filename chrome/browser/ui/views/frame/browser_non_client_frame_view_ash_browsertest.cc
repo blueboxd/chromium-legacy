@@ -1287,6 +1287,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
 // Test that for a browser app window, its caption buttons may or may not hide
 // in tablet mode.
+// Disable due to use-of-uninitialized value error on ChromeOS.
+// https://crbug.com/1028336.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        DISABLED_AppHeaderVisibilityInTabletModeTest) {
   // Create a browser app window.

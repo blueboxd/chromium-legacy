@@ -934,7 +934,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2326931316514688470">&amp;Znova načítať aplikáciu</translation>
 <translation id="2327492829706409234">Povoliť aplikáciu</translation>
 <translation id="2329597144923131178">Prihláste sa a používajte svoje záložky, históriu, heslá a ďalšie nastavenia vo všetkých svojich zariadeniach.</translation>
-<translation id="2330129964253841015">Upozorňovať pri odhalení hesiel</translation>
 <translation id="2332131598580221120">Zobraziť v obchode</translation>
 <translation id="2332192922827071008">Otvoriť predvoľby</translation>
 <translation id="2332742915001411729">Obnoviť na predvolené hodnoty</translation>
@@ -4098,6 +4097,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6990778048354947307">Tmavý motív</translation>
 <translation id="6991665348624301627">Vybrať cieľ</translation>
 <translation id="6992554835374084304">Zapnutie rozšírenej kontroly pravopisu</translation>
+<translation id="6995899638241819463">Upozorňovať pri prezradení hesiel v rámci porušenia ochrany údajov</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – denník aktivít</translation>
 <translation id="6997707937646349884">V zariadeniach:</translation>
 <translation id="6998793565256476099">Zaregistrovať zariadenie na videokonferencie</translation>

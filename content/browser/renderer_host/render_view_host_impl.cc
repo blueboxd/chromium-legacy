@@ -228,7 +228,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id) {
   DCHECK(instance_.get());
-  CHECK(delegate_);  // http://crbug.com/82827
+  DCHECK(delegate_);
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
 
   std::pair<RoutingIDViewMap::iterator, bool> result =
@@ -544,7 +544,7 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
 
   prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
 
-  if (delegate_ && delegate_->IsOverridingUserAgent())
+  if (delegate_->IsOverridingUserAgent())
     prefs.viewport_meta_enabled = false;
 
   prefs.main_frame_resizes_are_orientation_changes =
@@ -553,7 +553,7 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 
-  if (delegate_ && delegate_->IsSpatialNavigationDisabled())
+  if (delegate_->IsSpatialNavigationDisabled())
     prefs.spatial_navigation_enabled = false;
 
   prefs.caret_browsing_enabled =
@@ -583,11 +583,11 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   prefs.user_gesture_required_for_presentation = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForPresentation);
 
-  if (delegate_ && delegate_->HideDownloadUI())
+  if (delegate_->HideDownloadUI())
     prefs.hide_download_ui = true;
 
   // `media_controls_enabled` is `true` by default.
-  if (delegate_ && delegate_->HasPersistentVideo())
+  if (delegate_->HasPersistentVideo())
     prefs.media_controls_enabled = false;
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);

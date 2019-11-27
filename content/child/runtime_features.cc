@@ -16,6 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/referrer.h"
 #include "device/fido/features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
@@ -178,8 +179,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kBlockingFocusWithoutUserActivation, kEnableOnly},
           {wf::EnableNotificationContentImage,
            features::kNotificationContentImage, kDisableOnly},
-          {wf::EnableReducedReferrerGranularity,
-           features::kReducedReferrerGranularity, kUseFeatureState},
           {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync,
            kEnableOnly},
           {wf::EnableWebXR, features::kWebXr, kUseFeatureState},
@@ -559,6 +558,14 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
 
   WebRuntimeFeatures::EnableBackForwardCache(
       content::IsBackForwardCacheEnabled());
+
+  // Gate the ReducedReferrerGranularity runtime feature depending on whether
+  // content is configured to force a no-referrer-when-downgrade default policy.
+  // TODO(crbug.com/1016541): After M82, remove when the corresponding
+  // enterprise policy has been deleted.
+  WebRuntimeFeatures::EnableReducedReferrerGranularity(
+      base::FeatureList::IsEnabled(features::kReducedReferrerGranularity) &&
+      !content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
 }
 
 }  // namespace

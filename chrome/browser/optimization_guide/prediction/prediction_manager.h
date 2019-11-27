@@ -140,17 +140,19 @@ class PredictionManager
   virtual std::unique_ptr<PredictionModel> CreatePredictionModel(
       const proto::PredictionModel& model) const;
 
-  // Process |host_model_features| to be stored in |host_model_features_map|.
+  // Process |host_model_features| to be stored in memory in the host model
+  // features map for immediate use and asynchronously write them to the model
+  // and features store to be persisted.
   void UpdateHostModelFeatures(
       const google::protobuf::RepeatedPtrField<proto::HostModelFeatures>&
           host_model_features);
 
-  // Process |prediction_models| to be stored in
-  // |optimization_target_prediction_model_map_|.
+  // Process |prediction_models| to be stored in the in memory optimization
+  // target prediction model map for immediate use and asynchronously write the
+  // models to the model and features store to be persisted.
   void UpdatePredictionModels(
-      google::protobuf::RepeatedPtrField<proto::PredictionModel>*
-          prediction_models,
-      const base::flat_set<std::string>& host_model_features);
+      const google::protobuf::RepeatedPtrField<proto::PredictionModel>&
+          prediction_models);
 
  private:
   // Called on construction to register optimization targets, initialize the
@@ -181,7 +183,9 @@ class PredictionManager
   // Callback when the models and host model features have been fetched from the
   // remote Optimization Guide Service and are ready for parsing. Processes the
   // prediction models and the host model features in the response and stores
-  // them for use.
+  // them for use. The metadata entry containing the time that updates should be
+  // fetched from the remote Optimization Guide Service is updated, even when
+  // the response is empty.
   void OnModelsAndHostFeaturesFetched(
       base::Optional<std::unique_ptr<proto::GetModelsResponse>>
           get_models_response_data);
@@ -191,6 +195,16 @@ class PredictionManager
   // the store for registered optimization targets. |store_is_ready_| is set to
   // true.
   void OnStoreInitialized();
+
+  // Callback run after prediction models are stored in
+  // |model_and_features_store_|.
+  void OnPredictionModelsStored();
+
+  // Callback run after host model features are stored in
+  // |model_and_features_store_|. |fetch_timer_| is stopped and the timer is
+  // rescheduled based on when models and host model features should be fetched
+  // again.
+  void OnHostModelFeaturesStored();
 
   // Request the store to load all the host model features it contains. This
   // must be completed before any prediction models can be loaded from the
@@ -218,13 +232,15 @@ class PredictionManager
       std::unique_ptr<proto::PredictionModel> prediction_model);
 
   // Process |model| into a PredictionModel object and store it in the
-  // |optimization_target_prediction_model_map_|.
-  void ProcessAndStorePredictionModel(const proto::PredictionModel& model);
+  // |optimization_target_prediction_model_map_|. Return true if a prediction
+  // model object was created and successfully stored, otherwise false.
+  bool ProcessAndStorePredictionModel(const proto::PredictionModel& model);
 
   // Process |host_model_features| from the into host model features
   // usable by the PredictionManager. The processed host model features are
-  // stored in |host_model_features_map_|.
-  void ProcessAndStoreHostModelFeatures(
+  // stored in |host_model_features_map_|. Return true if host model features
+  // can be constructed and successfully stored, otherwise, return false.
+  bool ProcessAndStoreHostModelFeatures(
       const proto::HostModelFeatures& host_model_features);
 
   // Return the time when a prediction model and host model features fetch was

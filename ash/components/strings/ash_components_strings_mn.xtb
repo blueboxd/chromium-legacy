@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> эсвэл <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Тойм горим</translation>
 <translation id="4382340674111381977">Өмнөх хуудас руу буцах</translation>
+<translation id="4458670250301149821">Аппын дүрс тэмдгийг аппын торны фолдер луу эсвэл фолдероос гадагш зөөх</translation>
 <translation id="4472417192667361414">Систем болон дэлгэцийн тохиргоо</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, дараа нь <ph name="LEFT" /> эсвэл <ph name="RIGHT" /> эсвэл <ph name="UP" /> эсвэл <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Товчлуурын шууд холбоосны туслагчийг харах</translation>
 <translation id="4628718545549558538">Төлөв байдал илэрхийлэгчийг нээх (таны бүртгэлийн зураг харагдаж буй хэсэг)</translation>
 <translation id="4642092649622328492">Дэлгэцийн зургийг хэсэгчлэн дарах</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Дараагийн үсгийг устгах (устгахыг дамжуулах)</translation>
 <translation id="7500368597227394048">дундуур зураас</translation>
 <translation id="7611271430932669992">Попапс болон харилцах цонх руу сонголтыг зөөх</translation>
+<translation id="7635348532214572995">Аппын торны эргэн тойронд аппын дүрс тэмдгийг зөөх</translation>
 <translation id="766326951329901120">Түр санах ойгоос агуулгыг энгийн бичвэр болгон буулгах</translation>
 <translation id="7703010453515335249">зүүн талын хаалт</translation>
 <translation id="7724603315864178912">Хайчлах</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Агуулгыг түр санах ойгоос буулгах</translation>
 <translation id="9052808072970550123">Дараагийн хэрэглэгч рүү сэлгэх</translation>
 <translation id="906458777597946297">Цонхыг томсгох</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, дараа нь <ph name="LEFT" /> эсвэл <ph name="RIGHT" /> эсвэл <ph name="UP" /> эсвэл <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Мөрийн эхлэл рүү очно уу</translation>
 <translation id="9106898733795143799">Хуудас болон вэб хөтөч</translation>
 <translation id="9162942292291287644"><ph name="QUERY" />-н хайлтын илэрц алга</translation>

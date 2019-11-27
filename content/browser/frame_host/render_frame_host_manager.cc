@@ -1041,6 +1041,24 @@ void RenderFrameHostManager::UpdateUserActivationState(
     pair.second->Send(new FrameMsg_UpdateUserActivationState(
         pair.second->GetRoutingID(), update_type));
   }
+
+  // If any frame in an inner delegate is activated, then the FrameTreeNode that
+  // embeds the inner delegate in the outer delegate should be activated as well
+  // (crbug.com/1013447).
+  //
+  // TODO(mustaq): We should add activation consumption propagation from inner
+  // to outer delegates, and also all state propagation from outer to inner
+  // delegates. crbug.com/1026617.
+  RenderFrameProxyHost* outer_delegate_proxy = frame_tree_node_->frame_tree()
+                                                   ->root()
+                                                   ->render_manager()
+                                                   ->GetProxyToOuterDelegate();
+  if (outer_delegate_proxy &&
+      update_type == blink::UserActivationUpdateType::kNotifyActivation) {
+    outer_delegate_proxy->Send(new FrameMsg_UpdateUserActivationState(
+        outer_delegate_proxy->GetRoutingID(), update_type));
+    GetOuterDelegateNode()->UpdateUserActivationState(update_type);
+  }
 }
 
 void RenderFrameHostManager::TransferUserActivationFrom(

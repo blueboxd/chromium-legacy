@@ -16,13 +16,14 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
-import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {HTMLEscape} from 'chrome://resources/js/util.m.js';
-import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {afterNextRender, beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 import {DangerType, States} from './constants.js';
@@ -135,6 +136,13 @@ Polymer({
 
     /** @private {boolean} */
     restoreFocusAfterCancel_: false,
+
+    /** @override */
+    attached: function() {
+      afterNextRender(this, function() {
+        IronA11yAnnouncer.requestAvailability();
+      });
+    },
 
     /** @override */
     ready: function() {
@@ -552,13 +560,16 @@ Polymer({
         // Make the file name collapsible.
         p.collapsible = !!p.arg;
       });
-      getInstance().showForStringPieces(
+      getToastManager().showForStringPieces(
           /**
            * @type {!Array<{collapsible: boolean,
            *                 value: string,
            *                 arg: (string|null)}>}
            */
-          (pieces), true);
+          (pieces));
+      this.fire('iron-announce', {
+        text: loadTimeData.getString('undoDescription'),
+      });
       this.mojoHandler_.remove(this.data.id);
     },
 

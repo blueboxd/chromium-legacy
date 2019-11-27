@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> або <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Рэжым агляду</translation>
 <translation id="4382340674111381977">Вярнуцца на папярэднюю старонку</translation>
+<translation id="4458670250301149821">Перамясціць значок праграмы ў папку або з папкі ў сетцы праграм</translation>
 <translation id="4472417192667361414">Налады сістэмы і дысплэя</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, затым <ph name="LEFT" />, або <ph name="RIGHT" />, або <ph name="UP" />, або <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Адкрыць Памочнік па спалучэннях клавіш</translation>
 <translation id="4628718545549558538">Адкрыць панэль стану (дзе паказваецца ваша фота ўліковага запісу)</translation>
 <translation id="4642092649622328492">Зрабіць здымак часткі экрана</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Выдаліць наступную літару (выдаленне ў адваротным кірунку)</translation>
 <translation id="7500368597227394048">злучок</translation>
 <translation id="7611271430932669992">Перамясціць фокус на ўсплывальныя і дыялогавыя вокны</translation>
+<translation id="7635348532214572995">Перамясціць значок праграмы па сетцы праграм</translation>
 <translation id="766326951329901120">Уставіць змесціва з буфера абмену як звычайны тэкст</translation>
 <translation id="7703010453515335249">левая квадратная дужка</translation>
 <translation id="7724603315864178912">Выразаць</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Уставіць змесціва з буфера абмену</translation>
 <translation id="9052808072970550123">Пераключыцца на наступнага карыстальніка</translation>
 <translation id="906458777597946297">Разгарнуць акно</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, затым <ph name="LEFT" />, або <ph name="RIGHT" />, або <ph name="UP" />, або <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Перайсці ў пачатак радка</translation>
 <translation id="9106898733795143799">Старонка і вэб-браўзер</translation>
 <translation id="9162942292291287644">Няма вынікаў па пошукавым запыце "<ph name="QUERY" />"</translation>

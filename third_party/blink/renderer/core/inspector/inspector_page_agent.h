@@ -167,6 +167,7 @@ class CORE_EXPORT InspectorPageAgent final
                                          const protocol::Binary& data) override;
   protocol::Response clearCompilationCache() override;
   protocol::Response waitForDebugger() override;
+  protocol::Response setInterceptFileChooserDialog(bool enabled) override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
@@ -208,6 +209,9 @@ class CORE_EXPORT InspectorPageAgent final
                                v8::ScriptCompiler::CachedData**);
   void ProduceCompilationCache(const ScriptSourceCode& source,
                                v8::Local<v8::Script> script);
+  void FileChooserOpened(LocalFrame* frame,
+                         HTMLInputElement* element,
+                         bool* intercepted);
 
   // Inspector Controller API
   void Restore() override;
@@ -250,6 +254,7 @@ class CORE_EXPORT InspectorPageAgent final
   String pending_script_to_evaluate_on_load_once_;
   String script_to_evaluate_on_load_once_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
+  bool intercept_file_chooser_ = false;
   int resource_content_loader_client_id_;
   InspectorAgentState::Boolean enabled_;
   InspectorAgentState::Boolean screencast_enabled_;

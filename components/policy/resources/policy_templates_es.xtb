@@ -443,11 +443,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
           Si no le asignas ningún valor, la función de dictado estará inhabilitada inicialmente en la pantalla de inicio de sesión, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
-<translation id="1676141669324989554">Permite especificar si los usuarios pueden añadir excepciones para permitir el contenido mixto en determinados sitios web.
-
-          Es posible anular la aplicación de esta política en patrones de URL concretos usando las políticas "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
-
-          Si no se establece esta política, los usuarios podrán añadir excepciones para permitir contenido mixto bloqueable.</translation>
 <translation id="1695708467571967752">Esta política controla si el usuario puede reproducir contenido multimedia cuando el dispositivo está bloqueado.
 
       Si se le asigna el valor False, se inhabilitarán los controles multimedia en la pantalla de bloqueo.
@@ -529,7 +524,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1852294065645015766">Permitir reproducción automática de contenido multimedia</translation>
 <translation id="1853782273088286010">Permite controlar si se debe usar el cliente DNS integrado en <ph name="PRODUCT_NAME" />.
 
-      Esto no afecta a los servidores DNS que se vayan a usar, sino solo a la pila de software que se utilice para comunicarse con ellos. Por ejemplo, si el sistema operativo está configurado para utilizar un servidor DNS de empresa, el cliente DNS integrado usaría ese mismo servidor. Sin embargo, es posible que el cliente DNS integrado direccione los servidores de formas diferentes por medio de protocolos DNS más modernos, como DNS mediante TLS.
+      Esto no decide qué servidores DNS se van a usar, sino solo la pila de software que se utiliza para comunicarse con ellos. Por ejemplo, si el sistema operativo está configurado para utilizar un servidor DNS de empresa, el cliente DNS integrado usaría ese mismo servidor. Sin embargo, es posible que el cliente DNS integrado se dirija a los servidores de formas diferentes con protocolos DNS más modernos, como DNS mediante TLS.
 
       Si se le asigna el valor "true" a esta política, se utilizará el cliente DNS integrado si está disponible.
 
@@ -1421,11 +1416,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Solo se respetará esta política si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="3049248142961638857">Determina el nombre de host del dispositivo utilizado en las solicitudes DHCP.
 
-      Si a esta política se le asigna una cadena que no está vacía, la cadena se utilizará como nombre de host del dispositivo en la solicitud DHCP.
+      Si a esta política se le asigna una cadena que no está vacía, la cadena se utiliza como nombre de host del dispositivo en la solicitud DHCP.
 
-      La cadena puede incluir las variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> y <ph name="LOCATION_PLACEHOLDER" />, las cuales se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que se obtenga de la sustitución debe ser un nombre de host válido (según la sección 3.1 de la RFC 1035).
+      La cadena puede incluir las variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> y <ph name="LOCATION_PLACEHOLDER" />, las cuales se sustituyen por valores del dispositivo antes de que se utilice como nombre de host. El valor que se obtenga de la sustitución debe ser un nombre de host válido (según la sección 3.1 de la RFC 1035).
 
-      Si no se asigna ningún valor a esta política o el valor que se obtenga de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud DHCP. </translation>
+      Si no se asigna ningún valor a esta política o si el valor que se obtiene de la sustitución no es un nombre de host válido, no se establece ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
 
@@ -2725,11 +2720,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
-<translation id="5212118847531454979">Permite establecer el periodo de tiempo (en milisegundos) durante el que los usuarios recibirán una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
+<translation id="5212118847531454979">Permite establecer el periodo (en milisegundos) durante el cual los usuarios reciben una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
-      Durante este periodo de tiempo, se informará de forma reiterada al usuario de que la actualización es necesaria. En el caso de los dispositivos <ph name="PRODUCT_OS_NAME" />, se mostrará una notificación de reinicio en la bandeja del sistema de acuerdo con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambiará para indicar que es necesario reiniciar cuando haya transcurrido un tercio del periodo de notificación. Esta notificación cambiará de color cuando hayan transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este periodo haya finalizado. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen esta misma programación.
+      Durante este periodo, se informa de forma reiterada al usuario de que la actualización es necesaria. En el caso de los dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema de acuerdo con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambia para indicar que es necesario reiniciar cuando ha transcurrido un tercio del periodo de notificación. Esta notificación cambia de color cuando han transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este periodo finaliza. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen esta misma programación.
 
-      Si no se asigna ningún valor, se usará el periodo predeterminado de 604.800.000 milisegundos (una semana).</translation>
+      Si no se asigna ningún valor, se usa el periodo predeterminado de 604.800.000 milisegundos (una semana).</translation>
 <translation id="5212810195096589189">Especificar el permiso de la interfaz de línea de comandos para máquinas virtuales</translation>
 <translation id="5213038356678567351">Sitios web que nunca deben activar un cambio de navegador.</translation>
 <translation id="5219844027738217407">En el caso de las aplicaciones para Android, esta política afecta solo al micrófono. Si se asigna el valor true a esta política, el micrófono se silenciará en todas las aplicaciones para Android, sin excepciones.</translation>
@@ -2997,7 +2992,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente de estos sitios web en la pantalla de inicio de sesión</translation>
 <translation id="5564865786900450806">Suprime la advertencia que aparece cuando <ph name="PRODUCT_NAME" /> se ejecuta en un ordenador o en un sistema operativo que ya no es compatible.
 
-      Si no se asigna ningún valor esta política o se le asigna el valor "false", las advertencias aparecerán en los ordenadores o sistemas operativos no compatibles.</translation>
+      Si no se asigna ningún valor a esta política o se le asigna el valor "false", las advertencias aparecerán en los ordenadores o sistemas operativos no compatibles.</translation>
 <translation id="5565178130821694365">Es necesario introducir la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permitir imprimir con y sin PIN</translation>
 <translation id="556865034069957245">Esta política permite controlar la disponibilidad del modo de pantalla completa en el que toda la UI de <ph name="PRODUCT_NAME" /> está oculta y solo se muestra el contenido web.
@@ -3246,9 +3241,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5961137303188584693">Dirección NIC MAC integrada en el dispositivo</translation>
 <translation id="5966615072639944554">Extensiones con permiso para utilizar la API de confirmación remota</translation>
 <translation id="5983708779415553259">Comportamiento predeterminado de sitios no incluidos en un paquete de contenido</translation>
-<translation id="5997107377032983906">Permite crear una lista de patrones de URL que especifiquen sitios web que pueden mostrar contenido mixto (es decir, contenido HTTP en sitios web HTTPS) bloqueable (es decir, activo).
-
-          Si no se establece esta política, el contenido mixto bloqueable se bloqueará, pero los usuarios podrán establecer excepciones para permitir el contenido en determinados sitios web.</translation>
 <translation id="5997543603646547632">Utilizar reloj de formato de 24 horas de forma predeterminada</translation>
 <translation id="5997846976342452720">Especificar si se debe inhabilitar el buscador de complementos (obsoleta)</translation>
 <translation id="5998198091336830580">Esta política forma parte del siguiente grupo atómico (solo se aplicarán las políticas de la fuente que tenga mayor prioridad del grupo):</translation>
@@ -3647,9 +3639,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6795485990775913659">Permitir imprimir solo sin PIN</translation>
-<translation id="6800064234889290465">Permite crear una lista de patrones de URL que especifiquen sitios web que no pueden mostrar contenido mixto (es decir, contenido HTTP en sitios web HTTPS) bloqueable (es decir, activo).
-
-          Si no se establece esta política, el contenido mixto bloqueable se bloqueará, pero los usuarios podrán establecer excepciones para permitir el contenido en determinados sitios web.</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>

@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Показати більше</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Змініть пароль</translation>
 <translation id="1484290072879560759">Вибрати адресу доставки</translation>
 <translation id="1492194039220927094">Сповіщення про правила:</translation>
 <translation id="1501859676467574491">Показує картки з облікового запису Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Зв’яжіться із системним адміністратором.</translation>
 <translation id="1736420071277903564">Комп'ютер</translation>
-<translation id="1739107442478692187">На сайті чи в додатку, якими ви користуєтеся, виявлено порушення безпеки даних. Chrome радить перевірити збережені паролі та негайно змінити їх на сайті <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Введіть дійсний місяць закінчення терміну дії</translation>
 <translation id="1741613555002899862">Якщо параметр DnsOverHttpsMode має значення <ph name="SECURE_DNS_MODE_SECURE" />, потрібно вказати правило, яке має бути дійсним рядком.</translation>
 <translation id="1743520634839655729">Щоб наступного разу платити швидше, збережіть дані картки, ім’я та платіжну адресу в обліковому записі Google і на цьому пристрої.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Сервіс розпакування</translation>
 <translation id="1915697529809968049">Використовувати Touch ID замість коду CVC?</translation>
 <translation id="1916770123977586577">Щоб застосувати оновлені налаштування на цьому сайті, оновіть сторінку</translation>
+<translation id="1917876262703816781">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить негайно змінити пароль на сайті <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Оголошення</translation>
 <translation id="1919367280705858090">Як виправити конкретну помилку</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Немає}=1{1 сайт}one{# сайт}few{# сайти}many{# сайтів}other{# сайту}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Невідповідність домену</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="2099652385553570808">Скріпити тричі ліворуч</translation>
-<translation id="2100280972184758440">Ваш пароль було зламано</translation>
 <translation id="2102134110707549001">Запропонувати надійний пароль…</translation>
 <translation id="2108755909498034140">Перезавантажте комп’ютер</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Правило ігнорується, оскільки його замінено правилом <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Кому видано: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Пробити отвір унизу праворуч</translation>
-<translation id="2124528555835617522">На сайті чи в додатку, якими ви користуєтеся, виявлено порушення безпеки даних. Chrome радить негайно перевірити збережені паролі.</translation>
 <translation id="2129079103035905234">Датчики руху</translation>
 <translation id="2130448033692577677">Вибрані шаблони можуть не застосовуватися, оскільки правило DnsOverHttpsMode не налаштовано.</translation>
 <translation id="213826338245044447">Закладки на мобільному</translation>
@@ -484,7 +483,6 @@
 <translation id="3282497668470633863">Додати ім’я на кредитній картці</translation>
 <translation id="3287510313208355388">Завантажити після відновлення інтернет-з’єднання</translation>
 <translation id="3293642807462928945">Докладніше про правило <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">На сайті чи в додатку, якими ви користуєтеся, виявлено порушення безпеки даних. Chrome радить негайно змінити пароль на сайті <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Немає результатів</translation>
 <translation id="3320021301628644560">Додати платіжну адресу</translation>
 <translation id="3324983252691184275">Малиновий</translation>
@@ -892,6 +890,7 @@
 <translation id="5287240709317226393">Показати cookie-файли</translation>
 <translation id="5287456746628258573">На цьому сайті використовується недійсна конфігурація безпеки. Через це ваші дані (наприклад, паролі або номери кредитних карток) може бути розкрито, коли вони надсилається на цей сайт.</translation>
 <translation id="5288108484102287882">Під час перевірки значень правила виявлено застереження</translation>
+<translation id="5295292838686006428">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить негайно перевірити збережені паролі.</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
@@ -942,6 +941,7 @@
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
 <translation id="5541546772353173584">Додайте електронну адресу</translation>
 <translation id="5545756402275714221">Статті для вас</translation>
+<translation id="5552137475244467770">Chrome періодично зіставляє ваші паролі зі списками, які були опубліковані онлайн. Під час цього ваші паролі й імена користувачів шифруються, тож їх ніхто не може прочитати, навіть Google.</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5560088892362098740">Термін дії</translation>
 <translation id="5565735124758917034">Активний клієнт</translation>
@@ -1033,6 +1033,7 @@
 <translation id="5992691462791905444">Зігнути гармошкою</translation>
 <translation id="6000758707621254961">Результатів для запиту "<ph name="SEARCH_TEXT" />": <ph name="RESULT_COUNT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Перевірте свої паролі</translation>
 <translation id="6015796118275082299">Рік</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
@@ -1322,6 +1323,7 @@
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="748406663033922918">Використовувати метод розблокування екрана, щоб підтверджувати збережені способи оплати.</translation>
 <translation id="7485870689360869515">Даних не знайдено.</translation>
+<translation id="7495290002932347110">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить перевірити збережені паролі, а також негайно змінити пароль на сайті <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Продовжити редагування</translation>
 <translation id="7508255263130623398">Отриманий ідентифікатор правил пристрою порожній або не збігається з поточним ідентифікатором пристрою</translation>
 <translation id="7508870219247277067">Світло-зелений</translation>

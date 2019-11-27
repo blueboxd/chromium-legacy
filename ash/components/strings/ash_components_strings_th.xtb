@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> หรือ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">โหมดภาพรวม</translation>
 <translation id="4382340674111381977">กลับไปหน้าก่อนหน้า</translation>
+<translation id="4458670250301149821">ย้ายไอคอนแอปเข้า/ออกจากโฟลเดอร์ในตารางกริดของแอป</translation>
 <translation id="4472417192667361414">การตั้งค่าระบบและการแสดงผล</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> จากนั้น <ph name="LEFT" /> หรือ <ph name="RIGHT" /> หรือ <ph name="UP" /> หรือ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">ดูตัวช่วยเหลือสำหรับแป้นพิมพ์ลัด</translation>
 <translation id="4628718545549558538">เปิดพื้นที่แสดงสถานะ (ตรงตำแหน่งที่รูปสำหรับบัญชีของคุณปรากฏ)</translation>
 <translation id="4642092649622328492">ถ่ายภาพหน้าจอบางส่วน</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">ลบอักษรถัดไป (ลบไปข้างหน้า)</translation>
 <translation id="7500368597227394048">ขีดกลาง</translation>
 <translation id="7611271430932669992">ย้ายโฟกัสไปที่ป๊อปอัปและกล่องโต้ตอบ</translation>
+<translation id="7635348532214572995">ย้ายไอคอนแอปที่อยู่รอบตารางกริด</translation>
 <translation id="766326951329901120">วางเนื้อหาจากคลิปบอร์ดเป็นข้อความธรรมดา</translation>
 <translation id="7703010453515335249">วงเล็บเปิด</translation>
 <translation id="7724603315864178912">ตัด</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">วางเนื้อหาจากคลิปบอร์ด</translation>
 <translation id="9052808072970550123">เปลี่ยนเป็นผู้ใช้ถัดไป</translation>
 <translation id="906458777597946297">ขยายหน้าต่างเต็มหน้าจอ</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> จากนั้น <ph name="LEFT" /> หรือ <ph name="RIGHT" /> หรือ <ph name="UP" /> หรือ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ไปที่จุดเริ่มต้นของบรรทัด</translation>
 <translation id="9106898733795143799">หน้าและเว็บเบราว์เซอร์</translation>
 <translation id="9162942292291287644">ไม่พบผลการค้นหา <ph name="QUERY" /></translation>

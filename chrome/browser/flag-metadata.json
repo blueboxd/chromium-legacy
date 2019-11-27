@@ -1260,6 +1260,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-duet-tabstrip-integration",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "enable-edu-coexistence",
     "owners": [ "anastasiian@chromium.org", "sinhak@chromium.org" ],
     "expiry_milestone": 83

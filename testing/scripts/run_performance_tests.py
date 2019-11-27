@@ -318,8 +318,8 @@ class TelemetryCommandGenerator(object):
       if 'end' in self._story_selection_config:
         selection_args.append('--story-shard-end-index=%d' % (
             self._story_selection_config['end']))
-      if not self._story_selection_config.get('abridged', True):
-        selection_args.append('--run-full-story-set')
+      if self._story_selection_config.get('abridged', True):
+        selection_args.append('--run-abridged-story-set')
     return selection_args
 
   def _generate_reference_build_args(self):

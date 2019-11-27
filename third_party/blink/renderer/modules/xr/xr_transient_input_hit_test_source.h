@@ -13,16 +13,20 @@
 
 namespace blink {
 
+class ExceptionState;
 class XRInputSourceArray;
+class XRSession;
 class XRTransientInputHitTestResult;
 
 class XRTransientInputHitTestSource : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRTransientInputHitTestSource(uint64_t id);
+  XRTransientInputHitTestSource(uint64_t id, XRSession* xr_session);
 
   uint64_t id() const;
+
+  void cancel(ExceptionState& exception_state);
 
   void Update(
       const HashMap<uint32_t, Vector<device::mojom::blink::XRHitResultPtr>>&
@@ -37,6 +41,7 @@ class XRTransientInputHitTestSource : public ScriptWrappable {
   HeapVector<Member<XRTransientInputHitTestResult>> current_frame_results_;
 
   const uint64_t id_;
+  Member<XRSession> xr_session_;
 };
 
 }  // namespace blink

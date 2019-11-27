@@ -81,8 +81,9 @@ public class ClearBrowsingDataFetcher
      * shown yet.
      */
     public void requestInfoAboutOtherFormsOfBrowsingHistory() {
-        if (!OtherFormsOfHistoryDialogFragment.wasDialogShown())
+        if (!OtherFormsOfHistoryDialogFragment.wasDialogShown()) {
             BrowsingDataBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
+        }
     }
 
     /**

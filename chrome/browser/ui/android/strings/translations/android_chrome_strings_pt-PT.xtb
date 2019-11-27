@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
 <translation id="2328985652426384049">Não é possível iniciar sessão</translation>
-<translation id="2330129964253841015">Enviar-lhe um aviso se as palavras-passe forem comprometidas</translation>
 <translation id="2349710944427398404">Total de dados utilizados pelo Chrome, incluindo contas, marcadores e definições guardadas</translation>
 <translation id="2353636109065292463">A verificar a sua ligação à Internet...</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="290376772003165898">A página não está em <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Lista de dispositivos com os quais pretende partilhar um separador aberta à altura total.</translation>
+<translation id="2905036901251765993">Para partilhar com pessoas nas proximidades, deixe-as ler este código QR.</translation>
 <translation id="2909615210195135082">Plataforma de notificações da Google</translation>
 <translation id="2910701580606108292">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3658159451045945436">A reposição apaga o histórico da poupança de dados, incluindo a lista de sites visitados.</translation>
+<translation id="3682730288090679318">Ative para impedir automaticamente que os sites lhe peçam para apresentar notificações. Se um site lhe pedir para apresentar notificações, é apresentada uma barra de informações na parte inferior da página.</translation>
 <translation id="3692944402865947621">A transferência de <ph name="FILE_NAME" /> falhou porque o local de armazenamento está fora do alcance.</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
@@ -542,6 +543,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5048398596102334565">Permitir que os sites acedam aos sensores de movimentos (recomendado)</translation>
 <translation id="5063480226653192405">Utilização</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
+<translation id="5096950519211870196">Os sites não lhe podem pedir para apresentar notificações. Se um site lhe pedir para apresentar notificações, é apresentada uma barra de informações na parte inferior da página.</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="510275257476243843">Falta 1 hora</translation>
 <translation id="5123685120097942451">Separador de navegação anónima</translation>
@@ -589,6 +591,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5414836363063783498">A validar…</translation>
 <translation id="5423934151118863508">As páginas mais visitadas aparecem aqui</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB disponíveis</translation>
+<translation id="5427766642345310212">Compreendido. Por predefinição, os novos pedidos de notificação vão ser apresentados aqui.</translation>
 <translation id="543338862236136125">Editar palavra-passe</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
 <translation id="543509235395288790">A transferir <ph name="COUNT" /> ficheiros (<ph name="MEGABYTES" />)…</translation>
@@ -687,6 +690,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6111020039983847643">dados utilizados</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
+<translation id="6113400363611269907">Mostrar pedidos discretamente</translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="614940544461990577">Experimente:</translation>
@@ -811,6 +815,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6989267951144302301">Impossível transferir.</translation>
 <translation id="6990079615885386641">Obter a aplicação na Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Perguntar antes de permitir que os sites utilizem o microfone (recomendado)</translation>
+<translation id="6995899638241819463">Enviar-lhe um aviso se as palavras-passe forem expostas numa violação de dados</translation>
 <translation id="7015203776128479407">A configuração da sincronização inicial não foi concluída. A sincronização está desativada.</translation>
 <translation id="7016516562562142042">Permitido para o motor de pesquisa atual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
@@ -1019,6 +1024,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
+<translation id="8516012719330875537">Editor de imagens</translation>
 <translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>
 <translation id="8523928698583292556">Eliminar palavra-passe armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>

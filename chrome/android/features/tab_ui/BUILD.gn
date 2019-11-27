@@ -112,6 +112,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/MessageCardViewBinder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/MessageService.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridViewBinder.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupPopupUiCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupTitleEditor.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java",

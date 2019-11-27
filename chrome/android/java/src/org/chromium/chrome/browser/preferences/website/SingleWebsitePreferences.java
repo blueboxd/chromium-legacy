@@ -76,7 +76,6 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             "ads_permission_list", // ContentSettingException.Type.ADS
             "automatic_downloads_permission_list",
             // ContentSettingException.Type.AUTOMATIC_DOWNLOADS
-            "autoplay_permission_list", // ContentSettingException.Type.AUTOPLAY
             "background_sync_permission_list", // ContentSettingException.Type.BACKGROUND_SYNC
             "bluetooth_scanning_permission_list", // ContentSettingException.Type.BLUETOOTH_SCANNING
             "cookies_permission_list", // ContentSettingException.Type.COOKIE

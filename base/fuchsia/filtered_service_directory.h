@@ -14,6 +14,7 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 namespace fuchsia {
@@ -28,7 +29,7 @@ class BASE_EXPORT FilteredServiceDirectory {
   ~FilteredServiceDirectory();
 
   // Adds the specified service to the list of whitelisted services.
-  void AddService(const char* service_name);
+  void AddService(base::StringPiece service_name);
 
   // Connects a directory client. The directory can be passed to a sandboxed
   // process to be used for /svc namespace.

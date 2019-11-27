@@ -79,8 +79,8 @@ class AnimationObserver : public ScreenRotationAnimatorObserver {
 class TestScreenRotationAnimator : public ScreenRotationAnimator {
  public:
   TestScreenRotationAnimator(aura::Window* root_window,
-                             const base::Closure& before_callback,
-                             const base::Closure& after_callback);
+                             const base::RepeatingClosure& before_callback,
+                             const base::RepeatingClosure& after_callback);
   ~TestScreenRotationAnimator() override = default;
 
  private:
@@ -94,16 +94,16 @@ class TestScreenRotationAnimator : public ScreenRotationAnimator {
   void IntersectAfter(CopyCallback next_callback,
                       std::unique_ptr<viz::CopyOutputResult> result);
 
-  base::Closure intersect_before_callback_;
-  base::Closure intersect_after_callback_;
+  base::RepeatingClosure intersect_before_callback_;
+  base::RepeatingClosure intersect_after_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreenRotationAnimator);
 };
 
 TestScreenRotationAnimator::TestScreenRotationAnimator(
     aura::Window* root_window,
-    const base::Closure& before_callback,
-    const base::Closure& after_callback)
+    const base::RepeatingClosure& before_callback,
+    const base::RepeatingClosure& after_callback)
     : ScreenRotationAnimator(root_window),
       intersect_before_callback_(before_callback),
       intersect_after_callback_(after_callback) {}
@@ -201,8 +201,8 @@ class ScreenRotationAnimatorSmoothAnimationTest : public AshTestBase {
   TestScreenRotationAnimator* animator() { return animator_.get(); }
 
   void SetScreenRotationAnimator(aura::Window* root_window,
-                                 const base::Closure& before_callback,
-                                 const base::Closure& after_callback);
+                                 const base::RepeatingClosure& before_callback,
+                                 const base::RepeatingClosure& after_callback);
 
   ScreenRotationAnimatorTestApi* test_api() { return test_api_.get(); }
 
@@ -248,8 +248,8 @@ void ScreenRotationAnimatorSmoothAnimationTest::SetUp() {
 
 void ScreenRotationAnimatorSmoothAnimationTest::SetScreenRotationAnimator(
     aura::Window* root_window,
-    const base::Closure& before_callback,
-    const base::Closure& after_callback) {
+    const base::RepeatingClosure& before_callback,
+    const base::RepeatingClosure& after_callback) {
   animator_ = std::make_unique<TestScreenRotationAnimator>(
       root_window, before_callback, after_callback);
   test_api_ = std::make_unique<ScreenRotationAnimatorTestApi>(animator_.get());
@@ -441,7 +441,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(display_id),
       run_loop_->QuitWhenIdleClosure(),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
   AnimationObserver observer;
@@ -489,7 +489,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
 
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(secondary_display_id),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
       run_loop_->QuitWhenIdleClosure());
@@ -515,7 +515,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(primary_display_id),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
       run_loop_->QuitWhenIdleClosure());
@@ -540,7 +540,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(secondary_display_id),
       run_loop_->QuitWhenIdleClosure(),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
   SetDisplayRotation(secondary_display_id, display::Display::ROTATE_0);
@@ -566,7 +566,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(primary_display_id),
       run_loop_->QuitWhenIdleClosure(),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"));
   SetDisplayRotation(primary_display_id, display::Display::ROTATE_0);
@@ -591,7 +591,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   const int64_t secondary_display_id = display_manager()->GetDisplayAt(0).id();
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(secondary_display_id),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::RemoveSecondaryDisplay,
           base::Unretained(this), "640x480"),
       run_loop_->QuitWhenIdleClosure());
@@ -624,7 +624,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   SetScreenRotationAnimator(
       Shell::GetRootWindowForDisplayId(display_id),
       run_loop_->QuitWhenIdleClosure(),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
   SetDisplayRotation(display_id, display::Display::ROTATE_0);
@@ -645,7 +645,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
   SetScreenRotationAnimator(
       root_window, run_loop_->QuitWhenIdleClosure(),
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)));
   SetDisplayRotation(display_id, display::Display::ROTATE_0);
@@ -686,7 +686,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest, DisplayChangeDuringCopy) {
       Shell::GetRootWindowForDisplayId(internal_display_id);
   SetScreenRotationAnimator(
       root_window,
-      base::Bind(
+      base::BindRepeating(
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)),
       run_loop_->QuitWhenIdleClosure());

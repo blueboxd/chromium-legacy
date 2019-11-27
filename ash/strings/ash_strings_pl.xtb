@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">W użyciu jest <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
-<translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Wpisz kod dostępu rodzica w Family Link.</translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
 <translation id="9056839673611986238">Na urządzeniu zostanie przywrócona wcześniejsza wersja oprogramowania</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Lupa pełnego ekranu</translation>
 <translation id="9193626018745640770">Przesyłam do nieznanego odbiornika</translation>
 <translation id="9194617393863864469">Zaloguj innego użytkownika...</translation>
+<translation id="9205817095063786319">Urządzeniem zarządza <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Wyłączam tryb ujednoliconego pulpitu</translation>
 <translation id="9211681782751733685">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Ustaw tapetę</translation>

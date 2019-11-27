@@ -973,7 +973,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PWASizeIsCorrectlyRestored) {
   EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
   NavigateToURLAndWait(app_browser_, GetSecureAppURL());
 
-  gfx::Rect bounds = gfx::Rect(10, 10, 500, 500);
+  gfx::Rect bounds = gfx::Rect(50, 50, 500, 500);
   app_browser_->window()->SetBounds(bounds);
   app_browser_->window()->Close();
 
@@ -991,7 +991,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
   NavigateToURLAndWait(app_browser_, GetSecureAppURL());
 
-  gfx::Rect bounds = gfx::Rect(10, 10, 500, 500);
+  gfx::Rect bounds = gfx::Rect(50, 50, 500, 500);
   app_browser_->window()->SetBounds(bounds);
   app_browser_->window()->Close();
 

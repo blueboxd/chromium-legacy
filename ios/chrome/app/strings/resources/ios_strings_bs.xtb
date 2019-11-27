@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Meni Više</translation>
 <translation id="2316709634732130529">Koristi predloženu lozinku</translation>
 <translation id="2320166752086256636">Sakrij tastaturu</translation>
-<translation id="2330129964253841015">Upozori ako su lozinke ugrožene</translation>
 <translation id="2339560363438331454">Sinhronizacija i Googleove usluge</translation>
 <translation id="2351097562818989364">Vaše postavke prevođenja su poništene.</translation>
 <translation id="2359043044084662842">Prevedi</translation>
@@ -441,6 +440,7 @@ Vaši podaci su šifrirani sinhroniziranim pristupnim izrazom <ph name="TIME" />
 <translation id="6973630695168034713">Folderi</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6988572888918530647">Upravljanje Google računom</translation>
+<translation id="6995899638241819463">Upozori ako su lozinke izložene pri narušavanju podataka</translation>
 <translation id="6998989275928107238">Do</translation>
 <translation id="7004499039102548441">Nedavne kartice</translation>
 <translation id="7006788746334555276">Postavke sadržaja</translation>

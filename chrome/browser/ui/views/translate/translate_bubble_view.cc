@@ -696,14 +696,7 @@ void TranslateBubbleView::ShowOriginal() {
 void TranslateBubbleView::ConfirmAdvancedOptions() {
   model_->SetAlwaysTranslate(should_always_translate_);
   if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
-    // Switch back to the original page language if target language is the same
-    // as source language without triggering translating.
-    if (target_language_combobox_->GetSelectedIndex() ==
-        model_->GetOriginalLanguageIndex()) {
-      SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
-      tabbed_pane_->SelectTabAt(0);
-      ShowOriginal();
-    } else if (model_->IsPageTranslatedInCurrentLanguages()) {
+    if (model_->IsPageTranslatedInCurrentLanguages()) {
       SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
       SizeToContents();
     } else {

@@ -129,7 +129,7 @@ TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
   EXPECT_EQ(1u, animation_events->events_.size());
   AnimationEvent event = animation_events->events_[0];
   EXPECT_EQ(AnimationEvent::TIME_UPDATED, event.type);
-  EXPECT_EQ(worklet_animation_id_, event.worklet_animation_id);
+  EXPECT_EQ(worklet_animation_->id(), event.uid.animation_id);
   EXPECT_EQ(local_time, event.local_time);
 
   // If the state is not updated no more events is generated.

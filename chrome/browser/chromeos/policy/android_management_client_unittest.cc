@@ -34,7 +34,7 @@ namespace policy {
 
 namespace {
 
-const char kAccountId[] = "fake-account-id";
+const char kAccountEmail[] = "fake-account-id@gmail.com";
 const char kOAuthToken[] = "fake-oauth-token";
 
 }  // namespace
@@ -52,7 +52,7 @@ class AndroidManagementClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_.reset(new AndroidManagementClient(
-        &service_, shared_url_loader_factory_, CoreAccountId(kAccountId),
+        &service_, shared_url_loader_factory_, CoreAccountId(kAccountEmail),
         identity_test_environment_.identity_manager()));
 
     service_.ScheduleInitialization(0);
@@ -85,7 +85,7 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
 
   // On ChromeOS platform, account_id and email are same.
   AccountInfo account_info =
-      identity_test_environment_.MakeAccountAvailable(kAccountId);
+      identity_test_environment_.MakeAccountAvailable(kAccountEmail);
 
   client_->StartCheckAndroidManagement(callback_observer_.Get());
 

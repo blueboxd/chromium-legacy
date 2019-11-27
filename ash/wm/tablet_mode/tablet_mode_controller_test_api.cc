@@ -52,8 +52,20 @@ void TabletModeControllerTestApi::AttachExternalMouse() {
   }
 }
 
-void TabletModeControllerTestApi::DettachAllMouseDevices() {
-  // See comment in AttachExternalMouse() for why we need RunUntilIdle().
+void TabletModeControllerTestApi::AttachExternalTouchpad() {
+  // Similar to |AttachExternalMouse|.
+  base::RunLoop().RunUntilIdle();
+  ui::DeviceDataManagerTestApi().SetTouchpadDevices(
+      {ui::InputDevice(4, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
+  if (!IsTabletModeControllerInitialized()) {
+    tablet_mode_controller_->OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchpad);
+  }
+}
+
+void TabletModeControllerTestApi::DetachAllMice() {
+  // See comment in |AttachExternalMouse| for why we need to call
+  // |base::RunLoop::RunUntilIdle|.
   base::RunLoop().RunUntilIdle();
   ui::DeviceDataManagerTestApi().SetMouseDevices({});
   if (!IsTabletModeControllerInitialized()) {
@@ -61,6 +73,16 @@ void TabletModeControllerTestApi::DettachAllMouseDevices() {
     // notify it ourselves.
     tablet_mode_controller_->OnInputDeviceConfigurationChanged(
         ui::InputDeviceEventObserver::kMouse);
+  }
+}
+
+void TabletModeControllerTestApi::DetachAllTouchpads() {
+  // Similar to |DetachAllMice|.
+  base::RunLoop().RunUntilIdle();
+  ui::DeviceDataManagerTestApi().SetTouchpadDevices({});
+  if (!IsTabletModeControllerInitialized()) {
+    tablet_mode_controller_->OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchpad);
   }
 }
 

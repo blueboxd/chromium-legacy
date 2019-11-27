@@ -225,6 +225,10 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
              base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   }
 
+  BulkPrintersCalculatorImpl(const BulkPrintersCalculatorImpl&) = delete;
+  BulkPrintersCalculatorImpl& operator=(const BulkPrintersCalculatorImpl&) =
+      delete;
+
   void AddObserver(Observer* observer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     observers_.AddObserver(observer);
@@ -251,6 +255,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void SetData(std::unique_ptr<std::string> data) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DVLOG(1) << "Set Data";
     data_is_set_ = true;
     TaskData task_data =
         std::make_unique<TaskDataInternal>(++last_received_task_);
@@ -264,6 +269,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void SetAccessMode(AccessMode mode) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DVLOG(1) << "Set Access Mode: " << mode;
     TaskData task_data =
         std::make_unique<TaskDataInternal>(++last_received_task_);
     base::PostTaskAndReplyWithResult(
@@ -276,6 +282,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void SetBlacklist(const std::vector<std::string>& blacklist) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DVLOG(1) << "Number of blacklisted printers: " << blacklist.size();
     TaskData task_data =
         std::make_unique<TaskDataInternal>(++last_received_task_);
     base::PostTaskAndReplyWithResult(
@@ -288,6 +295,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void SetWhitelist(const std::vector<std::string>& whitelist) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DVLOG(1) << "Number of whitelisted printers: " << whitelist.size();
     TaskData task_data =
         std::make_unique<TaskDataInternal>(++last_received_task_);
     base::PostTaskAndReplyWithResult(
@@ -318,6 +326,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
   // task.
   void OnComputationComplete(TaskData task_data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DVLOG(1) << "Attempt to compute printers";
     if (!task_data || task_data->task_id <= last_processed_task_) {
       // The task is outdated (ClearData() was called in the meantime).
       return;
@@ -328,6 +337,7 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
       // No changes in the object's state.
       return;
     }
+    DVLOG(1) << "Number of printers: " << task_data->printers.size();
     printers_.swap(task_data->printers);
     task_data.reset();
     // Notifies observers about changes.
@@ -351,8 +361,8 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
   std::unordered_map<std::string, Printer> printers_;
 
   base::ObserverList<BulkPrintersCalculator::Observer>::Unchecked observers_;
+
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(BulkPrintersCalculatorImpl);
   base::WeakPtrFactory<BulkPrintersCalculatorImpl> weak_ptr_factory_{this};
 };
 

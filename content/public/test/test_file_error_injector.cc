@@ -61,14 +61,14 @@ class DownloadFileWithError : public download::DownloadFileImpl {
       SourceStream* source_stream) override;
 
   void RenameAndUniquify(const base::FilePath& full_path,
-                         const RenameCompletionCallback& callback) override;
+                         RenameCompletionCallback callback) override;
   void RenameAndAnnotate(
       const base::FilePath& full_path,
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url,
       mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-      const RenameCompletionCallback& callback) override;
+      RenameCompletionCallback callback) override;
 
  private:
   // Error generating helper.
@@ -104,15 +104,15 @@ static void InitializeErrorCallback(
 }
 
 static void RenameErrorCallback(
-    const download::DownloadFile::RenameCompletionCallback original_callback,
+    download::DownloadFile::RenameCompletionCallback original_callback,
     download::DownloadInterruptReason overwrite_error,
     download::DownloadInterruptReason original_error,
     const base::FilePath& path_result) {
-  original_callback.Run(
-      overwrite_error,
-      overwrite_error == download::DOWNLOAD_INTERRUPT_REASON_NONE
-          ? path_result
-          : base::FilePath());
+  std::move(original_callback)
+      .Run(overwrite_error,
+           overwrite_error == download::DOWNLOAD_INTERRUPT_REASON_NONE
+               ? path_result
+               : base::FilePath());
 }
 
 DownloadFileWithError::DownloadFileWithError(
@@ -206,10 +206,10 @@ DownloadFileWithError::HandleStreamCompletionStatus(
 
 void DownloadFileWithError::RenameAndUniquify(
     const base::FilePath& full_path,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
-  RenameCompletionCallback callback_to_use = callback;
+  RenameCompletionCallback callback_to_use;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
@@ -218,16 +218,19 @@ void DownloadFileWithError::RenameAndUniquify(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndUniquify; just
       // return the error.
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(callback, error_to_return, base::FilePath()));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(std::move(callback), error_to_return,
+                                    base::FilePath()));
       return;
     }
 
     // Otherwise, just wrap the return.
-    callback_to_use = base::Bind(&RenameErrorCallback, callback,
-                                 error_to_return);
+    callback_to_use = base::BindOnce(&RenameErrorCallback, std::move(callback),
+                                     error_to_return);
   }
+
+  if (!callback_to_use)
+    callback_to_use = std::move(callback);
 
   download::DownloadFileImpl::RenameAndUniquify(full_path,
                                                 std::move(callback_to_use));
@@ -239,10 +242,10 @@ void DownloadFileWithError::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
-  RenameCompletionCallback callback_to_use = callback;
+  RenameCompletionCallback callback_to_use;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
@@ -251,16 +254,19 @@ void DownloadFileWithError::RenameAndAnnotate(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndAnnotate; just
       // return the error.
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(callback, error_to_return, base::FilePath()));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(std::move(callback), error_to_return,
+                                    base::FilePath()));
       return;
     }
 
     // Otherwise, just wrap the return.
-    callback_to_use = base::Bind(&RenameErrorCallback, callback,
-                                 error_to_return);
+    callback_to_use = base::BindOnce(&RenameErrorCallback, std::move(callback),
+                                     error_to_return);
   }
+
+  if (!callback_to_use)
+    callback_to_use = std::move(callback);
 
   download::DownloadFileImpl::RenameAndAnnotate(
       full_path, client_guid, source_url, referrer_url, mojo::NullRemote(),

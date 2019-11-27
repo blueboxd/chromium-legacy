@@ -33,8 +33,6 @@ import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Swipe;
 import android.support.test.filters.MediumTest;
 
-import com.google.android.libraries.feed.common.functional.Function;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +58,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

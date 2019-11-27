@@ -49,7 +49,8 @@ def StoryNameFromUrl(url, prefix):
 def CreateStorySetFromPath(path, skipped_file,
                            shared_page_state_class=(
                                shared_page_state.SharedPageState),
-                           append_query=None):
+                           append_query=None,
+                           extra_tags=None):
   assert os.path.exists(path)
 
   page_urls = []
@@ -100,7 +101,8 @@ def CreateStorySetFromPath(path, skipped_file,
     ps.AddStory(_BlinkPerfPage(
         url, ps, ps.base_dir,
         shared_page_state_class=shared_page_state_class,
-        name=name))
+        name=name,
+        tags=extra_tags))
   return ps
 
 def _CreateMergedEventsBoundaries(events, max_start_time):
@@ -354,10 +356,12 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
 
   test = _BlinkPerfMeasurement
+  TAGS = []
 
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, self.SUBDIR)
-    return CreateStorySetFromPath(path, SKIPPED_FILE)
+    return CreateStorySetFromPath(path, SKIPPED_FILE,
+                                  extra_tags=self.TAGS)
 
 
 @benchmark.Info(emails=['dmazzoni@chromium.org'],
@@ -476,6 +480,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -507,6 +512,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   SUBDIR = 'paint'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):

@@ -304,7 +304,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidAttachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-            TabBrowserControlsState.updateEnabledState(mTab);
+            TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
@@ -320,7 +320,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidDetachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-            TabBrowserControlsState.updateEnabledState(mTab);
+            TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             if (!mTab.maybeShowNativePage(mTab.getUrl(), false)) {
                 mTab.showRenderedPage();
             }

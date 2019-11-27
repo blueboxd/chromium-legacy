@@ -165,7 +165,7 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
       AccountInfo account_info =
           account_tracker_service_->FindAccountInfoByEmail(account_name.id);
       DCHECK(!account_info.gaia.empty());
-      accounts_id.push_back(CoreAccountId(account_info.gaia));
+      accounts_id.push_back(CoreAccountId::FromGaiaId(account_info.gaia));
     }
     SetAccounts(accounts_id);
   }
@@ -235,13 +235,21 @@ std::vector<CoreAccountId> OAuth2TokenServiceDelegateAndroid::GetAccounts()
     const {
   std::vector<std::string> accounts;
   JNIEnv* env = AttachCurrentThread();
+
+  // TODO(crbug.com/1028580) Pass |j_accounts| as a list of
+  // org.chromium.components.signin.identitymanager.CoreAccountId and convert it
+  // to CoreAccountId using ConvertFromJavaCoreAccountId.
   ScopedJavaLocalRef<jobjectArray> j_accounts =
       signin::Java_OAuth2TokenService_getAccounts(env);
-  ;
+
   // TODO(fgorski): We may decide to filter out some of the accounts.
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &accounts);
-  return std::vector<CoreAccountId>(accounts.begin(), accounts.end());
+  std::vector<CoreAccountId> account_ids;
+  for (auto& account : accounts)
+    account_ids.push_back(CoreAccountId::FromString(account));
+
+  return account_ids;
 }
 
 std::vector<std::string>
@@ -252,6 +260,10 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
          "disable_interaction_with_system_accounts_";
   std::vector<std::string> account_names;
   JNIEnv* env = AttachCurrentThread();
+
+  // TODO(crbug.com/1028580) Pass |j_accounts| as a list of
+  // org.chromium.components.signin.identitymanager.CoreAccountId and convert it
+  // to CoreAccountId using ConvertFromJavaCoreAccountId.
   ScopedJavaLocalRef<jobjectArray> j_accounts =
       signin::Java_OAuth2TokenService_getSystemAccountNames(env, java_ref_);
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
@@ -333,14 +345,17 @@ void OAuth2TokenServiceDelegateAndroid::
       env, java_ref_, j_account_id);
 }
 
+// TODO(crbug.com/1028580) Pass |account_id| as a
+// org.chromium.components.signin.identitymanager.CoreAccountId and convert it
+// to CoreAccountId using ConvertFromJavaCoreAccountId.
 void OAuth2TokenServiceDelegateAndroid::
     ReloadAllAccountsWithPrimaryAccountAfterSeeding(
         JNIEnv* env,
         const base::android::JavaParamRef<jstring>& account_id) {
   base::Optional<CoreAccountId> core_account_id;
   if (account_id) {
-    core_account_id = CoreAccountId();
-    core_account_id->id = ConvertJavaStringToUTF8(env, account_id);
+    core_account_id =
+        CoreAccountId::FromString(ConvertJavaStringToUTF8(env, account_id));
   }
   UpdateAccountList(core_account_id, GetValidAccounts(), GetSystemAccounts());
 }

@@ -119,9 +119,8 @@ void ServiceIPCServerTest::TearDown() {
 
 void ServiceIPCServerTest::PumpLoops() {
   base::RunLoop run_loop;
-  io_thread_.task_runner()->PostTaskAndReply(FROM_HERE,
-                                             base::Bind(&PumpCurrentLoop),
-                                             run_loop.QuitClosure());
+  io_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&PumpCurrentLoop), run_loop.QuitClosure());
   run_loop.Run();
   PumpCurrentLoop();
 }

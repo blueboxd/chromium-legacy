@@ -49,6 +49,8 @@ function setUp() {
     '</cr-menu>',
     '<div id="focus-div" tabindex="1"/>',
     '<button id="focus-button" tabindex="2"/>',
+    '<cr-input id="focus-input" tabindex="3">',
+    '</cr-input>',
   ].join('');
 
   // Initialize cr.ui.Command with the <command>s.
@@ -390,6 +392,20 @@ function testFocusMenuButtonWithMouse() {
 
   // Verify that the previously focused button has lost focus.
   assertFalse(document.hasFocus() && document.activeElement === buttonElement);
+
+  // Verify the menu button has taken focus.
+  assertTrue(document.hasFocus() && document.activeElement === menubutton);
+
+  // Set focus on a cr-input element.
+  //* @type {HTMLElement} */
+  const inputElement = document.querySelector('#focus-input');
+  inputElement.focus();
+
+  // Send mousedown event to the menu button.
+  sendMouseDown('#test-menu-button');
+
+  // Verify the cr-input element has lost focus.
+  assertFalse(document.hasFocus() && document.activeElement === inputElement);
 
   // Verify the menu button has taken focus.
   assertTrue(document.hasFocus() && document.activeElement === menubutton);

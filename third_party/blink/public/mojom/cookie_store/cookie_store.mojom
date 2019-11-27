@@ -23,9 +23,20 @@ struct CookieChangeSubscription {
 // them.
 interface CookieStore {
   // Adds the given subscriptions to the registration's subscription list.
-  AppendSubscriptions(
+  //
+  // This method is idempotent. Subscriptions that are already contained in the
+  // registration's subscription list are ignored.
+  AddSubscriptions(
       int64 service_worker_registration_id,
-      array<CookieChangeSubscription> subscriptions) => (bool success);
+      array<CookieChangeSubscription> subscription) => (bool success);
+
+  // Removes the given subscriptions from the registration's subscription list.
+  //
+  // This method is idempotent. Subscriptions not contained in the
+  // registration's subscription list are ignored.
+  RemoveSubscriptions(
+      int64 service_worker_registration_id,
+      array<CookieChangeSubscription> subscription) => (bool success);
 
   // Returns all cookie change subscriptions for a service worker registration.
   GetSubscriptions(int64 service_worker_registration_id)

@@ -1079,34 +1079,36 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface, cryptohome::kSignalAsyncCallStatus,
-        base::Bind(&CryptohomeClientImpl::AsyncCallStatusReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&CryptohomeClientImpl::AsyncCallStatusReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CryptohomeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface,
         cryptohome::kSignalAsyncCallStatusWithData,
-        base::Bind(&CryptohomeClientImpl::AsyncCallStatusWithDataReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &CryptohomeClientImpl::AsyncCallStatusWithDataReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CryptohomeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface, cryptohome::kSignalTpmInitStatus,
-        base::Bind(&CryptohomeClientImpl::TpmInitStatusReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&CryptohomeClientImpl::TpmInitStatusReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CryptohomeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface, cryptohome::kSignalLowDiskSpace,
-        base::Bind(&CryptohomeClientImpl::LowDiskSpaceReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&CryptohomeClientImpl::LowDiskSpaceReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CryptohomeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface,
         cryptohome::kSignalDircryptoMigrationProgress,
-        base::Bind(&CryptohomeClientImpl::DircryptoMigrationProgressReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &CryptohomeClientImpl::DircryptoMigrationProgressReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CryptohomeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }

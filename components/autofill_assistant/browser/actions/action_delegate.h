@@ -314,14 +314,15 @@ class ActionDelegate {
   // Returns the current client settings.
   virtual const ClientSettings& GetSettings() = 0;
 
-  // Show a form to the user and call |callback| with its values whenever there
-  // is a change. |callback| will be called directly with the initial values of
-  // the form directly after this call. Returns true if the form was correctly
-  // set, false otherwise. The latter can happen if the form contains
-  // unsupported or invalid inputs.
+  // Show a form to the user and call |changed_callback| with its values
+  // whenever there is a change. |changed_callback| will be called directly with
+  // the initial values of the form directly after this call. Returns true if
+  // the form was correctly set, false otherwise. The latter can happen if the
+  // form contains unsupported or invalid inputs.
   virtual bool SetForm(
       std::unique_ptr<FormProto> form,
-      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) = 0;
 
   // Force showing the UI if no UI is shown. This is useful when executing a
   // direct action which realizes it needs to interact with the user. Once

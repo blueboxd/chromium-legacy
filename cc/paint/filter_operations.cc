@@ -235,7 +235,7 @@ void FilterOperations::AsValueInto(
 }
 
 std::string FilterOperations::ToString() const {
-  base::trace_event::TracedValue value;
+  base::trace_event::TracedValue value(0, /*force_json=*/true);
   value.BeginArray("FilterOperations");
   AsValueInto(&value);
   value.EndArray();

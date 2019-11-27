@@ -35,9 +35,7 @@ class UrlFetcherDownloader : public CrxDownloader {
 
   void CreateDownloadDir();
   void StartURLFetch(const GURL& url);
-  void OnNetworkFetcherComplete(base::FilePath file_path,
-                                int net_error,
-                                int64_t content_size);
+  void OnNetworkFetcherComplete(int net_error, int64_t content_size);
   void OnResponseStarted(int response_code, int64_t content_length);
   void OnDownloadProgress(int64_t content_length);
 
@@ -48,6 +46,9 @@ class UrlFetcherDownloader : public CrxDownloader {
 
   // Contains a temporary download directory for the downloaded file.
   base::FilePath download_dir_;
+
+  // Contains the file path to the downloaded file.
+  base::FilePath file_path_;
 
   base::TimeTicks download_start_time_;
 

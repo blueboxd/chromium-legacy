@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Näytä enemmän</translation>
 <translation id="1473183651233018052">JIS B10 (32 mm x 45 mm)</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Vaihda salasana</translation>
 <translation id="1484290072879560759">Valitse toimitusosoite</translation>
 <translation id="1492194039220927094">Käytäntöjen kehotusviestit:</translation>
 <translation id="1501859676467574491">Näytä Google-tilin kortit</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="1736420071277903564">Tietokone</translation>
-<translation id="1739107442478692187">Käyttämälläsi sivustolla tai sovelluksessa tapahtui tietosuojaloukkaus. Chrome suosittelee, että tarkistat tallennetut salasanasi ja vaihdat salasanan heti (<ph name="ORIGIN" />).</translation>
 <translation id="1740951997222943430">Anna kelvollinen viimeinen voimassaolokuukausi.</translation>
 <translation id="1741613555002899862">On määritettävä kelvollisena merkkijonona, kun DnsOverHttpsMode on <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Jos haluat maksaa nopeammin ensi kerralla, tallenna kortti, nimi ja laskutusosoite Google-tilillesi ja tälle laitteelle.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Purkupalvelu</translation>
 <translation id="1915697529809968049">Käytetäänkö Touch ID:tä CVC:n sijaan?</translation>
 <translation id="1916770123977586577">Päivitä tämä sivu, niin päivitetyt asetuksesi otetaan käyttöön tällä sivustolla.</translation>
+<translation id="1917876262703816781">Sivuston tai sovelluksen tietosuojaloukkaus paljasti salasanasi. Chrome suosittelee, että vaihdat salasanan heti (<ph name="ORIGIN" />).</translation>
 <translation id="1919345977826869612">Mainokset</translation>
 <translation id="1919367280705858090">Tiettyjen virheiden korjaaminen</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ei mitään}=1{1 sivusto}other{# sivustoa}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Verkkotunnukset eivät ole yhteensopivat</translation>
 <translation id="2096368010154057602">Osasto</translation>
 <translation id="2099652385553570808">Kolme niittiä vasemmalla</translation>
-<translation id="2100280972184758440">Salasanasi vaarantui</translation>
 <translation id="2102134110707549001">Ehdota vahvaa salasanaa…</translation>
 <translation id="2108755909498034140">Käynnistä tietokone uudelleen.</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
 <translation id="2119505898009119320">Myönnetty: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Reikä oikeassa alakulmassa</translation>
-<translation id="2124528555835617522">Käyttämälläsi sivustolla tai sovelluksessa tapahtui tietosuojaloukkaus. Chrome suosittelee, että tarkistat tallennetut salasanasi heti.</translation>
 <translation id="2129079103035905234">Liiketunnistimet</translation>
 <translation id="2130448033692577677">Määrittämiäsi malleja ei välttämättä käytetä, sillä DnsOverHttpsMode-käytäntöä ei ole määritetty.</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
@@ -495,7 +494,6 @@
 <translation id="3282497668470633863">Lisää kortissa oleva nimi</translation>
 <translation id="3287510313208355388">Lataa, kun verkkoyhteys on muodostettu</translation>
 <translation id="3293642807462928945">Lisätietoja käytännöstä: <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Käyttämälläsi sivustolla tai sovelluksessa tapahtui tietosuojaloukkaus. Chrome suosittelee, että vaihdat salasanan heti (<ph name="ORIGIN" />).</translation>
 <translation id="3303855915957856445">Ei hakutuloksia</translation>
 <translation id="3320021301628644560">Lisää laskutusosoite</translation>
 <translation id="3324983252691184275">Karmiininpunainen</translation>
@@ -909,6 +907,7 @@
 <translation id="5287240709317226393">Näytä evästeet</translation>
 <translation id="5287456746628258573">Tämä sivusto käyttää vanhentunutta tietoturvamääritystä, joka voi paljastaa tietosi (esim. salasanat tai credit-korttien numerot), kun ne lähetetään sivustolle.</translation>
 <translation id="5288108484102287882">Käytäntöarvojen vahvistus aiheutti varoituksia</translation>
+<translation id="5295292838686006428">Sivuston tai sovelluksen tietosuojaloukkaus paljasti salasanasi. Chrome suosittelee tarkistamaan tallennetut salasanasi nyt.</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
@@ -959,6 +958,7 @@
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
 <translation id="5541546772353173584">Lisää sähköposti</translation>
 <translation id="5545756402275714221">Sinulle valitut artikkelit</translation>
+<translation id="5552137475244467770">Chrome vertaa salasanojasi säännöllisesti listoihin salasanoista, jotka on julkaistu verkossa. Tätä varten salasanat ja käyttäjänimet salataan, joten kukaan (myöskään Google) ei voi lukea niitä.</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5560088892362098740">Viimeinen voimassaolopäivä</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
@@ -1050,6 +1050,7 @@
 <translation id="5992691462791905444">Kolmoistaite (engineering)</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> tulosta: <ph name="SEARCH_TEXT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Tarkista salasanasi</translation>
 <translation id="6015796118275082299">Vuosi</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Sivu 1}other{Sivu #}}</translation>
 <translation id="6017514345406065928">Vihreä</translation>
@@ -1339,6 +1340,7 @@ Lisätietoja:
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="748406663033922918">Vahvista tallennetut maksutavat näytön lukitustavalla</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
+<translation id="7495290002932347110">Sivuston tai sovelluksen tietosuojaloukkaus paljasti salasanasi. Chrome suosittelee, että tarkistat tallennetut salasanasi ja vaihdat salasanan heti (<ph name="ORIGIN" />).</translation>
 <translation id="7498234416455752244">Jatka muokkausta</translation>
 <translation id="7508255263130623398">Palautettu käytännön laitetunnus on tyhjä tai ei vastaa nykyistä laitetunnusta.</translation>
 <translation id="7508870219247277067">Avokadonvihreä</translation>

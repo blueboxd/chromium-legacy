@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2323763861024343754">网站存储数据</translation>
 <translation id="2328985652426384049">无法登录</translation>
-<translation id="2330129964253841015">在密码泄露时向您发出警告</translation>
 <translation id="2349710944427398404">Chrome 所使用的数据总量，包括帐号、书签和已保存的设置</translation>
 <translation id="2353636109065292463">检查互联网连接状况</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">地址</translation>
 <translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
 <translation id="2904414404539560095">要与之分享标签页的设备的列表已全屏打开。</translation>
+<translation id="2905036901251765993">要与附近的人分享，请让他们扫描此二维码</translation>
 <translation id="2909615210195135082">Google 通知平台</translation>
 <translation id="2910701580606108292">网站需先询问并得到许可才能播放受保护内容</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，您每次都要通过验证才能登录网站。</translation>
 <translation id="3658159451045945436">这项重置操作会清空流量节省情况历史记录，包括曾访问过的网站的列表。</translation>
+<translation id="3682730288090679318">启用此设置可自动禁止网站向您发出显示通知的请求。如有网站发出此类请求，网页底部会显示一个信息栏。</translation>
 <translation id="3692944402865947621">未能成功下载“<ph name="FILE_NAME" />”，因为无法访问它的存储位置。</translation>
 <translation id="3714981814255182093">打开查找栏</translation>
 <translation id="3716182511346448902">此网页占用的内存过多，因此 Chrome 已将其暂停。</translation>
@@ -542,6 +543,7 @@
 <translation id="5048398596102334565">允许网站使用动态传感器（推荐）</translation>
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5087580092889165836">添加新卡</translation>
+<translation id="5096950519211870196">系统将禁止网站发出向您显示通知的请求。如有网站发出此类请求，网页底部会显示一个信息栏。</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5123685120097942451">无痕式标签页</translation>
@@ -589,6 +591,7 @@
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
 <translation id="5424588387303617268">可用存储空间：<ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">知道了。默认情况下，新的通知请求会显示在此处。</translation>
 <translation id="543338862236136125">修改密码</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
 <translation id="543509235395288790">正在下载 <ph name="COUNT" /> 个文件（<ph name="MEGABYTES" /> MB）。</translation>
@@ -687,6 +690,7 @@
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6111020039983847643">已耗用的流量</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
+<translation id="6113400363611269907">静默地显示提示</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
@@ -811,6 +815,7 @@
 <translation id="6989267951144302301">无法下载</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
+<translation id="6995899638241819463">如有密码遭遇数据泄露，就向您发出警告</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
 <translation id="7016516562562142042">允许当前搜索引擎使用</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
@@ -1019,6 +1024,7 @@
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8514477925623180633">导出存储在 Chrome 中的密码</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
+<translation id="8516012719330875537">图片编辑器</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="854522910157234410">打开此网页</translation>

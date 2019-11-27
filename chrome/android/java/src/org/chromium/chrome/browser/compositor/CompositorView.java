@@ -13,7 +13,6 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -321,11 +320,6 @@ public class CompositorView
         mWindowAndroid = windowAndroid;
         mWindowAndroid.addSelectionHandlesObserver(this);
         onWindowVisibilityChangedInternal(getWindowVisibility());
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        return super.onTouchEvent(e);
     }
 
     /**

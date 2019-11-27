@@ -65,6 +65,18 @@ bool MachineLevelUserCloudPolicyManager::IsClientRegistered() {
   return client() && client()->is_registered();
 }
 
+void MachineLevelUserCloudPolicyManager::AddClientObserver(
+    CloudPolicyClient::Observer* observer) {
+  if (client())
+    client()->AddObserver(observer);
+}
+
+void MachineLevelUserCloudPolicyManager::RemoveClientObserver(
+    CloudPolicyClient::Observer* observer) {
+  if (client())
+    client()->RemoveObserver(observer);
+}
+
 void MachineLevelUserCloudPolicyManager::Init(SchemaRegistry* registry) {
   DVLOG(1) << "Machine level cloud policy manager initialized";
   // Call to grand-parent's Init() instead of parent's is intentional.

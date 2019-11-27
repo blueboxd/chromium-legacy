@@ -63,6 +63,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * If true footer would be shrunk as much as possible to fit container.
+     */
+    footerShrinkable: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus: function() {
@@ -87,7 +95,7 @@ Polymer({
    * Scroll to the bottom of footer container.
    */
   scrollToBottom: function() {
-    var el = this.$$('#footer-container');
+    var el = this.$$('#top-scroll-container');
     el.scrollTop = el.scrollHeight;
   },
 

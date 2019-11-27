@@ -612,8 +612,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
 #else
   SimpleTest(GURL(test_url.spec()));
 #endif
-  // Test stores one blob and one file to disk, so expect two files.
-  EXPECT_EQ(2, RequestBlobFileCount(kFileOrigin));
+  // As both of these files are empty, they do not create BlobDataItems.
+  // As they can't be read, the backing files are immediately released.
+  EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));
 }
 
 // Very flaky on many bots. See crbug.com/459835

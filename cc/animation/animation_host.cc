@@ -483,32 +483,6 @@ std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
   return std::make_unique<AnimationEvents>();
 }
 
-void DispatchAnimationEventToElementAnimations(ElementAnimations* animations,
-                                               const AnimationEvent& event) {
-  switch (event.type) {
-    case AnimationEvent::STARTED:
-      animations->NotifyAnimationStarted(event);
-      break;
-
-    case AnimationEvent::FINISHED:
-      animations->NotifyAnimationFinished(event);
-      break;
-
-    case AnimationEvent::ABORTED:
-      animations->NotifyAnimationAborted(event);
-      break;
-
-    case AnimationEvent::TAKEOVER:
-      animations->NotifyAnimationTakeover(event);
-      break;
-
-    case AnimationEvent::TIME_UPDATED:
-      // Worklet animations are looked up in ticking animations.
-      NOTREACHED();
-      break;
-  }
-}
-
 void AnimationHost::SetAnimationEvents(
     std::unique_ptr<MutatorEvents> mutator_events) {
   auto events =
@@ -517,25 +491,11 @@ void AnimationHost::SetAnimationEvents(
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
     AnimationEvent& event = events->events_[event_index];
-
-    // TODO(http://crbug.com/1013727): Make all animation events use animation
-    // id to do targeting;
-    if (event.worklet_animation_id) {
-      DCHECK(event.type == AnimationEvent::TIME_UPDATED);
-      // Look up worklet animation in ticking animations.
-      WorkletAnimation* animation =
-          FindWorkletAnimation(event.worklet_animation_id);
+    AnimationTimeline* timeline = GetTimelineById(event.uid.timeline_id);
+    if (timeline) {
+      Animation* animation = timeline->GetAnimationById(event.uid.animation_id);
       if (animation)
-        animation->NotifyLocalTimeUpdated(event);
-    } else {
-      // Use the map of all ElementAnimations, not just ticking animations,
-      // since non-ticking animations may still receive events for impl-only
-      // animations.
-      const ElementToAnimationsMap& all_element_animations =
-          element_to_animations_map_;
-      auto iter = all_element_animations.find(event.element_id);
-      if (iter != all_element_animations.end())
-        DispatchAnimationEventToElementAnimations((*iter).second.get(), event);
+        animation->DispatchAndDelegateAnimationEvent(event);
     }
   }
 }

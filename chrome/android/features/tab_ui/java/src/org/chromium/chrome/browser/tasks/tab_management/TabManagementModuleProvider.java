@@ -45,4 +45,11 @@ public class TabManagementModuleProvider {
         }
         return TabManagementModule.getImpl();
     }
+
+    /**
+     * Returns whether TabManagementModule is supported by checking if the module is installed.
+     */
+    public static boolean isTabManagementModuleSupported() {
+        return getDelegate() != null;
+    }
 }

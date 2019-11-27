@@ -18,6 +18,7 @@
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "chrome/browser/ssl/tls_deprecation_config.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -214,6 +215,10 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // the number of times it was available.
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
   }
+
+  // TODO(cthomp): Replace this with triggering on the new CertStatus flag.
+  MaybeShowKnownInterceptionDisclosureDialog(web_contents(),
+                                             navigation_handle->GetURL());
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {

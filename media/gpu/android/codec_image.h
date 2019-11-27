@@ -90,6 +90,7 @@ class MEDIA_GPU_EXPORT CodecImage
                     const std::string& dump_name) override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
+  gfx::Rect GetCropRect() override;
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
   // Currently this API is implemented by the NotifyOverlayPromotion, since this

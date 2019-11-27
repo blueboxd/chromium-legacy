@@ -223,7 +223,7 @@ var BookmarksExtensionAPITest = class extends BookmarksBrowserTest {
   }
 };
 
-TEST_F('BookmarksExtensionAPITest', 'DISABLED_All', function() {
+TEST_F('BookmarksExtensionAPITest', 'All', function() {
   mocha.run();
 });
 

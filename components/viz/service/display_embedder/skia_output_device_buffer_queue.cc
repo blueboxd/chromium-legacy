@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -11,12 +13,18 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/config/gpu_finch_features.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
+
+#if defined(OS_ANDROID)
+#include "ui/gl/gl_surface_egl_surface_control.h"
+#endif
 
 namespace viz {
 
@@ -125,7 +133,7 @@ void SkiaOutputDeviceBufferQueue::Image::EndWriteSkia() {
       .fSignalSemaphores = end_semaphores_.data(),
   };
   scoped_write_access_->surface()->flush(
-      SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
   scoped_write_access_.reset();
   end_semaphores_.clear();
 }
@@ -202,6 +210,41 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
   FreeAllSurfaces();
+}
+
+// static
+std::unique_ptr<SkiaOutputDeviceBufferQueue>
+SkiaOutputDeviceBufferQueue::Create(
+    SkiaOutputSurfaceDependency* deps,
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback) {
+#if defined(OS_ANDROID)
+  if (!features::IsAndroidSurfaceControlEnabled())
+    return nullptr;
+  bool can_be_used_with_surface_control = false;
+  ANativeWindow* window =
+      gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
+          deps->GetSurfaceHandle(), &can_be_used_with_surface_control);
+  if (!window || !can_be_used_with_surface_control)
+    return nullptr;
+  // TODO(https://crbug.com/1012401): don't depend on GL.
+  auto gl_surface = base::MakeRefCounted<gl::GLSurfaceEGLSurfaceControl>(
+      window, base::ThreadTaskRunnerHandle::Get());
+  if (!gl_surface->Initialize(gl::GLSurfaceFormat())) {
+    LOG(ERROR) << "Failed to initialize GLSurfaceEGLSurfaceControl.";
+    return nullptr;
+  }
+
+  if (!deps->GetSharedContextState()->MakeCurrent(gl_surface.get(),
+                                                  true /* needs_gl*/)) {
+    LOG(ERROR) << "MakeCurrent failed.";
+    return nullptr;
+  }
+
+  return std::make_unique<SkiaOutputDeviceBufferQueue>(
+      std::move(gl_surface), deps, did_swap_buffer_complete_callback);
+#else
+  return nullptr;
+#endif
 }
 
 SkiaOutputDeviceBufferQueue::Image*

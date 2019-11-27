@@ -35,7 +35,8 @@ namespace input_ime = extensions::api::input_ime;
 
 namespace {
 
-const char kErrorNoActiveEngine[] = "The extension has not been activated.";
+const char kErrorEngineNotActive[] = "The engine is not active.";
+const char kErrorRouterNotAvailable[] = "The router is not available.";
 const char kErrorPermissionDenied[] = "User denied permission.";
 const char kErrorCouldNotFindActiveBrowser[] =
     "Cannot find the active browser.";
@@ -123,13 +124,13 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
 namespace extensions {
 
 InputMethodEngine* GetEngineIfActive(content::BrowserContext* browser_context,
-                                     const std::string& extension_id) {
+                                     const std::string& extension_id,
+                                     std::string* error) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
-  InputMethodEngine* engine =
-      event_router ? static_cast<InputMethodEngine*>(
-                         event_router->GetEngineIfActive(extension_id))
-                   : nullptr;
+  CHECK(event_router) << kErrorRouterNotAvailable;
+  InputMethodEngine* engine = static_cast<InputMethodEngine*>(
+      event_router->GetEngineIfActive(extension_id, error));
   return engine;
 }
 
@@ -175,12 +176,16 @@ InputImeEventRouter::~InputImeEventRouter() {
 }
 
 InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
-    const std::string& extension_id) {
-  return (ui::IMEBridge::Get()->GetCurrentEngineHandler() &&
-          active_engine_ &&
-          active_engine_->GetExtensionId() == extension_id)
-             ? active_engine_
-             : nullptr;
+    const std::string& extension_id,
+    std::string* error) {
+  if (ui::IMEBridge::Get()->GetCurrentEngineHandler() && active_engine_ &&
+      active_engine_->GetExtensionId() == extension_id) {
+    return active_engine_;
+  } else {
+    LOG(WARNING) << kErrorEngineNotActive << " extension id: " << extension_id;
+    *error = kErrorEngineNotActive;
+    return nullptr;
+  }
 }
 
 void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
@@ -229,7 +234,7 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   if (!event_router)
-    return RespondNow(Error(kErrorNoActiveEngine));
+    return RespondNow(Error(kErrorEngineNotActive));
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
 
@@ -306,7 +311,7 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
   Profile* profile = Profile::FromBrowserContext(browser_context());
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   if (!event_router) {
-    Respond(Error(kErrorNoActiveEngine));
+    Respond(Error(kErrorEngineNotActive));
     return;
   }
   event_router->SetActiveEngine(extension_id());
@@ -323,8 +328,12 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
 }
 
 ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
+  std::string error;
   InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine) {
+    return RespondNow(Error(error));
+  }
   ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
   if (engine)
     engine->CloseImeWindows();
@@ -351,12 +360,12 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
     bounds.set_height(options.bounds->height);
   }
 
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id());
-  if (!engine)
-    return RespondNow(Error(kErrorNoActiveEngine));
-
   std::string error;
+  InputMethodEngine* engine =
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
+
   int frame_id = engine->CreateImeWindow(
       extension(), render_frame_host(),
       options.url.get() ? *options.url : url::kAboutBlankURL,
@@ -374,10 +383,11 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
+  std::string error;
   InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(kErrorNoActiveEngine));
+    return RespondNow(Error(error));
 
   std::unique_ptr<api::input_ime::ShowWindow::Params> params(
       api::input_ime::ShowWindow::Params::Create(*args_));
@@ -387,10 +397,11 @@ ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeHideWindowFunction::Run() {
+  std::string error;
   InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(kErrorNoActiveEngine));
+    return RespondNow(Error(error));
 
   std::unique_ptr<api::input_ime::HideWindow::Params> params(
       api::input_ime::HideWindow::Params::Create(*args_));

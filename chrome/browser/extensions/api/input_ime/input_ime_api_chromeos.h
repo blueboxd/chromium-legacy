@@ -177,7 +177,8 @@ class InputImeEventRouter : public InputImeEventRouterBase {
 
   chromeos::InputMethodEngine* GetEngine(const std::string& extension_id);
   input_method::InputMethodEngineBase* GetEngineIfActive(
-      const std::string& extension_id) override;
+      const std::string& extension_id,
+      std::string* error) override;
 
   std::string GetUnloadedExtensionId() const {
     return unloaded_component_extension_id_;

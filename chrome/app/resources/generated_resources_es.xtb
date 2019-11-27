@@ -934,7 +934,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2326931316514688470">&amp;Volver a cargar aplicación</translation>
 <translation id="2327492829706409234">Habilitar aplicación</translation>
 <translation id="2329597144923131178">Accede para ver marcadores, historial, contraseñas y otros en dispos.</translation>
-<translation id="2330129964253841015">Avisar si se vulneran tus contraseñas</translation>
 <translation id="2332131598580221120">Ver en Chrome Web Store</translation>
 <translation id="2332192922827071008">Abrir las preferencias</translation>
 <translation id="2332742915001411729">Restablecer predeterminado</translation>
@@ -4098,6 +4097,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6990778048354947307">Tema oscuro</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
 <translation id="6992554835374084304">Activa la revisión ortográfica mejorada</translation>
+<translation id="6995899638241819463">Avisar si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />: Registro de actividad</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998793565256476099">Registrar dispositivo para hacer videoconferencias</translation>

@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Balról jobbra</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
-<translation id="1409544243779336081">Javasolt alkalmazás</translation>
 <translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1498028757988366001">Korábban már rákeresett erre. Ha törli a(z) <ph name="QUERY" /> lekérdezést az előzmények közül, azzal véglegesen eltávolítja fiókjából minden eszközén.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Pont</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 hónap}other{# hónap}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144"><ph name="RATING_SCORE" /> csillagos értékelés</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 óra és }other{# óra és }}</translation>
 <translation id="1842960171412779397">Kiválasztás</translation>
 <translation id="1859234291848436338">Írás iránya</translation>

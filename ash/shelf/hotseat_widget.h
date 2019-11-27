@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/hotseat_transition_animator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -19,7 +18,6 @@ class ShelfView;
 
 // The hotseat widget is part of the shelf and hosts app shortcuts.
 class ASH_EXPORT HotseatWidget : public views::Widget,
-                                 public HotseatTransitionAnimator::Observer,
                                  public ShelfConfig::Observer {
  public:
   HotseatWidget();
@@ -62,18 +60,6 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
 
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
-
-  // HotseatTransitionAnimator::Observer:
-  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
-                                           HotseatState to_start) override;
-  void OnHotseatTransitionAnimationEnded(HotseatState from_state,
-                                         HotseatState to_start) override;
-
-  // Returns the bounds of the hotseat background in ScrollableShelfView.
-  gfx::Rect GetHotseatBackgroundBounds() const;
-
-  // Gets the background which is used to draw the background of the hotseat.
-  ui::Layer* GetOpaqueBackground();
 
   void SetState(HotseatState state);
   HotseatState state() const { return state_; }

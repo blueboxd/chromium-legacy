@@ -664,12 +664,17 @@ DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
 
 scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
     base::WeakPtr<CanvasResourceProvider> resource_provider) {
+  // Swap chain must be presented before resource is exported.
+  PresentSwapChainIfNeeded();
+
   scoped_refptr<ColorBuffer> canvas_resource_buffer =
       UsingSwapChain() ? front_color_buffer_ : back_color_buffer_;
+
   return ExternalCanvasResource::Create(
       canvas_resource_buffer->mailbox, canvas_resource_buffer->size,
       texture_target_, CanvasColorParams(), context_provider_->GetWeakPtr(),
-      resource_provider, kLow_SkFilterQuality);
+      resource_provider, kLow_SkFilterQuality,
+      /*is_origin_top_left=*/opengl_flip_y_extension_);
 }
 
 DrawingBuffer::ColorBuffer::ColorBuffer(
@@ -1461,12 +1466,11 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
   }
 }
 
-void DrawingBuffer::PresentSwapChain() {
-  DCHECK(UsingSwapChain());
-  DCHECK_EQ(texture_target_, static_cast<unsigned>(GL_TEXTURE_2D));
-
-  if (!contents_changed_)
+void DrawingBuffer::PresentSwapChainIfNeeded() {
+  if (!UsingSwapChain() || !contents_changed_)
     return;
+
+  DCHECK_EQ(texture_target_, static_cast<unsigned>(GL_TEXTURE_2D));
 
   ScopedStateRestorer scoped_state_restorer(this);
   ResolveIfNeeded();

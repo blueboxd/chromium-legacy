@@ -113,8 +113,9 @@ public class PreferenceUtils {
      */
     private static boolean isOverflowMenuButton(View button, ActionMenuView parentMenu) {
         if (button == null) return false;
-        if (!(button instanceof ImageView))
+        if (!(button instanceof ImageView)) {
             return false; // Normal items are usually TextView or LinearLayouts.
+        }
         ImageView imageButton = (ImageView) button;
         return imageButton.getDrawable() == parentMenu.getOverflowIcon();
     }

@@ -123,6 +123,7 @@ class UiControllerAndroid : public ControllerObserver {
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(std::string identifier);
   void OnTermsAndConditionsLinkClicked(int link);
+  void OnFormActionLinkClicked(int link);
   void OnDateTimeRangeStartChanged(int year,
                                    int month,
                                    int day,

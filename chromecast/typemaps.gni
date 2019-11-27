@@ -4,7 +4,10 @@
 
 import("//build/config/chromecast_build.gni")
 
-typemaps = [ "//chromecast/common/mojom/multiroom.typemap" ]
+typemaps = [
+  "//chromecast/common/mojom/application_media_capabilities.typemap",
+  "//chromecast/common/mojom/multiroom.typemap",
+]
 
 if (chromecast_branding != "public") {
   _typemap_internal = read_file("//chromecast/internal/typemaps.gni", "scope")

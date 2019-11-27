@@ -153,38 +153,6 @@ void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
   }
 }
 
-void GetProfilesForAppShim(
-    const std::string& app_id,
-    const std::vector<base::FilePath>& profile_paths_to_check,
-    GetProfilesForAppShimCallback callback) {
-  auto io_thread_lambda =
-      [](const std::string& app_id,
-         const std::vector<base::FilePath>& profile_paths_to_check,
-         GetProfilesForAppShimCallback callback) {
-        base::ScopedBlockingCall scoped_blocking_call(
-            FROM_HERE, base::BlockingType::MAY_BLOCK);
-
-        // Determine if an extension is installed for a profile by whether or
-        // not the subpath Extensions/|app_id| exists. We do this instead of
-        // checking the Profile's properties because the Profile may not be
-        // loaded yet.
-        std::vector<base::FilePath> profile_paths_with_app;
-        for (const auto& profile_path : profile_paths_to_check) {
-          base::FilePath extension_path =
-              profile_path.AppendASCII(extensions::kInstallDirectoryName)
-                  .AppendASCII(app_id);
-          if (base::PathExists(extension_path))
-            profile_paths_with_app.push_back(profile_path);
-        }
-        base::PostTask(
-            FROM_HERE, {content::BrowserThread::UI},
-            base::BindOnce(std::move(callback), profile_paths_with_app));
-      };
-  internals::GetShortcutIOTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(io_thread_lambda, app_id,
-                                profile_paths_to_check, std::move(callback)));
-}
-
 }  // namespace web_app
 
 namespace chrome {

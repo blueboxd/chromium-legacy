@@ -556,7 +556,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> का इस्तेमाल करें</translation>
 <translation id="899350903320462459">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को <ph name="LOGIN_ID" /> के तौर पर अनलॉक करें</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारा प्रबंधित</translation>
 <translation id="9017320285115481645">Family Link का अभिभावक ऐक्सेस कोड डालें.</translation>
 <translation id="9029474291399787231">Adobe Flash Player का अपडेट मौजूद है</translation>
 <translation id="9056839673611986238">डिवाइस बहाल कर दिया जाएगा</translation>
@@ -573,6 +572,7 @@
 <translation id="9183456764293710005">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="9193626018745640770">ऐसे रिसीवर पर कास्ट किया जा रहा है जिसकी जानकारी नहीं है</translation>
 <translation id="9194617393863864469">किसी दूसरे उपयोगकर्ता के रूप में साइन इन करें...</translation>
+<translation id="9205817095063786319"><ph name="DOMAIN" /> की ओर से प्रबंधित डिवाइस</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
 <translation id="9211681782751733685">बैटरी के पूरी तरह से चार्ज होने में<ph name="TIME_REMAINING" /> का समय बाकी है.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>

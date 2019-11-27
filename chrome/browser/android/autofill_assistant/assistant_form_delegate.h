@@ -28,6 +28,10 @@ class AssistantFormDelegate {
       jint choice_index,
       jboolean selected);
 
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& jcaller,
+                     jint link);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

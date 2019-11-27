@@ -3905,8 +3905,11 @@ TEST_P(HotseatShelfLayoutManagerTest, ExitingOvervieHidesHotseat) {
 
 // Tests that after dragging window from top of the home screen down, and back
 // up again, the hotseat is shown on the home screen.
-TEST_P(HotseatShelfLayoutManagerTest,
-       HomeToInAppAndBackHomeDragWithNoBackdrop) {
+TEST_P(HotseatShelfLayoutManagerTest, HomeToInAppAndBackHomeDrag) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
   GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
 

@@ -128,8 +128,8 @@ class TestChromeContentRendererClient : public ChromeContentRendererClient {
  public:
   TestChromeContentRendererClient() {}
   ~TestChromeContentRendererClient() override {}
-  // Since visited_link_slave_ in ChromeContentRenderClient never get initiated,
-  // overrides VisitedLinkedHash() function to prevent crashing.
+  // Since visited_link_reader_ in ChromeContentRenderClient never get
+  // initiated, overrides VisitedLinkedHash() function to prevent crashing.
   uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override {
     return 0;
   }

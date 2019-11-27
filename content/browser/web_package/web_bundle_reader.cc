@@ -319,13 +319,6 @@ const WebBundleSource& WebBundleReader::source() const {
   return *source_;
 }
 
-void WebBundleReader::SetWebBundleParserFactoryForTesting(
-    mojo::Remote<data_decoder::mojom::WebBundleParserFactory> factory) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  parser_->SetWebBundleParserFactoryForTesting(std::move(factory));
-}
-
 void WebBundleReader::ReadMetadataInternal(MetadataCallback callback,
                                            base::File file) {
   DCHECK(source_->is_trusted_file() || source_->is_file());

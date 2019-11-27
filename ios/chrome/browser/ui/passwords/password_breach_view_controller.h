@@ -14,6 +14,9 @@
 @interface PasswordBreachViewController
     : UIViewController <PasswordBreachConsumer>
 
+// The headline below the image.
+@property(nonatomic, readonly) NSString* titleString;
+
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<PasswordBreachActionHandler> actionHandler;
 

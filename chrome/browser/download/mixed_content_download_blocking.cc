@@ -4,8 +4,8 @@
 
 #include "chrome/browser/download/mixed_content_download_blocking.h"
 
-#include <string>
-
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
@@ -41,30 +41,78 @@ InsecureDownloadExtensions GetExtensionEnumFromString(
 // Get the appropriate histogram metric name for the initiator/download security
 // state combo.
 std::string GetDownloadBlockingExtensionMetricName(
-    base::Optional<url::Origin> initiator,
-    bool dl_secure) {
-  if (!initiator.has_value()) {
-    if (dl_secure)
-      return kInsecureDownloadHistogramInitiatorUnknownTargetSecure;
-    return kInsecureDownloadHistogramInitiatorUnknownTargetInsecure;
+    InsecureDownloadSecurityStatus status) {
+  switch (status) {
+    case InsecureDownloadSecurityStatus::kInitiatorUnknownFileSecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorUnknown,
+          kInsecureDownloadHistogramTargetSecure);
+    case InsecureDownloadSecurityStatus::kInitiatorUnknownFileInsecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorUnknown,
+          kInsecureDownloadHistogramTargetInsecure);
+    case InsecureDownloadSecurityStatus::kInitiatorSecureFileSecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorSecure,
+          kInsecureDownloadHistogramTargetSecure);
+    case InsecureDownloadSecurityStatus::kInitiatorSecureFileInsecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorSecure,
+          kInsecureDownloadHistogramTargetInsecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInsecureFileSecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInsecure,
+          kInsecureDownloadHistogramTargetSecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInsecureFileInsecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInsecure,
+          kInsecureDownloadHistogramTargetInsecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInferredSecureFileSecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInferredSecure,
+          kInsecureDownloadHistogramTargetSecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInferredSecureFileInsecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInferredSecure,
+          kInsecureDownloadHistogramTargetInsecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInferredInsecureFileSecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInferredInsecure,
+          kInsecureDownloadHistogramTargetSecure);
+    case InsecureDownloadSecurityStatus::kInitiatorInferredInsecureFileInsecure:
+      return GetDLBlockingHistogramName(
+          kInsecureDownloadExtensionInitiatorInferredInsecure,
+          kInsecureDownloadHistogramTargetInsecure);
   }
-
-  if (initiator->GetURL().SchemeIsCryptographic()) {
-    if (dl_secure)
-      return kInsecureDownloadHistogramInitiatorSecureTargetSecure;
-    return kInsecureDownloadHistogramInitiatorSecureTargetInsecure;
-  }
-
-  if (dl_secure)
-    return kInsecureDownloadHistogramInitiatorInsecureTargetSecure;
-  return kInsecureDownloadHistogramInitiatorInsecureTargetInsecure;
+  NOTREACHED();
+  return std::string();
 }
 
 // Get appropriate enum value for the initiator/download security state combo
-// for histogram reporting.
+// for histogram reporting. |dl_secure| signifies whether the download was
+// a secure source. |inferred| is whether the initiator value is our best guess.
 InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
     base::Optional<url::Origin> initiator,
-    bool dl_secure) {
+    bool dl_secure,
+    bool inferred) {
+  if (inferred) {
+    if (initiator->GetURL().SchemeIsCryptographic()) {
+      if (dl_secure) {
+        return InsecureDownloadSecurityStatus::
+            kInitiatorInferredSecureFileSecure;
+      }
+      return InsecureDownloadSecurityStatus::
+          kInitiatorInferredSecureFileInsecure;
+    }
+
+    if (dl_secure) {
+      return InsecureDownloadSecurityStatus::
+          kInitiatorInferredInsecureFileSecure;
+    }
+    return InsecureDownloadSecurityStatus::
+        kInitiatorInferredInsecureFileInsecure;
+  }
+
   if (!initiator.has_value()) {
     if (dl_secure)
       return InsecureDownloadSecurityStatus::kInitiatorUnknownFileSecure;
@@ -80,6 +128,15 @@ InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
   if (dl_secure)
     return InsecureDownloadSecurityStatus::kInitiatorInsecureFileSecure;
   return InsecureDownloadSecurityStatus::kInitiatorInsecureFileInsecure;
+}
+
+// Dump without crashing because of the given |issue|.
+void ReportTrace(const std::string& issue) {
+  LOG(WARNING) << "Unexpected download configuration:" << issue;
+  static auto* initiator_problem_reason = base::debug::AllocateCrashKeyString(
+      "download_initiator_problem_reason", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(initiator_problem_reason, issue);
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace
@@ -120,6 +177,24 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
 
   auto initiator = item.GetRequestInitiator();
 
+  bool is_inferred = false;
+  if (!initiator.has_value() && item.GetTabUrl().is_valid()) {
+    initiator = url::Origin::Create(item.GetTabUrl());
+    is_inferred = true;
+  }
+
+  if (is_inferred &&
+      item.GetDownloadSource() != download::DownloadSource::CONTEXT_MENU) {
+    ReportTrace(base::StringPrintf("inferred initiator [%d, %x]",
+                                   item.GetDownloadSource(),
+                                   item.GetTransitionType()));
+  }
+  if (!initiator.has_value()) {
+    ReportTrace(base::StringPrintf("no initiator found [%d, %x]",
+                                   item.GetDownloadSource(),
+                                   item.GetTransitionType()));
+  }
+
   // Then see if that extension is blocked
   bool found_blocked_extension = false;
 #if defined(OS_WIN)
@@ -137,12 +212,13 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
     }
   }
 
+  auto security_status =
+      GetDownloadBlockingEnum(initiator, is_download_secure, is_inferred);
   base::UmaHistogramEnumeration(
-      GetDownloadBlockingExtensionMetricName(initiator, is_download_secure),
+      GetDownloadBlockingExtensionMetricName(security_status),
       GetExtensionEnumFromString(extension));
-  base::UmaHistogramEnumeration(
-      kInsecureDownloadHistogramName,
-      GetDownloadBlockingEnum(initiator, is_download_secure));
+  base::UmaHistogramEnumeration(kInsecureDownloadHistogramName,
+                                security_status);
   download::RecordDownloadValidationMetrics(
       download::DownloadMetricsCallsite::kMixContentDownloadBlocking,
       download::CheckDownloadConnectionSecurity(dl_url, item.GetUrlChain()),

@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Lohistage liugurit, kuni saate seda mugavalt lugeda. Lõigu topeltkoputamisel peab tekst olema vähemalt nii suur.</translation>
 <translation id="2323763861024343754">Saidi salvestusruum</translation>
 <translation id="2328985652426384049">Ei saa sisse logida</translation>
-<translation id="2330129964253841015">Hoiata, kui minu paroolid satuvad ohtu</translation>
 <translation id="2349710944427398404">Chrome'i kasutatav andmemaht kokku, sh kontod, järjehoidjad ja salvestatud seaded</translation>
 <translation id="2353636109065292463">Interneti-ühenduse kontrollimine</translation>
 <translation id="2359808026110333948">Jätka</translation>
@@ -816,6 +815,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6989267951144302301">Ei saanud alla laadida</translation>
 <translation id="6990079615885386641">Hankige rakendus Google Play poest: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Küsi enne saitidele minu mikrofoni kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
+<translation id="6995899638241819463">Hoiata mind, kui paroolid andmetega seotud rikkumise käigus avalikustatakse</translation>
 <translation id="7015203776128479407">Sünkroonimise algseadistust ei viidud lõpule. Sünkroonimine on välja lülitatud.</translation>
 <translation id="7016516562562142042">Praeguse otsingumootori puhul lubatud</translation>
 <translation id="7022756207310403729">Avamine brauseris</translation>

@@ -28,10 +28,18 @@ class AssistantFormDelegate {
                     AssistantFormDelegate.this, inputIndex, counterIndex, value);
         }
     }
+
     void onChoiceSelectionChanged(int inputIndex, int choiceIndex, boolean selected) {
         if (mNativeAssistantFormDelegate != 0) {
             AssistantFormDelegateJni.get().onChoiceSelectionChanged(mNativeAssistantFormDelegate,
                     AssistantFormDelegate.this, inputIndex, choiceIndex, selected);
+        }
+    }
+
+    void onLinkClicked(int link) {
+        if (mNativeAssistantFormDelegate != 0) {
+            AssistantFormDelegateJni.get().onLinkClicked(
+                    mNativeAssistantFormDelegate, AssistantFormDelegate.this, link);
         }
     }
 
@@ -46,5 +54,7 @@ class AssistantFormDelegate {
                 int inputIndex, int counterIndex, long nativeAssistantOverlayDelegate);
         void onChoiceSelectionChanged(long nativeAssistantFormDelegate,
                 AssistantFormDelegate caller, int inputIndex, int choiceIndex, boolean selected);
+        void onLinkClicked(
+                long nativeAssistantFormDelegate, AssistantFormDelegate caller, int link);
     }
 }

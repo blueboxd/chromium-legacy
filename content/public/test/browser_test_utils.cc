@@ -755,11 +755,11 @@ bool WaitForLoadStop(WebContents* web_contents) {
   return IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL);
 }
 
-void PrepContentsForBeforeUnloadTest(WebContents* web_contents) {
+void PrepContentsForBeforeUnloadTest(WebContents* web_contents,
+                                     bool trigger_user_activation) {
   for (auto* frame : web_contents->GetAllFrames()) {
-    // JavaScript onbeforeunload dialogs are ignored unless the frame received a
-    // user gesture. Make sure the frames have user gestures.
-    frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
+    if (trigger_user_activation)
+      frame->ExecuteJavaScriptWithUserGestureForTests(base::string16());
 
     // Disable the hang monitor, otherwise there will be a race between the
     // beforeunload dialog and the beforeunload hang timer.
@@ -3264,6 +3264,26 @@ void ContextMenuFilter::OnContextMenu(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   last_params_ = params;
   std::move(quit_closure_).Run();
+}
+
+bool UpdateUserActivationStateMsgWaiter::OnMessageReceived(
+    const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(UpdateUserActivationStateMsgWaiter, message)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
+                        OnUpdateUserActivationState)
+  IPC_END_MESSAGE_MAP()
+  return false;
+}
+
+void UpdateUserActivationStateMsgWaiter::Wait() {
+  if (!received_)
+    run_loop_.Run();
+}
+
+void UpdateUserActivationStateMsgWaiter::OnUpdateUserActivationState(
+    blink::UserActivationUpdateType) {
+  received_ = true;
+  run_loop_.Quit();
 }
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest) {

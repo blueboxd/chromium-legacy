@@ -74,6 +74,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
   DOMWindow* window = nullptr;
   if (source_frame)
     window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
+  locked_agent_cluster_id_ = message.locked_agent_cluster_id;
   BlinkTransferableMessage msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {

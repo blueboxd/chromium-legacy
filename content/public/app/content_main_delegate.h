@@ -118,7 +118,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // |quit_closure| is a callback the embedder may retain and invoke at any time
   // to cleanly terminate Service Manager execution.
   virtual void OnServiceManagerInitialized(
-      const base::Closure& quit_closure,
+      base::OnceClosure quit_closure,
       service_manager::BackgroundServiceManager* service_manager);
 
   // Allows the embedder to perform platform-specific initialization before

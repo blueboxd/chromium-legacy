@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
 <translation id="2323763861024343754">Site depolama alanı</translation>
 <translation id="2328985652426384049">Oturum açılamıyor</translation>
-<translation id="2330129964253841015">Şifrelerinizin güvenliği ihlal edilirse sizi uyarır</translation>
 <translation id="2349710944427398404">Hesaplar, yer işaretleri ve kayıtlı ayarlar da dahil olmak üzere Chrome tarafından kullanılan tüm veriler</translation>
 <translation id="2353636109065292463">İnternet bağlantınızı kontrol etme</translation>
 <translation id="2359808026110333948">Devam et</translation>
@@ -816,6 +815,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6989267951144302301">İndirilemedi</translation>
 <translation id="6990079615885386641">Uygulamayı Google Play Store'dan edinin: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Sitelerin, mikrofonunuzu kullanmasına izin verilmeden önce size sorulsun (önerilen)</translation>
+<translation id="6995899638241819463">Şifreleriniz bir veri ihlalinde ifşa olursa uyarı alın</translation>
 <translation id="7015203776128479407">İlk senkronizasyon kurulumu tamamlanmadı. Senkronizasyon kapalı.</translation>
 <translation id="7016516562562142042">Geçerli arama motoru için izin verildi</translation>
 <translation id="7022756207310403729">Tarayıcıda aç</translation>

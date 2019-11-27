@@ -5,8 +5,8 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
-#include "chrome/browser/safe_browsing/download_protection/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"

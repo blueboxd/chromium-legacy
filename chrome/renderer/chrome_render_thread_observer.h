@@ -28,7 +28,7 @@ class ResourceDispatcherDelegate;
 }
 
 namespace visitedlink {
-class VisitedLinkSlave;
+class VisitedLinkReader;
 }
 
 // This class filters the incoming control messages (i.e. ones not destined for
@@ -91,8 +91,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   // |ChromeRenderThreadObserver|.
   const RendererContentSettingRules* content_setting_rules() const;
 
-  visitedlink::VisitedLinkSlave* visited_link_slave() {
-    return visited_link_slave_.get();
+  visitedlink::VisitedLinkReader* visited_link_reader() {
+    return visited_link_reader_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -127,7 +127,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
 
-  std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+  std::unique_ptr<visitedlink::VisitedLinkReader> visited_link_reader_;
 
   mojo::AssociatedReceiverSet<chrome::mojom::RendererConfiguration>
       renderer_configuration_receivers_;

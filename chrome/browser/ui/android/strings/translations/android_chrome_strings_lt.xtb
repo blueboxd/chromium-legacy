@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
 <translation id="2323763861024343754">Svetainės saugykla</translation>
 <translation id="2328985652426384049">Nepavyksta prisijungti</translation>
-<translation id="2330129964253841015">Įspėti jus, jei slaptažodžiai buvo pažeisti</translation>
 <translation id="2349710944427398404">Bendras „Chrome“ naudojamų duomenų kiekis, įskaitant paskyras, žymes ir išsaugotus nustatymus</translation>
 <translation id="2353636109065292463">Tikrinamas interneto ryšys</translation>
 <translation id="2359808026110333948">Tęskite</translation>
@@ -816,6 +815,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6989267951144302301">Nepavyko atsisiųsti</translation>
 <translation id="6990079615885386641">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pirmiausia klausti prieš leidžiant svetainėms naudoti mikrofoną (rekomenduojama)</translation>
+<translation id="6995899638241819463">Įspėti, jei slaptažodžiai buvo atskleisti įvykus duomenų saugos pažeidimui</translation>
 <translation id="7015203776128479407">Pradinis sinchronizavimo nustatymas nebaigtas. Sinchronizavimas išjungtas.</translation>
 <translation id="7016516562562142042">Leidžiama dabartiniam paieškos varikliui</translation>
 <translation id="7022756207310403729">Atidaryti naršyklėje</translation>

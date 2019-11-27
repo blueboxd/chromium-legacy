@@ -10,6 +10,7 @@
 
     <!-- Dialog for normal confirmation -->
     <oobe-dialog id="enableAdbSideloadDialog" role="dialog" has-buttons
+        footer-shrinkable
         aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
         hidden="[[!isState_(uiState_, 'setup')]]">
       <hd-iron-icon slot="oobe-icon"
@@ -48,6 +49,7 @@
 
     <!-- Dialog for error -->
     <oobe-dialog id="enableAdbSideloadErrorDialog" role="dialog" has-buttons
+        footer-shrinkable
         aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
         hidden="[[!isState_(uiState_, 'error')]]">
       <hd-iron-icon slot="oobe-icon"

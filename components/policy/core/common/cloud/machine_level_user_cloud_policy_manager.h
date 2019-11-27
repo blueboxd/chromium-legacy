@@ -39,6 +39,10 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyManager
   // Returns true if the underlying CloudPolicyClient is already registered.
   bool IsClientRegistered();
 
+  // Add or remove |observer| to/from the CloudPolicyClient embedded in |core_|.
+  void AddClientObserver(CloudPolicyClient::Observer* observer);
+  void RemoveClientObserver(CloudPolicyClient::Observer* observer);
+
   MachineLevelUserCloudPolicyStore* store() { return store_.get(); }
 
   // ConfigurationPolicyProvider:

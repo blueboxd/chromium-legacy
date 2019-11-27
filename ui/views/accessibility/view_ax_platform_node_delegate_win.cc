@@ -73,17 +73,11 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateWin::GetParent() {
   if (!hwnd)
     return nullptr;
 
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    ui::AXFragmentRootWin* ax_fragment_root =
-        ui::AXFragmentRootWin::GetForAcceleratedWidget(hwnd);
-    if (ax_fragment_root)
-      return ax_fragment_root->GetNativeViewAccessible();
-  } else {
-    IAccessible* parent;
-    if (SUCCEEDED(
-            ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
-                                         reinterpret_cast<void**>(&parent))))
-      return parent;
+  IAccessible* parent;
+  if (SUCCEEDED(
+          ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
+                                       reinterpret_cast<void**>(&parent)))) {
+    return parent;
   }
 
   return nullptr;

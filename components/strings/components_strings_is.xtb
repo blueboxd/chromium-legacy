@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Sýna meira</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Breyta aðgangsorði</translation>
 <translation id="1484290072879560759">Velja heimilisfang til sendingar</translation>
 <translation id="1492194039220927094">Sending reglna:</translation>
 <translation id="1501859676467574491">Sýna kort af Google reikningnum þínum</translation>
@@ -177,7 +178,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prófaðu að hafa samband við kerfisstjórann.</translation>
 <translation id="1736420071277903564">Tölva</translation>
-<translation id="1739107442478692187">Öryggisbrot átti sér stað á vefsvæði eða í forriti sem þú notar. Chrome mælir með því að þú athugir vistuð aðgangsorð og breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.</translation>
 <translation id="1740951997222943430">Færðu inn gildan lokamánuð</translation>
 <translation id="1741613555002899862">Verður að vera tilgreint og gildur strengur þegar DnsOverHttpsMode er <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Til að greiða hraðar næst geturðu vistað kortið og nafn og heimilisfang greiðanda á Google reikningnum og í þessu tæki.</translation>
@@ -211,6 +211,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="1914326953223720820">Afþjöppunarþjónusta</translation>
 <translation id="1915697529809968049">Viltu nota snertiauðkenni í stað CVC-númers?</translation>
 <translation id="1916770123977586577">Endurnýjaðu þessa síðu til að nota uppfærðar stillingar á þetta vefsvæði</translation>
+<translation id="1917876262703816781">Öryggisbrot á vefsvæði eða í forriti afhjúpaði aðgangsorðið þitt. Chrome mælir með því að þú breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.</translation>
 <translation id="1919345977826869612">Auglýsingar</translation>
 <translation id="1919367280705858090">Fáðu aðstoð varðandi einstök villuskilaboð</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ekkert}=1{Eitt vefsvæði}one{# vefsvæði}other{# vefsvæði}}</translation>
@@ -243,7 +244,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2094505752054353250">Misræmi í léni</translation>
 <translation id="2096368010154057602">Deild</translation>
 <translation id="2099652385553570808">Þrjú hefti vinstra megin</translation>
-<translation id="2100280972184758440">Aðgangsorðinu þínu var stolið</translation>
 <translation id="2102134110707549001">Tillaga að traustu aðgangsorði…</translation>
 <translation id="2108755909498034140">Endurræstu tölvuna</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -251,7 +251,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2114841414352855701">Hunsuð vegna þess að <ph name="POLICY_NAME" /> hnekkti henni.</translation>
 <translation id="2119505898009119320">Úthlutað til: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Gat neðst til hægri</translation>
-<translation id="2124528555835617522">Öryggisbrot átti sér stað á vefsvæði eða í forriti sem þú notar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.</translation>
 <translation id="2129079103035905234">Hreyfiskynjarar</translation>
 <translation id="2130448033692577677">Hugsanlega er ekki hægt að nota sniðmátin sem þú tilgreindir vegna þess að reglan DnsOverHttpsMode hefur ekki verið valin.</translation>
 <translation id="213826338245044447">Bókamerki fartækis</translation>
@@ -495,7 +494,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3282497668470633863">Bæta við nafni á korti</translation>
 <translation id="3287510313208355388">Sækja þegar nettenging er til staðar</translation>
 <translation id="3293642807462928945">Frekari upplýsingar um regluna „<ph name="POLICY_NAME" />“</translation>
-<translation id="3295439534709115864">Öryggisbrot átti sér stað á vefsvæði eða í forriti sem þú notar. Chrome mælir með því að þú breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.</translation>
 <translation id="3303855915957856445">Engar leitarniðurstöður fundust</translation>
 <translation id="3320021301628644560">Bæta við heimilisfangi greiðanda</translation>
 <translation id="3324983252691184275">Fagurrauður</translation>
@@ -909,6 +907,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5287240709317226393">Sýna fótspor</translation>
 <translation id="5287456746628258573">Þetta vefsvæði notar úrelta öryggisstillingu sem gæti sett upplýsingar þínar í hættu (til dæmis aðgangsorð eða kreditkortanúmer) þegar þær eru sendar til vefsvæðisins.</translation>
 <translation id="5288108484102287882">Prófun á reglugildum skilaði viðvörunum</translation>
+<translation id="5295292838686006428">Öryggisbrot á vefsvæði eða í forriti afhjúpaði aðgangsorðið þitt. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.</translation>
 <translation id="5299298092464848405">Villa við þáttun stefnu</translation>
 <translation id="5300589172476337783">Sýna</translation>
 <translation id="5308380583665731573">Tengjast</translation>
@@ -959,6 +958,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5540224163453853">Umbeðin grein fannst ekki.</translation>
 <translation id="5541546772353173584">Bæta við netfangi</translation>
 <translation id="5545756402275714221">Greinar fyrir þig</translation>
+<translation id="5552137475244467770">Chrome athugar aðgangsorðin þín reglulega og ber þau saman við lista sem hafa verið birtir á netinu. Meðan á þessu stendur eru aðgangsorðin þín og notandanöfn dulkóðuð svo enginn geti lesið þau, þ.m.t. ekki Google.</translation>
 <translation id="5556459405103347317">Endurhlaða</translation>
 <translation id="5560088892362098740">Lokadagsetning</translation>
 <translation id="5565735124758917034">Virkt</translation>
@@ -1050,6 +1050,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5992691462791905444">Z-brot</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> niðurstöður fyrir „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Athugaðu aðgangsorðin þín</translation>
 <translation id="6015796118275082299">Ár</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Síða 1}one{Síða #}other{Síða #}}</translation>
 <translation id="6017514345406065928">Grænn</translation>
@@ -1339,6 +1340,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7481312909269577407">Áfram</translation>
 <translation id="748406663033922918">Nota skjálás til að staðfesta vistaða greiðslumáta.</translation>
 <translation id="7485870689360869515">Engin gögn fundust.</translation>
+<translation id="7495290002932347110">Öryggisbrot á vefsvæði eða í forriti afhjúpaði aðgangsorðið þitt. Chrome mælir með því að þú athugir vistuð aðgangsorð og breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.</translation>
 <translation id="7498234416455752244">Halda áfram að breyta</translation>
 <translation id="7508255263130623398">Tækisauðkenni stefnu sem skilað var er autt eða stemmir ekki við núverandi tækisauðkenni</translation>
 <translation id="7508870219247277067">Lárperugrænn</translation>

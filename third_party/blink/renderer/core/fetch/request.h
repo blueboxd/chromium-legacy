@@ -93,6 +93,7 @@ class CORE_EXPORT Request final : public Body {
   const BodyStreamBuffer* BodyBuffer() const override {
     return request_->Buffer();
   }
+  mojom::RequestContextType GetRequestContextType() const;
 
   void Trace(blink::Visitor*) override;
 

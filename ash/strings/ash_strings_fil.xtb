@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Gamit ang <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">I-unlock ang device bilang <ph name="LOGIN_ID" /> para maisagawa ang pagkilos sa notification</translation>
-<translation id="8995603266996330174">Pinamamahalaan ni <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Ilagay ang access code ng magulang sa Family Link.</translation>
 <translation id="9029474291399787231">Available ang update sa Adobe Flash Player</translation>
 <translation id="9056839673611986238">Iro-roll back ang device</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Pang-magnify ng Full-screen</translation>
 <translation id="9193626018745640770">Nagka-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="9194617393863864469">Mag-sign in ng isa pang user...</translation>
+<translation id="9205817095063786319">Pinapamahalaan ng <ph name="DOMAIN" /> ang device</translation>
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> ang natitira bago ma-charge nang kumpleto ang baterya.</translation>
 <translation id="9215934040295798075">Magtakda ng wallpaper</translation>

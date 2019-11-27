@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> أو <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">وضع "النظرة العامة"</translation>
 <translation id="4382340674111381977">الرجوع إلى الصفحة السابقة</translation>
+<translation id="4458670250301149821">نقل رمز تطبيق داخل مجلد في شبكة التطبيق أو خارجه</translation>
 <translation id="4472417192667361414">النظام وإعدادات العرض</translation>
+<translation id="449214506787633354"><ph name="CTRL" />، ثم <ph name="LEFT" /> أو <ph name="RIGHT" /> أو <ph name="UP" /> أو <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">الاطلاع على "مساعد اختصارات لوحة المفاتيح"</translation>
 <translation id="4628718545549558538">فتح منطقة الحالة (التي تظهر فيها صورة الحساب)</translation>
 <translation id="4642092649622328492">أخذ لقطة شاشة جزئية</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">حذف الحرف التالي (حذف باتجاه الأمام)</translation>
 <translation id="7500368597227394048">واصلة</translation>
 <translation id="7611271430932669992">نقل التركيز إلى النوافذ المنبثقة ومربعات الحوار</translation>
+<translation id="7635348532214572995">نقل رمز تطبيق داخل شبكة التطبيق</translation>
 <translation id="766326951329901120">لصق المحتوى من الحافظة كنص عادي</translation>
 <translation id="7703010453515335249">القوس الأيسر</translation>
 <translation id="7724603315864178912">قص</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">لصق المحتوى من الحافظة</translation>
 <translation id="9052808072970550123">التبديل إلى المستخدم التالي</translation>
 <translation id="906458777597946297">تكبير النافذة</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />، ثم <ph name="LEFT" /> أو <ph name="RIGHT" /> أو <ph name="UP" /> أو <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">الانتقال إلى بداية السطر</translation>
 <translation id="9106898733795143799">الصفحة ومتصفّح الويب</translation>
 <translation id="9162942292291287644">لم يتم العثور على أي نتائج بحث <ph name="QUERY" /></translation>

@@ -135,15 +135,11 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
                            CacheSinksForDirectNetworkChange);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, OpenChannelsNow);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
-                           TestInitRetryParametersWithFeatureDisabled);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParameters);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithDefaultValue);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestCreateCastSocketOpenParams);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
-                           TestInitRetryParametersWithFeatureDisabled);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestInitParameters);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithDefaultValue);
@@ -154,49 +150,35 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            OpenChannelNewIPSameSink);
 
-  // Holds Finch field trial parameters controlling Cast channel retry strategy.
+  // Holds parameters controlling Cast channel retry strategy.
   struct RetryParams {
     // Initial delay (in ms) once backoff starts.
-    int initial_delay_in_milliseconds;
+    int initial_delay_in_milliseconds = 15 * 1000;  // 15 seconds
 
     // Max retry attempts allowed when opening a Cast socket.
-    int max_retry_attempts;
+    int max_retry_attempts = 3;
 
     // Factor by which the delay will be multiplied on each subsequent failure.
     // This must be >= 1.0.
-    double multiply_factor;
-
-    RetryParams();
-    ~RetryParams();
-
-    bool Validate();
-
-    static RetryParams GetFromFieldTrialParam();
+    double multiply_factor = 1.0;
   };
 
-  // Holds Finch field trial parameters controlling Cast channel open.
+  // Holds parameters controlling Cast channel open.
   struct OpenParams {
     // Connect timeout value when opening a Cast socket.
-    int connect_timeout_in_seconds;
+    int connect_timeout_in_seconds = 10;
 
     // Amount of idle time to wait before pinging the Cast device.
-    int ping_interval_in_seconds;
+    int ping_interval_in_seconds = 5;
 
     // Amount of idle time to wait before disconnecting.
-    int liveness_timeout_in_seconds;
+    int liveness_timeout_in_seconds = 10;
 
     // Dynamic time out delta for connect timeout and liveness timeout. If
     // previous channel open operation with opening parameters (liveness
     // timeout, connect timeout) fails, next channel open will have parameters
     // (liveness timeout + delta, connect timeout + delta).
-    int dynamic_timeout_delta_in_seconds;
-
-    OpenParams();
-    ~OpenParams();
-
-    bool Validate();
-
-    static OpenParams GetFromFieldTrialParam();
+    int dynamic_timeout_delta_in_seconds = 0;
   };
 
   // MediaSinkServiceBase implementation.

@@ -127,8 +127,8 @@ void MediaControlsProgressView::UpdateProgress(
         std::abs(1 / media_position.playback_rate()));
     update_progress_timer_.Start(
         FROM_HERE, update_frequency,
-        base::Bind(&MediaControlsProgressView::UpdateProgress,
-                   base::Unretained(this), media_position));
+        base::BindRepeating(&MediaControlsProgressView::UpdateProgress,
+                            base::Unretained(this), media_position));
   }
 }
 

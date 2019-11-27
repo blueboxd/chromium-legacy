@@ -168,6 +168,7 @@ test("gcm_unit_tests") {
     "//base/test:test_support",
     "//google_apis",
     "//google_apis:run_all_unittests",
+    "//google_apis:test_support",
     "//mojo/public/cpp/system:system",
     "//net",
     "//net:test_support",

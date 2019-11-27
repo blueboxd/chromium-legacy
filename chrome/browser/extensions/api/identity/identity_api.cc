@@ -41,11 +41,6 @@
 
 namespace extensions {
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-const base::Feature kExtensionsAllAccountsFeature{
-    "ExtensionsAllAccounts", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 IdentityTokenCacheValue::IdentityTokenCacheValue()
     : status_(CACHE_STATUS_NOTFOUND) {}
 
@@ -155,13 +150,7 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
 }
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_))
-    return true;
-  return !base::FeatureList::IsEnabled(kExtensionsAllAccountsFeature);
-#else
-  return true;
-#endif
+  return !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
 }
 
 void IdentityAPI::OnRefreshTokenUpdatedForAccount(

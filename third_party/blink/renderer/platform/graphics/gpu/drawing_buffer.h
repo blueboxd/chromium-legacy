@@ -254,7 +254,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   void RestoreAllState();
 
   bool UsingSwapChain() const { return using_swap_chain_; }
-  void PresentSwapChain();
 
   // This class helps implement correct semantics for BlitFramebuffer
   // when the DrawingBuffer is using a CHROMIUM image for its backing
@@ -483,6 +482,9 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Reallocate Multisampled renderbuffer, used by explicit resolve when resize
   // and GPU switch
   bool ReallocateMultisampleRenderbuffer(const IntSize&);
+
+  // Presents swap chain if swap chain is being used and contents have changed.
+  void PresentSwapChainIfNeeded();
 
   // Weak, reset by beginDestruction.
   Client* client_ = nullptr;

@@ -9,13 +9,12 @@ import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.client.knowncontent.ContentRemoval;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentRemoval;
 
 import java.util.ArrayList;
 import java.util.List;

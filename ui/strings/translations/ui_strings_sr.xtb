@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Слева надесно</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
-<translation id="1409544243779336081">Препорука за апликацију</translation>
 <translation id="1450753235335490080">Није успело дељење: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ово сте већ тражили раније. Ако избришете „<ph name="QUERY" />“ из историје, трајно ћете га уклонити са налога на свим уређајима.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Тачка</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}one{# месец}few{# месеца}other{# месеци}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Оцена у звездицама: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 сат и }one{# сат и }few{# сата и }other{# сати и }}</translation>
 <translation id="1842960171412779397">изабери</translation>
 <translation id="1859234291848436338">Writing Direction (Смер писања)</translation>

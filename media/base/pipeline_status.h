@@ -68,8 +68,8 @@ MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, PipelineStatus status);
 
 // TODO(crbug.com/1007799): Delete PipelineStatusCB once all callbacks are
 //                          converted to PipelineStatusCallback.
-typedef base::RepeatingCallback<void(PipelineStatus)> PipelineStatusCB;
-typedef base::OnceCallback<void(PipelineStatus)> PipelineStatusCallback;
+using PipelineStatusCB = base::RepeatingCallback<void(PipelineStatus)>;
+using PipelineStatusCallback = base::OnceCallback<void(PipelineStatus)>;
 
 struct PipelineDecoderInfo {
   bool is_platform_decoder = false;

@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Vänster till höger</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
-<translation id="1409544243779336081">Apprekommendation</translation>
 <translation id="1450753235335490080">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 månad}other{# månader}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/sek</translation>
-<translation id="1812519734428420144">Betyg <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 timme och }other{# timmar och }}</translation>
 <translation id="1842960171412779397">välj</translation>
 <translation id="1859234291848436338">Skrivriktning</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">Igår</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
+<translation id="7848989271541991537">Flyttades till sidan<ph name="PAGE_NUMBER" />, rad <ph name="ROW_NUMBER" />, kolumn <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Blockera inte</translation>
 <translation id="7907591526440419938">Öppna fil</translation>
 <translation id="7969046989155602842">Kommando</translation>

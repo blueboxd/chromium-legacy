@@ -30,7 +30,6 @@ class SurfaceId;
 namespace extensions {
 class Extension;
 class ExtensionHost;
-class ExtensionHostQueue;
 
 // A delegate to support functionality that cannot exist in the extensions
 // module. This is not an inner class of ExtensionHost to allow it to be forward
@@ -74,10 +73,6 @@ class ExtensionHostDelegate {
       const GURL& security_origin,
       blink::mojom::MediaStreamType type,
       const Extension* extension) = 0;
-
-  // Returns the ExtensionHostQueue implementation to use for creating
-  // ExtensionHost renderers.
-  virtual ExtensionHostQueue* GetExtensionHostQueue() const = 0;
 
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.

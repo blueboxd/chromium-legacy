@@ -4,6 +4,7 @@
 <translation id="1003088604756913841">Apri link in nuova finestra di <ph name="APP" /></translation>
 <translation id="1004218526896219317">Accesso al sito</translation>
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
+<translation id="1005333234656240382">Attivare debug ADB?</translation>
 <translation id="1006873397406093306">Questa estensione può leggere e modificare i tuoi dati sui siti. Sei tu controllare a quali siti può accedere l'estensione.</translation>
 <translation id="1007408791287232274">Impossibile caricare i dispositivi.</translation>
 <translation id="1008186147501209563">Esporta preferiti</translation>
@@ -31,6 +32,7 @@
 <translation id="1036982837258183574">Premi |<ph name="ACCELERATOR" />| per uscire dalla modalità a schermo intero</translation>
 <translation id="1038168778161626396">Solo crittografia</translation>
 <translation id="1039337018183941703">File non valido o danneggiato</translation>
+<translation id="1039850285407663109">Il file selezionato è sconosciuto e potrebbe essere pericoloso. Esegui una scansione prima di aprirlo.</translation>
 <translation id="1041175011127912238">Questa pagina non risponde</translation>
 <translation id="1041263367839475438">Dispositivi disponibili</translation>
 <translation id="1042174272890264476">Sul computer è integrata anche la libreria RLZ di <ph name="SHORT_PRODUCT_NAME" />. RLZ assegna un tag non univoco che non consente l'identificazione personale per valutare le ricerche e l'utilizzo di <ph name="SHORT_PRODUCT_NAME" /> promosso da una determinata campagna promozionale. Talvolta queste etichette vengono visualizzate in query della Ricerca Google in <ph name="PRODUCT_NAME" />.</translation>
@@ -102,6 +104,7 @@
 <translation id="1143142264369994168">Firmatario del certificato</translation>
 <translation id="1145292499998999162">Plug-in bloccato</translation>
 <translation id="1145532888383813076">Cerca sul dispositivo, nelle app e sul Web.</translation>
+<translation id="1145593918056169051">La stampante si è interrotta</translation>
 <translation id="1146678959555564648">Entra nella VR</translation>
 <translation id="114721135501989771">Tutta l'intelligenza Google in Chrome</translation>
 <translation id="1147991416141538220">Per richiedere l'accesso, contatta l'amministratore del dispositivo.</translation>
@@ -201,6 +204,7 @@
 <translation id="1274997165432133392">Cookie e altri dati dei siti</translation>
 <translation id="127668050356036882">Chiudi tutte le finestre</translation>
 <translation id="1280820357415527819">Ricerca di reti mobili in corso</translation>
+<translation id="1282420830958964167">Hai raggiunto il limite impostato dal tuo genitore per "<ph name="APP_NAME" />". Domani potrai utilizzare l'app per <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1285484354230578868">Memorizza dati nel tuo account Google Drive</translation>
 <translation id="1288037062697528143">La funzione Luminosità notturna verrà attivata automaticamente al tramonto</translation>
@@ -231,6 +235,7 @@
 <translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="1327074568633507428">Stampante su Google Cloud Print</translation>
 <translation id="1327272175893960498">Richieste di Kerberos</translation>
+<translation id="1327495825214193325">Per attivare il debug ADB è necessario riavviare questo <ph name="DEVICE_TYPE" />. Per disattivarlo è necessario ripristinare le impostazioni di fabbrica.</translation>
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1329584516321524826">Aggiornata adesso</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
@@ -364,6 +369,7 @@
 <translation id="1512210426710821809">L'unico modo per annullare questa operazione è reinstallare <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importati da Safari</translation>
 <translation id="1515163294334130951">Avvia</translation>
+<translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Host</translation>
 <translation id="1521442365706402292">Gestisci certificati</translation>
 <translation id="1521774566618522728">Attivo oggi</translation>
 <translation id="152234381334907219">Mai salvate</translation>
@@ -440,6 +446,7 @@
 <translation id="1627276047960621195">Descrittori di file</translation>
 <translation id="1627408615528139100">Già scaricato</translation>
 <translation id="1629314197035607094">Password scaduta</translation>
+<translation id="1630768113285622200">Riavvia e continua</translation>
 <translation id="1632803087685957583">Consente di regolare la frequenza di ripetizione della tastiera, la previsione delle parole e altro ancora</translation>
 <translation id="1635033183663317347">Installata dal supervisore.</translation>
 <translation id="1637224376458524414">Ricevi il preferito sull'iPhone</translation>
@@ -516,6 +523,7 @@
 <translation id="1733383495376208985">Cripta i dati sincronizzati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" />. Non sono inclusi i metodi di pagamento e gli indirizzi di Google Pay.</translation>
 <translation id="1734212868489994726">Azzurro</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> potrebbe non essere in grado di aggiornarsi automaticamente</translation>
+<translation id="173628468822554835">Ok. Per impostazioni predefinita, i nuovi siti che visiti non ti invieranno notifiche.</translation>
 <translation id="1736419249208073774">Esplora</translation>
 <translation id="1737968601308870607">Segnala bug</translation>
 <translation id="1741314857973421784">Continua</translation>
@@ -611,6 +619,7 @@
 <translation id="1858585891038687145">Considera attendibile questo certificato per l'identificazione dei creatori di software</translation>
 <translation id="1861262398884155592">Questa cartella è vuota</translation>
 <translation id="1863182668524159459">Nessuna porta seriale trovata</translation>
+<translation id="1863552924692672565"><ph name="FILE_NAME" /> è sconosciuto. Esegui una scansione del file per ridurre al minimo i rischi.</translation>
 <translation id="1864111464094315414">Accesso</translation>
 <translation id="1864400682872660285">Più fredda</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
@@ -925,7 +934,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2326931316514688470">&amp;Ricarica app</translation>
 <translation id="2327492829706409234">Attiva applicazione</translation>
 <translation id="2329597144923131178">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
-<translation id="2330129964253841015">Ricevi un avviso in caso di compromissione delle password</translation>
 <translation id="2332131598580221120">Visualizza nello store</translation>
 <translation id="2332192922827071008">Apri Preferenze</translation>
 <translation id="2332742915001411729">Ripristina impostazioni predefinite</translation>
@@ -948,6 +956,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2352810082280059586">Le note sulla schermata di blocco vengono salvate automaticamente nell'app <ph name="LOCK_SCREEN_APP_NAME" />. La nota più recente rimarrà sulla schermata di blocco.</translation>
 <translation id="2353297238722298836">Videocamera e microfono consentiti</translation>
 <translation id="2356070529366658676">Chiedi</translation>
+<translation id="2357330829548294574">Rimuovi <ph name="USER_NAME" /></translation>
 <translation id="2359345697448000899">Gestisci le tue estensioni facendo clic su Estensioni nel menu Strumenti.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="236117173274098341">Ottimizza</translation>
@@ -1054,6 +1063,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Schermo #}other{Schermo #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> di <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507253002925770350">Richiesta rimossa</translation>
+<translation id="2507397597949272797"><ph name="NAME" /> in sospeso</translation>
 <translation id="2508428939232952663">Account Google Play Store</translation>
 <translation id="2509495747794740764">Il valore Scala deve essere un numero compreso tra 10 e 200.</translation>
 <translation id="2509566264613697683">8x</translation>
@@ -1110,6 +1120,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2585724835339714757">Questa scheda sta condividendo il tuo schermo.</translation>
 <translation id="2586657967955657006">Appunti</translation>
 <translation id="2586672484245266891">Inserisci un URL più breve</translation>
+<translation id="2587922766792651800">Timeout</translation>
 <translation id="2588636910004461974">Dispositivi di <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Cerca su Google o digita un URL</translation>
 <translation id="2603115962224169880">Pulisci il computer</translation>
@@ -1131,6 +1142,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="26224892172169984">Non consentire ad alcun sito di gestire i protocolli</translation>
 <translation id="2624142942574147739">Questa pagina sta accedendo alla webcam e al microfono.</translation>
 <translation id="2626799779920242286">Riprova più tardi.</translation>
+<translation id="2628770867680720336">Per attivare il dubug ADB è necessario eseguire un ripristino dei dati di fabbrica di questo Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Sviluppo di app Android</translation>
 <translation id="2630681426381349926">Per iniziare, collegati alla rete Wi-Fi</translation>
 <translation id="2631120081682787498">Vuoi chiudere questa scheda?</translation>
@@ -1143,6 +1155,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2636625531157955190">Chrome non riesce ad accedere all'immagine.</translation>
 <translation id="2637400434494156704">PIN errato. Hai ancora a disposizione un tentativo.</translation>
 <translation id="2638087589890736295">Passphrase obbligatoria per avviare la sincronizzazione</translation>
+<translation id="264083724974021997">Collegati al telefono - Finestra di dialogo</translation>
 <translation id="2642111877055905627">Pallone da calcio</translation>
 <translation id="2643698698624765890">Gestisci le tue estensioni facendo clic su Estensioni nel menu Finestra.</translation>
 <translation id="264810637653812429">Nessun dispositivo compatibile trovato.</translation>
@@ -1502,6 +1515,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3151786313568798007">Orientamento</translation>
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
 <translation id="3154429428035006212">Offline per più di un mese</translation>
+<translation id="3154736273843608862">Hai raggiunto il limite impostato dal tuo genitore per <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="3156531245809797194">Accedi per usare Chrome</translation>
 <translation id="3157931365184549694">Ripristina</translation>
 <translation id="3158033540161634471">Imposta la tua impronta</translation>
@@ -1528,6 +1542,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3202131003361292969">Percorso</translation>
 <translation id="3202173864863109533">L'audio di questa scheda sta per essere disattivato.</translation>
 <translation id="3208703785962634733">Non confermato</translation>
+<translation id="32101887417650595">Impossibile collegarsi alla stampante</translation>
 <translation id="321084946921799184">Giallo e bianco</translation>
 <translation id="321356136776075234">UO dispositivo (esempio: UO=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3217843140356091325">Vuoi creare una scorciatoia?</translation>
@@ -1535,6 +1550,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="321834671654278338">Programma di disinstallazione di Linux</translation>
 <translation id="3220586366024592812">Il processo del connettore <ph name="CLOUD_PRINT_NAME" /> si è bloccato. Riavviarlo?</translation>
 <translation id="3222066309010235055">Prerender: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
+<translation id="3223531857777746191">Pulsante di ripristino</translation>
 <translation id="3225084153129302039">Avatar viola predefinito</translation>
 <translation id="3225319735946384299">Firma codice</translation>
 <translation id="3227137524299004712">Microfono</translation>
@@ -1729,6 +1745,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="351152300840026870">Carattere a larghezza fissa</translation>
 <translation id="3511528412952710609">Breve</translation>
 <translation id="3514373592552233661">Le reti preferite avranno precedenza su altre reti note se ne sono disponibili più di una</translation>
+<translation id="3515983984924808886">Tocca nuovamente il token di sicurezza per confermare la reimpostazione. Tutte le credenziali memorizzate sul token di sicurezza, nonché il suo PIN, verranno eliminate.</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="351952459507671940">Aggiungi a nuovo gruppo</translation>
 <translation id="3523642406908660543">Chiedi conferma quando un sito vuole utilizzare un plug-in per accedere al tuo computer (opzione consigliata)</translation>
@@ -1748,6 +1765,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3544879808695557954">Nome utente (facoltativo)</translation>
 <translation id="354602065659584722">Software dannoso rimosso</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
+<translation id="3548162552723420559">Regola il colore dello schermo per adattarlo all'ambiente circostante</translation>
 <translation id="3550915441744863158">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
 <translation id="3552780134252864554">Cancellato all'uscita</translation>
@@ -1865,6 +1883,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3699624789011381381">Indirizzo email</translation>
 <translation id="3699920817649120894">Disattivare la sincronizzazione e la personalizzazione?</translation>
 <translation id="3700888195348409686">Presentazione di (<ph name="PAGE_ORIGIN" />)</translation>
+<translation id="3701167022068948696">Sistema subito</translation>
 <translation id="3702500414347826004">Le pagine iniziali sono state modificate per includere <ph name="URL" />.</translation>
 <translation id="3703699162703116302">Richiesta aggiornata</translation>
 <translation id="370415077757856453">JavaScript bloccato</translation>
@@ -1985,6 +2004,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3850914401008572843"><ph name="ORIGIN" /> non può aprire questa cartella poiché contiene file di sistema</translation>
 <translation id="3851428669031642514">Carica script non sicuri</translation>
 <translation id="3854599674806204102">Scegli un'opzione</translation>
+<translation id="3854976556788175030">Vassoio di uscita pieno</translation>
 <translation id="3855441664322950881">Crea pacchetto estensione</translation>
 <translation id="3855676282923585394">Importa preferiti e impostazioni...</translation>
 <translation id="3856800405688283469">Seleziona il fuso orario</translation>
@@ -2178,6 +2198,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4109135793348361820">Sposta finestra su <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download completato: <ph name="FILE_NAME" />. Premi MAIUSC+F6 per passare alla parte con la barra dei download.</translation>
 <translation id="4110895898888439383">Naviga sul Web in modalità Contrasto elevato</translation>
+<translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
 <translation id="4115002065223188701">Rete fuori portata</translation>
 <translation id="4115080753528843955">Alcuni servizi di contenuti utilizzano identificatori univoci al fine di autorizzare l'accesso ai contenuti protetti</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -2235,6 +2256,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4211851069413100178">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare la tua esperienza Android tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa <ph name="BEGIN_LINK1" />impostazione<ph name="END_LINK1" /> è applicata dal proprietario. Il proprietario potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Esporta</translation>
 <translation id="42137655013211669">L'accesso a questa risorsa è vietato dal server.</translation>
+<translation id="4218274196133425560">Rimuovi l'eccezione per <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Si è verificato un errore durante l'attivazione.</translation>
 <translation id="4222772810963087151">Dettagli build</translation>
 <translation id="4225397296022057997">Su tutti i siti</translation>
@@ -2496,6 +2518,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4634771451598206121">Esegui di nuovo l'accesso...</translation>
 <translation id="4635398712689569051">La pagina <ph name="PAGE_NAME" /> non è disponibile per gli utenti Ospite.</translation>
 <translation id="4637083375689622795">Altre azioni, <ph name="EMAIL" /></translation>
+<translation id="4638930039313743000">Attiva debug ADB</translation>
 <translation id="4641539339823703554">Impossibile impostare l'ora di sistema in Chrome. Controlla l'ora indicata sotto e correggila se necessario.</translation>
 <translation id="4643612240819915418">&amp;Apri video in un'altra scheda</translation>
 <translation id="4645676300727003670">&amp;Conserva</translation>
@@ -2566,6 +2589,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4750394297954878236">Suggerimenti</translation>
 <translation id="475088594373173692">Primo utente</translation>
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
+<translation id="4756269098451810636">Immagine condivisa da <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Interrompi/Ricarica</translation>
 <translation id="4756388243121344051">&amp;Cronologia</translation>
 <translation id="4759238208242260848">Download</translation>
@@ -2590,6 +2614,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4798236378408895261">Allega <ph name="BEGIN_LINK" />log Bluetooth<ph name="END_LINK" /> (interno di Google)</translation>
 <translation id="4801448226354548035">Nascondi account</translation>
 <translation id="4801512016965057443">Consenti roaming dati mobile</translation>
+<translation id="4804756772600045300">Se continui, verrà attivato il debug ADB per creare e testare app Android. Tieni presente che il debug ADB consente l'installazione di app di prova che non sono state verificate da Google.</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4807098396393229769">Nome sulla carta di credito</translation>
@@ -2719,6 +2744,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4977942889532008999">Conferma accesso</translation>
 <translation id="4980805016576257426">Questa estensione contiene malware.</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />Accedi<ph name="END_LINK" /> per cancellare i dati di navigazione da tutti i dispositivi sincronizzati e dal tuo Account Google.</translation>
+<translation id="4986728572522335985">Questa operazione eliminerà tutti i dati sul token di sicurezza, incluso il suo PIN</translation>
 <translation id="4988526792673242964">Pagine</translation>
 <translation id="49896407730300355">Ruota in senso anti&amp;orario</translation>
 <translation id="4989966318180235467">Ispeziona pagina in &amp;background</translation>
@@ -2749,6 +2775,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="503498442187459473"><ph name="HOST" /> vuole usare la fotocamera e il microfono</translation>
 <translation id="5036662165765606524">Non consentire ai siti di scaricare automaticamente più file</translation>
 <translation id="5037676449506322593">Seleziona tutto</translation>
+<translation id="5038022729081036555">Domani potrai utilizzare l'app per <ph name="TIME_LIMIT" />.</translation>
 <translation id="5038863510258510803">Attivazione in corso...</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5042282098504489593">Apri le Impostazioni per collegare <ph name="USB_DEVICE_NAME" /> a Linux</translation>
@@ -2915,6 +2942,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="52912272896845572">Il file della chiave privata non è valido.</translation>
 <translation id="529175790091471945">Formatta questo dispositivo</translation>
 <translation id="5293170712604732402">Ripristina le impostazioni predefinite originali</translation>
+<translation id="5296471962619441686">Risolvi il problema per riprendere la sincronizzazione</translation>
 <translation id="5297082477358294722">Password salvata. Visualizza e gestisci le password salvate in <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creato da</translation>
 <translation id="5299109548848736476">Non tenere traccia</translation>
@@ -3241,6 +3269,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5764797882307050727">Libera spazio sul dispositivo</translation>
 <translation id="5765425701854290211">Spiacenti, alcuni file erano danneggiati, pertanto l'aggiornamento non è andato a buon fine. I file sincronizzati sono al sicuro.</translation>
 <translation id="5765491088802881382">Nessuna rete disponibile</translation>
+<translation id="5769519078756170258">Host o dominio da escludere</translation>
 <translation id="5771816112378578655">Configurazione in corso...</translation>
 <translation id="5772265531560382923">{NUM_PAGES,plural, =1{Puoi aspettare che risponda di nuovo o uscire dalla pagina.}other{Puoi aspettare che rispondano di nuovo o uscire dalle pagine.}}</translation>
 <translation id="577322787686508614">Lettura non consentita su: "<ph name="DEVICE_NAME" />".</translation>
@@ -3495,6 +3524,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6112727384379533756">Aggiungi una richiesta</translation>
 <translation id="6112931163620622315">Controlla il tuo telefono</translation>
 <translation id="6112952769866305444">Modifica persona, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
+<translation id="6113400363611269907">Mostra messaggi di autorizzazione in modalità silenziosa</translation>
 <translation id="6113942107547980621">Per usare Smart Lock, passa al profilo utente principale del telefono</translation>
 <translation id="6116338172782435947">Leggere testi e immagini copiati negli appunti</translation>
 <translation id="6116921718742659598">Modifica impostazioni della lingua e di immissione</translation>
@@ -3537,6 +3567,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6169040057125497443">Controlla il microfono.</translation>
 <translation id="6169666352732958425">Impossibile trasmettere il desktop.</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6170498031581934115">Impossibile attivare il debug ADB. Vai alle impostazioni e riprova.</translation>
 <translation id="6173623053897475761">Digita di nuovo il PIN</translation>
 <translation id="6175314957787328458">GUID di dominio Microsoft</translation>
 <translation id="6176043333338857209">Il Bluetooth verrà temporaneamente abilitato per comunicare con il tuo token di sicurezza</translation>
@@ -3631,6 +3662,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6316806695097060329">Questo dispositivo <ph name="SHORT_PRODUCT_NAME" /> è stato ideato per offrirti un'esperienza ottimale sul Web.</translation>
 <translation id="6317318380444133405">La stampante non è più supportata.</translation>
 <translation id="6317369057005134371">In attesa della finestra dell'applicazione...</translation>
+<translation id="6317608858038767920">Nameserver personalizzato <ph name="INPUT_INDEX" /></translation>
 <translation id="6318407754858604988">Download iniziato</translation>
 <translation id="6318944945640833942">Impossibile rilevare una stampante. Inserisci di nuovo l'indirizzo della stampante.</translation>
 <translation id="6322653941595359182">Invia e ricevi SMS dal Chromebook</translation>
@@ -3848,6 +3880,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6659594942844771486">TAB</translation>
 <translation id="6664237456442406323">Purtroppo il tuo computer è configurato con un ID hardware non valido. Ciò impedisce a Chrome OS di aggiornarsi con le ultime correzioni relative alla sicurezza e il tuo computer <ph name="BEGIN_BOLD" />potrebbe essere vulnerabile ad attacchi dannosi<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Si è verificato un problema durante l'apertura del profilo. Esci e accedi di nuovo.</translation>
+<translation id="6667776121818773738">Immagine condivisa da un altro dispositivo</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Vuoi che Google traduca la pagina da <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo di puntamento collegato</translation>
@@ -4022,6 +4055,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6923132443355966645">Scorri/fai clic</translation>
 <translation id="6923633482430812883">Errore durante il montaggio della condivisione. Verifica che il file server a cui vuoi collegarti supporti SMBv2 o versioni successive.</translation>
 <translation id="6930036377490597025">Token di sicurezza esterno o sensore integrato</translation>
+<translation id="6935286146439255109">Vassoio carta mancante</translation>
 <translation id="693807610556624488">La scrittura supera la lunghezza massima dell'attributo per: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6941937518557314510">Accedi a <ph name="TOKEN_NAME" /> per autenticarti su <ph name="HOST_NAME" /> con il tuo certificato.</translation>
 <translation id="6943176775188458830">Annulla la stampa</translation>
@@ -4063,6 +4097,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6990778048354947307">Tema scuro</translation>
 <translation id="6991665348624301627">Seleziona una destinazione</translation>
 <translation id="6992554835374084304">Attiva il controllo ortografico avanzato</translation>
+<translation id="6995899638241819463">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
 <translation id="6997642619627518301">Log delle attività - <ph name="NAME_PH" /></translation>
 <translation id="6997707937646349884">Sui tuoi dispositivi:</translation>
 <translation id="6998793565256476099">Registra il dispositivo per le videoconferenze</translation>
@@ -4114,6 +4149,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7065534935986314333">Informazioni sul sistema</translation>
 <translation id="706626672220389329">Errore durante il montaggio della condivisione. La condivisione specificata è già montata.</translation>
 <translation id="7066944511817949584">Impossibile collegarsi a "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7067396782363924830">Colori ambient</translation>
 <translation id="7067725467529581407">Non visualizzare più questo messaggio.</translation>
 <translation id="7069811530847688087"><ph name="WEBSITE" /> potrebbe richiedere un token di sicurezza più recente o di diverso tipo</translation>
 <translation id="7070484045139057854">Può leggere e cambiare i dati dei siti</translation>
@@ -4159,6 +4195,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7121728544325372695">Trattini smart</translation>
 <translation id="7123360114020465152">La stampante non è più supportata</translation>
 <translation id="7127980134843952133">Cronologia download</translation>
+<translation id="7128151990937044829">Mostra un indicatore nella barra degli indirizzi quando le notifiche sono bloccate</translation>
 <translation id="7128239828194367697">Genera codice QR per questa pagina</translation>
 <translation id="7131040479572660648">Lettura dei dati su <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Aggiungi pa&amp;gina...</translation>
@@ -4350,6 +4387,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7401778920660465883">Elimina questo messaggio</translation>
 <translation id="740624631517654988">Popup bloccato</translation>
 <translation id="7407430846095439694">Importa e associa</translation>
+<translation id="7407504355934009739">La maggior parte degli utenti blocca le notifiche da questo sito</translation>
 <translation id="7409549334477097887">Molto alta</translation>
 <translation id="7409836189476010449">Esegui Flash</translation>
 <translation id="7410344089573941623">Chiedi conferma se <ph name="HOST" /> vuole accedere alla webcam e al microfono</translation>
@@ -4463,6 +4501,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7581462281756524039">Uno strumento per la pulizia</translation>
 <translation id="7582582252461552277">Preferisci questa rete</translation>
 <translation id="7583948862126372804">Conteggio</translation>
+<translation id="7584578941316704630">Eseguire scansione prima dell'apertura?</translation>
 <translation id="7586498138629385861">Chrome rimane in esecuzione se ci sono app di Chrome aperte.</translation>
 <translation id="7589461650300748890">Attenzione.</translation>
 <translation id="7591957897535945411">Questa pagina è stata tradotta.</translation>
@@ -4796,6 +4835,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8013993649590906847">Se un'immagine è senza descrizione utile, Chrome proverà a fornirne una. Per la creazione delle descrizioni, le immagini vengono inviate a Google.</translation>
 <translation id="8014154204619229810">Lo strumento di aggiornamento è in esecuzione. Aggiorna tra un minuto per ricontrollare.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> non riesce a tornare alla versione precedente installata. Prova a eseguire il Powerwash del dispositivo.</translation>
+<translation id="8015163965024115122">Hai raggiunto il limite impostato dal tuo genitore per le app <ph name="IDS_SHORT_PRODUCT_NAME" /> o <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="8016266267177410919">Archiviazione temporanea</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Scorciatoia modificata</translation>
@@ -4845,6 +4885,8 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8076492880354921740">Schede</translation>
 <translation id="8076835018653442223">L'accesso ai file locali sul dispositivo è stato disattivato dall'amministratore</translation>
 <translation id="808089508890593134">Google</translation>
+<translation id="8081989000209387414">Disattivare il debug ADB?</translation>
+<translation id="8082390128630131497">La disattivazione del debug ADB ripristinerà le impostazioni di fabbrica di questo <ph name="DEVICE_TYPE" />. Tutti gli account utente e i dati locali verranno resettati.</translation>
 <translation id="8084114998886531721">Password salvata</translation>
 <translation id="8086015605808120405">Configurazione di <ph name="PRINTER_NAME" />…</translation>
 <translation id="8086442853986205778">Configura <ph name="PRINTER_NAME" /></translation>
@@ -4860,6 +4902,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8101987792947961127">Powerwash necessario a prossimo riavvio</translation>
 <translation id="8102159139658438129">Vai alle <ph name="LINK_BEGIN" />Impostazioni<ph name="LINK_END" /> per visualizzare le opzioni disponibili per il tuo telefono collegato</translation>
 <translation id="8104696615244072556">Esegui il Powerwash del tuo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e torna alla versione precedente.</translation>
+<translation id="8106661353233173262">Si è verificato un problema. Il file scansionato è scaduto.</translation>
 <translation id="8107015733319732394">Installazione in corso del Google Play Store sul tuo dispositivo <ph name="DEVICE_TYPE" />. L'operazione potrebbe richiedere alcuni minuti.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Nessun cookie di terze parti}=1{È stato bloccato 1 cookie di terze parti}other{Sono stati bloccati # cookie di terze parti}}</translation>
 <translation id="810875025413331850">Nessun dispositivo trovato nelle vicinanze.</translation>
@@ -4934,6 +4977,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8214489666383623925">Apri file...</translation>
 <translation id="8214962590150211830">Rimuovi questa persona</translation>
 <translation id="8217399928341212914">Continua a bloccare download automatici di più file</translation>
+<translation id="8221491193165283816">Di solito blocchi le notifiche. Per ricevere notifiche da questo sito, fai clic qui.</translation>
 <translation id="8225265270453771718">Condividi una finestra dell'applicazione</translation>
 <translation id="8225753906568652947">Utilizza le tue offerte</translation>
 <translation id="8226222018808695353">Vietato</translation>
@@ -5203,10 +5247,12 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8627795981664801467">Solo connessioni protette</translation>
 <translation id="8630903300770275248">Importa utente controllato</translation>
 <translation id="8631032106121706562">Petalo</translation>
+<translation id="863109444997383731">Ai siti verrà impedito di chiederti di mostrarti le notifiche. Se un sito chiede le notifiche verrà mostrato un indicatore bloccato nella barra degli indirizzi.</translation>
 <translation id="8635628933471165173">Nuovo caricamento in corso...</translation>
 <translation id="8637542770513281060">Il computer contiene un modulo per la sicurezza che viene utilizzato per implementare in Chrome OS molte funzionalità di sicurezza fondamentali. Per ulteriori informazioni, visita il Centro assistenza Chromebook all'indirizzo: https://support.google.com/chromebook/?p=sm.</translation>
 <translation id="8637688295594795546">Aggiornamento del sistema disponibile. Preparazione per il download in corso…</translation>
 <translation id="8639047128869322042">Controllo della presenza di software dannoso...</translation>
+<translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - Porta</translation>
 <translation id="8642900771896232685">2 secondi</translation>
 <translation id="8642947597466641025">Ingrandisci le dimensioni del testo</translation>
 <translation id="8644655801811752511">Impossibile reimpostare questo token di sicurezza. Prova a reimpostare il token subito dopo averlo inserito.</translation>
@@ -5371,6 +5417,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8838601485495657486">Opaca</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Annota immagine</translation>
+<translation id="8842594465773264717">Elimina questa impronta</translation>
 <translation id="8845001906332463065">Richiedi assistenza</translation>
 <translation id="8846132060409673887">Lettura del produttore e del modello di questo computer</translation>
 <translation id="8846141544112579928">Ricerca tastiera in corso...</translation>
@@ -5567,6 +5614,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9116799625073598554">App per creare note</translation>
 <translation id="9117030152748022724">Gestisci le tue applicazioni</translation>
 <translation id="9121814364785106365">Apri in una scheda bloccata</translation>
+<translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> in sospeso</translation>
 <translation id="9124003689441359348">Le password salvate verranno visualizzate qui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rimanenti)</translation>
 <translation id="9128317794749765148">Impossibile completare la configurazione</translation>

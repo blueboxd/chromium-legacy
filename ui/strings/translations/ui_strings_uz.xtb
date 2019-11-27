@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Chapdan o‘ngga</translation>
 <translation id="1383876407941801731">Qidiruv</translation>
 <translation id="1398853756734560583">Yoyish</translation>
-<translation id="1409544243779336081">Ilova tavsiyalari</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
 <translation id="1498028757988366001">Buni oldin qidirgan edingiz. Qidiruv tarixidan “<ph name="QUERY" />” oʻchirib tashlanganda u barcha . qurilmalaringizdagi hisobingizdan butunlay olib tashlanadi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 daqiqa va }other{# daqiqa va }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Nuqta</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 oy}other{# oy}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Bahosi: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 soat va }other{# soat va }}</translation>
 <translation id="1842960171412779397">tanlash</translation>
 <translation id="1859234291848436338">Yozuv yo‘nalishi</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7781829728241885113">Kecha</translation>
 <translation id="7814458197256864873">&amp;Nuxsa olish</translation>
+<translation id="7848989271541991537">Ilova <ph name="PAGE_NUMBER" />-sahifa, <ph name="ROW_NUMBER" />-qator, <ph name="COLUMN_NUMBER" />-ustunga olindi.</translation>
 <translation id="7879499977785298635">Bloklanmasin</translation>
 <translation id="7907591526440419938">Faylni ochish</translation>
 <translation id="7969046989155602842">Command</translation>

@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2316709634732130529">सुचवलेला पासवर्ड वापरा</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
-<translation id="2330129964253841015">तुमचे पासवर्ड धोक्यात आल्यास तुम्हाला चेतावणी द्यायची</translation>
 <translation id="2339560363438331454">सिंक आणि Google सेवा</translation>
 <translation id="2351097562818989364">आपल्या भाषांतर सेटिंग्ज रीसेट करण्यात आल्या आहेत.</translation>
 <translation id="2359043044084662842">भाषांतर</translation>
@@ -442,6 +441,7 @@
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6988572888918530647">तुमचे Google खाते व्यवस्थापित करा</translation>
+<translation id="6995899638241819463">डेटा भंगामध्ये पासवर्ड उघड झाल्यास, तुम्हाला चेतावणी द्या</translation>
 <translation id="6998989275928107238">प्रति</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
 <translation id="7006788746334555276">आशय सेटिंग्ज</translation>

@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -567,8 +567,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
-                    TabBrowserControlsState.update(
-                            tab, TabBrowserControlsState.getConstraints(tab), true);
+                    TabBrowserControlsConstraintsHelper.update(
+                            tab, TabBrowserControlsConstraintsHelper.getConstraints(tab), true);
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());

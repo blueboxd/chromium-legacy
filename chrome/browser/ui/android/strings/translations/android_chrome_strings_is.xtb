@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Dragðu sleðann þangað til þú getur lesið þetta áreynslulaust. Texti ætti að vera að minnsta kosti svona stór eftir að ýtt hefur verið tvisvar á efnisgrein.</translation>
 <translation id="2323763861024343754">Geymsla vefsvæða</translation>
 <translation id="2328985652426384049">Innskráning mistókst</translation>
-<translation id="2330129964253841015">Láta vita ef aðgangsorðum er stolið</translation>
 <translation id="2349710944427398404">Gögn sem Chrome notar alls, þ.m.t. reikningar, bókamerki og vistaðar stillingar</translation>
 <translation id="2353636109065292463">Verið er að athuga nettenginguna</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
@@ -816,6 +815,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6989267951144302301">Ekki tókst að sækja</translation>
 <translation id="6990079615885386641">Sækja forritið í Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spyrja áður en vefsvæðum er veitt heimild til að nota hljóðnemann þinn (ráðlagt)</translation>
+<translation id="6995899638241819463">Láta vita ef aðgangsorðin þín eru afhjúpuð vegna öryggisbrots</translation>
 <translation id="7015203776128479407">Fyrstu uppsetningu samstillingar var ekki lokið. Slökkt er á samstillingu.</translation>
 <translation id="7016516562562142042">Leyft á núverandi leitarvél</translation>
 <translation id="7022756207310403729">Opna í vafra</translation>

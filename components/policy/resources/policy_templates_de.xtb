@@ -446,11 +446,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
           Wird sie nicht konfiguriert, ist die Lupe auf dem Anmeldebildschirm anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="1675002386741412210">Unterstützt von:</translation>
-<translation id="1676141669324989554">Mit dieser Richtlinie festlegen, ob Nutzer Ausnahmen hinzufügen können, um gemischte Inhalte auf bestimmten Websites zuzulassen.
-
-          Die Richtlinie kann für spezifische URL-Muster mithilfe der Richtlinien "InsecureContentAllowedForUrls" und "InsecureContentBlockedForUrls" überschrieben werden.
-
-          Wenn sie nicht konfiguriert ist, können Nutzer Ausnahmen hinzufügen, um blockierbare gemischte Inhalte zuzulassen.</translation>
 <translation id="1695708467571967752">Mit dieser Richtlinie wird festgelegt, ob Nutzer Medien wiedergeben können, wenn das Gerät gesperrt ist.
 
       Wird sie auf "false" gesetzt, werden die Mediensteuerelemente auf dem Sperrbildschirm deaktiviert.
@@ -1470,7 +1465,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
-<translation id="3211426942294667684">Browser-Anmeldeeinstellungen</translation>
+<translation id="3211426942294667684">Einstellungen für die Anmeldung im Browser</translation>
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
@@ -3159,9 +3154,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
-<translation id="5997107377032983906">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von blockierbaren (also aktiven) gemischten Inhalten (also HTTP-Inhalten auf HTTPS-Websites) gestattet ist.
-
-          Wenn diese Richtlinie nicht konfiguriert ist, werden blockierbare gemischte Inhalte gesperrt, Nutzer haben jedoch die Möglichkeit, Ausnahmen für bestimmte Websites festzulegen.</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
 <translation id="5997846976342452720">Angeben, ob Plug-in-Suchfunktion deaktiviert werden soll (eingestellt)</translation>
 <translation id="5998198091336830580">Diese Richtlinie ist Teil der folgenden Atomic-Gruppe (nur Richtlinien aus der Quelle mit der höchsten Priorität in der Gruppe werden angewendet):</translation>
@@ -3200,7 +3192,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6083631234867522991">Windows (Windows-Clients):</translation>
 <translation id="608788685013546076">Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen in Prozent festlegen</translation>
 <translation id="6089679180657323464">Legt die Einstellungen für Wilco Diagnostics and Telemetry Controller fest.</translation>
-<translation id="6091233616732024397">Nutzer zwingen, sich zur Nutzung des Browsers anzumelden</translation>
+<translation id="6091233616732024397">Erzwingen, dass Nutzer sich im Browser anmelden müssen</translation>
 <translation id="6093156968240188330">Zulassen, dass Remote-Nutzer in Remote-Sitzungen mit geöffneten Fenstern arbeiten können</translation>
 <translation id="6095048925836115505">Bildschirmtastatur auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="6095999036251797924">Gibt die Zeitdauer ohne Nutzeraktivität an, nach der der Bildschirm im Netz- oder Akkubetrieb gesperrt wird.
@@ -3542,9 +3534,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6795485990775913659">Drucken nur ohne PIN zulassen</translation>
-<translation id="6800064234889290465">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von blockierbaren (also aktiven) gemischten Inhalten (also HTTP-Inhalten auf HTTPS-Websites) nicht gestattet ist.
-
-          Wenn diese Richtlinie nicht konfiguriert ist, werden blockierbare gemischte Inhalte gesperrt, Nutzer haben jedoch die Möglichkeit, Ausnahmen für bestimmte Websites festzulegen.</translation>
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
 <translation id="6813263547126514821">Betrieb und Herunterfahren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>

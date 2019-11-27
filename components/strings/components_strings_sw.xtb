@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Onyesha zaidi</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Badilisha nenosiri lako</translation>
 <translation id="1484290072879560759">Chagua Anwani ya Mahali Bidhaa Zitakapopelekwa</translation>
 <translation id="1492194039220927094">Sera zinaweza kutumwa:</translation>
 <translation id="1501859676467574491">Onyesha kadi kutoka Akaunti yako ya Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Kuwasiliana na msimamizi wa mfumo.</translation>
 <translation id="1736420071277903564">Kompyuta</translation>
-<translation id="1739107442478692187">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ukague manenosiri uliyohifadhi na ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="1740951997222943430">Andika mwezi sahihi wa kuisha kwa muda wa matumizi</translation>
 <translation id="1741613555002899862">Lazima ibainishwe na iwe mfuatano sahihi wakati DnsOverHttpsMode ni <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili, jina na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Huduma ya Kufungua Faili za Zip</translation>
 <translation id="1915697529809968049">Ungependa kutumia Touch ID badala ya CVC?</translation>
 <translation id="1916770123977586577">Pakia upya ukurasa huu ili mipangilio iliyosasishwa itumike katika tovuti hii</translation>
+<translation id="1917876262703816781">Tukio la ufichuzi haramu wa data kwenye tovuti au programu limefichua nenosiri lako. Chrome inapendekeza ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="1919345977826869612">Matangazo</translation>
 <translation id="1919367280705858090">Pata usaidizi kwa kutumia ujumbe mahususi kuhusu hitilafu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Hamna}=1{Tovuti 1}other{Tovuti #}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Kitolingana kwa kikoa</translation>
 <translation id="2096368010154057602">Idara</translation>
 <translation id="2099652385553570808">Bana kushoto mara tatu</translation>
-<translation id="2100280972184758440">Nenosiri lako limeathiriwa</translation>
 <translation id="2102134110707549001">Pendekeza Nenosiri Thabiti…</translation>
 <translation id="2108755909498034140">Zima na uwashe kompyuta yako</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Umetolewa kwa: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Toboa chini kulia</translation>
-<translation id="2124528555835617522">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.</translation>
 <translation id="2129079103035905234">Vitambuzi vya Mwendo</translation>
 <translation id="2130448033692577677">Huenda violezo ulivyobainisha visitumike kwa sababu sera ya DnsOverHttpsMode haijawekwa.</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
@@ -490,7 +489,6 @@
 <translation id="3282497668470633863">Ongeza jina kwenye kadi</translation>
 <translation id="3287510313208355388">Pakua ukiwa mtandaoni</translation>
 <translation id="3293642807462928945">Pata maelezo zaidi kuhusu sera ya <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="3303855915957856445">Hakuna matokeo ya utafutaji yaliyopatikana</translation>
 <translation id="3320021301628644560">Ongeza anwani ya kutuma bili</translation>
 <translation id="3324983252691184275">Nyekundu Iliyoiva</translation>
@@ -902,6 +900,7 @@
 <translation id="5287240709317226393">Onyesha vidakuzi</translation>
 <translation id="5287456746628258573">Tovuti hii inatumia mipangilio ya usalama iliyopitwa na wakati, hali ambayo inaweza kuonyesha taarifa zako (kwa mfano, manenosiri au nambari za kadi za mikopo) zikitumwa kwenye tovuti hii.</translation>
 <translation id="5288108484102287882">Imethibitisha thamani za sera na kutoa maonyo</translation>
+<translation id="5295292838686006428">Tukio la ufichuzi haramu wa data kwenye tovuti au programu limefichua nenosiri lako. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.</translation>
 <translation id="5299298092464848405">Hitilafu wakati wa kuchanganua sera</translation>
 <translation id="5300589172476337783">Onyesha</translation>
 <translation id="5308380583665731573">Unganisha</translation>
@@ -952,6 +951,7 @@
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="5541546772353173584">Ongeza Anwani ya Barua Pepe</translation>
 <translation id="5545756402275714221">Makala Tunayokupendekezea</translation>
+<translation id="5552137475244467770">Chrome itakagua mara kwa mara manenosiri yako dhidi ya orodha ambazo zimechapishwa mtandaoni. Wakati inafanya hivyo, manenosiri na majina yako ya mtumiaji yatasimbwa kwa njia fiche, kwa hivyo hayataweza kusomwa na mtu mwingine, ikiwemo Google.</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5560088892362098740">Tarehe ya Mwisho wa Matumizi</translation>
 <translation id="5565735124758917034">Inatumika</translation>
@@ -1043,6 +1043,7 @@
 <translation id="5992691462791905444">Mkunjo wa Z wa uhandisi</translation>
 <translation id="6000758707621254961">Matokeo <ph name="RESULT_COUNT" /> ya '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Kagua manenosiri yako</translation>
 <translation id="6015796118275082299">Mwaka</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Ukurasa wa 1}other{Ukurasa wa #}}</translation>
 <translation id="6017514345406065928">Kijani</translation>
@@ -1330,6 +1331,7 @@
 <translation id="7481312909269577407">Mbele</translation>
 <translation id="748406663033922918">Tumia mbinu ya kufunga skrini kuthibitisha njia za kulipa ulizohifadhi.</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
+<translation id="7495290002932347110">Tukio la ufichuzi haramu wa data kwenye tovuti au programu limefichua nenosiri lako. Chrome inapendekeza ukague manenosiri uliyohifadhi na ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="7498234416455752244">Endelea kubadilisha</translation>
 <translation id="7508255263130623398">Kitambulisho cha sera ya kifaa kilichorejeshwa hakina kitu au hakilingani na kitambulisho cha kifaa kilichopo</translation>
 <translation id="7508870219247277067">Kijani cha Parachichi</translation>

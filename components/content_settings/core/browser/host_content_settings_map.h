@@ -260,9 +260,9 @@ class HostContentSettingsMap : public content_settings::Observer,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type) const;
 
-  using PatternSourcePredicate =
-      base::Callback<bool(const ContentSettingsPattern& primary_pattern,
-                          const ContentSettingsPattern& secondary_pattern)>;
+  using PatternSourcePredicate = base::RepeatingCallback<bool(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern)>;
 
   // If |pattern_predicate| is null, this method is equivalent to the above.
   // Otherwise, it only deletes exceptions matched by |pattern_predicate| that
@@ -271,7 +271,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       base::Time begin_time,
       base::Time end_time,
-      const PatternSourcePredicate& pattern_predicate);
+      PatternSourcePredicate pattern_predicate);
 
   // RefcountedKeyedService implementation.
   void ShutdownOnUIThread() override;

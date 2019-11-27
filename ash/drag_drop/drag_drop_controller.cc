@@ -515,7 +515,7 @@ void DragDropController::Drop(aura::Window* target,
 
   Cleanup();
   if (should_block_during_drag_drop_)
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -557,7 +557,7 @@ void DragDropController::DoDragCancel(
   drag_operation_ = 0;
   StartCanceledAnimation(drag_cancel_animation_duration);
   if (should_block_during_drag_drop_)
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
 }
 
 void DragDropController::AnimationProgressed(const gfx::Animation* animation) {

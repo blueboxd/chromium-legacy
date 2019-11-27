@@ -322,9 +322,10 @@ cr.define('cr.ui', () => {
                                          // mouse button.
               this.showMenu(false, {x: e.screenX, y: e.screenY});
               // Prevent the button from stealing focus on mousedown unless
-              // focus is on another button.
+              // focus is on another button or cr-input element.
               if (!(document.hasFocus() &&
-                    document.activeElement.tagName === 'BUTTON')) {
+                    (document.activeElement.tagName === 'BUTTON' ||
+                     document.activeElement.tagName === 'CR-INPUT'))) {
                 e.preventDefault();
               }
             }

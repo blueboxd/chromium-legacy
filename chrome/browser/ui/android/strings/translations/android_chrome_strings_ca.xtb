@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Arrossega el control lliscant fins que puguis llegir aquest text còmodament. El text ha de ser almenys així de gran després de tocar dos cops un paràgraf.</translation>
 <translation id="2323763861024343754">Emmagatzematge del lloc web</translation>
 <translation id="2328985652426384049">No es pot iniciar la sessió</translation>
-<translation id="2330129964253841015">T'avisa si les contrasenyes es posen en perill</translation>
 <translation id="2349710944427398404">Dades totals utilitzades per Chrome, com ara comptes, adreces d'interès i opcions de configuració desades</translation>
 <translation id="2353636109065292463">S'està comprovant la connexió a Internet</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -816,6 +815,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6989267951144302301">No s'ha pogut baixar</translation>
 <translation id="6990079615885386641">Baixeu l'aplicació des de Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pregunta'm abans de permetre que els llocs web utilitzin el micròfon (opció recomanada)</translation>
+<translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en produir-se una violació de les dades</translation>
 <translation id="7015203776128479407">La configuració de la sincronització inicial no ha finalitzat. La sincronització està desactivada.</translation>
 <translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7022756207310403729">Obre al navegador</translation>

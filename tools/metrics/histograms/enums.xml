@@ -11908,6 +11908,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="MOUNT_FAILURE"/>
   <int value="4" label="COMPATIBILITY_CHECK_FAILED"/>
   <int value="5" label="NOT_FOUND"/>
+  <int value="6" label="UPDATE_IN_PROGRESS"/>
 </enum>
 
 <enum name="CrosDictationToggleDictationMethod">
@@ -12296,6 +12297,7 @@ Called by update_net_error_codes.py.-->
   <int value="45" label="CANCEL_UPGRADE_CONTAINER_FAILED"/>
   <int value="46" label="CONCIERGE_START_FAILED"/>
   <int value="47" label="CONTAINER_CONFIGURATION_FAILED"/>
+  <int value="48" label="LOAD_COMPONENT_UPDATE_IN_PROGRESS"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -25590,6 +25592,10 @@ Called by update_net_error_codes.py.-->
   <int value="3100" label="V8PortalHost_PostMessage_Method"/>
   <int value="3101" label="V8PortalActivateEvent_Data_AttributeGetter"/>
   <int value="3102" label="V8PortalActivateEvent_AdoptPredecessor_Method"/>
+  <int value="3103" label="LinkRelPrefetchForSignedExchanges"/>
+  <int value="3104" label="MessageEventSharedArrayBufferSameOrigin"/>
+  <int value="3105" label="MessageEventSharedArrayBufferSameAgentCluster"/>
+  <int value="3106" label="MessageEventSharedArrayBufferDifferentAgentCluster"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -27252,6 +27258,13 @@ Called by update_net_error_codes.py.-->
       label="Only permitted for framebusting, user gesture, ad frame"/>
   <int value="6" label="Allowed navigation, no user gesture, ad frame"/>
   <int value="7" label="Allowed navigation, user gesture, ad frame"/>
+</enum>
+
+<enum name="FramePrioritiesSeen">
+  <int value="0" label="No frames seen."/>
+  <int value="1" label="Low and normal priority frames seen."/>
+  <int value="2" label="Only low priority frames seen."/>
+  <int value="3" label="Only normal priority frames seen."/>
 </enum>
 
 <enum name="FrameSiteInstanceProcessRelationship">
@@ -32940,12 +32953,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="InsecureDownloadSecurityStatus">
-  <int value="0" label="kInitiatorUnknownFileSecure"/>
-  <int value="1" label="kInitiatorUnknownFileInsecure"/>
-  <int value="2" label="kInitiatorSecureFileSecure"/>
-  <int value="3" label="kInitiatorSecureFileInsecure"/>
-  <int value="4" label="kInitiatorInsecureFileSecure"/>
-  <int value="5" label="kInitiatorInsecureFileInsecure"/>
+  <int value="0" label="Secure download initiated by unknown source"/>
+  <int value="1" label="Insecure download initiated by unknown source"/>
+  <int value="2" label="Secure download initiated by secure source"/>
+  <int value="3" label="Insecure download initiated by secure source"/>
+  <int value="4" label="Secure download initiated by insecure source"/>
+  <int value="5" label="Insecure download initiated by insecure source"/>
+  <int value="6" label="Secure download initiated by inferred-secure source"/>
+  <int value="7" label="Insecure download initiated by inferred-secure source"/>
+  <int value="8" label="Secure download initiated by inferred-insecure source"/>
+  <int value="9"
+      label="Insecure download initiated by inferred-insecure source"/>
 </enum>
 
 <enum name="InsignificantPlaybackReason">
@@ -36649,6 +36667,7 @@ from previous Chrome versions.
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
   <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
+  <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
@@ -38736,6 +38755,7 @@ from previous Chrome versions.
   <int value="1622672308" label="ReaderMode:enabled"/>
   <int value="1624443254" label="AnimatedAvatarButton:disabled"/>
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
+  <int value="1628259213" label="DuetTabStripIntegrationAndroid:enabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
@@ -58377,6 +58397,12 @@ Called by update_net_trust_anchors.py.-->
       label="(Deprecated) User entered password while Bluetooth disabled"/>
   <int value="4" label="Canceled, user entered password"/>
   <int value="5" label="Authenticated channel dropped"/>
+</enum>
+
+<enum name="SmsReceiverDestroyedReason">
+  <int value="0" label="Navigated to new page"/>
+  <int value="1" label="Navigated to existing page"/>
+  <int value="2" label="Nagivated to same page"/>
 </enum>
 
 <enum name="SMSReceiverInfobarAction">

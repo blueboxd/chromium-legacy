@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您閱讀時感到舒適的大小。當您輕按兩下文字段落，文字至少應有這樣大。</translation>
 <translation id="2323763861024343754">網站儲存空間資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
-<translation id="2330129964253841015">密碼被盜用時接收警告</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和已儲存的設定</translation>
 <translation id="2353636109065292463">檢查互聯網連線</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">地址</translation>
 <translation id="290376772003165898">網頁的來源語言不是<ph name="LANGUAGE" />嗎？</translation>
 <translation id="2904414404539560095">要共用分頁嘅裝置清單宜家顯示喺成個畫面。</translation>
+<translation id="2905036901251765993">如要與附近的使用者分享，請讓對方掃瞄此二維條碼</translation>
 <translation id="2909615210195135082">Google 通知平台</translation>
 <translation id="2910701580606108292">網站播放受保護內容前先詢問您</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">顯示密碼</translation>
 <translation id="363596933471559332">使用儲存的憑證自動登入網站。關閉功能時，每次登入網站之前都會要求您驗證。</translation>
 <translation id="3658159451045945436">重設將會清除您儲存資料的記錄，包括瀏覽過的網站清單。</translation>
+<translation id="3682730288090679318">允許系統自動禁止網站要求顯示通知。如果網站要求顯示通知，頁面底部會顯示資料列。</translation>
 <translation id="3692944402865947621">無法存取儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用過多記憶體，因此 Chrome 已暫停顯示這個網頁。</translation>
@@ -542,6 +543,7 @@
 <translation id="5048398596102334565">允許網站存取動作感應器 (建議)</translation>
 <translation id="5063480226653192405">用量</translation>
 <translation id="5087580092889165836">加入新卡</translation>
+<translation id="5096950519211870196">系統將禁止網站要求顯示通知。如果網站要求顯示通知，頁面底部會顯示資料列。</translation>
 <translation id="5100237604440890931">已收合 - 點擊即可展開。</translation>
 <translation id="510275257476243843">尚餘 1 小時</translation>
 <translation id="5123685120097942451">無痕式分頁</translation>
@@ -589,6 +591,7 @@
 <translation id="5414836363063783498">正在驗證…</translation>
 <translation id="5423934151118863508">您最常瀏覽的網頁會在此顯示</translation>
 <translation id="5424588387303617268">可用空間：<ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">知道了。根據預設，新的通知要求會在這裡顯示。</translation>
 <translation id="543338862236136125">修改密碼</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="543509235395288790">正在下載 <ph name="COUNT" /> 個檔案 (<ph name="MEGABYTES" />)。</translation>
@@ -687,6 +690,7 @@
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
 <translation id="6112702117600201073">正在重新整理網頁</translation>
+<translation id="6113400363611269907">以無聲模式顯示提示</translation>
 <translation id="6127379762771434464">項目已移除</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="614940544461990577">建議做法：</translation>
@@ -811,6 +815,7 @@
 <translation id="6989267951144302301">無法下載</translation>
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">允許網站使用麥克風前先詢問您 (建議)</translation>
+<translation id="6995899638241819463">密碼因資料外洩而被洩露時接收警告</translation>
 <translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎使用</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
@@ -1018,6 +1023,7 @@
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="8514477925623180633">匯出儲存在 Chrome 中的密碼</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
+<translation id="8516012719330875537">圖片編輯器</translation>
 <translation id="851751545965956758">禁止網站連接裝置</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
 <translation id="854522910157234410">開啟此頁</translation>

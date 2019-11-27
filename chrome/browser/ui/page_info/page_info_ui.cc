@@ -168,7 +168,6 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
      IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER},
 #endif
-    {ContentSettingsType::AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY},
     {ContentSettingsType::ADS, IDS_PAGE_INFO_TYPE_ADS},
     {ContentSettingsType::SOUND, IDS_PAGE_INFO_TYPE_SOUND},
     {ContentSettingsType::CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},

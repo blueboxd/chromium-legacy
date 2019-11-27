@@ -189,10 +189,6 @@ public class UrlUtilities {
 
     /**
      * @param url An Android intent:// URL to validate.
-     *
-     * @throws URISyntaxException if url is not a valid Android intent://
-     * URL, as specified at
-     * https://developer.chrome.com/multidevice/android/intents#syntax.
      */
     @VisibleForTesting
     public static boolean validateIntentUrl(String url) {

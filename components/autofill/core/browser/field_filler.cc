@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/data_model_utils.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
@@ -331,8 +332,8 @@ bool FillExpirationMonthSelectControl(const base::string16& value,
     int converted_value = 0;
     // We use the trimmed value to match with |month|, but the original select
     // value to fill the field (otherwise filling wouldn't work).
-    if (CreditCard::ConvertMonth(trimmed_values[i], app_locale,
-                                 &converted_value) &&
+    if (data_util::ParseExpirationMonth(trimmed_values[i], app_locale,
+                                        &converted_value) &&
         month == converted_value) {
       field->value = field->option_values[i];
       return true;
@@ -342,8 +343,8 @@ bool FillExpirationMonthSelectControl(const base::string16& value,
   // Attempt to match with each of the options' content.
   for (size_t i = 0; i < field->option_contents.size(); ++i) {
     int converted_contents = 0;
-    if (CreditCard::ConvertMonth(field->option_contents[i], app_locale,
-                                 &converted_contents) &&
+    if (data_util::ParseExpirationMonth(field->option_contents[i], app_locale,
+                                        &converted_contents) &&
         month == converted_contents) {
       field->value = field->option_values[i];
       return true;
@@ -474,7 +475,7 @@ bool FillSelectControl(const AutofillType& type,
 // Fills in the month control |field| with the expiration date in |card|.
 void FillMonthControl(const CreditCard& card, FormFieldData* field) {
   field->value = card.Expiration4DigitYearAsString() + ASCIIToUTF16("-") +
-                 card.ExpirationMonthAsString();
+                 card.Expiration2DigitMonthAsString();
 }
 
 // Fills |field| with the street address in |value|. Translates newlines into

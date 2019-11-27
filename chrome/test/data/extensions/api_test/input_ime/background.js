@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function setCompositionTest() {
-  chrome.input.ime.setComposition({
-    "contextID": 1,
-    "text": "Pie",
-    "selectionStart": 1,
-    "selectionEnd": 2,
-    "cursor": 3,
-    "segments": [{
-      "start": 0,
-      "end": 1,
-      "style": "underline"
-    }]
-  }, chrome.test.callbackPass());
-}
+// Disabled: crbug.com/641425.
+// function setCompositionTest() {
+//   chrome.input.ime.setComposition({
+//     "contextID": 1,
+//     "text": "Pie",
+//     "selectionStart": 1,
+//     "selectionEnd": 2,
+//     "cursor": 3,
+//     "segments": [{
+//       "start": 0,
+//       "end": 1,
+//       "style": "underline"
+//     }]
+//   }, chrome.test.callbackPass());
+// }
 
+// Disabled: crbug.com/641425.
+// function clearCompositionTest() {
+//   chrome.input.ime.clearComposition({
+//     "contextID": 1
+//   }, chrome.test.callbackPass());
+// }
 
-function clearCompositionTest() {
-  chrome.input.ime.clearComposition({
-    "contextID": 1
-  }, chrome.test.callbackPass());
-}
-
-
-function commitTextTest() {
-  chrome.input.ime.commitText({
-    "contextID": 2,
-    "text": "Seaguls"
-  }, chrome.test.callbackPass());
-}
-
+// Disabled: crbug.com/641425.
+// function commitTextTest() {
+//   chrome.input.ime.commitText({
+//     "contextID": 2,
+//     "text": "Seaguls"
+//   }, chrome.test.callbackPass());
+// }
 
 // Disabled: crbug.com/641425.
 // function setCandidateWindowPropertiesTest() {
@@ -48,37 +48,36 @@ function commitTextTest() {
 //   }, chrome.test.callbackPass());
 // }
 
+// Disabled: crbug.com/641425.
+// function setCandidatesTest() {
+//   chrome.input.ime.setCandidates({
+//     "contextID": 8,
+//     "candidates": [{
+//       "candidate": "one",
+//       "id": 1,
+//       "label": "first",
+//       "annotation": "The first one"
+//     }, {
+//       "candidate": "two",
+//       "id": 2,
+//       "label": "second",
+//       "annotation": "The second one"
+//     }, {
+//       "candidate": "three",
+//       "id": 3,
+//       "label": "third",
+//       "annotation": "The third one"
+//     }]
+//   }, chrome.test.callbackPass());
+// }
 
-function setCandidatesTest() {
-  chrome.input.ime.setCandidates({
-    "contextID": 8,
-    "candidates": [{
-      "candidate": "one",
-      "id": 1,
-      "label": "first",
-      "annotation": "The first one"
-    }, {
-      "candidate": "two",
-      "id": 2,
-      "label": "second",
-      "annotation": "The second one"
-    }, {
-      "candidate": "three",
-      "id": 3,
-      "label": "third",
-      "annotation": "The third one"
-    }]
-  }, chrome.test.callbackPass());
-}
-
-
-function setCursorPositionTest() {
-  chrome.input.ime.setCursorPosition({
-    "contextID": 9,
-    "candidateID": 1
-  }, chrome.test.callbackPass());
-}
-
+// Disabled: crbug.com/641425.
+// function setCursorPositionTest() {
+//   chrome.input.ime.setCursorPosition({
+//     "contextID": 9,
+//     "candidateID": 1
+//   }, chrome.test.callbackPass());
+// }
 
 // Disabled: crbug.com/641425.
 // function setMenuItemsTest() {
@@ -125,12 +124,12 @@ function setCursorPositionTest() {
 // }
 
 chrome.test.runTests([
-    setCompositionTest,
-    clearCompositionTest,
-    commitTextTest,
+    // setCompositionTest,
+    // clearCompositionTest,
+    // commitTextTest,
     // setCandidateWindowPropertiesTest,
-    setCandidatesTest,
-    setCursorPositionTest,
+    // setCandidatesTest,
+    // setCursorPositionTest,
     // setMenuItemsTest,
     // updateMenuItemsTest,
     // deleteSurroundingText,

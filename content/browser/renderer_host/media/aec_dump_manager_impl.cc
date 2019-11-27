@@ -26,9 +26,9 @@ AecDumpManagerImpl::AecDumpManagerImpl() = default;
 
 AecDumpManagerImpl::~AecDumpManagerImpl() = default;
 
-void AecDumpManagerImpl::AddRequest(
-    mojo::InterfaceRequest<blink::mojom::AecDumpManager> request) {
-  receiver_set_.Add(this, std::move(request));
+void AecDumpManagerImpl::AddReceiver(
+    mojo::PendingReceiver<blink::mojom::AecDumpManager> receiver) {
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 void AecDumpManagerImpl::AutoStart() {

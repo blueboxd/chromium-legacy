@@ -492,5 +492,17 @@ test.util.sync.overrideFormat = contentWindow => {
       (volumeId, filesystem, volumeLabel) => {};
 };
 
+/**
+ * Run a contentWindow.requestAnimationFrame() cycle and resolve the callback
+ * when that requestAnimationFrame completes.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {function(boolean)} callback Completion callback.
+ */
+test.util.async.requestAnimationFrame = (contentWindow, callback) => {
+  contentWindow.requestAnimationFrame(() => {
+    callback(true);
+  });
+};
+
 // Register the test utils.
 test.util.registerRemoteTestUtils();

@@ -265,6 +265,12 @@ void DeepScanningDialogDelegate::OnCanceled() {
   if (callback_.is_null())
     return;
 
+  if (access_point_.has_value()) {
+    RecordDeepScanMetrics(access_point_.value(),
+                          base::TimeTicks::Now() - upload_start_time_, 0,
+                          "CancelledByUser", false);
+  }
+
   // Make sure to reject everything.
   FillAllResultsWith(false);
   RunCallback();
@@ -353,18 +359,19 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
 void DeepScanningDialogDelegate::ShowForWebContents(
     content::WebContents* web_contents,
     Data data,
-    CompletionCallback callback) {
+    CompletionCallback callback,
+    base::Optional<DeepScanAccessPoint> access_point) {
   Factory* testing_factory = GetFactoryStorage();
   bool wait_for_verdict = WaitForVerdict();
 
   // Using new instead of std::make_unique<> to access non public constructor.
-  auto delegate =
-      testing_factory->is_null()
-          ? std::unique_ptr<DeepScanningDialogDelegate>(
-                new DeepScanningDialogDelegate(web_contents, std::move(data),
-                                               std::move(callback)))
-          : testing_factory->Run(web_contents, std::move(data),
-                                 std::move(callback));
+  auto delegate = testing_factory->is_null()
+                      ? std::unique_ptr<DeepScanningDialogDelegate>(
+                            new DeepScanningDialogDelegate(
+                                web_contents, std::move(data),
+                                std::move(callback), access_point))
+                      : testing_factory->Run(web_contents, std::move(data),
+                                             std::move(callback));
 
   bool work_being_done = delegate->UploadData();
 
@@ -411,11 +418,13 @@ void DeepScanningDialogDelegate::SetDMTokenForTesting(
 DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     content::WebContents* web_contents,
     Data data,
-    CompletionCallback callback)
+    CompletionCallback callback,
+    base::Optional<DeepScanAccessPoint> access_point)
     : TabModalConfirmDialogDelegate(web_contents),
       web_contents_(web_contents),
       data_(std::move(data)),
-      callback_(std::move(callback)) {
+      callback_(std::move(callback)),
+      access_point_(access_point) {
   DCHECK(web_contents_);
   result_.text_results.resize(data_.text.size(), false);
   result_.paths_results.resize(data_.paths.size(), false);
@@ -425,16 +434,21 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
 void DeepScanningDialogDelegate::StringRequestCallback(
     BinaryUploadService::Result result,
     DeepScanningClientResponse response) {
+  int64_t content_size = 0;
+  for (const base::string16& entry : data_.text)
+    content_size += (entry.size() * sizeof(base::char16));
+  if (access_point_.has_value()) {
+    RecordDeepScanMetrics(access_point_.value(),
+                          base::TimeTicks::Now() - upload_start_time_,
+                          content_size, result, response);
+  }
+
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), "Text data", std::string(),
       "text/plain",
       extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      std::accumulate(data_.text.begin(), data_.text.end(), 0,
-                      [](int64_t acc, const base::string16& s) {
-                        return acc + s.size() * sizeof(base::char16);
-                      }),
-      result, response);
+      content_size, result, response);
 
   text_request_complete_ = true;
   bool text_complies = (result == BinaryUploadService::Result::SUCCESS &&
@@ -452,6 +466,12 @@ void DeepScanningDialogDelegate::FileRequestCallback(
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
+
+  if (access_point_.has_value()) {
+    RecordDeepScanMetrics(access_point_.value(),
+                          base::TimeTicks::Now() - upload_start_time_,
+                          file_info_[index].size, result, response);
+  }
 
   // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
   // file content.
@@ -499,6 +519,7 @@ policy::DMToken DeepScanningDialogDelegate::GetDMToken() {
 }
 
 bool DeepScanningDialogDelegate::UploadData() {
+  upload_start_time_ = base::TimeTicks::Now();
   if (data_.do_dlp_scan) {
     // Create a string data source based on all the text.
     std::string full_text;

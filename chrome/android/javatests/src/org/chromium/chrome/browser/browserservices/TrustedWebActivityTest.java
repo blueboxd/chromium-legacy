@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -254,6 +254,6 @@ public class TrustedWebActivityTest {
 
     public boolean getCanShowToolbarState(Tab tab) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TabBrowserControlsState.get(tab).canShow());
+                () -> TabBrowserControlsConstraintsHelper.get(tab).canShow());
     }
 }

@@ -172,7 +172,7 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestions) {
                        card.ObfuscatedLastFourDigits(), card.guid(),
                        /*is_obfuscated=*/false,
                        /*selectable=*/true)
-          .AppendSimpleField(card.ExpirationMonthAsString())
+          .AppendSimpleField(card.Expiration2DigitMonthAsString())
           .AppendSimpleField(card.Expiration4DigitYearAsString())
           .AppendSimpleField(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
           .Build());
@@ -198,8 +198,8 @@ TEST_F(CreditCardAccessoryControllerTest, PreventsFillingInsecureContexts) {
                              card.ObfuscatedLastFourDigits(), card.guid(),
                              /*is_obfuscated=*/false,
                              /*selectable=*/false)
-                .AppendField(card.ExpirationMonthAsString(),
-                             card.ExpirationMonthAsString(),
+                .AppendField(card.Expiration2DigitMonthAsString(),
+                             card.Expiration2DigitMonthAsString(),
                              /*is_obfuscated=*/false,
                              /*selectable=*/false)
                 .AppendField(card.Expiration4DigitYearAsString(),

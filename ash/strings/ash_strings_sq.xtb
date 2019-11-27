@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Po përdor <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Shkyç pajisjen si <ph name="LOGIN_ID" /> për të kryer veprimin e njoftimit</translation>
-<translation id="8995603266996330174">Menaxhuar nga <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Fut kodin e qasjes së prindit për Family Link</translation>
 <translation id="9029474291399787231">Ka përditësim për Adobe Flash Player</translation>
 <translation id="9056839673611986238">Pajisja do të kthehet prapa</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Zmadhuesi i ekranit të plotë</translation>
 <translation id="9193626018745640770">Po transmeton në një marrës të panjohur</translation>
 <translation id="9194617393863864469">Identifiko një përdorues tjetër...</translation>
+<translation id="9205817095063786319">Pajisja menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Po del nga modaliteti i desktopit të unifikuar</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> të mbetura deri sa bateria të karikohet plotësisht.</translation>
 <translation id="9215934040295798075">Cakto imazhin e sfondit</translation>

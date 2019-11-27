@@ -52,6 +52,9 @@ ChildAccountInfoFetcherAndroid::~ChildAccountInfoFetcherAndroid() {
                                        j_child_account_info_fetcher_);
 }
 
+// TODO(crbug.com/1028580) Pass |j_account_id| as a
+// org.chromium.components.signin.identitymanager.CoreAccountId and convert it
+// to CoreAccountId using ConvertFromJavaCoreAccountId.
 void JNI_ChildAccountInfoFetcher_SetIsChildAccount(
     JNIEnv* env,
     jlong native_service,
@@ -60,6 +63,7 @@ void JNI_ChildAccountInfoFetcher_SetIsChildAccount(
   AccountFetcherService* service =
       reinterpret_cast<AccountFetcherService*>(native_service);
   service->SetIsChildAccount(
-      CoreAccountId(base::android::ConvertJavaStringToUTF8(env, j_account_id)),
+      CoreAccountId::FromString(
+          base::android::ConvertJavaStringToUTF8(env, j_account_id)),
       is_child_account);
 }

@@ -75,22 +75,21 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
     return;
   }
 
-  const auto file_path = download_dir_.AppendASCII(url.ExtractFileName());
+  file_path_ = download_dir_.AppendASCII(url.ExtractFileName());
   network_fetcher_ = network_fetcher_factory_->Create();
   network_fetcher_->DownloadToFile(
-      url, file_path,
+      url, file_path_,
       base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
                      base::Unretained(this)),
       base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress,
                           base::Unretained(this)),
       base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
-                     base::Unretained(this), file_path));
+                     base::Unretained(this)));
 
   download_start_time_ = base::TimeTicks::Now();
 }
 
-void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
-                                                    int net_error,
+void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
                                                     int64_t content_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -104,22 +103,19 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
   int error = -1;
-  if (!file_path.empty() && response_code_ == 200) {
-    DCHECK_EQ(0, net_error);
+  if (!net_error && response_code_ == 200)
     error = 0;
-  } else if (response_code_ != -1) {
+  else if (response_code_ != -1)
     error = response_code_;
-  } else {
+  else
     error = net_error;
-  }
 
   const bool is_handled = error == 0 || IsHttpServerError(error);
 
   Result result;
   result.error = error;
-  if (!error) {
-    result.response = file_path;
-  }
+  if (!error)
+    result.response = file_path_;
 
   DownloadMetrics download_metrics;
   download_metrics.url = url();

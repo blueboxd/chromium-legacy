@@ -446,7 +446,7 @@ DownloadItemImpl::~DownloadItemImpl() {
 
   // Should always have been nuked before now, at worst in
   // DownloadManager shutdown.
-  DCHECK(!download_file_);
+  CHECK(!download_file_);
   CHECK(!is_updating_observers_);
 
   for (auto& observer : observers_)
@@ -871,6 +871,10 @@ const std::string& DownloadItemImpl::GetETag() const {
 
 bool DownloadItemImpl::IsSavePackageDownload() const {
   return job_ && job_->IsSavePackageDownload();
+}
+
+DownloadSource DownloadItemImpl::GetDownloadSource() const {
+  return download_source_;
 }
 
 const base::FilePath& DownloadItemImpl::GetFullPath() const {
@@ -1443,7 +1447,7 @@ void DownloadItemImpl::Start(
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!download_file_);
+  CHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
   RecordDownloadCountWithSource(START_COUNT, download_source_);
 

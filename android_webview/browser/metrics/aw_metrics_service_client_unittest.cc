@@ -179,9 +179,9 @@ TEST_F(AwMetricsServiceClientTest, TestShouldNotUploadPackageName_AppType) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(true, true);
   client->SetRecordPackageNameForAppType(false);
   client->SetInPackageNameSample(true);
+  client->SetHaveMetricsConsent(true, true);
   std::string package_name = client->GetAppPackageName();
   EXPECT_TRUE(package_name.empty());
 }
@@ -190,9 +190,9 @@ TEST_F(AwMetricsServiceClientTest, TestShouldNotUploadPackageName_SampledOut) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(true, true);
   client->SetRecordPackageNameForAppType(true);
   client->SetInPackageNameSample(false);
+  client->SetHaveMetricsConsent(true, true);
   std::string package_name = client->GetAppPackageName();
   EXPECT_TRUE(package_name.empty());
 }
@@ -201,9 +201,9 @@ TEST_F(AwMetricsServiceClientTest, TestCanUploadPackageName) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
-  client->SetHaveMetricsConsent(true, true);
   client->SetRecordPackageNameForAppType(true);
   client->SetInPackageNameSample(true);
+  client->SetHaveMetricsConsent(true, true);
   std::string package_name = client->GetAppPackageName();
   EXPECT_FALSE(package_name.empty());
 }

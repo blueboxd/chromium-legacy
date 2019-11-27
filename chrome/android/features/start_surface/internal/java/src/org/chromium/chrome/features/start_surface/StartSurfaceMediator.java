@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -96,6 +97,8 @@ class StartSurfaceMediator
     private TabModel mNormalTabModel;
     @Nullable
     private TabModelObserver mNormalTabModelObserver;
+    @Nullable
+    private TabModelSelectorObserver mTabModelSelectorObserver;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
@@ -119,14 +122,14 @@ class StartSurfaceMediator
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
 
-            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+            mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                     // TODO(crbug.com/982018): Optimize to not listen for selected Tab model change
                     // when overview is not shown.
                     updateIncognitoMode(newModel.isIncognito());
                 }
-            });
+            };
             mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
             if (mSurfaceMode == SurfaceMode.TWO_PANES) {
@@ -293,6 +296,9 @@ class StartSurfaceMediator
                                 mNightModeStateProvider.isInNightMode()));
             }
 
+            updateIncognitoMode(mTabModelSelector.isIncognitoSelected());
+            mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
             mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
         }
@@ -360,6 +366,9 @@ class StartSurfaceMediator
             destroyFeedSurfaceCoordinator();
             if (mNormalTabModelObserver != null) {
                 mNormalTabModel.removeObserver(mNormalTabModelObserver);
+            }
+            if (mTabModelSelectorObserver != null) {
+                mTabModelSelector.removeObserver(mTabModelSelectorObserver);
             }
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {

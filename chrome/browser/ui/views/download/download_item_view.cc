@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
@@ -50,6 +51,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/download_item_utils.h"
@@ -223,8 +225,11 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   open_button->set_context_menu_controller(this);
   open_button_ = AddChildView(std::move(open_button));
 
+  int file_name_style = views::style::STYLE_PRIMARY;
+  if (base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
+    file_name_style = STYLE_EMPHASIZED;
   auto file_name_label = std::make_unique<views::Label>(
-      ElidedFilename(), views::style::CONTEXT_LABEL, STYLE_EMPHASIZED);
+      ElidedFilename(), views::style::CONTEXT_LABEL, file_name_style);
   file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
   file_name_label_ = AddChildView(std::move(file_name_label));
@@ -467,7 +472,7 @@ void DownloadItemView::Layout() {
 
   if (IsShowingWarningDialog()) {
     gfx::Point child_origin(
-        kStartPadding + kWarningIconSize + kStartPadding,
+        kStartPadding + GetWarningIconSize() + kStartPadding,
         (height() - dangerous_download_label_->height()) / 2);
     dangerous_download_label_->SetPosition(child_origin);
 
@@ -481,8 +486,9 @@ void DownloadItemView::Layout() {
     if (discard_button_)
       discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (IsShowingDeepScanning()) {
-    gfx::Point child_origin(kStartPadding + kWarningIconSize + kStartPadding,
-                            (height() - deep_scanning_label_->height()) / 2);
+    gfx::Point child_origin(
+        kStartPadding + GetWarningIconSize() + kStartPadding,
+        (height() - deep_scanning_label_->height()) / 2);
     deep_scanning_label_->SetPosition(child_origin);
 
     if (open_now_button_) {
@@ -530,7 +536,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
 
   if (IsShowingWarningDialog()) {
     // Width.
-    width = kStartPadding + kWarningIconSize + kStartPadding +
+    width = kStartPadding + GetWarningIconSize() + kStartPadding +
             dangerous_download_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
     if (save_button_)
@@ -539,16 +545,16 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
 
     // Height: make sure the button fits and the warning icon fits.
     child_height =
-        std::max({child_height, button_size.height(), kWarningIconSize});
+        std::max({child_height, button_size.height(), GetWarningIconSize()});
   } else if (IsShowingDeepScanning()) {
-    width = kStartPadding + kWarningIconSize + kStartPadding +
+    width = kStartPadding + GetWarningIconSize() + kStartPadding +
             deep_scanning_label_->width() + kLabelPadding;
     if (open_now_button_) {
       width += open_now_button_->GetPreferredSize().width();
       // Height: make sure the button fits and the warning icon fits.
       child_height =
           std::max({child_height, open_now_button_->GetPreferredSize().height(),
-                    kWarningIconSize});
+                    GetWarningIconSize()});
       width += kEndPadding;
     }
 
@@ -733,6 +739,18 @@ int DownloadItemView::GetYForFilenameText() const {
 }
 
 void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
+  bool use_new_warnings =
+      base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings);
+  bool show_warning_icon = IsShowingWarningDialog() || IsShowingDeepScanning();
+  if (show_warning_icon && !use_new_warnings) {
+    int icon_x =
+        (base::i18n::IsRTL() ? width() - GetWarningIconSize() - kStartPadding
+                             : kStartPadding);
+    int icon_y = (height() - GetWarningIconSize()) / 2;
+    canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
+    return;
+  }
+
   // Paint download progress.
   DownloadItem::DownloadState state = model_->GetState();
   canvas->Save();
@@ -750,8 +768,8 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   if (image_ptr)
     current_icon = image_ptr->ToImageSkia();
 
-  if (state == DownloadItem::IN_PROGRESS && !IsShowingDeepScanning() &&
-      !IsShowingWarningDialog()) {
+  if (state == DownloadItem::IN_PROGRESS &&
+      !(use_new_warnings && show_warning_icon)) {
     base::TimeDelta progress_time = previous_progress_elapsed_;
     if (!model_->IsPaused())
       progress_time += base::TimeTicks::Now() - progress_start_time_;
@@ -766,7 +784,7 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
       DownloadShelf::PaintDownloadComplete(
           canvas, *GetThemeProvider(), complete_animation_->GetCurrentValue());
     }
-  } else {
+  } else if (use_new_warnings) {
     current_icon = &icon_;
   }
   canvas->Restore();
@@ -786,12 +804,12 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*current_icon, icon_x, icon_y, flags);
 
   // Overlay the danger icon if appropriate.
-  if (IsShowingWarningDialog() || IsShowingDeepScanning()) {
+  if (show_warning_icon && use_new_warnings) {
     int icon_x =
-        (base::i18n::IsRTL() ? width() - kWarningIconSize - kStartPadding
+        (base::i18n::IsRTL() ? width() - GetWarningIconSize() - kStartPadding
                              : kStartPadding) +
         kDangerIconOffset;
-    int icon_y = (height() - kWarningIconSize) / 2 + kDangerIconOffset;
+    int icon_y = (height() - GetWarningIconSize()) / 2 + kDangerIconOffset;
     canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
   }
 }
@@ -1049,7 +1067,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
               model()->profile())
               ->RequestsAdvancedProtectionVerdicts()) {
         return gfx::CreateVectorIcon(
-            vector_icons::kErrorIcon, kErrorIconSize,
+            vector_icons::kErrorIcon, GetErrorIconSize(),
             GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_AlertSeverityMedium));
       }
@@ -1064,13 +1082,13 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
       return gfx::CreateVectorIcon(
-          vector_icons::kWarningIcon, kWarningIconSize,
+          vector_icons::kWarningIcon, GetWarningIconSize(),
           GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_AlertSeverityHigh));
 
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-      return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
+      return gfx::CreateVectorIcon(vector_icons::kErrorIcon, GetErrorIconSize(),
                                    gfx::kGoogleGrey600);
 
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
@@ -1432,6 +1450,9 @@ void DownloadItemView::OpenDownloadDuringAsyncScanning() {
 }
 
 void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
+  if (!base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
+    return;
+
   base::string16 filename = ElidedFilename();
   size_t file_name_position = label->GetText().find(filename);
   if (file_name_position != std::string::npos) {
@@ -1441,4 +1462,22 @@ void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
         gfx::Range(file_name_position, file_name_position + filename.size()),
         style);
   }
+}
+
+// static
+int DownloadItemView::GetWarningIconSize() {
+  // TODO(drubery): Replace this method with a constexpr variable when the new
+  // UX is fully launched.
+  return base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings)
+             ? 20
+             : 24;
+}
+
+// static
+int DownloadItemView::GetErrorIconSize() {
+  // TODO(drubery): Replace this method with a constexpr variable when the new
+  // UX is fully launched.
+  return base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings)
+             ? 20
+             : 27;
 }

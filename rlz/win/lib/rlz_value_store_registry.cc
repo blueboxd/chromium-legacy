@@ -10,8 +10,8 @@
 #include "base/win/registry.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
-#include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/string_utils.h"
+#include "rlz/lib/supplementary_branding.h"
 #include "rlz/win/lib/registry_util.h"
 
 using base::ASCIIToUTF16;

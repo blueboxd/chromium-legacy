@@ -99,6 +99,7 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
                 super.isStatusBarDefaultThemeColor());
     }
 
+    @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(
                 event, this, mToolbarCoordinator.toolbarIsInitialized());

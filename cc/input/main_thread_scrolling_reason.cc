@@ -11,7 +11,7 @@
 namespace cc {
 
 std::string MainThreadScrollingReason::AsText(uint32_t reasons) {
-  base::trace_event::TracedValue traced_value;
+  base::trace_event::TracedValue traced_value(0, /*force_json=*/true);
   AddToTracedValue(reasons, traced_value);
   std::string result = traced_value.ToString();
   // Remove '{main_thread_scrolling_reasons:[', ']}', and any '"' chars.

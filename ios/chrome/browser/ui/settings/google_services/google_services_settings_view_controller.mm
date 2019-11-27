@@ -35,9 +35,8 @@ NSString* const kGoogleServicesSettingsViewIdentifier =
   NSIndexPath* indexPath =
       [self.tableViewModel indexPathForItemType:sender.tag];
   DCHECK(indexPath);
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-      [self.tableViewModel itemAtIndexPath:indexPath]);
-  [self.serviceDelegate toggleSwitchItem:syncSwitchItem withValue:sender.isOn];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  [self.serviceDelegate toggleSwitchItem:item withValue:sender.isOn];
 }
 
 #pragma mark - UITableViewDataSource

@@ -29,6 +29,7 @@
 #include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/lib/string_utils.h"
+#include "rlz/lib/time_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -471,23 +472,6 @@ bool FinancialPing::ClearLastPingTime(Product product) {
   if (!store || !store->HasAccess(RlzValueStore::kWriteAccess))
     return false;
   return store->ClearPingTime(product);
-}
-
-int64_t FinancialPing::GetSystemTimeAsInt64() {
-#if defined(OS_WIN)
-  FILETIME now_as_file_time;
-  // Relative to Jan 1, 1601 (UTC).
-  GetSystemTimeAsFileTime(&now_as_file_time);
-
-  LARGE_INTEGER integer;
-  integer.HighPart = now_as_file_time.dwHighDateTime;
-  integer.LowPart = now_as_file_time.dwLowDateTime;
-  return integer.QuadPart;
-#else
-  // Seconds since epoch (Jan 1, 1970).
-  double now_seconds = base::Time::Now().ToDoubleT();
-  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
-#endif
 }
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)

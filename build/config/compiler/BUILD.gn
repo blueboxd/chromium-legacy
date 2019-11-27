@@ -1524,11 +1524,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/989932): Evaluate and possibly enable.
           "-Wno-implicit-int-float-conversion",
 
-          # TODO(https://crbug.com/999871): Decide if we want to clean up the
-          # codebase or just disable this.  Doesn't seem super useful, but
-          # also fires in only 2 files.
-          "-Wno-c99-designator",
-
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
 
@@ -1544,6 +1539,12 @@ config("default_warnings") {
           # TODO(https://crbug.com/1024203) Clean up, enable.
           "-Wno-tautological-bitwise-compare",
         ]
+        if (is_fuchsia || is_mac) {
+          cflags += [
+            # TODO(https://crbug.com/999871): Clean up, enable.
+            "-Wno-c99-designator",
+          ]
+        }
 
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.

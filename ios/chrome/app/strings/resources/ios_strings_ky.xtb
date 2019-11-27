@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">"Таржымалды сактап баштоо" баскычын басып, JavaScript консолунун бардык өтмөктөрүндөгү мындан кийинки таржымалдарды жана каталарды топтоңуз. Таржымалдар ушул барак жабылып же "Таржымалды сактоону токтотуу" баскычы басылмайынча топтолот (жана эстутумда гана сакталат).</translation>
 <translation id="1657011748321897393">Тармакка туташпай тургандыктан, бөлүшө албай калдыңыз.</translation>
 <translation id="165877110639533037">Ачык өтмөктөр жок</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> тилинен <ph name="TARGET_LANGUAGE" /> тилине</translation>
 <translation id="168715261339224929">Кыстармаларды бардык түзмөктөрүңүздө колдонуу үчүн шайкештирүүнү күйгүзүңүз.</translation>
 <translation id="1687475363370981210">Баары окулган деп белгилөө</translation>
 <translation id="1690731385917361335">Эч нерсе жок</translation>
@@ -102,7 +103,6 @@
 <translation id="2273327106802955778">"Дагы" менюсу</translation>
 <translation id="2316709634732130529">Сунушталган сырсөздү колдонуу</translation>
 <translation id="2320166752086256636">Баскычтопту жашыруу</translation>
-<translation id="2330129964253841015">Сырсөзүңүздү кимдир-бирөө билип алса, эскертүү жөнөтүлсүн</translation>
 <translation id="2339560363438331454">Google кызматтарын шайкештирүү</translation>
 <translation id="2351097562818989364">Которуу жөндөөлөрүңүз баштапкы абалга келтирилди.</translation>
 <translation id="2359043044084662842">Которуу</translation>
@@ -127,6 +127,7 @@
 <translation id="2653659639078652383">Тапшыруу</translation>
 <translation id="2690858294534178585">Камера колдонулууда</translation>
 <translation id="2691653761409724435">Оффлайнда жеткиликтүү эмес</translation>
+<translation id="2695507686909505111">Барак которулду</translation>
 <translation id="2702801445560668637">Окуу тизмеси</translation>
 <translation id="2704606927547763573">Көчүрүлдү</translation>
 <translation id="2709516037105925701">Автотолтуруу</translation>
@@ -206,6 +207,7 @@
 <translation id="3779810277399252432">Интернет байланышы жок.</translation>
 <translation id="3783017676699494206">Сүрөттү сактоо</translation>
 <translation id="3789841737615482174">Орнотуу</translation>
+<translation id="3803696231112616155">Бул сайтты которууну сунуштоо</translation>
 <translation id="385051799172605136">Артка</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3915450441834151894">Сайт тууралуу маалымат</translation>
@@ -243,6 +245,7 @@
 <translation id="4359125752503270327">Бул барак башка колдонмодо ачылат.</translation>
 <translation id="4375040482473363939">QR кодду издөө</translation>
 <translation id="4378154925671717803">Телефон</translation>
+<translation id="4389019817280890563">Тилди өзгөртүү үчүн таптап коюңуз.</translation>
 <translation id="441868831736628555">Купуялык эскертүүсү</translation>
 <translation id="4454246407045105932">Тил кошуу</translation>
 <translation id="4476574785019001431">Жөндөөлөр</translation>
@@ -344,6 +347,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="5871497086027727873">1 нерсе жылдырылды</translation>
 <translation id="5897956970858271241">Көчүрүлгөн шилтеме менен өтүңүз</translation>
 <translation id="5911030830365207728">Google Котормо</translation>
+<translation id="5913600720976431809">Бул баракты которуу параметрлери</translation>
 <translation id="5916664084637901428">Күйүк</translation>
 <translation id="5938160824633642847">Түзмөгүңүздө орун аз калды. Орун бошотуп, кайра аракет кылыңыз.</translation>
 <translation id="5948291296578561264">Ушуну менен сүрөттөрдү галереяңызга сактоого мүмкүндүк берилет.</translation>
@@ -375,6 +379,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6219688215832490856">Эч качан которулбасын</translation>
 <translation id="6254066287920239840">Шилтемелерди серепчиден эмес, колдонмодон ачыңыз.</translation>
 <translation id="6255097610484507482">Насыя картсын түзтүү</translation>
+<translation id="6284652193729350524"><ph name="LANGUAGE" /> тилин которууну сунуштоо</translation>
 <translation id="6303969859164067831">Аккаунттан чыгып, шайкештирүүнү өчүрүү</translation>
 <translation id="6308436439357671616">Бул сүрөткө тартууга жана аларды жүктөп берүүгө жол ачат.</translation>
 <translation id="6324528485781869530">Каттоо эсебин алмаштыруу</translation>
@@ -429,11 +434,13 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6903907808598579934">Шайкештирүүнү күйгүзүү</translation>
 <translation id="6914583639806229067">Көчүрүп алган сүрөттү издеңиз</translation>
 <translation id="6914783257214138813">Сырсөздөрүңүз экспорттолгон сырсөздөр файлын көргөн адамдардын баарына көрүнөт.</translation>
+<translation id="6930799952781667037">Ушул тилге өзгөртүү үчүн таптап коюңуз.</translation>
 <translation id="6944369514868857500">Башка аккаунтту тандоо</translation>
 <translation id="6945221475159498467">Тандаңыз</translation>
 <translation id="6973630695168034713">Куржундар</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Google аккаунтунун жөндөөлөрүнө өтүү</translation>
+<translation id="6995899638241819463">Сырсөзүңүздү кимдир-бирөө билип алса, эскертүү жөнөтүлсүн</translation>
 <translation id="6998989275928107238">Кимге</translation>
 <translation id="7004499039102548441">Акыркы өтмөктөр</translation>
 <translation id="7006788746334555276">Мазмун жөндөөлөрү</translation>
@@ -458,6 +465,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7293171162284876153">Шайкештирүүнү баштоо үчүн, "Chrome дайындарын шайкештирүүнү" күйгүзүңүз.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> пайыз жүктөлүп алынды</translation>
 <translation id="7346909386216857016">Жарайт, түшүндүм</translation>
+<translation id="734758817008927353">Картаны сактоо параметрлери</translation>
 <translation id="7348502496356775519">Кыстарма</translation>
 <translation id="7383797227493018512">Окуу тизмеси</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7671141431838911305">ОРНОТУУ</translation>
 <translation id="7765158879357617694">Жылуу</translation>
 <translation id="7772032839648071052">Купуя сөз айкашын ырастаңыз</translation>
+<translation id="7781011649027948662">Бул баракча которулсунбу?</translation>
 <translation id="7781829728241885113">Кечээ</translation>
 <translation id="778855399387580014">Chrome'дун жаңы өтмөгүндө издеңиз.</translation>
 <translation id="7791543448312431591">Кошуу</translation>

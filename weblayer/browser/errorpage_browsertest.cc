@@ -5,7 +5,6 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
@@ -17,16 +16,9 @@
 
 namespace weblayer {
 
-// TODO(crbug.com/1026523): Fix flakiness on Win10.
-#if defined(OS_WIN)
-#define MAYBE_ErrorPageBrowserTest DISABLED_ErrorPageBrowserTest
-#else
-#define MAYBE_ErrorPageBrowserTest ErrorPageBrowserTest
-#endif
+using ErrorPageBrowserTest = WebLayerBrowserTest;
 
-using MAYBE_ErrorPageBrowserTest = WebLayerBrowserTest;
-
-IN_PROC_BROWSER_TEST_F(MAYBE_ErrorPageBrowserTest, NameNotResolved) {
+IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
   GURL error_page_url =
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
 
@@ -42,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ErrorPageBrowserTest, NameNotResolved) {
 
 // Verifies that navigating to a URL that returns a 404 with an empty body
 // results in the navigation failing.
-IN_PROC_BROWSER_TEST_F(MAYBE_ErrorPageBrowserTest, 404WithEmptyBody) {
+IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, 404WithEmptyBody) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL error_page_url = embedded_test_server()->GetURL("/empty404.html");

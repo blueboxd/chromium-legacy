@@ -48,90 +48,85 @@ network::mojom::CookieMatchType CookieMatchTypeFromProto(
 }  // namespace
 
 // static
-base::Optional<std::vector<CookieChangeSubscription>>
+std::vector<std::unique_ptr<CookieChangeSubscription>>
 CookieChangeSubscription::DeserializeVector(
     const std::string& proto_string,
     int64_t service_worker_registration_id) {
+  std::vector<std::unique_ptr<CookieChangeSubscription>> subscriptions;
+
   proto::CookieChangeSubscriptionsProto subscriptions_proto;
   if (!subscriptions_proto.ParseFromString(proto_string))
-    return base::nullopt;
+    return subscriptions;
 
-  std::vector<CookieChangeSubscription> subscriptions;
   int subscription_count = subscriptions_proto.subscriptions_size();
   subscriptions.reserve(subscription_count);
   for (int i = 0; i < subscription_count; ++i) {
-    base::Optional<CookieChangeSubscription> subscription_opt =
+    std::unique_ptr<CookieChangeSubscription> subscription =
         CookieChangeSubscription::Create(subscriptions_proto.subscriptions(i),
                                          service_worker_registration_id);
-    if (!subscription_opt.has_value())
+    if (!subscription)
       continue;
-    subscriptions.emplace_back(std::move(subscription_opt).value());
+    subscriptions.push_back(std::move(subscription));
   }
 
-  return base::make_optional(
-      std::vector<CookieChangeSubscription>(std::move(subscriptions)));
-}
-
-// static
-std::vector<CookieChangeSubscription> CookieChangeSubscription::FromMojoVector(
-    std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
-    int64_t service_worker_registration_id) {
-  std::vector<CookieChangeSubscription> subscriptions;
-  subscriptions.reserve(mojo_subscriptions.size());
-  for (const auto& mojo_subscription : mojo_subscriptions) {
-    subscriptions.emplace_back(
-        std::move(mojo_subscription->url), std::move(mojo_subscription->name),
-        mojo_subscription->match_type, service_worker_registration_id);
-  }
   return subscriptions;
 }
 
 // static
 std::string CookieChangeSubscription::SerializeVector(
-    const std::vector<CookieChangeSubscription>& subscriptions) {
+    const std::vector<std::unique_ptr<CookieChangeSubscription>>&
+        subscriptions) {
+  DCHECK(!subscriptions.empty());
   proto::CookieChangeSubscriptionsProto subscriptions_proto;
   for (const auto& subscription : subscriptions)
-    subscription.Serialize(subscriptions_proto.add_subscriptions());
+    subscription->Serialize(subscriptions_proto.add_subscriptions());
   return subscriptions_proto.SerializeAsString();
 }
 
 // static
 std::vector<blink::mojom::CookieChangeSubscriptionPtr>
 CookieChangeSubscription::ToMojoVector(
-    const std::vector<CookieChangeSubscription>& subscriptions) {
+    const std::vector<std::unique_ptr<CookieChangeSubscription>>&
+        subscriptions) {
   std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions;
   mojo_subscriptions.reserve(subscriptions.size());
   for (const auto& subscription : subscriptions) {
     auto mojo_subscription = blink::mojom::CookieChangeSubscription::New();
-    subscription.Serialize(mojo_subscription.get());
-    mojo_subscriptions.emplace_back(std::move(mojo_subscription));
+    subscription->Serialize(mojo_subscription.get());
+    mojo_subscriptions.push_back(std::move(mojo_subscription));
   }
   return mojo_subscriptions;
 }
 
 // static
-base::Optional<CookieChangeSubscription> CookieChangeSubscription::Create(
+std::unique_ptr<CookieChangeSubscription> CookieChangeSubscription::Create(
     proto::CookieChangeSubscriptionProto proto,
     int64_t service_worker_registration_id) {
   if (!proto.has_url())
-    return base::nullopt;
+    return nullptr;
   GURL url = GURL(proto.url());
   if (!url.is_valid())
-    return base::nullopt;
+    return nullptr;
 
   std::string name = proto.has_name() ? proto.name() : "";
   ::network::mojom::CookieMatchType match_type =
       proto.has_match_type() ? CookieMatchTypeFromProto(proto.match_type())
                              : ::network::mojom::CookieMatchType::EQUALS;
 
-  return CookieChangeSubscription(std::move(url), std::move(name), match_type,
-                                  service_worker_registration_id);
+  return std::make_unique<CookieChangeSubscription>(
+      std::move(url), std::move(name), match_type,
+      service_worker_registration_id);
 }
 
-CookieChangeSubscription::CookieChangeSubscription(CookieChangeSubscription&&) =
-    default;
-
 CookieChangeSubscription::~CookieChangeSubscription() = default;
+
+CookieChangeSubscription::CookieChangeSubscription(
+    blink::mojom::CookieChangeSubscriptionPtr mojo_subscription,
+    int64_t service_worker_registration_id)
+    : url_(std::move(mojo_subscription->url)),
+      name_(std::move(mojo_subscription->name)),
+      match_type_(mojo_subscription->match_type),
+      service_worker_registration_id_(service_worker_registration_id) {}
 
 CookieChangeSubscription::CookieChangeSubscription(
     GURL url,
@@ -177,6 +172,12 @@ bool CookieChangeSubscription::ShouldObserveChangeTo(
 
   return cookie.IncludeForRequestURL(url_, net_options, access_semantics)
       .IsInclude();
+}
+
+bool operator==(const CookieChangeSubscription& lhs,
+                const CookieChangeSubscription& rhs) {
+  return (lhs.match_type() == rhs.match_type()) && (lhs.name() == rhs.name()) &&
+         (lhs.url() == rhs.url());
 }
 
 }  // namespace content

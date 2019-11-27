@@ -31,7 +31,7 @@ public class ChromeUiApplicationTestRule extends ExternalResource {
      * Returns an instance of the page controller that corresponds to the current page.
      * @param controllers      List of possible page controller instances to search among.
      * @return                 The detected page controller.
-     * @throws UiLocationError If page can't be determined.
+     * @throws UiLocationException If page can't be determined.
      */
     public static PageController detectPageAmong(PageController... controllers) {
         for (PageController instance : controllers) {
@@ -102,7 +102,7 @@ public class ChromeUiApplicationTestRule extends ExternalResource {
      * launch or after application data was cleared.
      * Add potential page controllers that could show up before the New Tab Page here.
      * @return                 The detected page controller.
-     * @throws UiLocationError If page can't be determined.
+     * @throws UiLocationException If page can't be determined.
      */
     private static PageController detectPageOnFirstRun() {
         return detectPageAmong(TOSController.getInstance(), SyncController.getInstance(),

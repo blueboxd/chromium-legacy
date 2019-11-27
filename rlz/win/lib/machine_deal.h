@@ -8,7 +8,7 @@
 #define RLZ_WIN_LIB_MACHINE_DEAL_H_
 
 #include <string>
-#include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/rlz_enums.h"
 
 namespace rlz_lib {
 

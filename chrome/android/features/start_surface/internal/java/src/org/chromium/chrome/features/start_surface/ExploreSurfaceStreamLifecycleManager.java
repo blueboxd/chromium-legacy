@@ -6,9 +6,8 @@ package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 

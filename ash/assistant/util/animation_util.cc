@@ -21,7 +21,7 @@ namespace {
 // Returns an observer that will hide |view| when it fires.
 // The observer will delete itself after firing (by returning true).
 ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
-  return new ui::CallbackLayerAnimationObserver(base::Bind(
+  return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
       /*animation_ended_callback=*/
       [](views::View* view,
          const ui::CallbackLayerAnimationObserver& observer) {

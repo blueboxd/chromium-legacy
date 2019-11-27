@@ -524,6 +524,7 @@ class PrintRenderFrameHelper
 
     int total_page_count() const;
     const std::vector<int>& pages_to_render() const;
+    int pages_rendered_count() const;
     MetafileSkia* metafile();
     int last_error() const;
 

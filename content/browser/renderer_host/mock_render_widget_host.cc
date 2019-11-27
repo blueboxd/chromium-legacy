@@ -56,7 +56,7 @@ void MockRenderWidgetHost::ExpectForceEnableZoom(bool enable) {
 }
 
 // Mocks out |renderer_compositor_frame_sink_| with a
-// CompositorFrameSinkClientPtr bound to
+// CompositorFrameSinkClient bound to
 // |mock_renderer_compositor_frame_sink|.
 void MockRenderWidgetHost::SetMockRendererCompositorFrameSink(
     viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink) {

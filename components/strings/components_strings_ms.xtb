@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Tunjukkan lagi</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Tukar kata laluan anda</translation>
 <translation id="1484290072879560759">Pilih Alamat Pengiriman</translation>
 <translation id="1492194039220927094">Penolakan dasar:</translation>
 <translation id="1501859676467574491">Tunjukkan kad daripada Akaun Google anda</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Cuba hubungi pentadbir sistem.</translation>
 <translation id="1736420071277903564">Komputer</translation>
-<translation id="1739107442478692187">Pelanggaran data berlaku pada tapak atau apl yang anda gunakan. Chrome mengesyorkan anda menyemak kata laluan yang disimpan dan menukar kata laluan anda di <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="1740951997222943430">Masukkan bulan tamat tempoh yang sah</translation>
 <translation id="1741613555002899862">Mesti dinyatakan dan merupakan rentetan yang sah apabila DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Untuk membayar dengan lebih cepat selepas ini, simpan kad, nama dan alamat pengebilan anda ke Akaun Google dan ke peranti ini.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Perkhidmatan Nyahzip</translation>
 <translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan tetapan anda yang dikemas kini pada tapak ini, muatkan semula halaman ini</translation>
+<translation id="1917876262703816781">Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda. Chrome mengesyorkan supaya anda menukar kata laluan pada <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919367280705858090">Dapatkan bantuan berkaitan mesej ralat tertentu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Tiada}=1{1 tapak}other{# tapak}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domain tidak padan</translation>
 <translation id="2096368010154057602">Jabatan</translation>
 <translation id="2099652385553570808">Tiga kokot kiri</translation>
-<translation id="2100280972184758440">Kata laluan anda telah terjejas</translation>
 <translation id="2102134110707549001">Cadangkan Kata Laluan Yang Kukuh…</translation>
 <translation id="2108755909498034140">Mulakan semula komputer anda</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Dikeluarkan kepada: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Tebukan bawah sebelah kanan</translation>
-<translation id="2124528555835617522">Pelanggaran data berlaku pada tapak atau apl yang anda gunakan. Chrome mengesyorkan anda menyemak kata laluan yang disimpan sekarang.</translation>
 <translation id="2129079103035905234">Penderia Gerakan</translation>
 <translation id="2130448033692577677">Templat yang anda nyatakan tidak dapat digunakan kerana dasar DnsOverHttpsMode tidak ditetapkan.</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
@@ -494,7 +493,6 @@
 <translation id="3282497668470633863">Tambahkan nama pada kad</translation>
 <translation id="3287510313208355388">Muat turun semasa dalam talian</translation>
 <translation id="3293642807462928945">Ketahui lebih lanjut tentang dasar <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Pelanggaran data berlaku pada tapak atau apl yang anda gunakan. Chrome mengesyorkan supaya anda menukar kata laluan pada <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="3303855915957856445">Tiada hasil carian ditemui</translation>
 <translation id="3320021301628644560">Tambahkan alamat pengebilan</translation>
 <translation id="3324983252691184275">Merah lembayung</translation>
@@ -909,6 +907,7 @@
 <translation id="5287240709317226393">Tunjukkan kuki</translation>
 <translation id="5287456746628258573">Tapak ini menggunakan konfigurasi keselamatan yang sudah lapuk, yang mungkin mendedahkan maklumat anda (contohnya, kata laluan atau nombor kad kredit) apabila dihantar ke tapak ini.</translation>
 <translation id="5288108484102287882">Pengesahan nilai dasar telah menimbulkan amaran</translation>
+<translation id="5295292838686006428">Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda. Chrome mengesyorkan anda menyemak kata laluan yang disimpan sekarang.</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5308380583665731573">Sambung</translation>
@@ -959,6 +958,7 @@
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan E-mel</translation>
 <translation id="5545756402275714221">Artikel untuk Anda</translation>
+<translation id="5552137475244467770">Chrome menyemak kata laluan anda secara berkala pada senarai yang telah diterbitkan dalam talian. Apabila melakukan tindakan ini, kata laluan dan nama pengguna anda akan disulitkan supaya data ini tidak dapat dibaca oleh sesiapa termasuk Google.</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5560088892362098740">Tarikh Tamat Tempoh</translation>
 <translation id="5565735124758917034">Aktif</translation>
@@ -1050,6 +1050,7 @@
 <translation id="5992691462791905444">Lipatan Z kejuruteraan</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Semak kata laluan anda</translation>
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
@@ -1339,6 +1340,7 @@ Butiran tambahan:
 <translation id="7481312909269577407">Majukan</translation>
 <translation id="748406663033922918">Gunakan kunci skrin untuk mengesahkan kaedah pembayaran anda yang disimpan.</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
+<translation id="7495290002932347110">Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda. Chrome mengesyorkan anda menyemak kata laluan yang disimpan dan menukar kata laluan anda pada <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="7498234416455752244">Teruskan mengedit</translation>
 <translation id="7508255263130623398">Id peranti yang dikembalikan kosong atau tidak sepadan dengan id peranti semasa</translation>
 <translation id="7508870219247277067">Hijau Avokado</translation>

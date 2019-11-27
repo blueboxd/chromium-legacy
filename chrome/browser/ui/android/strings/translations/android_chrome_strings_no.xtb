@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
 <translation id="2328985652426384049">Kan ikke logge på</translation>
-<translation id="2330129964253841015">Advar deg hvis passord utsettes for sikkerhetsbrudd</translation>
 <translation id="2349710944427398404">Total datamengde som brukes av Chrome, deriblant kontoer, bokmerker og lagrede innstillinger</translation>
 <translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -816,6 +815,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
+<translation id="6995899638241819463">Advar deg hvis passord blir avdekket i databrudd</translation>
 <translation id="7015203776128479407">Innledende synkroniseringsoppsett ble ikke fullført. Synkronisering er slått av.</translation>
 <translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>

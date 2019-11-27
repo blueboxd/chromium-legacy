@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> կամ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Համատեսքի ռեժիմ</translation>
 <translation id="4382340674111381977">Անցնել նախորդ էջ</translation>
+<translation id="4458670250301149821">Տեղափոխել հավելվածի պատկերակը պանակ կամ պանակից՝ հավելվածի ցանցում</translation>
 <translation id="4472417192667361414">Համակարգի և էկրանի կարգավորումներ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ապա՝ <ph name="LEFT" /> կամ <ph name="RIGHT" />, կամ <ph name="UP" />, կամ<ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Ցուցադրել ստեղնային դյուրանցումների ուղեցույցը</translation>
 <translation id="4628718545549558538">Բացել կարգավիճակի գոտին (որտեղ ցուցադրվում է պրոֆիլի պատկերը)</translation>
 <translation id="4642092649622328492">Ստանալ էկրանի մասնակի պատկեր</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Ջնջել հաջորդ տառը (ջնջել հաջորդը)</translation>
 <translation id="7500368597227394048">գծիկ</translation>
 <translation id="7611271430932669992">Տեղափոխել ֆոկուսը ելնող և երկխոսության պատուհանների վրա</translation>
+<translation id="7635348532214572995">Տեղափոխել հավելվածի պատկերակը ցանցով</translation>
 <translation id="766326951329901120">Տեղադրել բովանդակությունը սեղմատախտակից որպես սովորական տեքստ</translation>
 <translation id="7703010453515335249">ձախ քառակուսի փակագիծ</translation>
 <translation id="7724603315864178912">Կտրել</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Տեղադրել սեղմատախտակի բովանդակությունը</translation>
 <translation id="9052808072970550123">Անցնել հաջորդ պրոֆիլին</translation>
 <translation id="906458777597946297">Առավելացնել պատուհանը</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ապա՝ <ph name="LEFT" /> կամ <ph name="RIGHT" />կամ <ph name="UP" />, կամ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Անցնել տողի սկիզբ</translation>
 <translation id="9106898733795143799">Էջ և դիտարկիչ</translation>
 <translation id="9162942292291287644">«<ph name="QUERY" />»՝ ոչ մի արդյունք չի գտնվել</translation>

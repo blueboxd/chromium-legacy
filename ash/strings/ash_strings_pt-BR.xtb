@@ -556,7 +556,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Usando <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Desbloqueie o dispositivo com a conta <ph name="LOGIN_ID" /> para executar a ação de notificação</translation>
-<translation id="8995603266996330174">Gerenciado por <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Insira o código de acesso de pai/mãe do Family Link.</translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9056839673611986238">O dispositivo será revertido</translation>
@@ -573,6 +572,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9183456764293710005">Lupa de tela cheia</translation>
 <translation id="9193626018745640770">Transmitindo para um destinatário desconhecido</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
+<translation id="9205817095063786319">Dispositivo gerenciado por <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
 <translation id="9211681782751733685">Tempo restante até que a bateria esteja totalmente carregada: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Definir plano de fundo</translation>

@@ -193,7 +193,7 @@ class UkmRecorderImpl : public UkmRecorder {
   std::set<uint64_t> whitelisted_entry_hashes_;
 
   // Sampling configurations, loaded from a field-trial.
-  int default_sampling_rate_ = 0;
+  int default_sampling_rate_ = -1;  // -1 == not yet loaded
   base::flat_map<uint64_t, int> event_sampling_rates_;
 
   // Contains data from various recordings which periodically get serialized

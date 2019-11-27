@@ -21,18 +21,11 @@ const char kLeader[] = "$i18n";
 const size_t kLeaderSize = base::size(kLeader) - 1;
 const char kKeyOpen = '{';
 const char kKeyClose = '}';
-const char kHtmlTemplateStart[] = "_template: html`";
-const char kHtmlTemplateStartMin[] = "_template:html`";
+const char kHtmlTemplateEnd[] = "<!--_html_template_end_-->";
+const char kHtmlTemplateStart[] = "<!--_html_template_start_-->";
 const size_t kHtmlTemplateStartSize = base::size(kHtmlTemplateStart) - 1;
-const size_t kHtmlTemplateStartMinSize = base::size(kHtmlTemplateStartMin) - 1;
 
-// Currently only legacy _template: html`...`, syntax is supported.
-enum HtmlTemplateType { INVALID = 0, NONE = 1, LEGACY = 2 };
-
-struct TemplatePosition {
-  HtmlTemplateType type;
-  base::StringPiece::size_type position;
-};
+enum HtmlTemplateType { INVALID = 0, NONE = 1, VALID = 2 };
 
 struct HtmlTemplate {
   base::StringPiece::size_type start;
@@ -40,60 +33,26 @@ struct HtmlTemplate {
   HtmlTemplateType type;
 };
 
-TemplatePosition FindHtmlTemplateEnd(const base::StringPiece& source) {
-  enum State { OPEN, IN_ESCAPE, IN_TICK };
-  State state = OPEN;
-
-  for (base::StringPiece::size_type i = 0; i < source.length(); i++) {
-    if (state == IN_ESCAPE) {
-      state = OPEN;  // Consume
-      continue;
-    }
-
-    switch (source[i]) {
-      case '\\':
-        state = IN_ESCAPE;
-        break;
-      case '`':
-        state = IN_TICK;
-        break;
-      case ',':
-        if (state == IN_TICK)
-          return {LEGACY, i - 1};
-        FALLTHROUGH;
-      default:
-        state = OPEN;
-    }
-  }
-  return {NONE, base::StringPiece::npos};
-}
-
 HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
   HtmlTemplate out;
   base::StringPiece::size_type found = source.find(kHtmlTemplateStart);
-  base::StringPiece::size_type found_min = base::StringPiece::npos;
-  if (found == base::StringPiece::npos) {
-    found_min = source.find(kHtmlTemplateStartMin);
-  }
 
   // No template found, return early.
-  if (found == base::StringPiece::npos &&
-      found_min == base::StringPiece::npos) {
+  if (found == base::StringPiece::npos) {
     out.type = NONE;
     return out;
   }
 
-  out.start = found == base::StringPiece::npos
-                  ? found_min + kHtmlTemplateStartMinSize
-                  : found + kHtmlTemplateStartSize;
-  TemplatePosition end = FindHtmlTemplateEnd(source.substr(out.start));
+  out.start = found + kHtmlTemplateStartSize;
+  base::StringPiece::size_type found_end =
+      source.find(kHtmlTemplateEnd, out.start);
   // Template is not terminated.
-  if (end.type == NONE) {
+  if (found_end == base::StringPiece::npos) {
     out.type = INVALID;
     return out;
   }
 
-  out.length = end.position;
+  out.length = found_end - out.start;
   // Check for a nested template
   if (source.substr(out.start, out.length).find(kHtmlTemplateStart) !=
       base::StringPiece::npos) {
@@ -101,7 +60,7 @@ HtmlTemplate FindHtmlTemplate(const base::StringPiece& source) {
     return out;
   }
 
-  out.type = LEGACY;
+  out.type = VALID;
   return out;
 }
 

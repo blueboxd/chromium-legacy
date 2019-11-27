@@ -20,10 +20,10 @@ void LivenessServiceProvider::Start(
   exported_object->ExportMethod(
       chromeos::kLivenessServiceInterface,
       chromeos::kLivenessServiceCheckLivenessMethod,
-      base::Bind(&LivenessServiceProvider::CheckLiveness,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&LivenessServiceProvider::OnExported,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&LivenessServiceProvider::CheckLiveness,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&LivenessServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LivenessServiceProvider::OnExported(const std::string& interface_name,

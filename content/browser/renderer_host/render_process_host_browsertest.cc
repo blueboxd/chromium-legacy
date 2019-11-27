@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -184,6 +185,34 @@ class RenderProcessHostTest : public ContentBrowserTest,
     ContentBrowserTest::SetUp();
   }
 
+  void TearDown() override {
+    if (!check_frame_priorities_)
+      return;
+
+    if (low_priority_frames_expected_ && normal_priority_frames_expected_) {
+      histogram_tester_.ExpectBucketCount(
+          "BrowserRenderProcessHost.FramePrioritiesSeen",
+          RenderProcessHostImpl::FramePrioritiesSeen::kMixedPrioritiesSeen, 1);
+    } else if (low_priority_frames_expected_) {
+      histogram_tester_.ExpectBucketCount(
+          "BrowserRenderProcessHost.FramePrioritiesSeen",
+          RenderProcessHostImpl::FramePrioritiesSeen::kOnlyLowPrioritiesSeen,
+          1);
+    } else if (normal_priority_frames_expected_) {
+      histogram_tester_.ExpectBucketCount(
+          "BrowserRenderProcessHost.FramePrioritiesSeen",
+          RenderProcessHostImpl::FramePrioritiesSeen::kOnlyNormalPrioritiesSeen,
+          1);
+    } else {
+      // Two are expected here because tests using this create their own
+      // process, meaning the default process is never used/has no frames
+      // attached.
+      histogram_tester_.ExpectBucketCount(
+          "BrowserRenderProcessHost.FramePrioritiesSeen",
+          RenderProcessHostImpl::FramePrioritiesSeen::kNoFramesSeen, 2);
+    }
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
@@ -199,7 +228,6 @@ class RenderProcessHostTest : public ContentBrowserTest,
     RenderProcessHostImpl* impl = static_cast<RenderProcessHostImpl*>(process);
     impl->visible_clients_ = visible_clients;
   }
-
  protected:
   void set_process_exit_callback(const base::Closure& callback) {
     process_exit_callback_ = callback;
@@ -225,6 +253,10 @@ class RenderProcessHostTest : public ContentBrowserTest,
   base::Closure process_exit_callback_;
   bool use_frame_priority_;
   base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
+  bool low_priority_frames_expected_ = false;
+  bool normal_priority_frames_expected_ = false;
+  bool check_frame_priorities_ = false;
 };
 
 // A mock ContentBrowserClient that only considers a spare renderer to be a
@@ -1252,6 +1284,19 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, TooManyKeepaliveRequests) {
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, NoFramesSeenPriorityTest) {
+  RenderProcessHost::SetRunRendererInProcess(true);
+  RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
+      RenderProcessHostImpl::CreateRenderProcessHost(
+          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+          false /* is_for_guests_only */));
+  DCHECK(process);
+  RenderProcessHost::SetRunRendererInProcess(false);
+
+  // This process has had no frames attached to it.
+  check_frame_priorities_ = true;
+}
+
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, LowPriorityFramesDisabled) {
   // RenderProcessHostImpl::UpdateProcessPriority has an early check of
   // run_renderer_in_process and exits for RenderProcessHosts without a child
@@ -1272,6 +1317,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, LowPriorityFramesDisabled) {
                                    RenderProcessHostImpl::FramePriority::kLow);
   EXPECT_FALSE(process->IsProcessBackgrounded());
   RenderProcessHost::SetRunRendererInProcess(false);
+
+  // This process has had only low priority frames attached to it.
+  low_priority_frames_expected_ = true;
+  check_frame_priorities_ = true;
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, PriorityOverride) {
@@ -1430,6 +1479,71 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
   EXPECT_FALSE(process->IsProcessBackgrounded());
 
   RenderProcessHost::SetRunRendererInProcess(false);
+
+  // This process has had low and normal priority frames attached to it.
+  normal_priority_frames_expected_ = true;
+  low_priority_frames_expected_ = true;
+  check_frame_priorities_ = true;
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
+                       LowPriorityFramesEnabledOnlyLowPriority) {
+  // RenderProcessHostImpl::UpdateProcessPriority has an early check of
+  // run_renderer_in_process and exits for RenderProcessHosts without a child
+  // process launcher.  In order to skip initializing that here and the layer of
+  // indirection, we explicitly run in-process, which we must also disable once
+  // the test has finished to prevent crashing on exit.
+  RenderProcessHost::SetRunRendererInProcess(true);
+  RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
+      RenderProcessHostImpl::CreateRenderProcessHost(
+          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+          false /* is_for_guests_only */));
+  // For these tests, assume something is always visible.
+  SetVisibleClients(process, 1);
+  // When no frames are attached, it's not low priority.
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+  // When all frames added are low priority, it's low priority.
+  process->UpdateFrameWithPriority(base::nullopt,
+                                   RenderProcessHostImpl::FramePriority::kLow);
+  process->UpdateFrameWithPriority(base::nullopt,
+                                   RenderProcessHostImpl::FramePriority::kLow);
+  EXPECT_TRUE(process->IsProcessBackgrounded());
+
+  RenderProcessHost::SetRunRendererInProcess(false);
+
+  // This process has had only low priority frames attached to it.
+  low_priority_frames_expected_ = true;
+  check_frame_priorities_ = true;
+}
+
+IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
+                       LowPriorityFramesEnabledOnlyNormalPriority) {
+  // RenderProcessHostImpl::UpdateProcessPriority has an early check of
+  // run_renderer_in_process and exits for RenderProcessHosts without a child
+  // process launcher.  In order to skip initializing that here and the layer of
+  // indirection, we explicitly run in-process, which we must also disable once
+  // the test has finished to prevent crashing on exit.
+  RenderProcessHost::SetRunRendererInProcess(true);
+  RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
+      RenderProcessHostImpl::CreateRenderProcessHost(
+          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+          false /* is_for_guests_only */));
+  // For these tests, assume something is always visible.
+  SetVisibleClients(process, 1);
+  // When no frames are attached, it's not low priority.
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+  // When all frames added are normal priority, it's not low priority.
+  process->UpdateFrameWithPriority(
+      base::nullopt, RenderProcessHostImpl::FramePriority::kNormal);
+  process->UpdateFrameWithPriority(
+      base::nullopt, RenderProcessHostImpl::FramePriority::kNormal);
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+
+  RenderProcessHost::SetRunRendererInProcess(false);
+
+  // This process has had only normal priority frames attached to it.
+  normal_priority_frames_expected_ = true;
+  check_frame_priorities_ = true;
 }
 
 }  // namespace content

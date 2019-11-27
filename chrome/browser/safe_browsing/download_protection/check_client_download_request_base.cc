@@ -11,12 +11,14 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
@@ -129,6 +131,8 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     base::FilePath full_path,
     TabUrls tab_urls,
     size_t file_size,
+    std::string mime_type,
+    std::string hash,
     content::BrowserContext* browser_context,
     CheckDownloadCallback callback,
     DownloadProtectionService* service,
@@ -144,7 +148,9 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
       service_(service),
       binary_feature_extractor_(std::move(binary_feature_extractor)),
       database_manager_(std::move(database_manager)),
-      pingback_enabled_(service_->enabled()) {
+      pingback_enabled_(service_->enabled()),
+      mime_type_(mime_type),
+      hash_(hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (browser_context) {
@@ -206,7 +212,17 @@ void CheckClientDownloadRequestBase::FinishRequest(
   }
 
   if (ShouldUploadBinary(reason)) {
-    if (!password_protected_allowed_ && is_password_protected_) {
+    if (password_protected_allowed_ && is_password_protected_) {
+      Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+          ->OnUnscannedFileEvent(
+              source_url_, target_file_path_.AsUTF8Unsafe(),
+              base::HexEncode(hash_.data(), hash_.size()), mime_type_,
+              extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+              "filePasswordProtected", file_size_);
+    }
+
+    if (is_password_protected_ && !password_protected_allowed_) {
       result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
       reason = DownloadCheckResultReason::REASON_BLOCKED_PASSWORD_PROTECTED;
     } else if (BinaryUploadService::ShouldBlockFileSize(file_size_)) {

@@ -21,7 +21,7 @@ using DomainVisitsPerDay = base::flat_map<Day, DomainVisits>;
 // The time intervals in days to compute domain mixing metrics for, sorted
 // in ascending order.
 std::vector<int> NumDaysForMetrics() {
-  return {1, 7, 14, 30};
+  return {kOneDay, kOneWeek, kTwoWeeks, kOneMonth};
 }
 
 // Maps a time to the start of a day using ref_start_of_day as the reference
@@ -87,16 +87,16 @@ void EmitDomainMixingMetric(const DomainVisits& domain_visits, int num_days) {
   double domain_mixing_ratio = ComputeDomainMixingRatio(domain_visits);
   int percentage = gfx::ToRoundedInt(100 * domain_mixing_ratio);
   switch (num_days) {
-    case 1:
+    case kOneDay:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.OneDay", percentage);
       break;
-    case 7:
+    case kOneWeek:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.OneWeek", percentage);
       break;
-    case 14:
+    case kTwoWeeks:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.TwoWeeks", percentage);
       break;
-    case 30:
+    case kOneMonth:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.OneMonth", percentage);
       break;
     default:

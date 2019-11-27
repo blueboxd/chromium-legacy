@@ -21,10 +21,10 @@ bool MediaRouterEnabled(content::BrowserContext* context);
 
 #if !defined(OS_ANDROID)
 
+// TODO(crbug.com/1028753): Remove default-enabled kDialMediaRouteProvider after
+// tests stop disabling it.
 extern const base::Feature kDialMediaRouteProvider;
-// TODO(crbug.com/969091): This feature is now enabled by default, and the flag
-// should be removed.
-extern const base::Feature kEnableCastDiscovery;
+
 extern const base::Feature kCastMediaRouteProvider;
 // If enabled, allows Media Router to connect to Cast devices on all IP
 // addresses, not just RFC1918/RFC4193 private addresses. Workaround for
@@ -59,18 +59,9 @@ std::string GetReceiverIdHashToken(PrefService* pref_service);
 // Returns true if browser side DIAL Media Route Provider is enabled.
 bool DialMediaRouteProviderEnabled();
 
-// Returns true if browser side Cast discovery is enabled.
-bool CastDiscoveryEnabled();
-
 // Returns true if browser side Cast Media Route Provider and sink query are
 // enabled.
 bool CastMediaRouteProviderEnabled();
-
-// Returns true if the Views implementation of the Cast dialog should be used.
-// Returns false if the WebUI implementation should be used.
-// TODO(crbug.com/969098): The feature is now enabled by default. Remove this
-// function.
-bool ShouldUseViewsDialog();
 
 // Returns true if Mirroring Service should be used for mirroring.
 bool ShouldUseMirroringService();

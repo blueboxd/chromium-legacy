@@ -24,9 +24,6 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
-  // TODO(mek): Use ShareableFileReference::FinalReleaseCallback somehow.
-  typedef base::RepeatingCallback<void(const base::FilePath&)> ReleaseCallback;
-
   static void ConvertBlobInfo(
       const std::vector<IndexedDBBlobInfo>& blob_info,
       std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
@@ -63,14 +60,16 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   const base::RepeatingClosure& mark_used_callback() const {
     return mark_used_callback_;
   }
-  const ReleaseCallback& release_callback() const { return release_callback_; }
+  const base::RepeatingClosure& release_callback() const {
+    return release_callback_;
+  }
 
   void set_size(int64_t size);
   void set_file_path(const base::FilePath& file_path);
   void set_last_modified(const base::Time& time);
   void set_key(int64_t key);
   void set_mark_used_callback(const base::RepeatingClosure& mark_used_callback);
-  void set_release_callback(const ReleaseCallback& release_callback);
+  void set_release_callback(const base::RepeatingClosure& release_callback);
 
  private:
   bool is_file_;
@@ -85,7 +84,7 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   // Valid only when this comes out of the database.
   int64_t key_;
   base::RepeatingClosure mark_used_callback_;
-  ReleaseCallback release_callback_;
+  base::RepeatingClosure release_callback_;
 };
 
 }  // namespace content

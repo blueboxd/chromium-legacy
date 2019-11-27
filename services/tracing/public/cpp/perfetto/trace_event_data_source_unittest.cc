@@ -1421,6 +1421,95 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBeginAndEnd) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 84u);
 }
 
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnInstant) {
+  CreateTraceEventDataSource();
+
+  TRACE_EVENT_INSTANT("browser", "bar", [&](perfetto::EventContext ctx) {
+    ctx.event()->set_log_message()->set_body_iid(42);
+  });
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScoped) {
+  CreateTraceEventDataSource();
+
+  // Use a if statement with no brackets to ensure that the Scoped TRACE_EVENT
+  // macro properly emits the end event when leaving the single expression
+  // associated with the if(true) statement.
+  if (true)
+    TRACE_EVENT("browser", "bar", [&](perfetto::EventContext ctx) {
+      ctx.event()->set_log_message()->set_body_iid(42);
+    });
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+
+  e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_END);
+
+  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
+  EXPECT_FALSE(e_packet->track_event().has_log_message());
+}
+
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedCapture) {
+  CreateTraceEventDataSource();
+
+  bool called = false;
+  {
+    TRACE_EVENT("browser", "bar", [&](perfetto::EventContext ctx) {
+      called = true;
+      ctx.event()->set_log_message()->set_body_iid(42);
+    });
+  }
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+
+  e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_END);
+
+  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
+  EXPECT_FALSE(e_packet->track_event().has_log_message());
+  EXPECT_TRUE(called);
+}
+
 // TODO(eseckler): Add startup tracing unittests.
 
 }  // namespace

@@ -1440,6 +1440,68 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   EXPECT_EQ(0, Size(origin1_));
 }
 
+TEST_F(CacheStorageManagerTest, PutResponseWithExistingFileTest) {
+  const GURL kFooURL("http://example.com/foo");
+  const std::string kCacheName = "foo";
+
+  // Create a cache with an entry in it.
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  auto cache_handle = std::move(callback_cache_handle_);
+  EXPECT_TRUE(CachePut(cache_handle.value(), kFooURL));
+
+  // Find where the files are stored on disk.
+  base::FilePath cache_path =
+      LegacyCacheStorageCache::From(cache_handle)->path();
+
+  // Find the name of the file used to store the single entry.
+  base::FileEnumerator iter(cache_path, /* recursive = */ false,
+                            base::FileEnumerator::FILES,
+                            FILE_PATH_LITERAL("*_0"));
+  ASSERT_FALSE(iter.Next().empty());
+  base::FilePath entry_file_name = cache_path.Append(iter.GetInfo().GetName());
+
+  // Derive the name of the stream 2 file that contains side data.
+  base::FilePath::StringType stream_2_file_name_string(entry_file_name.value());
+  stream_2_file_name_string.back() = '1';
+  base::FilePath stream_2_file_name(stream_2_file_name_string);
+
+  // Delete the entry from the cache.
+  EXPECT_TRUE(CacheDelete(cache_handle.value(), kFooURL));
+
+  // Close the cache and storage so we can modify the underlying files.
+  cache_handle = CacheStorageCacheHandle();
+  FlushCacheStorageIndex(origin1_);
+  DestroyStorageManager();
+
+  // Create a fake, empty file where the entry previously existed.
+  const std::string kFakeData("foobar");
+  EXPECT_EQ(
+      base::WriteFile(entry_file_name, kFakeData.data(), kFakeData.size()),
+      static_cast<int>(kFakeData.size()));
+  EXPECT_EQ(
+      base::WriteFile(stream_2_file_name, kFakeData.data(), kFakeData.size()),
+      static_cast<int>(kFakeData.size()));
+
+  // Re-open the cache.
+  CreateStorageManager();
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  cache_handle = std::move(callback_cache_handle_);
+
+  // Try to put the entry back into the cache.  This should overwrite
+  // the fake file and create the entry successfully.
+  EXPECT_TRUE(CachePut(cache_handle.value(), kFooURL));
+  EXPECT_TRUE(CacheMatch(cache_handle.value(), kFooURL));
+
+  // The main entry file should exist and the fake data should be overwritten.
+  int64_t file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(entry_file_name, &file_size));
+  EXPECT_NE(file_size, static_cast<int64_t>(kFakeData.size()));
+
+  // The stream 2 file should be removed because the response does not have
+  // any side data.
+  EXPECT_FALSE(base::PathExists(stream_2_file_name));
+}
+
 TEST_F(CacheStorageManagerTest, CacheSizeCorrectAfterReopen) {
   const GURL kFooURL("http://example.com/foo");
   const std::string kCacheName = "foo";

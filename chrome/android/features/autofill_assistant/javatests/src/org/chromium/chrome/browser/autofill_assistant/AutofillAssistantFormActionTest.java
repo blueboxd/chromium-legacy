@@ -85,7 +85,7 @@ public class AutofillAssistantFormActionTest {
                                                              .setMinValue(1)
                                                              .setMaxValue(9)
                                                              .setLabel("Counter 1")
-                                                             .setDescriptionLine1("$34.00 per tick")
+                                                             .setDescriptionLine1("$34.00 per item")
                                                              .setDescriptionLine2(
                                                                      "<link1>Details</link1>"))
                                         .addCounters(
@@ -93,7 +93,7 @@ public class AutofillAssistantFormActionTest {
                                                         .setMinValue(1)
                                                         .setMaxValue(9)
                                                         .setLabel("Counter 2")
-                                                        .setDescriptionLine1("$387.00 per tick"))
+                                                        .setDescriptionLine1("$387.00 per item"))
                                         .setMinimizedCount(1)
                                         .setMinCountersSum(2)
                                         .setMinimizeText("Minimize")
@@ -113,7 +113,7 @@ public class AutofillAssistantFormActionTest {
                                                 .setMinValue(1)
                                                 .setMaxValue(9)
                                                 .setLabel("Counter 3")
-                                                .setDescriptionLine1("$20.00 per tick")
+                                                .setDescriptionLine1("$20.00 per item")
                                                 .setDescriptionLine2("<link1>Details</link1>"))));
         // FormAction.
         list.add((ActionProto) ActionProto.newBuilder()
@@ -168,6 +168,70 @@ public class AutofillAssistantFormActionTest {
         onView(withText("Continue")).perform(click());
 
         waitUntilViewMatchesCondition(withText("End"), isCompletelyDisplayed());
-        // TODO(806868): check that the values were correctly received by the native delegate.
+        // TODO(b/144978160): check that the values were correctly written to the action response.
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testFormActionClickLink() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        // FromProto.Builder, extracted to avoid excessive line widths.
+        FormProto.Builder formProto =
+                FormProto.newBuilder().addInputs(FormInputProto.newBuilder().setCounter(
+                        CounterInputProto.newBuilder()
+                                .addCounters(CounterInputProto.Counter.newBuilder()
+                                                     .setMinValue(1)
+                                                     .setMaxValue(9)
+                                                     .setLabel("Counter 1")
+                                                     .setDescriptionLine1("$34.00 per item")
+                                                     .setDescriptionLine2("<link4>Details</link4>"))
+                                .addCounters(CounterInputProto.Counter.newBuilder()
+                                                     .setMinValue(1)
+                                                     .setMaxValue(9)
+                                                     .setLabel("Counter 2")
+                                                     .setDescriptionLine1("$387.00 per item"))
+                                .setMinimizedCount(1)
+                                .setMinCountersSum(2)
+                                .setMinimizeText("Minimize")
+                                .setExpandText("Expand")));
+        // FormAction.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowForm(ShowFormProto.newBuilder()
+                                              .setChip(ChipProto.newBuilder()
+                                                               .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                               .setText("Continue"))
+                                              .setForm(formProto))
+                         .build());
+
+        // Prompt.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Finished")
+                                            .addChoices(Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder()
+                                                            .setType(ChipType.DONE_ACTION)
+                                                            .setText("End"))))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        // TODO(b/144690738) Remove the isDisplayed() condition.
+
+        onView(allOf(isDisplayed(), withText("Details"))).perform(click());
+        // TODO(b/144978160) Check that the correct link number was written to the action response.
+
+        waitUntilViewMatchesCondition(withText("End"), isCompletelyDisplayed());
     }
 }

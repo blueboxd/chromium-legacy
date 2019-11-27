@@ -385,6 +385,7 @@ jumbo_static_library("test_support") {
     "//net:test_support",
     "//ppapi/c:c",
     "//services/audio/public/mojom",
+    "//services/data_decoder/public/cpp:test_support",
     "//services/data_decoder/public/mojom",
     "//services/device/public/mojom",
 

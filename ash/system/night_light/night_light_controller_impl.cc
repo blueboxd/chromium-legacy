@@ -9,10 +9,16 @@
 
 #include "ash/display/display_color_manager.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -25,6 +31,7 @@
 #include "third_party/icu/source/i18n/astro.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -35,10 +42,16 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
 
 namespace {
+
+// Auto Night Light notification IDs.
+constexpr char kNotifierId[] = "ash.night_light_controller_impl";
+constexpr char kNotificationId[] = "ash.auto_night_light_notify";
 
 // Default start time at 6:00 PM as an offset from 00:00.
 constexpr int kDefaultStartTimeOffsetMinutes = 18 * 60;
@@ -318,7 +331,8 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
 
 NightLightControllerImpl::NightLightControllerImpl()
     : delegate_(std::make_unique<NightLightControllerDelegateImpl>()),
-      temperature_animation_(std::make_unique<ColorTemperatureAnimation>()) {
+      temperature_animation_(std::make_unique<ColorTemperatureAnimation>()),
+      weak_ptr_factory_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   aura::Env::GetInstance()->AddObserver(this);
@@ -338,13 +352,18 @@ void NightLightControllerImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNightLightEnabled, false);
   registry->RegisterDoublePref(prefs::kNightLightTemperature,
                                kDefaultColorTemperature);
+  const ScheduleType default_schedule_type =
+      features::IsAutoNightLightEnabled() ? ScheduleType::kSunsetToSunrise
+                                          : ScheduleType::kNone;
   registry->RegisterIntegerPref(prefs::kNightLightScheduleType,
-                                static_cast<int>(ScheduleType::kNone));
+                                static_cast<int>(default_schedule_type));
   registry->RegisterIntegerPref(prefs::kNightLightCustomStartTime,
                                 kDefaultStartTimeOffsetMinutes);
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
                                 kDefaultEndTimeOffsetMinutes);
   registry->RegisterBooleanPref(prefs::kAmbientColorEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAutoNightLightNotificationDismissed,
+                                false);
 
   // Non-public prefs, only meant to be used by ash.
   registry->RegisterDoublePref(prefs::kNightLightCachedLatitude, 0.0);
@@ -548,6 +567,9 @@ void NightLightControllerImpl::OnHostInitialized(aura::WindowTreeHost* host) {
 
 void NightLightControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
+  if (pref_service == active_user_pref_service_)
+    return;
+
   // TODO(afakhry|yjliu): Remove this VLOG when https://crbug.com/1015474 is
   // fixed.
   auto vlog_helper = [](const PrefService* pref_service) -> std::string {
@@ -590,9 +612,94 @@ void NightLightControllerImpl::SuspendDone(
   Refresh(true /* did_schedule_change */);
 }
 
+void NightLightControllerImpl::Close(bool by_user) {
+  if (by_user)
+    DisableShowingFutureAutoNightLightNotification();
+}
+
+void NightLightControllerImpl::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  auto* shell = Shell::Get();
+
+  if (!button_index.has_value()) {
+    // Body has been clicked.
+    SystemTrayClient* tray_client = shell->system_tray_model()->client();
+    auto* session_controller = shell->session_controller();
+    if (session_controller->ShouldEnableSettings() && tray_client)
+      tray_client->ShowDisplaySettings();
+  } else {
+    DCHECK_EQ(0, *button_index);
+    SetEnabled(false, AnimationDuration::kShort);
+  }
+  message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
+                                                           /*by_user=*/true);
+  // Closing the notification with `by_user=true` above should end up calling
+  // NightLightControllerImpl::Close() which will disable showing the
+  // notification any further.
+  DCHECK(UserHasEverDismissedAutoNightLightNotification());
+}
+
 void NightLightControllerImpl::SetDelegateForTesting(
     std::unique_ptr<Delegate> delegate) {
   delegate_ = std::move(delegate);
+}
+
+message_center::Notification*
+NightLightControllerImpl::GetAutoNightLightNotificationForTesting() const {
+  return message_center::MessageCenter::Get()->FindVisibleNotificationById(
+      kNotificationId);
+}
+
+bool NightLightControllerImpl::UserHasEverChangedSchedule() const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->HasPrefPath(prefs::kNightLightScheduleType);
+}
+
+bool NightLightControllerImpl::UserHasEverDismissedAutoNightLightNotification()
+    const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->GetBoolean(
+             prefs::kAutoNightLightNotificationDismissed);
+}
+
+void NightLightControllerImpl::ShowAutoNightLightNotification() {
+  DCHECK(features::IsAutoNightLightEnabled());
+  DCHECK(GetEnabled());
+  DCHECK(!UserHasEverDismissedAutoNightLightNotification());
+  DCHECK_EQ(ScheduleType::kSunsetToSunrise, GetScheduleType());
+
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BUTTON_TEXT)));
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+          l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_TITLE),
+          l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BODY),
+          base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
+          data,
+          base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+              weak_ptr_factory_.GetWeakPtr()),
+          kUnifiedMenuNightLightIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+}
+
+void NightLightControllerImpl::
+    DisableShowingFutureAutoNightLightNotification() {
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+    return;
+
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetBoolean(
+        prefs::kAutoNightLightNotificationDismissed, true);
+  }
 }
 
 void NightLightControllerImpl::LoadCachedGeopositionIfNeeded() {
@@ -699,6 +806,7 @@ void NightLightControllerImpl::InitFromUserPrefs() {
   Refresh(true /* did_schedule_change */);
   NotifyStatusChanged();
   NotifyClientWithScheduleChange();
+  is_first_user_init_ = false;
 }
 
 void NightLightControllerImpl::NotifyStatusChanged() {
@@ -712,8 +820,20 @@ void NightLightControllerImpl::NotifyClientWithScheduleChange() {
 }
 
 void NightLightControllerImpl::OnEnabledPrefChanged() {
-  VLOG(1) << "Enable state changed. New state: " << GetEnabled() << ".";
+  const bool enabled = GetEnabled();
+  VLOG(1) << "Enable state changed. New state: " << enabled << ".";
   DCHECK(active_user_pref_service_);
+
+  if (enabled && features::IsAutoNightLightEnabled() &&
+      GetScheduleType() == kSunsetToSunrise &&
+      (is_first_user_init_ ||
+       animation_duration_ == AnimationDuration::kLong) &&
+      !UserHasEverChangedSchedule() &&
+      !UserHasEverDismissedAutoNightLightNotification()) {
+    VLOG(1) << "Auto Night Light is turning on.";
+    ShowAutoNightLightNotification();
+  }
+
   Refresh(false /* did_schedule_change */);
   NotifyStatusChanged();
 }

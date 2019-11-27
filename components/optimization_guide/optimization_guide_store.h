@@ -178,8 +178,9 @@ class OptimizationGuideStore {
   std::unique_ptr<StoreUpdateData> CreateUpdateDataForPredictionModels() const;
 
   // Updates the prediction models contained in the store. The callback is run
-  // asynchronously after the database stores the prediction models.
-  void UpdatePredictionModels(
+  // asynchronously after the database stores the prediction models. Virtualized
+  // for testing.
+  virtual void UpdatePredictionModels(
       std::unique_ptr<StoreUpdateData> prediction_models_update_data,
       base::OnceClosure callback);
 
@@ -212,7 +213,8 @@ class OptimizationGuideStore {
 
   // Updates the host model features contained in the store. The callback is run
   // asynchronously after the database stores the host model features.
-  void UpdateHostModelFeatures(
+  // Virtualized for testing.
+  virtual void UpdateHostModelFeatures(
       std::unique_ptr<StoreUpdateData> host_model_features_update_data,
       base::OnceClosure callback);
 
@@ -248,6 +250,7 @@ class OptimizationGuideStore {
  private:
   friend class OptimizationGuideStoreTest;
   friend class StoreUpdateData;
+  friend class TestOptimizationGuideStore;
 
   using EntryKeyPrefix = std::string;
   using EntryKeySet = base::flat_set<EntryKey>;

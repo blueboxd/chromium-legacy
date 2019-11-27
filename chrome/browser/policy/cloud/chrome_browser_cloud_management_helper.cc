@@ -130,6 +130,18 @@ void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
       base::BindOnce(&OnPolicyFetchCompleted));
 }
 
+void MachineLevelUserCloudPolicyFetcher::AddClientObserver(
+    CloudPolicyClient::Observer* observer) {
+  if (policy_manager_)
+    policy_manager_->AddClientObserver(observer);
+}
+
+void MachineLevelUserCloudPolicyFetcher::RemoveClientObserver(
+    CloudPolicyClient::Observer* observer) {
+  if (policy_manager_)
+    policy_manager_->RemoveClientObserver(observer);
+}
+
 void MachineLevelUserCloudPolicyFetcher::
     OnCloudPolicyServiceInitializationCompleted() {
   // Client will be registered before policy fetch. A non-registered client

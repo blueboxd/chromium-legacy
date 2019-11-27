@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">表示項目を増やす</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">パスワードを変更してください</translation>
 <translation id="1484290072879560759">配送先住所を選択</translation>
 <translation id="1492194039220927094">ポリシーのプッシュ:</translation>
 <translation id="1501859676467574491">Google アカウントに保存したカードを表示</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">AMEX</translation>
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
 <translation id="1736420071277903564">パソコン</translation>
-<translation id="1739107442478692187">ご利用のサイトまたはアプリでデータ侵害がありました。保存したパスワードを確認し、<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="1740951997222943430">有効期限（月）を正しい形式で入力してください</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode が「<ph name="SECURE_DNS_MODE_SECURE" />」の場合は、有効な文字列を指定する必要があります。</translation>
 <translation id="1743520634839655729">カード、お名前、請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">解凍サービス</translation>
 <translation id="1915697529809968049">CVC の代わりに Touch ID を使用しますか？</translation>
 <translation id="1916770123977586577">更新後の設定をこのサイトに適用するには、このページを再読み込みしてください</translation>
+<translation id="1917876262703816781">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。<ph name="ORIGIN" /> のパスワードをすぐに変更することをおすすめします。</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1919367280705858090">特定のエラー メッセージに関する情報</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{なし}=1{1 件のサイト}other{# 件のサイト}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">ドメインが一致しません</translation>
 <translation id="2096368010154057602">県</translation>
 <translation id="2099652385553570808">3 か所のステープル（左）</translation>
-<translation id="2100280972184758440">パスワードが危険にさらされています</translation>
 <translation id="2102134110707549001">安全なパスワードを自動生成…</translation>
 <translation id="2108755909498034140">パソコンを再起動する</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
 <translation id="2119505898009119320">発行先: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">パンチ（右下）</translation>
-<translation id="2124528555835617522">ご利用のサイトまたはアプリでデータ侵害がありました。保存したパスワードをすぐに確認することをおすすめします。</translation>
 <translation id="2129079103035905234">モーション センサー</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode ポリシーが設定されていないため、指定したテンプレートを適用できない可能性があります。</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって危険なアプリ（デバイスに問題を生じさせたり、モバイル利用料に不明瞭な請求を加えたり、個人情報を抜き取ったりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">インターネットに接続されていません</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />診断アプリ<ph name="END_LINK" />を使用して接続を修正してください</translation>
+<translation id="22320125457191592">おすすめ</translation>
 <translation id="2239100178324503013">送信</translation>
 <translation id="2248949050832152960">WebAuthn を使用</translation>
 <translation id="2250931979407627383">端綴じ（左）</translation>
@@ -366,6 +366,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">安全性に関する警告</translation>
 <translation id="2699302886720511147">利用可能なカード</translation>
 <translation id="2702801445560668637">リーディング リスト</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
@@ -466,6 +467,7 @@
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3209034400446768650">このページでは料金が請求される可能性があります</translation>
 <translation id="3209080785413271048">Windows Hello を使用して、保存したお支払い方法を確認します。</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> でのアクティビティは監視されています</translation>
 <translation id="3215092763954878852">WebAuthn を使用できませんでした</translation>
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
 <translation id="3226128629678568754">ページの読み込みに必要なデータを再送信するには、再読み込みボタンを押してください。</translation>
@@ -481,7 +483,6 @@
 <translation id="3282497668470633863">名義人名を追加</translation>
 <translation id="3287510313208355388">オンライン時にダウンロード</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ポリシーの詳細</translation>
-<translation id="3295439534709115864">ご利用のサイトまたはアプリでデータ侵害がありました。<ph name="ORIGIN" /> のパスワードをすぐに変更することをおすすめします。</translation>
 <translation id="3303855915957856445">一致する結果は見つかりませんでした</translation>
 <translation id="3320021301628644560">請求先住所を追加</translation>
 <translation id="3324983252691184275">クリムゾン</translation>
@@ -524,6 +525,7 @@
 <translation id="3528485271872257980">暗い茶色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{同期デバイスで 1 件以上のアイテム}=1{1 件のアイテム（同期デバイスではそれ以上のアイテム）}other{# 件のアイテム（同期デバイスではそれ以上のアイテム）}}</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
+<translation id="3553513561058684206">おすすめ</translation>
 <translation id="3566021033012934673">この接続ではプライバシーが保護されません</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" /> <ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> に埋め込まれているページの内容</translation>
@@ -749,6 +751,7 @@
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
 <translation id="4597348597567598915">サイズ 8</translation>
 <translation id="4600854749408232102">C6 / C5（封筒）</translation>
+<translation id="4613966523036881546">この接続の証明書はネットワーク傍受や監視に使用されていることが判明しているため、Google Chrome では信頼されません。</translation>
 <translation id="4635654612248442824">サイト <ph name="ORIGIN" /> は、すべてのリクエストにオリジン ポリシーの適用を求めていますが、このポリシーは現在適用することができません。</translation>
 <translation id="464342062220857295">検索機能</translation>
 <translation id="4646534391647090355">今すぐ表示</translation>
@@ -887,6 +890,7 @@
 <translation id="5287240709317226393">Cookie を表示</translation>
 <translation id="5287456746628258573">このサイトでは古いセキュリティ設定を使用しています。このサイトにパスワードやクレジット カード番号などの情報を送信すると流出する恐れがあります。</translation>
 <translation id="5288108484102287882">ポリシー値の検証で警告が返されました</translation>
+<translation id="5295292838686006428">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードをすぐに確認することをおすすめします。</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5308380583665731573">接続</translation>
@@ -937,6 +941,7 @@
 <translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
 <translation id="5541546772353173584">メールの追加</translation>
 <translation id="5545756402275714221">おすすめの記事</translation>
+<translation id="5552137475244467770">Chrome では、定期的にパスワードをオンライン上の公開リストと照合し、確認しています。その際、パスワードとユーザー名は Google を含め誰も読み取ることができないよう暗号化されます。</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5560088892362098740">有効期限</translation>
 <translation id="5565735124758917034">有効</translation>
@@ -1028,6 +1033,7 @@
 <translation id="5992691462791905444">工学 Z 折り</translation>
 <translation id="6000758707621254961">「<ph name="SEARCH_TEXT" />」に対する <ph name="RESULT_COUNT" /> 件の検索結果</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">パスワードの確認</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
 <translation id="6017514345406065928">緑</translation>
@@ -1317,6 +1323,7 @@
 <translation id="7481312909269577407">進む</translation>
 <translation id="748406663033922918">画面ロックを使用して、保存したお支払い方法を確認します。</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
+<translation id="7495290002932347110">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードを確認し、<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="7498234416455752244">編集を続ける</translation>
 <translation id="7508255263130623398">返されたポリシーのデバイス ID が空であるか、現在のデバイス ID と一致しません</translation>
 <translation id="7508870219247277067">アボカド グリーン</translation>
@@ -1453,6 +1460,7 @@
 <translation id="8103161714697287722">お支払い方法</translation>
 <translation id="8105368624971345109">オフにする</translation>
 <translation id="8118489163946903409">お支払い方法</translation>
+<translation id="8124023448510659215">この接続の証明書はネットワーク傍受や監視に使用されていることが判明しているため、Chromium では信頼されません。</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。管理者にこの問題を解決するよう依頼してください。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
@@ -1596,6 +1604,8 @@
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8962950042226115166">不審なサイト</translation>
 <translation id="8968766641738584599">カードを保存</translation>
+<translation id="8969267497192857913">ウェブで入力した情報やアクセスしたページなどのアクティビティがすべて監視され、知らない間にサイトのコンテンツが改変されるおそれがあります。
+    <ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8975012916872825179">電話番号、メールアドレス、配送先住所などの情報が含まれます</translation>
 <translation id="8975263830901772334">印刷するファイルの名前</translation>

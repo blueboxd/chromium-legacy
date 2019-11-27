@@ -134,7 +134,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -831,7 +831,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 // When resuming the activity, force an update to the fullscreen state to ensure a
                 // subactivity did not change the fullscreen configuration of this ChromeTab's
                 // renderer in the case where it was shared.
-                TabBrowserControlsState.updateEnabledState(tab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(tab);
             }
             VrModuleProvider.getDelegate().onActivityShown(this);
         } else {

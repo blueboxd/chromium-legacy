@@ -15,12 +15,13 @@ import './edit_dialog.js';
 import './shared_style.js';
 import './strings.m.js';
 
-import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {KeyboardShortcutList} from 'chrome://resources/js/cr/ui/keyboard_shortcut_list.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {afterNextRender, flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {deselectItems, selectAll, selectFolder} from './actions.js';
 import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
@@ -139,6 +140,10 @@ export const CommandManager = Polymer({
     addDocumentListenerForCommand('cut', Command.CUT);
     addDocumentListenerForCommand('copy', Command.COPY);
     addDocumentListenerForCommand('paste', Command.PASTE);
+
+    afterNextRender(this, function() {
+      IronA11yAnnouncer.requestAvailability();
+    });
   },
 
   detached: function() {
@@ -383,7 +388,7 @@ export const CommandManager = Polymer({
       }
       case Command.UNDO:
         chrome.bookmarkManagerPrivate.undo();
-        getInstance().hide();
+        getToastManager().hide();
         break;
       case Command.REDO:
         chrome.bookmarkManagerPrivate.redo();
@@ -421,7 +426,11 @@ export const CommandManager = Polymer({
       case Command.SORT:
         chrome.bookmarkManagerPrivate.sortChildren(
             assert(state.selectedFolder));
-        getInstance().show(loadTimeData.getString('toastFolderSorted'), true);
+        getToastManager().querySelector('dom-if').if = true;
+        getToastManager().show(loadTimeData.getString('toastFolderSorted'));
+        this.fire('iron-announce', {
+          text: loadTimeData.getString('undoDescription'),
+        });
         break;
       case Command.ADD_BOOKMARK:
         /** @type {!BookmarksEditDialogElement} */ (this.$.editDialog.get())
@@ -822,8 +831,13 @@ export const CommandManager = Polymer({
           p.collapsible = !!p.arg;
           return p;
         });
-
-    getInstance().showForStringPieces(pieces, canUndo);
+    getToastManager().querySelector('dom-if').if = canUndo;
+    getToastManager().showForStringPieces(pieces);
+    if (canUndo) {
+      this.fire('iron-announce', {
+        text: loadTimeData.getString('undoDescription'),
+      });
+    }
   },
 
   /**

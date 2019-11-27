@@ -483,8 +483,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
             // This should only be used for settings that have host-pattern based exceptions.
-            if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)
-                    || mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
+            if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                     || (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
                             && ChromeFeatureList.isEnabled(
                                     ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH))
@@ -528,8 +527,6 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         int resource = 0;
         if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)) {
             resource = R.string.website_settings_add_site_description_automatic_downloads;
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
-            resource = R.string.website_settings_add_site_description_autoplay;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             resource = R.string.website_settings_add_site_description_background_sync;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
@@ -615,9 +612,6 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
         boolean exception = false;
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            exception = true;
-        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)
-                && !WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.AUTOPLAY)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)

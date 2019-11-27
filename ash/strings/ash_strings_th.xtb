@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">กำลังใช้<ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">ปลดล็อกอุปกรณ์โดยใช้ <ph name="LOGIN_ID" /> เพื่อดำเนินการแจ้งเตือน</translation>
-<translation id="8995603266996330174">จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">ป้อนรหัสการเข้าถึง Family Link ของผู้ปกครอง</translation>
 <translation id="9029474291399787231">มีอัปเดต Adobe Flash Player พร้อมใช้งาน</translation>
 <translation id="9056839673611986238">อุปกรณ์จะได้รับการคืนค่าสถานะ</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="9193626018745640770">กำลังแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="9194617393863864469">ลงชื่อเข้าใช้ด้วยชื่อผู้ใช้อื่น...</translation>
+<translation id="9205817095063786319">อุปกรณ์จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
 <translation id="9211681782751733685">อีก <ph name="TIME_REMAINING" />จะชาร์จเต็ม</translation>
 <translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>

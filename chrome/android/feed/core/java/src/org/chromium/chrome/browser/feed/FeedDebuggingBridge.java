@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
-import com.google.android.libraries.feed.api.client.scope.ProcessScope;
-import com.google.android.libraries.feed.common.logging.Dumper;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.feed.library.api.client.requestmanager.RequestManager;
+import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
+import org.chromium.chrome.browser.feed.library.common.logging.Dumper;
 
 import java.io.IOException;
 import java.io.StringWriter;

@@ -69,13 +69,13 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
   return UnacceleratedStaticBitmapImage::Create(skia_image);
 }
 
-size_t StaticBitmapImage::GetSizeInBytes(
+base::CheckedNumeric<size_t> StaticBitmapImage::GetSizeInBytes(
     const IntRect& rect,
     const CanvasColorParams& color_params) {
   uint8_t bytes_per_pixel = color_params.BytesPerPixel();
   base::CheckedNumeric<size_t> data_size = bytes_per_pixel;
   data_size *= rect.Size().Area();
-  return data_size.ValueOrDefault(0);
+  return data_size;
 }
 
 bool StaticBitmapImage::MayHaveStrayArea(
@@ -94,7 +94,7 @@ bool StaticBitmapImage::CopyToByteArray(
     base::span<uint8_t> dst,
     const IntRect& rect,
     const CanvasColorParams& color_params) {
-  DCHECK_EQ(dst.size(), GetSizeInBytes(rect, color_params));
+  DCHECK_EQ(dst.size(), GetSizeInBytes(rect, color_params).ValueOrDie());
 
   if (!src_image)
     return true;

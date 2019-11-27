@@ -1568,7 +1568,7 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
 
   preview_params.document_cookie = print_pages_params_->params.document_cookie;
   preview_params.expected_pages_count =
-      print_preview_context_.total_page_count();
+      print_preview_context_.pages_rendered_count();
 
   PrintHostMsg_PreviewIds ids(print_pages_params_->params.preview_request_id,
                               print_pages_params_->params.preview_ui_id);
@@ -2645,6 +2645,11 @@ const std::vector<int>&
 PrintRenderFrameHelper::PrintPreviewContext::pages_to_render() const {
   DCHECK_EQ(RENDERING, state_);
   return pages_to_render_;
+}
+
+int PrintRenderFrameHelper::PrintPreviewContext::pages_rendered_count() const {
+  DCHECK_EQ(DONE, state_);
+  return pages_to_render_.size();
 }
 
 MetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {

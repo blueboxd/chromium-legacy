@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
 <translation id="2323763861024343754">Bộ nhớ trang web</translation>
 <translation id="2328985652426384049">Không thể đăng nhập</translation>
-<translation id="2330129964253841015">Cảnh báo bạn nếu mật khẩu bị lộ</translation>
 <translation id="2349710944427398404">Tổng số dữ liệu mà Chrome sử dụng, bao gồm tài khoản, dấu trang và cài đặt đã lưu</translation>
 <translation id="2353636109065292463">Kiểm tra kết nối Internet</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="290376772003165898">Trang này không được viết bằng <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã mở trên toàn màn hình.</translation>
+<translation id="2905036901251765993">Để chia sẻ với những người ở gần, hãy cho phép họ quét mã QR này</translation>
 <translation id="2909615210195135082">Nền tảng thông báo của Google</translation>
 <translation id="2910701580606108292">Hỏi trước khi cho phép trang web phát nội dung được bảo vệ</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Hiển thị mật khẩu</translation>
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="3658159451045945436">Việc đặt lại sẽ xóa lịch sử tiết kiệm dữ liệu, bao gồm cả danh sách các trang web bạn đã truy cập.</translation>
+<translation id="3682730288090679318">Bật để tự động chặn không cho các trang web đề xuất hiển thị thông báo cho bạn. Nếu một trang web đề xuất hiển thị thông báo, thì một thanh thông tin sẽ xuất hiện ở cuối trang.</translation>
 <translation id="3692944402865947621">Không tải <ph name="FILE_NAME" /> xuống được do không tìm thấy vị trí bộ nhớ.</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
@@ -542,6 +543,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5048398596102334565">Cho phép trang web sử dụng cảm biến chuyển động (nên dùng)</translation>
 <translation id="5063480226653192405">Mức sử dụng</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
+<translation id="5096950519211870196">Các trang web sẽ bị chặn không cho đề xuất hiển thị thông báo cho bạn. Nếu một trang web đề xuất hiển thị thông báo, thì một thanh thông tin sẽ xuất hiện ở cuối trang.</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
 <translation id="5123685120097942451">Tab ẩn danh</translation>
@@ -589,6 +591,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5414836363063783498">Đang xác minh...</translation>
 <translation id="5423934151118863508">Trang bạn truy cập nhiều nhất sẽ xuất hiện ở đây</translation>
 <translation id="5424588387303617268">Còn trống <ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">Đã hiểu. Theo mặc định, các đề xuất hiển thị thông báo mới sẽ xuất hiện ở đây.</translation>
 <translation id="543338862236136125">Chỉnh sửa mật khẩu</translation>
 <translation id="5433691172869980887">Đã sao chép tên người dùng</translation>
 <translation id="543509235395288790">Đang tải <ph name="COUNT" /> tệp (<ph name="MEGABYTES" />) xuống.</translation>
@@ -687,6 +690,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
+<translation id="6113400363611269907">Hiển thị lời nhắc ở chế độ yên lặng</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
@@ -811,6 +815,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6989267951144302301">Không thể tải xuống</translation>
 <translation id="6990079615885386641">Tải ứng dụng từ Cửa hàng Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Hỏi trước trước khi cho phép các trang web sử dụng micrô của bạn (được đề xuất)</translation>
+<translation id="6995899638241819463">Cảnh báo bạn nếu mật khẩu bị lộ trong một sự cố rò rỉ dữ liệu</translation>
 <translation id="7015203776128479407">Quá trình thiết lập đồng bộ hóa ban đầu chưa hoàn tất. Tính năng đồng bộ hóa đã tắt.</translation>
 <translation id="7016516562562142042">Được cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
@@ -1019,6 +1024,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8514477925623180633">Xuất mật khẩu đã lưu trữ với Chrome</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
+<translation id="8516012719330875537">Trình chỉnh sửa hình ảnh</translation>
 <translation id="851751545965956758">Chặn các trang web kết nối với thiết bị</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
 <translation id="854522910157234410">Mở trang này</translation>

@@ -58,7 +58,7 @@ import java.lang.reflect.Method;
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
     private static final String TAG = "WebLayer";
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "weblayer";
+    private static final String PRIVATE_DIRECTORY_SUFFIX = "weblayer";
     // TODO: Configure this from the client.
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
@@ -150,7 +150,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         R.onResourcesLoaded(resourcesPackageId);
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DIRECTORY_SUFFIX, PRIVATE_DIRECTORY_SUFFIX);
 
         ChildProcessCreationParams.set(appContext.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,

@@ -4232,7 +4232,8 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
   EXPECT_HRESULT_SUCCEEDED(root_node->get_ProviderOptions(&provider_options));
   EXPECT_EQ(ProviderOptions_ServerSideProvider |
                 ProviderOptions_UseComThreading |
-                ProviderOptions_RefuseNonClientSupport,
+                ProviderOptions_RefuseNonClientSupport |
+                ProviderOptions_HasNativeIAccessible,
             provider_options);
 }
 

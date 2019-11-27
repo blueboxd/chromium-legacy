@@ -304,6 +304,27 @@ ImageReaderGLOwner::GetAHardwareBuffer() {
       current_image_ref_->GetReadyFence());
 }
 
+gfx::Rect ImageReaderGLOwner::GetCropRect() {
+  if (!current_image_ref_)
+    return gfx::Rect();
+
+  // Note that to query the crop rectangle, we don't need to wait for the
+  // AImage to be ready by checking the associated image ready fence.
+  AImageCropRect crop_rect;
+  media_status_t return_code =
+      loader_.AImage_getCropRect(current_image_ref_->image(), &crop_rect);
+  if (return_code != AMEDIA_OK) {
+    DLOG(ERROR) << "Error querying crop rectangle from the image : "
+                << return_code;
+    return gfx::Rect();
+  }
+  DCHECK_GE(crop_rect.right, crop_rect.left);
+  DCHECK_GE(crop_rect.bottom, crop_rect.top);
+  return gfx::Rect(crop_rect.left, crop_rect.top,
+                   crop_rect.right - crop_rect.left,
+                   crop_rect.bottom - crop_rect.top);
+}
+
 void ImageReaderGLOwner::RegisterRefOnImage(AImage* image) {
   DCHECK(image_reader_);
 
@@ -351,22 +372,12 @@ void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
                                                 0, 0, 1, 0, 0, 1,  0, 1};
   memcpy(mtx, kYInvertedIdentity, sizeof(kYInvertedIdentity));
 
-  // Compute the transform matrix only if we have an image available.
-  if (!current_image_ref_)
-    return;
 
   // Get the crop rectangle associated with this image. The crop rectangle
   // specifies the region of valid pixels in the image.
-  // Note that to query the crop rectangle, we don't need to wait for the
-  // AImage to be ready by checking the associated image ready fence.
-  AImageCropRect crop_rect;
-  media_status_t return_code =
-      loader_.AImage_getCropRect(current_image_ref_->image(), &crop_rect);
-  if (return_code != AMEDIA_OK) {
-    DLOG(ERROR) << "Error querying crop rectangle from the image : "
-                << return_code;
+  gfx::Rect crop_rect = GetCropRect();
+  if (crop_rect.IsEmpty())
     return;
-  }
 
   // Get the AHardwareBuffer to query its dimensions.
   AHardwareBuffer* buffer = nullptr;
@@ -411,11 +422,10 @@ void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
       shrink_amount = 1.0;
   }
 
-  int32_t crop_rect_width = (crop_rect.right - crop_rect.left);
-  int32_t crop_rect_height = (crop_rect.bottom - crop_rect.top);
-  DCHECK_GE(crop_rect_width, 0);
-  DCHECK_GE(crop_rect_height, 0);
-
+  int32_t crop_rect_width = crop_rect.width();
+  int32_t crop_rect_height = crop_rect.height();
+  int32_t crop_rect_left = crop_rect.x();
+  int32_t crop_rect_bottom = crop_rect.y() + crop_rect_height;
   int32_t buffer_width = desc.width;
   int32_t buffer_height = desc.height;
   DCHECK_GT(buffer_width, 0);
@@ -423,12 +433,12 @@ void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
 
   // Only shrink the dimensions that are not the size of the buffer.
   if (crop_rect_width < buffer_width) {
-    tx = (float(crop_rect.left) + shrink_amount) / buffer_width;
+    tx = (float(crop_rect_left) + shrink_amount) / buffer_width;
     sx = (float(crop_rect_width) - (2.0f * shrink_amount)) / buffer_width;
   }
 
   if (crop_rect_height < buffer_height) {
-    ty = (float(buffer_height - crop_rect.bottom) + shrink_amount) /
+    ty = (float(buffer_height - crop_rect_bottom) + shrink_amount) /
          buffer_height;
     sy = (float(crop_rect_height) - (2.0f * shrink_amount)) / buffer_height;
   }

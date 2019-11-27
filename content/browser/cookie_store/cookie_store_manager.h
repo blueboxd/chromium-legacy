@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/containers/linked_list.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "content/browser/cookie_store/cookie_change_subscription.h"
 #include "content/browser/cookie_store/cookie_store_host.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
@@ -75,23 +77,27 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
       mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager,
       base::OnceCallback<void(bool)> callback);
 
-  // content::mojom::CookieStore implementation
-  void AppendSubscriptions(
+  // blink::mojom::CookieStore implementation
+  void AddSubscriptions(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
       std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
-      blink::mojom::CookieStore::AppendSubscriptionsCallback callback);
+      mojo::ReportBadMessageCallback bad_message_callback,
+      blink::mojom::CookieStore::AddSubscriptionsCallback callback);
+  void RemoveSubscriptions(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      blink::mojom::CookieStore::RemoveSubscriptionsCallback callback);
   void GetSubscriptions(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
+      mojo::ReportBadMessageCallback bad_message_callback,
       blink::mojom::CookieStore::GetSubscriptionsCallback callback);
 
   // ServiceWorkerContextCoreObserver
-  void OnRegistrationStored(int64_t service_worker_registration_id,
-                            const GURL& pattern) override;
   void OnRegistrationDeleted(int64_t service_worker_registration_id,
-                             const GURL& pattern) override;
-  void OnNewLiveRegistration(int64_t service_worker_registration_id,
                              const GURL& pattern) override;
   void OnStorageWiped() override;
 
@@ -113,19 +119,29 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   void DidLoadAllSubscriptions(bool succeeded,
                                base::OnceCallback<void(bool)> load_callback);
 
+  // Updates on-disk subscription data for a registration.
+  void StoreSubscriptions(
+      int64_t service_worker_registration_id,
+      const GURL& service_worker_origin,
+      const std::vector<std::unique_ptr<CookieChangeSubscription>>&
+          subscriptions,
+      base::OnceCallback<void(bool)> callback);
+
   // Starts sending cookie change events to a service worker.
   //
   // All subscriptions must belong to the same service worker registration. This
   // method is not idempotent.
   void ActivateSubscriptions(
-      std::vector<CookieChangeSubscription>* subscriptions);
+      base::span<const std::unique_ptr<CookieChangeSubscription>>
+          subscriptions);
 
   // Stops sending cookie change events to a service worker.
   //
   // All subscriptions must belong to the same service worker registration. This
   // method is not idempotent.
   void DeactivateSubscriptions(
-      std::vector<CookieChangeSubscription>* subscriptions);
+      base::span<const std::unique_ptr<CookieChangeSubscription>>
+          subscriptions);
 
   // Sends a cookie change to interested service workers.
   //
@@ -152,7 +168,8 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   // |subscriptions_by_registration_| map is done in O(1) time, and then each
   // subscription is removed from a LinkedList in |subscription_by_url_key_| in
   // O(1) time.
-  std::unordered_map<int64_t, std::vector<CookieChangeSubscription>>
+  std::unordered_map<int64_t,
+                     std::vector<std::unique_ptr<CookieChangeSubscription>>>
       subscriptions_by_registration_;
 
   // Used to efficiently implement DispatchCookieChange().

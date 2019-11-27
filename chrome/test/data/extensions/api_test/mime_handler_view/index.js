@@ -296,6 +296,14 @@ var tests = [
     chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(
         true, chrome.test.succeed);
   },
+
+  // TODO(mustaq): Every test above have a unique csv, which seems redundant.
+  // This particular one is used in two browser tests.
+  function testBeforeUnloadWithUserActivation() {
+    checkStreamDetails('testBeforeUnloadWithUserActivation.csv', false);
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(
+        true, chrome.test.succeed);
+  },
 ];
 
 var testsByName = {};

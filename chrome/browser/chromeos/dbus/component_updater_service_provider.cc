@@ -39,6 +39,8 @@ std::string ErrorToString(
       return "COMPATIBILITY_CHECK_FAILED";
     case component_updater::CrOSComponentManager::Error::NOT_FOUND:
       return "NOT_FOUND";
+    case component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS:
+      return "UPDATE_IN_PROGRESS";
     case component_updater::CrOSComponentManager::Error::ERROR_MAX:
       return "ERROR_MAX";
   }

@@ -490,10 +490,6 @@ public class JniProcessor extends AbstractProcessor {
         return builder.build();
     }
 
-    void copyMethodParamsAndReturnType(MethodSpec.Builder builder, ExecutableElement method) {
-        copyMethodParamsAndReturnType(builder, method, false);
-    }
-
     boolean shouldDowncastToObjectForJni(TypeName t) {
         if (t.isPrimitive()) {
             return false;
@@ -551,6 +547,10 @@ public class JniProcessor extends AbstractProcessor {
         TypeName returnType = toTypeName(givenReturnType, useJniTypes);
 
         builder.returns(returnType);
+    }
+
+    void copyMethodParamsAndReturnType(MethodSpec.Builder builder, ExecutableElement method) {
+        copyMethodParamsAndReturnType(builder, method, false);
     }
 
     ParameterSpec createParamSpec(VariableElement param, boolean useJniObjects) {

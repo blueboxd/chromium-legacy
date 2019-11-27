@@ -50,8 +50,6 @@ const char kImageFetcherUmaClient[] = "AccountFetcherService";
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
 
-const int AccountFetcherService::kAccountImageDownloadSize = 256;
-
 // AccountFetcherService implementation
 AccountFetcherService::AccountFetcherService() = default;
 
@@ -317,7 +315,7 @@ void AccountFetcherService::FetchAccountImage(const CoreAccountId& account_id) {
             "profile image."
         })");
   GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
-      picture_url, kAccountImageDownloadSize, true /* no_silhouette */));
+      picture_url, signin::kAccountInfoImageSize, true /* no_silhouette */));
   auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
                                       base::Unretained(this), account_id);
   image_fetcher::ImageFetcherParams params(traffic_annotation,

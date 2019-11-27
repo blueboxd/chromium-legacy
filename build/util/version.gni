@@ -78,7 +78,10 @@ _script_arguments += [
 _result = exec_script("version.py",
                       _script_arguments,
                       "scope",
-                      [ chrome_version_file ])
+                      [
+                        chrome_version_file,
+                        "android_chrome_version.py",
+                      ])
 
 # Full version. For example "45.0.12321.0"
 chrome_version_full = _result.full

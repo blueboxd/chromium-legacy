@@ -32,6 +32,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeStringConstants;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
@@ -47,9 +48,9 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         DialogInterface.OnClickListener, OnItemClickListener {
     private static final String TAG = "PassphraseTypeDialogFragment";
 
-    public interface Listener { void onPassphraseTypeSelected(@Passphrase.Type int type); }
+    public interface Listener { void onPassphraseTypeSelected(@PassphraseType int type); }
 
-    private String[] getDisplayNames(List<Integer /* @Passphrase.Type */> passphraseTypes) {
+    private String[] getDisplayNames(List<Integer /* @PassphraseType */> passphraseTypes) {
         String[] displayNames = new String[passphraseTypes.size()];
         for (int i = 0; i < displayNames.length; i++) {
             displayNames[i] = textForPassphraseType(passphraseTypes.get(i));
@@ -57,24 +58,25 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         return displayNames;
     }
 
-    private String textForPassphraseType(@Passphrase.Type int type) {
+    private String textForPassphraseType(@PassphraseType int type) {
         switch (type) {
-            case Passphrase.Type.IMPLICIT: // Intentional fall through.
-            case Passphrase.Type.KEYSTORE:
+            case PassphraseType.IMPLICIT_PASSPHRASE: // Intentional fall through.
+            case PassphraseType.KEYSTORE_PASSPHRASE:
+            case PassphraseType.TRUSTED_VAULT_PASSPHRASE:
                 return getString(R.string.sync_passphrase_type_keystore);
-            case Passphrase.Type.FROZEN_IMPLICIT:
+            case PassphraseType.FROZEN_IMPLICIT_PASSPHRASE:
                 String passphraseDate = getPassphraseDateStringFromArguments();
                 String frozenPassphraseString = getString(R.string.sync_passphrase_type_frozen);
                 return String.format(frozenPassphraseString, passphraseDate);
-            case Passphrase.Type.CUSTOM:
+            case PassphraseType.CUSTOM_PASSPHRASE:
                 return getString(R.string.sync_passphrase_type_custom);
             default:
                 return "";
         }
     }
 
-    private Adapter createAdapter(@Passphrase.Type int currentType) {
-        List<Integer /* @Passphrase.Type */> passphraseTypes =
+    private Adapter createAdapter(@PassphraseType int currentType) {
+        List<Integer /* @PassphraseType */> passphraseTypes =
                 Passphrase.getVisibleTypes(currentType);
         return new Adapter(passphraseTypes, getDisplayNames(passphraseTypes));
     }
@@ -91,7 +93,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
          * {@link PassphraseTypeDialogFragment#createAdapter}.
          */
         private Adapter(
-                List<Integer /* @Passphrase.Type */> passphraseTypes, String[] displayStrings) {
+                List<Integer /* @PassphraseType */> passphraseTypes, String[] displayStrings) {
             super(getActivity(), R.layout.passphrase_type_item, displayStrings);
             mPassphraseTypes = passphraseTypes;
         }
@@ -106,22 +108,22 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
             return getType(position);
         }
 
-        public @Passphrase.Type int getType(int position) {
+        public @PassphraseType int getType(int position) {
             return mPassphraseTypes.get(position);
         }
 
-        public int getPositionForType(@Passphrase.Type int type) {
+        public int getPositionForType(@PassphraseType int type) {
             return mPassphraseTypes.indexOf(type);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             CheckedTextView view = (CheckedTextView) super.getView(position, convertView, parent);
-            @Passphrase.Type
+            @PassphraseType
             int positionType = getType(position);
-            @Passphrase.Type
+            @PassphraseType
             int currentType = getCurrentTypeFromArguments();
-            List<Integer /* @Passphrase.Type */> allowedTypes = Passphrase.getAllowedTypes(
+            List<Integer /* @PassphraseType */> allowedTypes = Passphrase.getAllowedTypes(
                     currentType, getIsEncryptEverythingAllowedFromArguments());
 
             // Set the item to checked it if it is the currently selected encryption type.
@@ -133,7 +135,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     }
 
     /**
-     * This argument should contain a single value of type {@link Passphrase.Type}.
+     * This argument should contain a single value of type {@link PassphraseType}.
      */
     private static final String ARG_CURRENT_TYPE = "arg_current_type";
 
@@ -142,7 +144,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     private static final String ARG_IS_ENCRYPT_EVERYTHING_ALLOWED =
             "arg_is_encrypt_everything_allowed";
 
-    public static PassphraseTypeDialogFragment create(@Passphrase.Type int currentType,
+    public static PassphraseTypeDialogFragment create(@PassphraseType int currentType,
             long passphraseTime, boolean isEncryptEverythingAllowed) {
         PassphraseTypeDialogFragment dialog = new PassphraseTypeDialogFragment();
         Bundle args = new Bundle();
@@ -161,12 +163,12 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         // Configure the passphrase type list
         ListView list = (ListView) v.findViewById(R.id.passphrase_types);
 
-        @Passphrase.Type
+        @PassphraseType
         int currentType = getCurrentTypeFromArguments();
 
         // Configure the hint to reset the passphrase settings
         // Only show this hint if encryption has been set to use sync passphrase
-        if (currentType == Passphrase.Type.CUSTOM) {
+        if (currentType == PassphraseType.CUSTOM_PASSPHRASE) {
             TextViewWithClickableSpans instructionsView =
                     new TextViewWithClickableSpans(getActivity());
             instructionsView.setPadding(0,
@@ -219,11 +221,11 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long typeId) {
-        @Passphrase.Type
+        @PassphraseType
         int currentType = getCurrentTypeFromArguments();
         // We know that typeId conversion from long to int is safe, because it represents very
         // small enum values.
-        @Passphrase.Type
+        @PassphraseType
         int type = (int) typeId;
         boolean isEncryptEverythingAllowed = getIsEncryptEverythingAllowedFromArguments();
         if (Passphrase.getAllowedTypes(currentType, isEncryptEverythingAllowed).contains(type)) {
@@ -236,10 +238,10 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     }
 
     @VisibleForTesting
-    public @Passphrase.Type int getCurrentTypeFromArguments() {
-        // NUM_ENTRIES is used to find when value doesn't exist.
-        int currentType = getArguments().getInt(ARG_CURRENT_TYPE, Passphrase.Type.NUM_ENTRIES);
-        if (currentType == Passphrase.Type.NUM_ENTRIES) {
+    public @PassphraseType int getCurrentTypeFromArguments() {
+        // MAX_VALUE is used to find when value doesn't exist.
+        int currentType = getArguments().getInt(ARG_CURRENT_TYPE, 1 + PassphraseType.MAX_VALUE);
+        if (currentType > PassphraseType.MAX_VALUE) {
             throw new IllegalStateException("Unable to find argument with current type.");
         }
         return currentType;

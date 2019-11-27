@@ -655,7 +655,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   }
 
   if (IsSamplingEnabled()) {
-    if (default_sampling_rate_ == 0) {
+    if (default_sampling_rate_ < 0) {
       LoadExperimentSamplingInfo();
     }
 
@@ -687,9 +687,10 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
 }
 
 void UkmRecorderImpl::LoadExperimentSamplingInfo() {
-  DCHECK_EQ(0, default_sampling_rate_);
+  // This should be called only if a sampling rate hasn't been loaded.
+  DCHECK_LT(default_sampling_rate_, 0);
 
-  // Default rate must be > 0 to indicate that load is complete.
+  // Default rate must be >= 0 to indicate that load is complete.
   default_sampling_rate_ = 1;
 
   // If we don't have the feature, no parameters to load.
@@ -709,9 +710,8 @@ void UkmRecorderImpl::LoadExperimentSamplingInfo() {
       if (key.at(0) == '_') {
         if (key == "_default_sampling") {
           int sampling;
-          // We only load positive global sampling rates. If the global sampling
-          // is 0, then we stick to the default rate of '1' (unsampled).
-          if (base::StringToInt(kv.second, &sampling) && sampling > 0)
+          // We only load non-negative global sampling rates.
+          if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
             default_sampling_rate_ = sampling;
         }
         continue;
@@ -730,8 +730,9 @@ bool UkmRecorderImpl::IsSampledIn(int64_t source_id,
                                   int sampling_rate) {
   // A sampling rate of 0 is "never"; everything else is 1-in-N but calculated
   // deterministically based on a seed, the source-id, and the event-id. Skip
-  // the calculation, though, if N==1 because it will always be true.
-  if (sampling_rate == 0)
+  // the calculation, though, if N==1 because it will always be true. A negative
+  // rate means "unset"; treat it like "never".
+  if (sampling_rate <= 0)
     return false;
   if (sampling_rate == 1)
     return true;

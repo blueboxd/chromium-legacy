@@ -100,7 +100,7 @@ TEST_F(GraphOperationsTest, VisitFrameTree) {
 
   std::vector<const FrameNode*> visited;
   GraphOperations::VisitFrameTreePreOrder(
-      page1_.get(), base::Bind(
+      page1_.get(), base::BindRepeating(
                         [](std::vector<const FrameNode*>* visited,
                            const FrameNode* frame_node) -> bool {
                           visited->push_back(frame_node);
@@ -116,7 +116,7 @@ TEST_F(GraphOperationsTest, VisitFrameTree) {
 
   visited.clear();
   GraphOperations::VisitFrameTreePostOrder(
-      page1_.get(), base::Bind(
+      page1_.get(), base::BindRepeating(
                         [](std::vector<const FrameNode*>* visited,
                            const FrameNode* frame_node) -> bool {
                           visited->push_back(frame_node);

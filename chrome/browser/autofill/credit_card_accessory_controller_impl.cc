@@ -51,7 +51,7 @@ UserInfo TranslateCard(const CreditCard* data, bool enabled) {
                                       enabled));
 
   if (data->HasValidExpirationDate()) {
-    AddSimpleField(data->ExpirationMonthAsString(), &user_info, enabled);
+    AddSimpleField(data->Expiration2DigitMonthAsString(), &user_info, enabled);
     AddSimpleField(data->Expiration4DigitYearAsString(), &user_info, enabled);
   } else {
     AddSimpleField(base::string16(), &user_info, enabled);

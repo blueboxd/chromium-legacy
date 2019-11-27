@@ -13,11 +13,6 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
-import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryContentStorage;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryJournalStorage;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +33,10 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
+import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
+import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;

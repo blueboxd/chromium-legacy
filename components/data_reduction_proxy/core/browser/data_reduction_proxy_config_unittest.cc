@@ -213,7 +213,6 @@ class DataReductionProxyConfigTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
-  base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
 
@@ -405,6 +404,9 @@ TEST_F(DataReductionProxyConfigTest, DISABLED_WarmupURL) {
 
     ResetSettings();
 
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
+
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
 
@@ -413,7 +415,6 @@ TEST_F(DataReductionProxyConfigTest, DISABLED_WarmupURL) {
     ASSERT_TRUE(variations::AssociateVariationParams(
         params::GetQuicFieldTrialName(), "Enabled", variation_params));
 
-    base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            "Enabled");
 

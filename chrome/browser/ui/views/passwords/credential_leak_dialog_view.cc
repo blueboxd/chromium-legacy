@@ -11,11 +11,13 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -84,6 +86,17 @@ std::unique_ptr<views::View> CreateContent(const base::string16& title,
   content->AddChildView(std::move(description_label));
 
   return content;
+}
+
+std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
+  auto explanation_tooltip = std::make_unique<views::TooltipIcon>(
+      password_manager::GetLeakDetectionTooltip());
+  explanation_tooltip->set_bubble_width(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  return explanation_tooltip;
 }
 
 }  // namespace
@@ -177,6 +190,7 @@ void CredentialLeakDialogView::InitWindow() {
       CreateContent(controller_->GetTitle(), controller_->GetDescription());
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
+  SetExtraView(CreateInfoIcon());
 }
 
 CredentialLeakPrompt* CreateCredentialLeakPromptView(

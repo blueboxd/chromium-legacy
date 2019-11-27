@@ -27,9 +27,9 @@ TEST_F(StaticBitmapImageTest,
 
   IntRect too_big_rect(IntPoint(0, 0),
                        IntSize(1, (v8::TypedArray::kMaxLength / 4) + 1));
-  EXPECT_GT(
-      StaticBitmapImage::GetSizeInBytes(too_big_rect, CanvasColorParams()),
-      v8::TypedArray::kMaxLength);
+  EXPECT_GT(StaticBitmapImage::GetSizeInBytes(too_big_rect, CanvasColorParams())
+                .ValueOrDie(),
+            v8::TypedArray::kMaxLength);
 }
 
 }  // namespace blink

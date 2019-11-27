@@ -1468,6 +1468,25 @@
             ]
         }
     ],
+    "CacheStorageHighPriorityMatch": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled4",
+                    "enable_features": [
+                        "CacheStorageHighPriorityMatch"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheStorageSequence": [
         {
             "platforms": [
@@ -6209,26 +6228,6 @@
                     ],
                     "disable_features": [
                         "AlwaysShowServerCardsInSyncTransport"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncE2ELatency": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "ios",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncE2ELatencyMeasurement"
                     ]
                 }
             ]

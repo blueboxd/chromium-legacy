@@ -63,7 +63,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   // AdjustAllocatedMemoryCB and the return value is the total number of bytes
   // used by objects external to V8.  Note: this value includes things that are
   // not the WebMediaPlayer!
-  typedef base::Callback<int64_t(int64_t)> AdjustAllocatedMemoryCB;
+  using AdjustAllocatedMemoryCB = base::RepeatingCallback<int64_t(int64_t)>;
 
   // |defer_load_cb|, |audio_renderer_sink|, |compositor_task_runner|, and
   // |context_3d_cb| may be null.

@@ -57,8 +57,8 @@
                 "domain": "Page",
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors", "setInterceptFileChooserDialog", "handleFileChooser"],
-                "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "downloadWillBegin", "screencastVisibilityChanged", "screencastFrame", "fileChooserOpened"],
+                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors"],
+                "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "downloadWillBegin", "screencastVisibilityChanged", "screencastFrame"],
                 "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest", "reload", "captureSnapshot", "getInstallabilityErrors"]
             },
             {

@@ -24,7 +24,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/download/download_commands.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_reporter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"

@@ -82,6 +82,20 @@ TEST_F('HistoryItemTest', 'All', function() {
   mocha.run();
 });
 
+function HistoryLinkClickTest() {}
+
+HistoryLinkClickTest.prototype = {
+  __proto__: HistoryBrowserTest.prototype,
+
+  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    'link_click_test.js',
+  ]),
+};
+
+TEST_F('HistoryLinkClickTest', 'All', function() {
+  mocha.run();
+});
+
 function HistoryListTest() {}
 
 HistoryListTest.prototype = {

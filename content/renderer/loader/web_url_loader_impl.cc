@@ -297,23 +297,10 @@ void SetSecurityStyleAndDetails(const GURL& url,
   response->SetSecurityDetails(webSecurityDetails);
 }
 
-// Relationship of resource being authenticated with the top level page.
-enum HttpAuthRelationType {
-  HTTP_AUTH_RELATION_TOP,            // Top-level page itself
-  HTTP_AUTH_RELATION_SAME_DOMAIN,    // Sub-content from same domain
-  HTTP_AUTH_RELATION_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
-  HTTP_AUTH_RELATION_ALLOWED_CROSS,  // Allowed Sub-content per command line
-  HTTP_AUTH_RELATION_LAST
-};
-
-HttpAuthRelationType HttpAuthRelationTypeOf(
-    network::ResourceRequest* resource_request,
-    const WebURLRequest& request) {
+bool IsBannedCrossSiteAuth(network::ResourceRequest* resource_request,
+                           const WebURLRequest& request) {
   auto& request_url = resource_request->url;
   auto& first_party = resource_request->site_for_cookies;
-
-  if (!first_party.is_valid())
-    return HTTP_AUTH_RELATION_TOP;
 
   bool allow_cross_origin_auth_prompt = false;
   if (request.GetExtraData()) {
@@ -323,22 +310,20 @@ HttpAuthRelationType HttpAuthRelationTypeOf(
         extra_data->allow_cross_origin_auth_prompt();
   }
 
-  if (net::registry_controlled_domains::SameDomainOrHost(
+  if (first_party.is_valid() &&  // empty site_for_cookies means cross-site.
+      net::registry_controlled_domains::SameDomainOrHost(
           first_party, request_url,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     // If the first party is secure but the subresource is not, this is
     // mixed-content. Do not allow the image.
     if (!allow_cross_origin_auth_prompt && IsOriginSecure(first_party) &&
         !IsOriginSecure(request_url)) {
-      return HTTP_AUTH_RELATION_BLOCKED_CROSS;
+      return true;
     }
-    return HTTP_AUTH_RELATION_SAME_DOMAIN;
+    return false;
   }
 
-  if (allow_cross_origin_auth_prompt)
-    return HTTP_AUTH_RELATION_ALLOWED_CROSS;
-
-  return HTTP_AUTH_RELATION_BLOCKED_CROSS;
+  return !allow_cross_origin_auth_prompt;
 }
 
 }  // namespace
@@ -721,8 +706,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   if (resource_request->resource_type ==
           static_cast<int>(ResourceType::kImage) &&
-      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
-          HttpAuthRelationTypeOf(resource_request.get(), request)) {
+      IsBannedCrossSiteAuth(resource_request.get(), request)) {
     // Prevent third-party image content from prompting for login, as this
     // is often a scam to extract credentials for another domain from the
     // user. Only block image loads, as the attack applies largely to the

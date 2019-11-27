@@ -1183,7 +1183,8 @@ void DocumentLoader::StartLoadingInternal() {
   main_resource_identifier_ = CreateUniqueIdentifier();
 
   navigation_timing_info_ = ResourceTimingInfo::Create(
-      fetch_initiator_type_names::kDocument, GetTiming().NavigationStart());
+      fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
+      mojom::RequestContextType::IFRAME);
   navigation_timing_info_->SetInitialURL(url_);
   report_timing_info_to_parent_ = ShouldReportTimingInfoToParent();
 
@@ -1764,9 +1765,8 @@ void DocumentLoader::ParseAndPersistClientHints(
     const ResourceResponse& response) {
   const KURL& url = response.CurrentRequestUrl();
 
-  // The accept-ch-lifetime header is honored only on the navigation responses
-  // from a top level frame or with an origin matching the origin of the top
-  // level frame.
+  // The accept-ch header is honored only on the navigation responses from a top
+  // level frame or with an origin matching the origin of the to level frame.
   if (!frame_->IsMainFrame()) {
     bool is_first_party_origin =
         frame_->Tree()
@@ -1778,15 +1778,31 @@ void DocumentLoader::ParseAndPersistClientHints(
       return;
   }
 
+  if (!response.HttpHeaderFields().Contains(http_names::kAcceptCH))
+    return;
+
   FrameClientHintsPreferencesContext hints_context(GetFrame());
+  // TODO(crbug.com/1017166): Kill ACHL header completely once feature ships.
   client_hints_preferences_.UpdateFromAcceptClientHintsLifetimeHeader(
       response.HttpHeaderField(http_names::kAcceptCHLifetime), url,
       &hints_context);
   client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
       response.HttpHeaderField(http_names::kAcceptCH), url, &hints_context);
 
+  base::TimeDelta persist_duration;
+
+  // If the FeaturePolicyForClientHints feature is enabled, the lifetime
+  // should not expire. Setting the duration to "max" should essentially
+  // do the same thing.
+
+  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
+    persist_duration = base::TimeDelta::Max();
+  } else {
+    persist_duration = client_hints_preferences_.GetPersistDuration();
+  }
+
   // Notify content settings client of persistent client hints.
-  if (client_hints_preferences_.GetPersistDuration().InSeconds() <= 0)
+  if (persist_duration.InSeconds() <= 0)
     return;
 
   auto* settings_client = frame_->GetContentSettingsClient();
@@ -1798,8 +1814,8 @@ void DocumentLoader::ParseAndPersistClientHints(
   if (!settings_client->AllowScriptFromSource(allow_script, url))
     return;
   settings_client->PersistClientHints(
-      client_hints_preferences_.GetWebEnabledClientHints(),
-      client_hints_preferences_.GetPersistDuration(), url);
+      client_hints_preferences_.GetWebEnabledClientHints(), persist_duration,
+      url);
 }
 
 void DocumentLoader::InitializePrefetchedSignedExchangeManager() {

@@ -6,15 +6,14 @@ package org.chromium.chrome.browser.feed;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
-import com.google.android.libraries.feed.api.client.knowncontent.ContentRemoval;
-import com.google.android.libraries.feed.api.client.knowncontent.KnownContent;
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentRemoval;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;

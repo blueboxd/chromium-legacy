@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -23,8 +25,6 @@ class HomescreenTest : public UIPerformanceTest {
 
   HomescreenTest(const HomescreenTest& other) = delete;
   HomescreenTest& operator=(const HomescreenTest& rhs) = delete;
-
-  void set_test_has_dragging(bool val) { test_has_dragging_ = val; }
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
@@ -47,19 +47,8 @@ class HomescreenTest : public UIPerformanceTest {
       cmd->RemoveSwitch(wm::switches::kWindowAnimationsDisabled);
   }
   std::vector<std::string> GetUMAHistogramNames() const override {
-    if (!test_has_dragging_)
       return {"Ash.Homescreen.AnimationSmoothness"};
-
-    return {
-        "Ash.Homescreen.AnimationSmoothness",
-        "Apps.StateTransition.Drag.PresentationTime.TabletMode",
-        "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode",
-    };
   }
-
- private:
-  // If the test involves drags, the the expected histograms will differ.
-  bool test_has_dragging_ = false;
 };
 
 IN_PROC_BROWSER_TEST_F(HomescreenTest, ShowHideLauncher) {
@@ -85,9 +74,32 @@ IN_PROC_BROWSER_TEST_F(HomescreenTest, ShowHideLauncher) {
   ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
 }
 
-IN_PROC_BROWSER_TEST_F(HomescreenTest, DraggingPerformance) {
-  set_test_has_dragging(true);
+class HomescreenDragTest : public HomescreenTest {
+ public:
+  HomescreenDragTest() {
+    // Gesture tested by this test is only enabled if
+    // kDragFromShelfToHomeOrOverview is disabled.
+    scoped_features_.InitAndDisableFeature(
+        ash::features::kDragFromShelfToHomeOrOverview);
+  }
+  ~HomescreenDragTest() override = default;
 
+  HomescreenDragTest(const HomescreenDragTest& other) = delete;
+  HomescreenDragTest& operator=(const HomescreenDragTest& rhs) = delete;
+
+  std::vector<std::string> GetUMAHistogramNames() const override {
+    return {
+        "Ash.Homescreen.AnimationSmoothness",
+        "Apps.StateTransition.Drag.PresentationTime.TabletMode",
+        "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode",
+    };
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+IN_PROC_BROWSER_TEST_F(HomescreenDragTest, DraggingPerformance) {
   // First show the launcher so we can do drags.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();

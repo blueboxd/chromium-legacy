@@ -1588,10 +1588,13 @@ ImageData* BaseRenderingContext2D::getImageData(
   if (IsAccelerated())
     DisableAcceleration();
 
-  size_t size_in_bytes =
-      StaticBitmapImage::GetSizeInBytes(image_data_rect, color_params);
-  if (size_in_bytes > v8::TypedArray::kMaxLength)
+  size_t size_in_bytes;
+  if (!StaticBitmapImage::GetSizeInBytes(image_data_rect, color_params)
+           .AssignIfValid(&size_in_bytes) ||
+      size_in_bytes > v8::TypedArray::kMaxLength) {
+    exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
+  }
 
   bool may_have_stray_area =
       IsAccelerated()  // GPU readback may fail silently.

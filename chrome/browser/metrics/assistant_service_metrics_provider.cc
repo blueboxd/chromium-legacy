@@ -25,4 +25,9 @@ void AssistantServiceMetricsProvider::ProvideCurrentSessionData(
       "Assistant.ServiceEnabledUserCount",
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
           chromeos::assistant::prefs::kAssistantEnabled));
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Assistant.ContextEnabledUserCount",
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          chromeos::assistant::prefs::kAssistantContextEnabled));
 }

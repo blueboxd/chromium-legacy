@@ -263,10 +263,12 @@ static bool ExtractImageData(Image* image,
               kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
-  size_t size_in_bytes =
-      StaticBitmapImage::GetSizeInBytes(image_dest_rect, color_params);
-  if (size_in_bytes > v8::TypedArray::kMaxLength)
+  size_t size_in_bytes;
+  if (!StaticBitmapImage::GetSizeInBytes(image_dest_rect, color_params)
+           .AssignIfValid(&size_in_bytes) ||
+      size_in_bytes > v8::TypedArray::kMaxLength) {
     return false;
+  }
   ArrayBufferContents result(size_in_bytes, 1, ArrayBufferContents::kNotShared,
                              ArrayBufferContents::kZeroInitialize);
   if (result.DataLength() != size_in_bytes)

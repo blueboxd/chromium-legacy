@@ -177,15 +177,74 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType itemType = static_cast<ItemType>(
       [self.tableViewModel itemTypeForIndexPath:indexPath]);
 
-  // TODO(crbug.com/1014959): implement other button actions.
-  if (itemType == ItemTypeTranslateButton) {
-    TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
-    [tableViewTextButtonCell.button
-               addTarget:self.infobarModalDelegate
-                  action:@selector(modalInfobarButtonWasAccepted:)
-        forControlEvents:UIControlEventTouchUpInside];
-    tableViewTextButtonCell.selectionStyle = UITableViewCellSelectionStyleNone;
+  switch (itemType) {
+    case ItemTypeTranslateButton: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      tableViewTextButtonCell.selectionStyle =
+          UITableViewCellSelectionStyleNone;
+      [tableViewTextButtonCell.button
+                 addTarget:self.infobarModalDelegate
+                    action:@selector(modalInfobarButtonWasAccepted:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypeAlwaysTranslateSource: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      tableViewTextButtonCell.selectionStyle =
+          UITableViewCellSelectionStyleNone;
+      if (self.shouldAlwaysTranslate) {
+        [tableViewTextButtonCell.button
+                   addTarget:self.infobarModalDelegate
+                      action:@selector(undoAlwaysTranslateSourceLanguage)
+            forControlEvents:UIControlEventTouchUpInside];
+      } else {
+        [tableViewTextButtonCell.button
+                   addTarget:self.infobarModalDelegate
+                      action:@selector(alwaysTranslateSourceLanguage)
+            forControlEvents:UIControlEventTouchUpInside];
+      }
+      break;
+    }
+    case ItemTypeNeverTranslateSource: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      tableViewTextButtonCell.selectionStyle =
+          UITableViewCellSelectionStyleNone;
+      if (self.isTranslatableLanguage) {
+        [tableViewTextButtonCell.button
+                   addTarget:self.infobarModalDelegate
+                      action:@selector(neverTranslateSourceLanguage)
+            forControlEvents:UIControlEventTouchUpInside];
+      } else {
+        [tableViewTextButtonCell.button
+                   addTarget:self.infobarModalDelegate
+                      action:@selector(undoNeverTranslateSourceLanguage)
+            forControlEvents:UIControlEventTouchUpInside];
+      }
+      break;
+    }
+    case ItemTypeNeverTranslateSite: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      tableViewTextButtonCell.selectionStyle =
+          UITableViewCellSelectionStyleNone;
+      if (self.isSiteBlacklisted) {
+        [tableViewTextButtonCell.button
+                   addTarget:self.infobarModalDelegate
+                      action:@selector(undoNeverTranslateSite)
+            forControlEvents:UIControlEventTouchUpInside];
+      } else {
+        [tableViewTextButtonCell.button addTarget:self.infobarModalDelegate
+                                           action:@selector(neverTranslateSite)
+                                 forControlEvents:UIControlEventTouchUpInside];
+      }
+      break;
+    }
+    case ItemTypeSourceLanguage:
+    case ItemTypeTargetLanguage:
+      break;
   }
 
   return cell;

@@ -9,12 +9,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;

@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">عرض المزيد</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">عليك تغيير كلمة مرورك</translation>
 <translation id="1484290072879560759">اختيار عنوان الشحن</translation>
 <translation id="1492194039220927094">إرسال السياسات:</translation>
 <translation id="1501859676467574491">‏عرض البطاقات من حسابك على Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">جرّب الاتصال بمشرف النظام.</translation>
 <translation id="1736420071277903564">جهاز الكمبيوتر</translation>
-<translation id="1739107442478692187">‏حدثت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفّح Chrome التحقق من كلمات المرور المحفوظة وتغيير كلمات المرور على <ph name="ORIGIN" /> الآن.</translation>
 <translation id="1740951997222943430">أدخِل شهر انتهاء صلاحية صحيح</translation>
 <translation id="1741613555002899862">‏يجب أن تكون محدّدة وتُمثّل سلسلة صالحة عندما تكون DnsOverHttpsMode مضبوطة على <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">‏للدفع بشكلٍ أسرع في المرة القادمة، يمكنك حفظ البطاقة والاسم وعنوان إرسال الفواتير في حسابك على Google وفي هذا الجهاز.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">خدمة "فك الضغط"</translation>
 <translation id="1915697529809968049">‏هل تريد استخدام رقم التعريف باللمس بدلاً من رمز التحقق من البطاقة (CVC)؟</translation>
 <translation id="1916770123977586577">لتطبيق الإعدادات المُحدَّثة على موقع الويب هذا، أعِد تحميل هذه الصفحة</translation>
+<translation id="1917876262703816781">‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك. يقترح متصفّح Chrome تغيير كلمة مرورك على <ph name="ORIGIN" /> الآن.</translation>
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1919367280705858090">الحصول على مساعدة بخصوص رسالة خطأ محددة</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{بدون}=1{موقع واحد}two{ موقعان (#)}few{# مواقع}many{# موقعًا}other{# موقع}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">النطاق غير متطابق</translation>
 <translation id="2096368010154057602">القسم</translation>
 <translation id="2099652385553570808">وضع ثلاثة دبابيس يسارًا</translation>
-<translation id="2100280972184758440">اختراق كلمة المرور</translation>
 <translation id="2102134110707549001">اقتراح كلمة مرور قوية…</translation>
 <translation id="2108755909498034140">إعادة تشغيل جهاز الكمبيوتر</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">تم الإصدار إلى: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">عمل ثقب أسفل اليمين</translation>
-<translation id="2124528555835617522">‏حدثت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفّح Chrome التحقق من كلمات المرور المحفوظة الآن.</translation>
 <translation id="2129079103035905234">مستشعرات الحركة</translation>
 <translation id="2130448033692577677">‏قد لا يتم تطبيق النماذج التي حدّدتها بسبب عدم ضبط سياسة DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوّال</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">يمكن للمهاجمين الموجودين حاليًا على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت تطبيقات خطيرة تضرّ جهازك أو تضيف رسومًا إلى فاتورة الجوّال أو تسرق معلوماتك الشخصية. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">الاتصال بالإنترنت مقطوع</translation>
 <translation id="2230458221926704099">إصلاح الاتصال باستخدام <ph name="BEGIN_LINK" />تطبيق بيانات التشخيص<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">محتوى يهمّك</translation>
 <translation id="2239100178324503013">إرسال الآن</translation>
 <translation id="2248949050832152960">‏استخدام WebAuthn</translation>
 <translation id="2250931979407627383">خزم الحواف يسارًا</translation>
@@ -374,6 +374,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">تحذير متعلق بالأمان</translation>
 <translation id="2699302886720511147">البطاقات المقبولة</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
@@ -476,6 +477,7 @@
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
 <translation id="3209034400446768650">إمكانية تحصيل الصفحة للرسوم</translation>
 <translation id="3209080785413271048">‏يمكنك استخدام Windows Hello للتحقق من طرق الدفع المحفوظة.</translation>
+<translation id="3212581601480735796">تتم مراقبة نشاطك على <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">‏تعذّر استخدام WebAuthn</translation>
 <translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3226128629678568754">اضغط على زر إعادة التحميل لإعادة إرسال البيانات المطلوبة لتحميل الصفحة.</translation>
@@ -491,7 +493,6 @@
 <translation id="3282497668470633863">إضافة الاسم الوارد في البطاقة</translation>
 <translation id="3287510313208355388">التنزيل عند الاتصال بالإنترنت</translation>
 <translation id="3293642807462928945">مزيد من المعلومات عن سياسة <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">‏حدثت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفّح Chrome تغيير كلمة مرورك على <ph name="ORIGIN" /> الآن.</translation>
 <translation id="3303855915957856445">لم يتم العثور على أي نتائج بحث</translation>
 <translation id="3320021301628644560">إضافة عنوان إرسال الفواتير</translation>
 <translation id="3324983252691184275">قرمزي</translation>
@@ -534,6 +535,7 @@
 <translation id="3528485271872257980">بني داكن</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
 <translation id="3539171420378717834">الاحتفاظ بنسخة من هذه البطاقة على هذا الجهاز</translation>
+<translation id="3553513561058684206">محتوى يهمّك</translation>
 <translation id="3566021033012934673">الاتصال بهذا الموقع الإلكتروني ليس خاصًا</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">تعرض صفحة مُضمنة في موقع <ph name="SITE" /></translation>
@@ -764,6 +766,7 @@
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
 <translation id="4597348597567598915">الحجم 8</translation>
 <translation id="4600854749408232102">‏C6/C5 (مغلف)</translation>
+<translation id="4613966523036881546">‏لا يثق Google Chrome بشهادة هذا الاتصال، فمن المعروف أنها تُستخدم لاعتراض الشبكة ومراقبتها.</translation>
 <translation id="4635654612248442824">لقد طلب الموقع الإلكتروني <ph name="ORIGIN" /> تطبيق سياسة المصدر
     على جميع طلباته، ولكن لا يمكن تطبيق هذه السياسة حاليًا.</translation>
 <translation id="464342062220857295">ميزات البحث</translation>
@@ -903,6 +906,7 @@
 <translation id="5287240709317226393">عرض ملفات تعريف الارتباط</translation>
 <translation id="5287456746628258573">يستخدم هذا الموقع الإلكتروني ضبط الأمان القديم الذي قد يكشف عن معلوماتك (مثل كلمات المرور أو أرقام بطاقة الائتمان) عند إرسالها إلى هذا الموقع الإلكتروني.</translation>
 <translation id="5288108484102287882">لقد أدى التحقُّق من قيم السياسة إلى ظهور تحذيرات.</translation>
+<translation id="5295292838686006428">‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5308380583665731573">اتصال</translation>
@@ -953,6 +957,7 @@
 <translation id="5540224163453853">تعذر العثور على المقالة المطلوبة</translation>
 <translation id="5541546772353173584">إضافة البريد الإلكتروني</translation>
 <translation id="5545756402275714221">مقالات لك</translation>
+<translation id="5552137475244467770">‏يتحقَّق Chrome من كلمات مرورك بشكلٍ دوري في البيانات التي تم نشرها على الإنترنت. وأثناء هذه العملية، تكون كلمات المرور وأسماء المستخدمين مشفّرة، ولا يمكن لأي مستخدم آخر الاطِّلاع على هذه البيانات بما في ذلك Google.</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5560088892362098740">تاريخ انتهاء الصلاحية</translation>
 <translation id="5565735124758917034">نشط</translation>
@@ -1044,6 +1049,7 @@
 <translation id="5992691462791905444">‏تصميم الطي على شكل حرف Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> من نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">التحقق من كلمات المرور</translation>
 <translation id="6015796118275082299">عام</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحة 1}zero{صفحة #}two{صفحة #}few{صفحة #}many{صفحة #}other{صفحة #}}</translation>
 <translation id="6017514345406065928">أخضر</translation>
@@ -1333,6 +1339,7 @@
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="748406663033922918">يمكنك استخدام قفل الشاشة للتحقق من طرق الدفع المحفوظة.</translation>
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
+<translation id="7495290002932347110">‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة وتغيير كلمة مرورك على <ph name="ORIGIN" /> الآن.</translation>
 <translation id="7498234416455752244">متابعة التعديل</translation>
 <translation id="7508255263130623398">رقم تعريف الجهاز المعروض للسياسة فارغ أو لا يتطابق مع رقم تعريف الجهاز الحالي</translation>
 <translation id="7508870219247277067">أخضر مصفر</translation>
@@ -1469,6 +1476,7 @@
 <translation id="8103161714697287722">طريقة الدفع</translation>
 <translation id="8105368624971345109">إيقاف</translation>
 <translation id="8118489163946903409">طريقة الدفع</translation>
+<translation id="8124023448510659215">‏لا يثق Chromium بشهادة هذا الاتصال، فمن المعروف أنها تُستخدم لاعتراض الشبكة ومراقبتها.</translation>
 <translation id="8127301229239896662">لم يتم تثبيت "<ph name="SOFTWARE_NAME" />" بطريقة صحيحة على جهاز الكمبيوتر أو الشبكة. اطلب من مشرف تقنية المعلومات حل هذه المشكلة.</translation>
 <translation id="8131740175452115882">التأكيد</translation>
 <translation id="8149426793427495338">خضع جهاز الكمبيوتر إلى وضع السكون.</translation>
@@ -1612,6 +1620,8 @@
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
 <translation id="8962950042226115166">موقع إلكتروني مريب</translation>
 <translation id="8968766641738584599">حفظ البطاقة</translation>
+<translation id="8969267497192857913">تتم مراقبة أي نص تكتبه أو أي صفحات تطّلع عليها أو أي نشاط آخر تجريه على الإنترنت، ويمكن أن يتم تغيير المحتوى على المواقع الإلكترونية بدون معرفتك.
+    <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8975012916872825179">تتضمّن معلومات مثل أرقام الهواتف وعناوين البريد الإلكتروني وعناوين الشحن.</translation>
 <translation id="8975263830901772334">أسماء الملفات التي طبعتها</translation>

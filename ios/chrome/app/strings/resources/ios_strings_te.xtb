@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">అన్ని ట్యాబ్‌ల నుండి భవిష్యత్తు JavaScript కన్సోల్ లాగ్‌లు మరియు ఎర్రర్‌లను సేకరించడానికి "లాగ్ చేయడం ప్రారంభించు" బటన్ నొక్కండి. లాగ్‌లు ఈ పేజీని మూసివేసే వరకు లేదా “లాగ్ చేయడం ఆపివేయి” నొక్కే వరకు సేకరించబడతాయి (అలాగే, మెమెరీలో నిల్వ చేయబడతాయి).</translation>
 <translation id="1657011748321897393">మీరు ఇంటర్నెట్‌కు కనెక్ట్ చేయనందున షేరింగ్ విఫలమైంది.</translation>
 <translation id="165877110639533037">తెరిచి ఉన్న ట్యాబ్‌లు లేవు</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> నుండి <ph name="TARGET_LANGUAGE" />లోకి</translation>
 <translation id="168715261339224929">మీ బుక్‌మార్క్‌లను మీ అన్ని పరికరాలలోనూ పొందాలంటే, సమకాలీకరణను ఆన్ చేయండి.</translation>
 <translation id="1687475363370981210">అన్నీ చదివినట్లు గుర్తు పెట్టు</translation>
 <translation id="1690731385917361335">అంశాలు లేవు</translation>
@@ -102,7 +103,6 @@
 <translation id="2273327106802955778">మరిన్ని మెను</translation>
 <translation id="2316709634732130529">సూచించిన పాస్‌వర్డ్‌ని ఉపయోగించు</translation>
 <translation id="2320166752086256636">కీబోర్డ్‌ను దాచు</translation>
-<translation id="2330129964253841015">పాస్‌వర్డ్‌లు చోరీకి గురైతే మిమ్మల్ని హెచ్చరిస్తుంది</translation>
 <translation id="2339560363438331454">సింక్ మరియు Google సేవలు</translation>
 <translation id="2351097562818989364">మీ అనువాద సెట్టింగ్‌లు రీసెట్ చేయబడ్డాయి.</translation>
 <translation id="2359043044084662842">అనువదించు</translation>
@@ -127,6 +127,7 @@
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2690858294534178585">కెమెరా వినియోగంలో ఉంది</translation>
 <translation id="2691653761409724435">ఆఫ్‌లైన్‌లో అందుబాటులో లేదు</translation>
+<translation id="2695507686909505111">పేజీ అనువాదం చేయబడింది</translation>
 <translation id="2702801445560668637">పఠనా జాబితా</translation>
 <translation id="2704606927547763573">కాపీ చేయబడింది</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
@@ -206,6 +207,7 @@
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
+<translation id="3803696231112616155">ఈ సైట్‌కు అనువాదం అందించే సూచన</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3897092660631435901">మెను</translation>
 <translation id="3915450441834151894">సైట్ సమాచారం</translation>
@@ -243,6 +245,7 @@
 <translation id="4359125752503270327">ఈ పేజీ మరొక అప్లికేషన్‌లో తెరవబడుతుంది.</translation>
 <translation id="4375040482473363939">QR కోడ్ శోధన</translation>
 <translation id="4378154925671717803">ఫోన్</translation>
+<translation id="4389019817280890563">భాషను మార్చడానికి నొక్కండి.</translation>
 <translation id="441868831736628555">గోప్యతా నోటీసు</translation>
 <translation id="4454246407045105932">భాషను జోడించండి</translation>
 <translation id="4476574785019001431">సెట్టింగ్‌లు</translation>
@@ -344,6 +347,7 @@
 <translation id="5871497086027727873">1 అంశం తరలించబడింది</translation>
 <translation id="5897956970858271241">కాపీ చేసిన లింక్‌ను సందర్శించండి</translation>
 <translation id="5911030830365207728">Google అనువాదం</translation>
+<translation id="5913600720976431809">పేజీ అనువాద ఎంపికలు</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
 <translation id="5938160824633642847">మీ పరికరం దాదాపు నిండింది. స్థలాన్ని ఖాళీ చేసిన తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="5948291296578561264">ఇది మీ ఫోటో లైబ్రరీకి ఫోటోలను సేవ్ చేయడానికి మీకు వీలు కల్పిస్తుంది.</translation>
@@ -375,6 +379,7 @@
 <translation id="6219688215832490856">ఎన్నటికీ అనువదించవద్దు</translation>
 <translation id="6254066287920239840">లింక్‌లను బ్రౌజర్‌కు బదులుగా యాప్‌లో తెరవండి.</translation>
 <translation id="6255097610484507482">క్రెడిట్ కార్డ్‌ను సవరించు</translation>
+<translation id="6284652193729350524"><ph name="LANGUAGE" />లోకి అనువాదం అందించే సూచన</translation>
 <translation id="6303969859164067831">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయండి</translation>
 <translation id="6308436439357671616">దీని వలన మీరు ఫోటోలను తీసి, అప్‌లోడ్ చేయగలుగుతారు.</translation>
 <translation id="6324528485781869530">సింక్‌ ఖాతాను మార్చండి</translation>
@@ -429,11 +434,13 @@
 <translation id="6903907808598579934">సమకాలీకరణను ఆన్ చేయి</translation>
 <translation id="6914583639806229067">మీరు కాపీ చేసిన చిత్రాన్ని వెతకండి</translation>
 <translation id="6914783257214138813">ఎగుమతి చేయబడిన ఫైల్‌ను చూడగల ఎవరికైనా మీ పాస్‌వర్డ్‌లు కనిపిస్తాయి.</translation>
+<translation id="6930799952781667037">ఈ భాషను మార్చడానికి నొక్కండి.</translation>
 <translation id="6944369514868857500">మరొక ఖాతాను ఎంచుకోండి</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6973630695168034713">ఫోల్డర్‌లు</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="6988572888918530647">మీ Google ఖాతాను నిర్వహించండి</translation>
+<translation id="6995899638241819463">మీరు ఉపయోగించే పాస్‌వర్డ్‌లు, ఏవైనా డేటా ఉల్లంఘనలో భాగమైతే మిమ్మల్ని హెచ్చరిస్తుంది</translation>
 <translation id="6998989275928107238">స్వీకర్త</translation>
 <translation id="7004499039102548441">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="7006788746334555276">కంటెంట్ సెట్టింగ్‌లు</translation>
@@ -458,6 +465,7 @@
 <translation id="7293171162284876153">సింక్‌ను మొదలుపెట్టడానికి, "మీ Chrome డేటాను సింక్ చేయడం" ఆన్ చేయండి</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> శాతం డౌన్‌లోడ్ అయ్యింది</translation>
 <translation id="7346909386216857016">సరే, అర్థమైంది</translation>
+<translation id="734758817008927353">కార్డ్‌ను సేవ్ చేయడానికి ఎంపికలు</translation>
 <translation id="7348502496356775519">బుక్‌‍మార్క్</translation>
 <translation id="7383797227493018512">పఠన జాబితా</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@
 <translation id="7671141431838911305">ఇన్‌స్టాల్ చేయి</translation>
 <translation id="7765158879357617694">తరలించు</translation>
 <translation id="7772032839648071052">రహస్య పదబంధాన్ని నిర్ధారించండి</translation>
+<translation id="7781011649027948662">పేజీని అనువాదం చేయాలా?</translation>
 <translation id="7781829728241885113">నిన్న</translation>
 <translation id="778855399387580014">కొత్త Chrome ట్యాబ్‌లో శోధనను ప్రారంభించండి.</translation>
 <translation id="7791543448312431591">జోడించు</translation>

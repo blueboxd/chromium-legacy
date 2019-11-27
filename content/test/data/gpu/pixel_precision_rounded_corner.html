@@ -1,0 +1,43 @@
+
+<!DOCTYPE HTML>
+
+<!-- READ BEFORE UPDATING:
+If this test is updated make sure to increment the "revision" value of the
+associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
+that the baseline images are regenerated on the next run.
+-->
+
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1">
+    <title>Rounded corner Float Precision test</title>
+    <style>
+      #circle {
+        transform-origin: 0 0;
+        transform: scale(5);
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      #rotate {
+        width: 400px;
+        height: 400px;
+        background: lightblue;
+        will-change: transform;
+      }
+    </style>
+    <script>
+      function finish() {
+        domAutomationController.send("SUCCESS");
+      }
+      window.requestAnimationFrame(finish);
+    </script>
+  </head>
+  <body onload="main()">
+    <div id="circle">
+      <div id="rotate">
+      </div>
+    </div>
+  </body>
+</html>

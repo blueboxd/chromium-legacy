@@ -438,6 +438,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
     performance_manager::mojom::InterventionPolicy policy) {
+  // The origin trial policy should only be updated when its value changes.
+  DCHECK_NE(policy, origin_trial_freeze_policy_);
   // Unfreeze the tab if needed. This can happen if the tab gets frozen
   // before all its frames are loaded and if one of these frames
   // causes the tab to be opted out.
@@ -1054,9 +1056,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckDeviceUsage(
 void TabLifecycleUnitSource::TabLifecycleUnit::CheckFreezingOriginTrial(
     DecisionDetails* decision_details) const {
   switch (origin_trial_freeze_policy_) {
-    case performance_manager::mojom::InterventionPolicy::kUnknown:
-      decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN);
-      break;
     case performance_manager::mojom::InterventionPolicy::kOptOut:
       decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT);
       break;

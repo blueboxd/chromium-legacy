@@ -7,17 +7,17 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import java.util.concurrent.TimeoutException;
-
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
+
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Common utilities for Trusted Web Activity tests.
@@ -50,8 +50,6 @@ public class TrustedWebActivityTestUtil {
     public static boolean isTrustedWebActivity(CustomTabActivity activity) {
         // A key part of the Trusted Web Activity UI is the lack of browser controls.
         return !TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> TabBrowserControlsState
-                        .get(activity.getActivityTab())
-                        .canShow());
+                () -> TabBrowserControlsConstraintsHelper.get(activity.getActivityTab()).canShow());
     }
 }

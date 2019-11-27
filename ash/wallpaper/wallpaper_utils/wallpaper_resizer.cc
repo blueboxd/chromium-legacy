@@ -123,11 +123,11 @@ void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
   if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&Resize, image_, target_size_, wallpaper_info_.layout,
-                     resized_bitmap, base::RetainedRef(task_runner_)),
-          base::Bind(&WallpaperResizer::OnResizeFinished,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Owned(resized_bitmap)))) {
+          base::BindOnce(&Resize, image_, target_size_, wallpaper_info_.layout,
+                         resized_bitmap, base::RetainedRef(task_runner_)),
+          base::BindOnce(&WallpaperResizer::OnResizeFinished,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::Owned(resized_bitmap)))) {
     LOG(WARNING) << "PostSequencedWorkerTask failed. "
                  << "Wallpaper may not be resized.";
   }

@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">왼쪽에서 오른쪽으로</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1398853756734560583">최대화</translation>
-<translation id="1409544243779336081">앱 추천</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">마침표</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1개월}other{#개월}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" />MB/초</translation>
-<translation id="1812519734428420144">별표 평점: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1시간 }other{#시간 }}</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="1859234291848436338">쓰기 방향</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7814458197256864873">복사(&amp;C)</translation>
+<translation id="7848989271541991537"><ph name="PAGE_NUMBER" />페이지, <ph name="ROW_NUMBER" />행, <ph name="COLUMN_NUMBER" />열로 이동합니다.</translation>
 <translation id="7879499977785298635">차단하지 않음</translation>
 <translation id="7907591526440419938">파일 열기</translation>
 <translation id="7969046989155602842">Command</translation>

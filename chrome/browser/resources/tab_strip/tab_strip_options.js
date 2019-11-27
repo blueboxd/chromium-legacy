@@ -9,5 +9,4 @@
  */
 export const tabStripOptions = {
   autoCloseEnabled: true,
-  mruEnabled: true,
 };

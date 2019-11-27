@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">הצג יותר</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">עליך לשנות את הסיסמה</translation>
 <translation id="1484290072879560759">בחירת כתובת למשלוח</translation>
 <translation id="1492194039220927094">דחיפת מדיניות:</translation>
 <translation id="1501859676467574491">‏הצגת כרטיסים מחשבון Google שלך</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">נסה לפנות אל מנהל המערכת.</translation>
 <translation id="1736420071277903564">מחשב</translation>
-<translation id="1739107442478692187">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. מערכת Chrome ממליצה לך לבדוק כעת את הסיסמאות ששמרת ולשנות את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">עליך להזין חודש תפוגה חוקי</translation>
 <translation id="1741613555002899862">‏יש לציין מחרוזת חוקית כשהערך של DnsOverHttpsMode הוא <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס, השם והכתובת לחיוב.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">שירות לפתיחת קבצים דחוסים</translation>
 <translation id="1915697529809968049">‏האם להשתמש ב-Touch ID במקום ב-CVC?</translation>
 <translation id="1916770123977586577">כדי להחיל על האתר את ההגדרות המעודכנות, טען מחדש את הדף</translation>
+<translation id="1917876262703816781">‏פרצה באבטחת מידע באתר או באפליקציה חשפה את הסיסמה שלך. ההמלצה של Chrome היא לשנות עכשיו את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="1919367280705858090">עזרה לגבי הודעות שגיאה ספציפיות</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ללא}=1{אתר אחד}two{שני אתרים}many{# אתרים}other{# אתרים}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">אי התאמה בדומיינים</translation>
 <translation id="2096368010154057602">מחלקה</translation>
 <translation id="2099652385553570808">3 סיכות הידוק בצד שמאל</translation>
-<translation id="2100280972184758440">הסיסמה שלך בסיכון</translation>
 <translation id="2102134110707549001">הצעת סיסמה חזקה…</translation>
 <translation id="2108755909498034140">אתחול המחשב</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">נופק ל: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">ניקוב בפינה הימנית התחתונה</translation>
-<translation id="2124528555835617522">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. ההמלצה של Chrome היא לבדוק עכשיו את הסיסמאות השמורות.</translation>
 <translation id="2129079103035905234">חיישני תנועה</translation>
 <translation id="2130448033692577677">‏לא ניתן להחיל את התבניות שבחרת, מפני שמדיניות DnsOverHttpsMode לא הוגדרה.</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
@@ -492,7 +491,6 @@
 <translation id="3282497668470633863">הוספה של השם המופיע בכרטיס</translation>
 <translation id="3287510313208355388">להורדה אחרי התחברות לרשת</translation>
 <translation id="3293642807462928945">מידע נוסף על המדיניות <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. ההמלצה של Chrome היא לשנות עכשיו את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">לא נמצאו תוצאות חיפוש</translation>
 <translation id="3320021301628644560">הוספה של כתובת לחיוב</translation>
 <translation id="3324983252691184275">ארגמן</translation>
@@ -910,6 +908,7 @@ Del</translation>
 <translation id="5287240709317226393">‏הצגת קובצי Cookie</translation>
 <translation id="5287456746628258573">האתר הזה משתמש בהגדרת אבטחה מיושנת, שעלולה לחשוף את המידע שלך (למשל, סיסמאות או מספרים של כרטיס אשראי) כשהוא נשלח לאתר זה.</translation>
 <translation id="5288108484102287882">בעקבות אימות ערכי המדיניות הופיעו אזהרות</translation>
+<translation id="5295292838686006428">‏פרצה באבטחת מידע באתר או באפליקציה חשפה את הסיסמה שלך. ההמלצה של Chrome היא לבדוק עכשיו את הסיסמאות השמורות.</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5308380583665731573">התחברות</translation>
@@ -961,6 +960,7 @@ Del</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
 <translation id="5541546772353173584">הוספת כתובת אימייל</translation>
 <translation id="5545756402275714221">מאמרים שעשויים לעניין אותך</translation>
+<translation id="5552137475244467770">‏מערכת Chrome בודקת מדי פעם את הסיסמאות שלך ומשווה אותן לרשימות שהתפרסמו באינטרנט. כשהפעולה הזו מבוצעת, הסיסמאות ושמות המשתמש מוצפנים, כך שאיש לא יוכל לקרוא אותם, כולל Google.</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5560088892362098740">תאריך תפוגה</translation>
 <translation id="5565735124758917034">פעיל</translation>
@@ -1052,6 +1052,7 @@ Del</translation>
 <translation id="5992691462791905444">‏קיפול מסוג Engineering Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> תוצאות בשביל '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">בדיקת הסיסמאות</translation>
 <translation id="6015796118275082299">שנה</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{דף 1}two{דף #}many{דף #}other{דף #}}</translation>
 <translation id="6017514345406065928">ירוק</translation>
@@ -1341,6 +1342,7 @@ Del</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="748406663033922918">אפשר להשתמש בנעילת המסך כדי לאמת את אמצעי התשלום ששמרת.</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
+<translation id="7495290002932347110">‏פרצה באבטחת מידע באתר או באפליקציה חשפה את הסיסמה שלך. ההמלצה של Chrome היא לבדוק עכשיו את הסיסמאות ששמרת ולשנות את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">המשך העריכה</translation>
 <translation id="7508255263130623398">מזהה המכשיר במדיניות שהוחזר ריק או שאינו תואם את מזהה המכשיר הנוכחי</translation>
 <translation id="7508870219247277067">ירוק אבוקדו</translation>

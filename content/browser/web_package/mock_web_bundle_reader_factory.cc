@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,6 +86,12 @@ class MockParserFactory final
   MockParserFactory() {}
   ~MockParserFactory() override = default;
 
+  void AddReceiver(
+      mojo::PendingReceiver<data_decoder::mojom::WebBundleParserFactory>
+          receiver) {
+    receivers_.Add(this, std::move(receiver));
+  }
+
   void WaitUntilParseMetadataCalled(base::OnceClosure closure) {
     if (parser_)
       parser_->WaitUntilParseMetadataCalled(std::move(closure));
@@ -134,6 +141,7 @@ class MockParserFactory final
   }
 
   std::unique_ptr<MockParser> parser_;
+  mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
   base::OnceClosure wait_parse_metadata_callback_;
   base::OnceClosure wait_parse_response_callback_;
 
@@ -147,6 +155,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
 
   scoped_refptr<WebBundleReader> CreateReader(
       const std::string& test_file_data) override {
+    DCHECK(!factory_);
     if (!temp_dir_.CreateUniqueTempDir() ||
         !CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file_path_) ||
         (test_file_data.size() !=
@@ -159,13 +168,10 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
         WebBundleSource::MaybeCreateFromTrustedFileUrl(
             net::FilePathToFileURL(temp_file_path_)));
 
-    std::unique_ptr<MockParserFactory> factory =
-        std::make_unique<MockParserFactory>();
-    factory_ = factory.get();
-    mojo::Remote<data_decoder::mojom::WebBundleParserFactory> remote;
-    mojo::MakeSelfOwnedReceiver(std::move(factory),
-                                remote.BindNewPipeAndPassReceiver());
-    reader->SetWebBundleParserFactoryForTesting(std::move(remote));
+    factory_ = std::make_unique<MockParserFactory>();
+    in_process_data_decoder_.service()
+        .SetWebBundleParserFactoryBinderForTesting(base::BindRepeating(
+            &MockParserFactory::AddReceiver, base::Unretained(factory_.get())));
     return reader;
   }
 
@@ -223,10 +229,11 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
   }
 
  private:
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   std::string test_file_data_;
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file_path_;
-  MockParserFactory* factory_ = nullptr;
+  std::unique_ptr<MockParserFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebBundleReaderFactoryImpl);
 };

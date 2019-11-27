@@ -11,7 +11,7 @@ class GURL;
 
 namespace visitedlink {
 
-// Delegate class that clients of VisitedLinkMaster must implement.
+// Delegate class that clients of VisitedLinkWriter must implement.
 class VisitedLinkDelegate {
  public:
   // See RebuildTable.
@@ -33,7 +33,7 @@ class VisitedLinkDelegate {
   };
 
   // Delegate class is responsible for persisting the list of visited URLs
-  // across browser runs. This is called by VisitedLinkMaster to repopulate
+  // across browser runs. This is called by VisitedLinkWriter to repopulate
   // its internal table. Note that methods on enumerator can be called on any
   // thread but the delegate is responsible for synchronizating the calls.
   virtual void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) = 0;

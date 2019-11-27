@@ -90,7 +90,8 @@ class CastContentRendererClient
 
  private:
   // mojom::ApplicationMediaCapabilitiesObserver implementation:
-  void OnSupportedBitstreamAudioCodecsChanged(int codecs) override;
+  void OnSupportedBitstreamAudioCodecsChanged(
+      const BitstreamAudioCodecsInfo& info) override;
 
   std::unique_ptr<network_hints::WebPrescientNetworkingImpl>
       web_prescient_networking_impl_;
@@ -114,7 +115,7 @@ class CastContentRendererClient
   std::unique_ptr<media::CastAudioDeviceFactory> cast_audio_device_factory_;
 #endif
 
-  int supported_bitstream_audio_codecs_;
+  BitstreamAudioCodecsInfo supported_bitstream_audio_codecs_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);
 };

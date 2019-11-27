@@ -50,7 +50,7 @@ cast_source_set("mixer_output") {
     "//chromecast/base",
     "//chromecast/public/media",
     "//media",
-    "//third_party/fuchsia-sdk/sdk:media",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-media",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
 }
@@ -68,6 +68,6 @@ cast_source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:media",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-media",
   ]
 }

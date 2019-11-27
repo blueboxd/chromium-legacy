@@ -47,6 +47,10 @@ class CONTENT_EXPORT IndexedDBCallbacks
  public:
   // IndexedDBValueBlob stores information about a given IndexedDBValue's
   // blobs so they can be created on the IO thread.
+  //
+  // This class holds a const reference to its creating blob info, so
+  // should only be used as a temporary object to pass to a function,
+  // and not something that should be persisted or posttasked.
   class IndexedDBValueBlob {
    public:
     // IndexedDBValueBlob() takes a std::vector<IDBBlobInfoPtr>* which it
@@ -81,9 +85,11 @@ class CONTENT_EXPORT IndexedDBCallbacks
     mojo::PendingReceiver<blink::mojom::Blob> receiver_;
   };
 
-  static bool CreateAllBlobs(
-      scoped_refptr<ChromeBlobStorageContext> blob_context,
-      std::vector<IndexedDBValueBlob> value_blobs);
+  // Create blobs for all of the receivers in |value_blobs|.
+  // |dispatcher_host| must be non-null.
+  // TODO(enne): maybe this function should live in dispatcher host?
+  static void CreateAllBlobs(IndexedDBDispatcherHost* dispatcher_host,
+                             std::vector<IndexedDBValueBlob> value_blobs);
 
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                      const url::Origin& origin,

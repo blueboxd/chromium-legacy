@@ -105,6 +105,14 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
     proto::OptimizationTarget optimization_target);
 
+// Returns the minimum number of seconds to randomly delay before starting to
+// fetch for prediction models and host model features.
+int PredictionModelFetchRandomMinDelaySecs();
+
+// Returns the maximum number of seconds to randomly delay before starting to
+// fetch for prediction models and host model features.
+int PredictionModelFetchRandomMaxDelaySecs();
+
 }  // namespace features
 }  // namespace optimization_guide
 

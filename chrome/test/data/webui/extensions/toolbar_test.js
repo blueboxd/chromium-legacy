@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getInstance} from 'chrome://extensions/extensions.js';
+import {getToastManager} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -111,7 +111,7 @@ suite(extension_toolbar_tests.suiteName, function() {
           return mockDelegate.whenCalled('loadUnpacked');
         })
         .then(function() {
-          const toastManager = getInstance();
+          const toastManager = getToastManager();
           assertFalse(toastManager.isToastOpen);
           toolbar.$.updateNow.click();
           // Simulate user rapidly clicking update button multiple times.

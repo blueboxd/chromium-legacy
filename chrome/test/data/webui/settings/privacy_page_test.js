@@ -164,6 +164,7 @@ cr.define('settings_privacy_page', function() {
   }
 
   function registerNativeCertificateManagerTests() {
+    assert(cr.isMac || cr.isWindows);
     suite('NativeCertificateManager', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
       let testBrowserProxy;
@@ -196,6 +197,12 @@ cr.define('settings_privacy_page', function() {
       let page;
 
       setup(function() {
+        const testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        const testSyncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
+        PolymerTest.clearBody();
+
         page = document.createElement('settings-privacy-page');
         page.prefs = {
           signin: {
@@ -204,6 +211,7 @@ cr.define('settings_privacy_page', function() {
           },
         };
         document.body.appendChild(page);
+        return testSyncBrowserProxy.whenCalled('getSyncStatus');
       });
 
       teardown(function() {
@@ -316,6 +324,7 @@ cr.define('settings_privacy_page', function() {
   }
 
   function registerClearBrowsingDataTestsDice() {
+    assert(!cr.isChromeOS);
     suite('ClearBrowsingDataDice', function() {
       /** @type {settings.TestClearBrowsingDataBrowserProxy} */
       let testBrowserProxy;
@@ -809,16 +818,12 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  if (cr.isMac || cr.isWindows) {
-    registerNativeCertificateManagerTests();
-  }
-
-  if (!cr.isChromeOS) {
-    registerClearBrowsingDataTestsDice();
-  }
-
-  registerClearBrowsingDataTests();
-  registerPrivacyPageTests();
-  registerPrivacyPageSoundTests();
-  registerUMALoggingTests();
+  return {
+    registerNativeCertificateManagerTests,
+    registerClearBrowsingDataTestsDice,
+    registerClearBrowsingDataTests,
+    registerPrivacyPageTests,
+    registerPrivacyPageSoundTests,
+    registerUMALoggingTests,
+  };
 });

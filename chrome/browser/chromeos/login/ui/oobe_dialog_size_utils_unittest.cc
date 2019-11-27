@@ -7,16 +7,13 @@
 #include <stddef.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
 
 namespace {
-
-constexpr int kGaiaDialogMaxSize = 768;
-constexpr int kGaiaDialogMinMargin = 48;
-constexpr int kGaiaDialogMinSize = 464;
 
 constexpr int kShelfHeight = 56;
 constexpr int kVirtualKeyboardHeight = 280;
@@ -42,23 +39,23 @@ class OobeDialogSizeUtilsTest : public testing::Test {
     // Dialog is centered in area.
     EXPECT_EQ(area.CenterPoint(), dialog.CenterPoint());
 
-    EXPECT_LE(dialog.width(), kGaiaDialogMaxSize);
-    EXPECT_LE(dialog.height(), kGaiaDialogMaxSize);
+    EXPECT_LE(dialog.width(), kMaxDialogSize.width());
+    EXPECT_LE(dialog.height(), kMaxDialogSize.height());
     // If there is at least some space, we should have margins.
-    if (dialog.width() > kGaiaDialogMinSize) {
-      EXPECT_GE(dialog.x(), kGaiaDialogMinMargin);
-      EXPECT_GE(area.right() - dialog.right(), kGaiaDialogMinMargin);
+    if (dialog.width() > kMinDialogSize.width()) {
+      EXPECT_GE(dialog.x(), kMinMargins.left());
+      EXPECT_GE(area.right() - dialog.right(), kMinMargins.right());
     }
-    if (dialog.height() > kGaiaDialogMinSize) {
-      EXPECT_TRUE(dialog.y() >= kGaiaDialogMinMargin);
-      EXPECT_TRUE(area.bottom() - dialog.bottom() >= kGaiaDialogMinMargin);
+    if (dialog.height() > kMinDialogSize.height()) {
+      EXPECT_TRUE(dialog.y() >= kMinMargins.top());
+      EXPECT_TRUE(area.bottom() - dialog.bottom() >= kMinMargins.bottom());
     }
     // If dialog size is lesser than minimum size, there should be no margins
-    if (dialog.width() < kGaiaDialogMinSize) {
+    if (dialog.width() < kMinDialogSize.width()) {
       EXPECT_EQ(dialog.x(), area.x());
       EXPECT_EQ(dialog.right(), area.right());
     }
-    if (dialog.height() < kGaiaDialogMinSize) {
+    if (dialog.height() < kMinDialogSize.height()) {
       EXPECT_EQ(dialog.y(), area.y());
       EXPECT_EQ(dialog.bottom(), area.bottom());
     }

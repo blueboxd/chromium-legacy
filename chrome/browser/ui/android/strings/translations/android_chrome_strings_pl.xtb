@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2323763861024343754">Dane witryn:</translation>
 <translation id="2328985652426384049">Nie można się zalogować</translation>
-<translation id="2330129964253841015">Ostrzegaj, jeśli hasła dostały się w niepowołane ręce</translation>
 <translation id="2349710944427398404">Łączna ilość danych używanych przez Chrome, w tym konta, zakładki i zapisane ustawienia</translation>
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Lista urządzeń, którym udostępnisz kartę, jest otwarta na pełną wysokość.</translation>
+<translation id="2905036901251765993">Aby udostępniać pliki użytkownikom w pobliżu, pozwól im zeskanować ten kod QR</translation>
 <translation id="2909615210195135082">Platforma powiadomień Google</translation>
 <translation id="2910701580606108292">Pytaj, zanim zezwolisz stronom na odtwarzanie treści chronionej</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Pokaż hasło</translation>
 <translation id="363596933471559332">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
 <translation id="3658159451045945436">Resetowanie usuwa historię oszczędzania danych, w tym listę odwiedzonych stron.</translation>
+<translation id="3682730288090679318">Włącz automatyczne blokowanie próśb o pokazywanie powiadomień przez strony. Jeśli strona będzie prosić o zgodę na wyświetlanie powiadomień, w jej dolnej części pokaże się pasek informacyjny.</translation>
 <translation id="3692944402865947621">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu niedostępności pamięci.</translation>
 <translation id="3714981814255182093">Otwórz pasek wyszukiwania</translation>
 <translation id="3716182511346448902">Ta strona używa zbyt dużo pamięci, dlatego została wstrzymana w Chrome.</translation>
@@ -542,6 +543,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5048398596102334565">Zezwalaj stronom na dostęp do czujników ruchu (zalecane)</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5087580092889165836">Dodaj kartę</translation>
+<translation id="5096950519211870196">Prośby o pokazywanie powiadomień przez strony będą blokowane. Jeśli strona będzie prosić o zgodę na wyświetlanie powiadomień, w jej dolnej części pokaże się pasek informacyjny.</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
 <translation id="5123685120097942451">Karta incognito</translation>
@@ -589,6 +591,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5414836363063783498">Weryfikuję…</translation>
 <translation id="5423934151118863508">Tu pojawią się strony, na które najczęściej wchodzisz</translation>
 <translation id="5424588387303617268">Dostępne <ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">OK. Domyślnie nowe prośby o pokazywanie powiadomień będą pojawiać się w tym miejscu.</translation>
 <translation id="543338862236136125">Edytuj hasło</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
 <translation id="543509235395288790">Pobieram pliki: <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +690,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6111020039983847643">użytych danych</translation>
 <translation id="6112702117600201073">Odświeżam stronę</translation>
+<translation id="6113400363611269907">Pokazuj prośby dyskretnie</translation>
 <translation id="6127379762771434464">Element został usunięty</translation>
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
@@ -811,6 +815,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6989267951144302301">Nie udało się pobrać</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
+<translation id="6995899638241819463">Ostrzegaj, jeśli wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia haseł</translation>
 <translation id="7015203776128479407">Nie ukończono początkowej konfiguracji synchronizacji. Synchronizacja jest wyłączona.</translation>
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>
@@ -1019,6 +1024,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8514477925623180633">Eksportuj hasła zapisane w Chrome</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
+<translation id="8516012719330875537">Edytor obrazów</translation>
 <translation id="851751545965956758">Nie zezwalaj stronom na łączenie się z urządzeniami</translation>
 <translation id="8523928698583292556">Usuń zapisane hasło</translation>
 <translation id="854522910157234410">Otwórz tę stronę</translation>

@@ -24,6 +24,10 @@
 #include "rlz/lib/string_utils.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+#if defined(OS_WIN)
+#include "rlz/lib/machine_deal_win.h"
+#endif
+
 namespace {
 
 // Event information returned from ping response.

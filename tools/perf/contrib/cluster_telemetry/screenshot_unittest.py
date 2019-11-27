@@ -11,7 +11,10 @@ from contrib.cluster_telemetry import screenshot
 
 
 class ScreenshotUnitTest(legacy_page_test_case.LegacyPageTestCase):
-  @decorators.Disabled('linux')
+  # This test should only run on linux, but it got disabled on Linux as
+  # well because of crbug.com/1023255. Replace the following with
+  # @decorators.Enabled('linux') once this is fixed on linux.
+  @decorators.Disabled('all')
   def testScreenshot(self):
     # Screenshots for Cluster Telemetry purposes currently only supported on
     # Linux platform.

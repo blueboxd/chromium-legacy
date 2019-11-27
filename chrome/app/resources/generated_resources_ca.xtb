@@ -934,7 +934,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2326931316514688470">&amp;Tornar a carregar l'aplicació</translation>
 <translation id="2327492829706409234">Activa l'aplicació</translation>
 <translation id="2329597144923131178">Inicieu la sessió per tenir adreces d'interès, historial, contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
-<translation id="2330129964253841015">T'avisa si les contrasenyes es posen en perill</translation>
 <translation id="2332131598580221120">Mostra a la botiga</translation>
 <translation id="2332192922827071008">Obre les preferències</translation>
 <translation id="2332742915001411729">Restableix als valors predeterminats</translation>
@@ -4098,6 +4097,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6990778048354947307">Tema fosc</translation>
 <translation id="6991665348624301627">Selecció d'una destinació</translation>
 <translation id="6992554835374084304">Activa el corrector ortogràfic millorat</translation>
+<translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en produir-se una violació de les dades</translation>
 <translation id="6997642619627518301">Registre d'activitat a <ph name="NAME_PH" /></translation>
 <translation id="6997707937646349884">Als teus dispositius:</translation>
 <translation id="6998793565256476099">Inscriu el dispositiu per a la videoconferència</translation>

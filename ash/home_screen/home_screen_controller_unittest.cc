@@ -139,6 +139,8 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   tester.ExpectTotalCount(kHomescreenDragHistogram, 0);
   tester.ExpectTotalCount(kHomescreenDragMaxLatencyHistogram, 0);
 
+  const bool drag_enabled = !GetParam();
+
   // Create a touch event and drag it twice and verify the histograms are
   // recorded as expected.
   auto* compositor = CurrentContext()->layer()->GetCompositor();
@@ -148,20 +150,23 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   generator->MoveTouch(gfx::Point(200, 20));
   compositor->ScheduleFullRedraw();
   WaitForNextFrameToBePresented(compositor);
-  tester.ExpectTotalCount(kHomescreenDragHistogram, 1);
+  tester.ExpectTotalCount(kHomescreenDragHistogram, drag_enabled ? 1 : 0);
   generator->MoveTouch(gfx::Point(200, 60));
   compositor->ScheduleFullRedraw();
   WaitForNextFrameToBePresented(compositor);
   generator->ReleaseTouch();
 
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);
-  tester.ExpectTotalCount(kHomescreenDragHistogram, 2);
-  tester.ExpectTotalCount(kHomescreenDragMaxLatencyHistogram, 1);
+  tester.ExpectTotalCount(kHomescreenDragHistogram, drag_enabled ? 2 : 0);
+  tester.ExpectTotalCount(kHomescreenDragMaxLatencyHistogram,
+                          drag_enabled ? 1 : 0);
 
   // On touch release, the window should animate. When it's done animating we
   // should have a animation smoothness histogram recorded.
-  ShellTestApi().WaitForWindowFinishAnimating(window.get());
-  tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
+  if (drag_enabled) {
+    ShellTestApi().WaitForWindowFinishAnimating(window.get());
+    tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
+  }
 }
 
 }  // namespace

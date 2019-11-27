@@ -828,13 +828,13 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 void TableView::OnFocus() {
   SchedulePaintForSelection();
   focus_ring_->SchedulePaint();
-  UpdateAccessibilityFocus();
+  needs_update_accessibility_focus_ = true;
 }
 
 void TableView::OnBlur() {
   SchedulePaintForSelection();
   focus_ring_->SchedulePaint();
-  UpdateAccessibilityFocus();
+  needs_update_accessibility_focus_ = true;
 }
 
 int TableView::GetCellMargin() const {
@@ -876,6 +876,7 @@ void TableView::SortItemsAndUpdateMapping(bool schedule_paint) {
       model_to_view_[view_to_model_[i]] = i;
     model_->ClearCollator();
   }
+
   UpdateVirtualAccessibilityChildren();
   if (schedule_paint)
     SchedulePaint();
@@ -1060,7 +1061,7 @@ void TableView::SetActiveVisibleColumnIndex(int index) {
   }
 
   focus_ring_->SchedulePaint();
-  UpdateAccessibilityFocus();
+  needs_update_accessibility_focus_ = true;
   OnPropertyChanged(&active_visible_column_index_, kPropertyEffectsNone);
 }
 
@@ -1101,7 +1102,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
   }
 
   focus_ring_->SchedulePaint();
-  UpdateAccessibilityFocus();
+  needs_update_accessibility_focus_ = true;
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   if (observer_)
     observer_->OnSelectionChanged();
@@ -1188,6 +1189,9 @@ void TableView::UpdateVirtualAccessibilityChildren() {
   GetViewAccessibility().RemoveAllVirtualChildViews();
   if (!GetRowCount() || visible_columns_.empty()) {
     NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
+
+    if (needs_update_accessibility_focus_)
+      UpdateAccessibilityFocus();
     return;
   }
 
@@ -1345,9 +1349,13 @@ void TableView::UpdateVirtualAccessibilityChildren() {
   }
 
   NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
+
+  if (needs_update_accessibility_focus_)
+    UpdateAccessibilityFocus();
 }
 
 void TableView::UpdateAccessibilityFocus() {
+  needs_update_accessibility_focus_ = false;
   if (!HasFocus())
     return;
 

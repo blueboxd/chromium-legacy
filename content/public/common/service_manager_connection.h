@@ -83,7 +83,7 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // Sets a closure that is called when the connection is lost. Note that
   // connection may already have been closed, in which case |closure| will be
   // run immediately before returning from this function.
-  virtual void SetConnectionLostClosure(const base::Closure& closure) = 0;
+  virtual void SetConnectionLostClosure(base::OnceClosure closure) = 0;
 
   // Adds a generic ServiceRequestHandler for a given service name. This
   // will be used to satisfy any incoming calls to CreateService() which

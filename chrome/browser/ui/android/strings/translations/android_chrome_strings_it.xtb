@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2323763861024343754">Memoria utilizzata dai siti</translation>
 <translation id="2328985652426384049">Impossibile eseguire l'accesso</translation>
-<translation id="2330129964253841015">Ricevi un avviso in caso di compromissione delle password</translation>
 <translation id="2349710944427398404">Dati totali utilizzati da Chrome, tra cui account, preferiti e impostazioni salvate</translation>
 <translation id="2353636109065292463">Controllare la connessione a Internet</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Indirizzi</translation>
 <translation id="290376772003165898">La pagina non è in <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Elenco di dispositivi con cui condividere una scheda aperto a schermo intero.</translation>
+<translation id="2905036901251765993">Per condividere con le persone qui vicino, fa' scansionare loro questo codice QR</translation>
 <translation id="2909615210195135082">Piattaforma per le notifiche Google</translation>
 <translation id="2910701580606108292">Chiedi prima di consentire ai siti di riprodurre contenuti protetti</translation>
 <translation id="2913331724188855103">Consenti ai siti di salvare e leggere i dati dei cookie (opzione consigliata)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Visualizza password</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
 <translation id="3658159451045945436">La reimpostazione elimina la tua cronologia dei dati risparmiati, incluso l'elenco dei siti web visitati.</translation>
+<translation id="3682730288090679318">Consenti il blocco automatico dei siti che chiedono di mostrarti le notifiche. Se un sito chiede di mostrarti le notifiche verrà visualizzata una barra delle informazioni nella parte inferiore della pagina.</translation>
 <translation id="3692944402865947621">Download di <ph name="FILE_NAME" /> non riuscito perché non è possibile trovare il percorso di archiviazione.</translation>
 <translation id="3714981814255182093">Apri la barra Trova</translation>
 <translation id="3716182511346448902">Questa pagina è stata messa in pausa da Chromium perché utilizza troppa memoria.</translation>
@@ -542,6 +543,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5048398596102334565">Consenti ai siti di accedere ai sensori di movimento (opzione consigliata)</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="5087580092889165836">Aggiungi carta</translation>
+<translation id="5096950519211870196">Ai siti verrà impedito di chiederti di mostrarti le notifiche. Se un sito chiede di mostrarti le notifiche verrà visualizzata una barra delle informazioni nella parte inferiore della pagina.</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="510275257476243843">1 ora rimanente</translation>
 <translation id="5123685120097942451">Scheda di navigazione in incognito</translation>
@@ -589,6 +591,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5414836363063783498">Verifica…</translation>
 <translation id="5423934151118863508">Le pagine che visiti più spesso verranno visualizzate qui</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB disponibili</translation>
+<translation id="5427766642345310212">Ok. Per impostazione predefinita, qui verranno visualizzate tutte le nuove richieste di notifica.</translation>
 <translation id="543338862236136125">Modifica password</translation>
 <translation id="5433691172869980887">Nome utente copiato</translation>
 <translation id="543509235395288790">Download di <ph name="COUNT" /> file (<ph name="MEGABYTES" />) in corso.</translation>
@@ -687,6 +690,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6108923351542677676">Configurazione in corso…</translation>
 <translation id="6111020039983847643">di dati utilizzati</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
+<translation id="6113400363611269907">Mostra messaggi di autorizzazione in modalità silenziosa</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6140912465461743537">Paese/regione</translation>
 <translation id="614940544461990577">Prova a:</translation>
@@ -811,6 +815,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6989267951144302301">Download non riuscito</translation>
 <translation id="6990079615885386641">Scarica l'app dal Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Chiedi conferma prima di consentire ai siti di utilizzare il microfono (opzione consigliata)</translation>
+<translation id="6995899638241819463">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
 <translation id="7015203776128479407">La configurazione della sincronizzazione iniziale non è stata terminata. La sincronizzazione è disattivata.</translation>
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="7022756207310403729">Apri nel browser</translation>
@@ -1019,6 +1024,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="8514477925623180633">Esporta le password memorizzate su Chrome</translation>
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
+<translation id="8516012719330875537">Editor immagini</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="8523928698583292556">Elimina la password memorizzata</translation>
 <translation id="854522910157234410">Apri questa pagina</translation>

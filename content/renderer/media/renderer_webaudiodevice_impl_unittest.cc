@@ -48,14 +48,14 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
       const base::UnguessableToken& session_id)
-      : RendererWebAudioDeviceImpl(layout,
-                                   channels,
-                                   latency_hint,
-                                   callback,
-                                   session_id,
-                                   base::Bind(&MockGetOutputDeviceParameters),
-                                   base::Bind(&MockFrameIdFromCurrentContext)) {
-  }
+      : RendererWebAudioDeviceImpl(
+            layout,
+            channels,
+            latency_hint,
+            callback,
+            session_id,
+            base::BindOnce(&MockGetOutputDeviceParameters),
+            base::BindOnce(&MockFrameIdFromCurrentContext)) {}
 };
 
 }  // namespace

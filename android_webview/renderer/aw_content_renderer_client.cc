@@ -30,7 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -77,7 +77,7 @@ void AwContentRendererClient::RenderThreadStarted() {
   aw_render_thread_observer_.reset(new AwRenderThreadObserver);
   thread->AddObserver(aw_render_thread_observer_.get());
 
-  visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
+  visited_link_reader_.reset(new visitedlink::VisitedLinkReader);
 
   browser_interface_broker_ =
       blink::Platform::Current()->GetBrowserInterfaceBroker();
@@ -260,11 +260,11 @@ void AwContentRendererClient::PrepareErrorPage(
 
 uint64_t AwContentRendererClient::VisitedLinkHash(const char* canonical_url,
                                                   size_t length) {
-  return visited_link_slave_->ComputeURLFingerprint(canonical_url, length);
+  return visited_link_reader_->ComputeURLFingerprint(canonical_url, length);
 }
 
 bool AwContentRendererClient::IsLinkVisited(uint64_t link_hash) {
-  return visited_link_slave_->IsVisited(link_hash);
+  return visited_link_reader_->IsVisited(link_hash);
 }
 
 void AwContentRendererClient::AddSupportedKeySystems(

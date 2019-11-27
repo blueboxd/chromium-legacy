@@ -49,19 +49,11 @@ class HotseatTransitionAnimator : public TabletModeObserver,
   void OnTabletModeEnded() override;
 
  private:
-  // Starts the animation between |old_state_| and |target_state_|.
+  // Starts the animation between |old_state| and |target_state|.
   void DoAnimation(HotseatState old_state, HotseatState new_state);
 
   // Whether an animation should occur between |old_state| and |new_state|.
   bool ShouldDoAnimation(HotseatState old_state, HotseatState new_state);
-
-  // Hides layers that are being imitated, and sets the starting properties of
-  // the animation.
-  void SetAnimationStartProperties(HotseatState old_state,
-                                   HotseatState new_state);
-
-  // Starts the animation and sets target layer values.
-  void StartAnimation(HotseatState old_state, HotseatState new_state);
 
   // Notifies observers of animation completion.
   void NotifyHotseatTransitionAnimationEnded(HotseatState old_state,

@@ -111,7 +111,7 @@ void IndexedDBBlobInfo::set_mark_used_callback(
 }
 
 void IndexedDBBlobInfo::set_release_callback(
-    const ReleaseCallback& release_callback) {
+    const base::RepeatingClosure& release_callback) {
   DCHECK(release_callback_.is_null());
   release_callback_ = release_callback;
 }

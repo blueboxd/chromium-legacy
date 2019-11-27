@@ -6,13 +6,29 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_result.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+
+namespace {
+const char kCannotCancelHitTestSource[] =
+    "Hit test source could not be canceled! Ensure that it was not already "
+    "canceled.";
+}
 
 namespace blink {
 
-XRHitTestSource::XRHitTestSource(uint64_t id) : id_(id) {}
+XRHitTestSource::XRHitTestSource(uint64_t id, XRSession* xr_session)
+    : id_(id), xr_session_(xr_session) {}
 
 uint64_t XRHitTestSource::id() const {
   return id_;
+}
+
+void XRHitTestSource::cancel(ExceptionState& exception_state) {
+  if (!xr_session_->RemoveHitTestSource(this)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kCannotCancelHitTestSource);
+  }
 }
 
 HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
@@ -33,6 +49,10 @@ void XRHitTestSource::Update(
     last_frame_results_.push_back(
         std::make_unique<TransformationMatrix>(result->hit_matrix.matrix()));
   }
+}
+void XRHitTestSource::Trace(blink::Visitor* visitor) {
+  visitor->Trace(xr_session_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

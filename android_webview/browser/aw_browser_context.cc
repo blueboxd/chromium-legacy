@@ -47,7 +47,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
@@ -134,9 +134,9 @@ AwBrowserContext::AwBrowserContext()
 
   CreateUserPrefService();
 
-  visitedlink_master_.reset(
-      new visitedlink::VisitedLinkMaster(this, this, false));
-  visitedlink_master_->Init();
+  visitedlink_writer_.reset(
+      new visitedlink::VisitedLinkWriter(this, this, false));
+  visitedlink_writer_->Init();
 
   form_database_service_.reset(
       new AwFormDatabaseService(context_storage_path_));
@@ -290,8 +290,8 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
-  DCHECK(visitedlink_master_);
-  visitedlink_master_->AddURLs(urls);
+  DCHECK(visitedlink_writer_);
+  visitedlink_writer_->AddURLs(urls);
 }
 
 AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {

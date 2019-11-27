@@ -16,7 +16,7 @@ public class TokenGenerator {
      * Default constructor for TokenGenerator.
      */
     public TokenGenerator() {
-        this(1l);
+        this(1L);
     }
 
     /**

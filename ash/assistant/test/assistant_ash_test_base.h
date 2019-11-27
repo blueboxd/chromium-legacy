@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_TEST_ASSISTANT_ASH_TEST_BASE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/assistant/model/assistant_ui_model.h"
@@ -63,6 +64,10 @@ class AssistantAshTestBase : public AshTestBase {
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.
   void MockAssistantInteractionWithResponse(const std::string& response_text);
+
+  void MockAssistantInteractionWithQueryAndResponse(
+      const std::string& query,
+      const std::string& response_text);
 
   // Simulate the user entering a query followed by <return>.
   void SendQueryThroughTextField(const std::string& query);

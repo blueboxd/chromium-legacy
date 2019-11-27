@@ -228,9 +228,6 @@
     <message name="IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER" desc="The label used for the protected media identifier permission controls in the Page Info popup.">
       Protected content
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Page Info popup.">
-      Autoplay
-    </message>
     <message name="IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC" desc="The label used for the background sync permission controls in the Page Info popup.">
       Background Sync
     </message>

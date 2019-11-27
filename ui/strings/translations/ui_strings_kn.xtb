@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">ಎಡದಿಂದ ಬಲಕ್ಕೆ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
-<translation id="1409544243779336081">ಆ್ಯಪ್ ಶಿಫಾರಸು</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />ವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="1498028757988366001">ನೀವು ಈ ಮೊದಲೇ ಇದಕ್ಕಾಗಿ ಹುಡುಕಿದ್ದೀರಿ. ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ "<ph name="QUERY" />" ಅನ್ನು ಅಳಿಸುವುದರಿಂದ, ಅದನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಾದ್ಯಂತ ಇರುವ ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಶಾಶ್ವತವಾಗಿ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ನಿಮಿಷ ಮತ್ತು }one{# ನಿಮಿಷಗಳು ಮತ್ತು }other{# ನಿಮಿಷಗಳು ಮತ್ತು }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">ಅವಧಿ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ತಿಂಗಳು}one{# ತಿಂಗಳುಗಳು}other{# ತಿಂಗಳುಗಳು}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">ಸ್ಟಾರ್ ರೇಟಿಂಗ್ <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ಗಂಟೆ ಮತ್ತು }one{# ಗಂಟೆಗಳು ಮತ್ತು }other{# ಗಂಟೆಗಳು ಮತ್ತು }}</translation>
 <translation id="1842960171412779397">ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="1859234291848436338">ಬರವಣಿಗೆ ನಿರ್ದೇಶನ</translation>

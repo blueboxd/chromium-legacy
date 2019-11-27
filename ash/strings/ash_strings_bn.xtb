@@ -556,7 +556,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="899350903320462459">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য <ph name="LOGIN_ID" /> হিসেবে ডিভাইস আনলক করুন</translation>
-<translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
 <translation id="9017320285115481645">Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন।</translation>
 <translation id="9029474291399787231">Adobe Flash Player-এর আপডেট উপলভ্য</translation>
 <translation id="9056839673611986238">ডিভাইস রোল ব্যাক করা হবে</translation>
@@ -573,6 +572,7 @@
 <translation id="9183456764293710005">ফুল-স্ক্রিন ম্যাগনিফায়ার</translation>
 <translation id="9193626018745640770">অজানা ডিভাইসে কাস্ট করা হচ্ছে</translation>
 <translation id="9194617393863864469">অন্য ব্যবহারকারীকে সাইন-ইন করান...</translation>
+<translation id="9205817095063786319"><ph name="DOMAIN" /> ডিভাইস ম্যানেজ করছে</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
 <translation id="9211681782751733685">ব্যাটারি পুরো চার্জ হতে <ph name="TIME_REMAINING" /> বাকি আছে।</translation>
 <translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>

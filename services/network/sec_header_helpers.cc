@@ -12,6 +12,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -73,17 +74,32 @@ void SetSecFetchSiteHeader(
     const GURL* pending_redirect_url,
     const mojom::URLLoaderFactoryParams& factory_params) {
   SecFetchSiteValue header_value;
+  url::Origin initiator = GetTrustworthyInitiator(
+      factory_params.request_initiator_site_lock, request->initiator());
 
-  // Browser-initiated requests with no initiator origin will send
-  // `Sec-Fetch-Site: None`. Other requests start with `kSameOrigin`, and walk
-  // the request's URL chain to calculate the right value.
-  if (factory_params.process_id == mojom::kBrowserProcessId &&
-      !request->initiator().has_value()) {
+  // Browser-initiated requests with no initiator origin, and
+  // privileged requests initiated from a "non-webby" context will send
+  // `Sec-Fetch-Site: None` while unprivileged ones will send
+  // `Sec-Fetch-Site: cross-site`. Other requests default to `kSameOrigin`,
+  // and walk through the request's URL chain to calculate the
+  // correct value.
+  if (factory_params.unsafe_non_webby_initiator) {
+    cors::OriginAccessList origin_access_list;
+    origin_access_list.SetAllowListForOrigin(
+        factory_params.factory_bound_access_patterns->source_origin,
+        factory_params.factory_bound_access_patterns->allow_patterns);
+    if (origin_access_list.CheckAccessState(
+            factory_params.factory_bound_access_patterns->source_origin,
+            request->url()) == cors::OriginAccessList::AccessState::kAllowed) {
+      header_value = SecFetchSiteValue::kNoOrigin;
+    } else {
+      header_value = SecFetchSiteValue::kCrossSite;
+    }
+  } else if (factory_params.process_id == mojom::kBrowserProcessId &&
+             !request->initiator().has_value()) {
     header_value = SecFetchSiteValue::kNoOrigin;
   } else {
     header_value = SecFetchSiteValue::kSameOrigin;
-    url::Origin initiator = GetTrustworthyInitiator(
-        factory_params.request_initiator_site_lock, request->initiator());
     for (const GURL& target_url : request->url_chain()) {
       header_value = std::max(header_value,
                               SecFetchSiteHeaderValue(target_url, initiator));

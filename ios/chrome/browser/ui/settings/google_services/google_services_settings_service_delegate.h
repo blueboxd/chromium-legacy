@@ -5,14 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 
-@class SyncSwitchItem;
 @class TableViewItem;
 
 // Protocol to handle user actions from the Google services settings view.
 @protocol GoogleServicesSettingsServiceDelegate <NSObject>
 
-// Called when the UISwitch from the SyncSwitchItem is toggled.
-- (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value;
+// Called when the UISwitch from a TableViewItem is toggled.
+- (void)toggleSwitchItem:(TableViewItem*)switchItem withValue:(BOOL)value;
 
 // Called when cell is tapped.
 - (void)didSelectItem:(TableViewItem*)item;

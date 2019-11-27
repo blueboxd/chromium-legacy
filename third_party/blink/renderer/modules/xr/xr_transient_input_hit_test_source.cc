@@ -5,16 +5,36 @@
 #include "third_party/blink/renderer/modules/xr/xr_transient_input_hit_test_source.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_input_source_array.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_transient_input_hit_test_result.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 
+namespace {
+const char* kCannotCancelHitTestSource =
+    "Hit test source could not be canceled. Ensure that it was not already "
+    "canceled.";
+}
+
 namespace blink {
-XRTransientInputHitTestSource::XRTransientInputHitTestSource(uint64_t id)
-    : id_(id) {}
+
+XRTransientInputHitTestSource::XRTransientInputHitTestSource(
+    uint64_t id,
+    XRSession* xr_session)
+    : id_(id), xr_session_(xr_session) {
+  DCHECK(xr_session_);
+}
 
 uint64_t XRTransientInputHitTestSource::id() const {
   return id_;
+}
+
+void XRTransientInputHitTestSource::cancel(ExceptionState& exception_state) {
+  if (!xr_session_->RemoveHitTestSource(this)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kCannotCancelHitTestSource);
+  }
 }
 
 void XRTransientInputHitTestSource::Update(
@@ -53,6 +73,7 @@ XRTransientInputHitTestSource::Results() {
 
 void XRTransientInputHitTestSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_frame_results_);
+  visitor->Trace(xr_session_);
   ScriptWrappable::Trace(visitor);
 }
 

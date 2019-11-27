@@ -937,8 +937,6 @@ class CORE_EXPORT LocalFrameView final
 
   LifecycleData lifecycle_data_;
 
-  IntRect remote_viewport_intersection_;
-
   // Lazily created, but should only be created on a local frame root's view.
   mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
 

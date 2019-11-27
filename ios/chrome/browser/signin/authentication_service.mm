@@ -278,7 +278,7 @@ AuthenticationService::GetLastKnownAccountsFromForeground() {
   for (const auto& value : accounts_pref->GetList()) {
     DCHECK(value.is_string());
     DCHECK(!value.GetString().empty());
-    accounts.push_back(CoreAccountId(value.GetString()));
+    accounts.push_back(CoreAccountId::FromString(value.GetString()));
   }
   return accounts;
 }

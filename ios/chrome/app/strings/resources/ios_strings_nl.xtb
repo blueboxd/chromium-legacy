@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Menu Meer</translation>
 <translation id="2316709634732130529">Voorgesteld wachtwoord gebruiken</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
-<translation id="2330129964253841015">Waarschuwen als je wachtwoorden niet meer veilig zijn</translation>
 <translation id="2339560363438331454">Synchronisatie en Google-services</translation>
 <translation id="2351097562818989364">Je vertaalinstellingen zijn opnieuw ingesteld.</translation>
 <translation id="2359043044084662842">Vertalen</translation>
@@ -441,6 +440,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6973630695168034713">Mappen</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Je Google-account beheren</translation>
+<translation id="6995899638241819463">Waarschuwen als je wachtwoorden zijn gelekt bij een gegevenslek</translation>
 <translation id="6998989275928107238">Aan</translation>
 <translation id="7004499039102548441">Recent gebruikte tabbladen</translation>
 <translation id="7006788746334555276">Instellingen voor content</translation>

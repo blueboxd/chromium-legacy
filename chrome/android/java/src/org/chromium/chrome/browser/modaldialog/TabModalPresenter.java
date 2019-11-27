@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -358,7 +358,7 @@ public class TabModalPresenter
         if (isShowing && areRendererInputEventsIgnored()) {
             mChromeFullscreenManager.showAndroidControls(true);
         } else {
-            TabBrowserControlsState.update(mActiveTab, BrowserControlsState.SHOWN,
+            TabBrowserControlsConstraintsHelper.update(mActiveTab, BrowserControlsState.SHOWN,
                     !mChromeFullscreenManager.offsetOverridden());
         }
     }

@@ -400,7 +400,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       _pak_prefix = "trichrome_chrome"
     }
 
-    use_chromium_linker = false
+    use_chromium_linker = is_trichrome && chromium_linker_supported
+    use_modern_linker = use_chromium_linker
 
     # Resources config for blocklisting resource names from obfuscation
     resources_config_path = "//android_webview/aapt2.config"

@@ -255,14 +255,6 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
   return !parent_tree_it->second->IsNode();
 }
 
-int32_t AXTreeSourceArc::GetWindowId() const {
-  if (window_id_.has_value())
-    return *window_id_;
-  // |window_id_| could be empty when called after OnNotificationStateChanged,
-  // but before OnAccessibilityEvent in ArcAccessibilityHelperBridge.
-  return ui::AXNode::kInvalidAXID;
-}
-
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = ax_tree_id();
   if (focused_id_.has_value())

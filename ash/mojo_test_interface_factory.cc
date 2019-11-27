@@ -28,8 +28,9 @@ void BindStatusAreaWidgetTestApiOnMainThread(
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
-                         main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindStatusAreaWidgetTestApiOnMainThread),
+      main_thread_task_runner);
 }
 
 }  // namespace mojo_test_interface_factory

@@ -119,6 +119,8 @@ std::vector<std::string> TryProcessAsContentImageURL(
 
 namespace signin {
 
+const int kAccountInfoImageSize = 256;
+
 GURL GetAvatarImageURLWithOptions(const GURL& old_url,
                                   int image_size,
                                   bool no_silhouette) {

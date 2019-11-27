@@ -51,8 +51,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
   // was done to.  On a failed rename, |reason| will contain the
   // error.
-  typedef base::Callback<void(DownloadInterruptReason reason,
-                              const base::FilePath& path)>
+  typedef base::OnceCallback<void(DownloadInterruptReason reason,
+                                  const base::FilePath& path)>
       RenameCompletionCallback;
 
   // Used to drop the request, when the byte stream reader should be closed on
@@ -78,7 +78,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // |full_path| will be uniquified by suffixing " (<number>)" to the
   // file name before the extension.
   virtual void RenameAndUniquify(const base::FilePath& full_path,
-                                 const RenameCompletionCallback& callback) = 0;
+                                 RenameCompletionCallback callback) = 0;
 
   // Rename the download file to |full_path| and annotate it with
   // "Mark of the Web" information about its source.  No uniquification
@@ -92,7 +92,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
       const GURL& source_url,
       const GURL& referrer_url,
       mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-      const RenameCompletionCallback& callback) = 0;
+      RenameCompletionCallback callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach() = 0;
@@ -119,17 +119,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // content URI, it will be used for the renaming. Otherwise, A new
   // intermediate URI will be created to write the download file. Once
   // completes, |callback| is called with a content URI to be written into.
-  virtual void RenameToIntermediateUri(
-      const GURL& original_url,
-      const GURL& referrer_url,
-      const base::FilePath& file_name,
-      const std::string& mime_type,
-      const base::FilePath& current_path,
-      const RenameCompletionCallback& callback) = 0;
+  virtual void RenameToIntermediateUri(const GURL& original_url,
+                                       const GURL& referrer_url,
+                                       const base::FilePath& file_name,
+                                       const std::string& mime_type,
+                                       const base::FilePath& current_path,
+                                       RenameCompletionCallback callback) = 0;
 
   // Publishes the download to public. Once completes, |callback| is called with
   // the final content URI.
-  virtual void PublishDownload(const RenameCompletionCallback& callback) = 0;
+  virtual void PublishDownload(RenameCompletionCallback callback) = 0;
 
   // Returns the suggested file path from the system.
   virtual base::FilePath GetDisplayName() = 0;

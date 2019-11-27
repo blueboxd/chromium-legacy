@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Trage cursorul până poți citi textul cu ușurință. Textul trebuie să fie cel puțin la fel de mare ca acesta după o atingere dublă pe un paragraf.</translation>
 <translation id="2323763861024343754">Stocarea site-urilor</translation>
 <translation id="2328985652426384049">Nu se poate conecta</translation>
-<translation id="2330129964253841015">Avertizează-mă dacă parolele au fost compromise</translation>
 <translation id="2349710944427398404">Totalul datelor folosite de Chrome, inclusiv conturile, marcajele și setările salvate</translation>
 <translation id="2353636109065292463">Se verifică conexiunea la internet</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -816,6 +815,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6989267951144302301">Nu s-a putut descărca</translation>
 <translation id="6990079615885386641">Descarcă aplicația din Magazinul Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Întreabă înainte de a permite site-urilor să folosească microfonul (recomandat)</translation>
+<translation id="6995899638241819463">Avertizează-mă dacă parolele au fost expuse în urma încălcării securității datelor</translation>
 <translation id="7015203776128479407">Configurarea inițială a sincronizării nu a fost finalizată. Sincronizarea este dezactivată.</translation>
 <translation id="7016516562562142042">Se permite pentru motorul de căutare actual</translation>
 <translation id="7022756207310403729">Deschide în browser</translation>

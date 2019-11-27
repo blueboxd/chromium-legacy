@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> же <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Сереп салуу режими</translation>
 <translation id="4382340674111381977">Мурунку баракка кайтуу</translation>
+<translation id="4458670250301149821">Колдонмонун сүрөтчөсүн колдонмонун торчосунда киргизүү/чыгаруу</translation>
 <translation id="4472417192667361414">Тутум жана дисплей жөндөөлөрү</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, андан соң <ph name="LEFT" /> же <ph name="RIGHT" /> же <ph name="UP" /> же <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Тез баскыч жардамчысын көрүү</translation>
 <translation id="4628718545549558538">Статус аймагын ачуу (профилиңиздин сүрөтү көрүнгөн жерде)</translation>
 <translation id="4642092649622328492">Экрандын бир бөлүгүн тартып алуу</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Кийинки тамганы өчүрүү (алдыга карай өчүрүү)</translation>
 <translation id="7500368597227394048">сызыкча</translation>
 <translation id="7611271430932669992">Калкып чыкма терезелерге жана диалогдорго өтүү</translation>
+<translation id="7635348532214572995">Колдонмонун сүрөтчөсүн колдонмонун торчосунда жылдыруу</translation>
 <translation id="766326951329901120">Алмашуу буфериндеги мазмунду жөнөкөй текст катары чаптоо</translation>
 <translation id="7703010453515335249">сол бурч кашаасы</translation>
 <translation id="7724603315864178912">Кесүү</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Алмашуу буферинен мазмунду чаптоо</translation>
 <translation id="9052808072970550123">Кийинки колдонуучуга которулуу</translation>
 <translation id="906458777597946297">Терезени чоңойтуу</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, андан соң <ph name="LEFT" /> же <ph name="RIGHT" /> же <ph name="UP" /> же <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Саптын башына өтүү</translation>
 <translation id="9106898733795143799">Барак жана веб браузер</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> сурамы боюнча жыйынтык жок</translation>

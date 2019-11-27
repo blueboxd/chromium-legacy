@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">자세히 보기</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">비밀번호 변경</translation>
 <translation id="1484290072879560759">배송지 주소 선택</translation>
 <translation id="1492194039220927094">정책 푸시:</translation>
 <translation id="1501859676467574491">Google 계정에 저장된 카드 표시</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">시스템 관리자에게 문의하세요.</translation>
 <translation id="1736420071277903564">컴퓨터</translation>
-<translation id="1739107442478692187">사용 중인 사이트 또는 앱에서 정보 유출이 발생했습니다. 저장된 비밀번호를 확인하고 지금 바로 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="1740951997222943430">올바른 만료 월을 입력하세요.</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode가 <ph name="SECURE_DNS_MODE_SECURE" />일 때 반드시 지정되어야 하며 유효한 문자열이어야 합니다.</translation>
 <translation id="1743520634839655729">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드, 이름, 청구서 수신 주소를 저장하세요.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">압축 해제 서비스</translation>
 <translation id="1915697529809968049">CVC 대신 Touch ID를 사용하시겠습니까?</translation>
 <translation id="1916770123977586577">이 사이트에 업데이트된 설정을 적용하려면 이 페이지를 다시 로드하세요.</translation>
+<translation id="1917876262703816781">사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919367280705858090">특정 오류 메시지에 관한 도움말 보기</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{없음}=1{사이트 1개}other{사이트 #개}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">도메인이 일치하지 않음</translation>
 <translation id="2096368010154057602">부서</translation>
 <translation id="2099652385553570808">왼쪽 트리플 스테이플</translation>
-<translation id="2100280972184758440">비밀번호가 도용됨</translation>
 <translation id="2102134110707549001">강력한 비밀번호 추천...</translation>
 <translation id="2108755909498034140">컴퓨터 다시 시작</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" />이(가) 우선 적용되었기 때문에 무시됩니다.</translation>
 <translation id="2119505898009119320">발급 대상: <ph name="ORGANIZATION" />[<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">오른쪽 하단 펀칭</translation>
-<translation id="2124528555835617522">사용 중인 사이트 또는 앱에서 정보 유출이 발생했습니다. 지금 바로 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode 정책이 설정되지 않았기 때문에 지정한 템플릿이 적용되지 않을 수 있습니다.</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 기기를 손상시키거나, 모바일 요금에 몰래 추가 요금을 부과하거나, 개인정보를 도용하는 위험한 앱을 설치할 수도 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">인터넷 연결 없음</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />진단 앱<ph name="END_LINK" />을 사용하여 연결 문제를 해결하세요.</translation>
+<translation id="22320125457191592">추천</translation>
 <translation id="2239100178324503013">지금 보내기</translation>
 <translation id="2248949050832152960">WebAuthn 사용</translation>
 <translation id="2250931979407627383">왼쪽 에지 스티치</translation>
@@ -374,6 +374,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">안전 경고</translation>
 <translation id="2699302886720511147">사용할 수 있는 카드</translation>
 <translation id="2702801445560668637">읽기 목록</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
@@ -474,6 +475,7 @@
 <translation id="3207960819495026254">북마크에 추가됨</translation>
 <translation id="3209034400446768650">페이지에서 요금을 청구할 수 있음</translation>
 <translation id="3209080785413271048">Windows Hello를 사용하여 저장된 결제 수단을 확인합니다.</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" />의 활동이 모니터링되고 있음</translation>
 <translation id="3215092763954878852">WebAuthn을 사용할 수 없음</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
@@ -489,7 +491,6 @@
 <translation id="3282497668470633863">카드 명의 추가</translation>
 <translation id="3287510313208355388">온라인 상태일 때 다운로드</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> 정책에 관해 자세히 알아보기</translation>
-<translation id="3295439534709115864">사용 중인 사이트 또는 앱에서 정보 유출이 발생했습니다. 지금 바로 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="3303855915957856445">검색결과 없음</translation>
 <translation id="3320021301628644560">청구지 주소 추가</translation>
 <translation id="3324983252691184275">진홍색</translation>
@@ -532,6 +533,7 @@
 <translation id="3528485271872257980">진한 갈색</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
+<translation id="3553513561058684206">추천</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" />에 삽입된 페이지 내용:</translation>
@@ -762,6 +764,7 @@
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4597348597567598915">크기 8</translation>
 <translation id="4600854749408232102">C6/C5(봉투)</translation>
+<translation id="4613966523036881546">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다.</translation>
 <translation id="4635654612248442824">사이트 <ph name="ORIGIN" />이(가) 모든 요청에 기존 정책 적용을
     요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
 <translation id="464342062220857295">검색 기능</translation>
@@ -901,6 +904,7 @@
 <translation id="5287240709317226393">쿠키 표시</translation>
 <translation id="5287456746628258573">이 사이트에서는 오래된 보안 구성을 사용하므로 정보(예: 비밀번호나 신용카드 번호)를 이 사이트로 전송할 경우 정보가 유출될 수도 있습니다.</translation>
 <translation id="5288108484102287882">정책 값 유효성 검사 결과 경고가 발생했습니다.</translation>
+<translation id="5295292838686006428">사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5308380583665731573">연결</translation>
@@ -1042,6 +1046,7 @@
 <translation id="5992691462791905444">엔지니어링 Z 폴드</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' 검색결과 <ph name="RESULT_COUNT" />개</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">비밀번호 확인</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1페이지}other{#페이지}}</translation>
 <translation id="6017514345406065928">녹색</translation>
@@ -1330,6 +1335,7 @@
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="748406663033922918">화면 잠금을 사용해 저장된 결제 수단을 확인합니다.</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
+<translation id="7495290002932347110">사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하고 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="7498234416455752244">계속 수정</translation>
 <translation id="7508255263130623398">반환된 정책 기기 ID가 비었거나 현재 기기 ID와 일치하지 않음</translation>
 <translation id="7508870219247277067">아보카도 녹색</translation>
@@ -1466,6 +1472,7 @@
 <translation id="8103161714697287722">결제 수단</translation>
 <translation id="8105368624971345109">사용 중지</translation>
 <translation id="8118489163946903409">결제 수단</translation>
+<translation id="8124023448510659215">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chromium에서 신뢰하지 않습니다.</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />'이(가) 컴퓨터 또는 네트워크에 제대로 설치되지 않았습니다. IT 관리자에게 문제 해결을 요청해 보세요.</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8149426793427495338">컴퓨터가 절전 모드 상태입니다.</translation>
@@ -1608,6 +1615,8 @@
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
 <translation id="8962950042226115166">의심스러운 사이트</translation>
 <translation id="8968766641738584599">카드 저장</translation>
+<translation id="8969267497192857913">내가 입력하는 내용, 접속하는 페이지, 웹상의 기타 모든 활동이 감시되며, 사이트의 콘텐츠가 눈치채지 못하게 변경될 수 있습니다.
+    <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8975012916872825179">전화번호, 이메일 주소, 배송지 주소 등의 정보를 포함합니다.</translation>
 <translation id="8975263830901772334">인쇄하는 파일의 이름</translation>

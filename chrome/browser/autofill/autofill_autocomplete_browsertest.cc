@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -251,8 +252,16 @@ IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest,
 
 // Tests that initialization of the AutocompleteHistoryManager sets the
 // retention policy last version ran preference when the flag is enabled.
+// Disable due to flaky on Mac and ChromeOS. https://crbug.com/1028765
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_RetentionPolicy_Init_SavesVersionPref \
+  DISABLED_RetentionPolicy_Init_SavesVersionPref
+#else
+#define MAYBE_RetentionPolicy_Init_SavesVersionPref \
+  RetentionPolicy_Init_SavesVersionPref
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest,
-                       RetentionPolicy_Init_SavesVersionPref) {
+                       MAYBE_RetentionPolicy_Init_SavesVersionPref) {
   // Navigate to a file and wait, this will make sure we instantiate
   // AutocompleteHistoryManager.
   NavigateToFile(kSimpleFormFileName);

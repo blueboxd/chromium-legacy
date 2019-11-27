@@ -519,6 +519,9 @@ extern const char kMemlogStackModePseudo[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
+extern const char kDuetTabStripIntegrationAndroidName[];
+extern const char kDuetTabStripIntegrationAndroidDescription[];
+
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
@@ -607,6 +610,9 @@ extern const char kExperimentalCanvasFeaturesDescription[];
 
 extern const char kExperimentalExtensionApisName[];
 extern const char kExperimentalExtensionApisDescription[];
+
+extern const char kExperimentalFlingAnimationName[];
+extern const char kExperimentalFlingAnimationDescription[];
 
 extern const char kExperimentalProductivityFeaturesName[];
 extern const char kExperimentalProductivityFeaturesDescription[];
@@ -1683,9 +1689,6 @@ extern const char kChromeColorsDescription[];
 extern const char kChromeColorsCustomColorPickerName[];
 extern const char kChromeColorsCustomColorPickerDescription[];
 
-extern const char kDialMediaRouteProviderName[];
-extern const char kDialMediaRouteProviderDescription[];
-
 extern const char kNtpConfirmSuggestionRemovalsName[];
 extern const char kNtpConfirmSuggestionRemovalsDescription[];
 
@@ -1789,9 +1792,6 @@ extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
-
-extern const char kExperimentalFlingAnimationName[];
-extern const char kExperimentalFlingAnimationDescription[];
 
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];

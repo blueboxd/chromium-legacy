@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">JavaScript-н цаашдын консолын лог болон бүх табын алдааг цуглуулахын тулд "Логийг эхлүүлэх" товчлуурыг товшино уу. Логийг энэ хуудсыг хаах эсвэл "Логийг зогсоох" товчлуурыг товших хүртэл цуглуулна (зөвхөн санах ойд хадгална).</translation>
 <translation id="1657011748321897393">Та сүлжээнд холбогдоогүй байгаа учраас хуваалцах ажиллагаа амжилтгүй боллоо.</translation>
 <translation id="165877110639533037">Нээлттэй цонх алга</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> -с <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Хавчуургаа бүх төхөөрөмждөө авах бол синкийг асаана уу.</translation>
 <translation id="1687475363370981210">Бүгдийг уншсан гэж тэмдэглэх</translation>
 <translation id="1690731385917361335">Ямар ч зүйл алга</translation>
@@ -102,7 +103,6 @@
 <translation id="2273327106802955778">Дэлгэрэнгүй цэс</translation>
 <translation id="2316709634732130529">Санал болгосон нууц үгийг ашиглах</translation>
 <translation id="2320166752086256636">Компьютерийн гарыг нуух</translation>
-<translation id="2330129964253841015">Нууц үгийн нууцлал алдагдвал танд анхааруулах</translation>
 <translation id="2339560363438331454">Синк болон Google үйлчилгээ</translation>
 <translation id="2351097562818989364">Таны орчуулгын тохиргоо дахин шинэчлэгдсэн байна.</translation>
 <translation id="2359043044084662842">Орчуулах</translation>
@@ -127,6 +127,7 @@
 <translation id="2653659639078652383">Илгээх</translation>
 <translation id="2690858294534178585">Камерыг ашиглаж байна</translation>
 <translation id="2691653761409724435">Офлайн үед боломжгүй</translation>
+<translation id="2695507686909505111">Хуудсыг орчуулсан</translation>
 <translation id="2702801445560668637">Унших жагсаалт</translation>
 <translation id="2704606927547763573">Хуулсан</translation>
 <translation id="2709516037105925701">Автоматаар бөглөх</translation>
@@ -206,6 +207,7 @@
 <translation id="3779810277399252432">Интернэт холболт алга.</translation>
 <translation id="3783017676699494206">Зургийг хадгал</translation>
 <translation id="3789841737615482174">Суулгах</translation>
+<translation id="3803696231112616155">Энэ сайтыг орчуулахыг санал болгох</translation>
 <translation id="385051799172605136">Буцах</translation>
 <translation id="3897092660631435901">Цэс</translation>
 <translation id="3915450441834151894">Сайтын мэдээлэл</translation>
@@ -243,6 +245,7 @@
 <translation id="4359125752503270327">Энэ хуудас өөр апп-д нээгдэх болно.</translation>
 <translation id="4375040482473363939">Хурдан хариу үйлдлийн кодоор хайх</translation>
 <translation id="4378154925671717803">Утас</translation>
+<translation id="4389019817280890563">Хэл солихын тулд товшино уу.</translation>
 <translation id="441868831736628555">Нууцлалын мэдэгдэл</translation>
 <translation id="4454246407045105932">Хэл нэмэх</translation>
 <translation id="4476574785019001431">Тохиргоо</translation>
@@ -343,6 +346,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="5871497086027727873">1 зүйлийг зөөсөн байна</translation>
 <translation id="5897956970858271241">Хуулсан холбоосонд зочлох</translation>
 <translation id="5911030830365207728">Google Translate</translation>
+<translation id="5913600720976431809">Хуудсыг орчуулах сонголтууд</translation>
 <translation id="5916664084637901428">Асаах</translation>
 <translation id="5938160824633642847">Таны төхөөрөмж бараг дүүрсэн байна. Зай гаргаад дахин оролдоно уу.</translation>
 <translation id="5948291296578561264">Энэ нь танд зургийг зургийн сандаа хадгалах боломжийг олгодог.</translation>
@@ -374,6 +378,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6219688215832490856">Хэзээ ч бүү хөрвүүл</translation>
 <translation id="6254066287920239840">Апп-д хөтчийн оронд холбоосыг нээнэ үү.</translation>
 <translation id="6255097610484507482">Зээлийн картыг засварлах</translation>
+<translation id="6284652193729350524"><ph name="LANGUAGE" />-г орчуулахыг санал болгох</translation>
 <translation id="6303969859164067831">Гараад синк хийхийг унтраах</translation>
 <translation id="6308436439357671616">Энэ нь танд зураг авах, байршуулах боломжийг олгодог.</translation>
 <translation id="6324528485781869530">Синклэх бүртгэлийг солих</translation>
@@ -428,6 +433,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6903907808598579934">Синк хийхийг асаах</translation>
 <translation id="6914583639806229067">Хуулсан зургаа хайх</translation>
 <translation id="6914783257214138813">Экспорт хийсэн файлыг харах боломжтой хүн бүрд таны нууц үг харагдана.</translation>
+<translation id="6930799952781667037">Энэ хэл рүү өөрчлөхийн тулд товшино уу.</translation>
 <translation id="6944369514868857500">Өөр бүртгэл сонгох</translation>
 <translation id="6945221475159498467">Сонгох</translation>
 <translation id="6973630695168034713">Хавтас</translation>
@@ -457,6 +463,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7293171162284876153">Синк хийж эхлэхийн тулд "Chrome-н өгөгдлөө синк хийх" гэснийг асаана уу.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> хувь татагдсан байна</translation>
 <translation id="7346909386216857016">OK, ойлголоо</translation>
+<translation id="734758817008927353">Картыг хадгалах сонголтууд</translation>
 <translation id="7348502496356775519">Хавчуурга</translation>
 <translation id="7383797227493018512">Унших жагсаалт</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -481,6 +488,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7671141431838911305">СУУЛГАХ</translation>
 <translation id="7765158879357617694">Зөөх</translation>
 <translation id="7772032839648071052">Нэвтрэх үгүүдийг баталгаажуул</translation>
+<translation id="7781011649027948662">Хуудсыг орчуулах уу?</translation>
 <translation id="7781829728241885113">Өчигдөр</translation>
 <translation id="778855399387580014">Хайлтыг Chrome-н шинэ табад эхлүүлнэ үү.</translation>
 <translation id="7791543448312431591">Нэмэх</translation>

@@ -1595,6 +1595,18 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   if (cleanup_corb_exception_for_plugin_upon_destruction_)
     RemoveCorbExceptionForPluginOnUIThread(GetID());
+
+  // Do reporting here for the priority of the frames seen by the host.
+  FramePrioritiesSeen report = FramePrioritiesSeen::kNoFramesSeen;
+  if (normal_priority_frames_seen_ && low_priority_frames_seen_) {
+    report = FramePrioritiesSeen::kMixedPrioritiesSeen;
+  } else if (normal_priority_frames_seen_) {
+    report = FramePrioritiesSeen::kOnlyNormalPrioritiesSeen;
+  } else if (low_priority_frames_seen_) {
+    report = FramePrioritiesSeen::kOnlyLowPrioritiesSeen;
+  }
+  UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.FramePrioritiesSeen",
+                            report);
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -2258,7 +2270,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&AecDumpManagerImpl::AddRequest,
+      base::BindRepeating(&AecDumpManagerImpl::AddReceiver,
                           base::Unretained(&aec_dump_manager_)));
 
   // ---- Please do not register interfaces below this line ------
@@ -2679,6 +2691,17 @@ void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
 void RenderProcessHostImpl::UpdateFrameWithPriority(
     base::Optional<FramePriority> previous_priority,
     base::Optional<FramePriority> new_priority) {
+  // Record the priority of the frames seens so we know for reporting what
+  // combination of normal and low priority frames have been seen.
+  if (new_priority) {
+    if (new_priority == FramePriority::kNormal) {
+      normal_priority_frames_seen_ = true;
+    } else {
+      low_priority_frames_seen_ = true;
+    }
+  }
+
+  // If we're not using frame priorities, return after recording.
   if (!base::FeatureList::IsEnabled(
           features::kUseFramePriorityInRenderProcessHost)) {
     return;

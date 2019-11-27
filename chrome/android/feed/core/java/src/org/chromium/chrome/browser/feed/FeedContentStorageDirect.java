@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.host.storage.CommitResult;
-import com.google.android.libraries.feed.api.host.storage.ContentMutation;
-import com.google.android.libraries.feed.api.host.storage.ContentStorage;
-import com.google.android.libraries.feed.api.host.storage.ContentStorageDirect;
-import com.google.android.libraries.feed.common.Result;
+import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorage;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageDirect;
+import org.chromium.chrome.browser.feed.library.common.Result;
 
 import java.util.Collections;
 import java.util.List;

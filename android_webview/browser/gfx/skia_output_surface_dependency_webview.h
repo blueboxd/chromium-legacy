@@ -45,6 +45,7 @@ class SkiaOutputSurfaceDependencyWebView
   gpu::SurfaceHandle GetSurfaceHandle() override;
   scoped_refptr<gl::GLSurface> CreateGLSurface(
       base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
+  base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
   void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
   void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
   void DidLoseContext(bool offscreen,

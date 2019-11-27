@@ -199,19 +199,29 @@ declare_args() {
                      current_cpu == "mipsel" || current_cpu == "mips64el")) ||
        (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
                        current_cpu == "arm" || current_cpu == "arm64")))
+}
 
-  # Use relative paths for debug info. This is important to make the build
-  # results independent of the checkout and build directory names, which
-  # in turn is important for goma compile hit rate.
-  # Setting this to true may make it harder to debug binaries on Linux, see
-  # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
-  # It's not clear if the crash server will correctly handle dSYMs with relative
-  # paths, so we disable this feature for official benefit. The main benefit is
-  # deterministic builds to reduce compile times, so this is less relevant for
-  # official builders.
-  strip_absolute_paths_from_debug_symbols =
-      is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
-      (is_mac && !enable_dsyms)
+# Use relative paths for debug info. This is important to make the build
+# results independent of the checkout and build directory names, which
+# in turn is important for goma compile hit rate.
+# Setting this to true may make it harder to debug binaries on Linux, see
+# https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
+# It's not clear if the crash server will correctly handle dSYMs with relative
+# paths, so we disable this feature for official benefit. The main benefit is
+# deterministic builds to reduce compile times, so this is less relevant for
+# official builders.
+strip_absolute_paths_from_debug_symbols_default =
+    is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
+    (is_mac && !enable_dsyms)
+
+# If the platform uses stripped absolute paths by default, then we don't expose
+# it as a configuration option. If this is causing problems, please file a bug.
+if (strip_absolute_paths_from_debug_symbols_default) {
+  strip_absolute_paths_from_debug_symbols = true
+} else {
+  declare_args() {
+    strip_absolute_paths_from_debug_symbols = false
+  }
 }
 
 # If it wasn't manually set, set to an appropriate default.

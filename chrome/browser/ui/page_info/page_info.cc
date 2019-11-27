@@ -131,7 +131,6 @@ ContentSettingsType kPermissionType[] = {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
-    ContentSettingsType::AUTOPLAY,
     ContentSettingsType::MIDI_SYSEX,
     ContentSettingsType::CLIPBOARD_READ,
 #if defined(OS_ANDROID)
@@ -210,10 +209,6 @@ bool ShouldShowPermission(
                                           std::string(), nullptr) != nullptr) {
     return true;
   }
-
-  // Autoplay is Android-only at the moment.
-  if (info.type == ContentSettingsType::AUTOPLAY)
-    return false;
 
   // NFC is Android-only at the moment.
   if (info.type == ContentSettingsType::NFC)
@@ -1077,13 +1072,9 @@ void PageInfo::RecordPasswordReuseEvent() {
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;
-  for (size_t i = 0; i < base::size(kPermissionType); ++i) {
-#if !defined(OS_ANDROID)
-    if (kPermissionType[i] == ContentSettingsType::AUTOPLAY)
-      continue;
-#endif
+  for (size_t i = 0; i < base::size(kPermissionType); ++i)
     permission_list.push_back(kPermissionType[i]);
-  }
+
   return permission_list;
 }
 

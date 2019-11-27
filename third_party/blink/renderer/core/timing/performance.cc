@@ -474,6 +474,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.connection_info = final_response.ConnectionInfoString();
   result.timing = final_response.GetResourceLoadTiming();
   result.response_end = info.LoadResponseEnd();
+  result.context_type = info.ContextType();
 
   bool response_tainting_not_basic = false;
   bool tainted_origin_flag = false;

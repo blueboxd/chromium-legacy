@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> અથવા <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ઝલક મોડ</translation>
 <translation id="4382340674111381977">પાછળનાં પેજ પર જાઓ</translation>
+<translation id="4458670250301149821">ઍપ ગ્રિડમાં ઍપ આઇકનને ફોલ્ડરની અંદર/બહાર ખસેડો</translation>
 <translation id="4472417192667361414">સિસ્ટમ અને ડિસ્પ્લેનું સેટિંગ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, પછી <ph name="LEFT" /> અથવા <ph name="RIGHT" /> અથવા <ph name="UP" /> અથવા <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">કીબોર્ડ શૉર્ટકટ સહાયક જુઓ</translation>
 <translation id="4628718545549558538">સ્ટેટસ એરિયા ખોલો (જ્યાં તમારું એકાઉન્ટનું ફોટો દેખાય છે ત્યાં ક્લિક કરો)</translation>
 <translation id="4642092649622328492">આંશિક સ્ક્રીનશૉટ લો</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">આગલો અક્ષર ડિલીટ કરો (ફૉર્વર્ડ ડિલીટ કરો)</translation>
 <translation id="7500368597227394048">હાયફન</translation>
 <translation id="7611271430932669992">પૉપઅપ અને સંવાદો પર ફોકસ લઈ જાઓ</translation>
+<translation id="7635348532214572995">ઍપ આઇકનને ગ્રિડની આસપાસ ખસેડો</translation>
 <translation id="766326951329901120">ક્લિપબોર્ડમાંના કન્ટેન્ટને સાદી ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
 <translation id="7703010453515335249">ડાબો કૌંસ</translation>
 <translation id="7724603315864178912">કાપો</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ક્લિપબોર્ડ પરનું કન્ટેન્ટ પેસ્ટ કરો</translation>
 <translation id="9052808072970550123">આગલા વપરાશકર્તા પર સ્વિચ કરો</translation>
 <translation id="906458777597946297">વિંડો મોટી કરો</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, પછી <ph name="LEFT" /> અથવા <ph name="RIGHT" /> અથવા <ph name="UP" /> અથવા <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">રેખાની શરૂઆત પર જાઓ</translation>
 <translation id="9106898733795143799">પેજ અને વેબ બ્રાઉઝર</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> માટે કોઈ શોધ પરિણામ નથી</translation>

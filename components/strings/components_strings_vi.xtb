@@ -176,7 +176,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
 <translation id="1736420071277903564">Máy tính</translation>
-<translation id="1739107442478692187">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên kiểm tra mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="1740951997222943430">Nhập tháng hết hạn hợp lệ</translation>
 <translation id="1741613555002899862">Phải được chỉ định và là một chuỗi hợp lệ khi DnsOverHttpsMode là <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào thiết bị này và Tài khoản Google của bạn.</translation>
@@ -242,7 +241,6 @@
 <translation id="2094505752054353250">Miền không khớp</translation>
 <translation id="2096368010154057602">Khu vực hành chính</translation>
 <translation id="2099652385553570808">Dập 3 ghim bên trái</translation>
-<translation id="2100280972184758440">Mật khẩu của bạn đã bị lộ</translation>
 <translation id="2102134110707549001">Đề xuất mật khẩu mạnh…</translation>
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +248,6 @@
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
 <translation id="2119505898009119320">Cấp cho: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Đục lỗ dưới cùng bên phải</translation>
-<translation id="2124528555835617522">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên kiểm tra mật khẩu đã lưu ngay bây giờ.</translation>
 <translation id="2129079103035905234">Cảm biến chuyển động</translation>
 <translation id="2130448033692577677">Các mẫu bạn đã chỉ định có thể không được áp dụng do chưa đặt chính sách DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Dấu trang trên thiết bị di động</translation>
@@ -274,6 +271,7 @@
 <translation id="2218879909401188352">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cài đặt ứng dụng nguy hiểm làm hỏng thiết bị của bạn, thêm các khoản phí ẩn vào hóa đơn di động hoặc lấy cắp thông tin cá nhân của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Không có Internet</translation>
 <translation id="2230458221926704099">Sửa kết nối bằng <ph name="BEGIN_LINK" />ứng dụng chẩn đoán<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Dành cho bạn</translation>
 <translation id="2239100178324503013">Gửi bây giờ</translation>
 <translation id="2248949050832152960">Sử dụng WebAuthn</translation>
 <translation id="2250931979407627383">May viền ở bên trái</translation>
@@ -374,6 +372,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Cảnh báo an toàn</translation>
 <translation id="2699302886720511147">Thẻ được chấp nhận</translation>
 <translation id="2702801445560668637">Danh sách đọc</translation>
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
@@ -476,6 +475,7 @@
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="3209034400446768650">Trang này có thể tính phí</translation>
 <translation id="3209080785413271048">Dùng Windows Hello để xác minh phương thức thanh toán đã lưu.</translation>
+<translation id="3212581601480735796">Hoạt động của bạn trên <ph name="HOSTNAME" /> sẽ bị giám sát</translation>
 <translation id="3215092763954878852">Không thể dùng WebAuthn</translation>
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
 <translation id="3226128629678568754">Nhấn nút tải lại để gửi lại các dữ liệu cần thiết để tải trang.</translation>
@@ -491,7 +491,6 @@
 <translation id="3282497668470633863">Thêm tên trên thẻ</translation>
 <translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3293642807462928945">Hãy tìm hiểu thêm về chính sách <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
 <translation id="3324983252691184275">Đỏ thẫm</translation>
@@ -534,6 +533,7 @@
 <translation id="3528485271872257980">Nâu đậm</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
 <translation id="3539171420378717834">Giữ bản sao thẻ này trên thiết bị này</translation>
+<translation id="3553513561058684206">Dành cho bạn</translation>
 <translation id="3566021033012934673">Kết nối của bạn không phải là kết nối riêng tư</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Một trang được nhúng tại <ph name="SITE" /> cho biết</translation>
@@ -764,6 +764,7 @@
 <translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
 <translation id="4597348597567598915">Kích thước 8</translation>
 <translation id="4600854749408232102">C6/C5 (Phong bì)</translation>
+<translation id="4613966523036881546">Google Chrome không tin cậy chứng chỉ của kết nối này vì chứng chỉ này đã được xác định là dùng để chặn và giám sát mạng.</translation>
 <translation id="4635654612248442824">Trang web <ph name="ORIGIN" /> đã yêu cầu phải áp dụng một chính sách nguồn gốc
     cho tất cả các yêu cầu của trang web. Tuy nhiên, chính sách này hiện không áp dụng được.</translation>
 <translation id="464342062220857295">Tìm kiếm tính năng</translation>
@@ -953,6 +954,7 @@
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
 <translation id="5541546772353173584">Thêm email</translation>
 <translation id="5545756402275714221">Tin bài dành cho bạn</translation>
+<translation id="5552137475244467770">Chrome kiểm tra định kỳ các mật khẩu của bạn so với những danh sách đã đăng trên Internet. Khi thực hiện việc này, mật khẩu và tên người dùng của bạn được mã hóa nên không ai có thể đọc được, kể cả Google.</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5560088892362098740">Ngày hết hạn</translation>
 <translation id="5565735124758917034">Đang hoạt động</translation>
@@ -1044,6 +1046,7 @@
 <translation id="5992691462791905444">Gấp kiểu chữ Z kỹ thuật</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> kết quả cho '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Kiểm tra mật khẩu của bạn</translation>
 <translation id="6015796118275082299">Năm</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Trang 1}other{Trang #}}</translation>
 <translation id="6017514345406065928">Xanh lục</translation>
@@ -1469,6 +1472,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8103161714697287722">Phương thức thanh toán</translation>
 <translation id="8105368624971345109">Tắt</translation>
 <translation id="8118489163946903409">Phương thức thanh toán</translation>
+<translation id="8124023448510659215">Chromium không tin cậy chứng chỉ của kết nối này vì chứng chỉ này đã được xác định là dùng để chặn và giám sát mạng.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
@@ -1612,6 +1616,8 @@ Thông tin chi tiết bổ sung:
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8962950042226115166">Trang web đáng ngờ</translation>
 <translation id="8968766641738584599">Lưu thẻ</translation>
+<translation id="8969267497192857913">Mọi thông tin bạn nhập, mọi trang bạn xem hoặc mọi hoạt động khác trên web đều sẽ bị theo dõi và nội dung trên các trang web có thể bị thay đổi mà bạn không hề hay biết.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
 <translation id="8975263830901772334">Tên của các tệp mà bạn in</translation>

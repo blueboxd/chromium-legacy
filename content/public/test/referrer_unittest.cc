@@ -5,6 +5,8 @@
 #include "content/public/common/referrer.h"
 
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -83,6 +85,42 @@ TEST(ReferrerTest, BlinkNetRoundTripConversion) {
                   Referrer::NetReferrerPolicyToBlinkReferrerPolicy(policy)),
               policy);
   }
+}
+
+TEST(DefaultReferrerPolicyTest, Unconfigured) {
+  EXPECT_EQ(
+      Referrer::GetDefaultReferrerPolicy(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+}
+
+TEST(DefaultReferrerPolicyTest, FeatureOnly) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(features::kReducedReferrerGranularity);
+  EXPECT_EQ(
+      Referrer::GetDefaultReferrerPolicy(),
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN);
+}
+
+TEST(DefaultReferrerPolicyTest, SetAndGetForceLegacy) {
+  EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+}
+
+TEST(DefaultReferrerPolicyTest, ForceLegacyOnly) {
+  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_EQ(
+      Referrer::GetDefaultReferrerPolicy(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+}
+
+TEST(DefaultReferrerPolicyTest, FeatureAndForceLegacy) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(features::kReducedReferrerGranularity);
+  content::Referrer::SetForceLegacyDefaultReferrerPolicy(true);
+  EXPECT_EQ(
+      Referrer::GetDefaultReferrerPolicy(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
 }
 
 }  // namespace content

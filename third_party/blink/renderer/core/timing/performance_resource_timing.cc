@@ -72,6 +72,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       timing_(info.timing),
       last_redirect_end_time_(info.last_redirect_end_time),
       response_end_(info.response_end),
+      context_type_(info.context_type),
       transfer_size_(info.transfer_size),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),
@@ -95,6 +96,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
+      context_type_(mojom::RequestContextType::HYPERLINK),
       is_secure_context_(is_secure_context),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(server_timing)),
@@ -165,10 +167,22 @@ AtomicString PerformanceResourceTiming::nextHopProtocol() const {
                                                        ConnectionInfo());
 }
 
+namespace {
+bool IsDocumentDestination(mojom::RequestContextType context_type) {
+  return context_type == mojom::RequestContextType::IFRAME ||
+         context_type == mojom::RequestContextType::FRAME ||
+         context_type == mojom::RequestContextType::FORM ||
+         context_type == mojom::RequestContextType::HYPERLINK;
+}
+
+}  // namespace
+
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing || timing->WorkerStart().is_null())
+  if (!timing || timing->WorkerStart().is_null() ||
+      (!allow_timing_details_ && IsDocumentDestination(context_type_))) {
     return 0.0;
+  }
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
       time_origin_, timing->WorkerStart(), allow_negative_value_);

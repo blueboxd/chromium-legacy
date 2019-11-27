@@ -141,10 +141,13 @@ bool LegacyRenderWidgetHostHWND::Init() {
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   HRESULT hr;
-  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
-                                     IID_PPV_ARGS(&window_accessible_));
-  } else {
+  hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
+                                   IID_PPV_ARGS(&window_accessible_));
+
+  if (FAILED(hr))
+    return false;
+
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // The usual way for UI Automation to obtain a fragment root is through
     // WM_GETOBJECT. However, if there's a relation such as "Controller For"
     // between element A in one window and element B in another window, UIA
@@ -153,7 +156,6 @@ bool LegacyRenderWidgetHostHWND::Init() {
     // WM_GETOBJECT to element B's window. So we create the fragment root now to
     // ensure it's ready if asked for.
     ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
-    hr = S_OK;
   }
 
   ui::AXMode mode =
@@ -168,7 +170,7 @@ bool LegacyRenderWidgetHostHWND::Init() {
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
 
-  return !!SUCCEEDED(hr);
+  return true;
 }
 
 // static
@@ -210,8 +212,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
 
   if ((is_uia_request &&
        ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) ||
-      (is_msaa_request &&
-       !::switches::IsExperimentalAccessibilityPlatformUIAEnabled())) {
+      is_msaa_request) {
     if (is_uia_request) {
       // UIA, by design, insulates providers from knowing about the client(s)
       // asking for information. When UIA interface is requested, the presence
@@ -220,14 +221,15 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
       BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
     }
 
+    gfx::NativeViewAccessible root =
+        GetOrCreateWindowRootAccessible(is_uia_request);
+
     if (is_uia_request) {
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia;
-      ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
-          IID_PPV_ARGS(&root_uia));
+      root->QueryInterface(IID_PPV_ARGS(&root_uia));
       return UiaReturnRawElementProvider(hwnd(), w_param, l_param,
                                          root_uia.Get());
     } else {
-      gfx::NativeViewAccessible root = GetOrCreateBrowserAccessibilityRoot();
       if (root == nullptr)
         return static_cast<LRESULT>(0L);
 
@@ -526,11 +528,12 @@ bool LegacyRenderWidgetHostHWND::IsAXFragmentRootAControlElement() {
 }
 
 gfx::NativeViewAccessible
-LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible(
+    bool is_uia_request) {
+  if (is_uia_request) {
+    DCHECK(::switches::IsExperimentalAccessibilityPlatformUIAEnabled());
     return ax_fragment_root_->GetNativeViewAccessible();
   }
-
   return GetOrCreateBrowserAccessibilityRoot();
 }
 

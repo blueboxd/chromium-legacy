@@ -168,7 +168,6 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     NOTREACHED();
     return nullptr;
   }
-  virtual void ProvideBackBufferToResourceProvider() const { NOTREACHED(); }
   virtual int ExternallyAllocatedBufferCountPerPixel() {
     NOTREACHED();
     return 0;

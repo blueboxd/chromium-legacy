@@ -117,6 +117,12 @@ SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
   return gl_surface_;
 }
 
+base::ScopedClosureRunner SkiaOutputSurfaceDependencyWebView::CacheGLSurface(
+    gl::GLSurface* surface) {
+  NOTREACHED();
+  return base::ScopedClosureRunner();
+}
+
 void SkiaOutputSurfaceDependencyWebView::RegisterDisplayContext(
     gpu::DisplayContext* display_context) {
   // No GpuChannelManagerDelegate here, so leave it no-op for now.

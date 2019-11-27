@@ -429,6 +429,43 @@ class RendererPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
   }
 
+  void RunTextureQuads5x5SameTex() {
+    const gfx::Size kTextureSize =
+        ScaleToCeiledSize(kSurfaceSize, /*x_scale=*/0.2, /*y_scale=*/0.2);
+    ResourceId resource_id;
+    resource_list_.push_back(CreateTestTexture(
+        gfx::Rect(kTextureSize),
+        /*texel_color=*/SkColorSetARGB(128, 0, 255, 0),
+        /*premultiplied_alpha=*/false, child_resource_provider_.get(),
+        child_context_provider_));
+    resource_id = resource_list_.back().id;
+
+    timer_.Reset();
+    do {
+      std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass();
+      SharedQuadState* shared_state = CreateTestSharedQuadState(
+          gfx::Transform(), kSurfaceRect, pass.get(), gfx::RRectF());
+
+      for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+          CreateTestTextureDrawQuad(
+              resource_id,
+              gfx::Rect(i * kTextureSize.width(), j * kTextureSize.height(),
+                        kTextureSize.width(), kTextureSize.height()),
+              /*background_color=*/SK_ColorTRANSPARENT,
+              /*premultiplied_alpha=*/false, shared_state, pass.get());
+        }
+      }
+
+      RenderPassList pass_list;
+      pass_list.push_back(std::move(pass));
+      DrawFrame(std::move(pass_list));
+
+      client_.WaitForSwap();
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+  }
+
   void RunTileQuads(int tile_count,
                     const gfx::Transform& starting_transform,
                     const gfx::Transform& transform_step,
@@ -553,6 +590,10 @@ TYPED_TEST(RendererPerfTest, SingleTextureQuad) {
 
 TYPED_TEST(RendererPerfTest, TextureQuads5x5) {
   this->RunTextureQuads5x5();
+}
+
+TYPED_TEST(RendererPerfTest, TextureQuads5x5SameTex) {
+  this->RunTextureQuads5x5SameTex();
 }
 
 TYPED_TEST(RendererPerfTest, RotatedTileQuadsShared) {

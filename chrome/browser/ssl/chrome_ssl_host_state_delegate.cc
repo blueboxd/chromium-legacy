@@ -224,7 +224,7 @@ void MigrateOldSettings(HostContentSettingsMap* map) {
 }
 
 bool HostFilterToPatternFilter(
-    const base::Callback<bool(const std::string&)>& host_filter,
+    base::OnceCallback<bool(const std::string&)> host_filter,
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern) {
   // We only ever set origin-scoped exceptions which are of the form
@@ -232,7 +232,7 @@ bool HostFilterToPatternFilter(
   // against its host.
   GURL url = GURL(primary_pattern.ToString());
   DCHECK(url.is_valid());
-  return host_filter.Run(url.host());
+  return std::move(host_filter).Run(url.host());
 }
 
 }  // namespace
@@ -289,14 +289,14 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
 }
 
 void ChromeSSLHostStateDelegate::Clear(
-    const base::Callback<bool(const std::string&)>& host_filter) {
+    base::RepeatingCallback<bool(const std::string&)> host_filter) {
   // Convert host matching to content settings pattern matching. Content
   // settings deletion is done synchronously on the UI thread, so we can use
   // |host_filter| by reference.
   HostContentSettingsMap::PatternSourcePredicate pattern_filter;
   if (!host_filter.is_null()) {
     pattern_filter =
-        base::Bind(&HostFilterToPatternFilter, std::cref(host_filter));
+        base::BindRepeating(&HostFilterToPatternFilter, host_filter);
   }
 
   HostContentSettingsMapFactory::GetForProfile(profile_)

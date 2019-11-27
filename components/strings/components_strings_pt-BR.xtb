@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mostrar mais</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Mude sua senha</translation>
 <translation id="1484290072879560759">Escolher endereço de entrega</translation>
 <translation id="1492194039220927094">Push de políticas:</translation>
 <translation id="1501859676467574491">Mostre os cartões salvos na Conta do Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Tente entrar em contato com o administrador do sistema.</translation>
 <translation id="1736420071277903564">Computador</translation>
-<translation id="1739107442478692187">Houve uma violação de dados em um site ou app usado por você. Por recomendação do Chrome, verifique as senhas salvas e mude sua senha em <ph name="ORIGIN" /> imediatamente.</translation>
 <translation id="1740951997222943430">Informe um mês de validade válido</translation>
 <translation id="1741613555002899862">Precisa ser especificada e ser uma string válida quando DnsOverHttpsMode for <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Para agilizar o pagamento na próxima vez, salve o cartão, seu nome e o endereço de faturamento na sua Conta do Google e neste dispositivo.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Serviço Descompactar</translation>
 <translation id="1915697529809968049">Usar o Touch ID em vez do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar as configurações atualizadas a este site, recarregue a página</translation>
+<translation id="1917876262703816781">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, mude a senha imediatamente em <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919367280705858090">Receber ajuda com uma mensagem de erro específica</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}one{# site}other{# sites}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Incompatibilidade de domínio</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2099652385553570808">Três grampos no lado esquerdo</translation>
-<translation id="2100280972184758440">Sua senha foi comprometida</translation>
 <translation id="2102134110707549001">Sugerir senha forte…</translation>
 <translation id="2108755909498034140">Reiniciar seu computador</translation>
 <translation id="2111256659903765347">Super A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignorado porque foi substituído por <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Emitido para: <ph name="ORGANIZATION" /> (<ph name="JURISDICTION" />)</translation>
 <translation id="2119867082804433120">Perfuração na parte inferior direita</translation>
-<translation id="2124528555835617522">Houve uma violação de dados em um site ou app usado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.</translation>
 <translation id="2129079103035905234">Sensores de movimento</translation>
 <translation id="2130448033692577677">Os modelos que você especificou podem não ser aplicados, porque a política DnsOverHttpsMode não foi definida.</translation>
 <translation id="213826338245044447">Favoritos nos dispositivos móveis</translation>
@@ -484,7 +483,6 @@
 <translation id="3282497668470633863">Adicionar nome (como consta no cartão)</translation>
 <translation id="3287510313208355388">Download quando estiver on-line</translation>
 <translation id="3293642807462928945">Saiba mais sobre a política <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Houve uma violação de dados em um site ou app usado por você. Por recomendação do Chrome, mude sua senha em <ph name="ORIGIN" /> imediatamente.</translation>
 <translation id="3303855915957856445">Nenhum resultado de pesquisa encontrado</translation>
 <translation id="3320021301628644560">Adicionar endereço de faturamento</translation>
 <translation id="3324983252691184275">Carmim</translation>
@@ -892,6 +890,7 @@
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este site usa uma configuração de segurança desatualizada que pode expor suas informações, como senhas ou números de cartão de crédito, quando elas forem enviadas para o site.</translation>
 <translation id="5288108484102287882">A validação dos valores da política gerou alguns avisos</translation>
+<translation id="5295292838686006428">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, verifique as senhas salvas imediatamente.</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -942,6 +941,7 @@
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="5541546772353173584">Adicione um E-mail</translation>
 <translation id="5545756402275714221">Artigos para você</translation>
+<translation id="5552137475244467770">O Chrome verifica periodicamente se suas senhas estão em listas que foram publicados on-line. Quando isso é feito, as senhas e os nomes de usuário são criptografados para que não possam ser lidos por ninguém, nem o Google.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5560088892362098740">Data de validade</translation>
 <translation id="5565735124758917034">Ativo</translation>
@@ -1033,6 +1033,7 @@
 <translation id="5992691462791905444">Dobra sanfona</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Verificar suas senhas</translation>
 <translation id="6015796118275082299">Ano</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}one{Página #}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
@@ -1322,6 +1323,7 @@ Mais detalhes:
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="748406663033922918">Use o bloqueio de tela para confirmar suas formas de pagamento salvas.</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
+<translation id="7495290002932347110">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, verifique as senhas salvas e mude sua senha imediatamente em <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continuar editando</translation>
 <translation id="7508255263130623398">O código do dispositivo da política retornado está em branco ou não corresponde ao código do dispositivo atual</translation>
 <translation id="7508870219247277067">Verde-abacate</translation>

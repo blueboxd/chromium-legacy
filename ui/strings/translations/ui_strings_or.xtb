@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">ବାମରୁ ଡାହାଣ</translation>
 <translation id="1383876407941801731">ସନ୍ଧାନ</translation>
 <translation id="1398853756734560583">ସର୍ବାଧିକ କରନ୍ତୁ</translation>
-<translation id="1409544243779336081">ଆପ୍‍ର ସୁପାରିଶ୍‌</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ସେୟାର୍ କରାଯାଇ ପାରିବ ନାହିଁ</translation>
 <translation id="1498028757988366001">ଆପଣ ପୂର୍ବରୁ ଏହାକୁ ସନ୍ଧାନ କରିଥିଲେ। ଆପଣଙ୍କ ଇତିହାସରୁ "<ph name="QUERY" />" ଡିଲିଟ୍ କରିବା ଦ୍ୱାରା, ଏହା ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ଥିବା ଆକାଉଣ୍ଟରୁ ସ୍ଥାୟୀ ଭାବେ କାଢ଼ି ହୋଇଯିବ।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ମିନିଟ୍‍ ଏବଂ }other{# ମିନିଟ୍‍ ଏବଂ }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">ସମୟ ଅବଧି</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ମାସ}other{# ମାସ}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/ସେ</translation>
-<translation id="1812519734428420144"><ph name="RATING_SCORE" /> ତାରାଙ୍କିତ ମୂଲ୍ୟାଙ୍କନ</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ଘଣ୍ଟା ଏବଂ }other{# ଘଣ୍ଟା ଏବଂ }}</translation>
 <translation id="1842960171412779397">ଚୟନ</translation>
 <translation id="1859234291848436338">ଦିଗନିର୍ଦ୍ଦେଶ ଲେଖାଯାଉଛି</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>
 <translation id="7814458197256864873">&amp;କପି</translation>
+<translation id="7848989271541991537">ପୃଷ୍ଠା <ph name="PAGE_NUMBER" />, ଧାଡ଼ି <ph name="ROW_NUMBER" />, ସ୍ତମ୍ଭ <ph name="COLUMN_NUMBER" />କୁ ଘୁଞ୍ଚାଯାଇଛି।</translation>
 <translation id="7879499977785298635">ଅବରୋଧ କରନ୍ତୁ ନାହିଁ</translation>
 <translation id="7907591526440419938">ଫାଇଲ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="7969046989155602842">କମାଣ୍ଡ</translation>

@@ -33,7 +33,7 @@ class TestActivationStateCallbackReceiver {
   mojom::ActivationState last_activation_state_;
   int callback_count_ = 0;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestActivationStateCallbackReceiver);
 };

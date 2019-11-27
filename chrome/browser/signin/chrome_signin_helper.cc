@@ -317,13 +317,9 @@ void ProcessDiceHeader(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(!profile->IsOffTheRecord());
 
-  AccountConsistencyMethod account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
-  if (account_consistency == AccountConsistencyMethod::kMirror ||
-      account_consistency == AccountConsistencyMethod::kDisabled) {
-    // Ignore Dice response headers if Dice is not enabled at all.
+  // Ignore Dice response headers if Dice is not enabled.
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile))
     return;
-  }
 
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;

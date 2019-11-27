@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
@@ -28,6 +27,8 @@ class ActionTracker {
  public:
   explicit ActionTracker(content::BrowserContext* browser_context);
   ~ActionTracker();
+  ActionTracker(const ActionTracker& other) = delete;
+  ActionTracker& operator=(const ActionTracker& other) = delete;
 
   // Called whenever a request matches with a rule.
   void OnRuleMatched(const RequestAction& request_action,
@@ -53,23 +54,37 @@ class ActionTracker {
   void ResetActionCountForTab(int tab_id);
 
  private:
+  struct ExtensionTabIdKey {
+    ExtensionTabIdKey(ExtensionId extension_id, int tab_id);
+    ExtensionTabIdKey(const ExtensionTabIdKey& other) = delete;
+    ExtensionTabIdKey& operator=(const ExtensionTabIdKey& other) = delete;
+    ExtensionTabIdKey(ExtensionTabIdKey&&);
+    ExtensionTabIdKey& operator=(ExtensionTabIdKey&&);
+
+    ExtensionId extension_id;
+    int tab_id;
+
+    bool operator<(const ExtensionTabIdKey& other) const;
+  };
+
+  // Info tracked for each ExtensionTabIdKey.
+  struct TrackedInfo {
+    size_t action_count = 0;
+  };
+
   // Called from OnRuleMatched. Dispatches a OnRuleMatchedDebug event to the
   // observer for the extension specified by |request_action.extension_id|.
   void DispatchOnRuleMatchedDebugIfNeeded(
       const RequestAction& request_action,
       api::declarative_net_request::RequestDetails request_details);
 
-  using ExtensionTabKey = std::pair<ExtensionId, int>;
-
   // Maps a pair of (extension ID, tab ID) to the number of actions matched for
   // the extension and tab specified.
-  std::map<ExtensionTabKey, int> actions_matched_;
+  std::map<ExtensionTabIdKey, TrackedInfo> actions_matched_;
 
   content::BrowserContext* browser_context_;
 
   ExtensionPrefs* extension_prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActionTracker);
 };
 
 }  // namespace declarative_net_request

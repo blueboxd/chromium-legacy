@@ -233,9 +233,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcWakeLockBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);
   GpuArcVideoServiceHost::GetForBrowserContext(profile);
-  if (apps::ArcAppsFactory::IsEnabled()) {
-    apps::ArcAppsFactory::GetForProfile(profile);
-  }
+  apps::ArcAppsFactory::GetForProfile(profile);
   chromeos::ApkWebAppService::Get(profile);
 
   // ARC Container-only services.

@@ -130,7 +130,6 @@ TEST_F(DataReductionProxyServiceTest, TestResetBadProxyListOnDisableDataSaver) {
 }
 
 TEST_F(DataReductionProxyServiceTest, HoldbackConfiguresProxies) {
-  base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =

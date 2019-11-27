@@ -92,7 +92,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   }
 
   void RemoveKeyframeModel(int keyframe_model_id) override;
-  void NotifyLocalTimeUpdated(const AnimationEvent& event);
 
   void ReleasePendingTreeLock() { has_pending_tree_lock_ = false; }
 

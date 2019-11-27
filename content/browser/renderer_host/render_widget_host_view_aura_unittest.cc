@@ -2109,6 +2109,10 @@ TEST_F(RenderWidgetHostViewAuraTest,
 // Tests that a gesture fling start with touchpad source resets wheel phase
 // state.
 TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
+  // Calling InitAsChild so it will create aura::Window. This will be queried by
+  // fling controller to get the root viewport size when it receives GFS.
+  view_->InitAsChild(nullptr);
+  view_->SetSize(gfx::Size(100, 100));
   // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
   // sure that the timer is still running when the touchpad fling start is sent.
   view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(

@@ -32,10 +32,12 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/sms/sms_receiver_destroyed_reason.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 
 using base::BindLambdaForTesting;
 using base::Optional;
+using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsReceiver;
 using blink::mojom::SmsStatus;
 using std::string;
@@ -137,6 +139,12 @@ class SmsServiceTest : public RenderViewHostTestHarness {
   std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
       const std::string& name) {
     return histogram_tester_.GetHistogramSamplesSinceCreation(name);
+  }
+
+  void ExpectDestroyedReasonCount(SmsReceiverDestroyedReason bucket,
+                                  int32_t count) {
+    histogram_tester_.ExpectBucketCount("Blink.Sms.Receive.DestroyedReason",
+                                        bucket, count);
   }
 
  private:
@@ -640,6 +648,123 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
   std::unique_ptr<base::HistogramSamples> receive_samples(
       GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
   EXPECT_EQ(1, receive_samples->TotalCount());
+}
+
+TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
+  NavigateAndCommit(GURL(kTestUrl));
+  NiceMock<MockSmsWebContentsDelegate> delegate;
+  WebContentsImpl* web_contents_impl =
+      reinterpret_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SetDelegate(&delegate);
+
+  NiceMock<MockSmsProvider> provider;
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(), &provider);
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&fetcher, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+    navigate.Quit();
+  }));
+
+  base::RunLoop reload;
+
+  service->Receive(base::BindLambdaForTesting(
+      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
+        EXPECT_EQ(base::nullopt, sms);
+        reload.Quit();
+      }));
+
+  navigate.Run();
+
+  // Simulates the user navigating to a new page.
+  NavigateAndCommit(GURL("https://www.example.com"));
+
+  reload.Run();
+
+  ExpectDestroyedReasonCount(SmsReceiverDestroyedReason::kNavigateNewPage, 1);
+}
+
+TEST_F(SmsServiceTest, RecordMetricsForSamePage) {
+  NavigateAndCommit(GURL(kTestUrl));
+  NiceMock<MockSmsWebContentsDelegate> delegate;
+  WebContentsImpl* web_contents_impl =
+      reinterpret_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SetDelegate(&delegate);
+
+  NiceMock<MockSmsProvider> provider;
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(), &provider);
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&fetcher, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+    navigate.Quit();
+  }));
+
+  base::RunLoop reload;
+
+  service->Receive(base::BindLambdaForTesting(
+      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
+        EXPECT_EQ(base::nullopt, sms);
+        reload.Quit();
+      }));
+
+  navigate.Run();
+
+  // Simulates the user re-navigating to the same page through the omni-box.
+  NavigateAndCommit(GURL(kTestUrl));
+
+  reload.Run();
+
+  ExpectDestroyedReasonCount(SmsReceiverDestroyedReason::kNavigateSamePage, 1);
+}
+
+TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
+  NavigateAndCommit(GURL(kTestUrl));  // Add to history.
+  NavigateAndCommit(GURL("https://example.com"));
+
+  NiceMock<MockSmsWebContentsDelegate> delegate;
+  WebContentsImpl* web_contents_impl =
+      reinterpret_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SetDelegate(&delegate);
+
+  NiceMock<MockSmsProvider> provider;
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(), &provider);
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&fetcher, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+    navigate.Quit();
+  }));
+
+  base::RunLoop reload;
+
+  service->Receive(base::BindLambdaForTesting(
+      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
+        EXPECT_EQ(base::nullopt, sms);
+        reload.Quit();
+      }));
+
+  navigate.Run();
+
+  // Simulates the user re-navigating to an existing history page.
+  NavigationSimulator::GoBack(web_contents());
+
+  reload.Run();
+
+  ExpectDestroyedReasonCount(SmsReceiverDestroyedReason::kNavigateExistingPage,
+                             1);
 }
 
 }  // namespace content

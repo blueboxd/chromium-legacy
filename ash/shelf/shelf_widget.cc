@@ -186,9 +186,11 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 
   // |animating_background_| will be made visible during hotseat animations.
   ShowAnimatingBackground(false);
-  if (features::IsBackgroundBlurEnabled())
+  if (features::IsBackgroundBlurEnabled()) {
     animating_background_.SetBackdropFilterQuality(0.33f);
-
+    animating_background_.SetColor(
+        ShelfConfig::Get()->GetMaximizedShelfColor());
+  }
   std::unique_ptr<views::View> drag_handle_ptr =
       std::make_unique<views::View>();
   const int radius = kDragHandleCornerRadius;
@@ -515,7 +517,6 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 
 void ShelfWidget::Shutdown() {
   hotseat_transition_animator_->RemoveObserver(delegate_view_);
-  hotseat_transition_animator_->RemoveObserver(hotseat_widget_.get());
   hotseat_transition_animator_.reset();
   // Shutting down the status area widget may cause some widgets (e.g. bubbles)
   // to close, so uninstall the ShelfLayoutManager event filters first. Don't
@@ -562,7 +563,6 @@ void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
   delegate_view_->set_context_menu_controller(hotseat_widget_->GetShelfView());
   hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
   hotseat_transition_animator_->AddObserver(delegate_view_);
-  hotseat_transition_animator_->AddObserver(hotseat_widget_.get());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {

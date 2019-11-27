@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/download/public/common/download_item.h"
@@ -127,9 +127,10 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
 //   "SafeBrowsing.DeepScan.<access-point>.BytesPerSeconds"
 //   "SafeBrowsing.DeepScan.<access-point>.Duration"
 //   "SafeBrowsing.DeepScan.<access-point>.<result>.Duration"
-// TODO(domfc): Add UPLOAD, DRAG_AND_DROP and PASTE access points.
+// TODO(domfc): Add DRAG_AND_DROP and PASTE access points.
 enum class DeepScanAccessPoint {
   DOWNLOAD,
+  UPLOAD,
 };
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
 

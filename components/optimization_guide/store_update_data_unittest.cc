@@ -82,8 +82,7 @@ TEST(StoreUpdateDataTest, BuildPredictionModelUpdateData) {
 
   std::unique_ptr<StoreUpdateData> prediction_model_update =
       StoreUpdateData::CreatePredictionModelStoreUpdateData();
-  prediction_model_update->MovePredictionModelIntoUpdateData(
-      std::move(prediction_model));
+  prediction_model_update->CopyPredictionModelIntoUpdateData(prediction_model);
   EXPECT_FALSE(prediction_model_update->component_version().has_value());
   EXPECT_FALSE(prediction_model_update->update_time().has_value());
   // Verify there is 1 store entry.
@@ -106,7 +105,7 @@ TEST(StoreUpdateDataTest, BuildHostModelFeaturesUpdateData) {
           host_model_features_update_time +
               optimization_guide::features::
                   StoredHostModelFeaturesFreshnessDuration());
-  host_model_features_update->MoveHostModelFeaturesIntoUpdateData(
+  host_model_features_update->CopyHostModelFeaturesIntoUpdateData(
       std::move(host_model_features));
   EXPECT_FALSE(host_model_features_update->component_version().has_value());
   EXPECT_TRUE(host_model_features_update->update_time().has_value());

@@ -1023,6 +1023,12 @@ const char kExperimentalExtensionApisDescription[] =
     "Enables experimental extension APIs. Note that the extension gallery "
     "doesn't allow you to upload extensions that use experimental APIs.";
 
+const char kExperimentalFlingAnimationName[] =
+    "Enable experimental fling animation";
+const char kExperimentalFlingAnimationDescription[] =
+    "Enables the use of a touch fling curve that is based on the behavior of "
+    "native apps on Windows.";
+
 const char kExperimentalProductivityFeaturesName[] =
     "Experimental Productivity Features";
 const char kExperimentalProductivityFeaturesDescription[] =
@@ -2510,6 +2516,10 @@ const char kDirectActionsDescription[] =
 const char kDownloadRenameName[] = "Enable download rename";
 const char kDownloadRenameDescription[] = "Enables rename option for downloads";
 
+const char kDuetTabStripIntegrationAndroidName[] = "Duet-TabStrip Integration";
+const char kDuetTabStripIntegrationAndroidDescription[] =
+    "Allows users to access integration of Duet and TabStrip.";
+
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =
@@ -2869,11 +2879,6 @@ const char kChromeColorsCustomColorPickerName[] =
 const char kChromeColorsCustomColorPickerDescription[] =
     "Show custom color picker in Chrome Colors menu.";
 
-const char kDialMediaRouteProviderName[] = "DIAL Media Route Provider";
-const char kDialMediaRouteProviderDescription[] =
-    "Enables the native DIAL Media Route Provider implementation to be used "
-    "instead of the implementation in the Media Router component extension.";
-
 const char kNtpConfirmSuggestionRemovalsName[] =
     "Confirm removing \"realbox\" suggestions on New Tab page";
 const char kNtpConfirmSuggestionRemovalsDescription[] =
@@ -3062,12 +3067,6 @@ const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
 const char kEnableGpuAppcontainerDescription[] =
     "Enables the use of an AppContainer for the GPU sandboxed processes to "
     "improve security.";
-
-const char kExperimentalFlingAnimationName[] =
-    "Enable experimental fling animation";
-const char kExperimentalFlingAnimationDescription[] =
-    "Enables the use of a touch fling curve that is based on the behavior of "
-    "native apps on Windows.";
 
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =

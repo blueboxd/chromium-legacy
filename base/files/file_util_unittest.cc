@@ -238,9 +238,12 @@ void SetReadOnly(const FilePath& path, bool read_only) {
              FILE_ATTRIBUTE_READONLY)
           : (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
 
-  // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
+  // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED and FILE_ATTRIBUTE_COMPRESSED
+  // if present. These flags are set by the operating system, depending on
+  // local configurations, such as compressing the file system. Not filtering
+  // out these flags could cause tests to fail even though they should pass.
   attrs = GetFileAttributes(path.value().c_str()) &
-          ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+          ~(FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_ATTRIBUTE_COMPRESSED);
   ASSERT_EQ(expected, attrs);
 #else
   // On all other platforms, it involves removing/setting the write bit.

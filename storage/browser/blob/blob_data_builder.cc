@@ -353,9 +353,9 @@ void BlobDataBuilder::AppendReadableDataHandle(
 }
 
 void BlobDataBuilder::AppendMojoDataItem(mojom::BlobDataItemPtr item_ptr) {
-  auto item = BlobDataItem::CreateMojoDataItem(std::move(item_ptr));
-  if (item->length() == 0ul)
+  if (item_ptr->size == 0ul)
     return;
+  auto item = BlobDataItem::CreateMojoDataItem(std::move(item_ptr));
 
   total_size_ += item->length();
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(

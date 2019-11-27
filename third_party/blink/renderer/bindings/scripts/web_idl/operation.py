@@ -12,9 +12,9 @@ from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
 from .exposure import Exposure
 from .function_like import FunctionLike
+from .function_like import OverloadGroup
 from .idl_type import IdlType
 from .make_copy import make_copy
-from .overload_group import OverloadGroup
 
 
 class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,

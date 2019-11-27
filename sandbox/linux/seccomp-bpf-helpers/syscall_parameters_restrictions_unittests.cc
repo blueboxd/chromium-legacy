@@ -59,6 +59,7 @@ class RestrictClockIdPolicy : public bpf_dsl::Policy {
     switch (sysno) {
       case __NR_clock_gettime:
       case __NR_clock_getres:
+      case __NR_clock_nanosleep:
         return RestrictClockID();
       default:
         return Allow();
@@ -98,12 +99,42 @@ BPF_TEST_C(ParameterRestrictions,
 #endif
 }
 
+void CheckClockNanosleep(clockid_t clockid) {
+  struct timespec ts;
+  struct timespec out_ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 0;
+  clock_nanosleep(clockid, 0, &ts, &out_ts);
+}
+
+BPF_TEST_C(ParameterRestrictions,
+           clock_nanosleep_allowed,
+           RestrictClockIdPolicy) {
+  CheckClockNanosleep(CLOCK_MONOTONIC);
+  CheckClockNanosleep(CLOCK_MONOTONIC_COARSE);
+  CheckClockNanosleep(CLOCK_MONOTONIC_RAW);
+  CheckClockNanosleep(CLOCK_BOOTTIME);
+  CheckClockNanosleep(CLOCK_REALTIME);
+  CheckClockNanosleep(CLOCK_REALTIME_COARSE);
+}
+
 BPF_DEATH_TEST_C(ParameterRestrictions,
                  clock_gettime_crash_clock_fd,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  RestrictClockIdPolicy) {
   struct timespec ts;
   syscall(SYS_clock_gettime, (~0) | CLOCKFD, &ts);
+}
+
+BPF_DEATH_TEST_C(ParameterRestrictions,
+                 clock_nanosleep_crash_clock_fd,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 RestrictClockIdPolicy) {
+  struct timespec ts;
+  struct timespec out_ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 0;
+  syscall(SYS_clock_nanosleep, (~0) | CLOCKFD, 0, &ts, &out_ts);
 }
 
 #if !defined(OS_ANDROID)

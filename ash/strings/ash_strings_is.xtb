@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Notar <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Opnaðu tækið sem <ph name="LOGIN_ID" /> til að framkvæma aðgerð tilkynningarinnar</translation>
-<translation id="8995603266996330174">Stjórnað af <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Færðu inn aðgangskóða foreldris fyrir Family Link.</translation>
 <translation id="9029474291399787231">Uppfærsla Adobe Flash Player í boði</translation>
 <translation id="9056839673611986238">Tækið verður fært í eldri útgáfu</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Stækkun á öllum skjánum</translation>
 <translation id="9193626018745640770">Sendir út í óþekkt tæki</translation>
 <translation id="9194617393863864469">Skrá annan notanda inn...</translation>
+<translation id="9205817095063786319">Tæki undir stjórn <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Hættir í sameinaðri skjáborðsstillingu</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> eftir þar til rafhlaðan er fullhlaðin.</translation>
 <translation id="9215934040295798075">Velja veggfóður</translation>

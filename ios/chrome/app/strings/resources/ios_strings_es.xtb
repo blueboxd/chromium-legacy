@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Menú más</translation>
 <translation id="2316709634732130529">Utilizar la contraseña sugerida</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
-<translation id="2330129964253841015">Avisar si se vulneran tus contraseñas</translation>
 <translation id="2339560363438331454">Servicios de Google y sincronización</translation>
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="2359043044084662842">Traducir</translation>
@@ -441,6 +440,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Gestionar tu cuenta de Google</translation>
+<translation id="6995899638241819463">Avisar si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>

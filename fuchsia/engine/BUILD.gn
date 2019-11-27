@@ -90,12 +90,12 @@ component("web_engine_core") {
     "//services/service_manager/sandbox",
     "//skia/public/mojom",
     "//third_party/blink/public/common",
-    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
-    "//third_party/fuchsia-sdk/sdk:math",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-math",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-gfx",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
-    "//third_party/fuchsia-sdk/sdk:ui_gfx",
-    "//third_party/fuchsia-sdk/sdk:web",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/aura",
@@ -241,7 +241,7 @@ source_set("browsertest_core") {
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//ui/ozone",
   ]
 }
@@ -266,7 +266,7 @@ test("web_engine_browsertests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//ui/ozone",
   ]
@@ -294,9 +294,9 @@ test("web_engine_unittests") {
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
-    "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
 
@@ -316,7 +316,7 @@ test("web_engine_integration_tests") {
     "//base/test:run_all_unittests",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
   ]
   package_deps = [ [
         ":web_engine",
@@ -353,10 +353,10 @@ executable("web_engine_shell_exec") {
   deps = [
     "//base",
     "//fuchsia/base",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-policy",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
-    "//third_party/fuchsia-sdk/sdk:ui_policy",
-    "//third_party/fuchsia-sdk/sdk:web",
     "//url",
   ]
 }

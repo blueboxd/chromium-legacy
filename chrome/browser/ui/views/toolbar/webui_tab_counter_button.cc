@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -75,9 +76,13 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
     TabStripModel* tab_strip_model) {
   auto tab_counter = std::make_unique<WebUITabCounterButton>(listener);
 
+  tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
+  // TODO(crbug.com/1028827): replace this with production string and provide
+  // tab count.
+  tab_counter->SetAccessibleName(base::ASCIIToUTF16("Open tab strip"));
+
   // TODO(999557): Create a custom text style to get the correct size/weight.
   // TODO(999557): Figure out how to get the right font.
-  tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
   tab_counter->SetProperty(views::kFlexBehaviorKey,
                            views::FlexSpecification::ForSizeRule(
                                views::MinimumFlexSizeRule::kScaleToMinimum,

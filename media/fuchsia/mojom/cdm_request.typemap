@@ -11,6 +11,6 @@ sources = [
 ]
 public_deps = [
   "//fuchsia/mojom:traits",
-  "//third_party/fuchsia-sdk/sdk:media_drm",
+  "//third_party/fuchsia-sdk/sdk:fuchsia-media-drm",
 ]
 type_mappings = [ "media.mojom.CdmRequest=::fidl::InterfaceRequest<::fuchsia::media::drm::ContentDecryptionModule>[move_only]" ]

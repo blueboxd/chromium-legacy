@@ -209,7 +209,8 @@ test('bookmarkManagerPrivate', async () => {
             assertEquals(count, result.length);
 
             // Look for barNode's index.
-            for (let barIndex = 0; barIndex < result.length; barIndex++) {
+            let barIndex;
+            for (barIndex = 0; barIndex < result.length; barIndex++) {
               if (result[barIndex].id == barNode.id) {
                 break;
               }
@@ -251,7 +252,8 @@ test('bookmarkManagerPrivate', async () => {
             assertEquals(count, result.length);
 
             // Look for fooNode2's index.
-            for (let foo2Index = 0; foo2Index < result.length; foo2Index++) {
+            let foo2Index;
+            for (foo2Index = 0; foo2Index < result.length; foo2Index++) {
               if (result[foo2Index].id == fooNode2.id) {
                 break;
               }

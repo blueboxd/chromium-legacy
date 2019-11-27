@@ -6,24 +6,23 @@ package org.chromium.chrome.browser.feed;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
-import com.google.android.libraries.feed.api.host.logging.ActionType;
-import com.google.android.libraries.feed.api.host.logging.BasicLoggingApi;
-import com.google.android.libraries.feed.api.host.logging.ContentLoggingData;
-import com.google.android.libraries.feed.api.host.logging.ElementLoggingData;
-import com.google.android.libraries.feed.api.host.logging.InternalFeedError;
-import com.google.android.libraries.feed.api.host.logging.RequestReason;
-import com.google.android.libraries.feed.api.host.logging.ScrollType;
-import com.google.android.libraries.feed.api.host.logging.SessionEvent;
-import com.google.android.libraries.feed.api.host.logging.SpinnerType;
-import com.google.android.libraries.feed.api.host.logging.Task;
-import com.google.android.libraries.feed.api.host.logging.ZeroStateShowReason;
-import com.google.search.now.ui.action.FeedActionProto;
-
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.library.api.host.logging.ActionType;
+import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
+import org.chromium.chrome.browser.feed.library.api.host.logging.ContentLoggingData;
+import org.chromium.chrome.browser.feed.library.api.host.logging.ElementLoggingData;
+import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;
+import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
+import org.chromium.chrome.browser.feed.library.api.host.logging.ScrollType;
+import org.chromium.chrome.browser.feed.library.api.host.logging.SessionEvent;
+import org.chromium.chrome.browser.feed.library.api.host.logging.SpinnerType;
+import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
+import org.chromium.chrome.browser.feed.library.api.host.logging.ZeroStateShowReason;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.feed.core.proto.ui.action.FeedActionProto;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.List;

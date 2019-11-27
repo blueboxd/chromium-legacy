@@ -179,8 +179,8 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
     else:
       profile_valid = True
   except subprocess.CalledProcessError as error:
-    logging.warning('Validating and converting %r to %r failed with output: %r',
-                    profraw_file, output_profdata_file, error.output)
+    logging.info('Validating and converting %r to %r failed with output: %r',
+                 profraw_file, output_profdata_file, error.output)
     validation_output = error.output
 
   # 2. Add the profile to the appropriate list(s).

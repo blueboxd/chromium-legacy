@@ -154,11 +154,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   static base::ThreadLocalBoolean* GetThreadIsInTraceEventTLS();
 
-  // Installs TraceLog overrides for tracing during Chrome startup. Trace data
-  // is locally buffered until connection to the perfetto service is
-  // established. Expects a later call to StartTracing() to bind to the perfetto
-  // service. Should only be called once.
+  // Enables startup tracing. Trace data is locally buffered until connection to
+  // the perfetto service is established. Expects a later call to StartTracing()
+  // to bind to the perfetto service. Should only be called once.
   void SetupStartupTracing(bool privacy_filtering_enabled);
+
+  // Installs TraceLog overrides for tracing during Chrome startup.
+  void RegisterStartupHooks();
 
   void OnTaskSchedulerAvailable();
 

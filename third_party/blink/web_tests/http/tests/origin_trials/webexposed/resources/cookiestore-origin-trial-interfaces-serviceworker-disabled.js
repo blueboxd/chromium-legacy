@@ -4,7 +4,7 @@ importScripts('/resources/testharness.js',
 test(t => {
   OriginTrialsHelper.check_interfaces_missing(
     self,
-    ['CookieStore', 'ExtendableCookieChangeEvent']);
+    ['CookieStore', 'CookieStoreManager', 'ExtendableCookieChangeEvent']);
 }, 'Cookie Store API interfaces in Origin-Trial disabled worker.');
 
 test(t => {
@@ -12,6 +12,8 @@ test(t => {
                'cookieStore property does not exist on global scope');
   assert_false('oncookiechange' in self,
                'oncookiechange property does not exist on global scope');
+  assert_false('cookies' in self.registration,
+               'cookies property does not exist on ServiceWorkerRegistration');
 }, 'Cookie Store API entry points in Origin-Trial disabled worker.');
 
 done();

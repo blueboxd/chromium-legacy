@@ -438,11 +438,6 @@
 
           如果不設定這項政策，系統會在顯示登入畫面時先停用語音輸入功能，但使用者隨時可以將其啟用。</translation>
 <translation id="1675002386741412210">支援環境：</translation>
-<translation id="1676141669324989554">可讓你設定使用者是否能新增例外網站，允許特定網站顯示混合內容。
-
-          你可以透過「InsecureContentAllowedForUrls」和「InsecureContentBlockedForUrls」政策，使用特定網址模式覆寫這項政策。
-
-          如果不設定這項政策，使用者可以新增例外網站，允許特定網站顯示可封鎖的混合內容。</translation>
 <translation id="1695708467571967752">這項政策可控管使用者是否能夠在裝置鎖定的情況下播放媒體。
 
       如果將這項政策設為 False，系統會停用鎖定畫面上的媒體控制項。
@@ -520,7 +515,7 @@
 <translation id="1852294065645015766">允許自動播放媒體</translation>
 <translation id="1853782273088286010">控管是否要在 <ph name="PRODUCT_NAME" /> 中使用內建的 DNS 用戶端。
 
-      這項政策不會影響系統使用的 DNS 伺服器，只會影響與 DNS 伺服器建立連線的軟體堆疊。比方說，如果作業系統設為使用企業版 DNS 伺服器，內建 DNS 用戶端也會使用相同的伺服器。不過，內建的 DNS 用戶端可能會採用新版 DNS 相關通訊協定 (例如 DNS-over-TLS)，透過其他方式與伺服器互動。
+      這項政策不會影響系統使用的 DNS 伺服器，只會影響與 DNS 伺服器建立連線的軟體堆疊。比方說，如果作業系統設為使用企業的 DNS 伺服器，內建 DNS 用戶端也會使用相同的伺服器。不過，內建的 DNS 用戶端可能會採用新版 DNS 相關通訊協定 (例如 DNS-over-TLS)，透過其他方式與伺服器互動。
 
       如果將這項政策設為 True，系統將使用內建的 DNS 用戶端 (如果可用)。
 
@@ -3128,9 +3123,6 @@
 <translation id="5961137303188584693">裝置內建的 NIC MAC 位址</translation>
 <translation id="5966615072639944554">允許擴充功能使用 Remote Attestation API</translation>
 <translation id="5983708779415553259">非任何內容套件中網站的預設行為</translation>
-<translation id="5997107377032983906">你可以設定網址模式清單，指定哪些網站能夠顯示可封鎖 (即使用中) 混合內容 (亦即 HTTPS 網站上的 HTTP 內容)。
-
-         如果不設定這項政策，則可封鎖的混合內容將遭到封鎖，但使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。</translation>
 <translation id="5997543603646547632">預設使用 24 小時制時鐘</translation>
 <translation id="5997846976342452720">指定是否要停用外掛程式尋找工具 (已淘汰)</translation>
 <translation id="5998198091336830580">這項政策屬於下列不可部分完成的群組 (系統僅會套用群組中最高優先來源所設定的政策)：</translation>
@@ -3509,9 +3501,6 @@
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6795485990775913659">只在 PIN 碼停用時允許列印</translation>
-<translation id="6800064234889290465">你可以設定網址模式清單，指定哪些網站不得顯示可封鎖 (即使用中) 的混合內容 (亦即 HTTPS 網站上的 HTTP 內容)。
-
-          如果不設定這項政策，則可封鎖的混合內容將遭到封鎖，但使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="6813263547126514821">電源與關機</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
@@ -4400,7 +4389,7 @@
           如果你停用這項設定，系統將會掃描網頁的中繼標記。
 
           如未設定這項政策，系統將會掃描網頁的中繼標記。</translation>
-<translation id="829641334878002866">這項政策可讓你設定時間範圍 (以毫秒為單位)，指定從系統第一次通知使用者重新啟動 <ph name="PRODUCT_OS_NAME" />裝置以套用待處理的更新開始，到 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策指定的結束時間為止，兩者之間的時間範圍。
+<translation id="829641334878002866">這項政策可讓你設定以下作業的時間範圍 (以毫秒為單位)：從系統第一次通知使用者重新啟動 <ph name="PRODUCT_OS_NAME" />裝置以套用待處理的更新開始，到 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策指定的結束時間為止。
 
       如果不設定這項政策，<ph name="PRODUCT_OS_NAME" />裝置會使用 259200000 毫秒 (三天) 做為預設時間範圍。</translation>
 <translation id="8300455783946254851">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。

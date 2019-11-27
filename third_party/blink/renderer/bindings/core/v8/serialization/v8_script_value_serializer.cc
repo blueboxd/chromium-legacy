@@ -627,14 +627,9 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     uint64_t size;
     base::Optional<base::Time> last_modified_time;
     file->CaptureSnapshot(size, last_modified_time);
-    // TODO(crbug.com/988343): transition WebBlobInfo.lastModified to be
-    // base::Time also.
-    double last_modified = last_modified_time
-                               ? last_modified_time->ToDoubleT()
-                               : std::numeric_limits<double>::quiet_NaN();
     blob_info_array_->emplace_back(file->GetBlobDataHandle(), file->GetPath(),
-                                   file->name(), file->type(), last_modified,
-                                   size);
+                                   file->name(), file->type(),
+                                   last_modified_time, size);
     WriteUint32(static_cast<uint32_t>(index));
   } else {
     WriteUTF8String(file->HasBackingFile() ? file->GetPath() : g_empty_string);

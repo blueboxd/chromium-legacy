@@ -43,8 +43,8 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
   // Return back to the same thread where the commit request came from.
   commit_thread_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
-                 base::Unretained(this), widget, buffer_id, swap_result));
+      base::BindOnce(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
+                     base::Unretained(this), widget, buffer_id, swap_result));
 }
 
 void WaylandBufferManagerGpu::OnPresentation(
@@ -55,8 +55,9 @@ void WaylandBufferManagerGpu::OnPresentation(
   // Return back to the same thread where the commit request came from.
   commit_thread_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WaylandBufferManagerGpu::SubmitPresentationtOnOriginThread,
-                 base::Unretained(this), widget, buffer_id, feedback));
+      base::BindOnce(
+          &WaylandBufferManagerGpu::SubmitPresentationtOnOriginThread,
+          base::Unretained(this), widget, buffer_id, feedback));
 }
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,

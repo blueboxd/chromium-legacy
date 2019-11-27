@@ -47,4 +47,16 @@ constexpr char kTraceEventEndName[] = "";
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, \
                                    kTraceEventEndName, ##__VA_ARGS__)
 
+// Begin a thread-scoped slice which gets automatically closed when going out
+// of scope.
+#define TRACE_EVENT(category, name, ...) \
+  TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ##__VA_ARGS__)
+
+// Emit a thread-scoped slice which has zero duration.
+// TODO(nuskos): Add support for process-wide and global instant events when
+// perfetto does.
+#define TRACE_EVENT_INSTANT(category, name, ...)                              \
+  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_INSTANT, category, name, \
+                                   ##__VA_ARGS__)
+
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_H_

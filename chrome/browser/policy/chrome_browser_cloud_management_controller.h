@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
 
 class PrefService;
 
@@ -26,14 +27,14 @@ class ReportScheduler;
 
 namespace policy {
 class ChromeBrowserCloudManagementRegistrar;
-class CloudPolicyClient;
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class ChromeBrowserCloudManagementRegisterWatcher;
 
 // A class that setups and manages all CBCM related features.
-class ChromeBrowserCloudManagementController {
+class ChromeBrowserCloudManagementController
+    : public CloudPolicyClient::Observer {
  public:
   // Chrome browser cloud management enrollment result.
   enum class RegisterResult {
@@ -73,7 +74,7 @@ class ChromeBrowserCloudManagementController {
   static bool IsEnabled();
 
   ChromeBrowserCloudManagementController();
-  virtual ~ChromeBrowserCloudManagementController();
+  ~ChromeBrowserCloudManagementController() override;
 
   static std::unique_ptr<MachineLevelUserCloudPolicyManager>
   CreatePolicyManager(ConfigurationPolicyProvider* platform_provider);
@@ -88,6 +89,11 @@ class ChromeBrowserCloudManagementController {
 
   // Returns whether the enterprise startup dialog is being diaplayed.
   bool IsEnterpriseStartupDialogShowing();
+
+  // CloudPolicyClient::Observer implementation:
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
  protected:
   void NotifyPolicyRegisterFinished(bool succeeded);

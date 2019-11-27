@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import static org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
-
 import android.content.Intent;
 
 import androidx.annotation.IntDef;
+
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

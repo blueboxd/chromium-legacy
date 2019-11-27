@@ -31,6 +31,10 @@ const char kSessionMismatch[] = "XRSpace and XRFrame sessions do not match.";
 const char kCannotReportPoses[] =
     "Poses cannot be given out for the current state.";
 
+const char kHitTestSourceUnavailable[] =
+    "Unable to obtain hit test results for specified hit test source. Ensure "
+    "that it was not already canceled.";
+
 }  // namespace
 
 XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
@@ -133,19 +137,31 @@ void XRFrame::Deactivate() {
 }
 
 HeapVector<Member<XRHitTestResult>> XRFrame::getHitTestResults(
-    XRHitTestSource* hit_test_source) {
+    XRHitTestSource* hit_test_source,
+    ExceptionState& exception_state) {
   if (!hit_test_source ||
-      !session_->ValidateHitTestSourceExists(hit_test_source))
+      !session_->ValidateHitTestSourceExists(hit_test_source)) {
+    // This should only happen when hit test source was already canceled.
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kHitTestSourceUnavailable);
     return {};
+  }
+
   return hit_test_source->Results();
 }
 
 HeapVector<Member<XRTransientInputHitTestResult>>
 XRFrame::getHitTestResultsForTransientInput(
-    XRTransientInputHitTestSource* hit_test_source) {
+    XRTransientInputHitTestSource* hit_test_source,
+    ExceptionState& exception_state) {
   if (!hit_test_source ||
-      !session_->ValidateHitTestSourceExists(hit_test_source))
+      !session_->ValidateHitTestSourceExists(hit_test_source)) {
+    // This should only happen when hit test source was already canceled.
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kHitTestSourceUnavailable);
     return {};
+  }
+
   return hit_test_source->Results();
 }
 

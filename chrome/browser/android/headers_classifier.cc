@@ -17,16 +17,19 @@ namespace android {
 jboolean JNI_IntentHeadersRecorder_IsCorsSafelistedHeader(
     JNIEnv* env,
     const JavaParamRef<jstring>& j_header_name,
-    const JavaParamRef<jstring>& j_header_value) {
+    const JavaParamRef<jstring>& j_header_value,
+    jboolean is_first_party) {
   std::string header_name(ConvertJavaStringToUTF8(env, j_header_name));
   std::string header_value(ConvertJavaStringToUTF8(env, j_header_value));
 
   if (network::cors::IsCorsSafelistedHeader(header_name, header_value))
     return true;
 
-  base::UmaHistogramSparse(
-      "Android.IntentNonSafelistedHeaderNames",
-      base::PersistentHash(base::ToLowerASCII(header_name)));
+  if (is_first_party) {
+    base::UmaHistogramSparse(
+        "Android.IntentNonSafelistedHeaderNames",
+        base::PersistentHash(base::ToLowerASCII(header_name)));
+  }
 
   return false;
 }

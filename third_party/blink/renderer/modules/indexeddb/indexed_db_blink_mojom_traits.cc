@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -199,7 +200,7 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
         name = g_empty_string;
       blob_info->file->name = name;
       blob_info->file->last_modified =
-          base::Time::FromDoubleT(info.LastModified());
+          info.LastModified().value_or(base::Time());
     }
     blob_info->size = info.size();
     blob_info->uuid = info.Uuid();
@@ -241,11 +242,11 @@ bool StructTraits<blink::mojom::IDBValueDataView,
   value_blob_info.ReserveInitialCapacity(blob_or_file_info.size());
   for (const auto& info : blob_or_file_info) {
     if (info->file) {
-      value_blob_info.emplace_back(info->uuid,
-                                   blink::FilePathToWebString(info->file->path),
-                                   info->file->name, info->mime_type,
-                                   info->file->last_modified.ToDoubleT(),
-                                   info->size, info->blob.PassPipe());
+      value_blob_info.emplace_back(
+          info->uuid, blink::FilePathToWebString(info->file->path),
+          info->file->name, info->mime_type,
+          blink::NullableTimeToOptionalTime(info->file->last_modified),
+          info->size, info->blob.PassPipe());
     } else {
       value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
                                    info->blob.PassPipe());

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -15,6 +16,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 
 using blink::WebInputEvent;
@@ -502,5 +504,40 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
       router->forced_last_fling_start_target_to_stop_flinging_for_test());
 }
 #endif  // !defined(OS_MACOSX)
+
+class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
+ public:
+  PhysicsBasedFlingCurveBrowserTest() {}
+  ~PhysicsBasedFlingCurveBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kExperimentalFlingAnimation}, {});
+    IsolateAllSitesForTesting(command_line);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(PhysicsBasedFlingCurveBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PhysicsBasedFlingCurveBrowserTest,
+                       TargetScrollOffsetForFlingAnimation) {
+  LoadPageWithOOPIF();
+
+  // Higher value of fling velocity will make sure that the scroll distance
+  // calculated exceeds the upper bound.
+  gfx::Vector2d fling_velocity(0, -6000.0);
+
+  // Simulate fling on OOPIF
+  SimulateTouchscreenFling(child_view_->host(), nullptr, fling_velocity);
+
+  // If the viewport size required for fling curve generation
+  // (PhysicsBasedFlingCurveBrowser) is based on RenderWidget, test will time
+  // out as upper bound calculated will be 3 * size of iframe window(3 * 100)
+  // and thus it will not scroll beyond it. Viewport size should be based on
+  // root RenderWidgetHost.
+  WaitForFrameScroll(GetChildNode(), 400);
+}
 
 }  // namespace content

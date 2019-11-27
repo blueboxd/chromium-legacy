@@ -378,8 +378,13 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                            int disk_cache_body_index);
   void PutDidWriteBlobToCache(std::unique_ptr<PutContext> put_context,
                               BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
+                              int disk_cache_body_index,
                               ScopedWritableEntry entry,
                               bool success);
+  void PutWriteBlobToCacheComplete(std::unique_ptr<PutContext> put_context,
+                                   int disk_cache_body_index,
+                                   ScopedWritableEntry entry,
+                                   int rv);
   void PutComplete(std::unique_ptr<PutContext> put_context,
                    blink::mojom::CacheStorageError error);
 

@@ -441,11 +441,6 @@
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranında yüksek kontrast başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman etkinleştirebilirler.</translation>
 <translation id="1675002386741412210">Desteklendiği yerler:</translation>
-<translation id="1676141669324989554">Belirli sitelerle ilgili karma içeriğe izin vermek için kullanıcıların istisnalar ekleyip ekleyemeyeceğini ayarlamanıza olanak tanır.
-
-          Bu politika "InsecureContentAllowedForUrls" ve "InsecureContentBlockedForUrls" politikaları kullanılarak belirli URL kalıpları için geçersiz kılınabilir.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcıların engellenebilir karma içeriğe izin vermek için istisnalar eklemelerine izin verilir.</translation>
 <translation id="1695708467571967752">Bu politika, kullanıcıların cihaz kilitliyken medya oynatıp oynatamayacaklarını kontrol eder.
 
       Bu politika False (Yanlış) değerine ayarlanırsa medya denetimleri kilit ekranında devre dışı bırakılır.
@@ -3229,9 +3224,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5961137303188584693">Cihazın dahili NIC MAC adresi</translation>
 <translation id="5966615072639944554">Uzaktan doğrulama API'sını kullanmasına izin verilen uzantılar</translation>
 <translation id="5983708779415553259">Hiçbir içerik paketinde bulunmayan siteler için varsayılan davranış</translation>
-<translation id="5997107377032983906">Engellenebilir (ör. etkin) karma içeriği (ör. HTTPS sitelerindeki HTTP içeriği) görüntülemesine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
-
-          Bu politika ayarlanmadan bırakılırsa engellenebilir karma içerik engellenir ancak kullanıcıların belirli sitelerde buna izin vermek üzere istisnalar ayarlamalarına izin verilir.</translation>
 <translation id="5997543603646547632">Varsayılan olarak 24 saatlik saat biçimini kullan</translation>
 <translation id="5997846976342452720">Eklenti bulucunun devre dışı bırakılıp bırakılmayacağını belirt (kullanımdan kaldırıldı)</translation>
 <translation id="5998198091336830580">Bu politika, aşağıdaki atom grubunun bir parçasıdır (yalnızca grupta bulunan en yüksek öncelikli kaynaktan gelen politikalar geçerlidir):</translation>
@@ -3617,9 +3609,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6786747875388722282">Uzantılar</translation>
 <translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6795485990775913659">Yalnızca PIN olmadan yazdırmaya izin ver</translation>
-<translation id="6800064234889290465">Engellenebilir (ör. etkin) karma içeriği (ör. HTTPS sitelerindeki HTTP içeriği) görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
-
-          Bu politika ayarlanmadan bırakılırsa engellenebilir karma içerik engellenir ancak kullanıcıların belirli sitelerde buna izin vermek üzere istisnalar ayarlamalarına izin verilir.</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="6813263547126514821">Açma ve kapatma</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>

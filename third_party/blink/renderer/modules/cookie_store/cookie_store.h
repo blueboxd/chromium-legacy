@@ -37,8 +37,7 @@ class CookieStore final : public EventTargetWithInlineData,
  public:
   CookieStore(
       ExecutionContext*,
-      mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend,
-      mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend);
+      mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend);
   // Needed because of the
   // mojo::Remote<network::mojom::blink::RestrictedCookieManager>
   ~CookieStore() override;
@@ -64,17 +63,9 @@ class CookieStore final : public EventTargetWithInlineData,
   ScriptPromise Delete(ScriptState*,
                        const CookieStoreDeleteOptions*,
                        ExceptionState&);
-  ScriptPromise subscribeToChanges(
-      ScriptState*,
-      const HeapVector<Member<CookieStoreGetOptions>>& subscriptions,
-      ExceptionState&);
-  ScriptPromise getChangeSubscriptions(ScriptState*, ExceptionState&);
 
   // GarbageCollected
-  void Trace(blink::Visitor* visitor) override {
-    EventTargetWithInlineData::Trace(visitor);
-    ContextLifecycleObserver::Trace(visitor);
-  }
+  void Trace(blink::Visitor* visitor) override;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
@@ -131,13 +122,6 @@ class CookieStore final : public EventTargetWithInlineData,
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,
                                          bool backend_result);
 
-  static void OnSubscribeToCookieChangesResult(ScriptPromiseResolver*,
-                                               bool backend_result);
-  static void OnGetCookieChangeSubscriptionResult(
-      ScriptPromiseResolver*,
-      Vector<blink::mojom::blink::CookieChangeSubscriptionPtr> backend_result,
-      bool backend_success);
-
   // Called when a change event listener is added.
   //
   // This is idempotent during the time intervals between StopObserving() calls.
@@ -148,12 +132,6 @@ class CookieStore final : public EventTargetWithInlineData,
 
   // Wraps an always-on Mojo pipe for sending requests to the Network Service.
   mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend_;
-
-  // Wraps a Mojo pipe for managing service worker cookie change subscriptions.
-  //
-  // This pipe is always connected in service worker execution contexts, and
-  // never connected in document contexts.
-  mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend_;
 
   // Wraps a Mojo pipe used to receive cookie change notifications.
   //

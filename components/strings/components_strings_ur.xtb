@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">مزید دکھائیں</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">اپنا پاس ورڈ تبدیل کریں</translation>
 <translation id="1484290072879560759">ترسیل کا پتہ منتخب کریں</translation>
 <translation id="1492194039220927094">پالیسیوں کو پُش کرنا:</translation>
 <translation id="1501859676467574491">‏اپنے Google اکاؤنٹ سے کارڈز دکھائیں</translation>
@@ -177,7 +178,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">سسٹم کے منتظم سے رابطہ کرنے کی کوشش کریں۔</translation>
 <translation id="1736420071277903564">کمپیوٹر</translation>
-<translation id="1739107442478692187">‏آپ کی استعمال کی جانے والی سائٹ یا ایپ پر ڈیٹا کی خلاف ورزی ہوئی ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے اور ابھی <ph name="ORIGIN" /> پر آپ کے پاس ورڈ کو تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="1740951997222943430">ایک درست ماہِ اختتام درج کریں</translation>
 <translation id="1741613555002899862">‏جب DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> میں ہو، تو متعینہ اور درست اسٹرنگ ہونا چاہیے۔</translation>
 <translation id="1743520634839655729">‏اگلی بار زیادہ تیزی سے ادائیگی کرنے کیلئے، اپنے کارڈ، نام اور بلنگ پتہ کو اپنے Google اکاؤنٹ اور اس آلہ میں محفوظ کریں۔</translation>
@@ -211,6 +211,7 @@
 <translation id="1914326953223720820">اَن زِپ کرنے کی سروس</translation>
 <translation id="1915697529809968049">‏CVC کے بجائے Touch ID کا استعمال کریں؟</translation>
 <translation id="1916770123977586577">اس سائٹ پر اپنی اپ ڈیٹ کردہ ترتیبات کا اطلاق کرنے کیلئے اس صفحہ کو دوبارہ لوڈ کریں</translation>
+<translation id="1917876262703816781">‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے آپ کے پاس ورڈ کو ظاہر کر دیا ہے۔ Chrome آپ کے پاس ورڈ کو <ph name="ORIGIN" /> پر ابھی تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="1919345977826869612">اشتہارات</translation>
 <translation id="1919367280705858090">خرابی کے کسی مخصوص پیغام کے بارے میں مدد حاصل کریں</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{کوئی سائٹ نہیں}=1{1 سائٹ}other{# سائٹس}}</translation>
@@ -243,7 +244,6 @@
 <translation id="2094505752054353250">ڈومین کی عدم مماثلت</translation>
 <translation id="2096368010154057602">محکمہ</translation>
 <translation id="2099652385553570808">بائیں طرف تین سٹیپل</translation>
-<translation id="2100280972184758440">کسی نے آپ کے پاس ورڈ کے ساتھ چھیڑ چھاڑ کی ہے</translation>
 <translation id="2102134110707549001">مضبوط پاس ورڈ تجویز کریں…</translation>
 <translation id="2108755909498034140">اپنے کمپیوٹر کو دوبارہ شروع کریں</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -251,7 +251,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> کی جانب سے اسے اوور رائڈ کیے جانے کی وجہ سے نظر انداز کر دیا گیا۔</translation>
 <translation id="2119505898009119320">جاری کردہ بنام: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">نیچے دائیں طرف سوراخ</translation>
-<translation id="2124528555835617522">‏آپ کی استعمال کی جانے والی سائٹ یا ایپ پر ڈیٹا کی خلاف ورزی ہوئی ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="2129079103035905234">موشن سینسرز</translation>
 <translation id="2130448033692577677">‏ہو سکتا ہے کہ آپ کے ذریعے متعینہ تمثیلات DnsOverHttpsMode پالیسی سیٹ نہ ہونے کی وجہ سے لاگو نہ ہو۔</translation>
 <translation id="213826338245044447">موبائل بُک مارکس</translation>
@@ -275,6 +274,7 @@
 <translation id="2218879909401188352">حملہ آور فی الحال <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> پر آپ کے آلہ کو نقصان پہنچانے والی، آپ کے موبائل بل پر مخفی چارجز شامل کرنے والی یا آپ کی ذاتی معلومات کی چوری کرنے والی خطرناک ایپس انسٹال کر سکتے ہیں۔<ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">انٹرنیٹ نہیں ہے</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />تشخیصات ایپ<ph name="END_LINK" /> کا استعمال کر کے اپنا کنکشن درست کریں</translation>
+<translation id="22320125457191592">آپ کے لیے</translation>
 <translation id="2239100178324503013">ابھی بھیجیں</translation>
 <translation id="2248949050832152960">‏WebAuthn کا استعمال کریں</translation>
 <translation id="2250931979407627383">بائیں طرف کنارے کی سلائی</translation>
@@ -369,6 +369,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">چھوڑیں</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">حفاظتی وارننگ</translation>
 <translation id="2699302886720511147">قبول کردہ کارڈز</translation>
 <translation id="2702801445560668637">پڑھنے کی فہرست</translation>
 <translation id="2704283930420550640">قدر فارمیٹ سے مماثل نہیں ہے۔</translation>
@@ -473,6 +474,7 @@
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
 <translation id="3209034400446768650">صفحہ پیسے چارج کر سکتا ہے</translation>
 <translation id="3209080785413271048">‏اپنے محفوظ کردہ ادائیگی کے طریقوں کی توثیق کرنے کیلئے Windows Hello استعمال کریں۔</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> پر آپ کی سرگرمی پر نظر رکھی جا رہی ہے</translation>
 <translation id="3215092763954878852">‏WebAuthn کا استعمال نہیں کیا جا سکا</translation>
 <translation id="3225919329040284222">سرور نے ایک سرٹیفکیٹ پیش کیا ہے جو پہلے سے موجود توقعات سے مماثل نہیں ہے۔ آپ کے تحفظ کیلئے یہ توقعات مخصوص، انتہائی سیکیورٹی والی ویب سائٹس کیلئے شامل کی جاتی ہیں۔</translation>
 <translation id="3226128629678568754">صفحہ کو لوڈ کرنے کیلئے درکار ڈیٹا دوبارہ جمع کرانے کیلئے دوبارہ لوڈ کریں بٹن دبائیں۔</translation>
@@ -488,7 +490,6 @@
 <translation id="3282497668470633863">کارڈ پر نام شامل کریں</translation>
 <translation id="3287510313208355388">آن لائن ہونے پر ڈاؤن لوڈ کریں</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> پالیسی کے بارے میں مزید جانیں</translation>
-<translation id="3295439534709115864">‏آپ کی استعمال کی جانے والی سائٹ یا ایپ پر ڈیٹا کی خلاف ورزی ہوئی ہے۔ Chrome آپ کے پاس ورڈ کو <ph name="ORIGIN" /> پر ابھی تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3303855915957856445">تلاش کے کوئی نتائج نہیں ملے</translation>
 <translation id="3320021301628644560">بلنگ پتہ شامل کریں</translation>
 <translation id="3324983252691184275">قرمزی</translation>
@@ -531,6 +532,7 @@
 <translation id="3528485271872257980">گہرا بھورا</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{مطابقت پذیر آلات پر کم از کم 1 آئٹم}=1{1 آئٹم (اور مطابقت پذیر آلات پر مزید)}other{# آئٹمز (اور مطابقت پذیر آلات پر مزید)}}</translation>
 <translation id="3539171420378717834">اس کارڈ کی ایک کاپی اس آلہ پر رکھیں</translation>
+<translation id="3553513561058684206">آپ کے لیے</translation>
 <translation id="3566021033012934673">آپ کا کنکشن نجی نہیں ہے</translation>
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> پر انضمام کردہ ایک صفحے کے مطابق</translation>
@@ -756,6 +758,7 @@
 <translation id="4594403342090139922">حذف کو کالعدم کریں</translation>
 <translation id="4597348597567598915">سائز 8</translation>
 <translation id="4600854749408232102">C6/C5 ‎(Envelope‎)‎</translation>
+<translation id="4613966523036881546">‏Google Chrome اس کنکشن کے سرٹیفکیٹ پر اعتبار نہیں کرتا ہے، کیونکہ اسے نیٹ ورک کی مداخلت اور نگرانی کے استعمال کے لیے جانا جاتا ہے۔</translation>
 <translation id="4635654612248442824">اس سائٹ <ph name="ORIGIN" /> نے درخواست کی ہے کہ ایک اصل پالیسی اس کی سبھی درخواست پر لاگو ہوگی، لیکن فی الحال اس پالیسی کو لاگو نہیں کیا جا سکتا۔</translation>
 <translation id="464342062220857295">خصوصیات تلاش کریں</translation>
 <translation id="4646534391647090355">اب مجھے وہاں لے چلیں</translation>
@@ -894,6 +897,7 @@
 <translation id="5287240709317226393">کوکیز دکھائیں</translation>
 <translation id="5287456746628258573">یہ سائٹ پرانی سیکیورٹی کنفیگریشن کو استعمال کر رہی ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز یا کریڈٹ کارڈ نمبرز) کو ظاہر کر سکتی ہے۔</translation>
 <translation id="5288108484102287882">پالیسی کی اقدار کی تصدیق نے واننگز ظاہر کی ہیں</translation>
+<translation id="5295292838686006428">‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے آپ کے پاس ورڈ کو ظاہر کر دیا ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="5299298092464848405">پالیسی کو پارس کرنے میں خرابی</translation>
 <translation id="5300589172476337783">دکھائیں</translation>
 <translation id="5308380583665731573">منسلک کریں</translation>
@@ -944,6 +948,7 @@
 <translation id="5540224163453853">درخواست کردہ مضمون کو تلاش نہیں کیا جا سکا۔</translation>
 <translation id="5541546772353173584">ای میل شامل کریں</translation>
 <translation id="5545756402275714221">آپ کیلئے مضامین</translation>
+<translation id="5552137475244467770">‏Chrome وقفے وقفے سے ان فہرستوں کے خلاف پاس ورڈز چیک کرتا ہے جو آن لائن شائع ہوئی ہیں۔ ایسا کرتے وقت، آپ کے پاس ورڈز اور صارف نام مرموزکردہ ہو جاتے ہیں، تاکہ وہ Google سمیت کسی بھی شخص کے ذریعے نہ پڑھے جا سکیں۔</translation>
 <translation id="5556459405103347317">دوبارہ لوڈ کریں</translation>
 <translation id="5560088892362098740">تاریخ اختتام</translation>
 <translation id="5565735124758917034">فعال</translation>
@@ -1035,6 +1040,7 @@
 <translation id="5992691462791905444">‏انجینیئرنگ Z-فولڈ</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' کے <ph name="RESULT_COUNT" /> نتائج</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">اپنے پاس ورڈز چیک کریں</translation>
 <translation id="6015796118275082299">سال</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحہ 1}other{صفحہ #}}</translation>
 <translation id="6017514345406065928">سبز</translation>
@@ -1325,6 +1331,7 @@
 <translation id="7481312909269577407">فارورڈ کریں</translation>
 <translation id="748406663033922918">اپنے محفوظ کردہ ادائیگی کے طریقوں کی توثیق کرنے کیلئے اسکرین لاک استعمال کریں۔</translation>
 <translation id="7485870689360869515">کوئی ڈیٹا نہیں ملا۔</translation>
+<translation id="7495290002932347110">‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے آپ کے پاس ورڈ کو ظاہر کر دیا ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے اور ابھی <ph name="ORIGIN" /> پر آپ کے پاس ورڈ کو تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="7498234416455752244">ترمیم جاری رکھیں</translation>
 <translation id="7508255263130623398">‏واپس کردہ پالیسی آلہ id خالی ہے یا موجودہ آلہ id سے مماثل نہیں ہے</translation>
 <translation id="7508870219247277067">مَگَر ناشپاتی سبز</translation>
@@ -1461,6 +1468,7 @@
 <translation id="8103161714697287722">ادائیگی کا طریقہ</translation>
 <translation id="8105368624971345109">آف کریں</translation>
 <translation id="8118489163946903409">ادائیگی کا طریقہ</translation>
+<translation id="8124023448510659215">‏Chromium اس کنکشن کے سرٹیفکیٹ پر اعتبار نہیں کرتا ہے، کیونکہ اسے نیٹ ورک کی مداخلت اور نگرانی کے استعمال کے لیے جانا جاتا ہے۔</translation>
 <translation id="8127301229239896662">‏"<ph name="SOFTWARE_NAME" />" آپ کے کمپیوٹر یا نیٹ ورک پر مناسب طریقے سے انسٹال نہیں ہوا تھا۔ اس مسئلے کو حل کرنے کے لیے اپنے IT منتظم سے کہیں۔</translation>
 <translation id="8131740175452115882">توثیق کریں</translation>
 <translation id="8149426793427495338">آپ کا کمپیوٹر سلیپ وضع میں چلا گیا۔</translation>
@@ -1603,6 +1611,8 @@
 <translation id="8957210676456822347">کیپٹو پورٹل اجازت دہندگی</translation>
 <translation id="8962950042226115166">مشکوک سائٹ</translation>
 <translation id="8968766641738584599">کارڈ کو محفوظ کریں</translation>
+<translation id="8969267497192857913">آپ جو بھی ٹائپ کرتے ہیں، جو بھی صفحات آپ دیکھتے ہیں، یا ویب پر دیکھی جانے والی کوئی بھی دوسری سرگرمی، اور سائٹس پر موجود کسی بھی مواد کو آپ کی معلومات کے بغیر تبدیل کیا جا سکتا ہے۔
+    <ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">سرور کے سرٹیفکیٹ کی میعاد ختم ہوگئی۔</translation>
 <translation id="8975012916872825179">اس میں فون نمبرز، ای میل پتے اور ترسیل کے پتے جیسی معلومات شامل ہیں</translation>
 <translation id="8975263830901772334">آپ کی پرنٹ کردہ فائلز کے نام</translation>

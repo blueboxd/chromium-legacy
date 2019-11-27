@@ -62,6 +62,9 @@ base::string16 GetDescription(password_manager::CredentialLeakType leak_type,
 // Returns the leak dialog title based on leak type.
 base::string16 GetTitle(password_manager::CredentialLeakType leak_type);
 
+// Returns the leak dialog tooltip shown on (?) click.
+base::string16 GetLeakDetectionTooltip();
+
 // Checks whether the leak dialog should prompt user to password checkup.
 bool ShouldCheckPasswords(password_manager::CredentialLeakType leak_type);
 

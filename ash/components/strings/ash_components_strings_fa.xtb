@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> یا <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">حالت نمای کلی</translation>
 <translation id="4382340674111381977">برگشتن به صفحه قبلی</translation>
+<translation id="4458670250301149821">انتقال نماد برنامه به داخل/خارج پوشه‌ای در جدول برنامه</translation>
 <translation id="4472417192667361414">تنظیمات سیستم و نمایشگر</translation>
+<translation id="449214506787633354"><ph name="CTRL" />، سپس <ph name="LEFT" /> یا <ph name="RIGHT" /> یا <ph name="UP" /> یا <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">مشاهده راهنمای میان‌برهای صفحه‌کلید</translation>
 <translation id="4628718545549558538">باز کردن ناحیه نشانگر وضعیت (جایی که تصویر حسابتان نشان داده می‌شود)</translation>
 <translation id="4642092649622328492">گرفتن عکس از قسمتی از صفحه‌نمایش</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">حذف حرف بعدی (حذف بعدی)</translation>
 <translation id="7500368597227394048">خط تیره</translation>
 <translation id="7611271430932669992">انتقال تمرکز به پنجره‌های بازشو و کادرهای گفتگو</translation>
+<translation id="7635348532214572995">نماد برنامه را در اطراف جدول برنامه جابه‌جا کنید</translation>
 <translation id="766326951329901120">جای‌گذاری محتوا از بریده‌دان به عنوان نوشتار ساده</translation>
 <translation id="7703010453515335249">کمانک چپ</translation>
 <translation id="7724603315864178912">برش</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">جای‌گذاری محتوا از بریده‌دان</translation>
 <translation id="9052808072970550123">جابه‌جا شدن به کاربر بعدی</translation>
 <translation id="906458777597946297">بازکردن پنجره در حداکثر اندازه</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />، سپس<ph name="LEFT" /> یا <ph name="RIGHT" /> یا <ph name="UP" /> یا <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">رفتن به ابتدای خط</translation>
 <translation id="9106898733795143799">صفحه و مرورگر وب</translation>
 <translation id="9162942292291287644">هیچ نتیجه جستجویی برای <ph name="QUERY" /> وجود ندارد</translation>

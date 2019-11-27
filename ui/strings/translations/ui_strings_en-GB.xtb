@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">Maximise</translation>
-<translation id="1409544243779336081">App recommendation</translation>
 <translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 month}other{# months}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Star rating <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hour and }other{# hours and }}</translation>
 <translation id="1842960171412779397">select</translation>
 <translation id="1859234291848436338">Writing Direction</translation>

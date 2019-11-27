@@ -3,4 +3,4 @@ file://chromeos/components/multidevice/OWNERS
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
-# COMPONENT: UI>Multidevice
+# COMPONENT: OS>Systems>Multidevice

@@ -51,6 +51,7 @@ GetComponentInstallationErrorForCrOSComponentManagerError(
       return api::media_perception_private::
           COMPONENT_INSTALLATION_ERROR_UNKNOWN_COMPONENT;
     case component_updater::CrOSComponentManager::Error::INSTALL_FAILURE:
+    case component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS:
       return api::media_perception_private::
           COMPONENT_INSTALLATION_ERROR_INSTALL_FAILURE;
     case component_updater::CrOSComponentManager::Error::MOUNT_FAILURE:

@@ -448,11 +448,6 @@
 
           Als dit beleid niet is ingesteld, is dicteren in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
-<translation id="1676141669324989554">Hiermee kun je instellen of gebruikers uitzonderingen kunnen toevoegen om gecombineerde content toe te staan voor specifieke sites.
-
-          Dit beleid kan worden overschreven voor specifieke URL-patronen met het beleid 'InsecureContentAllowedForUrls' en 'InsecureContentBlockedForUrls'.
-
-          Als dit beleid niet is ingesteld, kunnen gebruikers uitzonderingen toevoegen om blokkeerbare gecombineerde content toe te staan.</translation>
 <translation id="1695708467571967752">Dit beleid bepaalt of gebruikers media kunnen afspelen wanneer het apparaat vergrendeld is.
 
       Als dit beleid is ingesteld op False, zijn bedieningsopties voor media op het vergrendelingsscherm uitgeschakeld.
@@ -536,7 +531,7 @@
 
       Als dit beleid is ingesteld op False, wordt de ingebouwde DNS-client nooit gebruikt.
 
-      Als dit beleid niet wordt ingesteld, wordt de ingebouwde DNS-client standaard ingeschakeld op Mac OS, Android (als Privé-DNS en VPN niet zijn ingeschakeld) en Chrome OS en kunnen de gebruikers bepalen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
+      Als dit beleid niet wordt ingesteld, wordt de ingebouwde DNS-client standaard ingeschakeld op Mac OS, Android (als Privé-DNS en VPN niet zijn ingeschakeld) en Chrome OS en kunnen de gebruikers bepalen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of door een opdrachtregelmarkering op te geven.</translation>
 <translation id="1857152770025485173">Dit beleid voorkomt dat de gebruiker webpagina's van de zwarte lijst met URL's laadt. De zwarte lijst biedt een lijst met URL-patronen waarin wordt aangegeven welke URL's op de zwarte lijst komen te staan.
 
       Een URL-patroon moet worden ingedeeld volgens https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -2701,9 +2696,9 @@
 <translation id="5208240613060747912">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
-<translation id="5212118847531454979">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een update in behandeling toe te passen.
+<translation id="5212118847531454979">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een update in behandeling uit te voeren.
 
-      Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. In het geval van <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. In het geval van <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
+      Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. Voor <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. Voor <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
 
       Als dit beleid niet is ingesteld, wordt de standaardperiode van 604.800.000 milliseconden (één week) gebruikt.</translation>
 <translation id="5212810195096589189">Toestemming voor VM-CLI specificeren</translation>
@@ -3226,9 +3221,6 @@
 <translation id="5961137303188584693">MAC-adres van ingebouwde NIC van apparaat</translation>
 <translation id="5966615072639944554">Extensies die toestemming hebben de API voor externe bevestiging te gebruiken</translation>
 <translation id="5983708779415553259">Standaardgedrag voor sites die zich niet in een inhoudspakket bevinden</translation>
-<translation id="5997107377032983906">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop blokkeerbare (actieve) gecombineerde content (zoals HTTP-content op een HTTPS-site) mag worden weergegeven.
-
-          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd, maar kunnen gebruikers wel uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
 <translation id="5997543603646547632">Klok met 24-uursnotatie standaard gebruiken</translation>
 <translation id="5997846976342452720">Aangeven of de plug-inzoeker moet worden uitgeschakeld (beëindigd)</translation>
 <translation id="5998198091336830580">Dit beleid maakt deel uit van de volgende atomische groep (alleen beleidsregels van de bron met de hoogste prioriteit in de groep worden toegepast):</translation>
@@ -3613,9 +3605,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6795485990775913659">Alleen afdrukken toestaan zonder pincode</translation>
-<translation id="6800064234889290465">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop blokkeerbare (actieve) gecombineerde content (zoals HTTP-content op een HTTPS-site) niet mag worden weergegeven.
-
-          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd, maar kunnen gebruikers wel uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="6813263547126514821">Energiebeheer en uitschakelen</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
@@ -4533,7 +4522,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
           Als je deze instelling uitschakelt, worden pagina's gescand op metatags.
 
           Als dit beleid niet is geconfigureerd, worden pagina's gescand op metatags.</translation>
-<translation id="829641334878002866">Hiermee kun je de periode in milliseconden instellen tussen de eerste melding dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een update in behandeling toe te passen en het einde van de periode zoals vermeld in het <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-beleid.
+<translation id="829641334878002866">Hiermee kun je de periode in milliseconden instellen tussen de eerste melding dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een update in behandeling uit te voeren en het einde van de periode zoals vermeld in het <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-beleid.
 
       Als dit beleid niet is ingesteld, wordt de standaardperiode van 259.200.000 milliseconden (drie dagen) gebruikt voor <ph name="PRODUCT_OS_NAME" />-apparaten.</translation>
 <translation id="8300455783946254851">Als deze instelling is ingesteld op 'True', wordt synchronisatie met Google Drive uitgeschakeld in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> bij gebruik van een mobiele verbinding. In dat geval worden gegevens alleen gesynchroniseerd met Google Drive bij verbinding via wifi of Ethernet.

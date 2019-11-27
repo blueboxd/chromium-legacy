@@ -11,12 +11,13 @@
 // These tests require write access to HKLM and HKCU, unless
 // rlz_lib::CreateMachineState() has been successfully called.
 
+#include "rlz/win/lib/machine_deal.h"
+
 #include "base/logging.h"
+#include "rlz/lib/machine_deal_win.h"
+#include "rlz/test/rlz_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "rlz/test/rlz_test_helpers.h"
-#include "rlz/win/lib/machine_deal.h"
 
 class MachineDealCodeHelper : public rlz_lib::MachineDealCode {
  public:

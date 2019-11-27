@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">بائیں سے دائیں</translation>
 <translation id="1383876407941801731">تلاش کریں</translation>
 <translation id="1398853756734560583">بڑا کریں</translation>
-<translation id="1409544243779336081">ایپ کی تجویز</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> کا اشتراک نہیں کیا جا سکتا</translation>
 <translation id="1498028757988366001">آپ نے اسے پہلے بھی تلاش کیا ہے۔ آپ کی سرگزشت سے "<ph name="QUERY" />" کو حذف کرنے سے، یہ آپ کے تمام آلات پر آپ کے اکاؤنٹ سے مستقل طور پر ہٹ جائے گا۔</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 منٹ اور }other{# منٹ اور }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">وقفہ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 مہینہ}other{# مہینے}}</translation>
 <translation id="1809410197924942083">‎<ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144"><ph name="RATING_SCORE" /> کی درجہ بندی شروع کریں</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 گھنٹہ اور }other{# گھنٹے اور }}</translation>
 <translation id="1842960171412779397">منتخب کریں</translation>
 <translation id="1859234291848436338">تحریر کا ڈائریکشن</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">منسوخ کریں</translation>
 <translation id="7781829728241885113">گزشتہ کل</translation>
 <translation id="7814458197256864873">&amp;کاپی کریں</translation>
+<translation id="7848989271541991537">صفحہ <ph name="PAGE_NUMBER" />، قطار <ph name="ROW_NUMBER" />، کالم <ph name="COLUMN_NUMBER" /> میں منتقل کر دیا گیا۔</translation>
 <translation id="7879499977785298635">مسدود نہ کریں</translation>
 <translation id="7907591526440419938">فائل کھولیں</translation>
 <translation id="7969046989155602842">کمانڈ</translation>

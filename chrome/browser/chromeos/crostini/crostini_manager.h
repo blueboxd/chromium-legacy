@@ -630,7 +630,7 @@ class CrostiniManager : public KeyedService,
       CrostiniResultCallback callback,
       bool is_update_checked,
       component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& result);
+      const base::FilePath& path);
 
   // Callback for CrostiniClient::StartConcierge. Called after the
   // DebugDaemon service method finishes.

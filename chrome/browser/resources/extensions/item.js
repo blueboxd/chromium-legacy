@@ -19,7 +19,7 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 
-import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -246,16 +246,16 @@ Polymer({
 
     this.isReloading_ = true;
 
-    const toastManager = getInstance();
+    const toastManager = getToastManager();
     // Keep the toast open indefinitely.
     toastManager.duration = 0;
-    toastManager.show(this.i18n('itemReloading'), false);
+    toastManager.show(this.i18n('itemReloading'));
     this.delegate.reloadItem(this.data.id)
         .then(
             () => {
               toastManager.hide();
               toastManager.duration = 3000;
-              toastManager.show(this.i18n('itemReloaded'), false);
+              toastManager.show(this.i18n('itemReloaded'));
               this.isReloading_ = false;
             },
             loadError => {

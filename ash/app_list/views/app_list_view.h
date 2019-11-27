@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -55,13 +56,9 @@ FORWARD_DECLARE_TEST(AppListControllerImplTest,
 FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
                      PresentationTimeRecordedForDragInTabletMode);
 
-namespace {
-
 // The fraction of app list height that the app list must be released at in
 // order to transition to the next state.
 constexpr int kAppListThresholdDenominator = 3;
-
-}  // namespace
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -367,6 +364,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   SkColor GetAppListBackgroundShieldColorForTest();
 
+  // Returns true if the Embedded Assistant UI is currently being shown.
+  bool IsShowingEmbeddedAssistantUI() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
                            CheckAppListViewBoundsWhenVKeyboardEnabled);
@@ -471,9 +471,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
-  // Returns true if the Embedded Assistant UI is currently being shown.
-  bool IsShowingEmbeddedAssistantUI() const;
-
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
   int GetPreferredWidgetYForState(ash::AppListViewState state) const;
@@ -548,9 +545,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
-
-  // For UMA and testing. If non-null, triggered when the app list is painted.
-  base::Closure next_paint_callback_;
 
   // Metric reporter for state change animations.
   const std::unique_ptr<StateAnimationMetricsReporter>

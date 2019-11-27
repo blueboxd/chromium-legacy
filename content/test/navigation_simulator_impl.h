@@ -238,6 +238,11 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   BuildDidCommitProvisionalLoadParams(bool same_document,
                                       bool failed_navigation);
 
+  // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
+  // the commit time.
+  void SimulateSwapOutACKForPreviousFrameIfNeeded(
+      RenderFrameHostImpl* previous_frame);
+
   enum State {
     INITIALIZATION,
     WAITING_BEFORE_UNLOAD,

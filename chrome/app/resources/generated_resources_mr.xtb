@@ -933,7 +933,6 @@
 <translation id="2326931316514688470">&amp;अ‍ॅप रीलोड करा</translation>
 <translation id="2327492829706409234">अ‍ॅप सुरू करा</translation>
 <translation id="2329597144923131178">आपल्‍या सर्व डिव्‍हाइसेस वरील तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळविण्‍यासाठी साइन इन करा.</translation>
-<translation id="2330129964253841015">तुमचे पासवर्ड धोक्यात आल्यास तुम्हाला चेतावणी द्यायची</translation>
 <translation id="2332131598580221120">स्टोअर मध्ये पहा</translation>
 <translation id="2332192922827071008">प्राधान्ये उघडा</translation>
 <translation id="2332742915001411729">डीफॉल्टवर रीसेट करा</translation>
@@ -4098,6 +4097,7 @@
 <translation id="6990778048354947307">गडद थीम</translation>
 <translation id="6991665348624301627">एक गंतव्य निवडा</translation>
 <translation id="6992554835374084304">वर्धित केलेले स्पेल चेक सुरू करा</translation>
+<translation id="6995899638241819463">डेटा भंगामध्ये पासवर्ड उघड झाल्यास, तुम्हाला चेतावणी द्या</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - ॲक्टिव्हिटी लॉग</translation>
 <translation id="6997707937646349884">तुमच्या डिव्हाइसवर:</translation>
 <translation id="6998793565256476099">डीव्हाइसची व्हिडिओ काँफरंससाठी नोंदणी करा</translation>

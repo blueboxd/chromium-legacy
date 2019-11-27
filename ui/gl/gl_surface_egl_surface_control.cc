@@ -329,12 +329,27 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (hardware_buffer) {
     gfx::Rect dst = bounds_rect;
 
+    // Get the crop rectangle from the image which is the actual region of valid
+    // pixels. This region could be smaller than the buffer dimensions. Hence
+    // scale the |crop_rect| according to the valid pixel area rather than
+    // buffer dimensions. crbug.com/1027766 for more details.
+    gfx::Rect valid_pixel_rect = image->GetCropRect();
     gfx::Size buffer_size = GetBufferSize(hardware_buffer);
-    gfx::RectF scaled_rect =
-        gfx::RectF(crop_rect.x() * buffer_size.width(),
-                   crop_rect.y() * buffer_size.height(),
-                   crop_rect.width() * buffer_size.width(),
-                   crop_rect.height() * buffer_size.height());
+
+    // If the image doesn't provide a |valid_pixel_rect|, assume the entire
+    // buffer is valid.
+    if (valid_pixel_rect.IsEmpty()) {
+      valid_pixel_rect.set_size(buffer_size);
+    } else {
+      // Clamp the |valid_pixel_rect| to the buffer dimensions to make sure for
+      // some reason it does not overflows.
+      valid_pixel_rect.Intersect(gfx::Rect(buffer_size));
+    }
+    gfx::RectF scaled_rect = gfx::RectF(
+        crop_rect.x() * valid_pixel_rect.width() + valid_pixel_rect.x(),
+        crop_rect.y() * valid_pixel_rect.height() + valid_pixel_rect.y(),
+        crop_rect.width() * valid_pixel_rect.width(),
+        crop_rect.height() * valid_pixel_rect.height());
     gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
 
     if (uninitialized || surface_state.src != src || surface_state.dst != dst ||

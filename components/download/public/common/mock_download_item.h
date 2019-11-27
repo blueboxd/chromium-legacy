@@ -17,6 +17,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -82,6 +83,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(IsSavePackageDownload, bool());
+  MOCK_CONST_METHOD0(GetDownloadSource, DownloadSource());
   MOCK_CONST_METHOD0(GetFullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());

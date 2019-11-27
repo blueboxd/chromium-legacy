@@ -65,8 +65,6 @@
     <ListPreference
         android:key="protected_media_identifier_permission_list" />
     <ListPreference
-        android:key="autoplay_permission_list" />
-    <ListPreference
         android:key="sound_permission_list" />
     <ListPreference
         android:key="midi_sysex_permission_list" />

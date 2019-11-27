@@ -201,9 +201,9 @@ class MediaNotificationService
 
   OverlayMediaNotificationsManager overlay_media_notifications_manager_;
 
-  // Used to track whether there are any active controllable media sessions. If
-  // not, then there's nothing to show in the dialog and we can hide the toolbar
-  // icon.
+  // Used to track whether there are any active controllable sessions. If not,
+  // then there's nothing to show in the dialog and we can hide the toolbar
+  // icon. Contains sessions from both Media Session API and Cast.
   std::unordered_set<std::string> active_controllable_session_ids_;
 
   // Tracks the sessions that are currently frozen. If there are only frozen

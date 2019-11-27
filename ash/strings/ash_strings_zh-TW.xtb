@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">目前使用<ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 帳戶解鎖裝置，即可執行通知動作</translation>
-<translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9017320285115481645">請輸入 Family Link 家長存取碼。</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">裝置將復原</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">全螢幕放大鏡</translation>
 <translation id="9193626018745640770">正在透過不明接收器投放</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
+<translation id="9205817095063786319">由 <ph name="DOMAIN" /> 管理的裝置</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>
 <translation id="9211681782751733685">電池剩餘充電時間：<ph name="TIME_REMAINING" />。</translation>
 <translation id="9215934040295798075">設定桌布</translation>

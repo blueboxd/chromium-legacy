@@ -201,6 +201,9 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
     ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableDataReductionProxyWarmupURLFetch));
 
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
+
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
     if (!test.enable_warmup_url)
@@ -214,7 +217,6 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
         params::GetQuicFieldTrialName(), test.trial_group_name,
         variation_params));
 
-    base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            test.trial_group_name);
 
@@ -275,6 +277,9 @@ TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
   };
 
   for (const auto& test : tests) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
+
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
 
@@ -282,7 +287,6 @@ TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
         params::GetQuicFieldTrialName(), test.trial_group_name,
         variation_params));
 
-    base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            test.trial_group_name);
 
@@ -302,7 +306,8 @@ TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
   };
 
   for (const auto& test : tests) {
-    base::FieldTrialList field_trial_list(nullptr);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
 
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "DataCompressionProxyHoldback", test.trial_group_name));
@@ -324,7 +329,8 @@ TEST_F(DataReductionProxyParamsTest, PromoFieldTrial) {
   };
 
   for (const auto& test : tests) {
-    base::FieldTrialList field_trial_list(nullptr);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
 
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "DataCompressionProxyPromoVisibility", test.trial_group_name));
@@ -345,7 +351,8 @@ TEST_F(DataReductionProxyParamsTest, FREPromoFieldTrial) {
   };
 
   for (const auto& test : tests) {
-    base::FieldTrialList field_trial_list(nullptr);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
 
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "DataReductionProxyFREPromo", test.trial_group_name));

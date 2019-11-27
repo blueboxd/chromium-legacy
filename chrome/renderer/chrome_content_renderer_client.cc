@@ -95,7 +95,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -1295,12 +1295,12 @@ bool ChromeContentRendererClient::IsPrefetchOnly(
 
 uint64_t ChromeContentRendererClient::VisitedLinkHash(const char* canonical_url,
                                                       size_t length) {
-  return chrome_observer_->visited_link_slave()->ComputeURLFingerprint(
+  return chrome_observer_->visited_link_reader()->ComputeURLFingerprint(
       canonical_url, length);
 }
 
 bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
-  return chrome_observer_->visited_link_slave()->IsVisited(link_hash);
+  return chrome_observer_->visited_link_reader()->IsVisited(link_hash);
 }
 
 blink::WebPrescientNetworking*

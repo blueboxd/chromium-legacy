@@ -33,14 +33,8 @@ namespace media_router {
 // Controls if browser side DialMediaRouteProvider is enabled.
 const base::Feature kDialMediaRouteProvider{"DialMediaRouteProvider",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls if browser side Cast device discovery is enabled.
-const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -114,10 +108,6 @@ std::string GetReceiverIdHashToken(PrefService* pref_service) {
 
 bool DialMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kDialMediaRouteProvider);
-}
-
-bool CastDiscoveryEnabled() {
-  return base::FeatureList::IsEnabled(kEnableCastDiscovery);
 }
 
 bool CastMediaRouteProviderEnabled() {

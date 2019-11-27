@@ -1007,14 +1007,6 @@ void TouchExplorationController::DispatchKeyWithFlags(
   }
 }
 
-base::Closure TouchExplorationController::BindKeyEventWithFlags(
-    const ui::KeyboardCode key,
-    int flags,
-    const Continuation continuation) {
-  return base::Bind(&TouchExplorationController::DispatchKeyWithFlags,
-                    base::Unretained(this), key, flags, continuation);
-}
-
 std::unique_ptr<ui::MouseEvent>
 TouchExplorationController::CreateMouseMoveEvent(const gfx::PointF& location,
                                                  int flags) {

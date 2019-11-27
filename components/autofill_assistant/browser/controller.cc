@@ -355,10 +355,12 @@ const FormProto* Controller::GetForm() const {
 
 bool Controller::SetForm(
     std::unique_ptr<FormProto> form,
-    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+    base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+    base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   form_.reset();
   form_result_.reset();
-  form_callback_ = base::DoNothing();
+  form_changed_callback_ = base::DoNothing();
+  form_cancel_callback_ = base::DoNothing::Once<const ClientStatus&>();
 
   if (!form) {
     for (ControllerObserver& observer : observers_) {
@@ -408,10 +410,11 @@ bool Controller::SetForm(
   // Form is valid.
   form_ = std::move(form);
   form_result_ = std::move(form_result);
-  form_callback_ = callback;
+  form_changed_callback_ = changed_callback;
+  form_cancel_callback_ = std::move(cancel_callback);
 
   // Call the callback with initial result.
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 
   for (ControllerObserver& observer : observers_) {
     observer.OnFormChanged(form_.get());
@@ -437,7 +440,7 @@ void Controller::SetCounterValue(int input_index,
   }
 
   input_result->mutable_counter()->set_values(counter_index, value);
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 }
 
 void Controller::SetChoiceSelected(int input_index,
@@ -458,7 +461,7 @@ void Controller::SetChoiceSelected(int input_index,
   }
 
   input_result->mutable_selection()->set_selected(choice_index, selected);
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 }
 
 void Controller::AddObserver(ControllerObserver* observer) {
@@ -516,7 +519,7 @@ void Controller::EnterStoppedState() {
   SetDetails(nullptr);
   SetUserActions(nullptr);
   SetCollectUserDataOptions(nullptr, nullptr);
-  SetForm(nullptr, base::DoNothing());
+  SetForm(nullptr, base::DoNothing(), base::DoNothing());
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -992,6 +995,14 @@ void Controller::OnTermsAndConditionsLinkClicked(int link) {
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
   SetCollectUserDataOptions(nullptr, nullptr);
   std::move(callback).Run(link);
+}
+
+void Controller::OnFormActionLinkClicked(int link) {
+  if (form_cancel_callback_ && form_result_ != nullptr) {
+    form_result_->set_link(link);
+    form_changed_callback_.Run(form_result_.get());
+    std::move(form_cancel_callback_).Run(ClientStatus(ACTION_APPLIED));
+  }
 }
 
 void Controller::SetDateTimeRangeStart(int year,

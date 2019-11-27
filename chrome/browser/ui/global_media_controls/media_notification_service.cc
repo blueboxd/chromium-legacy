@@ -384,8 +384,17 @@ void MediaNotificationService::OnContainerDismissed(const std::string& id) {
   }
 
   auto it = sessions_.find(id);
-  if (it == sessions_.end())
+  if (it == sessions_.end()) {
+    if (!cast_notification_provider_)
+      return;
+
+    base::WeakPtr<media_message_center::MediaNotificationItem> cast_item =
+        cast_notification_provider_->GetNotificationItem(id);
+    if (cast_item)
+      cast_item->Dismiss();
+
     return;
+  }
 
   it->second.set_dismiss_reason(
       GlobalMediaControlsDismissReason::kUserDismissedNotification);
@@ -496,9 +505,7 @@ void MediaNotificationService::SetDialogDelegate(
 }
 
 bool MediaNotificationService::HasActiveNotifications() const {
-  return !active_controllable_session_ids_.empty() ||
-         (cast_notification_provider_ &&
-          cast_notification_provider_->HasItems());
+  return !active_controllable_session_ids_.empty();
 }
 
 bool MediaNotificationService::HasFrozenNotifications() const {

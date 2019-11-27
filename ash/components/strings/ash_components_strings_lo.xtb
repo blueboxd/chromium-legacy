@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ຫຼື <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ໂໝດພາບຮວມ</translation>
 <translation id="4382340674111381977">ກັບຄືນຫາໜ້າຜ່ານມາ</translation>
+<translation id="4458670250301149821">ຍ້າຍໄອຄອນແອັບເຂົ້າ/ອອກຈາກໂຟນເດີໃນຕາໜ່າງແອັບ</translation>
 <translation id="4472417192667361414">ການຕັ້ງຄ່າລະບົບ ແລະ ຈໍສະແດງຜົນ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ຈາກນັ້ນ <ph name="LEFT" /> ຫຼື <ph name="RIGHT" /> ຫຼື <ph name="UP" /> ຫຼື <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">ເບິ່ງຕົວຊ່ວຍທາງລັດແປ້ນພິມ</translation>
 <translation id="4628718545549558538">ເປີດພື້ນທີ່ສະຖານະ (ບ່ອນທີ່ຮູບບັນຊີຂອງທ່ານປາກົດ)</translation>
 <translation id="4642092649622328492">ຖ່າຍຮູບໜ້າຈໍບາງສ່ວນ</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">ລຶບຕົວອັກສອນຕໍ່ໄປ (ລຶບໄປໜ້າ)</translation>
 <translation id="7500368597227394048">ໝາຍຂີດຂັ້ນ</translation>
 <translation id="7611271430932669992">ຍ້າຍໂຟກັສໃສ່ປັອບອັບ ແລະ ກ່ອງໂຕ້ຕອບ</translation>
+<translation id="7635348532214572995">ຍ້າຍໄອຄອນແອັບອ້ອມຕາໜ່າງແອັບ</translation>
 <translation id="766326951329901120">ວາງເນື້ອຫາຈາກຄລິບບອດເປັນຂໍ້ຄວາມທຳມະດາ</translation>
 <translation id="7703010453515335249">ວົງເລັບເປີດ</translation>
 <translation id="7724603315864178912">ຕັດ</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ວາງເນື້ອຫາຈາກຄລິບບອດ</translation>
 <translation id="9052808072970550123">ປ່ຽນເປັນຜູ້ໃຊ້ຕໍ່ໄປ</translation>
 <translation id="906458777597946297">ຂະຫຍາຍໜ້າ​ຕ່າງ</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ຈາກນັ້ນ <ph name="LEFT" /> ຫຼື <ph name="RIGHT" /> ຫຼື <ph name="UP" /> ຫຼື <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ໄປທີ່ຫົວແຖວ</translation>
 <translation id="9106898733795143799">ໜ້າເວັບ ແລະ ໂປຣແກຣມທ່ອງເວັບ</translation>
 <translation id="9162942292291287644">ບໍ່ມີຜົນການຊອກຫາສຳລັບ <ph name="QUERY" /></translation>

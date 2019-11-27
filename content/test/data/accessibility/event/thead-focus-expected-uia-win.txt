@@ -1,1 +1,2 @@
 AutomationFocusChanged on role=group, name=thead
+AutomationFocusChanged on role=group, name=thead

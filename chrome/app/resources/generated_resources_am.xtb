@@ -934,7 +934,6 @@
 <translation id="2326931316514688470">&amp;መተግበሪያን ዳግም ጫን</translation>
 <translation id="2327492829706409234">መተግበሪያን አንቃ</translation>
 <translation id="2329597144923131178">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ።</translation>
-<translation id="2330129964253841015">የእርስዎ የይለፍ ቃላት ከተነጠቁ ማስጠንቀቂያ ያግኙ</translation>
 <translation id="2332131598580221120">በመደብር ውስጥ ይመልከቱ</translation>
 <translation id="2332192922827071008">ምርጫዎችን ክፈት</translation>
 <translation id="2332742915001411729">ወደ ነባሪ ዳግም አስጀምር</translation>
@@ -2005,7 +2004,7 @@
 <translation id="3850914401008572843">ይህ አቃፊ የስርዓት ፋይሎችን ስለያዘ <ph name="ORIGIN" /> ሊከፍተው አይችልም</translation>
 <translation id="3851428669031642514">ደህንነታቸው አስተማማኝ ያልሆኑ የአጻጻፍ ስርዓቶችን ጫን</translation>
 <translation id="3854599674806204102">አንድ አማራጭ ይምረጡ</translation>
-<translation id="3854976556788175030">የውጽአት ትሪ ሙሉ ነው</translation>
+<translation id="3854976556788175030">የውጽዓት ትሪ ሙሉ ነው</translation>
 <translation id="3855441664322950881">ቅጥያን ጠቅልል</translation>
 <translation id="3855676282923585394">ዕልባቶችን እና ቅንብሮችን ያስመጡ...</translation>
 <translation id="3856800405688283469">የሰዓት ሰቅ ይምረጡ</translation>
@@ -3268,7 +3267,7 @@
 <translation id="5764797882307050727">እባክዎ በመሣሪያዎ ላይ የተወሰነ ቦታ ያስለቅቁ።</translation>
 <translation id="5765425701854290211">ይቅርታ፣ አንዳንድ ፋይሎች የተበላሹ ሲሆኑ ዝማኔው አልተሳካም። የተሰመሩ ፋይሎችዎ በጥንቃቄ ተይዘዋል።</translation>
 <translation id="5765491088802881382">ምንም አውታረ መረብ የለም</translation>
-<translation id="5769519078756170258">የሚገለል አስተናጋኣጅ ወይም ጎራ</translation>
+<translation id="5769519078756170258">የሚገለል አስተናጋጅ ወይም ጎራ</translation>
 <translation id="5771816112378578655">ጭነቱ በሂደት ላይ…</translation>
 <translation id="5772265531560382923">{NUM_PAGES,plural, =1{ምላሽ እስኪሰጥ ድረስ መጠበቅ ወይም ከገጹ መውጣት ይችላሉ።}one{ምላሽ እስኪሰጡ ድረስ መጠበቅ ወይም ከገጾቹ መውጣት ይችላሉ።}other{ምላሽ እስኪሰጡ ድረስ መጠበቅ ወይም ከገጾቹ መውጣት ይችላሉ።}}</translation>
 <translation id="577322787686508614">የማንብብ ክወና በዚህ ላይ አይፈቀድም፦ «<ph name="DEVICE_NAME" />»።</translation>
@@ -4096,6 +4095,7 @@
 <translation id="6990778048354947307">ጨለማ ገጽታ</translation>
 <translation id="6991665348624301627">መድረሻ ይምረጡ</translation>
 <translation id="6992554835374084304">የበለጸገ የፊደል አራሚን ያብሩ</translation>
+<translation id="6995899638241819463">የይለፍ ቃላት በውሂብ ደንብ ጥሰት ተጋላጭ ከሆነ ያስጠንቅቅዎት</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - የእንቅስቃሴ ምዝግብ ማስታወሻ</translation>
 <translation id="6997707937646349884">በእርስዎ መሣሪያዎች ላይ፦</translation>
 <translation id="6998793565256476099">መሣሪያን ለቪዲዮ ጉባዔ ያስመዝግቡ</translation>

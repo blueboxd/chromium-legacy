@@ -16,6 +16,7 @@
 #include "net/http/mock_http_cache.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::IsOk;
@@ -26,14 +27,27 @@ namespace {
 
 class MockServerPushHelper : public ServerPushDelegate::ServerPushHelper {
  public:
-  explicit MockServerPushHelper(const GURL& url) : request_url_(url) {}
+  explicit MockServerPushHelper(const GURL& url)
+      : request_url_(url),
+        network_isolation_key_(url::Origin::Create(url),
+                               url::Origin::Create(url)) {}
 
   const GURL& GetURL() const override { return request_url_; }
+
+  NetworkIsolationKey GetNetworkIsolationKey() const override {
+    return network_isolation_key_;
+  }
+
+  void set_network_isolation_key(
+      const net::NetworkIsolationKey& network_isolation_key) {
+    network_isolation_key_ = network_isolation_key;
+  }
 
   MOCK_METHOD0(Cancel, void());
 
  private:
   const GURL request_url_;
+  NetworkIsolationKey network_isolation_key_;
 };
 
 std::unique_ptr<MockTransaction> CreateMockTransaction(const GURL& url) {
@@ -136,13 +150,17 @@ TEST(HttpCacheLookupManagerTest, ServerPushDoNotCreateCacheEntry) {
   EXPECT_EQ(0, mock_cache.disk_cache()->create_count());
 }
 
-TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
-  // Skip test if split cache is enabled, as it breaks push.
-  // crbug.com/1009619
-  if (base::FeatureList::IsEnabled(
-          net::features::kSplitCacheByNetworkIsolationKey)) {
-    return;
-  }
+// Parameterized by whether the network isolation key are the same for the
+// server push and corresponding cache entry.
+class HttpCacheLookupManagerTest_NetworkIsolationKey
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<
+          bool /* use_same_network_isolation_key */> {};
+
+TEST_P(HttpCacheLookupManagerTest_NetworkIsolationKey, ServerPushCacheStatus) {
+  bool use_same_network_isolation_key = GetParam();
+  bool split_cache_enabled = base::FeatureList::IsEnabled(
+      net::features::kSplitCacheByNetworkIsolationKey);
 
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
@@ -163,32 +181,41 @@ TEST(HttpCacheLookupManagerTest, ServerPushHitCache) {
 
   std::unique_ptr<MockServerPushHelper> push_helper =
       std::make_unique<MockServerPushHelper>(request_url);
+  if (!use_same_network_isolation_key) {
+    url::Origin origin = url::Origin::Create(GURL("http://www.abc.com"));
+    push_helper->set_network_isolation_key(
+        net::NetworkIsolationKey(origin, origin));
+  }
+
   MockServerPushHelper* push_helper_ptr = push_helper.get();
 
-  // Receive a server push and should cancel the push.
-  EXPECT_CALL(*push_helper_ptr, Cancel()).Times(1);
+  int expected_cancel_times =
+      use_same_network_isolation_key || !split_cache_enabled ? 1 : 0;
+  EXPECT_CALL(*push_helper_ptr, Cancel()).Times(expected_cancel_times);
   push_delegate.OnPush(std::move(push_helper), NetLogWithSource());
   base::RunLoop().RunUntilIdle();
 
   // Make sure no new net layer transaction is created.
   EXPECT_EQ(1, mock_cache.network_layer()->transaction_count());
-  EXPECT_EQ(1, mock_cache.disk_cache()->open_count());
+
+  int expected_open_count =
+      use_same_network_isolation_key || !split_cache_enabled ? 1 : 0;
+  EXPECT_EQ(expected_open_count, mock_cache.disk_cache()->open_count());
+
   EXPECT_EQ(1, mock_cache.disk_cache()->create_count());
 
   RemoveMockTransaction(mock_trans.get());
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    HttpCacheLookupManagerTest_NetworkIsolationKey,
+    ::testing::Bool());
+
 // Test when a server push is received while the HttpCacheLookupManager has a
 // pending lookup transaction for the same URL, the new server push will not
 // send a new lookup transaction and should not be canceled.
 TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
-  // Skip test if split cache is enabled, as it breaks push.
-  // crbug.com/1009619
-  if (base::FeatureList::IsEnabled(
-          net::features::kSplitCacheByNetworkIsolationKey)) {
-    return;
-  }
-
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());
@@ -234,13 +261,6 @@ TEST(HttpCacheLookupManagerTest, ServerPushPendingLookup) {
 
 // Test the server push lookup is based on the full url.
 TEST(HttpCacheLookupManagerTest, ServerPushLookupOnUrl) {
-  // Skip test if split cache is enabled, as it breaks push.
-  // crbug.com/1009619
-  if (base::FeatureList::IsEnabled(
-          net::features::kSplitCacheByNetworkIsolationKey)) {
-    return;
-  }
-
   base::test::TaskEnvironment task_environment;
   MockHttpCache mock_cache;
   HttpCacheLookupManager push_delegate(mock_cache.http_cache());

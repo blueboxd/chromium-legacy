@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Més opcions del menú</translation>
 <translation id="2316709634732130529">Utilitza la contrasenya suggerida</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
-<translation id="2330129964253841015">T'avisa si les contrasenyes es posen en perill</translation>
 <translation id="2339560363438331454">Sincron. i serveis de Google</translation>
 <translation id="2351097562818989364">S'ha restablert la configuració del Traductor.</translation>
 <translation id="2359043044084662842">Tradueix</translation>
@@ -441,6 +440,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6973630695168034713">Carpetes</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Gestiona el teu Compte de Google</translation>
+<translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en produir-se una violació de les dades</translation>
 <translation id="6998989275928107238">Per a</translation>
 <translation id="7004499039102548441">Pestanyes recents</translation>
 <translation id="7006788746334555276">Configuració del contingut</translation>

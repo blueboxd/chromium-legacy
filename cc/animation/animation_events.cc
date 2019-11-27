@@ -7,24 +7,27 @@
 namespace cc {
 
 AnimationEvent::AnimationEvent(AnimationEvent::Type type,
-                               ElementId element_id,
+                               UniqueKeyframeModelId uid,
                                int group_id,
                                int target_property,
                                base::TimeTicks monotonic_time)
     : type(type),
-      element_id(element_id),
-      worklet_animation_id(),
+      uid(uid),
       group_id(group_id),
       target_property(target_property),
       monotonic_time(monotonic_time),
       is_impl_only(false),
       local_time() {}
 
-AnimationEvent::AnimationEvent(WorkletAnimationId worklet_animation_id,
+AnimationEvent::AnimationEvent(int timeline_id,
+                               int animation_id,
                                base::Optional<base::TimeDelta> local_time)
     : type(TIME_UPDATED),
-      element_id(),
-      worklet_animation_id(worklet_animation_id),
+      // Initializing model_id with an invalid value (0).
+      // Also initializing keyframe_id with 0 which in its case is a valid
+      // value. However this is safe since keyframe_id and model_id are not used
+      // when routing a TIME_UPDATED event.
+      uid({timeline_id, animation_id, 0, 0}),
       group_id(),
       target_property(),
       monotonic_time(),
@@ -33,7 +36,7 @@ AnimationEvent::AnimationEvent(WorkletAnimationId worklet_animation_id,
 
 AnimationEvent::AnimationEvent(const AnimationEvent& other) {
   type = other.type;
-  element_id = other.element_id;
+  uid = other.uid;
   group_id = other.group_id;
   target_property = other.target_property;
   monotonic_time = other.monotonic_time;
@@ -41,13 +44,12 @@ AnimationEvent::AnimationEvent(const AnimationEvent& other) {
   animation_start_time = other.animation_start_time;
   if (other.curve)
     curve = other.curve->Clone();
-  worklet_animation_id = other.worklet_animation_id;
   local_time = other.local_time;
 }
 
 AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
   type = other.type;
-  element_id = other.element_id;
+  uid = other.uid;
   group_id = other.group_id;
   target_property = other.target_property;
   monotonic_time = other.monotonic_time;
@@ -55,7 +57,6 @@ AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
   animation_start_time = other.animation_start_time;
   if (other.curve)
     curve = other.curve->Clone();
-  worklet_animation_id = other.worklet_animation_id;
   local_time = other.local_time;
   return *this;
 }
@@ -68,6 +69,15 @@ AnimationEvents::~AnimationEvents() = default;
 
 bool AnimationEvents::IsEmpty() const {
   return events_.empty();
+}
+
+bool AnimationEvent::ShouldDispatchToKeyframeEffectAndModel() const {
+  // TIME_UPDATED events are used to synchronize effect time between cc and
+  // main thread worklet animations. Keyframe models are not involved in
+  // this process.
+  // is_impl_only events are not dispatched because they don't have
+  // corresponding main thread components.
+  return type != TIME_UPDATED && !is_impl_only;
 }
 
 }  // namespace cc

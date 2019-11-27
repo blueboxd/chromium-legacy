@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
 <translation id="2328985652426384049">Can’t sign in</translation>
-<translation id="2330129964253841015">Warn you if passwords are compromised</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
 <translation id="2353636109065292463">Checking your Internet connection</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -816,6 +815,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6989267951144302301">Couldn’t download</translation>
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
+<translation id="6995899638241819463">Warn you if passwords are exposed in a data breach</translation>
 <translation id="7015203776128479407">Initial sync setup was not finished. Sync is off.</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7022756207310403729">Open in browser</translation>

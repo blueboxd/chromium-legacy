@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Bruker <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
-<translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Skriv inn koden for foreldretilgang til Family Link.</translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Lupe for hele skjermen</translation>
 <translation id="9193626018745640770">Caster på en ukjent mottaker</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
+<translation id="9205817095063786319">Enheten administreres av <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> gjenstår til batteriet er fulladet.</translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>

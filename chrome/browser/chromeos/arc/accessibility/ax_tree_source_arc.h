@@ -73,9 +73,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // parent window).
   bool IsRootOfNodeTree(int32_t id) const;
 
-  // Gets the window id of this tree.
-  int32_t GetWindowId() const;
-
   // AXTreeSource:
   bool GetTreeData(ui::AXTreeData* data) const override;
   AccessibilityInfoDataWrapper* GetRoot() const override;
@@ -88,6 +85,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   bool is_notification() { return is_notification_; }
 
   bool is_input_method_window() { return is_input_method_window_; }
+
+  // The window id of this tree.
+  base::Optional<int32_t> window_id() const { return window_id_; }
 
  private:
   friend class arc::AXTreeSourceArcTest;

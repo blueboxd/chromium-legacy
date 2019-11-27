@@ -427,11 +427,6 @@ Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRO
 
           Se questo criterio non viene impostato, inizialmente la dettatura è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
-<translation id="1676141669324989554">Consente di stabilire se gli utenti possono aggiungere eccezioni per consentire contenuti misti per siti specifici.
-
-          Questo criterio può essere ignorato per pattern URL specifici usando i criteri "InsecureContentAllowedForUrls" e "InsecureContentBlockedForUrls".
-
-          Se questo criterio non viene impostato, gli utenti potranno aggiungere eccezioni per consentire contenuti misti bloccabili.</translation>
 <translation id="1695708467571967752">Questo criterio consente di stabilire se gli utenti possono o meno riprodurre contenuti multimediali con il dispositivo bloccato.
 
       Se questo criterio viene impostato su False, i controlli multimediali nella schermata di blocco vengono disattivati.
@@ -507,15 +502,15 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca ist
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="1852294065645015766">Consenti la riproduzione automatica dei contenuti multimediali</translation>
-<translation id="1853782273088286010">Controlla se in <ph name="PRODUCT_NAME" /> è usato il client DNS integrato.
+<translation id="1853782273088286010">Consente di controllare se in <ph name="PRODUCT_NAME" /> è usato il client DNS integrato.
 
       Non influisce sui server DNS utilizzati, ma solo sullo stack software usato per comunicare con loro. Ad esempio, se il sistema operativo è configurato in modo da usare un server DNS aziendale, lo stesso server viene usato dal client DNS integrato. Tuttavia, è possibile che il client DNS integrato indirizzi i server in modi diversi usando protocolli DNS più moderni, come DNS-over-TLS.
 
       Se questo criterio viene impostato su True, verrà usato il client DNS integrato, se disponibile.
 
-      Se la norma è impostata su False, il client DNS integrato non verrà mai utilizzato.
+      Se il criterio viene impostato su False, il client DNS integrato non verrà mai utilizzato.
 
-      Se la norma non viene impostata, per impostazione predefinita il client DNS integrato verrà attivato su macOS, Android (nel caso in cui non siano attivi il DNS privato né la VPN) e ChromeOS. Gli utenti saranno in grado di scegliere se il client DNS integrato è utilizzato modificando chrome://flags o specificando un flag della riga di comando.</translation>
+      Se il criterio non viene impostato, per impostazione predefinita il client DNS integrato verrà attivato su macOS, Android (nel caso in cui non siano attivi il DNS privato né la VPN) e ChromeOS. Gli utenti potranno scegliere se utilizzare o meno il client DNS integrato modificando chrome://flags o specificando un flag della riga di comando.</translation>
 <translation id="1857152770025485173">Questa norma impedisce agli utenti di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
 
       Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -1363,7 +1358,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="3049248142961638857">Determina il nome host del dispositivo usato nelle richieste DHCP.
+<translation id="3049248142961638857">Consente di determinare il nome host del dispositivo usato nelle richieste DHCP.
 
       Se questo criterio è impostato su una stringa non vuota, tale stringa verrà usata come nome host del dispositivo durante la richiesta DHCP.
 
@@ -2875,7 +2870,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se non è specificata, questa norma non modifica l'URL del numero di inizializzazione delle varianti.</translation>
 <translation id="5561811616825571914">Seleziona automaticamente i certificati client per questi siti nella schermata di accesso</translation>
-<translation id="5564865786900450806">Elimina l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o un sistema operativo non più supportato.
+<translation id="5564865786900450806">Consente di eliminare l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o un sistema operativo non più supportato.
 
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
 <translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
@@ -3125,9 +3120,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5961137303188584693">Indirizzo MAC NIC integrato del dispositivo</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
-<translation id="5997107377032983906">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi).
-
-          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati, ma gli utenti potranno impostare eccezioni per consentirli per siti specifici.</translation>
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="5997846976342452720">Specifica se disattivare o meno la ricerca dei plug-in (ritirata)</translation>
 <translation id="5998198091336830580">Questo criterio fa parte del seguente gruppo atomico (vengono applicati soltanto i criteri dell'origine con la priorità massima presenti nel gruppo):</translation>
@@ -3516,9 +3508,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6795485990775913659">Consenti la stampa solo senza PIN</translation>
-<translation id="6800064234889290465">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare contenuti misti (ossia contenuti HTTP su siti HTTPS) bloccabili (ossia attivi).
-
-          Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati, ma gli utenti potranno impostare eccezioni per consentirli per siti specifici.</translation>
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
@@ -4417,7 +4406,7 @@ Se attivi questa impostazione, le pagine non saranno sottoposte a scansione per 
 Se disattivi questa impostazione, le pagine saranno sottoposte a scansione per i metatag.
 
 Se questa norma non viene impostata, le pagine saranno sottoposte a scansione per i metatag.</translation>
-<translation id="829641334878002866">Ti consente di impostare il periodo di tempo, in millisecondi, tra la prima notifica che informa che un dispositivo <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso e la fine del periodo di tempo specificato dal criterio <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+<translation id="829641334878002866">Ti consente di impostare il periodo di tempo, in millisecondi, tra la prima notifica relativa alla necessità di riavviare un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso e la fine del periodo di tempo specificato dal criterio <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Se non è impostato, per i dispositivi <ph name="PRODUCT_OS_NAME" /> viene utilizzato il periodo predefinito di 259200000 millisecondi (tre giorni).</translation>
 <translation id="8300455783946254851">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> utilizzando una connessione alla rete dati quando questa norma viene impostata su True. In tal caso, i dati vengono sincronizzati con Google Drive solo in presenza di una connessione alla rete Wi-Fi o Ethernet.

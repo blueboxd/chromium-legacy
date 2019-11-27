@@ -78,6 +78,12 @@
 </div>
 <bookmarks-router></bookmarks-router>
 <bookmarks-command-manager></bookmarks-command-manager>
-<cr-toast-manager duration="10000" on-undo-click="onUndoClick_"
-    undo-label="$i18n{undo}" undo-description="$i18n{undoDescription}">
+<cr-toast-manager duration="100000000">
+  <dom-if>
+    <template>
+      <cr-button on-click="onUndoClick_" aria-label="$i18n{undoDescription}">
+        $i18n{undo}
+      </cr-button>
+    </template>
+  </dom-if>
 </cr-toast-manager>

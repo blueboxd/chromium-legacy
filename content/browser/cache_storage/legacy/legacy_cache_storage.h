@@ -41,6 +41,7 @@ class LegacyCacheStorageManager;
 namespace cache_storage_manager_unittest {
 class CacheStorageManagerTest;
 FORWARD_DECLARE_TEST(CacheStorageManagerTest, PersistedCacheKeyUsed);
+FORWARD_DECLARE_TEST(CacheStorageManagerTest, PutResponseWithExistingFileTest);
 FORWARD_DECLARE_TEST(CacheStorageManagerTest, TestErrorInitializingCache);
 }  // namespace cache_storage_manager_unittest
 
@@ -154,6 +155,9 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   FRIEND_TEST_ALL_PREFIXES(
       cache_storage_manager_unittest::CacheStorageManagerTest,
       PersistedCacheKeyUsed);
+  FRIEND_TEST_ALL_PREFIXES(
+      cache_storage_manager_unittest::CacheStorageManagerTest,
+      PutResponseWithExistingFileTest);
   FRIEND_TEST_ALL_PREFIXES(
       cache_storage_manager_unittest::CacheStorageManagerTest,
       TestErrorInitializingCache);

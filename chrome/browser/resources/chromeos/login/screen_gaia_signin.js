@@ -60,6 +60,7 @@ const DialogMode = {
   GAIA: 'online-gaia',
   OFFLINE_GAIA: 'offline-gaia',
   OFFLINE_AD: 'ad',
+  GAIA_LOADING: 'gaia-loading',
   LOADING: 'loading',
   PIN_DIALOG: 'pin',
   GAIA_WHITELIST_ERROR: 'whitelist-error',
@@ -94,6 +95,7 @@ Polymer({
 
     /**
      * Current step displayed.
+     * @type {DialogMode}
      * @private
      */
     step_: {
@@ -1591,10 +1593,15 @@ Polymer({
   },
 
   /**
-   * Simple equality comparison function.
+   * Checks if current step is one of specified steps.
+   * @param {DialogMode} currentStep Name of current step.
+   * @param {...string} stepsVarArgs List of steps to compare with.
+   * @return {boolean}
    */
-  eq_: function(currentStep, expectedStep) {
-    return currentStep == expectedStep;
+  isStep_: function(currentStep, ...stepsVarArgs) {
+    if (stepsVarArgs.length < 1)
+      throw Error('At least one step to compare is required.');
+    return stepsVarArgs.some(step => currentStep === step);
   },
 
   /**
@@ -1610,7 +1617,11 @@ Polymer({
       return;
     }
     if (isLoading) {
-      this.step_ = DialogMode.LOADING;
+      if (mode == AuthMode.DEFAULT) {
+        this.step_ = DialogMode.GAIA_LOADING;
+      } else {
+        this.step_ = DialogMode.LOADING;
+      }
       return;
     }
     if (isWhitelistError) {

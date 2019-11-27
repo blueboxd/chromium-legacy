@@ -328,6 +328,13 @@ bool MessageEvent::IsOriginCheckRequiredToAccessData() const {
   return data_as_serialized_script_value_->Value()->IsOriginCheckRequired();
 }
 
+bool MessageEvent::IsLockedToAgentCluster() const {
+  if (data_type_ != kDataTypeSerializedScriptValue) {
+    return false;
+  }
+  return data_as_serialized_script_value_->Value()->IsLockedToAgentCluster();
+}
+
 void MessageEvent::EntangleMessagePorts(ExecutionContext* context) {
   ports_ = MessagePort::EntanglePorts(*context, std::move(channels_));
   is_ports_dirty_ = true;

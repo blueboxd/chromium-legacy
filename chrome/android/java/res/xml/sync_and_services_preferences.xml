@@ -61,6 +61,10 @@
             android:summary="@string/safe_browsing_summary"
             android:persistent="false"/>
         <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+            android:key="password_leak_detection"
+            android:title="@string/passwords_leak_detection_switch_title"
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:key="safe_browsing_scout_reporting"
             android:title="@string/safe_browsing_scout_reporting_title"
             android:summary="@string/safe_browsing_scout_reporting_summary"

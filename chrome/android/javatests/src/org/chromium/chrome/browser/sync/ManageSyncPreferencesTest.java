@@ -38,7 +38,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Collection;
@@ -310,8 +310,9 @@ public class ManageSyncPreferencesTest {
 
         final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
         mSyncTestRule.stopSync();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { typeFragment.onItemClick(null, null, 0, Passphrase.Type.CUSTOM); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            typeFragment.onItemClick(null, null, 0, PassphraseType.CUSTOM_PASSPHRASE);
+        });
         // No crash means we passed.
     }
 
@@ -374,7 +375,7 @@ public class ManageSyncPreferencesTest {
         SyncTestUtil.waitForSyncActive();
         final ManageSyncPreferences fragment = startManageSyncPreferences();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> fragment.onPassphraseTypeSelected(Passphrase.Type.CUSTOM));
+                () -> fragment.onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
         AlertDialog dialog = (AlertDialog) pcdf.getDialog();

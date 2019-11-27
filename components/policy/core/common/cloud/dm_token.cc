@@ -27,7 +27,7 @@ DMToken::DMToken(Status status, const base::StringPiece value)
     : status_(status), value_(value) {}
 
 const std::string& DMToken::value() const {
-  // TODO(domfc): Add DCHECK(is_valid()) after migrating code.
+  DCHECK(is_valid());
   return value_;
 }
 

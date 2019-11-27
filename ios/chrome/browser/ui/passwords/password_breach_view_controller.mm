@@ -246,7 +246,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 // Handle taps on the help button.
 - (void)didTapHelpButton {
-  // TODO(crbug.com/1028095): Open help center article.
+  [self.actionHandler passwordBreachLearnMoreAction];
 }
 
 // Handle taps on the primary action button.

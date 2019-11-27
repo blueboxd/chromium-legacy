@@ -8,17 +8,16 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.storage.CommitResult;
-import com.google.android.libraries.feed.api.host.storage.ContentMutation;
-import com.google.android.libraries.feed.common.Result;
-import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.testing.conformance.storage.ContentStorageConformanceTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
+import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation;
+import org.chromium.chrome.browser.feed.library.common.Result;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.chrome.browser.feed.library.testing.conformance.storage.ContentStorageConformanceTest;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;

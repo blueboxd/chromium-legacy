@@ -1388,7 +1388,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Save Passwords
       </message>
       <message name="IDS_IOS_LEAK_CHECK_SWITCH" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
-        Warn You if Passwords are Exposed in a Data Breach
+        Warn you if passwords are exposed in a data breach
       </message>
       <message name="IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
         When you sign in to your Google Account, this feature is turned on.

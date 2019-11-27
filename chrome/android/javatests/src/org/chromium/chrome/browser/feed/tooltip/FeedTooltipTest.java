@@ -10,18 +10,16 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static com.google.android.libraries.feed.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
-
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+
+import static org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
 
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
-
-import com.google.android.libraries.feed.api.client.stream.Stream;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -37,6 +35,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;

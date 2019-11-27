@@ -114,6 +114,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   const base::WeakPtr<SkiaOutputSurfaceImplOnGpu>& weak_ptr() const {
     return weak_ptr_;
   }
+  gl::GLSurface* gl_surface() const { return gl_surface_.get(); }
 
   void Reshape(const gfx::Size& size,
                float device_scale_factor,

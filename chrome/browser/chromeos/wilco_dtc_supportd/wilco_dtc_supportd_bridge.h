@@ -40,7 +40,7 @@ class WilcoDtcSupportdBridge final
 
     // Creates a Mojo invitation that requests the remote implementation of the
     // WilcoDtcSupportdServiceFactory interface.
-    // Returns |wilco_dtc_supportd_service_factory_mojo_ptr| - interface pointer
+    // Returns |wilco_dtc_supportd_service_factory_mojo_remote| - remote
     // that points to the remote implementation of the interface,
     // |remote_endpoint_fd| - file descriptor of the remote endpoint to be sent.
     virtual void CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
@@ -129,8 +129,7 @@ class WilcoDtcSupportdBridge final
   // Current consecutive connection attempt number.
   int connection_attempt_ = 0;
 
-  // Interface pointers to the Mojo services exposed by the wilco_dtc_supportd
-  // daemon.
+  // Remotes to the Mojo services exposed by the wilco_dtc_supportd daemon.
   mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
       wilco_dtc_supportd_service_factory_mojo_remote_;
   mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>

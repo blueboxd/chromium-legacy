@@ -41,7 +41,11 @@ bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
   // are policy-installed (even if they can be disabled), then do not show the
   // extensions checkup experiment.
   for (const auto& extension : *extension_set) {
-    if (!extensions::Manifest::IsPolicyLocation(extension->location())) {
+    if (extension->is_extension() &&
+        !extensions::Manifest::IsPolicyLocation(extension->location()) &&
+        !extensions::Manifest::IsComponentLocation(extension->location()) &&
+        !(extension->creation_flags() &
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT)) {
       return true;
     }
   }
@@ -52,6 +56,9 @@ bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
 
 namespace extensions {
 
+const char kNtpPromoExperiment[] = "promo";
+const char kStartupExperiment[] = "startup";
+
 bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   if (ShouldShowExtensionsCheckup(context) &&
@@ -60,9 +67,6 @@ bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
           extensions_features::kExtensionsCheckupToolEntryPointParameter) ==
           "startup" &&
       !prefs->HasUserSeenExtensionsCheckupOnStartup()) {
-    // Stores a boolean in ExtensionPrefs so we can make sure that the user is
-    // redirected to the extensions page upon startup once.
-    prefs->SetUserHasSeenExtensionsCheckupOnStartup(true);
     return true;
   }
   return false;

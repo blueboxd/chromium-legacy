@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Od leve proti desni</translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1398853756734560583">Povečaj</translation>
-<translation id="1409544243779336081">Priporočilo aplikacije</translation>
 <translation id="1450753235335490080">Ni mogoče deliti tega: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">To ste v preteklosti že iskali. Če izbrišete poizvedbo »<ph name="QUERY" />« iz zgodovine, bo trajno odstranjena iz računa v vseh napravah.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Obdobje</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mesec}one{# mesec}two{# meseca}few{# mesece}other{# mesecev}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Ocena z zvezdicami (<ph name="RATING_SCORE" />)</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 h in }one{# h in }two{# h in }few{# h in }other{# h in }}</translation>
 <translation id="1842960171412779397">izberi</translation>
 <translation id="1859234291848436338">Smer pisanja</translation>
@@ -192,6 +190,7 @@
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
+<translation id="7848989271541991537">Premaknjeno na <ph name="PAGE_NUMBER" />. stran, <ph name="ROW_NUMBER" />. vrstico, <ph name="COLUMN_NUMBER" />. stolpec.</translation>
 <translation id="7879499977785298635">Ne blokiraj</translation>
 <translation id="7907591526440419938">Odpri datoteko</translation>
 <translation id="7969046989155602842">Command</translation>

@@ -585,14 +585,6 @@ String GraphicsLayer::DebugName(const cc::Layer* layer) const {
   return "";
 }
 
-void GraphicsLayer::SetPosition(const gfx::PointF& point) {
-  CcLayer()->SetPosition(point);
-}
-
-const gfx::PointF& GraphicsLayer::GetPosition() const {
-  return CcLayer()->position();
-}
-
 const gfx::Size& GraphicsLayer::Size() const {
   return CcLayer()->bounds();
 }

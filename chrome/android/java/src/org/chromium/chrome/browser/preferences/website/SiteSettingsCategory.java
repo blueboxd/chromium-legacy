@@ -37,11 +37,11 @@ import java.lang.annotation.RetentionPolicy;
  * A base class for dealing with website settings categories.
  */
 public class SiteSettingsCategory {
-    @IntDef({Type.ALL_SITES, Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.AUTOPLAY,
-            Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING, Type.CAMERA, Type.CLIPBOARD,
-            Type.COOKIES, Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC,
-            Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND,
-            Type.USB, Type.USE_STORAGE})
+    @IntDef({Type.ALL_SITES, Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.BACKGROUND_SYNC,
+            Type.BLUETOOTH_SCANNING, Type.CAMERA, Type.CLIPBOARD, Type.COOKIES,
+            Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC, Type.NOTIFICATIONS,
+            Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND, Type.USB,
+            Type.USE_STORAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
@@ -50,27 +50,26 @@ public class SiteSettingsCategory {
         int ALL_SITES = 0; // Always first as it should appear in the UI at the top.
         int ADS = 1;
         int AUTOMATIC_DOWNLOADS = 2;
-        int AUTOPLAY = 3;
-        int BACKGROUND_SYNC = 4;
-        int BLUETOOTH_SCANNING = 5;
-        int CAMERA = 6;
-        int CLIPBOARD = 7;
-        int COOKIES = 8;
-        int DEVICE_LOCATION = 9;
-        int JAVASCRIPT = 10;
-        int MICROPHONE = 11;
-        int NFC = 12;
-        int NOTIFICATIONS = 13;
-        int POPUPS = 14;
-        int PROTECTED_MEDIA = 15;
-        int SENSORS = 16;
-        int SOUND = 17;
-        int USB = 18;
-        int USE_STORAGE = 19; // Always last as it should appear in the UI at the bottom.
+        int BACKGROUND_SYNC = 3;
+        int BLUETOOTH_SCANNING = 4;
+        int CAMERA = 5;
+        int CLIPBOARD = 6;
+        int COOKIES = 7;
+        int DEVICE_LOCATION = 8;
+        int JAVASCRIPT = 9;
+        int MICROPHONE = 10;
+        int NFC = 11;
+        int NOTIFICATIONS = 12;
+        int POPUPS = 13;
+        int PROTECTED_MEDIA = 14;
+        int SENSORS = 15;
+        int SOUND = 16;
+        int USB = 17;
+        int USE_STORAGE = 18; // Always last as it should appear in the UI at the bottom.
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 20;
+        int NUM_ENTRIES = 19;
     }
 
     // The id of this category.
@@ -136,8 +135,6 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.ADS;
             case Type.AUTOMATIC_DOWNLOADS:
                 return ContentSettingsType.AUTOMATIC_DOWNLOADS;
-            case Type.AUTOPLAY:
-                return ContentSettingsType.AUTOPLAY;
             case Type.BACKGROUND_SYNC:
                 return ContentSettingsType.BACKGROUND_SYNC;
             case Type.BLUETOOTH_SCANNING:
@@ -199,8 +196,6 @@ public class SiteSettingsCategory {
                 return "all_sites";
             case Type.AUTOMATIC_DOWNLOADS:
                 return "automatic_downloads";
-            case Type.AUTOPLAY:
-                return "autoplay";
             case Type.BACKGROUND_SYNC:
                 return "background_sync";
             case Type.BLUETOOTH_SCANNING:

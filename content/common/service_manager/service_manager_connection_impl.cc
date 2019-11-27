@@ -365,8 +365,8 @@ service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
 }
 
 void ServiceManagerConnectionImpl::SetConnectionLostClosure(
-    const base::Closure& closure) {
-  connection_lost_handler_ = closure;
+    base::OnceClosure closure) {
+  connection_lost_handler_ = std::move(closure);
 }
 
 void ServiceManagerConnectionImpl::AddServiceRequestHandler(
@@ -388,7 +388,7 @@ void ServiceManagerConnectionImpl::SetDefaultServiceRequestHandler(
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {
   if (!connection_lost_handler_.is_null())
-    connection_lost_handler_.Run();
+    std::move(connection_lost_handler_).Run();
 }
 
 void ServiceManagerConnectionImpl::GetInterface(

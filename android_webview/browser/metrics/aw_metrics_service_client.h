@@ -185,6 +185,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   bool user_consent_ = false;
   bool app_consent_ = false;
   bool is_in_sample_ = false;
+  bool is_in_package_name_sample_ = false;
   bool fast_startup_for_testing_ = false;
 
   // When non-zero, this overrides the default value in

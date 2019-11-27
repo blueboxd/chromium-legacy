@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">বাওঁফালৰ পৰা সোঁফাললৈ</translation>
 <translation id="1383876407941801731">সন্ধান</translation>
 <translation id="1398853756734560583">সৰ্বাধিক মাত্ৰালৈ বঢ়াওক</translation>
-<translation id="1409544243779336081">এপ্‌ চুপাৰিছ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শ্বেয়াৰ কৰিব নোৱাৰি</translation>
 <translation id="1498028757988366001">আপুনি এই বিষয়ে পূর্বে সন্ধান কৰিছে। আপোনাৰ ইতিহাসৰ পৰা "<ph name="QUERY" />"ক মচা কার্যয়ে আপোনাৰ সকলো ডিভাইচৰ পৰাই ইয়াক স্থায়ীভাৱে আঁতৰাব।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট আৰু }one{# মিনিট আৰু }other{# মিনিট আৰু }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">প্ৰিৰিয়ড</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{১মাহ}one{#মাহ}other{#মাহ}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> এম.বি./ছেকেণ্ড</translation>
-<translation id="1812519734428420144">তৰাযুক্ত মূল্যাংকন <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{১ঘণ্টা আৰু }one{#ঘণ্টা আৰু }other{#ঘণ্টা আৰু }}</translation>
 <translation id="1842960171412779397">বাছনি কৰক</translation>
 <translation id="1859234291848436338">লিখাৰ নির্দেশনা</translation>
@@ -192,6 +190,7 @@
 <translation id="7658239707568436148">বাতিল কৰক</translation>
 <translation id="7781829728241885113">কালি</translation>
 <translation id="7814458197256864873">&amp;প্ৰতিলিপি কৰক</translation>
+<translation id="7848989271541991537">পৃষ্ঠা <ph name="PAGE_NUMBER" />, শাৰী <ph name="ROW_NUMBER" />, স্তম্ভ <ph name="COLUMN_NUMBER" />লৈ স্থানান্তৰ কৰা হৈছে।</translation>
 <translation id="7879499977785298635">অৱৰোধ নকৰিব</translation>
 <translation id="7907591526440419938">ফাইল খোলক</translation>
 <translation id="7969046989155602842">নিৰ্দেশনা</translation>

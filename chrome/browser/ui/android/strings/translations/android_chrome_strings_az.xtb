@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Rahat oxuya biləcəyinizə qədər slayderi dartın. Abzasa iki dəfə tıklayandan sonra mətn bu böyüklükdə olmalıdır.</translation>
 <translation id="2323763861024343754">Sayt yaddaşı</translation>
 <translation id="2328985652426384049">Daxil olmaq mümkün deyil</translation>
-<translation id="2330129964253841015">Parol ələ keçirildikdə xəbərdarlıq edilsin</translation>
 <translation id="2349710944427398404">Hesablar, əlfəcinlər və yadda saxlanılan ayarlar daxil olmaqla, Chrome tərəfindən istifadə olunmuş ümumi data</translation>
 <translation id="2353636109065292463">İnternet bağlantısının yoxlanması</translation>
 <translation id="2359808026110333948">Davam edin</translation>
@@ -814,6 +813,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6989267951144302301">Endirilmədi</translation>
 <translation id="6990079615885386641">Google Play Dükanından tətbiq əldə edin: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Saytlara mikrofonunuzu istifadə etmək icazəsi verməmişdən əvvəl soruşun (tövsiyə olunur)</translation>
+<translation id="6995899638241819463">Data pozulması halında parolların ələ keçirilib-keçirilmədiyi bildirilir</translation>
 <translation id="7015203776128479407">İlkin sinxronizasiya ayarlaması tamamlanmadı. Sinxronizasiya deaktivdir.</translation>
 <translation id="7016516562562142042">Cari axtarış sistemi üçün icazə verildi</translation>
 <translation id="7022756207310403729">Brauzerdə açın</translation>

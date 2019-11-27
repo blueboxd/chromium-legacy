@@ -33,6 +33,8 @@ void EnableStartupTracingIfNeeded() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
+  TraceEventDataSource::GetInstance()->RegisterStartupHooks();
+
   // TODO(oysteine): Support startup tracing to a perfetto protobuf trace. This
   // should also enable TraceLog and call
   // TraceEventDataSource::SetupStartupTracing().

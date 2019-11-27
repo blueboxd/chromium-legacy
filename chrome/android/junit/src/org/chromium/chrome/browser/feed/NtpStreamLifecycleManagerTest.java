@@ -21,8 +21,6 @@ import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +34,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;

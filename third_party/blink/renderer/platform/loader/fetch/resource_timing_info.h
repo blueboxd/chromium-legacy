@@ -48,9 +48,11 @@ class PLATFORM_EXPORT ResourceTimingInfo
   USING_FAST_MALLOC(ResourceTimingInfo);
 
  public:
-  static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
-                                                  const base::TimeTicks time) {
-    return base::AdoptRef(new ResourceTimingInfo(type, time));
+  static scoped_refptr<ResourceTimingInfo> Create(
+      const AtomicString& type,
+      const base::TimeTicks time,
+      mojom::RequestContextType context) {
+    return base::AdoptRef(new ResourceTimingInfo(type, time, context));
   }
   base::TimeTicks InitialTime() const { return initial_time_; }
 
@@ -88,6 +90,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
     negative_allowed_ = negative_allowed;
   }
   bool NegativeAllowed() const { return negative_allowed_; }
+  mojom::RequestContextType ContextType() const { return context_type_; }
 
   void SetWorkerTimingReceiver(
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
@@ -101,11 +104,14 @@ class PLATFORM_EXPORT ResourceTimingInfo
   }
 
  private:
-  ResourceTimingInfo(const AtomicString& type, const base::TimeTicks time)
-      : type_(type), initial_time_(time) {}
+  ResourceTimingInfo(const AtomicString& type,
+                     const base::TimeTicks time,
+                     mojom::RequestContextType context_type)
+      : type_(type), initial_time_(time), context_type_(context_type) {}
 
   AtomicString type_;
   base::TimeTicks initial_time_;
+  mojom::RequestContextType context_type_;
   base::TimeTicks load_response_end_;
   KURL initial_url_;
   ResourceResponse final_response_;

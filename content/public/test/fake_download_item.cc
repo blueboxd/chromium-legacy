@@ -362,6 +362,10 @@ bool FakeDownloadItem::IsSavePackageDownload() const {
   return false;
 }
 
+download::DownloadSource FakeDownloadItem::GetDownloadSource() const {
+  return download::DownloadSource::UNKNOWN;
+}
+
 const base::FilePath& FakeDownloadItem::GetFullPath() const {
   return dummy_file_path;
 }

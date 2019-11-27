@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mostra'n més</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Canvia la contrasenya</translation>
 <translation id="1484290072879560759">Tria l'adreça d'enviament</translation>
 <translation id="1492194039220927094">Tramesa automàtica de les polítiques:</translation>
 <translation id="1501859676467574491">Mostra les targetes del Compte de Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Proveu de contactar amb l'administrador del sistema.</translation>
 <translation id="1736420071277903564">Ordinador</translation>
-<translation id="1739107442478692187">S'ha produït una violació de les dades en un lloc web o en una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades i que canviïs la contrasenya del lloc web <ph name="ORIGIN" /> ara mateix.</translation>
 <translation id="1740951997222943430">Introdueix un mes de caducitat vàlid</translation>
 <translation id="1741613555002899862">S'ha d'especificar juntament amb una cadena vàlida quan DnsOverHttpsMode sigui <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta, el nom i l'adreça de facturació al Compte de Google i en aquest dispositiu.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Descomprimeix el servei</translation>
 <translation id="1915697529809968049">Vols utilitzar Touch ID en lloc del CVC?</translation>
 <translation id="1916770123977586577">Per aplicar la configuració actualitzada a aquest lloc web, torna a carregar la pàgina</translation>
+<translation id="1917876262703816781">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que canviïs la contrasenya per a <ph name="ORIGIN" /> ara.</translation>
 <translation id="1919345977826869612">Anuncis</translation>
 <translation id="1919367280705858090">Obtenir ajuda amb un missatge d'error específic</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Cap}=1{1 lloc}other{# llocs}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Els dominis no coincideixen.</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2099652385553570808">Grapat triple a l'esquerra</translation>
-<translation id="2100280972184758440">La contrasenya s'ha posat en perill</translation>
 <translation id="2102134110707549001">Suggereix una contrasenya segura…</translation>
 <translation id="2108755909498034140">Reinicia l'ordinador</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">S'ha ignorat perquè <ph name="POLICY_NAME" /> l'ha substituït.</translation>
 <translation id="2119505898009119320">Emès per a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Encunyació a la part inferior dreta</translation>
-<translation id="2124528555835617522">S'ha produït una violació de les dades en un lloc web o en una aplicació que fas servir. Chrome et recomana que comprovis les contrasenyes desades.</translation>
 <translation id="2129079103035905234">Sensors de moviment</translation>
 <translation id="2130448033692577677">Pot ser que les plantilles que has especificat no s'apliquin perquè la política DnsOverHttpsMode no s'ha establert.</translation>
 <translation id="213826338245044447">Adreces d'interès per a mòbils</translation>
@@ -484,7 +483,6 @@
 <translation id="3282497668470633863">Afegeix el titular de la targeta</translation>
 <translation id="3287510313208355388">Baixa quan estigui en línia</translation>
 <translation id="3293642807462928945">Més informació sobre la política <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">S'ha produït una violació de les dades en un lloc web o en una aplicació que fas servir. Chrome et recomana que canviïs la contrasenya del lloc web <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">No s'ha trobat cap resultat de la cerca</translation>
 <translation id="3320021301628644560">Afegeix una adreça de facturació</translation>
 <translation id="3324983252691184275">Carmesí</translation>
@@ -892,6 +890,7 @@
 <translation id="5287240709317226393">Mostra les galetes</translation>
 <translation id="5287456746628258573">Aquest lloc web utilitza una configuració de seguretat obsoleta i, per tant, la informació que hi enviïs podria quedar exposada (per exemple, les contrasenyes o els números de les targetes de crèdit).</translation>
 <translation id="5288108484102287882">La validació dels valors de la política ha generat advertiments</translation>
+<translation id="5295292838686006428">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis les contrasenyes desades ara.</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5308380583665731573">Connecta</translation>
@@ -942,6 +941,7 @@
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
 <translation id="5541546772353173584">Afegeix un correu electrònic</translation>
 <translation id="5545756402275714221">Articles que et poden interessar</translation>
+<translation id="5552137475244467770">Chrome contrasta periòdicament les teves contrasenyes amb les d'una sèrie de llistes publicades en línia. D'aquesta manera, les teves contrasenyes i els teus noms d'usuari queden encriptats i, per tant, ningú no els pot llegir (ni tan sols Google).</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5560088892362098740">Data de caducitat</translation>
 <translation id="5565735124758917034">Actiu</translation>
@@ -1033,6 +1033,7 @@
 <translation id="5992691462791905444">Plegat en Z per a enginyeria</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultats per a "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Comprova les contrasenyes</translation>
 <translation id="6015796118275082299">Any</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pàgina 1}other{Pàgina #}}</translation>
 <translation id="6017514345406065928">Verd</translation>
@@ -1322,6 +1323,7 @@ Detalls addicionals:
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="748406663033922918">Fes servir el bloqueig de pantalla per verificar les formes de pagament desades.</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
+<translation id="7495290002932347110">La teva contrasenya ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis les contrasenyes desades i que canviïs la contrasenya per a <ph name="ORIGIN" /> ara.</translation>
 <translation id="7498234416455752244">Continua editant</translation>
 <translation id="7508255263130623398">L'identificador de dispositiu de la política que s'ha tornat és buit o no coincideix amb l'actual</translation>
 <translation id="7508870219247277067">Verd alvocat</translation>

@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">顯示更多</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">變更你的密碼</translation>
 <translation id="1484290072879560759">選擇運送地址</translation>
 <translation id="1492194039220927094">政策通知推送：</translation>
 <translation id="1501859676467574491">顯示你 Google 帳戶中的卡片</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">建議您與系統管理員聯絡。</translation>
 <translation id="1736420071277903564">電腦</translation>
-<translation id="1739107442478692187">你使用的網站或應用程式發生資料侵害事件。Chrome 建議你檢查儲存的密碼，並立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="1740951997222943430">請輸入有效的到期月份</translation>
 <translation id="1741613555002899862">將 DnsOverHttpsMode 設為 <ph name="SECURE_DNS_MODE_SECURE" /> 時，必須指定有效的字串。</translation>
 <translation id="1743520634839655729">只要將你的卡片資訊、姓名與帳單地址儲存到你的 Google 帳戶中和這部裝置上，下次即可更快完成付款程序。</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">解壓縮服務</translation>
 <translation id="1915697529809968049">要使用 Touch ID 取代信用卡安全碼嗎？</translation>
 <translation id="1916770123977586577">如要將你更新過的設定套用到這個網站，請重新載入這個網頁</translation>
+<translation id="1917876262703816781">你使用的某個網站或應用程式發生資料侵害事件，因此你的密碼已遭洩露。Chrome 建議你立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1919367280705858090">瞭解如何修正特定錯誤訊息指出的錯誤</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{無}=1{1 個網站}other{# 個網站}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">網域不符</translation>
 <translation id="2096368010154057602">部門</translation>
 <translation id="2099652385553570808">三釘 (左側)</translation>
-<translation id="2100280972184758440">你的密碼已遭外洩</translation>
 <translation id="2102134110707549001">建議高強度密碼…</translation>
 <translation id="2108755909498034140">重新啟動電腦</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME" />」覆寫了，因此遭到略過。</translation>
 <translation id="2119505898009119320">核發對象：<ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">打孔 (右下方)</translation>
-<translation id="2124528555835617522">你使用的網站或應用程式發生資料侵害事件。Chrome 建議你立即檢查已儲存的密碼。</translation>
 <translation id="2129079103035905234">動作感應器</translation>
 <translation id="2130448033692577677">你並未設定 DnsOverHttpsMode 政策，因此系統無法套用你指定的範本。</translation>
 <translation id="213826338245044447">行動版書籤</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">目前在 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻擊者可能會讓你安裝不安全的應用程式，導致裝置受損、手機帳單中多出隱藏費用，或是個人資訊遭竊。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">沒有網際網路連線</translation>
 <translation id="2230458221926704099">請使用<ph name="BEGIN_LINK" />診斷應用程式<ph name="END_LINK" />修正連線問題</translation>
+<translation id="22320125457191592">為你推薦</translation>
 <translation id="2239100178324503013">立即傳送</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
 <translation id="2250931979407627383">邊緣裝訂 (左側)</translation>
@@ -366,6 +366,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">安全警告</translation>
 <translation id="2699302886720511147">接受的卡片</translation>
 <translation id="2702801445560668637">閱讀清單</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
@@ -466,6 +467,7 @@
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3209034400446768650">這個頁面可能會產生費用</translation>
 <translation id="3209080785413271048">使用 Windows Hello 驗證已儲存的付款方式。</translation>
+<translation id="3212581601480735796">你在 <ph name="HOSTNAME" /> 上進行的活動正遭到監控</translation>
 <translation id="3215092763954878852">無法使用 WebAuthn</translation>
 <translation id="3225919329040284222">伺服器呈現的憑證與內建的預期條件不符。我們在系統中針對特定高安全性的網站內建了這些預期條件，目的在於保護你的資料安全無虞。</translation>
 <translation id="3226128629678568754">按下重新載入按鈕，重新提交載入網頁所需的資料。</translation>
@@ -481,7 +483,6 @@
 <translation id="3282497668470633863">新增持卡人姓名</translation>
 <translation id="3287510313208355388">等到可連線時再下載網頁內容</translation>
 <translation id="3293642807462928945">進一步瞭解 <ph name="POLICY_NAME" /> 政策</translation>
-<translation id="3295439534709115864">你使用的網站或應用程式發生資料侵害事件。Chrome 建議你立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="3303855915957856445">找不到相符的搜尋結果</translation>
 <translation id="3320021301628644560">新增帳單地址</translation>
 <translation id="3324983252691184275">深紅色</translation>
@@ -524,6 +525,7 @@
 <translation id="3528485271872257980">深棕色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的裝置上至少有 1 個項目}=1{1 個項目 (在已同步的裝置上還有更多項目)}other{# 個項目 (在已同步的裝置上還有更多項目)}}</translation>
 <translation id="3539171420378717834">在這個裝置上保留這張信用卡的複本</translation>
+<translation id="3553513561058684206">為你推薦</translation>
 <translation id="3566021033012934673">你的連線不是私人連線</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" />，<ph name="STATE" />，<ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> 的嵌入式網頁顯示</translation>
@@ -749,6 +751,7 @@
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4597348597567598915">粗細：8</translation>
 <translation id="4600854749408232102">C6/C5 (信封)</translation>
+<translation id="4613966523036881546">Google Chrome 不信任這個連線的憑證，因為該憑證曾用於網路攔截及監控。</translation>
 <translation id="4635654612248442824">「<ph name="ORIGIN" />」網站指定所有收到的要求都必須套用來源政策，但目前無法套用此政策。</translation>
 <translation id="464342062220857295">搜尋功能</translation>
 <translation id="4646534391647090355">立即前往下載中心</translation>
@@ -887,6 +890,7 @@
 <translation id="5287240709317226393">顯示 Cookie</translation>
 <translation id="5287456746628258573">這個網站的安全性設定過舊，因此你傳送給這個網站的的資訊 (例如密碼或信用卡號碼) 可能會外洩。</translation>
 <translation id="5288108484102287882">政策值驗證作業出現警告訊息</translation>
+<translation id="5295292838686006428">你使用的某個網站或應用程式發生資料侵害事件，因此你的密碼已遭洩露。Chrome 建議你立即檢查已儲存的密碼。</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5308380583665731573">連線</translation>
@@ -937,6 +941,7 @@
 <translation id="5540224163453853">找不到要求的文章。</translation>
 <translation id="5541546772353173584">新增電子郵件地址</translation>
 <translation id="5545756402275714221">為你推薦的報導</translation>
+<translation id="5552137475244467770">Chrome 會定期將你的密碼與網路上發布的清單進行比對。在比對過程中，你的密碼和使用者名稱會經過加密，任何人 (包括 Google) 都無法讀取。</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5560088892362098740">到期日</translation>
 <translation id="5565735124758917034">管理中</translation>
@@ -1028,6 +1033,7 @@
 <translation id="5992691462791905444">大小彈簧摺</translation>
 <translation id="6000758707621254961">有 <ph name="RESULT_COUNT" /> 個與「<ph name="SEARCH_TEXT" />」相符的搜尋結果</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">請檢查你的密碼</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{第 1 頁}other{第 # 頁}}</translation>
 <translation id="6017514345406065928">綠色</translation>
@@ -1317,6 +1323,7 @@
 <translation id="7481312909269577407">往前</translation>
 <translation id="748406663033922918">使用螢幕鎖定驗證已儲存的付款方式。</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
+<translation id="7495290002932347110">你使用的某個網站或應用程式發生資料侵害事件，因此你的密碼已遭洩露。Chrome 建議你立即檢查已儲存的密碼，並變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="7498234416455752244">繼續編輯</translation>
 <translation id="7508255263130623398">傳回的政策裝置 ID 沒有任何內容，或是與目前的裝置 ID 不符</translation>
 <translation id="7508870219247277067">酪梨綠</translation>
@@ -1453,6 +1460,7 @@
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8105368624971345109">關閉</translation>
 <translation id="8118489163946903409">付款方式</translation>
+<translation id="8124023448510659215">Chromium 不信任這個連線的憑證，因為該憑證曾用於網路攔截及監控。</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上。請通知 IT 管理員解決這個問題。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
@@ -1595,6 +1603,8 @@
 <translation id="8957210676456822347">監控式入口網站授權</translation>
 <translation id="8962950042226115166">可疑網站</translation>
 <translation id="8968766641738584599">儲存卡片</translation>
+<translation id="8969267497192857913">你輸入的內容、瀏覽的網頁或任何其他網路活動都會遭到監視，且網站內容可能會在你不知情的情況下遭到變更。
+    <ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>
 <translation id="8975012916872825179">包括電話號碼、電子郵件地址和運送地址等資訊</translation>
 <translation id="8975263830901772334">你列印的檔案名稱</translation>

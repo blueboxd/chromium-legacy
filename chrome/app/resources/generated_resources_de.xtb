@@ -931,7 +931,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2326931316514688470">App &amp;neu laden</translation>
 <translation id="2327492829706409234">App aktivieren</translation>
 <translation id="2329597144923131178">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
-<translation id="2330129964253841015">Warnen, wenn Passwörter nicht mehr sicher sind</translation>
 <translation id="2332131598580221120">Im Store ansehen</translation>
 <translation id="2332192922827071008">Einstellungen öffnen</translation>
 <translation id="2332742915001411729">Auf Standardeinstellungen zurücksetzen</translation>
@@ -1430,7 +1429,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3016780570757425217">Ihren Standort abrufen</translation>
 <translation id="3017079585324758401">Hintergrund</translation>
 <translation id="3019285239893817657">Taste zur Unterseite</translation>
-<translation id="3020183492814296499">Tastenkombinationen</translation>
+<translation id="3020183492814296499">Verknüpfungen</translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Schmetterling</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
@@ -4095,6 +4094,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6990778048354947307">Dunkles Design</translation>
 <translation id="6991665348624301627">Ziel auswählen</translation>
 <translation id="6992554835374084304">Erweiterte Rechtschreibprüfung aktivieren</translation>
+<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Aktivitätsprotokoll</translation>
 <translation id="6997707937646349884">Auf Ihren Geräten:</translation>
 <translation id="6998793565256476099">Gerät für Videokonferenzen registrieren</translation>

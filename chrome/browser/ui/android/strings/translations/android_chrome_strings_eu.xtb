@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Arrastatu graduatzailea testu hau erraz irakurri ahal izan arte. Testuak gutxienez hau bezain handia izan beharko du paragrafoan klik bikoitza egin ondoren.</translation>
 <translation id="2323763861024343754">Webguneen datuak</translation>
 <translation id="2328985652426384049">Ezin da hasi saioa</translation>
-<translation id="2330129964253841015">Bidali abisu bat pasahitzak baimenik gabe atzitzen badira</translation>
 <translation id="2349710944427398404">Chrome-k erabilitako datuak, guztira; hala nola kontuak, laster-markak eta gordetako ezarpenak.</translation>
 <translation id="2353636109065292463">Internetera konektatuta zaudela egiaztatzea</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Helbideak</translation>
 <translation id="290376772003165898">Ez al da <ph name="LANGUAGE" /> orriko hizkuntza?</translation>
 <translation id="2904414404539560095">Fitxa partekatzeko hautatutako gailuen zerrenda irekita dago, eta altuera osoa hartzen du.</translation>
+<translation id="2905036901251765993">Ingurukoekin partekatu nahi izanez gero, eska iezaiezu QR kode hau eskaneatzeko</translation>
 <translation id="2909615210195135082">Google-ren jakinarazpenen plataforma</translation>
 <translation id="2910701580606108292">Webguneei eduki babestua erreproduzitzeko baimena eman aurretik, eskatu onespena</translation>
 <translation id="2913331724188855103">Baimendu webguneei cookieen datuak gordetzea eta irakurtzea (gomendatua)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Erakutsi pasahitza</translation>
 <translation id="363596933471559332">Hasi saioa automatikoki webguneetan gordetako kredentzialekin. Eginbidea desaktibatuta badago, zu zarela egiaztatzeko eskatuko dizu webguneak saioa hasten duzun bakoitzean.</translation>
 <translation id="3658159451045945436">Berrezarriz gero, aurreztutako datuen historia ezabatuko da, baita bisitatu dituzun webguneen zerrenda ere.</translation>
+<translation id="3682730288090679318">Gaitu hau webguneei automatikoki ukatzeko jakinarazpenak erakusteko baimena eskatzea. Hala, webguneren batek jakinarazpenak eskatzen baditu, informazio-barra bat agertuko da horren berri emanez orriaren behealdean.</translation>
 <translation id="3692944402865947621">Ezin izan da deskargatu <ph name="FILE_NAME" />, memoria ez dagoelako eskuragarri.</translation>
 <translation id="3714981814255182093">Ireki bilaketa-barra</translation>
 <translation id="3716182511346448902">Chrome-k orri hau pausatu du memoria gehiegi erabiltzen duelako.</translation>
@@ -542,6 +543,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5048398596102334565">Eman mugimendu-sentsoreak atzitzeko baimena webguneei (gomendatua)</translation>
 <translation id="5063480226653192405">Erabilera</translation>
 <translation id="5087580092889165836">Gehitu txartel bat</translation>
+<translation id="5096950519211870196">Webguneei ez zaie utziko jakinarazpenak erakusteko baimenik eskatzen. Hala, webguneren batek jakinarazpenak eskatzen baditu, informazio-barra bat agertuko da horren berri emanez orriaren behealdean.</translation>
 <translation id="5100237604440890931">Tolestuta; egin klik zabaltzeko.</translation>
 <translation id="510275257476243843">Ordubete gelditzen da</translation>
 <translation id="5123685120097942451">Ezkutuko moduko fitxa</translation>
@@ -589,6 +591,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5414836363063783498">Egiaztatzen…</translation>
 <translation id="5423934151118863508">Gehien erabiltzen dituzun orriak agertuko dira hemen</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB daude erabilgarri</translation>
+<translation id="5427766642345310212">Ados. Modu lehenetsian, hemen agertuko dira jakinarazpenak erakusteko eskaera berriak.</translation>
 <translation id="543338862236136125">Editatu pasahitza</translation>
 <translation id="5433691172869980887">Kopiatu da erabiltzaile-izena</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> fitxategi deskargatzen (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +690,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6108923351542677676">Konfigurazioa abian da…</translation>
 <translation id="6111020039983847643">erabilitako datuak</translation>
 <translation id="6112702117600201073">Orria freskatzen</translation>
+<translation id="6113400363611269907">Erakutsi baimen-eskaerak soinurik egin gabe</translation>
 <translation id="6127379762771434464">Kendu egin da elementua</translation>
 <translation id="6140912465461743537">Herrialdea/Lurraldea</translation>
 <translation id="614940544461990577">Konpontzeko, hauek egin ditzakezu:</translation>
@@ -811,6 +815,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6989267951144302301">Ezin izan da deskargatu</translation>
 <translation id="6990079615885386641">Eskuratu aplikazioa Google Play Store dendan: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Webguneei mikrofonoa erabiltzeko baimena eman aurretik, eskatu onespena (gomendatua)</translation>
+<translation id="6995899638241819463">Abisatu pasahitzak arriskuan badaude datuen isilpekotasuna urratu delako</translation>
 <translation id="7015203776128479407">Oraindik ez da amaitu hasierako sinkronizazioaren konfigurazioa. Sinkronizazioa desaktibatuta dago.</translation>
 <translation id="7016516562562142042">Baimenduta dago uneko bilatzailean</translation>
 <translation id="7022756207310403729">Ireki arakatzailean</translation>
@@ -1019,6 +1024,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8503813439785031346">Erabiltzaile-izena</translation>
 <translation id="8514477925623180633">Esportatu Chrome-rekin gordetako pasahitzak</translation>
 <translation id="8514577642972634246">Sartu ezkutuko moduan</translation>
+<translation id="8516012719330875537">Irudi-editorea</translation>
 <translation id="851751545965956758">Ez utzi webguneei gailuekin konektatzen</translation>
 <translation id="8523928698583292556">Ezabatu gordetako pasahitza</translation>
 <translation id="854522910157234410">Ireki orri hau</translation>

@@ -205,7 +205,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     : frame_(frame),
       header_view_(new HeaderView(frame)),
       overlay_view_(new OverlayView(header_view_)) {
-  header_view_->set_immersive_mode_changed_callback(base::Bind(
+  header_view_->set_immersive_mode_changed_callback(base::BindRepeating(
       &NonClientFrameViewAsh::InvalidateLayout, weak_factory_.GetWeakPtr()));
 
   aura::Window* frame_window = frame->GetNativeWindow();

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> atau <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Mode ringkasan</translation>
 <translation id="4382340674111381977">Kembali ke halaman sebelumnya</translation>
+<translation id="4458670250301149821">Pindahkan ikon aplikasi ke dalam/luar folder di petak aplikasi</translation>
 <translation id="4472417192667361414">Setelan Sistem &amp; Tampilan</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, lalu <ph name="LEFT" /> atau <ph name="RIGHT" /> atau <ph name="UP" /> atau <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Melihat Pemandu Pintasan Keyboard</translation>
 <translation id="4628718545549558538">Membuka area status (tempat gambar akun muncul)</translation>
 <translation id="4642092649622328492">Mengambil screenshot sebagian</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Menghapus huruf berikutnya (hapus maju)</translation>
 <translation id="7500368597227394048">tanda hubung</translation>
 <translation id="7611271430932669992">Pindahkan fokus ke pop-up dan dialog</translation>
+<translation id="7635348532214572995">Pindahkan ikon aplikasi di seluruh petak aplikasi</translation>
 <translation id="766326951329901120">Menempelkan konten dari papan klip dalam bentuk teks biasa</translation>
 <translation id="7703010453515335249">tanda kurung siku buka</translation>
 <translation id="7724603315864178912">Potong</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Menempelkan konten dari papan klip</translation>
 <translation id="9052808072970550123">Beralih ke pengguna berikutnya</translation>
 <translation id="906458777597946297">Memaksimalkan jendela</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, lalu <ph name="LEFT" /> atau <ph name="RIGHT" /> atau <ph name="UP" /> atau <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Ke awal baris</translation>
 <translation id="9106898733795143799">Halaman &amp; Browser Web</translation>
 <translation id="9162942292291287644">Tidak ditemukan hasil penelusuran untuk <ph name="QUERY" /></translation>

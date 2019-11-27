@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/base/net_errors.h"
 #include "services/data_decoder/public/cpp/safe_web_bundle_parser.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -82,9 +81,6 @@ class CONTENT_EXPORT WebBundleReader final
 
   // Returns the WebBundleSource.
   const WebBundleSource& source() const;
-
-  void SetWebBundleParserFactoryForTesting(
-      mojo::Remote<data_decoder::mojom::WebBundleParserFactory> factory);
 
  private:
   friend class base::RefCounted<WebBundleReader>;

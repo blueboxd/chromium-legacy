@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" />.</translation>
 <translation id="4240486403425279990">Modo de vista geral</translation>
 <translation id="4382340674111381977">Voltar à página anterior</translation>
+<translation id="4458670250301149821">Mova o ícone de uma aplicação para dentro/fora de uma pasta na grelha de aplicações.</translation>
 <translation id="4472417192667361414">Definições de sistema e de visualização</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> e, em seguida, <ph name="LEFT" /> ou <ph name="RIGHT" /> ou <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Consultar a Ajuda dos atalhos de teclado</translation>
 <translation id="4628718545549558538">Abrir a área de estado (onde é apresentada a imagem da conta)</translation>
 <translation id="4642092649622328492">Criar uma captura de ecrã parcial</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Eliminar a letra seguinte (eliminação para a frente)</translation>
 <translation id="7500368597227394048">hífen</translation>
 <translation id="7611271430932669992">Mover o foco para pop-ups e caixas de diálogo</translation>
+<translation id="7635348532214572995">Mova o ícone de uma aplicação na grelha de aplicações.</translation>
 <translation id="766326951329901120">Colar o conteúdo da área de transferência como texto simples</translation>
 <translation id="7703010453515335249">parêntese reto esquerdo</translation>
 <translation id="7724603315864178912">Cortar</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Colar o conteúdo da área de transferência</translation>
 <translation id="9052808072970550123">Mudar para o utilizador seguinte</translation>
 <translation id="906458777597946297">Maximizar janela</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> e, em seguida, <ph name="LEFT" /> ou <ph name="RIGHT" /> ou <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Ir para o início da linha</translation>
 <translation id="9106898733795143799">Página e navegador de Internet</translation>
 <translation id="9162942292291287644">Nenhum resultado da pesquisa para <ph name="QUERY" />.</translation>

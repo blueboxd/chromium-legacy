@@ -934,7 +934,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2326931316514688470">App opnieuw &amp;laden</translation>
 <translation id="2327492829706409234">App inschakelen</translation>
 <translation id="2329597144923131178">Als je inlogt, heb je al je instellingen op al je apparaten: bladwijzers, geschiedenis, wachtwoorden en meer.</translation>
-<translation id="2330129964253841015">Waarschuwen als je wachtwoorden niet meer veilig zijn</translation>
 <translation id="2332131598580221120">Bekijken in de Web Store</translation>
 <translation id="2332192922827071008">Voorkeuren openen</translation>
 <translation id="2332742915001411729">Terugzetten naar standaardinstelling</translation>
@@ -2944,7 +2943,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="52912272896845572">Privésleutelbestand is ongeldig.</translation>
 <translation id="529175790091471945">Dit apparaat formatteren</translation>
 <translation id="5293170712604732402">Instellingen terugzetten naar de oorspronkelijke standaardwaarden</translation>
-<translation id="5296471962619441686">Los de fout op om de synchronisatie te hervatten</translation>
+<translation id="5296471962619441686">Los de fout op om door te gaan met de synchronisatie</translation>
 <translation id="5297082477358294722">Het wachtwoord is opgeslagen. Bekijk en beheer opgeslagen wachtwoorden in je <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Thema gemaakt door</translation>
 <translation id="5299109548848736476">Niet bijhouden</translation>
@@ -4099,6 +4098,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6990778048354947307">Donker thema</translation>
 <translation id="6991665348624301627">Een bestemming selecteren</translation>
 <translation id="6992554835374084304">Schakel verbeterde spellingcontrole in</translation>
+<translation id="6995899638241819463">Waarschuwen als je wachtwoorden zijn gelekt bij een gegevenslek</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - Activiteitenlogboek</translation>
 <translation id="6997707937646349884">Op je apparaten:</translation>
 <translation id="6998793565256476099">Apparaat aanmelden voor videovergaderingen</translation>

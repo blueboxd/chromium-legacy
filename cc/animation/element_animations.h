@@ -26,7 +26,6 @@ class FilterOperations;
 class KeyframeEffect;
 class TransformOperations;
 enum class ElementListType;
-struct AnimationEvent;
 
 // An ElementAnimations owns a list of all KeyframeEffects attached to a single
 // target (represented by an ElementId).
@@ -88,11 +87,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   // property and that affects the given tree type.
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
                                     ElementListType list_type) const;
-
-  void NotifyAnimationStarted(const AnimationEvent& event);
-  void NotifyAnimationFinished(const AnimationEvent& event);
-  void NotifyAnimationAborted(const AnimationEvent& event);
-  void NotifyAnimationTakeover(const AnimationEvent& event);
 
   bool has_element_in_active_list() const {
     return has_element_in_active_list_;

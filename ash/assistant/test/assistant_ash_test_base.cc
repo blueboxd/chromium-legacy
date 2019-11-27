@@ -4,6 +4,9 @@
 
 #include "ash/assistant/test/assistant_ash_test_base.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
@@ -133,14 +136,18 @@ views::View* AssistantAshTestBase::page_view() {
 
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(
     const std::string& response_text) {
-  const std::string query = std::string("input text");
+  MockAssistantInteractionWithQueryAndResponse(/*query=*/"input text",
+                                               response_text);
+}
 
+void AssistantAshTestBase::MockAssistantInteractionWithQueryAndResponse(
+    const std::string& query,
+    const std::string& response_text) {
   SendQueryThroughTextField(query);
-  assistant_service()->SetInteractionResponse(
-      InteractionResponse()
-          .AddTextResponse(response_text)
-          .AddResolution(InteractionResponse::Resolution::kNormal)
-          .Clone());
+  auto response = std::make_unique<InteractionResponse>();
+  response->AddTextResponse(response_text)
+      ->AddResolution(InteractionResponse::Resolution::kNormal);
+  assistant_service()->SetInteractionResponse(std::move(response));
 
   base::RunLoop().RunUntilIdle();
 }

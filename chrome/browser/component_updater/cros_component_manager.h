@@ -28,6 +28,7 @@ class CrOSComponentManager {
     COMPATIBILITY_CHECK_FAILED = 4,  // Compatibility check failed.
     NOT_FOUND = 5,  // A component installation was not found - reported for
                     // load requests with kSkip update policy.
+    UPDATE_IN_PROGRESS = 6,  // Component update in progress.
     ERROR_MAX
   };
 

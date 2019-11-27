@@ -265,6 +265,7 @@ android_library("chrome_java") {
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
+    "//components/feed/core/proto:proto_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
     "//components/invalidation/impl:java",
@@ -342,7 +343,6 @@ android_library("chrome_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/cct_dynamic_module:cct_dynamic_module_java",
-    "//third_party/feed_library:feed_lib_proto_java",
     "//third_party/gif_player:gif_player_java",
     "//third_party/google_android_play_core:com_google_android_play_core_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -1767,10 +1767,6 @@ template("monochrome_public_apk_or_module_tmpl") {
       deps += [
         ":monochrome_java",
         "//android_webview:platform_service_bridge_upstream_implementation_java",
-
-        # TODO(crbug.com/951275): Clean this up once relevant internal code
-        # is upstreamed.
-        "//android_webview/glue:webview_chromium_for_q_upstream_java",
       ]
       if (webview_includes_weblayer) {
         deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
@@ -1810,25 +1806,28 @@ if (public_android_sdk) {
     }
   }
 
-  trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
-    apk_name = "TrichromeLibrary6432"
-    android_manifest = trichrome_library_64_32_android_manifest
-    android_manifest_dep = ":trichrome_library_64_32_android_manifest"
-    is_64_bit_browser = true
+  if (android_64bit_target_cpu) {
+    trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
+      apk_name = "TrichromeLibrary6432"
+      android_manifest = trichrome_library_64_32_android_manifest
+      android_manifest_dep = ":trichrome_library_64_32_android_manifest"
+      is_64_bit_browser = true
 
-    if (trichrome_synchronized_proguard) {
-      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
-      shared_resources_whitelist_locales = locales
-      static_library_dependent_targets = [
-        {
-          name = "//android_webview:trichrome_webview_64_32_apk"
-          is_resource_ids_provider = true
-        },
-        {
-          name = ":trichrome_chrome_64_32_bundle"
-          is_resource_ids_provider = false
-        },
-      ]
+      if (trichrome_synchronized_proguard) {
+        shared_resources_whitelist_target =
+            "//android_webview:system_webview_apk"
+        shared_resources_whitelist_locales = locales
+        static_library_dependent_targets = [
+          {
+            name = "//android_webview:trichrome_webview_64_32_apk"
+            is_resource_ids_provider = true
+          },
+          {
+            name = ":trichrome_chrome_64_32_bundle"
+            is_resource_ids_provider = false
+          },
+        ]
+      }
     }
   }
 }
@@ -2591,6 +2590,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/InstallableAmbientBadgeInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBarDelegate.java",
+    "java/src/org/chromium/chrome/browser/infobar/KnownInterceptionDisclosureInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/NearOomInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/NearOomReductionInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
@@ -2730,7 +2730,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSitesBridge.java",
     "java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java",
     "java/src/org/chromium/chrome/browser/tab/InterceptNavigationDelegateImpl.java",
-    "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsState.java",
+    "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsConstraintsHelper.java",
     "java/src/org/chromium/chrome/browser/tab/TabFavicon.java",
     "java/src/org/chromium/chrome/browser/tab/TabImpl.java",
     "java/src/org/chromium/chrome/browser/tab/TabState.java",

@@ -102,7 +102,9 @@ public class BottomControlsCoordinator {
                 root.getResources().getDimensionPixelOffset(bottomToolbarHeightWithShadowId));
 
         if (TabManagementModuleProvider.getDelegate() != null
-                && FeatureUtilities.isTabGroupsAndroidEnabled()) {
+                && FeatureUtilities.isTabGroupsAndroidEnabled()
+                && !(FeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
+                        && FeatureUtilities.isBottomToolbarEnabled())) {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {

@@ -3155,7 +3155,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
+// Disable due to runloop time out. https://crbug.com/937461
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
+  DISABLED_Dialog_TestConfirmDialogDefaultGCCancel
+#else
+#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
+  Dialog_TestConfirmDialogDefaultGCCancel
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "web_view/dialog",
              NO_TEST_SERVER);

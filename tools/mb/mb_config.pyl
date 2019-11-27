@@ -201,8 +201,8 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
 
-      'android-code-coverage': 'android_release_bot_minimal_symbols_arm64_coverage',
-      'android-code-coverage-native': 'android_release_bot_minimal_symbols_arm64_native_coverage',
+      'android-code-coverage': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage',
+      'android-code-coverage-native': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_native_coverage',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_coverage',
@@ -671,7 +671,7 @@
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
-      'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage',
+      'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -1153,16 +1153,6 @@
       'strip_debug_info',
     ],
 
-    'android_release_bot_minimal_symbols_arm64_coverage': [
-      'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'use_java_coverage',
-    ],
-
-    'android_release_bot_minimal_symbols_arm64_native_coverage': [
-      'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'use_clang_coverage',
-    ],
-
     'android_release_bot_minimal_symbols_arm64_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_google',
@@ -1633,9 +1623,21 @@
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
-      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
       'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
       'android_no_proguard',
+    ],
+
+    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage': [
+      'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
+      'android_no_proguard', 'use_java_coverage',
+    ],
+
+    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_native_coverage': [
+      'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
+      'android_no_proguard', 'use_clang_coverage',
     ],
 
     'gpu_tests_android_release_trybot': [
@@ -1652,13 +1654,15 @@
     ],
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild': [
-      'android', 'release_trybot', 'arm64', 'static_angle',
+      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
       'resource_whitelisting', 'android_fastbuild', 'webview_google',
       'android_no_proguard',
     ],
 
-    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [
-      'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
+    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage': [
+      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
+      'resource_whitelisting', 'android_fastbuild', 'webview_google',
+      'android_no_proguard',
       'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
@@ -2316,10 +2320,7 @@
     },
 
     'goma': {
-      # strip_absolute_paths_from_debug_symbols is on by default on Linux and
-      # Windows, but not elsewhere. Since it helps goma's cache, set this to
-      # help Android builds.
-      'gn_args': 'use_goma=true strip_absolute_paths_from_debug_symbols=true',
+      'gn_args': 'use_goma=true',
     },
 
     'gpu_fyi_tests': {

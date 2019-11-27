@@ -50,7 +50,7 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
         }) == items_.end()) {
       items_.emplace(std::piecewise_construct,
                      std::forward_as_tuple(route.media_route_id()),
-                     std::forward_as_tuple(notification_controller_));
+                     std::forward_as_tuple(route, notification_controller_));
       // TODO(crbug.com/987479): Connect the CastMediaNotificationItem to a
       // controller through MediaRouter::GetMediaController().
     }

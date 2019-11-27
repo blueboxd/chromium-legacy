@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.feed;
 
 import org.chromium.base.VisibleForTesting;
 
-/** A network client that returns configurable responses
- *  modified from com.google.android.libraries.feed.mocknetworkclient.MockServerNetworkClient
+/**
+ * A network client that returns configurable responses
+ *  modified from org.chromium.chrome.browser.feed.library.mocknetworkclient.MockServerNetworkClient
  */
 public class TestNetworkClient {
     public TestNetworkClient() {}

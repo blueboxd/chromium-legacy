@@ -101,7 +101,7 @@ public class TabSuspensionTest {
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         jniMocker.mock(UsageStatsBridgeJni.TEST_HOOKS, mUsageStatsNativeMock);
-        doReturn(123456l).when(mUsageStatsNativeMock).init(anyObject(), anyObject());
+        doReturn(123456L).when(mUsageStatsNativeMock).init(anyObject(), anyObject());
         // TokenTracker and EventTracker hold a promise, and Promises can only be used on a single
         // thread, so we have to initialize them on the thread where they will be used.
         TestThreadUtils.runOnUiThreadBlocking(() -> {

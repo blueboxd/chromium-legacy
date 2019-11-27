@@ -5,6 +5,9 @@ import os
 import urllib
 
 from core import benchmark_finders
+from core import benchmark_utils
+
+from telemetry.story import story_filter
 
 
 _SHARD_MAP_DIR = os.path.join(os.path.dirname(__file__), 'shard_maps')
@@ -109,10 +112,30 @@ class BenchmarkConfig(object):
     """
     self.benchmark = benchmark
     self.abridged = abridged
+    self._stories = None
 
   @property
   def name(self):
     return self.benchmark.Name()
+
+  @property
+  def repeat(self):
+    return self.benchmark.options.get('pageset_repeat', 1)
+
+  @property
+  def stories(self):
+    if self._stories != None:
+      return self._stories
+    else:
+      story_set = benchmark_utils.GetBenchmarkStorySet(self.benchmark())
+      abridged_story_set_tag = (
+          story_set.GetAbridgedStorySetTagFilter() if self.abridged else None)
+      story_filter_obj = story_filter.StoryFilter(
+          abridged_story_set_tag=abridged_story_set_tag)
+      stories = story_filter_obj.FilterStories(story_set)
+      self._stories = [story.name for story in stories]
+      return self._stories
+
 
 # Global |benchmarks| is convenient way to keep BenchmarkConfig objects
 # unique, which allows us to use set subtraction below.
@@ -168,7 +191,8 @@ _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = frozenset([
-    _GetBenchmarkConfig('system_health.common_mobile')])
+    _GetBenchmarkConfig('system_health.common_mobile', True),
+    _GetBenchmarkConfig('system_health.memory_mobile', True)])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('heap_profiling.mobile.disabled'),
     _GetBenchmarkConfig('heap_profiling.mobile.native'),

@@ -28,6 +28,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -38,11 +40,9 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Dialog to ask to user to enter their sync passphrase.
@@ -191,22 +191,23 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     private SpannableString getPromptText() {
         ProfileSyncService pss = ProfileSyncService.get();
         String accountName = pss.getCurrentSignedInAccountText() + "\n\n";
-        @Passphrase.Type
+        @PassphraseType
         int passphraseType = pss.getPassphraseType();
         if (pss.hasExplicitPassphraseTime()) {
             String syncPassphraseHelpContext =
                     getString(R.string.help_context_change_sync_passphrase);
             switch (passphraseType) {
-                case Passphrase.Type.FROZEN_IMPLICIT:
+                case PassphraseType.FROZEN_IMPLICIT_PASSPHRASE:
                     return applyInProductHelpSpan(
                             accountName + pss.getSyncEnterGooglePassphraseBodyWithDateText(),
                             syncPassphraseHelpContext);
-                case Passphrase.Type.CUSTOM:
+                case PassphraseType.CUSTOM_PASSPHRASE:
                     return applyInProductHelpSpan(
                             accountName + pss.getSyncEnterCustomPassphraseBodyWithDateText(),
                             syncPassphraseHelpContext);
-                case Passphrase.Type.IMPLICIT: // Falling through intentionally.
-                case Passphrase.Type.KEYSTORE: // Falling through intentionally.
+                case PassphraseType.IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.KEYSTORE_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.TRUSTED_VAULT_PASSPHRASE: // Falling through intentionally.
                 default:
                     Log.w(TAG, "Found incorrect passphrase type " + passphraseType
                                     + ". Falling back to default string.");

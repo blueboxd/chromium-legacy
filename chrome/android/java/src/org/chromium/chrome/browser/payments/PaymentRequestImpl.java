@@ -611,8 +611,7 @@ public class PaymentRequestImpl
         }
 
         boolean googlePayBridgeActivated = googlePayBridgeEligible
-                && PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.PAYMENT_REQUEST_SKIP_TO_GPAY);
+                && SkipToGPayHelper.canActivateExperiment(mWebContents, methodData);
 
         mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
         if (googlePayBridgeActivated) {

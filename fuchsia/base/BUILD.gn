@@ -22,7 +22,7 @@ source_set("base") {
   ]
   deps = [
     "//base",
-    "//third_party/fuchsia-sdk/sdk:mem",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-mem",
   ]
 }
 
@@ -40,7 +40,7 @@ source_set("modular") {
     "//base",
   ]
   public_deps = [
-    "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
 }
@@ -58,7 +58,7 @@ source_set("message_port") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//third_party/blink/public/common",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
   ]
 }
 
@@ -84,8 +84,8 @@ source_set("test_support") {
     "//base",
     "//net",
     "//net:test_support",
-    "//third_party/fuchsia-sdk/sdk:modular",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//url",
   ]
 }

@@ -232,6 +232,11 @@ const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
 const char kNightLightCachedLatitude[] = "ash.night_light.cached_latitude";
 const char kNightLightCachedLongitude[] = "ash.night_light.cached_longitude";
 
+// A boolean pref storing whether the AutoNightLight notification has ever been
+// dismissed by the user, which we use to stop showing it again.
+const char kAutoNightLightNotificationDismissed[] =
+    "ash.auto_night_light.notification_dismissed";
+
 // Whether the Chrome OS lock screen is allowed.
 const char kAllowScreenLock[] = "allow_screen_lock";
 

@@ -471,6 +471,13 @@ class SpdyServerPushHelper : public ServerPushDelegate::ServerPushHelper {
 
   const GURL& GetURL() const override { return request_url_; }
 
+  NetworkIsolationKey GetNetworkIsolationKey() const override {
+    if (session_) {
+      return session_->spdy_session_key().network_isolation_key();
+    }
+    return NetworkIsolationKey();
+  }
+
  private:
   base::WeakPtr<SpdySession> session_;
   const GURL request_url_;

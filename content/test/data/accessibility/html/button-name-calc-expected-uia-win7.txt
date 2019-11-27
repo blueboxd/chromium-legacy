@@ -6,9 +6,15 @@ document
 ++button Name='LabelledBy4'
 ++button Name='InnerText5'
 ++button Name='Outer inner'
+++++description Name='Outer' IsControlElement=false
 ++++group
+++++++description Name='inner' IsControlElement=false
 ++button Name='Outer inner1'
+++++description Name='Outer' IsControlElement=false
 ++++group Name='inner1'
+++++++description Name='inner2' IsControlElement=false
 ++button Name='Outer grandchild'
+++++description Name='Outer' IsControlElement=false
 ++++group
 ++++++group
+++++++++description Name='grandchild' IsControlElement=false

@@ -173,7 +173,7 @@ if (is_android || is_chromeos) {
     # Set to false to disable the Errorprone compiler.
     # Defaults to false for official builds to reduce build times.
     # Static analysis failures should have been already caught by normal bots.
-    use_errorprone_java_compiler = false  # TODO(crbug.com/1027541): re-enable.
+    use_errorprone_java_compiler = !is_official_build
 
     # Build incremental targets whenever possible.
     # See //build/android/incremental_install/README.md for more details.

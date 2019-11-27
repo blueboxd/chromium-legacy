@@ -33,11 +33,6 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
     private static final String PREF_PAYMENT_APPS = "payment_apps";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.autofill_payment_methods);
 

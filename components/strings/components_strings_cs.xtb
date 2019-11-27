@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Zobrazit více</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Změňte heslo</translation>
 <translation id="1484290072879560759">Vybrat dodací adresu</translation>
 <translation id="1492194039220927094">Přenesení zásad:</translation>
 <translation id="1501859676467574491">Zobrazit karty z vašeho účtu Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Zkuste kontaktovat administrátora systému.</translation>
 <translation id="1736420071277903564">Počítač</translation>
-<translation id="1739107442478692187">Na webu nebo v aplikaci, které používáte, došlo k porušení zabezpečení údajů. Chrome doporučuje ihned zkontrolovat uložená hesla a změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Zadejte platný měsíc vypršení platnosti</translation>
 <translation id="1741613555002899862">Když je zásada DnsOverHttpsMode nastavená na hodnotu <ph name="SECURE_DNS_MODE_SECURE" />, musí být tato zásada nastavená a musí být platná.</translation>
 <translation id="1743520634839655729">Abyste příště mohli zaplatit rychleji, uložte si kartu, jméno a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Služba rozbalování souborů ZIP</translation>
 <translation id="1915697529809968049">Použít Touch ID namísto CVC?</translation>
 <translation id="1916770123977586577">Chcete-li pro tento web použít aktualizovaná nastavení, načtěte tuto stránku znovu</translation>
+<translation id="1917876262703816781">Vaše heslo bylo vyzrazeno při porušení zabezpečení webu nebo aplikace. Chrome doporučuje okamžitě změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Nápověda ke konkrétní chybové zprávě</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žádné}=1{1 web}few{# weby}many{# webu}other{# webů}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Neshoda domén</translation>
 <translation id="2096368010154057602">Department</translation>
 <translation id="2099652385553570808">Tři sponky vlevo</translation>
-<translation id="2100280972184758440">Vaše heslo bylo ohroženo</translation>
 <translation id="2102134110707549001">Navrhnout silné heslo…</translation>
 <translation id="2108755909498034140">Restartujte počítač</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Vydáno organizaci <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Děrování vpravo dole</translation>
-<translation id="2124528555835617522">Na webu nebo v aplikaci, které používáte, došlo k porušení zabezpečení údajů. Chrome vám doporučuje zkontrolovat nyní uložená hesla.</translation>
 <translation id="2129079103035905234">Senzory pohybu</translation>
 <translation id="2130448033692577677">Zadané šablony nelze použít, protože není nastavená zásada DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
@@ -481,7 +480,6 @@
 <translation id="3282497668470633863">Přidání jména na kartě</translation>
 <translation id="3287510313208355388">Stáhnout, až bude zařízení online</translation>
 <translation id="3293642807462928945">Další informace o zásadě <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Na webu nebo v aplikaci, které používáte, došlo k porušení zabezpečení údajů. Chrome doporučuje okamžitě změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Nebyly nalezeny žádné výsledky</translation>
 <translation id="3320021301628644560">Přidání fakturační adresy</translation>
 <translation id="3324983252691184275">Karmínová</translation>
@@ -888,6 +886,7 @@
 <translation id="5287240709317226393">Zobrazit soubory cookie</translation>
 <translation id="5287456746628258573">Tento web používá zastaralou konfiguraci zabezpečení, která vaše informace odesílané na tento web (například hesla nebo čísla kreditních karet) vystavuje riziku odhalení.</translation>
 <translation id="5288108484102287882">Ověření hodnot zásad vygenerovalo upozornění</translation>
+<translation id="5295292838686006428">Vaše heslo bylo vyzrazeno při porušení zabezpečení webu nebo aplikace. Chrome doporučuje okamžitě zkontrolovat uložená hesla.</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5308380583665731573">Připojení</translation>
@@ -938,6 +937,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
 <translation id="5541546772353173584">Přidání e-mailu</translation>
 <translation id="5545756402275714221">Články pro vás</translation>
+<translation id="5552137475244467770">Chrome vaše hesla pravidelně porovnává se seznamy hesel, která unikla na internet. Vaše hesla a uživatelská jména jsou při tom šifrována, takže je nemůže nikdo zobrazit (ani Google).</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5560088892362098740">Datum vypršení platnosti</translation>
 <translation id="5565735124758917034">Aktivní</translation>
@@ -1029,6 +1029,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5992691462791905444">Technické přeložení do Z</translation>
 <translation id="6000758707621254961">Výsledky pro dotaz <ph name="SEARCH_TEXT" /> (<ph name="RESULT_COUNT" />)</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Kontrola hesel</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Stránka 1}few{Stránka #}many{Stránka #}other{Stránka #}}</translation>
 <translation id="6017514345406065928">Zelená</translation>
@@ -1316,6 +1317,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="748406663033922918">Uložené platební metody můžete ověřit pomocí zámku obrazovky.</translation>
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
+<translation id="7495290002932347110">Vaše heslo bylo vyzrazeno při porušení zabezpečení webu nebo aplikace. Chrome doporučuje okamžitě zkontrolovat uložená hesla a změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Pokračovat v úpravách</translation>
 <translation id="7508255263130623398">Vrácené ID zařízení pro zásady je prázdné nebo neodpovídá aktuálnímu ID zařízení</translation>
 <translation id="7508870219247277067">Žlutozelená</translation>

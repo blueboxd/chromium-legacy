@@ -556,7 +556,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> を使用しています</translation>
 <translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> でデバイスのロックを解除してください</translation>
-<translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">ファミリー リンクの保護者のアクセスコードを入力してください。</translation>
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>
 <translation id="9056839673611986238">デバイスはロールバックされます</translation>
@@ -573,6 +572,7 @@
 <translation id="9183456764293710005">全画面拡大鏡</translation>
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
+<translation id="9205817095063786319"><ph name="DOMAIN" /> で管理されているデバイス</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="9211681782751733685">充電完了まであと <ph name="TIME_REMAINING" />です。</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>

@@ -59,7 +59,7 @@ const double kStableSampledInRate = 0.02;
 const double kBetaDevCanarySampledInRate = 0.99;
 
 // As a mitigation to preserve use privacy, the privacy team has asked that we
-// upload package name with no more than 10% of UMA records. This is to mitigate
+// upload package name with no more than 10% of UMA clients. This is to mitigate
 // fingerprinting for users on low-usage applications (if an app only has a
 // a small handful of users, there's a very good chance many of them won't be
 // uploading UMA records due to sampling). Do not change this constant without
@@ -190,6 +190,7 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
       RegisterForNotifications();
       metrics_state_manager_->ForceClientIdCreation();
       is_in_sample_ = IsInSample();
+      is_in_package_name_sample_ = IsInPackageNameSample();
       if (IsReportingEnabled()) {
         // WebView has no shutdown sequence, so there's no need for a matching
         // Stop() call.
@@ -327,7 +328,7 @@ bool AwMetricsServiceClient::ShouldStartUpFastForTesting() const {
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {
-  if (IsInPackageNameSample() && CanRecordPackageNameForAppType()) {
+  if (is_in_package_name_sample_ && CanRecordPackageNameForAppType()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaLocalRef<jstring> j_app_name =
         Java_AwMetricsServiceClient_getAppPackageName(env);

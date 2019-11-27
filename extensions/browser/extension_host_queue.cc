@@ -8,46 +8,24 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/variations/variations_associated_data.h"
 #include "extensions/browser/deferred_start_render_host.h"
 
 namespace extensions {
 
-namespace {
-
-// Gets the number of milliseconds to delay between loading ExtensionHosts. By
-// default this is 0, but it can be overridden by field trials.
-int GetDelayMs() {
-  // TODO(devlin): I think these field trials are dead. Confirm, and remove.
-  // A sanity check for the maximum delay, to guard against a bad field trial
-  // config being pushed that delays loading too much (e.g. using wrong units).
-  static const int kMaxDelayMs = 30 * 1000;
-  static int delay_ms = -1;
-  if (delay_ms == -1) {
-    std::string delay_ms_param =
-        variations::GetVariationParamValue("ExtensionSpeed", "SerialEHQDelay");
-    if (delay_ms_param.empty()) {
-      delay_ms = 0;
-    } else if (!base::StringToInt(delay_ms_param, &delay_ms)) {
-      LOG(ERROR) << "Could not parse SerialEHQDelay: " << delay_ms_param;
-      delay_ms = 0;
-    } else if (delay_ms < 0 || delay_ms > kMaxDelayMs) {
-      LOG(ERROR) << "SerialEHQDelay out of range: " << delay_ms;
-      delay_ms = 0;
-    }
-  }
-  return delay_ms;
-}
-
-}  // namespace
-
 ExtensionHostQueue::ExtensionHostQueue() : pending_create_(false) {}
 
 ExtensionHostQueue::~ExtensionHostQueue() = default;
+
+// static
+ExtensionHostQueue& ExtensionHostQueue::GetInstance() {
+  static base::NoDestructor<ExtensionHostQueue> queue;
+  return *queue;
+}
 
 void ExtensionHostQueue::Add(DeferredStartRenderHost* host) {
   queue_.push_back(host);
@@ -62,11 +40,9 @@ void ExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
 
 void ExtensionHostQueue::PostTask() {
   if (!pending_create_) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ExtensionHostQueue::ProcessOneHost,
-                       ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(GetDelayMs()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ExtensionHostQueue::ProcessOneHost,
+                                  ptr_factory_.GetWeakPtr()));
     pending_create_ = true;
   }
 }

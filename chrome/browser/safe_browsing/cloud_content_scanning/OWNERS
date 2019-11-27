@@ -1,0 +1,7 @@
+per-file deep_scanning_dialog_delegate.cc=rogerta@chromium.org
+per-file deep_scanning_dialog_delegate.h=rogerta@chromium.org
+per-file deep_scanning_dialog_delegate_unittest.cc=rogerta@chromium.org
+per-file fake_deep_scanning_dialog_delegate.cc=rogerta@chromium.org
+per-file fake_deep_scanning_dialog_delegate.h=rogerta@chromium.org
+
+drubery@chromium.org

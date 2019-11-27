@@ -364,20 +364,15 @@ class OrderfileUpdater(object):
   _CLOUD_STORAGE_BUCKET = None
   _UPLOAD_TO_CLOUD_COMMAND = 'upload_to_google_storage.py'
 
-  def __init__(self, repository_root, step_recorder, branch, netrc=None):
+  def __init__(self, repository_root, step_recorder):
     """Constructor.
 
     Args:
       repository_root: (str) Root of the target repository.
       step_recorder: (StepRecorder) Step recorder, for logging.
-      branch: (str) Branch to commit to.
-      netrc: (str) Obsolete. Specified by code in internal repo. TODO(pasko):
-          remove.
     """
-    # pylint: disable=unused-argument
     self._repository_root = repository_root
     self._step_recorder = step_recorder
-    self._branch = branch
 
   def CommitStashedFileHashes(self, files):
     """Commits unpatched and patched orderfiles hashes if changed.
@@ -397,34 +392,6 @@ class OrderfileUpdater(object):
     files_to_commit = list(filter(None, files))
     if files_to_commit:
       self._CommitStashedFiles(files_to_commit)
-
-  def LegacyCommitFileHashes(self,
-                             unpatched_orderfile_filename,
-                             orderfile_filename):
-    """Commits unpatched and patched orderfiles hashes, if provided.
-
-    DEPRECATED. Left in place during transition.
-
-    Files must have been successfilly uploaded to cloud storage first.
-
-    Args:
-      unpatched_orderfile_filename: (str or None) Unpatched orderfile path.
-      orderfile_filename: (str or None) Orderfile path.
-
-    Raises:
-      NotImplementedError when the commit logic hasn't been overridden.
-    """
-    files_to_commit = []
-    commit_message_lines = ['Update Orderfile.']
-    for filename in [unpatched_orderfile_filename, orderfile_filename]:
-      if not filename:
-        continue
-      (relative_path, sha1) = self._GetHashFilePathAndContents(filename)
-      commit_message_lines.append('Profile: %s: %s' % (
-          os.path.basename(relative_path), sha1))
-      files_to_commit.append(relative_path)
-    if files_to_commit:
-      self._CommitFiles(files_to_commit, commit_message_lines)
 
   def UploadToCloudStorage(self, filename, use_debug_location):
     """Uploads a file to cloud storage.
@@ -634,8 +601,7 @@ class OrderfileGenerator(object):
         orderfile_updater_class = OrderfileUpdater
     assert issubclass(orderfile_updater_class, OrderfileUpdater)
     self._orderfile_updater = orderfile_updater_class(self._clank_dir,
-                                                      self._step_recorder,
-                                                      options.branch)
+                                                      self._step_recorder)
     assert os.path.isdir(constants.DIR_SOURCE_ROOT), 'No src directory found'
     symbol_extractor.SetArchitecture(options.arch)
 
@@ -987,9 +953,6 @@ class OrderfileGenerator(object):
 
   def Generate(self):
     """Generates and maybe upload an order."""
-    profile_uploaded = False
-    orderfile_uploaded = False
-
     assert (bool(self._options.profile) ^
             bool(self._options.manual_symbol_offsets))
     if self._options.system_health_orderfile and not self._options.profile:
@@ -1017,7 +980,6 @@ class OrderfileGenerator(object):
                                           self._options.use_call_graph)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
-        profile_uploaded = True
       finally:
         _StashOutputDirectory(self._instrumented_out_dir)
     elif self._options.manual_symbol_offsets:
@@ -1063,7 +1025,6 @@ class OrderfileGenerator(object):
         self._MaybeArchiveOrderfile(self._GetPathToOrderfile())
       finally:
         _StashOutputDirectory(self._uninstrumented_out_dir)
-      orderfile_uploaded = True
 
     if self._options.benchmark:
       self._output_data['orderfile_benchmark_results'] = self.RunBenchmark(
@@ -1071,16 +1032,7 @@ class OrderfileGenerator(object):
       self._output_data['no_orderfile_benchmark_results'] = self.RunBenchmark(
           self._no_orderfile_out_dir, no_orderfile=True)
 
-    if self._options.new_commit_flow:
-      self._orderfile_updater._GitStash()
-    else:
-      if (self._options.buildbot and not self._step_recorder.ErrorRecorded()):
-        unpatched_orderfile_filename = (
-            self._GetUnpatchedOrderfileFilename() if profile_uploaded else None)
-        orderfile_filename = (
-            self._GetPathToOrderfile() if orderfile_uploaded else None)
-        self._orderfile_updater.LegacyCommitFileHashes(
-            unpatched_orderfile_filename, orderfile_filename)
+    self._orderfile_updater._GitStash()
     self._step_recorder.EndStep()
     return not self._step_recorder.ErrorRecorded()
 
@@ -1133,17 +1085,6 @@ def CreateArgumentParser():
   parser.add_argument(
       '--skip-patch', action='store_false', dest='patch', default=True,
       help='Only generate the raw (unpatched) orderfile, don\'t patch it.')
-  parser.add_argument(
-      '--netrc', action='store', help='Obsolete. A custom .netrc file.')
-  parser.add_argument(
-      '--branch', action='store', default='master',
-      help='When running on buildbot, the branch orderfile '
-      'hashes get checked into.')
-  # Obsolete (Autoninja is now used, and this argument is ignored).
-  parser.add_argument(
-      '-j', '--jobs', help='Obsolete. Number of jobs to use for compilation.')
-  # Obsolete (Autoninja is now used, and this argument is ignored).
-  parser.add_argument('-l', '--max-load', help='Obsolete. Max cpu load.')
   parser.add_argument('--goma-dir', help='GOMA directory.')
   parser.add_argument(
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
@@ -1160,7 +1101,6 @@ def CreateArgumentParser():
   parser.add_argument(
       '--use-legacy-chrome-apk', action='store_true', default=False,
       help=('Compile and instrument chrome for [L, K] devices.'))
-
   parser.add_argument('--manual-symbol-offsets', default=None, type=str,
                       help=('File of list of ordered symbol offsets generated '
                             'by manual profiling. Must set other --manual* '
@@ -1195,7 +1135,7 @@ def CreateArgumentParser():
   parser.add_argument('--commit-hashes', action='store_true',
                       help=('Commit any orderfile hash files in the current '
                             'checkout; performs no other action'))
-  parser.add_argument('--new-commit-flow', action='store_true',
+  parser.add_argument('--new-commit-flow', action='store_true', default=True,
                       help='Use the new two-step commit flow.')
   parser.add_argument('--use-call-graph', action='store_true', default=False,
                       help='Use call graph instrumentation.')
@@ -1224,8 +1164,6 @@ def CreateOrderfile(options, orderfile_updater_class=None):
     if options.verify:
       generator._VerifySymbolOrder()
     elif options.commit_hashes:
-      if not options.new_commit_flow:
-        raise Exception('--commit-hashes requries --new-commit-flow')
       return generator.CommitStashedOrderfileHashes()
     elif options.upload_ready_orderfiles:
       return generator.UploadReadyOrderfiles()

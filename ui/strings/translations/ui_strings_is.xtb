@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Frá vinstri til hægri</translation>
 <translation id="1383876407941801731">Leita</translation>
 <translation id="1398853756734560583">Stækka</translation>
-<translation id="1409544243779336081">Tillaga að forriti</translation>
 <translation id="1450753235335490080">Ekki er hægt að deila <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Þú hefur leitað að þessu áður. Ef þú eyðir „<ph name="QUERY" />“ úr ferlinum þínum verður það fjarlægt varanlega af reikningnum þínum í öllum tækjunum þínum.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 mínúta og }one{# mínúta og }other{# mínútur og }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Punktur</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{Einn mánuður}one{# mánuður}other{# mánuðir}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/sek.</translation>
-<translation id="1812519734428420144">Stjörnugjöf <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 klukkustund og }one{# klukkustund og }other{# klukkustundir og }}</translation>
 <translation id="1842960171412779397">velja</translation>
 <translation id="1859234291848436338">Ritunarstefna</translation>

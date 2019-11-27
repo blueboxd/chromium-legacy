@@ -258,7 +258,7 @@ class PageNodeImpl
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   // Inline storage for PageAggregatorAccess user data.
-  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 24> page_aggregator_data_;
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 20> page_aggregator_data_;
 
   base::WeakPtrFactory<PageNodeImpl> weak_factory_{this};
 

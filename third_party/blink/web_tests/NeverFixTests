@@ -286,10 +286,11 @@ crbug.com/551843 [ Linux ] virtual/text-antialias/fallback-traits-fixup.html [ S
 crbug.com/551843 [ Linux ] virtual/text-antialias/emoji-font-weight-mac.html [ Skip ]
 crbug.com/551843 [ Win ] virtual/text-antialias/emoji-font-weight-mac.html [ Skip ]
 
-# Variable system font only supported on Mac atm.
+# Variable system font only supported on Mac 10.12 and newer atm.
 crbug.com/670246 [ Linux ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
 crbug.com/670246 [ Win ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
 crbug.com/670246 [ Mac10.10 ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
+crbug.com/670246 [ Mac10.11 ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
 
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Skip ]

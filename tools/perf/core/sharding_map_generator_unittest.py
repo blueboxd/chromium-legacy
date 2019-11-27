@@ -11,23 +11,27 @@ import unittest
 from core import sharding_map_generator
 
 
+class FakeBenchmarkConfig(object):
+  def __init__(self, name, stories, repeat):
+    self.name = name
+    self.stories = stories
+    self.repeat = repeat
+    self.abridged = False
+
+
 class TestShardingMapGenerator(unittest.TestCase):
 
   def _generate_test_data(self, times):
     timing_data = []
     benchmarks_data = []
     for i, _ in enumerate(times):
-      b = {
-        'name': 'benchmark_' + str(i),
-        'stories': [],
-        'repeat': 1,
-      }
+      b = FakeBenchmarkConfig('benchmark_' + str(i), [], 1)
       benchmarks_data.append(b)
       story_times = times[i]
       for j, _ in enumerate(story_times):
         benchmark_name = 'benchmark_' + str(i)
         story_name = 'story_' + str(j)
-        b['stories'].append(story_name)
+        b.stories.append(story_name)
         timing_data.append({
            'name': benchmark_name + '/' + story_name,
            'duration': story_times[j]
@@ -55,15 +59,10 @@ class TestShardingMapGenerator(unittest.TestCase):
     # shard 3.
     timing_data = []
     benchmarks_data = [
-      { 'name': 'foo_benchmark',
-        'stories': ['foo_1', 'foo_2', 'foo_3', 'foo_4'],
-        'repeat': 2
-      },
-      { 'name': 'bar_benchmark',
-        'stories': ['bar_1', 'bar_2', 'bar_3', 'bar_4'],
-        'repeat': 1
-      }
-
+        FakeBenchmarkConfig(
+            'foo_benchmark', ['foo_1', 'foo_2', 'foo_3', 'foo_4'], 2),
+        FakeBenchmarkConfig(
+            'bar_benchmark', ['bar_1', 'bar_2', 'bar_3', 'bar_4'], 1),
     ]
     sharding_map = sharding_map_generator.generate_sharding_map(
         benchmarks_data, timing_data, 3, None)
@@ -85,7 +84,9 @@ class TestShardingMapGenerator(unittest.TestCase):
   def testGeneratePerfSharding(self):
     test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
     with open(os.path.join(test_data_dir, 'benchmarks_to_shard.json')) as f:
-      benchmarks_to_shard = json.load(f)
+      raw_configs = json.load(f)
+      benchmarks_to_shard = [FakeBenchmarkConfig(
+          c['name'], c['stories'], c['repeat']) for c in raw_configs]
 
     with open(os.path.join(test_data_dir, 'test_timing_data.json')) as f:
       timing_data = json.load(f)

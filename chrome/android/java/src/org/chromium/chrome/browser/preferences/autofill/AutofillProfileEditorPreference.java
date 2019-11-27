@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
  * Launches the UI to edit, create or delete an Autofill profile entry.
  */
 public class AutofillProfileEditorPreference extends Preference {
-    final private Activity mActivity;
-    final private EditorObserverForTest mObserverForTest;
+    private final Activity mActivity;
+    private final EditorObserverForTest mObserverForTest;
     private EditorDialog mEditorDialog;
     private AutofillAddress mAutofillAddress;
     private String mGUID;

@@ -416,11 +416,6 @@
 
           如果此政策未设置，放大镜在登录屏幕上最初会处于停用状态，但用户可以随时启用它。</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
-<translation id="1676141669324989554">让您能够设置用户可否添加例外情况以允许在特定网站中显示混合内容。
-
-          您可以使用“InsecureContentAllowedForUrls”和“InsecureContentBlockedForUrls”政策为特定网址格式覆盖此政策。
-
-          如果未设置此政策，用户将能添加例外情况以允许显示可屏蔽的混合内容。</translation>
 <translation id="1695708467571967752">此政策用于控制用户是否能够在设备锁定时播放媒体。
 
       如果将此政策设为 False，系统会停用锁定屏幕上的媒体控件。
@@ -3093,9 +3088,6 @@
 <translation id="5961137303188584693">设备的内置 NIC MAC 地址</translation>
 <translation id="5966615072639944554">允许扩展程序使用 Remote Attestation API</translation>
 <translation id="5983708779415553259">非任何内容包内的网站的默认行为</translation>
-<translation id="5997107377032983906">让您能够设置一系列网址格式，以指定允许哪些网站显示可屏蔽的（即主动型）混合内容（即 HTTPS 网站上的 HTTP 内容）。
-
-          如果未设置此政策，可屏蔽的混合内容将遭到屏蔽，但用户将能设置例外情况以允许在特定网站上显示此类内容。</translation>
 <translation id="5997543603646547632">默认情况下，使用24小时制</translation>
 <translation id="5997846976342452720">指定是否应停用插件查找器（已弃用）</translation>
 <translation id="5998198091336830580">此政策是下面这个原子政策组的一部分（系统仅会应用该组中来源优先级最高的政策）：</translation>
@@ -3476,9 +3468,6 @@
 <translation id="6786747875388722282">扩展程序</translation>
 <translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6795485990775913659">仅允许在没有 PIN 码的情况下打印</translation>
-<translation id="6800064234889290465">让您能够设置一系列网址格式，以指定不允许哪些网站显示可屏蔽的（即主动型）混合内容（即 HTTPS 网站上的 HTTP 内容）。
-
-          如果未设置此政策，可屏蔽的混合内容将遭到屏蔽，但用户将能设置例外情况以允许在特定网站上显示此类内容。</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="6813263547126514821">电源和关机</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>

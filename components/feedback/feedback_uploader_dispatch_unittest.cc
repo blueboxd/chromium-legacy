@@ -88,7 +88,6 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("Test", "Group1", 123);
 
   FeedbackUploader uploader(

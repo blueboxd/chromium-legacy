@@ -14,6 +14,9 @@ namespace features {
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutoNightLight{"AutoNightLight",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -105,6 +108,10 @@ const base::Feature kDragFromShelfToHomeOrOverview{
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
+
+bool IsAutoNightLightEnabled() {
+  return base::FeatureList::IsEnabled(kAutoNightLight);
 }
 
 bool IsHideArcMediaNotificationsEnabled() {

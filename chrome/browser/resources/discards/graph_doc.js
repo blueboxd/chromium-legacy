@@ -9,18 +9,18 @@ const kPageNodesTargetY = 20;
 const kPageNodesYRange = 100;
 
 // Range occupied by process nodes at the bottom of the graph view.
-const kProcessNodesYRange = 150;
+const kProcessNodesYRange = 100;
 
 // Range occupied by worker nodes at the bottom of the graph view, above
 // process nodes.
-const kWorkerNodesYRange = 300;
+const kWorkerNodesYRange = 200;
 
 // Target y position for frame nodes.
 const kFrameNodesTargetY = kPageNodesYRange + 50;
 
 // Range that frame nodes cannot enter at the top/bottom of the graph view.
 const kFrameNodesTopMargin = kPageNodesYRange;
-const kFrameNodesBottomMargin = kProcessNodesYRange + 50;
+const kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
 
 /** @implements {d3.ForceNode} */
 class GraphNode {
@@ -58,8 +58,8 @@ class GraphNode {
   /**
    * Sets the initial x and y position of this node, also resets
    * vx and vy.
-   * @param {number} graphWidth: Width of the graph view (svg).
-   * @param {number} graphHeight: Height of the graph view (svg).
+   * @param {number} graphWidth Width of the graph view (svg).
+   * @param {number} graphHeight Height of the graph view (svg).
    */
   setInitialPosition(graphWidth, graphHeight) {
     this.x = graphWidth / 2;
@@ -69,7 +69,7 @@ class GraphNode {
   }
 
   /**
-   * @param {number} graphHeight: Height of the graph view (svg).
+   * @param {number} graphHeight Height of the graph view (svg).
    * @return {number}
    */
   targetYPosition(graphHeight) {
@@ -78,7 +78,7 @@ class GraphNode {
   }
 
   /**
-   * @return {number}: The strength of the force that pulls the node towards
+   * @return {number} The strength of the force that pulls the node towards
    *                    its target y position.
    */
   targetYPositionStrength() {
@@ -86,7 +86,7 @@ class GraphNode {
   }
 
   /**
-   * @param {number} graphHeight: Height of the graph view.
+   * @param {number} graphHeight Height of the graph view.
    * @return {!Array<number>}
    */
   allowedYRange(graphHeight) {
@@ -94,7 +94,7 @@ class GraphNode {
     return [0, graphHeight];
   }
 
-  /** @return {number}: The strength of the repulsion force with other nodes. */
+  /** @return {number} The strength of the repulsion force with other nodes. */
   manyBodyStrength() {
     return -200;
   }
@@ -106,7 +106,7 @@ class GraphNode {
 
   /**
    * Selects a color string from an id.
-   * @param {number} id: The id the returned color is selected from.
+   * @param {number} id The id the returned color is selected from.
    * @return {string}
    */
   selectColor(id) {
@@ -314,6 +314,12 @@ class Graph {
     this.simulation_ = null;
 
     /**
+     * A selection for the top-level <g> node that contains all separators.
+     * @private {d3.selection}
+     */
+    this.separatorGroup_ = null;
+
+    /**
      * A selection for the top-level <g> node that contains all nodes.
      * @private {d3.selection}
      */
@@ -364,6 +370,7 @@ class Graph {
     const svg = d3.select(this.svg_);
     this.linkGroup_ = svg.append('g').attr('class', 'links');
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
+    this.separatorGroup_ = svg.append('g').attr('class', 'separators');
   }
 
   /** @override */
@@ -673,6 +680,55 @@ class Graph {
     return d.manyBodyStrength();
   }
 
+  /**
+   * @param {number} graphWidth Width of the graph view (svg).
+   * @param {number} graphHeight Height of the graph view (svg).
+   * @private
+   */
+  updateSeparators_(graphWidth, graphHeight) {
+    const separators = [
+      ['Pages', 'Frame Tree', kPageNodesYRange],
+      ['', 'Workers', graphHeight - kWorkerNodesYRange],
+      ['', 'Processes', graphHeight - kProcessNodesYRange],
+    ];
+    const kAboveLabelOffset = -6;
+    const kBelowLabelOffset = 14;
+
+    const groups = this.separatorGroup_.selectAll('g').data(separators);
+    if (groups.enter()) {
+      const group = groups.enter().append('g').attr(
+          'transform', d => `translate(0,${d[2]})`);
+      group.append('line')
+          .attr('x1', 10)
+          .attr('y1', 0)
+          .attr('x2', graphWidth - 10)
+          .attr('y2', 0)
+          .attr('stroke', 'black')
+          .attr('stroke-dasharray', '4');
+
+      group.each(function(d) {
+        const parentGroup = d3.select(this);
+        if (d[0]) {
+          parentGroup.append('text')
+              .attr('x', 20)
+              .attr('y', kAboveLabelOffset)
+              .attr('class', 'separator')
+              .text(d => d[0]);
+        }
+        if (d[1]) {
+          parentGroup.append('text')
+              .attr('x', 20)
+              .attr('y', kBelowLabelOffset)
+              .attr('class', 'separator')
+              .text(d => d[1]);
+        }
+      });
+    }
+
+    groups.attr('transform', d => `translate(0,${d[2]})`);
+    groups.selectAll('line').attr('x2', graphWidth - 10);
+  }
+
   /** @private */
   restartSimulation_() {
     // Restart the simulation.
@@ -686,6 +742,8 @@ class Graph {
   onResize_() {
     this.width_ = this.svg_.clientWidth;
     this.height_ = this.svg_.clientHeight;
+
+    this.updateSeparators_(this.width_, this.height_);
 
     // Reset both X and Y attractive forces, as they're cached.
     const xForce = d3.forceX().x(this.width_ / 2).strength(0.1);

@@ -415,7 +415,8 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
       const CanvasColorParams&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality);
+      SkFilterQuality,
+      bool is_origin_top_left);
   ~ExternalCanvasResource() override;
   bool IsRecycleable() const final { return IsValid(); }
   bool IsAccelerated() const final { return true; }
@@ -446,13 +447,16 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
                          const CanvasColorParams&,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
                          base::WeakPtr<CanvasResourceProvider>,
-                         SkFilterQuality);
+                         SkFilterQuality,
+                         bool is_origin_top_left);
 
   const base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       context_provider_wrapper_;
   const IntSize size_;
+  const gpu::Mailbox mailbox_;
   const GLenum texture_target_;
-  gpu::Mailbox mailbox_;
+  const bool is_origin_top_left_;
+
   gpu::SyncToken sync_token_;
 
   bool is_origin_clean_ = true;

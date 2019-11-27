@@ -75,11 +75,6 @@ public class MediaNotificationManagerTestBase {
         protected int getNotificationId() {
             return MediaNotificationManagerTestBase.this.getNotificationId();
         }
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            return super.onStartCommand(intent, flags, startId);
-        }
     }
 
     static class MockMediaButtonReceiver extends MediaButtonReceiver {

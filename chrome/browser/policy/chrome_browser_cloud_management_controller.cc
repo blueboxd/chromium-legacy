@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
@@ -98,8 +99,14 @@ bool ChromeBrowserCloudManagementController::IsEnabled() {
 
 ChromeBrowserCloudManagementController::
     ChromeBrowserCloudManagementController() {}
+
 ChromeBrowserCloudManagementController::
-    ~ChromeBrowserCloudManagementController() {}
+    ~ChromeBrowserCloudManagementController() {
+  if (policy_fetcher_)
+    policy_fetcher_->RemoveClientObserver(this);
+  if (cloud_policy_client_)
+    cloud_policy_client_->RemoveObserver(this);
+}
 
 // static
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
@@ -201,6 +208,7 @@ void ChromeBrowserCloudManagementController::Init(
     policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
         policy_manager, local_state, device_management_service,
         url_loader_factory);
+    policy_fetcher_->AddClientObserver(this);
     return;
   }
 
@@ -216,6 +224,7 @@ void ChromeBrowserCloudManagementController::Init(
   policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
       policy_manager, local_state, device_management_service,
       url_loader_factory);
+  policy_fetcher_->AddClientObserver(this);
 
   if (dm_token.is_empty()) {
     cloud_management_register_watcher_ =
@@ -281,6 +290,32 @@ bool ChromeBrowserCloudManagementController::
     IsEnterpriseStartupDialogShowing() {
   return cloud_management_register_watcher_ &&
          cloud_management_register_watcher_->IsDialogShowing();
+}
+
+void ChromeBrowserCloudManagementController::OnPolicyFetched(
+    CloudPolicyClient* client) {
+  // Ignored.
+}
+
+void ChromeBrowserCloudManagementController::OnRegistrationStateChanged(
+    CloudPolicyClient* client) {
+  // Ignored.
+}
+
+void ChromeBrowserCloudManagementController::OnClientError(
+    CloudPolicyClient* client) {
+  // DM_STATUS_SERVICE_DEVICE_NOT_FOUND being the last status implies the
+  // browser has been unenrolled.
+  if (client->status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND) {
+    // Invalidate DM token in storage.
+    BrowserDMTokenStorage::Get()->InvalidateDMToken(
+        base::BindOnce([](bool success) {
+          if (success)
+            DVLOG(1) << "Successfully invalidated the DM token";
+          else
+            DVLOG(1) << "Failed to invalidate the DM token";
+        }));
+  }
 }
 
 void ChromeBrowserCloudManagementController::NotifyPolicyRegisterFinished(
@@ -377,6 +412,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       nullptr, CloudPolicyClient::DeviceDMTokenCallback());
+  cloud_policy_client_->AddObserver(this);
   auto timer = std::make_unique<enterprise_reporting::RequestTimer>();
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(

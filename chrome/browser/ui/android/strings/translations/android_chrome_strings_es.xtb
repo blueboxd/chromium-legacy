@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer cómodamente. El texto debe tener al menos este tamaño después de tocar un párrafo dos veces.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio web</translation>
 <translation id="2328985652426384049">No se puede iniciar sesión</translation>
-<translation id="2330129964253841015">Avisar si se vulneran tus contraseñas</translation>
 <translation id="2349710944427398404">Datos totales utilizados por Chrome, incluidos los marcadores, las cuentas y la configuración guardada</translation>
 <translation id="2353636109065292463">Comprobar tu conexión a Internet</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -816,6 +815,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6989267951144302301">Error al descargar</translation>
 <translation id="6990079615885386641">Descarga la aplicación en Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Preguntar antes de permitir que los sitios web utilicen el micrófono (recomendado)</translation>
+<translation id="6995899638241819463">Avisar si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
 <translation id="7015203776128479407">La configuración de sincronización inicial no ha terminado. La sincronización está desactivada.</translation>
 <translation id="7016516562562142042">Permitido en el motor de búsqueda actual</translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>

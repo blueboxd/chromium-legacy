@@ -70,26 +70,6 @@ def GetParser():
   _AddBuilderPlatformSelectionArgs(parser_update_timing)
   parser_update_timing.set_defaults(func=_UpdateTimingDataCommand)
 
-  parser_create = subparsers.add_parser(
-      'create',
-      help='Create a shard map for a single benchmark.')
-  parser_create.add_argument(
-      '--benchmark', help='The benchmark that you want to create shard for',
-      required=True)
-  parser_create.add_argument(
-      '--timing-data-source', '-t', choices=bot_platforms.ALL_PLATFORM_NAMES,
-      help='The timing data that you want to use. If not set, it will assume '
-           'all stories use the same amount of time to run')
-  parser_create.add_argument(
-      # pinpoint typically has 16 machines for each hardware types, so we set
-      # the default to use half of them to avoid starving the pool.
-      '--shards-num', type=int, default=8,
-      help="The number of shards you'd like to use, default is %(default)s")
-  parser_create.add_argument(
-      '--output-path', default='new_shard_map.json',
-      help='Output file path for the shard map, default is `%(default)s`')
-  parser_create.set_defaults(func=_CreateShardMapForBenchmark)
-
   parser_deschedule = subparsers.add_parser(
       'deschedule',
       help=('After you deschedule one or more '
@@ -124,38 +104,6 @@ def _DumpJson(data, output_path):
     json.dump(data, output_file, indent=4, separators=(',', ': '))
 
 
-def _GenerateBenchmarksToShardsList(benchmarks):
-  """Return |benchmarks_to_shard| from given list of |benchmarks|.
-
-    benchmarks_to_shard is a list all benchmarks to be sharded. Its
-    structure is as follows:
-    [{
-       "name": "benchmark_1",
-       "stories": [ "storyA", "storyB",...],
-       "repeat": <number of pageset_repeat>
-      },
-      {
-       "name": "benchmark_2",
-       "stories": [ "storyA", "storyB",...],
-       "repeat": <number of pageset_repeat>
-      },
-       ...
-    ]
-
-    The "stories" field contains a list of ordered story names. Notes that
-    this should match the actual order of how the benchmark stories are
-    executed for the sharding algorithm to be effective.
-  """
-  benchmarks_to_shard = []
-  for b in benchmarks:
-    benchmarks_to_shard.append({
-        'name': b.Name(),
-        'repeat': b().options.get('pageset_repeat', 1),
-        'stories': benchmark_utils.GetBenchmarkStoryNames(b())
-    })
-  return benchmarks_to_shard
-
-
 def _LoadTimingData(args):
   builder_name, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStortyTimingData(
@@ -165,14 +113,12 @@ def _LoadTimingData(args):
 
 
 def _GenerateShardMap(
-    builder, num_of_shards, output_path, debug, benchmark):
+    builder, num_of_shards, output_path, debug):
   timing_data = []
   if builder:
     with open(builder.timing_file_path) as f:
       timing_data = json.load(f)
-  benchmarks_to_shard = _GenerateBenchmarksToShardsList(
-      [b for b in builder.benchmarks_to_run if not benchmark or (
-          b.Name() == benchmark)])
+  benchmarks_to_shard = list(builder.benchmark_configs)
   sharding_map = sharding_map_generator.generate_sharding_map(
       benchmarks_to_shard, timing_data, num_shards=num_of_shards,
       debug=debug)
@@ -236,28 +182,8 @@ def _UpdateShardsForBuilders(args):
     _UpdateTimingData(builders)
   for b in builders:
     _GenerateShardMap(
-        b, b.num_shards, b.shards_map_file_path, args.debug, benchmark=None)
+        b, b.num_shards, b.shards_map_file_path, args.debug)
     print('Updated sharding map for %s' % repr(b.name))
-
-
-def _CreateShardMapForBenchmark(args):
-  """Create the shard map for the given benchmark.
-
-  Args:
-    args(Namespace object): the namespace object for the subparser `create`. It
-      will contain the attributes:
-        `benchmark`: the name of the benchmark that we want the shard for
-        `num_shards`: the total number of shards that we want to use
-        `output_path`: the output file path for the shard map
-        `builder`: the builder name, unlike the above, this is a string instead
-          of a list of string like above
-  """
-  builder = None
-  if args.timing_data_source:
-    [builder] = [b for b in bot_platforms.ALL_PLATFORMS
-                 if b.name == args.timing_data_source]
-  _GenerateShardMap(
-      builder, args.shards_num, args.output_path, args.debug, args.benchmark)
 
 
 def _DescheduleBenchmark(args):
@@ -306,7 +232,7 @@ def _ValidateShardMaps(args):
   # Check that bot_platforms.py matches the actual shard maps
   for platform in bot_platforms.ALL_PLATFORMS:
     platform_benchmark_names = set(
-        b.Name() for b in platform.benchmarks_to_run)
+        b.name for b in platform.benchmark_configs)
     shard_map_benchmark_names = _ParseBenchmarks(platform.shards_map_file_path)
     for benchmark in platform_benchmark_names - shard_map_benchmark_names:
       errors.append(

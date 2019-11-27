@@ -4,12 +4,14 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -81,12 +83,20 @@ IN_PROC_BROWSER_TEST_F(LauncherDragClamshellModeTest, Open) {
 class LauncherDragTest : public LauncherDragClamshellModeTest,
                          public ::testing::WithParamInterface<bool> {
  public:
-  LauncherDragTest() = default;
+  LauncherDragTest() {
+    tablet_mode_ = GetParam();
+
+    // Drag from top to close app list in tablet mode is disabled if
+    // kDragFromShelfToHomeOrOverview feature is enabled.
+    if (tablet_mode_) {
+      scoped_features_.InitAndDisableFeature(
+          ash::features::kDragFromShelfToHomeOrOverview);
+    }
+  }
   ~LauncherDragTest() override = default;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
-    tablet_mode_ = GetParam();
     if (tablet_mode_)
       ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
@@ -103,6 +113,7 @@ class LauncherDragTest : public LauncherDragClamshellModeTest,
 
  private:
   bool tablet_mode_ = false;
+  base::test::ScopedFeatureList scoped_features_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherDragTest);
 };

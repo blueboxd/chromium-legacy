@@ -101,11 +101,10 @@ void WebAppUiManagerImpl::UninstallAndReplace(
 #endif
     }
 
-    if (apps::AppServiceProxyFactory::IsEnabled()) {
-      apps::AppServiceProxy* proxy =
-          apps::AppServiceProxyFactory::GetForProfile(profile_);
-      proxy->Uninstall(from_app, nullptr /* parent_window */);
-    }
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile_);
+    DCHECK(proxy);
+    proxy->Uninstall(from_app, nullptr /* parent_window */);
   }
 }
 

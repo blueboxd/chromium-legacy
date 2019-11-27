@@ -176,7 +176,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обидете се да контактирате со системскиот администратор.</translation>
 <translation id="1736420071277903564">Компјутер</translation>
-<translation id="1739107442478692187">Имаше упад во податоците на некој сајт или апликација што ја користите. Chrome ви препорачува да ги проверите зачуваните лозинки и да ја промените лозинката на <ph name="ORIGIN" /> веднаш.</translation>
 <translation id="1740951997222943430">Внесете важечки месец на истекување</translation>
 <translation id="1741613555002899862">Мора да е одредена и важечка низа кога DnsOverHttpsMode е <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">За да платите побрзо следниот пат, зачувајте ја картичката, името и адресата за наплата на вашата сметка на Google и на уредов.</translation>
@@ -242,7 +241,6 @@
 <translation id="2094505752054353250">Несовпаѓање на домени</translation>
 <translation id="2096368010154057602">Област</translation>
 <translation id="2099652385553570808">Тројно спојување лево</translation>
-<translation id="2100280972184758440">Вашата лозинка е компромитирана</translation>
 <translation id="2102134110707549001">Предложи силна лозинка…</translation>
 <translation id="2108755909498034140">Рестартирајте го компјутерот</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +248,6 @@
 <translation id="2114841414352855701">Игнорирано бидејќи е отфрлено од <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Издаден на: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Дупка долу десно</translation>
-<translation id="2124528555835617522">Имаше упад во податоците на некој сајт или апликација што ја користите. Chrome ви препорачува да ги проверите зачуваните лозинки веднаш.</translation>
 <translation id="2129079103035905234">Сензори за движење</translation>
 <translation id="2130448033692577677">Шаблоните што ги назначивте не може да се применат бидејќи правилото DnsOverHttpsMode не е поставено.</translation>
 <translation id="213826338245044447">Мобилни обележувачи</translation>
@@ -494,7 +491,6 @@
 <translation id="3282497668470633863">Додајте име на картичка</translation>
 <translation id="3287510313208355388">Преземи кога ќе има мрежа</translation>
 <translation id="3293642807462928945">Дознајте повеќе за правилото <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Имаше упад во податоците на некој сајт или апликација што ја користите. Chrome ви препорачува да ја промените лозинката на <ph name="ORIGIN" /> веднаш.</translation>
 <translation id="3303855915957856445">Не се пронајдени резултати од пребарувањето</translation>
 <translation id="3320021301628644560">Додајте адреса за наплата</translation>
 <translation id="3324983252691184275">Темноцрвена</translation>
@@ -1049,6 +1045,7 @@
 <translation id="5992691462791905444">Инженерско Z-превиткување</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултати за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Проверете ги лозинките</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}other{Страница #}}</translation>
 <translation id="6017514345406065928">Зелена</translation>

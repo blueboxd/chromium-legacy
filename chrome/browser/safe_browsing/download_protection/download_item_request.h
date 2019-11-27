@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "components/download/public/common/download_item.h"
 
 namespace safe_browsing {

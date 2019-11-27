@@ -18,5 +18,8 @@ module.exports = {
     // Enabled checks.
     'no-extra-semi': 'error',
     'semi': ['error', 'always'],
+    // Disabled checks.
+    'no-var': 'off',
+    'prefer-const': 'off',
   },
 };

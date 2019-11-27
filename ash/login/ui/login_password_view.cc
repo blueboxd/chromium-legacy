@@ -183,9 +183,9 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     on_tapped_ = on_tapped;
 
     hover_notifier_ = std::make_unique<HoverNotifier>(
-        this,
-        base::Bind(&LoginPasswordView::EasyUnlockIcon::OnHoverStateChanged,
-                   base::Unretained(this)));
+        this, base::BindRepeating(
+                  &LoginPasswordView::EasyUnlockIcon::OnHoverStateChanged,
+                  base::Unretained(this)));
   }
 
   void SetEasyUnlockIcon(EasyUnlockIconId icon_id,

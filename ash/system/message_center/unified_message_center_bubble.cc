@@ -10,7 +10,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/unified_message_center_view.h"
-#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -66,7 +65,7 @@ class UnifiedMessageCenterBubble::Border : public ui::LayerDelegate {
 UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
     : tray_(tray), border_(std::make_unique<Border>()) {
   TrayBubbleView::InitParams init_params;
-  init_params.delegate = tray;
+  init_params.delegate = this;
   // Anchor within the overlay container.
   init_params.parent_window = tray->GetBubbleWindowContainer();
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;

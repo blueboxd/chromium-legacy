@@ -50,8 +50,8 @@ public class SendTabToSelfAndroidBridgeTest {
     private static final String TITLE = "Come try Tanya's famous tacos";
     private static final String DEVICE_NAME = "Macbook Pro";
     private static final String TARGET_DEVICE_SYNC_CACHE_GUID = "randomguid2";
-    private static final long NAVIGATION_TIME_MS = 123l;
-    private static final long SHARE_TIME_MS = 456l;
+    private static final long NAVIGATION_TIME_MS = 123L;
+    private static final long SHARE_TIME_MS = 456L;
 
     @Before
     public void setUp() {
@@ -73,9 +73,9 @@ public class SendTabToSelfAndroidBridgeTest {
     @SmallTest
     @SuppressWarnings("unchecked")
     public void testGetAllTargetDeviceInfos() {
-        TargetDeviceInfo one = new TargetDeviceInfo("name1", "guid1", DeviceType.CHROMEOS, 123l);
-        TargetDeviceInfo two = new TargetDeviceInfo("name2", "guid2", DeviceType.LINUX, 456l);
-        TargetDeviceInfo three = new TargetDeviceInfo("name3", "guid3", DeviceType.PHONE, 789l);
+        TargetDeviceInfo one = new TargetDeviceInfo("name1", "guid1", DeviceType.CHROMEOS, 123L);
+        TargetDeviceInfo two = new TargetDeviceInfo("name2", "guid2", DeviceType.LINUX, 456L);
+        TargetDeviceInfo three = new TargetDeviceInfo("name3", "guid3", DeviceType.PHONE, 789L);
         doAnswer(answerVoid(new VoidAnswer2<Profile, List<TargetDeviceInfo>>() {
             @Override
             public void answer(Profile profile, List<TargetDeviceInfo> deviceInfos) {

@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">目前使用的是“<ph name="IME_NAME" />”</translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 身份解锁设备即可执行通知操作</translation>
-<translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9017320285115481645">输入 Family Link 家长访问码。</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">全屏放大镜</translation>
 <translation id="9193626018745640770">正在投射至不明接收器</translation>
 <translation id="9194617393863864469">登录其他用户帐号…</translation>
+<translation id="9205817095063786319">设备由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>
 <translation id="9211681782751733685">电池电量将在 <ph name="TIME_REMAINING" />后充满。</translation>
 <translation id="9215934040295798075">设置壁纸</translation>

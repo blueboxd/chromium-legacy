@@ -57,7 +57,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   // Mocks out |renderer_compositor_frame_sink_| with a
-  // CompositorFrameSinkClientPtr bound to
+  // CompositorFrameSinkClient bound to
   // |mock_renderer_compositor_frame_sink|.
   void SetMockRendererCompositorFrameSink(
       viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink);

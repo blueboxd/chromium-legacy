@@ -22,24 +22,6 @@ function testQuoteString() {
   match = re.exec('Hello, world');
   assertEquals(null, match);
 }
-
-function testClickHandler() {
-  listenForPrivilegedLinkClicks();
-  var clickArgs = null;
-  var oldSend = chrome.send;
-  chrome.send = function(message, args) {
-    assertEquals('navigateToUrl', message);
-    clickArgs = args;
-  };
-  $('file').click();
-  assertEquals('file:///path/to/file', clickArgs[0]);
-  $('chrome').click();
-  assertEquals('about:chrome', clickArgs[0]);
-  $('blank').click();
-  assertEquals('about:blank', clickArgs[0]);
-  chrome.send = oldSend;
-}
-
 </script>
 </body>
 </html>

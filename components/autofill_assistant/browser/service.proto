@@ -1664,8 +1664,16 @@ message ShowFormProto {
 
 message FormProto {
   // A result associated to this form, such that |input_results[i]| is the
-  // result of |inputs[i]|.
-  message Result { repeated FormInputProto.Result input_results = 1; }
+  // result of |inputs[i]|. If the user clicks a link while in the form action,
+  // |link| will be set to the index of the clicked link and |input_results|
+  // may be incomplete.
+  message Result {
+    repeated FormInputProto.Result input_results = 1;
+    // If this is set, it contains the index of the text link that was clicked.
+    // E.g., <link4>Details</link4> will populate this field with '4' when
+    // clicked.
+    optional int32 link = 2;
+  }
 
   // The different inputs to display.
   repeated FormInputProto inputs = 1;
@@ -1691,13 +1699,16 @@ message CounterInputProto {
   // A single counter.
   message Counter {
     // The label shown with the counter. All occurrences of the '{value}'
-    // substring will be replaced by the current counter value.
+    // substring will be replaced by the current counter value. May contain
+    // links of the form <link1>Some text</link1>.
     optional string label = 1;
 
-    // Text shown below the label. Optional.
+    // Text shown below the label. Optional. May contain links of the form
+    // <link1>Some text</link1>.
     optional string description_line_1 = 5;
 
-    // Text shown below |description_line_2|. Optional.
+    // Text shown below |description_line_2|. Optional. May contain links of the
+    // form <link1>Some text</link1>.
     optional string description_line_2 = 8;
 
     // The possible values this counter can have. If empty, the possible values
@@ -1827,13 +1838,16 @@ message CounterInputProto {
 // |min_choices|.
 message SelectionInputProto {
   message Choice {
-    // The label of this choice.
+    // The label of this choice. May contain links of the form <link1>Some
+    // text</link1>.
     optional string label = 1;
 
-    // Text shown below the label. Optional.
+    // Text shown below the label. Optional. May contain links of the form
+    // <link1>Some text</link1>.
     optional string description_line_1 = 3;
 
-    // Text shown below |description_line_2|. Optional.
+    // Text shown below |description_line_2|. Optional. May contain links of the
+    // form <link1>Some text</link1>.
     optional string description_line_2 = 4;
 
     // Whether this choice is selected by default. If |allow_multiple| is false,

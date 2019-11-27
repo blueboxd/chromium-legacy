@@ -112,9 +112,7 @@ void EmbeddedWorkerTestHelper::OnInstanceClientRequest(
 }
 
 void EmbeddedWorkerTestHelper::OnServiceWorkerRequest(
-    blink::mojom::ServiceWorkerRequest request) {
-  mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver(
-      std::move(request));
+    mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver) {
   OnServiceWorkerReceiver(std::move(receiver));
 }
 

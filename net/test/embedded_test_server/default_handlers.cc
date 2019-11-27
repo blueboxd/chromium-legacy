@@ -102,6 +102,7 @@ std::unique_ptr<HttpResponse> HandleEchoHeader(const std::string& url,
   http_response->AddCustomHeader("Vary", vary);
   http_response->set_content(content);
   http_response->set_content_type("text/plain");
+  http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
   http_response->AddCustomHeader("Cache-Control", cache_control);
   return http_response;
 }

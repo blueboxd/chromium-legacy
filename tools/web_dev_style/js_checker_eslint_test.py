@@ -44,11 +44,11 @@ class JsCheckerEsLintTest(unittest.TestCase):
     self.assertEqual(line, message.get('line'))
 
   def testGetElementByIdCheck(self):
-    results_json = self._runChecks('var a = document.getElementById(\'foo\');')
+    results_json = self._runChecks("const a = document.getElementById('foo');")
     self._assertError(results_json, 'no-restricted-properties', 1)
 
   def testPrimitiveWrappersCheck(self):
-    results_json = self._runChecks('var a = new Number(1);')
+    results_json = self._runChecks('const a = new Number(1);')
     self._assertError(results_json, 'no-new-wrappers', 1)
 
 

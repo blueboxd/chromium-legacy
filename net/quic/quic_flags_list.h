@@ -267,13 +267,6 @@ QUIC_FLAG(bool,
 // If true, enable HTTP/2 default scheduling(round robin).
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
 
-// If true, QuicFramer does not create an encrypter/decrypter for the
-// ENCRYPTION_INITIAL level.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_framer_doesnt_create_initial_encrypter,
-    true)
-
 // If true, treat queued QUIC packets as sent.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_treat_queued_packets_as_sent,
@@ -282,7 +275,7 @@ QUIC_FLAG(bool,
 // Call NeuterHandshakePackets() at most once per connection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once2,
-          false)
+          true)
 
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
@@ -337,18 +330,18 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)
 // encryption level.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_connection_encryption_level,
-          false)
+          true)
 
 // If true, do not inject bandwidth in BbrSender::AdjustNetworkParameters.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_donot_inject_bandwidth,
-          false)
+          true)
 
 // If true, close connection if CreateAndSerializeStreamFrame fails.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_connection_on_failed_consume_data_fast_path,
-    false)
+    true)
 
 // If true, add a up call when N packet numbers get skipped.
 QUIC_FLAG(bool,
@@ -376,13 +369,27 @@ QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
 // upon high loss.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
 
-// If true, for QUIC BBRv2: 1) don't grow inflight_hi unless it's fully used,
-// and 2) cap inflight_lo in PROBE_CRUISE.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_fix_inflight_bounds, true)
-
 // If true, when a stream receives data with wrong close offset, it closes the
 // connection. And the stream frame data will be discarded.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_connection_and_discard_data_on_wrong_offset,
     false)
+
+// If true, log number of ack aggregation epochs in QUIC transport connection
+// stats.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_log_ack_aggregation_stats,
+          false)
+
+// If true, for server QUIC connections, set version_negotiated_ to true by
+// default.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_version_negotiated_by_default_at_server,
+    false)
+
+// If true, QuicSession::SendRstStreamInner will be factored out and deleted.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_delete_send_rst_stream_inner,
+          false)

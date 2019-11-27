@@ -2190,10 +2190,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCastMediaRouteProviderName,
      flag_descriptions::kCastMediaRouteProviderDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kCastMediaRouteProvider)},
-    {"dial-media-route-provider",
-     flag_descriptions::kDialMediaRouteProviderName,
-     flag_descriptions::kDialMediaRouteProviderDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media_router::kDialMediaRouteProvider)},
     {"mirroring-service", flag_descriptions::kMirroringServiceName,
      flag_descriptions::kMirroringServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(mirroring::features::kMirroringService)},
@@ -2588,12 +2584,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveEventListenersDueToFlingName,
      flag_descriptions::kPassiveEventListenersDueToFlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveEventListenersDueToFling)},
-#if defined(OS_WIN)
     {"enable-experimental-fling-animation",
      flag_descriptions::kExperimentalFlingAnimationName,
-     flag_descriptions::kExperimentalFlingAnimationDescription, kOsWin,
+     flag_descriptions::kExperimentalFlingAnimationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalFlingAnimation)},
-#endif
     {"per-method-can-make-payment-quota",
      flag_descriptions::kPerMethodCanMakePaymentQuotaName,
      flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
@@ -3370,6 +3364,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabEngagementReportingName,
      flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabEngagementReportingAndroid)},
+
+    {"enable-duet-tabstrip-integration",
+     flag_descriptions::kDuetTabStripIntegrationAndroidName,
+     flag_descriptions::kDuetTabStripIntegrationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDuetTabStripIntegrationAndroid)},
 #endif  // OS_ANDROID
 
     {"enable-built-in-module-all", flag_descriptions::kBuiltInModuleAllName,

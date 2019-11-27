@@ -102,8 +102,8 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // discovery / sink query. We are migrating discovery from the external Media
   // Route Provider to the Media Router (https://crbug.com/687383), so we need
   // to disable it in the provider.
-  config->enable_cast_discovery = !CastDiscoveryEnabled();
-  config->enable_dial_sink_query = !DialMediaRouteProviderEnabled();
+  config->enable_cast_discovery = false;
+  config->enable_dial_sink_query = false;
   config->enable_cast_sink_query = !CastMediaRouteProviderEnabled();
   config->use_mirroring_service = ShouldUseMirroringService();
   std::move(callback).Run(instance_id(), std::move(config));
@@ -294,13 +294,7 @@ void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
 
 #if defined(OS_WIN)
 void MediaRouterDesktop::EnsureMdnsDiscoveryEnabled() {
-  if (CastDiscoveryEnabled()) {
-    media_sink_service_->StartMdnsDiscovery();
-  } else {
-    media_route_providers_[MediaRouteProviderId::EXTENSION]
-        ->EnableMdnsDiscovery();
-  }
-
+  media_sink_service_->StartMdnsDiscovery();
   // Record that we enabled mDNS discovery, so that we will know to enable again
   // when we reconnect to the component extension.
   should_enable_mdns_discovery_ = true;

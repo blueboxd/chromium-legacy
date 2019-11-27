@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -38,8 +39,12 @@ public class IntentHeadersRecorderTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
 
-        doReturn(true).when(mClassifier).isCorsSafelistedHeader(eq(SAFE_HEADER), anyString());
-        doReturn(false).when(mClassifier).isCorsSafelistedHeader(eq(UNSAFE_HEADER), anyString());
+        doReturn(true)
+                .when(mClassifier)
+                .isCorsSafelistedHeader(eq(SAFE_HEADER), anyString(), anyBoolean());
+        doReturn(false)
+                .when(mClassifier)
+                .isCorsSafelistedHeader(eq(UNSAFE_HEADER), anyString(), anyBoolean());
 
         mRecorder = new IntentHeadersRecorder(mClassifier);
     }
@@ -58,44 +63,44 @@ public class IntentHeadersRecorderTest {
 
     @Test
     public void safeHeaders_firstParty() {
-        mRecorder.recordHeader(SAFE_HEADER, "");
+        mRecorder.recordHeader(SAFE_HEADER, "", true);
         mRecorder.report(true);
         assertUma(0, 1, 0, 0, 0, 0);
     }
 
     @Test
     public void safeHeaders_thirdParty() {
-        mRecorder.recordHeader(SAFE_HEADER, "");
+        mRecorder.recordHeader(SAFE_HEADER, "", false);
         mRecorder.report(false);
         assertUma(0, 0, 0, 0, 1, 0);
     }
 
     @Test
     public void unsafeHeaders_firstParty() {
-        mRecorder.recordHeader(UNSAFE_HEADER, "");
+        mRecorder.recordHeader(UNSAFE_HEADER, "", true);
         mRecorder.report(true);
         assertUma(0, 0, 1, 0, 0, 0);
     }
 
     @Test
     public void unsafeHeaders_thirdParty() {
-        mRecorder.recordHeader(UNSAFE_HEADER, "");
+        mRecorder.recordHeader(UNSAFE_HEADER, "", false);
         mRecorder.report(false);
         assertUma(0, 0, 0, 0, 0, 1);
     }
 
     @Test
     public void mixedHeaders_firstParty() {
-        mRecorder.recordHeader(SAFE_HEADER, "");
-        mRecorder.recordHeader(UNSAFE_HEADER, "");
+        mRecorder.recordHeader(SAFE_HEADER, "", true);
+        mRecorder.recordHeader(UNSAFE_HEADER, "", true);
         mRecorder.report(true);
         assertUma(0, 0, 1, 0, 0, 0);
     }
 
     @Test
     public void mixedHeaders_thirdParty() {
-        mRecorder.recordHeader(SAFE_HEADER, "");
-        mRecorder.recordHeader(UNSAFE_HEADER, "");
+        mRecorder.recordHeader(SAFE_HEADER, "", false);
+        mRecorder.recordHeader(UNSAFE_HEADER, "", false);
         mRecorder.report(false);
         assertUma(0, 0, 0, 0, 0, 1);
     }

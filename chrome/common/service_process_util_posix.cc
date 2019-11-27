@@ -194,9 +194,8 @@ MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
 }
 
 ServiceProcessTerminateMonitor::ServiceProcessTerminateMonitor(
-    const base::Closure& terminate_task)
-    : terminate_task_(terminate_task) {
-}
+    base::OnceClosure terminate_task)
+    : terminate_task_(std::move(terminate_task)) {}
 
 ServiceProcessTerminateMonitor::~ServiceProcessTerminateMonitor() {
 }
@@ -206,8 +205,7 @@ void ServiceProcessTerminateMonitor::OnFileCanReadWithoutBlocking(int fd) {
     int buffer;
     int length = read(fd, &buffer, sizeof(buffer));
     if ((length == sizeof(buffer)) && (buffer == kTerminateMessage)) {
-      terminate_task_.Run();
-      terminate_task_.Reset();
+      std::move(terminate_task_).Run();
     } else if (length > 0) {
       DLOG(ERROR) << "Unexpected read: " << buffer;
     } else if (length == 0) {
@@ -321,7 +319,7 @@ void ServiceProcessState::CreateState() {
 
 bool ServiceProcessState::SignalReady(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& terminate_task) {
+    base::OnceClosure terminate_task) {
   DCHECK(task_runner);
   DCHECK(state_);
 
@@ -331,8 +329,8 @@ bool ServiceProcessState::SignalReady(
     return false;
   }
 #endif
-  state_->terminate_monitor.reset(
-      new ServiceProcessTerminateMonitor(terminate_task));
+  state_->terminate_monitor = std::make_unique<ServiceProcessTerminateMonitor>(
+      std::move(terminate_task));
   if (pipe(state_->sockets) < 0) {
     DPLOG(ERROR) << "pipe";
     return false;

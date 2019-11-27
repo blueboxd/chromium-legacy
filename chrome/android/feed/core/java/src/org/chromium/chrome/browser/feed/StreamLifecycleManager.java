@@ -9,10 +9,9 @@ import android.app.Activity;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

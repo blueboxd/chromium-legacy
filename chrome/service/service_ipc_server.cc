@@ -19,8 +19,8 @@ ServiceIPCServer::ServiceIPCServer(
   DCHECK(client);
   DCHECK(shutdown_event);
   binder_registry_.AddInterface(
-      base::Bind(&ServiceIPCServer::HandleServiceProcessConnection,
-                 base::Unretained(this)));
+      base::BindRepeating(&ServiceIPCServer::HandleServiceProcessConnection,
+                          base::Unretained(this)));
 }
 
 bool ServiceIPCServer::Init() {
@@ -34,8 +34,8 @@ void ServiceIPCServer::CreateChannel() {
   receiver_.Bind(
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>(
           client_->CreateChannelMessagePipe()));
-  receiver_.set_disconnect_handler(
-      base::Bind(&ServiceIPCServer::OnChannelError, base::Unretained(this)));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &ServiceIPCServer::OnChannelError, base::Unretained(this)));
 }
 
 ServiceIPCServer::~ServiceIPCServer() = default;

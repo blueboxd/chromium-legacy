@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Povlačite klizač dok vam tekst ne bude ugodan za čitanje. Nakon dvostrukog dodira na pasus, tekst bi trebao izgledati najmanje ove veličine.</translation>
 <translation id="2323763861024343754">Pohrana web lokacije</translation>
 <translation id="2328985652426384049">Nije se moguće prijaviti</translation>
-<translation id="2330129964253841015">Upozori ako su lozinke ugrožene</translation>
 <translation id="2349710944427398404">Ukupna količina podataka koju je Chrome iskoristio, uključujući račune, oznake i sačuvane postavke</translation>
 <translation id="2353636109065292463">Provjera vaše internetske veze</translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -816,6 +815,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6989267951144302301">Preuzimanje nije uspjelo</translation>
 <translation id="6990079615885386641">Preuzmite aplikaciju s Google Play trgovine: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Web-lokacije moraju tražiti dopuštenje za upotrebu mikrofona (preporučeno)</translation>
+<translation id="6995899638241819463">Upozori ako su lozinke izložene pri narušavanju podataka</translation>
 <translation id="7015203776128479407">Početno postavljanje sinhroniziranja nije završeno. Sinhroniziranje je isključeno.</translation>
 <translation id="7016516562562142042">Dozvoljeno za trenutni pretraživač</translation>
 <translation id="7022756207310403729">Otvori u pregledniku</translation>

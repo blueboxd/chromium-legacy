@@ -88,8 +88,7 @@ class DualMediaSinkService {
   friend class DualMediaSinkServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DualMediaSinkServiceTest,
                            AddSinksDiscoveredCallback);
-  template <bool>
-  friend class MediaRouterDesktopTestBase;
+  friend class MediaRouterDesktopTest;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, ProvideSinks);
 
   static DualMediaSinkService* instance_for_test_;

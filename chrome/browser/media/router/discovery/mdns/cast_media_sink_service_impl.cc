@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 
 #include "base/bind.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
@@ -123,30 +122,6 @@ void RecordError(cast_channel::ChannelError channel_error,
   CastAnalytics::RecordDeviceChannelError(error_code);
 }
 
-// Parameter names.
-constexpr char kParamNameInitialDelayInMilliSeconds[] = "initial_delay_in_ms";
-constexpr char kParamNameMaxRetryAttempts[] = "max_retry_attempts";
-constexpr char kParamNameExponential[] = "exponential";
-constexpr char kParamNameConnectTimeoutInSeconds[] =
-    "connect_timeout_in_seconds";
-constexpr char kParamNamePingIntervalInSeconds[] = "ping_interval_in_seconds";
-constexpr char kParamNameLivenessTimeoutInSeconds[] =
-    "liveness_timeout_in_seconds";
-constexpr char kParamNameDynamicTimeoutDeltaInSeconds[] =
-    "dynamic_timeout_delta_in_seconds";
-
-// Default values if field trial parameter is not specified.
-constexpr int kDefaultInitialDelayInMilliSeconds = 15 * 1000;  // 15 seconds
-// TODO(zhaobin): Remove this when we switch to use max delay instead of max
-// number of retry attempts to decide when to stop retry.
-constexpr int kDefaultMaxRetryAttempts = 3;
-constexpr double kDefaultExponential = 1.0;
-constexpr int kDefaultConnectTimeoutInSeconds = 10;
-constexpr int kDefaultPingIntervalInSeconds = 5;
-constexpr int kDefaultLivenessTimeoutInSeconds =
-    kDefaultPingIntervalInSeconds * 2;
-constexpr int kDefaultDynamicTimeoutDeltaInSeconds = 0;
-
 // Max allowed values
 constexpr int kMaxConnectTimeoutInSeconds = 30;
 constexpr int kMaxLivenessTimeoutInSeconds = 60;
@@ -213,9 +188,6 @@ CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(cast_socket_service_);
   DCHECK(network_monitor_);
-
-  retry_params_ = RetryParams::GetFromFieldTrialParam();
-  open_params_ = OpenParams::GetFromFieldTrialParam();
 
   backoff_policy_ = {
       // Number of initial errors (in sequence) to ignore before going into
@@ -720,109 +692,6 @@ void CastMediaSinkServiceImpl::OpenChannelsNow(
 void CastMediaSinkServiceImpl::SetCastAllowAllIPs(bool allow_all_ips) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_all_ips_ = allow_all_ips;
-}
-
-CastMediaSinkServiceImpl::RetryParams::RetryParams()
-    : initial_delay_in_milliseconds(kDefaultInitialDelayInMilliSeconds),
-      max_retry_attempts(kDefaultMaxRetryAttempts),
-      multiply_factor(kDefaultExponential) {}
-CastMediaSinkServiceImpl::RetryParams::~RetryParams() = default;
-
-bool CastMediaSinkServiceImpl::RetryParams::Validate() {
-  if (max_retry_attempts < 0 || max_retry_attempts > 100) {
-    return false;
-  }
-  if (initial_delay_in_milliseconds <= 0 ||
-      initial_delay_in_milliseconds > 60 * 1000 /* 1 min */) {
-    return false;
-  }
-  if (multiply_factor < 1.0 || multiply_factor > 5.0)
-    return false;
-
-  return true;
-}
-
-// static
-CastMediaSinkServiceImpl::RetryParams
-CastMediaSinkServiceImpl::RetryParams::GetFromFieldTrialParam() {
-  RetryParams params;
-  params.max_retry_attempts = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableCastDiscovery, kParamNameMaxRetryAttempts,
-      kDefaultMaxRetryAttempts);
-  params.initial_delay_in_milliseconds = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableCastDiscovery, kParamNameInitialDelayInMilliSeconds,
-      kDefaultInitialDelayInMilliSeconds);
-  params.multiply_factor = base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableCastDiscovery, kParamNameExponential, kDefaultExponential);
-
-  DVLOG(2) << "Parameters: "
-           << " [initial_delay_ms]: " << params.initial_delay_in_milliseconds
-           << " [max_retry_attempts]: " << params.max_retry_attempts
-           << " [exponential]: " << params.multiply_factor;
-
-  if (!params.Validate())
-    return RetryParams();
-
-  return params;
-}
-
-CastMediaSinkServiceImpl::OpenParams::OpenParams()
-    : connect_timeout_in_seconds(kDefaultConnectTimeoutInSeconds),
-      ping_interval_in_seconds(kDefaultPingIntervalInSeconds),
-      liveness_timeout_in_seconds(kDefaultLivenessTimeoutInSeconds),
-      dynamic_timeout_delta_in_seconds(kDefaultDynamicTimeoutDeltaInSeconds) {}
-CastMediaSinkServiceImpl::OpenParams::~OpenParams() = default;
-
-bool CastMediaSinkServiceImpl::OpenParams::Validate() {
-  if (connect_timeout_in_seconds <= 0 ||
-      connect_timeout_in_seconds > kMaxConnectTimeoutInSeconds) {
-    return false;
-  }
-  if (liveness_timeout_in_seconds <= 0 ||
-      liveness_timeout_in_seconds > kMaxLivenessTimeoutInSeconds) {
-    return false;
-  }
-  if (ping_interval_in_seconds <= 0 ||
-      ping_interval_in_seconds > liveness_timeout_in_seconds) {
-    return false;
-  }
-  if (dynamic_timeout_delta_in_seconds < 0 ||
-      dynamic_timeout_delta_in_seconds > kMaxConnectTimeoutInSeconds) {
-    return false;
-  }
-
-  return true;
-}
-
-// static
-CastMediaSinkServiceImpl::OpenParams
-CastMediaSinkServiceImpl::OpenParams::GetFromFieldTrialParam() {
-  OpenParams params;
-  params.connect_timeout_in_seconds = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableCastDiscovery, kParamNameConnectTimeoutInSeconds,
-      kDefaultConnectTimeoutInSeconds);
-  params.ping_interval_in_seconds = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableCastDiscovery, kParamNamePingIntervalInSeconds,
-      kDefaultPingIntervalInSeconds);
-  params.liveness_timeout_in_seconds = base::GetFieldTrialParamByFeatureAsInt(
-      kEnableCastDiscovery, kParamNameLivenessTimeoutInSeconds,
-      kDefaultLivenessTimeoutInSeconds);
-  params.dynamic_timeout_delta_in_seconds =
-      base::GetFieldTrialParamByFeatureAsInt(
-          kEnableCastDiscovery, kParamNameDynamicTimeoutDeltaInSeconds,
-          kDefaultDynamicTimeoutDeltaInSeconds);
-
-  DVLOG(2) << "Parameters: "
-           << " [connect_timeout]: " << params.connect_timeout_in_seconds
-           << " [ping_interval]: " << params.ping_interval_in_seconds
-           << " [liveness_timeout]: " << params.liveness_timeout_in_seconds
-           << " [dynamic_timeout_delta]: "
-           << params.dynamic_timeout_delta_in_seconds;
-
-  if (!params.Validate())
-    return OpenParams();
-
-  return params;
 }
 
 }  // namespace media_router

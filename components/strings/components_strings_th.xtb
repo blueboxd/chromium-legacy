@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">เปลี่ยนรหัสผ่าน</translation>
 <translation id="1484290072879560759">เลือกที่อยู่สำหรับจัดส่ง</translation>
 <translation id="1492194039220927094">การพุชนโยบาย:</translation>
 <translation id="1501859676467574491">แสดงบัตรจากบัญชี Google ของคุณ</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ลองติดต่อผู้ดูแลระบบ</translation>
 <translation id="1736420071277903564">คอมพิวเตอร์</translation>
-<translation id="1739107442478692187">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="1740951997222943430">ป้อนเดือนที่หมดอายุที่ถูกต้อง</translation>
 <translation id="1741613555002899862">ต้องระบุและสตริงที่ถูกต้องเมื่อนโยบาย DnsOverHttpsMode ตั้งค่าเป็น <ph name="SECURE_DNS_MODE_SECURE" /></translation>
 <translation id="1743520634839655729">เพื่อความรวดเร็วในการชำระเงินครั้งถัดไป โปรดบันทึกบัตร ชื่อ และที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google และในอุปกรณ์นี้</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">บริการแตกไฟล์</translation>
 <translation id="1915697529809968049">ใช้ Touch ID แทน CVC ไหม</translation>
 <translation id="1916770123977586577">โหลดหน้านี้ซ้ำเพื่อใช้การตั้งค่าที่อัปเดตกับไซต์นี้</translation>
+<translation id="1917876262703816781">การละเมิดข้อมูลในเว็บไซต์หรือแอปเปิดเผยรหัสผ่านของคุณ Chrome ขอแนะนำให้คุณเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1919367280705858090">ขอความช่วยเหลือเกี่ยวกับข้อความแสดงข้อผิดพลาดที่เจาะจง</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ไม่มี}=1{เว็บไซต์ 1 แห่ง}other{เว็บไซต์ # แห่ง}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
 <translation id="2096368010154057602">แผนก</translation>
 <translation id="2099652385553570808">เย็บด้วยลวดเย็บกระดาษด้านซ้าย 3 ครั้ง</translation>
-<translation id="2100280972184758440">รหัสผ่านของคุณถูกบุกรุก</translation>
 <translation id="2102134110707549001">แนะนำรหัสผ่านที่รัดกุม…</translation>
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">ไม่สนใจเพราะถูกแทนที่โดย <ph name="POLICY_NAME" /></translation>
 <translation id="2119505898009119320">ออกให้แก่: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">เจาะรูด้านขวาล่าง</translation>
-<translation id="2124528555835617522">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้โดยทันที</translation>
 <translation id="2129079103035905234">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="2130448033692577677">เทมเพลตที่คุณระบุอาจใช้ไม่ได้เนื่องจากไม่มีการตั้งค่านโยบาย DnsOverHttpsMode ไว้</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนอุปกรณ์เคลื่อนที่</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">ผู้โจมตีที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> สามารถติดตั้งแอปอันตรายที่ทำลายอุปกรณ์ของคุณ เพิ่มค่าใช้จ่ายแฝงในใบแจ้งยอดมือถือ หรือขโมยข้อมูลส่วนบุคคล <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ไม่มีอินเทอร์เน็ต</translation>
 <translation id="2230458221926704099">แก้ไขการเชื่อมต่อของคุณด้วย<ph name="BEGIN_LINK" />แอปการวินิจฉัย<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">สำหรับคุณ</translation>
 <translation id="2239100178324503013">ส่งเลย</translation>
 <translation id="2248949050832152960">ใช้ WebAuthn</translation>
 <translation id="2250931979407627383">เย็บขอบด้านซ้าย</translation>
@@ -366,6 +366,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ออก</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">คำเตือนด้านความปลอดภัย</translation>
 <translation id="2699302886720511147">บัตรที่ยอมรับ</translation>
 <translation id="2702801445560668637">รายการที่จะอ่าน</translation>
 <translation id="2704283930420550640">ค่าไม่ตรงกับรูปแบบ</translation>
@@ -466,6 +467,7 @@
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3209034400446768650">อาจมีการเรียกเก็บเงินในหน้านี้</translation>
 <translation id="3209080785413271048">ใช้ Windows Hello เพื่อยืนยันวิธีการชำระเงินที่คุณบันทึกไว้</translation>
+<translation id="3212581601480735796">มีการตรวจสอบกิจกรรมที่คุณทำใน <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">ใช้ WebAuthn ไม่ได้</translation>
 <translation id="3225919329040284222">เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ตรงกับการคาดการณ์ที่มีอยู่ การคาดการณ์เหล่านี้มีอยู่ในบางเว็บไซต์ที่มีการรักษาความปลอดภัยสูงเพื่อปกป้องคุณ</translation>
 <translation id="3226128629678568754">กดปุ่มโหลดซ้ำเพื่อส่งซ้ำข้อมูลที่จำเป็นในการโหลดหน้าเว็บ</translation>
@@ -481,7 +483,6 @@
 <translation id="3282497668470633863">เพิ่มชื่อบนบัตร</translation>
 <translation id="3287510313208355388">ดาวน์โหลดเมื่อออนไลน์</translation>
 <translation id="3293642807462928945">ดูข้อมูลเพิ่มเติมเกี่ยวกับนโยบาย <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้คุณเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="3303855915957856445">ไม่พบผลการค้นหา</translation>
 <translation id="3320021301628644560">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="3324983252691184275">แดงเข้ม</translation>
@@ -523,6 +524,7 @@
 <translation id="3528485271872257980">น้ำตาลเข้ม</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{อย่างน้อย 1 รายการบนอุปกรณ์ที่ซิงค์}=1{1 รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}other{# รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}}</translation>
 <translation id="3539171420378717834">เก็บสำเนาบัตรนี้ไว้บนอุปกรณ์นี้</translation>
+<translation id="3553513561058684206">สำหรับคุณ</translation>
 <translation id="3566021033012934673">การเชื่อมต่อของคุณไม่เป็นส่วนตัว</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">หน้าที่ฝังไว้ใน <ph name="SITE" /> บอกว่า</translation>
@@ -748,6 +750,7 @@
 <translation id="4594403342090139922">&amp;เลิกทำการนำออก</translation>
 <translation id="4597348597567598915">ขนาด 8</translation>
 <translation id="4600854749408232102">C6/C5 (ซองจดหมาย)</translation>
+<translation id="4613966523036881546">Google Chrome ไม่เชื่อถือใบรับรองการเชื่อมต่อนี้ เนื่องจากเป็นที่ทราบกันว่าใช้สำหรับการสกัดกั้นและการตรวจสอบเครือข่าย</translation>
 <translation id="4635654612248442824">เว็บไซต์ <ph name="ORIGIN" /> ขอให้บังคับใช้นโยบายดั้งเดิมกับคำขอทั้งหมดของเว็บไซต์ แต่ขณะนี้ใช้นโยบายนี้ไม่ได้</translation>
 <translation id="464342062220857295">ฟีเจอร์การค้นหา</translation>
 <translation id="4646534391647090355">พาฉันไปที่นั่นเลย</translation>
@@ -886,6 +889,7 @@
 <translation id="5287240709317226393">แสดงคุกกี้</translation>
 <translation id="5287456746628258573">เว็บไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจทำให้ข้อมูลของคุณรั่วไหลเมื่อส่งไปยังเว็บไซต์นี้ (เช่น รหัสผ่านหรือหมายเลขบัตรเครดิต)</translation>
 <translation id="5288108484102287882">มีคำเตือนจากการตรวจสอบความถูกต้องของค่านโยบาย</translation>
+<translation id="5295292838686006428">การละเมิดข้อมูลในเว็บไซต์หรือแอปเปิดเผยรหัสผ่านของคุณ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้โดยทันที</translation>
 <translation id="5299298092464848405">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
@@ -936,6 +940,7 @@
 <translation id="5540224163453853">ไม่พบบทความที่ขอ</translation>
 <translation id="5541546772353173584">เพิ่มอีเมล</translation>
 <translation id="5545756402275714221">บทความสำหรับคุณ</translation>
+<translation id="5552137475244467770">Chrome ตรวจสอบรหัสผ่านของคุณเป็นระยะโดยเทียบกับรายการที่มีการเผยแพร่ออนไลน์ เราเข้ารหัสชื่อผู้ใช้และรหัสผ่านเมื่อทำการตรวจสอบเพื่อไม่ให้ผู้ใดอ่านข้อมูลดังกล่าวได้ รวมถึง Google</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5560088892362098740">วันที่หมดอายุ</translation>
 <translation id="5565735124758917034">ใช้งานอยู่</translation>
@@ -1027,6 +1032,7 @@
 <translation id="5992691462791905444">พับทบแบบ Engineering รูปตัว Z</translation>
 <translation id="6000758707621254961">มีผลการค้นหา "<ph name="SEARCH_TEXT" />" <ph name="RESULT_COUNT" /> รายการ</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">ตรวจสอบรหัสผ่านของคุณ</translation>
 <translation id="6015796118275082299">ปี</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
@@ -1316,6 +1322,7 @@
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="748406663033922918">ใช้การล็อกหน้าจอเพื่อยืนยันวิธีการชำระเงินที่คุณบันทึกไว้</translation>
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
+<translation id="7495290002932347110">การละเมิดข้อมูลในเว็บไซต์หรือแอปเปิดเผยรหัสผ่านของคุณ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="7498234416455752244">แก้ไขต่อ</translation>
 <translation id="7508255263130623398">รหัสอุปกรณ์นโยบายที่ส่งกลับว่างเปล่าหรือไม่ตรงกับรหัสอุปกรณ์ปัจจุบัน</translation>
 <translation id="7508870219247277067">เขียวอะโวคาโด</translation>
@@ -1452,6 +1459,7 @@
 <translation id="8103161714697287722">วิธีการชำระเงิน</translation>
 <translation id="8105368624971345109">ปิด</translation>
 <translation id="8118489163946903409">วิธีการชำระเงิน</translation>
+<translation id="8124023448510659215">Chromium ไม่เชื่อถือใบรับรองการเชื่อมต่อนี้ เนื่องจากเป็นที่ทราบกันว่าใช้สำหรับการสกัดกั้นและการตรวจสอบเครือข่าย</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ไม่ได้ติดตั้งในคอมพิวเตอร์หรือเครือข่ายอย่างถูกต้อง โปรดขอให้ผู้ดูแลระบบ IT แก้ไขปัญหานี้</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
@@ -1595,6 +1603,8 @@
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8962950042226115166">เว็บไซต์ที่น่าสงสัย</translation>
 <translation id="8968766641738584599">บันทึกบัตร</translation>
+<translation id="8969267497192857913">มีการสอดแนมทุกอย่างที่คุณพิมพ์ หน้าที่คุณเข้าชม หรือกิจกรรมอื่นใดที่คุณทำในหน้าเว็บ อาจมีการเปลี่ยนแปลงเนื้อหาในเว็บไซต์โดยไม่แจ้งให้คุณทราบ
+    <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8975012916872825179">รวมข้อมูล เช่น หมายเลขโทรศัพท์ อีเมล และที่อยู่สำหรับจัดส่ง</translation>
 <translation id="8975263830901772334">ชื่อของไฟล์ที่คุณพิมพ์</translation>

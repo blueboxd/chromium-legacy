@@ -21,8 +21,6 @@ class ArcAppsFactory : public BrowserContextKeyedServiceFactory {
 
   static ArcAppsFactory* GetInstance();
 
-  static bool IsEnabled();
-
   static void ShutDownForTesting(content::BrowserContext* context);
 
  private:

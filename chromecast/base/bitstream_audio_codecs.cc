@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
@@ -36,6 +37,27 @@ const char* BitstreamAudioCodecToString(int codec) {
 
 }  // namespace
 
+BitstreamAudioCodecsInfo BitstreamAudioCodecsInfo::operator&(
+    const BitstreamAudioCodecsInfo& other) const {
+  return BitstreamAudioCodecsInfo{codecs & other.codecs,
+                                  spatial_rendering & other.spatial_rendering};
+}
+
+bool BitstreamAudioCodecsInfo::operator==(
+    const BitstreamAudioCodecsInfo& other) const {
+  return codecs == other.codecs && spatial_rendering == other.spatial_rendering;
+}
+
+bool BitstreamAudioCodecsInfo::operator!=(
+    const BitstreamAudioCodecsInfo& other) const {
+  return !(*this == other);
+}
+
+BitstreamAudioCodecsInfo BitstreamAudioCodecsInfo::ApplyCodecMask(
+    int mask) const {
+  return BitstreamAudioCodecsInfo{codecs & mask, spatial_rendering & mask};
+}
+
 std::string BitstreamAudioCodecsToString(int codecs) {
   std::string codec_string = BitstreamAudioCodecToString(codecs);
   if (!codec_string.empty()) {
@@ -51,6 +73,13 @@ std::string BitstreamAudioCodecsToString(int codecs) {
     }
   }
   return "[" + base::JoinString(codec_strings, ", ") + "]";
+}
+
+std::string BitstreamAudioCodecsInfoToString(
+    const BitstreamAudioCodecsInfo& info) {
+  return base::StrCat({"[codecs]", BitstreamAudioCodecsToString(info.codecs),
+                       "[spatial_rendering]",
+                       BitstreamAudioCodecsToString(info.spatial_rendering)});
 }
 
 }  // namespace chromecast

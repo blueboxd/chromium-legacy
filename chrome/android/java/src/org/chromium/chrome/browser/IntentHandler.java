@@ -780,6 +780,9 @@ public class IntentHandler {
 
         // We do some logging to determine what kinds of headers developers are inserting.
         IntentHeadersRecorder recorder = shouldLogHeaders ? new IntentHeadersRecorder() : null;
+        boolean firstParty = shouldLogHeaders
+                ? IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
+                : false;
 
         for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
@@ -787,7 +790,7 @@ public class IntentHandler {
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
 
-            if (shouldLogHeaders) recorder.recordHeader(key, value);
+            if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
 
             if (!HttpUtil.isAllowedHeader(key, value)) continue;
 
@@ -797,9 +800,7 @@ public class IntentHandler {
             extraHeaders.append(value);
         }
 
-        if (shouldLogHeaders) {
-            recorder.report(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
-        }
+        if (shouldLogHeaders) recorder.report(firstParty);
         return extraHeaders.length() == 0 ? null : extraHeaders.toString();
     }
 

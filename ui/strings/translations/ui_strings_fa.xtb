@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">چپ به راست</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
-<translation id="1409544243779336081">توصیه برنامه</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
 <translation id="1498028757988366001">قبلاً این را جستجو کردید. اگر «<ph name="QUERY" />» را از سابقه‌تان حذف کنید، این پرسمان در همه دستگاه‌ها از حسابتان به‌طور دائم برداشته خواهد شد.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">نقطه</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
-<translation id="1812519734428420144">رتبه‌بندی ستاره‌ای <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{۱ ساعت و }one{# ساعت و }other{# ساعت و }}</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="1859234291848436338">جهت نوشتن</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="7814458197256864873">&amp;کپی</translation>
+<translation id="7848989271541991537">به صفحه <ph name="PAGE_NUMBER" />، ردیف <ph name="ROW_NUMBER" />، ستون <ph name="COLUMN_NUMBER" />.منتقل شد.</translation>
 <translation id="7879499977785298635">مسدود نکنید</translation>
 <translation id="7907591526440419938">باز کردن فایل</translation>
 <translation id="7969046989155602842">فرمان</translation>

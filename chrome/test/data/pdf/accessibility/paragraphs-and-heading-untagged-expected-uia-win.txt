@@ -2,6 +2,7 @@ group
 ++document Name='PDF document containing 1 page'
 ++++region Name='Page 1'
 ++++++heading
+++++++++description Name='Heading<newline>' IsControlElement=false
 ++++++group
 ++++++++description Name='This is a small pdf file:<newline>'
 ++++++group

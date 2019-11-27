@@ -43,6 +43,7 @@ bool WebResourceTimingInfo::operator==(
          transfer_size == other.transfer_size &&
          encoded_body_size == other.encoded_body_size &&
          decoded_body_size == other.decoded_body_size &&
+         context_type == other.context_type &&
          did_reuse_connection == other.did_reuse_connection &&
          is_secure_context == other.is_secure_context &&
          allow_timing_details == other.allow_timing_details &&
@@ -76,6 +77,7 @@ CrossThreadCopier<blink::WebResourceTimingInfo>::Copy(
   copy.transfer_size = info.transfer_size;
   copy.encoded_body_size = info.encoded_body_size;
   copy.decoded_body_size = info.decoded_body_size;
+  copy.context_type = info.context_type;
 
   copy.did_reuse_connection = info.did_reuse_connection;
   copy.is_secure_context = info.is_secure_context;

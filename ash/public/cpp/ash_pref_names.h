@@ -90,6 +90,7 @@ ASH_PUBLIC_EXPORT extern const char kNightLightCustomStartTime[];
 ASH_PUBLIC_EXPORT extern const char kNightLightCustomEndTime[];
 ASH_PUBLIC_EXPORT extern const char kNightLightCachedLatitude[];
 ASH_PUBLIC_EXPORT extern const char kNightLightCachedLongitude[];
+ASH_PUBLIC_EXPORT extern const char kAutoNightLightNotificationDismissed[];
 
 ASH_PUBLIC_EXPORT extern const char kAllowScreenLock[];
 ASH_PUBLIC_EXPORT extern const char kEnableAutoScreenLock[];

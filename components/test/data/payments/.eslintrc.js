@@ -8,6 +8,8 @@ module.exports = {
     'es6': true,
   },
   'rules': {
+    'no-var': 'off',
+    'prefer-const': 'off',
     'no-restricted-properties': 0,
     'no-irregular-whitespace': 2,
     'no-unexpected-multiline': 2,

@@ -57,13 +57,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
     // Return the profile for |path|, only if it is already loaded.
     virtual Profile* ProfileForPath(const base::FilePath& path);
 
-    // Call |callback| with the list of profiles for which this app is
-    // installed.
-    virtual void GetProfilesForAppAsync(
-        const std::string& app_id,
-        const std::vector<base::FilePath>& profile_paths_to_check,
-        base::OnceCallback<void(const std::vector<base::FilePath>&)>);
-
     // Load a profile and call |callback| when completed or failed.
     virtual void LoadProfileAsync(const base::FilePath& path,
                                   base::OnceCallback<void(Profile*)> callback);
@@ -201,8 +194,12 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   void set_delegate(Delegate* delegate);
   content::NotificationRegistrar& registrar() { return registrar_; }
 
+  // Called when profile menu items may have changed. Rebuilds the profile
+  // menu item list and sends updated lists to all apps.
+  void UpdateAllProfileMenus();
+
   // Update |profile_menu_items_| from |avatar_menu_|. Virtual for tests.
-  virtual void UpdateProfileMenuItems();
+  virtual void RebuildProfileMenuItemsFromAvatarMenu();
 
   // The list of all profiles that might appear in the menu.
   std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
@@ -218,26 +215,31 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // Close one specified app.
   void CloseShimForApp(Profile* profile, const std::string& app_id);
 
-  // Return the profile that should be opened for |app_id|, preferring
-  // |specified_profile_path| if is valid, otherwise prefering the most recently
-  // used of |profile_paths|.
-  base::FilePath SelectProfileForApp(
-      const std::string& app_id,
-      const base::FilePath& specified_profile_path,
-      const std::vector<base::FilePath>& profile_paths) const;
+  // This is called by OnShimProcessConnected if the app shim was launched by
+  // Chrome, and should connect to an already-existing AppShimHost.
+  void OnShimProcessConnectedForRegisterOnly(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
-  // Continuation of OnShimProcessConnected, once the query for all profiles
-  // with the app installed has returned.profiles
-  void OnShimProcessConnectedAndProfilesRetrieved(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap,
-      const std::vector<base::FilePath>& profiles);
+  // This is called by OnShimProcessConnected when the shim was was launched
+  // not by Chrome, and needs to launch the app (that is, open a new app
+  // window).
+  void OnShimProcessConnectedForLaunch(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
-  // Continuation of OnShimProcessConnectedAndProfilesRetrieved, once the
-  // decided profile has loaded.
-  void OnShimProcessConnectedAndAppLoaded(
+  // Continuation of OnShimProcessConnectedForLaunch, once all of the profiles
+  // to use have been loaded. The list of profiles to launch is in
+  // |profile_paths_to_launch|. The first entry corresponds to the bootstrap-
+  // specified profile, and may be a blank path.
+  void OnShimProcessConnectedAndProfilesToLaunchLoaded(
       std::unique_ptr<AppShimHostBootstrap> bootstrap,
-      Profile* profile,
-      const extensions::Extension* extension);
+      const std::vector<base::FilePath>& profile_paths_to_launch);
+
+  // The final step of both paths for OnShimProcessConnected. This will connect
+  // |bootstrap| to |profile_state|'s AppShimHost, if possible.
+  void OnShimProcessConnectedAndAllLaunchesDone(
+      ProfileState* profile_state,
+      chrome::mojom::AppShimLaunchResult result,
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
   // Continuation of OnShimSelectedProfile, once the profile has loaded.
   void OnShimSelectedProfileAndAppLoaded(
@@ -258,17 +260,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   void OnAppEnabled(const base::FilePath& profile_path,
                     const std::string& app_id,
                     LoadProfileAppCallback callback);
-
-  // Check to see for which profile paths in |profile_menu_items_| the app with
-  // |app_id| is installed, and return them as the argument to |callback|.
-  void GetProfilesForAppAsync(
-      const std::string& app_id,
-      base::OnceCallback<void(const std::vector<base::FilePath>&)> callback);
-
-  // Callback for the call to asynchronously query which profiles have an app
-  // installed.
-  void OnGotProfilesForApp(const std::string& app_id,
-                           const std::vector<base::FilePath>& profiles);
 
   // Update the profiles menu for the specified host.
   void UpdateAppProfileMenu(AppState* app_state);

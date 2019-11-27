@@ -309,6 +309,7 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
 }
 
 void OverrideFactoryParams(const Extension& extension,
+                           FactoryUser factory_user,
                            network::mojom::URLLoaderFactoryParams* params) {
   // Setup factory bound allow list that overwrites per-profile common list
   // to allow tab specific permissions only for this newly created factory.
@@ -324,6 +325,9 @@ void OverrideFactoryParams(const Extension& extension,
   // TODO(lukasza): https://crbug.com/1016904: Use more granular CORB
   // enforcement based on the specific |extension|'s permissions.
   params->is_corb_enabled = false;
+
+  if (factory_user == FactoryUser::kExtensionProcess)
+    params->unsafe_non_webby_initiator = true;
 }
 
 void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
@@ -541,7 +545,7 @@ void URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return;
 
-  OverrideFactoryParams(*extension, factory_params);
+  OverrideFactoryParams(*extension, factory_user, factory_params);
 }
 
 // static

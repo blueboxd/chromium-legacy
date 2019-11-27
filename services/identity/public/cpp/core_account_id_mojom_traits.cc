@@ -15,7 +15,7 @@ bool StructTraits<identity::mojom::CoreAccountId::DataView, ::CoreAccountId>::
     return false;
   }
 
-  out->id = id;
+  *out = CoreAccountId::FromString(id);
 
   return true;
 }

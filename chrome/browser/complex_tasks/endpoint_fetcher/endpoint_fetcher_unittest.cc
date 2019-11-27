@@ -23,7 +23,7 @@ using MockEndpointFetcherCallback = base::MockCallback<EndpointFetcherCallback>;
 
 namespace {
 const char kContentType[] = "mock_content_type";
-const char kEmail[] = "mock_email";
+const char kEmail[] = "mock_email@gmail.com";
 const char kEndpoint[] = "https://my-endpoint.com";
 const char kExpectedResponse[] = "mock_response";
 const char kExpectedAuthError[] = "There was an authentication error";

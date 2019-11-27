@@ -17,7 +17,7 @@ class ProcessNode;
 // A collection of utilities for performing common queries and traversals on a
 // graph.
 struct GraphOperations {
-  using FrameNodeVisitor = base::Callback<bool(const FrameNode*)>;
+  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
 
   // Returns the collection of page nodes that are associated with the given
   // |process|. A page is associated with a process if the page's frame tree

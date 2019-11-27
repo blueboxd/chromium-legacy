@@ -198,6 +198,13 @@ void WebUITabStripContainerView::UpdateButtons() {
   }
 }
 
+void WebUITabStripContainerView::SetVisibleForTesting(bool visible) {
+  SetContainerTargetVisibility(visible);
+  animation_.SetCurrentValue(visible ? 1.0 : 0.0);
+  animation_.End();
+  PreferredSizeChanged();
+}
+
 const ui::AcceleratorProvider*
 WebUITabStripContainerView::GetAcceleratorProvider() const {
   return BrowserView::GetBrowserViewForBrowser(browser_);
@@ -218,6 +225,24 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_.Hide();
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
+
+    // Tapping in the WebUI tab strip gives keyboard focus to the
+    // WebContents's native window. While this doesn't take away View
+    // focus, it will change the focused TextInputClient; see
+    // |ui::InputMethod::SetFocusedTextInputClient()|. The Omnibox is a
+    // TextInputClient, and it installs itself as the focused
+    // TextInputClient when it receives Views-focus. So, tapping in the
+    // tab strip while the Omnibox has focus will mean text cannot be
+    // entered until it is blurred and re-focused. This caused
+    // crbug.com/1027375.
+    //
+    // TODO(crbug.com/994350): stop WebUI tab strip from taking focus on
+    // tap and remove this workaround.
+    views::FocusManager* const focus_manager = GetFocusManager();
+    if (focus_manager) {
+      focus_manager->StoreFocusedView(true /* clear_native_focus */);
+      focus_manager->RestoreFocusedView();
+    }
   }
   auto_closer_->set_enabled(target_visible);
 }

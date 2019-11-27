@@ -2847,4 +2847,12 @@ const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
 // TODO(937746): Remove this after M84.
 const char kWebComponentsV0Enabled[] = "web_components_v0_enabled";
 
+#if defined(OS_ANDROID)
+// Last time the known interception disclosure message was dismissed. Used to
+// ensure a cooldown period passes before the disclosure message is displayed
+// again.
+const char kKnownInterceptionDisclosureInfobarLastShown[] =
+    "known_interception_disclosure_infobar_last_shown";
+#endif
+
 }  // namespace prefs

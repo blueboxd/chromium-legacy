@@ -16,7 +16,7 @@ ColorTransform::ColorTransform(Callback callback)
 ColorTransform::ColorTransform(SkColor color) {
   const auto generator = [](SkColor color, SkColor input_color,
                             const ColorMixer& mixer) { return color; };
-  callback_ = base::Bind(generator, color);
+  callback_ = base::BindRepeating(generator, color);
 }
 
 ColorTransform::ColorTransform(ColorId id) {
@@ -25,7 +25,7 @@ ColorTransform::ColorTransform(ColorId id) {
                             const ColorMixer& mixer) {
     return mixer.GetResultColor(id);
   };
-  callback_ = base::Bind(generator, id);
+  callback_ = base::BindRepeating(generator, id);
 }
 
 ColorTransform::ColorTransform(const ColorTransform&) = default;
@@ -49,8 +49,8 @@ ColorTransform AlphaBlend(ColorTransform foreground_transform,
                                    background_transform.Run(input_color, mixer),
                                    alpha);
   };
-  return base::Bind(generator, std::move(foreground_transform),
-                    std::move(background_transform), alpha);
+  return base::BindRepeating(generator, std::move(foreground_transform),
+                             std::move(background_transform), alpha);
 }
 
 ColorTransform BlendForMinContrast(
@@ -78,10 +78,10 @@ ColorTransform BlendForMinContrast(
                    contrast_ratio)
             .color;
       };
-  return base::Bind(generator, std::move(foreground_transform),
-                    std::move(background_transform),
-                    std::move(high_contrast_foreground_transform),
-                    contrast_ratio);
+  return base::BindRepeating(generator, std::move(foreground_transform),
+                             std::move(background_transform),
+                             std::move(high_contrast_foreground_transform),
+                             contrast_ratio);
 }
 
 ColorTransform BlendForMinContrastWithSelf(ColorTransform transform,
@@ -96,7 +96,7 @@ ColorTransform BlendTowardMaxContrast(ColorTransform transform, SkAlpha alpha) {
     return color_utils::BlendTowardMaxContrast(
         transform.Run(input_color, mixer), alpha);
   };
-  return base::Bind(generator, std::move(transform), alpha);
+  return base::BindRepeating(generator, std::move(transform), alpha);
 }
 
 ColorTransform ContrastInvert(ColorTransform transform) {
@@ -113,7 +113,7 @@ ColorTransform ContrastInvert(ColorTransform transform) {
                                             base::nullopt, contrast_ratio)
         .color;
   };
-  return base::Bind(generator, std::move(transform));
+  return base::BindRepeating(generator, std::move(transform));
 }
 
 ColorTransform DeriveDefaultIconColor(ColorTransform transform) {
@@ -122,7 +122,7 @@ ColorTransform DeriveDefaultIconColor(ColorTransform transform) {
     return color_utils::DeriveDefaultIconColor(
         transform.Run(input_color, mixer));
   };
-  return base::Bind(generator, std::move(transform));
+  return base::BindRepeating(generator, std::move(transform));
 }
 
 ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id) {
@@ -132,14 +132,14 @@ ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id) {
                             const ColorMixer& mixer) {
     return mixer.GetOriginalColorFromSet(id, set_id);
   };
-  return base::Bind(generator, id, set_id);
+  return base::BindRepeating(generator, id, set_id);
 }
 
 ColorTransform FromTransformInput() {
   const auto generator = [](SkColor input_color, const ColorMixer& mixer) {
     return input_color;
   };
-  return base::Bind(generator);
+  return base::BindRepeating(generator);
 }
 
 ColorTransform GetColorWithMaxContrast(ColorTransform transform) {
@@ -148,7 +148,7 @@ ColorTransform GetColorWithMaxContrast(ColorTransform transform) {
     return color_utils::GetColorWithMaxContrast(
         transform.Run(input_color, mixer));
   };
-  return base::Bind(generator, std::move(transform));
+  return base::BindRepeating(generator, std::move(transform));
 }
 
 ColorTransform GetResultingPaintColor(ColorTransform foreground_transform,
@@ -160,8 +160,8 @@ ColorTransform GetResultingPaintColor(ColorTransform foreground_transform,
         foreground_transform.Run(input_color, mixer),
         background_transform.Run(input_color, mixer));
   };
-  return base::Bind(generator, std::move(foreground_transform),
-                    std::move(background_transform));
+  return base::BindRepeating(generator, std::move(foreground_transform),
+                             std::move(background_transform));
 }
 
 ColorTransform SelectBasedOnDarkInput(
@@ -178,9 +178,9 @@ ColorTransform SelectBasedOnDarkInput(
                                        : output_transform_for_light_input;
     return output_transform.Run(input_color, mixer);
   };
-  return base::Bind(generator, std::move(input_transform),
-                    std::move(output_transform_for_dark_input),
-                    std::move(output_transform_for_light_input));
+  return base::BindRepeating(generator, std::move(input_transform),
+                             std::move(output_transform_for_dark_input),
+                             std::move(output_transform_for_light_input));
 }
 
 ColorTransform SetAlpha(ColorTransform transform, SkAlpha alpha) {
@@ -188,7 +188,7 @@ ColorTransform SetAlpha(ColorTransform transform, SkAlpha alpha) {
                             SkColor input_color, const ColorMixer& mixer) {
     return SkColorSetA(transform.Run(input_color, mixer), alpha);
   };
-  return base::Bind(generator, std::move(transform), alpha);
+  return base::BindRepeating(generator, std::move(transform), alpha);
 }
 
 }  // namespace ui

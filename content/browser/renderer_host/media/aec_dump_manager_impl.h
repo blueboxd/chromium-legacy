@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/process/process_handle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/mediastream/aec_dump.mojom.h"
 
@@ -24,7 +25,8 @@ class AecDumpManagerImpl : public blink::mojom::AecDumpManager {
   AecDumpManagerImpl();
   ~AecDumpManagerImpl() override;
 
-  void AddRequest(mojo::InterfaceRequest<blink::mojom::AecDumpManager> request);
+  void AddReceiver(
+      mojo::PendingReceiver<blink::mojom::AecDumpManager> receiver);
 
   // Start generating AEC dumps using default settings.
   void AutoStart();

@@ -70,7 +70,6 @@ template("trichrome_library_apk_tmpl") {
       r_java_root_package_name = "trichrome_lib"
       app_as_shared_lib = true
     }
-    use_chromium_linker = false
 
     uncompress_shared_libraries = true
     uncompress_dex = true
@@ -131,7 +130,7 @@ template("trichrome_library_apk_tmpl") {
           secondary_abi_loadable_modules =
               [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
 
-          if (use_chromium_linker) {
+          if (chromium_linker_supported) {
             deps += [ "//base/android/linker:chromium_android_linker($android_secondary_abi_toolchain)" ]
             secondary_abi_loadable_modules +=
                 [ "$_secondary_out_dir/libchromium_android_linker.so" ]
@@ -150,6 +149,11 @@ template("trichrome_library_apk_tmpl") {
           "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
         ]
         loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
+
+        if (chromium_linker_supported) {
+          deps += [ "//base/android/linker:chromium_android_linker" ]
+          loadable_modules += [ "$root_out_dir/libchromium_android_linker.so" ]
+        }
       }
     }
 

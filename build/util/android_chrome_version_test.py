@@ -54,15 +54,6 @@ class _VersionTest(unittest.TestCase):
 
     self.assertEqual(trichrome_version_code, '372000003')
 
-  def testGenerateVersionCodesAndroidNoTouch(self):
-    """Assert it gives correct values for standard/example inputs"""
-    output = GenerateVersionCodes(
-        self.EXAMPLE_VERSION_VALUES, arch='arm', is_next_build=False)
-
-    notouch_chrome_version_code = output['NOTOUCH_CHROME_VERSION_CODE']
-
-    self.assertEqual(notouch_chrome_version_code, '372000004')
-
   def testGenerateVersionCodesAndroidWebviewStable(self):
     """Assert it gives correct values for standard/example inputs"""
     output = GenerateVersionCodes(
@@ -170,13 +161,25 @@ class _VersionTest(unittest.TestCase):
     """
     output = GenerateVersionCodes(
         self.EXAMPLE_VERSION_VALUES, arch='arm64', is_next_build=False)
+    arch_monochrome_version_code = output['MONOCHROME_VERSION_CODE']
+    arch_monochrome_32_version_code = output['MONOCHROME_32_VERSION_CODE']
+    arch_monochrome_32_64_version_code = output['MONOCHROME_32_64_VERSION_CODE']
     arch_monochrome_64_32_version_code = output['MONOCHROME_64_32_VERSION_CODE']
     arch_monochrome_64_version_code = output['MONOCHROME_64_VERSION_CODE']
+    arch_trichrome_version_code = output['TRICHROME_VERSION_CODE']
+    arch_trichrome_32_version_code = output['TRICHROME_32_VERSION_CODE']
+    arch_trichrome_32_64_version_code = output['TRICHROME_32_64_VERSION_CODE']
     arch_trichrome_64_32_version_code = output['TRICHROME_64_32_VERSION_CODE']
     arch_trichrome_64_version_code = output['TRICHROME_64_VERSION_CODE']
 
+    self.assertEqual(arch_monochrome_32_version_code, '372000002')
+    self.assertEqual(arch_monochrome_32_64_version_code, '372000032')
+    self.assertEqual(arch_monochrome_version_code, '372000032')
     self.assertEqual(arch_monochrome_64_32_version_code, '372000042')
     self.assertEqual(arch_monochrome_64_version_code, '372000052')
+    self.assertEqual(arch_trichrome_32_version_code, '372000003')
+    self.assertEqual(arch_trichrome_32_64_version_code, '372000033')
+    self.assertEqual(arch_trichrome_version_code, '372000033')
     self.assertEqual(arch_trichrome_64_32_version_code, '372000043')
     self.assertEqual(arch_trichrome_64_version_code, '372000053')
 
@@ -202,13 +205,25 @@ class _VersionTest(unittest.TestCase):
     """
     output = GenerateVersionCodes(
         self.EXAMPLE_VERSION_VALUES, arch='x64', is_next_build=False)
+    arch_monochrome_32_version_code = output['MONOCHROME_32_VERSION_CODE']
+    arch_monochrome_32_64_version_code = output['MONOCHROME_32_64_VERSION_CODE']
+    arch_monochrome_version_code = output['MONOCHROME_VERSION_CODE']
     arch_monochrome_64_32_version_code = output['MONOCHROME_64_32_VERSION_CODE']
     arch_monochrome_64_version_code = output['MONOCHROME_64_VERSION_CODE']
+    arch_trichrome_32_version_code = output['TRICHROME_32_VERSION_CODE']
+    arch_trichrome_32_64_version_code = output['TRICHROME_32_64_VERSION_CODE']
+    arch_trichrome_version_code = output['TRICHROME_VERSION_CODE']
     arch_trichrome_64_32_version_code = output['TRICHROME_64_32_VERSION_CODE']
     arch_trichrome_64_version_code = output['TRICHROME_64_VERSION_CODE']
 
+    self.assertEqual(arch_monochrome_32_version_code, '372000012')
+    self.assertEqual(arch_monochrome_32_64_version_code, '372000062')
+    self.assertEqual(arch_monochrome_version_code, '372000062')
     self.assertEqual(arch_monochrome_64_32_version_code, '372000072')
     self.assertEqual(arch_monochrome_64_version_code, '372000082')
+    self.assertEqual(arch_trichrome_32_version_code, '372000013')
+    self.assertEqual(arch_trichrome_32_64_version_code, '372000063')
+    self.assertEqual(arch_trichrome_version_code, '372000063')
     self.assertEqual(arch_trichrome_64_32_version_code, '372000073')
     self.assertEqual(arch_trichrome_64_version_code, '372000083')
 

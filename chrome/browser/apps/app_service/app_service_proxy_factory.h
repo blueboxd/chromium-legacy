@@ -22,8 +22,6 @@ class AppServiceProxyFactory : public BrowserContextKeyedServiceFactory {
 
   static AppServiceProxyFactory* GetInstance();
 
-  static bool IsEnabled();
-
  private:
   friend struct base::DefaultSingletonTraits<AppServiceProxyFactory>;
 

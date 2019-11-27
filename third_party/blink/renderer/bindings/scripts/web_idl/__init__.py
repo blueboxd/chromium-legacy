@@ -44,12 +44,12 @@ from .dictionary import DictionaryMember
 from .enumeration import Enumeration
 from .exposure import Exposure
 from .function_like import FunctionLike
+from .function_like import OverloadGroup
 from .idl_type import IdlType
 from .interface import Interface
 from .namespace import Namespace
 from .operation import Operation
 from .operation import OperationGroup
-from .overload_group import OverloadGroup
 from .runtime_enabled_features import RuntimeEnabledFeatures
 from .typedef import Typedef
 from .union import Union

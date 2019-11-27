@@ -83,8 +83,7 @@ void CSVPasswordIterator::SeekToNextValidRow() {
       // Skip over empty lines, and
       (csv_row_.empty() && !csv_rest_.empty()) ||
       // lines which are not correctly encoded passwords.
-      (!csv_row_.empty() &&
-       password_->Parse(nullptr) != CSVPassword::Status::kOK));
+      (!csv_row_.empty() && password_->TryParse() != CSVPassword::Status::kOK));
 }
 
 base::StringPiece ConsumeCSVLine(base::StringPiece* input) {

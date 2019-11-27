@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Wpisz liczbę.</translation>
 <translation id="4912536737030637138">pozycja bibliograficzna</translation>
+<translation id="492244087561876220">komentarz</translation>
 <translation id="4975562563186953947">Wybrano: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Wyłącz wyciszenie</translation>
 <translation id="49969490063480558">Podaj część po znaku „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Miesiąc</translation>
 <translation id="901493112792887934">bieżący czas w sekundach</translation>
 <translation id="901834265349196618">e-mail</translation>
+<translation id="9023835124071926463">sekcja komentarzy</translation>
 <translation id="9048119486235211610">nawigacja</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">wyłącz tryb obrazu w obrazie</translation>

@@ -5,7 +5,7 @@
 // A library to manage RLZ information for access-points shared
 // across different client applications.
 
-#include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/machine_deal_win.h"
 
 #include <windows.h>
 #include <aclapi.h>

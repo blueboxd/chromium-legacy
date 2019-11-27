@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/test_report_body.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
@@ -1340,6 +1342,19 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
   }
 }
 
+void InspectorPageAgent::FileChooserOpened(LocalFrame* frame,
+                                           HTMLInputElement* element,
+                                           bool* intercepted) {
+  *intercepted |= intercept_file_chooser_;
+  if (!intercept_file_chooser_)
+    return;
+  bool multiple = element->Multiple();
+  GetFrontend()->fileChooserOpened(
+      IdentifiersFactory::FrameId(frame), DOMNodeIds::IdForNode(element),
+      multiple ? protocol::Page::FileChooserOpened::ModeEnum::SelectMultiple
+               : protocol::Page::FileChooserOpened::ModeEnum::SelectSingle);
+}
+
 Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
   produce_compilation_cache_.Set(enabled);
   return Response::OK();
@@ -1361,8 +1376,13 @@ Response InspectorPageAgent::waitForDebugger() {
   return Response::OK();
 }
 
-protocol::Response InspectorPageAgent::generateTestReport(const String& message,
-                                                          Maybe<String> group) {
+Response InspectorPageAgent::setInterceptFileChooserDialog(bool enabled) {
+  intercept_file_chooser_ = enabled;
+  return Response::OK();
+}
+
+Response InspectorPageAgent::generateTestReport(const String& message,
+                                                Maybe<String> group) {
   Document* document = inspected_frames_->Root()->GetDocument();
 
   // Construct the test report.

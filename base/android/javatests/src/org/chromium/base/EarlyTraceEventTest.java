@@ -4,9 +4,6 @@
 
 package org.chromium.base;
 
-import static org.chromium.base.EarlyTraceEvent.AsyncEvent;
-import static org.chromium.base.EarlyTraceEvent.Event;
-
 import android.os.Process;
 import android.support.test.filters.SmallTest;
 
@@ -15,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.EarlyTraceEvent.AsyncEvent;
+import org.chromium.base.EarlyTraceEvent.Event;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.BaseJUnit4ClassRunner;

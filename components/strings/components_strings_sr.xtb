@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Прикажи више</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Промените лозинку</translation>
 <translation id="1484290072879560759">Одаберите адресу за испоруку</translation>
 <translation id="1492194039220927094">Слање смерница:</translation>
 <translation id="1501859676467574491">Приказуј картице са мог Google налога</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Покушајте да контактирате администратора система.</translation>
 <translation id="1736420071277903564">Рачунар</translation>
-<translation id="1739107442478692187">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да проверите сачуване лозинке и да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Унесите важећи месец истека</translation>
 <translation id="1741613555002899862">Мора да се наведе као важећи низ када је DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Да бисте следећи пут платили брже, сачувајте картицу, име и адресу за обрачун на Google налогу и овом уређају.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Услуга за отпакивање датотека</translation>
 <translation id="1915697529809968049">Желите ли да користите Touch ID уместо CVC-а?</translation>
 <translation id="1916770123977586577">Да бисте применили ажурирана подешавања на овом сајту, учитајте страницу поново</translation>
+<translation id="1917876262703816781">Ваша лозинка је откривена при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Огласи</translation>
 <translation id="1919367280705858090">Потражите помоћ у вези са одређеном поруком о грешци</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{None}=1{1 сајт}one{# сајт}few{# сајта}other{# сајтова}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Домени се не подударају</translation>
 <translation id="2096368010154057602">Одсек</translation>
 <translation id="2099652385553570808">Троструко спајање на левој страни</translation>
-<translation id="2100280972184758440">Ваша лозинка је угрожена</translation>
 <translation id="2102134110707549001">Предложи јаку лозинку…</translation>
 <translation id="2108755909498034140">Поново покрените рачунар</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Занемарују се јер су замењене смерницама <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Издато за: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Бушење у доњем десном углу</translation>
-<translation id="2124528555835617522">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да одмах проверите сачуване лозинке.</translation>
 <translation id="2129079103035905234">Сензори за покрет</translation>
 <translation id="2130448033692577677">Није могуће применити шаблоне које сте навели јер DnsOverHttpsMode смернице нису подешене.</translation>
 <translation id="213826338245044447">Мобилни обележивачи</translation>
@@ -494,7 +493,6 @@
 <translation id="3282497668470633863">Додајте име на картици</translation>
 <translation id="3287510313208355388">Преузми када сам онлајн</translation>
 <translation id="3293642807462928945">Сазнајте више о смерницама <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Нису пронађени резултати претраге</translation>
 <translation id="3320021301628644560">Додајте адресу за обрачун</translation>
 <translation id="3324983252691184275">Јаркоцрвена</translation>
@@ -908,6 +906,7 @@
 <translation id="5287240709317226393">Прикажи колачиће</translation>
 <translation id="5287456746628258573">Овај сајт користи застарелу безбедносну конфигурацију, која може да открије ваше информације (на пример, лозинке или бројеве кредитних картица) када се шаљу на њега.</translation>
 <translation id="5288108484102287882">Валидација вредности смерница је активирала упозорења</translation>
+<translation id="5295292838686006428">Ваша лозинка је откривена при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах проверите сачуване лозинке.</translation>
 <translation id="5299298092464848405">Грешка при рашчлањивању смерница</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5308380583665731573">Повезивање</translation>
@@ -958,6 +957,7 @@
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
 <translation id="5541546772353173584">Додајте имејл</translation>
 <translation id="5545756402275714221">Чланци за вас</translation>
+<translation id="5552137475244467770">Chrome повремено упоређује ваше лозинке са листама које су објављене онлајн. Док то ради, ваше лозинке и корисничка имена су шифровани, па нико не може да их прочита, укључујући Google.</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5560088892362098740">Датум истека</translation>
 <translation id="5565735124758917034">Активно</translation>
@@ -1049,6 +1049,7 @@
 <translation id="5992691462791905444">Пресавијање у облику полу-хармонике</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Проверите лозинке</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. страница}one{#. страница}few{#. страница}other{#. страница}}</translation>
 <translation id="6017514345406065928">Зелена</translation>
@@ -1337,6 +1338,7 @@
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="748406663033922918">Користите закључавање екрана за верификовање сачуваних начина плаћања.</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
+<translation id="7495290002932347110">Ваша лозинка је откривена при упаду у податке на сајту или у апликацији. Chrome препоручује да проверите сачуване лозинке и да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Наставите са изменама</translation>
 <translation id="7508255263130623398">Враћени ИД уређаја за смернице је празан или се не подудара са актуелним ИД-ом уређаја</translation>
 <translation id="7508870219247277067">Зеленожута</translation>

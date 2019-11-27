@@ -556,7 +556,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> anvendes</translation>
 <translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre notifikationshandlingen</translation>
-<translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Angiv forældreadgangskoden til Family Link.</translation>
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>
 <translation id="9056839673611986238">En tidligere version gendannes på enheden</translation>
@@ -573,6 +572,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9183456764293710005">Forstørrelse af fuld skærm</translation>
 <translation id="9193626018745640770">Caster på en ukendt modtager</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
+<translation id="9205817095063786319">Enheden administreres af <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> til batteriet er fuldt opladet.</translation>
 <translation id="9215934040295798075">Vælg baggrund</translation>

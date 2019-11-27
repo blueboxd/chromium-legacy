@@ -6,5 +6,7 @@ module.exports = {
   'env': {'browser': true, 'es6': true},
   'rules': {
     'no-restricted-properties': 'off',
+    'no-var': 'off',
+    'prefer-const': 'off',
   },
 };

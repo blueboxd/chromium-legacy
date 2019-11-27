@@ -504,13 +504,6 @@ void StorageHandler::NotifyIndexedDBContentChanged(
 Response StorageHandler::FindStoragePartition(
     const Maybe<std::string>& browser_context_id,
     StoragePartition** storage_partition) {
-  if (!browser_context_id.isJust()) {
-    if (!storage_partition_)
-      return Response::InvalidParams("Browser context not specified");
-    *storage_partition = storage_partition_;
-    return Response::OK();
-  }
-
   BrowserContext* browser_context = nullptr;
   Response response =
       BrowserHandler::FindBrowserContext(browser_context_id, &browser_context);

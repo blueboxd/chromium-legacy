@@ -4,6 +4,7 @@
 
 #include "content/browser/cookie_store/cookie_store_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -28,18 +29,6 @@ namespace {
 
 // ServiceWorkerStorage user data key for cookie change subscriptions.
 const char kSubscriptionsUserKey[] = "cookie_store_subscriptions";
-
-// Handles the result of ServiceWorkerContextWrapper::StoreRegistrationUserData.
-void HandleStoreRegistrationUserDataStatus(
-    blink::ServiceWorkerStatusCode status) {
-  // The current implementation does not have a good way to handle errors in
-  // StoreRegistrationUserData. Cookie change subscriptions have been added to
-  // the registration during the install event, so it's too late to surface the
-  // error to the renderer. The registration has already been persisted, and the
-  // Service Worker is likely active by now.
-  DLOG_IF(ERROR, status != blink::ServiceWorkerStatusCode::kOk)
-      << "StoreRegistrationUserData failed";
-}
 
 }  // namespace
 
@@ -112,20 +101,19 @@ void CookieStoreManager::ProcessOnDiskSubscriptions(
     int64_t service_worker_registration_id = pair.first;
     const std::string& proto_string = pair.second;
 
-    base::Optional<std::vector<CookieChangeSubscription>> subscriptions_opt =
+    std::vector<std::unique_ptr<CookieChangeSubscription>> subscriptions =
         CookieChangeSubscription::DeserializeVector(
             proto_string, service_worker_registration_id);
-    if (!subscriptions_opt.has_value()) {
+    if (subscriptions.empty()) {
       load_success = false;
       continue;
     }
 
-    ActivateSubscriptions(&subscriptions_opt.value());
+    ActivateSubscriptions(subscriptions);
     DCHECK(
         !subscriptions_by_registration_.count(service_worker_registration_id));
     subscriptions_by_registration_.emplace(
-        std::move(service_worker_registration_id),
-        std::move(subscriptions_opt).value());
+        std::move(service_worker_registration_id), std::move(subscriptions));
   }
 
   DidLoadAllSubscriptions(load_success, std::move(load_callback));
@@ -144,18 +132,19 @@ void CookieStoreManager::DidLoadAllSubscriptions(
   std::move(load_callback).Run(succeeded);
 }
 
-void CookieStoreManager::AppendSubscriptions(
+void CookieStoreManager::AddSubscriptions(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
-    blink::mojom::CookieStore::AppendSubscriptionsCallback callback) {
+    mojo::ReportBadMessageCallback bad_message_callback,
+    blink::mojom::CookieStore::AddSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(base::BindOnce(
-        &CookieStoreManager::AppendSubscriptions, weak_factory_.GetWeakPtr(),
+    subscriptions_loaded_callbacks_.push_back(base::BindOnce(
+        &CookieStoreManager::AddSubscriptions, weak_factory_.GetWeakPtr(),
         service_worker_registration_id, origin, std::move(mojo_subscriptions),
-        std::move(callback)));
+        std::move(bad_message_callback), std::move(callback)));
     return;
   }
 
@@ -164,100 +153,205 @@ void CookieStoreManager::AppendSubscriptions(
     return;
   }
 
-  // GetLiveRegistration() is sufficient here (as opposed to a flavor of
-  // FindRegistration()) because AppendSubscriptions is only called from the
-  // implementation of the Cookie Store API, which is exposed to
-  // ServiceWorkerGlobalScope. ServiceWorkerGlobalScope references the
-  // service worker's registration via a ServiceWorkerRegistration JavaScript
-  // object, so the registration is guaranteed to be live while the service
-  // worker is executing.
+  // GetLiveRegistration() is sufficient here, as opposed to a flavor of
+  // FindRegistration(), because we know the registration must be alive.
   //
-  // It is possible for the service worker to get killed while this API call is
-  // in progress, for example, if the service worker code exceeds an event
-  // handling time limit. In that case, the return value will not be observed,
-  // so a false negative is acceptable.
+  // blink::CookieStoreManager calls AddSubscription() and stays alive until the
+  // async call completes. blink::CookieStoreManager hangs onto the Blink side
+  // of the Service Worker's registration. So, the registration will be live if
+  // the call's result is received.
   ServiceWorkerRegistration* service_worker_registration =
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
+  // If the calling blink::CookieStoreManager instance goes away (for example,
+  // it had to wait for the database load to complete, and that took too long),
+  // the result of this call won't be received, so it's acceptable to fail it.
   if (!service_worker_registration ||
-      !origin.IsSameOriginWith(
+      !service_worker_registration->active_version()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!origin.IsSameOriginWith(
           url::Origin::Create(service_worker_registration->scope()))) {
-    // This error case is a good fit for mojo::ReportBadMessage(), because the
-    // renderer has passed an invalid registration ID. However, the code here
-    // might run without a mojo call context, if the original call was delayed
-    // while loading on-disk subscription data.
-    //
-    // While it would be possible to have two code paths for the two situations,
-    // the extra complexity doesn't seem warranted for the limited debuggig
-    // benefits provided by mojo::ReportBadMessage.
+    std::move(bad_message_callback).Run("Invalid service worker");
     std::move(callback).Run(false);
     return;
   }
 
-  // TODO(crbug.com/843079): This check incorrectly allows an active service
-  //                         worker version to call the API, if another version
-  //                         is installing at the same time.
-  if (!service_worker_registration->installing_version()) {
-    // A service worker's cookie change subscriptions can only be modified while
-    // the service worker's install event is handled.
-    std::move(callback).Run(false);
+  // The empty set is special-cased because the code below assumes that the
+  // registration's list of subscriptions will end up non-empty.
+  if (mojo_subscriptions.empty()) {
+    std::move(callback).Run(true);
     return;
   }
 
-  for (const auto& subscription : mojo_subscriptions) {
+  for (const auto& mojo_subscription : mojo_subscriptions) {
     if (!ServiceWorkerUtils::ScopeMatches(service_worker_registration->scope(),
-                                          subscription->url)) {
-      // Another spot where BadMessage would be appropriate.
+                                          mojo_subscription->url)) {
+      // Blink should have validated subscription URLs against the service
+      // worker registration scope. A mismatch here means that the renderer was
+      // compromised.
+      std::move(bad_message_callback).Run("Invalid subscription URL");
       std::move(callback).Run(false);
       return;
     }
   }
 
-  if (mojo_subscriptions.empty()) {
-    // Empty subscriptions are special-cased so we never have to serialize an
-    // empty array of subscriptions. This is advantageous because the protobuf
-    // serialization of an empty array is the empty string, which is also used
-    // by the convenience protobuf serialization API to signal serialization
-    // failure. So, supporting serializing an empty array would mean we can't
-    // use the convenience serialization API.
-    std::move(callback).Run(true);
+  // If the registration does not exist in the map, the default std::vector()
+  // constructor is used to create a new entry. The constructor produces an
+  // empty vector, which is exactly what is needed here.
+  std::vector<std::unique_ptr<CookieChangeSubscription>>& subscriptions =
+      subscriptions_by_registration_[service_worker_registration_id];
+
+  // New subscriptions will be appended past the current vector end.
+  size_t old_subscriptions_size = subscriptions.size();
+
+  // The loop consumes the mojo subscriptions, so it can build
+  // CookieChangeSubscriptions more efficiently.
+  for (auto& mojo_subscription : mojo_subscriptions) {
+    auto new_subscription = std::make_unique<CookieChangeSubscription>(
+        std::move(mojo_subscription), service_worker_registration->id());
+
+    auto existing_subscription_it = std::find_if(
+        subscriptions.begin(), subscriptions.end(),
+        [&](const std::unique_ptr<CookieChangeSubscription>& other) -> bool {
+          return *new_subscription == *other;
+        });
+    if (existing_subscription_it == subscriptions.end())
+      subscriptions.push_back(std::move(new_subscription));
+  }
+
+  ActivateSubscriptions(
+      base::make_span(subscriptions).subspan(old_subscriptions_size));
+  StoreSubscriptions(service_worker_registration_id, origin.GetURL(),
+                     subscriptions, std::move(callback));
+}
+
+void CookieStoreManager::RemoveSubscriptions(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
+    mojo::ReportBadMessageCallback bad_message_callback,
+    blink::mojom::CookieStore::RemoveSubscriptionsCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!done_loading_subscriptions_) {
+    subscriptions_loaded_callbacks_.push_back(base::BindOnce(
+        &CookieStoreManager::RemoveSubscriptions, weak_factory_.GetWeakPtr(),
+        service_worker_registration_id, origin, std::move(mojo_subscriptions),
+        std::move(bad_message_callback), std::move(callback)));
     return;
   }
 
-  std::vector<CookieChangeSubscription> new_subscriptions =
-      CookieChangeSubscription::FromMojoVector(
-          std::move(mojo_subscriptions), service_worker_registration->id());
-  DCHECK(!new_subscriptions.empty());
+  if (!succeeded_loading_subscriptions_) {
+    std::move(callback).Run(false);
+    return;
+  }
 
-  auto old_subscriptions_it =
+  // GetLiveRegistration() is sufficient here, as opposed to a flavor of
+  // FindRegistration(), because we know the registration must be alive.
+  //
+  // blink::CookieStoreManager calls AddSubscription() and stays alive until the
+  // async call completes. blink::CookieStoreManager hangs onto the Blink side
+  // of the Service Worker's registration. So, the registration will be live if
+  // the call's result is received.
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->GetLiveRegistration(
+          service_worker_registration_id);
+  // If the calling blink::CookieStoreManager instance goes away (for example,
+  // it had to wait for the database load to complete, and that took too long),
+  // the result of this call won't be received, so it's acceptable to fail it.
+  if (!service_worker_registration ||
+      !service_worker_registration->active_version()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!origin.IsSameOriginWith(
+          url::Origin::Create(service_worker_registration->scope()))) {
+    std::move(bad_message_callback).Run("Invalid service worker");
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::vector<std::unique_ptr<CookieChangeSubscription>> target_subscriptions;
+  target_subscriptions.reserve(mojo_subscriptions.size());
+  // The loop consumes the mojo subscriptions, so it can build
+  // CookieChangeSubscriptions more efficiently.
+  for (auto& mojo_subscription : mojo_subscriptions) {
+    // This method does not need to check the subscription's URL against the
+    // service worker registration's scope. AddSubscription() checks
+    // subscription URLs, so the registration does not have any subscriptions
+    // with invalid URLs. If a compromised renderer attempts to remove a
+    // subscription with an invalid URL, no such subscription will be found, and
+    // this method will be a noop.
+    target_subscriptions.push_back(std::make_unique<CookieChangeSubscription>(
+        std::move(mojo_subscription), service_worker_registration->id()));
+  }
+
+  auto all_subscriptions_it =
       subscriptions_by_registration_.find(service_worker_registration_id);
-  if (old_subscriptions_it == subscriptions_by_registration_.end()) {
-    subscriptions_by_registration_.emplace(service_worker_registration_id,
-                                           std::move(new_subscriptions));
+  if (all_subscriptions_it == subscriptions_by_registration_.end()) {
+    // Nothing to remove.
     std::move(callback).Run(true);
     return;
   }
+  std::vector<std::unique_ptr<CookieChangeSubscription>>& all_subscriptions =
+      all_subscriptions_it->second;
 
-  std::vector<CookieChangeSubscription>& old_subscriptions =
-      old_subscriptions_it->second;
-  old_subscriptions.reserve(old_subscriptions.size() +
-                            new_subscriptions.size());
-  for (auto& new_subscription : new_subscriptions)
-    old_subscriptions.emplace_back(std::move(new_subscription));
+  std::vector<std::unique_ptr<CookieChangeSubscription>> removed_subscriptions;
+  removed_subscriptions.reserve(target_subscriptions.size());
 
-  std::move(callback).Run(true);
+  std::vector<std::unique_ptr<CookieChangeSubscription>> live_subscriptions;
+  // Assume that the application is tracking its subscriptions carefully and
+  // each removal will succeed. If the assumption holds, no vector reallocation
+  // will be needed.
+  if (all_subscriptions.size() > target_subscriptions.size()) {
+    live_subscriptions.reserve(all_subscriptions.size() -
+                               target_subscriptions.size());
+  }
+
+  for (auto& subscription : all_subscriptions) {
+    auto target_subscription_it = std::find_if(
+        target_subscriptions.begin(), target_subscriptions.end(),
+        [&](const std::unique_ptr<CookieChangeSubscription>& other) -> bool {
+          return *subscription == *other;
+        });
+    if (target_subscription_it == target_subscriptions.end()) {
+      // The subscription is not marked for deletion.
+      live_subscriptions.push_back(std::move(subscription));
+    } else {
+      DCHECK(**target_subscription_it == *subscription);
+      removed_subscriptions.push_back(std::move(subscription));
+    }
+  }
+  DeactivateSubscriptions(removed_subscriptions);
+
+  // StoreSubscriptions() needs to be called before updating
+  // |subscriptions_by_registration_|, because the update may delete the vector
+  // holding the subscriptions.
+  StoreSubscriptions(service_worker_registration_id, origin.GetURL(),
+                     live_subscriptions, std::move(callback));
+  if (live_subscriptions.empty()) {
+    subscriptions_by_registration_.erase(all_subscriptions_it);
+  } else {
+    all_subscriptions = std::move(live_subscriptions);
+  }
 }
 
 void CookieStoreManager::GetSubscriptions(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
+    mojo::ReportBadMessageCallback bad_message_callback,
     blink::mojom::CookieStore::GetSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(base::BindOnce(
+    subscriptions_loaded_callbacks_.push_back(base::BindOnce(
         &CookieStoreManager::GetSubscriptions, weak_factory_.GetWeakPtr(),
-        service_worker_registration_id, origin, std::move(callback)));
+        service_worker_registration_id, origin, std::move(bad_message_callback),
+        std::move(callback)));
     return;
   }
 
@@ -274,24 +368,17 @@ void CookieStoreManager::GetSubscriptions(
     return;
   }
 
-  const url::Origin& first_origin = url::Origin::Create(it->second[0].url());
+  const url::Origin first_origin = url::Origin::Create(it->second[0]->url());
 #if DCHECK_IS_ON()
   for (const auto& subscription : it->second) {
     DCHECK(
-        first_origin.IsSameOriginWith(url::Origin::Create(subscription.url())))
+        first_origin.IsSameOriginWith(url::Origin::Create(subscription->url())))
         << "Service worker's change subscriptions don't have the same origin";
   }
 #endif  // DCHECK_IS_ON()
 
   if (!origin.IsSameOriginWith(first_origin)) {
-    // This error case is a good fit for mojo::ReportBadMessage(), because the
-    // renderer has passed an invalid registration ID. However, the code here
-    // might run without a mojo call context, if the original call was delayed
-    // while loading on-disk subscription data.
-    //
-    // While it would be possible to have two code paths for the two situations,
-    // the extra complexity doesn't seem warranted for the limited debuggig
-    // benefits provided by mojo::ReportBadMessage.
+    std::move(bad_message_callback).Run("Invalid service worker");
     std::move(callback).Run(
         std::vector<blink::mojom::CookieChangeSubscriptionPtr>(), false);
     return;
@@ -301,44 +388,40 @@ void CookieStoreManager::GetSubscriptions(
                           true);
 }
 
-void CookieStoreManager::OnNewLiveRegistration(
+void CookieStoreManager::StoreSubscriptions(
     int64_t service_worker_registration_id,
-    const GURL& pattern) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void CookieStoreManager::OnRegistrationStored(
-    int64_t service_worker_registration_id,
-    const GURL& pattern) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Waiting for the on-disk subscriptions to be loaded ensures that the
-  // registration's subscriptions aren't activated twice. Without waiting,
-  // there's a risk that LoadAllSubscriptions() sees the result of the
-  // StoreRegistrationUserData() call below.
-  if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(base::BindOnce(
-        &CookieStoreManager::OnRegistrationStored, weak_factory_.GetWeakPtr(),
-        service_worker_registration_id, pattern));
+    const GURL& service_worker_origin,
+    const std::vector<std::unique_ptr<CookieChangeSubscription>>& subscriptions,
+    base::OnceCallback<void(bool)> callback) {
+  if (subscriptions.empty()) {
+    service_worker_context_->ClearRegistrationUserData(
+        service_worker_registration_id, {registration_user_data_key_},
+        base::BindOnce(
+            [](base::OnceCallback<void(bool)> callback,
+               blink::ServiceWorkerStatusCode status) {
+              std::move(callback).Run(status ==
+                                      blink::ServiceWorkerStatusCode::kOk);
+            },
+            std::move(callback)));
     return;
   }
 
-  auto it = subscriptions_by_registration_.find(service_worker_registration_id);
-  if (it == subscriptions_by_registration_.end())
-    return;
-
-  ActivateSubscriptions(&it->second);
-
   std::string subscriptions_data =
-      CookieChangeSubscription::SerializeVector(it->second);
+      CookieChangeSubscription::SerializeVector(subscriptions);
   DCHECK(!subscriptions_data.empty())
       << "Failed to create cookie change subscriptions protobuf";
 
   service_worker_context_->StoreRegistrationUserData(
-      service_worker_registration_id, pattern.GetOrigin(),
+      service_worker_registration_id, service_worker_origin,
       std::vector<std::pair<std::string, std::string>>(
           {{registration_user_data_key_, subscriptions_data}}),
-      base::BindOnce(&HandleStoreRegistrationUserDataStatus));
+      base::BindOnce(
+          [](base::OnceCallback<void(bool)> callback,
+             blink::ServiceWorkerStatusCode status) {
+            std::move(callback).Run(status ==
+                                    blink::ServiceWorkerStatusCode::kOk);
+          },
+          std::move(callback)));
 }
 
 void CookieStoreManager::OnRegistrationDeleted(
@@ -351,7 +434,7 @@ void CookieStoreManager::OnRegistrationDeleted(
   // that a registration's subscriptions will finish loading (and thus remain
   // active) right after this function runs.
   if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(base::BindOnce(
+    subscriptions_loaded_callbacks_.push_back(base::BindOnce(
         &CookieStoreManager::OnRegistrationDeleted, weak_factory_.GetWeakPtr(),
         service_worker_registration_id, pattern));
     return;
@@ -361,13 +444,13 @@ void CookieStoreManager::OnRegistrationDeleted(
   if (it == subscriptions_by_registration_.end())
     return;
 
-  DeactivateSubscriptions(&it->second);
+  DeactivateSubscriptions(it->second);
   subscriptions_by_registration_.erase(it);
 }
 
 void CookieStoreManager::ActivateSubscriptions(
-    std::vector<CookieChangeSubscription>* subscriptions) {
-  if (subscriptions->empty())
+    base::span<const std::unique_ptr<CookieChangeSubscription>> subscriptions) {
+  if (subscriptions.empty())
     return;
 
   // Service workers can only observe changes to cookies for URLs under their
@@ -378,27 +461,26 @@ void CookieStoreManager::ActivateSubscriptions(
   //               net::CookieMonsterChangeDispatcher::DomainKey. Extract that
   //               implementation into net/cookies.cookie_util.h and call it.
   std::string url_key = net::registry_controlled_domains::GetDomainAndRegistry(
-
-      (*subscriptions)[0].url(),
+      subscriptions[0]->url(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   base::LinkedList<CookieChangeSubscription>& url_key_subscriptions_list =
       subscriptions_by_url_key_[url_key];
 
-  for (auto& subscription : *subscriptions) {
-    DCHECK(!subscription.next() && !subscription.previous())
+  for (auto& subscription : subscriptions) {
+    DCHECK(!subscription->next() && !subscription->previous())
         << "Subscription passed to " << __func__ << " already activated";
     DCHECK_EQ(url_key,
               net::registry_controlled_domains::GetDomainAndRegistry(
-                  subscription.url(),
+                  subscription->url(),
                   net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
         << __func__ << " subscriptions belong to different registrations";
-    url_key_subscriptions_list.Append(&subscription);
+    url_key_subscriptions_list.Append(subscription.get());
   }
 }
 
 void CookieStoreManager::DeactivateSubscriptions(
-    std::vector<CookieChangeSubscription>* subscriptions) {
-  if (subscriptions->empty())
+    base::span<const std::unique_ptr<CookieChangeSubscription>> subscriptions) {
+  if (subscriptions.empty())
     return;
 
   // Service workers can only observe changes to cookies for URLs under their
@@ -409,17 +491,17 @@ void CookieStoreManager::DeactivateSubscriptions(
   //               net::CookieMonsterChangeDispatcher::DomainKey. Extract that
   //               implementation into net/cookies.cookie_util.h and call it.
   std::string url_key = net::registry_controlled_domains::GetDomainAndRegistry(
-      (*subscriptions)[0].url(),
+      subscriptions[0]->url(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  for (auto& subscription : *subscriptions) {
-    DCHECK(subscription.next() && subscription.previous())
+  for (auto& subscription : subscriptions) {
+    DCHECK(subscription->next() && subscription->previous())
         << "Subscription passed to " << __func__ << " not previously activated";
     DCHECK_EQ(url_key,
               net::registry_controlled_domains::GetDomainAndRegistry(
-                  subscription.url(),
+                  subscription->url(),
                   net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
         << __func__ << " subscriptions belong to different registrations";
-    subscription.RemoveFromList();
+    subscription->RemoveFromList();
   }
   auto it = subscriptions_by_url_key_.find(url_key);
   DCHECK(it != subscriptions_by_url_key_.end());
@@ -435,7 +517,7 @@ void CookieStoreManager::OnStorageWiped() {
   // subscriptions will finish loading (and thus remain active) after this
   // function runs.
   if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(base::BindOnce(
+    subscriptions_loaded_callbacks_.push_back(base::BindOnce(
         &CookieStoreManager::OnStorageWiped, weak_factory_.GetWeakPtr()));
     return;
   }
@@ -449,7 +531,7 @@ void CookieStoreManager::OnCookieChange(const net::CookieChangeInfo& change) {
   // delivered to all service workers that subscribed to them in previous
   // browser sessions. Without waiting, workers might miss cookie changes.
   if (!done_loading_subscriptions_) {
-    subscriptions_loaded_callbacks_.emplace_back(
+    subscriptions_loaded_callbacks_.push_back(
         base::BindOnce(&CookieStoreManager::OnCookieChange,
                        weak_factory_.GetWeakPtr(), change));
     return;

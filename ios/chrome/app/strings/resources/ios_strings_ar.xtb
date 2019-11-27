@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">انقر على الزر "بدء تسجيل الدخول" لجمع سجلَّات وحدة تحكُّم جافا سكريبت وأخطائها من جميع علامات التبويب. سيتم جمع السجلَّات (وتخزينها فقط في الذاكرة) حتى يتم إغلاق هذه الصفحة أو النقر على "إيقاف تسجيل الدخول".</translation>
 <translation id="1657011748321897393">تعذّرت المشاركة بسبب عدم اتصالك بالشبكة.</translation>
 <translation id="165877110639533037">لا توجد علامات تبويب مفتوحة</translation>
+<translation id="1674504678466460478">من <ph name="SOURCE_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
 <translation id="1687475363370981210">وضع العلامة كمقروءة على الكل</translation>
 <translation id="1690731385917361335">لا توجد عناصر</translation>
@@ -102,7 +103,6 @@
 <translation id="2273327106802955778">قائمة "المزيد"</translation>
 <translation id="2316709634732130529">استخدام كلمة المرور المقترحة</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
-<translation id="2330129964253841015">التحذير إذا كانت كلمات المرور مخترقة</translation>
 <translation id="2339560363438331454">‏خدمات Google والمزامنة</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359043044084662842">الترجمة</translation>
@@ -127,6 +127,7 @@
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2690858294534178585">الكاميرا قيد الاستخدام</translation>
 <translation id="2691653761409724435">غير متاح بلا اتصال</translation>
+<translation id="2695507686909505111">تمت ترجمة الصفحة</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
@@ -206,6 +207,7 @@
 <translation id="3779810277399252432">لا يتوفر اتصال بالإنترنت.</translation>
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
+<translation id="3803696231112616155">اقتراح ترجمة هذا الموقع الإلكتروني</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3915450441834151894">معلومات موقع الويب</translation>
@@ -243,6 +245,7 @@
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4375040482473363939">البحث عن رمز الاستجابة السريعة</translation>
 <translation id="4378154925671717803">هاتف</translation>
+<translation id="4389019817280890563">انقر لتغيير اللغة.</translation>
 <translation id="441868831736628555">إشعار الخصوصية</translation>
 <translation id="4454246407045105932">إضافة لغة</translation>
 <translation id="4476574785019001431">الإعدادات</translation>
@@ -344,6 +347,7 @@
 <translation id="5871497086027727873">تم نقل عنصر واحد</translation>
 <translation id="5897956970858271241">الانتقال إلى الرابط المنسوخ</translation>
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
+<translation id="5913600720976431809">خيارات ترجمة الصفحة</translation>
 <translation id="5916664084637901428">مفعّل</translation>
 <translation id="5938160824633642847">جهازك ممتلئ تقريبًا. يمكنك إخلاء بعض المساحة وإعادة المحاولة.</translation>
 <translation id="5948291296578561264">يسمح لك ذلك بحفظ الصور في مكتبة صورك.</translation>
@@ -375,6 +379,7 @@
 <translation id="6219688215832490856">عدم الترجمة مطلقًا</translation>
 <translation id="6254066287920239840">فتح الروابط في التطبيق بدلاً من المتصفح.</translation>
 <translation id="6255097610484507482">تعديل بطاقة الائتمان</translation>
+<translation id="6284652193729350524">اقتراح ترجمة <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">تسجيل الخروج وإيقاف المزامنة</translation>
 <translation id="6308436439357671616">هذا يتيح لك التقاط الصور وتحميلها.</translation>
 <translation id="6324528485781869530">تبديل حساب المزامنة</translation>
@@ -429,11 +434,13 @@
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6914583639806229067">البحث عن الصورة التي نسختها</translation>
 <translation id="6914783257214138813">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره.</translation>
+<translation id="6930799952781667037">انقر للتغيير إلى هذه اللغة.</translation>
 <translation id="6944369514868857500">اختيار حساب آخر</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">‏إدارة حسابك على Google</translation>
+<translation id="6995899638241819463">التحذير إذا تم الكشف عن كلمات المرور في عملية اختراق بيانات</translation>
 <translation id="6998989275928107238">إلى</translation>
 <translation id="7004499039102548441">علامات التبويب الأخيرة</translation>
 <translation id="7006788746334555276">إعدادات المحتوى</translation>
@@ -458,6 +465,7 @@
 <translation id="7293171162284876153">‏لبدء المزامنة، يُرجى تفعيل "مزامنة بيانات Chrome".</translation>
 <translation id="7336264872878993241">تم تنزيل <ph name="PERCENT" /> بالمائة</translation>
 <translation id="7346909386216857016">حسنًا</translation>
+<translation id="734758817008927353">خيارات حفظ البطاقة</translation>
 <translation id="7348502496356775519">إشارة مرجعية</translation>
 <translation id="7383797227493018512">قائمة القراءة</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
@@ -482,6 +490,7 @@
 <translation id="7671141431838911305">تثبيت</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
+<translation id="7781011649027948662">هل تريد ترجمة الصفحة؟</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="778855399387580014">‏يمكنك بدء البحث في علامة تبويب Chrome جديدة.</translation>
 <translation id="7791543448312431591">إضافة</translation>

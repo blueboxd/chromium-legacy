@@ -9,6 +9,7 @@
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/root_window_controller.h"
@@ -24,7 +25,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/pattern.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
@@ -33,6 +36,7 @@
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
 
@@ -145,7 +149,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
 
 class NightLightTest : public NoSessionAshTestBase {
  public:
-  NightLightTest() = default;
+  NightLightTest() : delegate_(new TestDelegate) {}
   ~NightLightTest() override = default;
 
   PrefService* user1_pref_service() {
@@ -163,13 +167,12 @@ class NightLightTest : public NoSessionAshTestBase {
   // AshTestBase:
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
+    GetController()->SetDelegateForTesting(base::WrapUnique(delegate_));
+
     CreateTestUserSessions();
 
     // Simulate user 1 login.
     SwitchActiveUser(kUser1Email);
-
-    delegate_ = new TestDelegate;
-    GetController()->SetDelegateForTesting(base::WrapUnique(delegate_));
   }
 
   void CreateTestUserSessions() {
@@ -189,7 +192,7 @@ class NightLightTest : public NoSessionAshTestBase {
   }
 
  private:
-  TestDelegate* delegate_ = nullptr;
+  TestDelegate* delegate_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(NightLightTest);
 };
@@ -1324,6 +1327,144 @@ TEST(AmbientTemperature, AmbientTemperatureToRGBScaleFactors) {
       NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(7000);
   EXPECT_LT((vec - gfx::Vector3dF(0.949f, 0.971f, 1.0f)).Length(),
             allowed_difference);
+}
+
+class AutoNightLightTest : public NightLightTest {
+ public:
+  AutoNightLightTest() = default;
+  ~AutoNightLightTest() override = default;
+  AutoNightLightTest(const AutoNightLightTest& other) = delete;
+  AutoNightLightTest& operator=(const AutoNightLightTest& rhs) = delete;
+
+  // NightLightTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kAutoNightLight);
+
+    delegate()->SetFakeNow(TimeOfDay(fake_now_));
+    delegate()->SetFakeSunset(TimeOfDay(20 * 60));  // 8:00 PM.
+    delegate()->SetFakeSunrise(TimeOfDay(5 * 60));  // 5:00 AM.
+
+    NightLightTest::SetUp();
+  }
+
+ protected:
+  // Now is at 4 PM.
+  //
+  //      16:00               20:00                      5:00
+  // <----- + ----------------- + ----------------------- + ------->
+  //        |                   |                         |
+  //       now                sunset                   sunrise
+  //
+  int fake_now_ = 16 * 60;  // 4:00 PM.
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AutoNightLightTest, Notification) {
+  // Unblock the user session in order to be able to stop showing the Auto Night
+  // Light notification.
+  GetSessionControllerClient()->UnlockScreen();
+
+  // Since Auto Night Light is enabled, the schedule should be automatically set
+  // to sunset-to-sunrise, even though the user never set that pref.
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_EQ(NightLightController::kSunsetToSunrise,
+            controller->GetScheduleType());
+  EXPECT_FALSE(
+      user1_pref_service()->HasPrefPath(prefs::kNightLightScheduleType));
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  auto* notification = controller->GetAutoNightLightNotificationForTesting();
+  ASSERT_TRUE(notification);
+  ASSERT_TRUE(notification->delegate());
+
+  // Simulate the user clicking the notification button, Night Light should now
+  // be disabled, and the notification should be dismissed.
+  notification->delegate()->Click(base::make_optional<int>(0), base::nullopt);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+
+  // Simulate reaching next sunset. The notification should no longer show.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, CannotDisableNotificationWhenSessionIsBlocked) {
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
+
+  // Simulate reaching sunset.
+  NightLightControllerImpl* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  auto* notification = controller->GetAutoNightLightNotificationForTesting();
+  ASSERT_TRUE(notification);
+  ASSERT_TRUE(notification->delegate());
+
+  // Simulate user closing the notification.
+  notification->delegate()->Close(/*by_user=*/true);
+  EXPECT_FALSE(user1_pref_service()->GetBoolean(
+      prefs::kAutoNightLightNotificationDismissed));
+}
+
+TEST_F(AutoNightLightTest, OverriddenByUser) {
+  // Once the user sets the schedule to anything, even sunset-to-sunrise, the
+  // auto-night light will never show.
+  NightLightControllerImpl* controller = GetController();
+  controller->SetScheduleType(NightLightController::kSunsetToSunrise);
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, NoNotificationWhenManuallyEnabledFromSettings) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_FALSE(controller->GetEnabled());
+  user1_pref_service()->SetBoolean(prefs::kNightLightEnabled, true);
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, NoNotificationWhenManuallyEnabledFromSystemMenu) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_FALSE(controller->GetEnabled());
+  controller->Toggle();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+// Now is at 11 PM.
+//
+//      20:00               23:00                      5:00
+// <----- + ----------------- + ----------------------- + ------->
+//        |                   |                         |
+//      sunset               now                     sunrise
+//
+// Tests that when the user logs in for the first time between sunset and
+// sunrise with Auto Night Light enabled, and the notification has never been
+// dismissed before, the notification should be shown.
+class AutoNightLightOnFirstLogin : public AutoNightLightTest {
+ public:
+  AutoNightLightOnFirstLogin() { fake_now_ = 23 * 60; }
+  ~AutoNightLightOnFirstLogin() override = default;
+  AutoNightLightOnFirstLogin(const AutoNightLightOnFirstLogin& other) = delete;
+  AutoNightLightOnFirstLogin& operator=(const AutoNightLightOnFirstLogin& rhs) =
+      delete;
+};
+
+TEST_F(AutoNightLightOnFirstLogin, NotifyOnFirstLogin) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
 }
 
 }  // namespace

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> yoki <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Umumiy axborot rejimi</translation>
 <translation id="4382340674111381977">Oldingi sahifaga qaytish</translation>
+<translation id="4458670250301149821">Ilova ikonkasini olib, ilovalar jadvaliga joylang</translation>
 <translation id="4472417192667361414">Tizim va ekran sozlamalari</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, keyin <ph name="LEFT" /> yoki <ph name="RIGHT" /> yoki <ph name="UP" /> yoki <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Tezkor tugmalar yuzasidan yordam</translation>
 <translation id="4628718545549558538">Holat panelini ochish (hisob rasmi ko‘rinadigan joy)</translation>
 <translation id="4642092649622328492">Qisman skrinshot olish</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Keyingi harfni o‘chirish (oldinga o‘chirish)</translation>
 <translation id="7500368597227394048">chiziqcha</translation>
 <translation id="7611271430932669992">Fokusni qalqib chiqqan va muloqot oynalariga o‘tkazish</translation>
+<translation id="7635348532214572995">Ilova ikonkasini olib, ilovalar jadvaliga joylash</translation>
 <translation id="766326951329901120">Klipborddagi kontentni oddiy matn sifatida joylash</translation>
 <translation id="7703010453515335249">chap kvadrat qavs</translation>
 <translation id="7724603315864178912">Qirqish</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Klipborddagi kontentni joylash</translation>
 <translation id="9052808072970550123">Keyingi foydalanuvchiga o‘tish</translation>
 <translation id="906458777597946297">Oynani yoyish</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, keyin <ph name="LEFT" /> yoki <ph name="RIGHT" /> yoki <ph name="UP" /> yoki <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Qator boshiga qaytish</translation>
 <translation id="9106898733795143799">Sahifa va brauzer</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> – hech narsa topilmadi</translation>

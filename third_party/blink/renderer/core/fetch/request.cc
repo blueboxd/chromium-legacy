@@ -901,6 +901,13 @@ String Request::ContentType() const {
   return result;
 }
 
+mojom::RequestContextType Request::GetRequestContextType() const {
+  if (!request_) {
+    return mojom::RequestContextType::UNSPECIFIED;
+  }
+  return request_->Context();
+}
+
 void Request::Trace(blink::Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(request_);

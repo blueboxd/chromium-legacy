@@ -52,7 +52,7 @@ android_library("custom_tabs_client_shared_java") {
   deps = [
     ":custom_tabs_support_java",
   ]
-  chromium_code = true
+  chromium_code = false
 }
 
 android_library("custom_tabs_support_java") {

@@ -50,5 +50,12 @@ void LiveTest::TearDown() {
   InProcessBrowserTest::TearDown();
 }
 
+void LiveTest::PostRunTestOnMainThread() {
+  // This test was skipped. Running PostRunTestOnMainThread can cause
+  // TIMED_OUT on Win7.
+  if (skip_test_)
+    return;
+  InProcessBrowserTest::PostRunTestOnMainThread();
+}
 }  // namespace test
 }  // namespace signin

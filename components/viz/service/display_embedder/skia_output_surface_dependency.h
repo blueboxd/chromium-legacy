@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -86,6 +87,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual gpu::SurfaceHandle GetSurfaceHandle() = 0;
   virtual scoped_refptr<gl::GLSurface> CreateGLSurface(
       base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) = 0;
+  // Hold a ref of the given surface until the returned closure is fired.
+  virtual base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) = 0;
   virtual void PostTaskToClientThread(base::OnceClosure closure) = 0;
   virtual void ScheduleGrContextCleanup() = 0;
 

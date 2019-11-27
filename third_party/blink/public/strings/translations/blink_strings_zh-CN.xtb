@@ -114,6 +114,7 @@
 <translation id="479989351350248267">搜索</translation>
 <translation id="4812940957355064477">请输入一个数字。</translation>
 <translation id="4912536737030637138">参考书目</translation>
+<translation id="492244087561876220">评论</translation>
 <translation id="4975562563186953947">选择了<ph name="SELECTED_COUNT" />项</translation>
 <translation id="4992066212339426712">取消静音</translation>
 <translation id="49969490063480558">请在“<ph name="ATSIGN" />”后面输入内容。“<ph name="INVALIDADDRESS" />”不完整。</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前时间（以秒为单位）</translation>
 <translation id="901834265349196618">电子邮件</translation>
+<translation id="9023835124071926463">“评论”部分</translation>
 <translation id="9048119486235211610">导航</translation>
 <translation id="9062295712474918030">文档</translation>
 <translation id="9093215626363556771">退出“画中画”模式</translation>

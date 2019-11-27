@@ -6,7 +6,9 @@
 
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
+#import "ios/chrome/browser/ui/passwords/password_breach_learn_more_view_controller.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_mediator.h"
+#import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,10 +18,14 @@
 @interface PasswordBreachCoordinator () <PasswordBreachCommands,
                                          PasswordBreachPresenter>
 
-// The main view controller for this coordinator.
+// Main view controller for this coordinator.
 @property(nonatomic, strong) PasswordBreachViewController* viewController;
 
-// The main mediator for this coordinator.
+// Learn more view controller, when presented.
+@property(nonatomic, strong)
+    PasswordBreachLearnMoreViewController* learnMoreViewController;
+
+// Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordBreachMediator* mediator;
 
 @end
@@ -77,6 +83,29 @@
                                               leakType:leakType];
   self.viewController.actionHandler = self.mediator;
   [self start];
+}
+
+#pragma mark - PasswordBreachPresenter
+
+- (void)presentLearnMore {
+  self.learnMoreViewController =
+      [[PasswordBreachLearnMoreViewController alloc] initWithPresenter:self];
+  UINavigationController* navigationViewController =
+      [[UINavigationController alloc]
+          initWithRootViewController:self.learnMoreViewController];
+  self.learnMoreViewController.title = self.viewController.titleString;
+  self.learnMoreViewController.modalPresentationStyle =
+      UIModalPresentationFormSheet;
+  [self.viewController presentViewController:navigationViewController
+                                    animated:YES
+                                  completion:nil];
+}
+
+- (void)dismissLearnMore {
+  [self.learnMoreViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
+  self.learnMoreViewController = nil;
 }
 
 @end

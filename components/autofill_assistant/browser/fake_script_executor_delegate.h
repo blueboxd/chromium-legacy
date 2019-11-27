@@ -60,9 +60,10 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
-  bool SetForm(std::unique_ptr<FormProto> form,
-               base::RepeatingCallback<void(const FormProto::Result*)> callback)
-      override;
+  bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;

@@ -151,7 +151,8 @@ std::string MakeAccountKey(const CoreAccountId& account_id) {
 }
 
 CoreAccountId ParseAccountKey(const std::string& key) {
-  return CoreAccountId(key.substr(base::size(kAccountKeyStart) - 1));
+  return CoreAccountId::FromString(
+      key.substr(base::size(kAccountKeyStart) - 1));
 }
 
 std::string MakeHeartbeatKey(const std::string& scope) {

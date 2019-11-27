@@ -141,7 +141,7 @@ constexpr int kSystemButtonMaxLabelWidthDp =
 // delete itself after firing (by returning true). Make sure to call
 // |observer->SetActive()| after attaching it.
 ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
-  return new ui::CallbackLayerAnimationObserver(base::Bind(
+  return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
       [](views::View* view,
          const ui::CallbackLayerAnimationObserver& observer) {
         // Don't hide the view if the animation is aborted, as |view| may no
@@ -831,12 +831,12 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   // Initialization of |password_view| is deferred because it needs the
   // |pin_view| pointer.
-  password_view->Init(
-      base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)),
-      base::Bind(&LoginPinView::OnPasswordTextChanged,
-                 base::Unretained(pin_view.get())),
-      callbacks.on_easy_unlock_icon_hovered,
-      callbacks.on_easy_unlock_icon_tapped);
+  password_view->Init(base::BindRepeating(&LoginAuthUserView::OnAuthSubmit,
+                                          base::Unretained(this)),
+                      base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
+                                          base::Unretained(pin_view.get())),
+                      callbacks.on_easy_unlock_icon_hovered,
+                      callbacks.on_easy_unlock_icon_tapped);
 
   auto online_sign_in_message = std::make_unique<SystemButton>(
       this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE));

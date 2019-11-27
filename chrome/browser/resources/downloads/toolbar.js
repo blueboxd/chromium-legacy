@@ -12,7 +12,7 @@ import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import './strings.m.js';
 
-import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -80,7 +80,10 @@ Polymer({
     assert(this.canClearAll());
     this.mojoHandler_.clearAll();
     this.$.moreActionsMenu.close();
-    getInstance().show(loadTimeData.getString('toastClearedAll'), true);
+    getToastManager().show(loadTimeData.getString('toastClearedAll'));
+    this.fire('iron-announce', {
+      text: loadTimeData.getString('undoDescription'),
+    });
   },
 
   /** @private */

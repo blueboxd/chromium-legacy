@@ -21,7 +21,7 @@ class SpellCheck;
 #endif
 
 namespace visitedlink {
-class VisitedLinkSlave;
+class VisitedLinkReader;
 }
 
 namespace android_webview {
@@ -63,8 +63,8 @@ class AwContentRendererClient : public content::ContentRendererClient,
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
 
-  visitedlink::VisitedLinkSlave* visited_link_slave() {
-    return visited_link_slave_.get();
+  visitedlink::VisitedLinkReader* visited_link_reader() {
+    return visited_link_reader_.get();
   }
 
  private:
@@ -73,7 +73,7 @@ class AwContentRendererClient : public content::ContentRendererClient,
                     mojo::ScopedMessagePipeHandle request_handle) override;
 
   std::unique_ptr<AwRenderThreadObserver> aw_render_thread_observer_;
-  std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+  std::unique_ptr<visitedlink::VisitedLinkReader> visited_link_reader_;
 
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;

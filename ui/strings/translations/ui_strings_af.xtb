@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Links na regs</translation>
 <translation id="1383876407941801731">Soek</translation>
 <translation id="1398853756734560583">Maak groot</translation>
-<translation id="1409544243779336081">Programaanbeveling</translation>
 <translation id="1450753235335490080">Kan nie <ph name="CONTENT_TYPE" /> deel nie</translation>
 <translation id="1498028757988366001">Jy het voorheen hiervoor gesoek. As jy "<ph name="QUERY" />" in jou geskiedenis uitvee, word dit permanent op al jou toestelle van jou rekening af uitgevee.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minute en }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Punt</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 maand}other{# maande}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Stergradering <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 uur en }other{# uur en }}</translation>
 <translation id="1842960171412779397">kies</translation>
 <translation id="1859234291848436338">Skryfrigting</translation>

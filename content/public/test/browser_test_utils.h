@@ -41,6 +41,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -157,8 +158,12 @@ void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents);
 bool WaitForLoadStop(WebContents* web_contents);
 
 // If a test uses a beforeunload dialog, it must be prepared to avoid flakes.
-// This function collects everything that needs to be done.
-void PrepContentsForBeforeUnloadTest(WebContents* web_contents);
+// This function collects everything that needs to be done, except for user
+// activation which is triggered only when |trigger_user_activation| is true.
+// Note that beforeunload dialog attempts are ignored unless the frame has
+// received a user activation.
+void PrepContentsForBeforeUnloadTest(WebContents* web_contents,
+                                     bool trigger_user_activation = true);
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
 // If WebContent's view is currently being resized, this will wait for the ack
@@ -1649,6 +1654,24 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
   content::ContextMenuParams last_params_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
+};
+
+// This class allows tests to wait until FrameHostMsg_UpdateUserActivationState
+// IPC reaches the browser process from a renderer.
+class UpdateUserActivationStateMsgWaiter : public BrowserMessageFilter {
+ public:
+  UpdateUserActivationStateMsgWaiter() : BrowserMessageFilter(FrameMsgStart) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void Wait();
+
+ private:
+  ~UpdateUserActivationStateMsgWaiter() override = default;
+
+  void OnUpdateUserActivationState(blink::UserActivationUpdateType);
+
+  bool received_ = false;
+  base::RunLoop run_loop_;
 };
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest);

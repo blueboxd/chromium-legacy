@@ -99,7 +99,7 @@ TEST_P(CSVPasswordTestSuccess, Parse) {
   const TestCase& test_case = GetParam();
   SCOPED_TRACE(test_case.name);
   const CSVPassword csv_pwd(test_case.map, test_case.csv);
-  EXPECT_EQ(Status::kOK, csv_pwd.Parse(nullptr));
+  EXPECT_EQ(Status::kOK, csv_pwd.TryParse());
 
   const PasswordForm result = csv_pwd.ParseValid();
 
@@ -250,7 +250,7 @@ TEST_P(CSVPasswordTestFailure, Parse) {
   const TestCase& test_case = GetParam();
   SCOPED_TRACE(test_case.name);
   EXPECT_EQ(test_case.status,
-            CSVPassword(test_case.map, test_case.csv).Parse(nullptr));
+            CSVPassword(test_case.map, test_case.csv).TryParse());
 }
 
 INSTANTIATE_TEST_SUITE_P(

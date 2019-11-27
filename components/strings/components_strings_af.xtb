@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Wys meer</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Verander jou wagwoord</translation>
 <translation id="1484290072879560759">Kies versendingadres</translation>
 <translation id="1492194039220927094">Deurstuur van beleide:</translation>
 <translation id="1501859676467574491">Wys kaarte van jou Google-rekening</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Probeer om die stelseladministrateur te kontak.</translation>
 <translation id="1736420071277903564">Rekenaar</translation>
-<translation id="1739107442478692187">'n Dataskending het plaasgevind op 'n werf of program wat jy gebruik. Chrome beveel aan dat jy jou gestoorde wagwoorde nagaan en jou wagwoord op <ph name="ORIGIN" /> nou verander.</translation>
 <translation id="1740951997222943430">Voer 'n geldige vervalmaand in</translation>
 <translation id="1741613555002899862">Moet gespesifseer en 'n geldige string wees wanneer DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> is.</translation>
 <translation id="1743520634839655729">Stoor jou kaart, naam en faktureringadres in jou Google-rekening en op hierdie toestel om volgende keer vinniger te betaal.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Dekompakteer diens</translation>
 <translation id="1915697529809968049">Gebruik Touch ID pleks van CVC?</translation>
 <translation id="1916770123977586577">Herlaai hierdie bladsy om jou opgedateerde instellings op hierdie werf toe te pas</translation>
+<translation id="1917876262703816781">'n Dataskending op 'n werf of program het jou wagwoord blootgestel. Chrome beveel aan dat jy jou wagwoord op <ph name="ORIGIN" /> nou verander.</translation>
 <translation id="1919345977826869612">Advertensies</translation>
 <translation id="1919367280705858090">Kry hulp met 'n spesifieke foutboodskap</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Geen}=1{1 werf}other{# werwe}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domein stem nie ooreen nie</translation>
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2099652385553570808">Tripelkram links</translation>
-<translation id="2100280972184758440">Jou wagwoord is gekompromitteer.</translation>
 <translation id="2102134110707549001">Stel sterk wagwoord voor …</translation>
 <translation id="2108755909498034140">Herbegin jou rekenaar</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Geïgnoreer, want dit is deur <ph name="POLICY_NAME" /> geïgnoreer.</translation>
 <translation id="2119505898009119320">Uitgereik aan: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Pons regs onder</translation>
-<translation id="2124528555835617522">'n Dataskending het plaasgevind op 'n werf of program wat jy gebruik. Chrome beveel aan dat jy jou gestoorde wagwoorde nou nagaan.</translation>
 <translation id="2129079103035905234">Bewegingensors</translation>
 <translation id="2130448033692577677">Die template wat jy gespesifiseer het, kan dalk nie toegepas word die omdat die DnsOverHttpsMode-beleid nie gestel is nie.</translation>
 <translation id="213826338245044447">Mobiele boekmerke</translation>
@@ -494,7 +493,6 @@
 <translation id="3282497668470633863">Voeg naam op kaart by</translation>
 <translation id="3287510313208355388">Laai af wanneer jy aanlyn is</translation>
 <translation id="3293642807462928945">Kom meer te wete oor <ph name="POLICY_NAME" />-beleid</translation>
-<translation id="3295439534709115864">'n Dataskending het plaasgevind op 'n werf of program wat jy gebruik. Chrome beveel aan dat jy jou wagwoord op <ph name="ORIGIN" /> nou verander.</translation>
 <translation id="3303855915957856445">Geen soekresultate gevind nie</translation>
 <translation id="3320021301628644560">Voeg faktureringadres by</translation>
 <translation id="3324983252691184275">Karmosyn</translation>
@@ -908,6 +906,7 @@
 <translation id="5287240709317226393">Wys webkoekies</translation>
 <translation id="5287456746628258573">Hierdie werf gebruik 'n verouderde sekuriteitopstelling, wat jou inligting (byvoorbeeld, wagwoorde en kredietkaartnommers) kan blootstel wanneer dit na hierdie werf toe gestuur word.</translation>
 <translation id="5288108484102287882">Bevestiging van beleidswaardes het waarskuwings veroorsaak</translation>
+<translation id="5295292838686006428">'n Dataskending op 'n werf of program het jou wagwoord blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nou nagaan.</translation>
 <translation id="5299298092464848405">Kon nie beleid ontleed nie</translation>
 <translation id="5300589172476337783">Wys</translation>
 <translation id="5308380583665731573">Koppel</translation>
@@ -958,6 +957,7 @@
 <translation id="5540224163453853">Kon nie die versoekte artikel vind nie.</translation>
 <translation id="5541546772353173584">Voeg e-posadres by</translation>
 <translation id="5545756402275714221">Artikels vir jou</translation>
+<translation id="5552137475244467770">Chrome vergelyk jou wagwoorde van tyd tot tyd met lyste wat aanlyn gepubliseer is. Wanneer dit gedoen word, word jou wagwoorde en gebruikername geënkripteer sodat niemand, insluitend Google, hulle kan lees nie.</translation>
 <translation id="5556459405103347317">Herlaai</translation>
 <translation id="5560088892362098740">Vervaldatum</translation>
 <translation id="5565735124758917034">Aktief</translation>
@@ -1049,6 +1049,7 @@
 <translation id="5992691462791905444">Ingenieur-Z-vou</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultate vir "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Gaan jou wagwoorde na</translation>
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Bladsy 1}other{Bladsy #}}</translation>
 <translation id="6017514345406065928">Groen</translation>
@@ -1338,6 +1339,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7481312909269577407">Vorentoe</translation>
 <translation id="748406663033922918">Gebruik skermslot om jou gestoorde betaalmetodes te verifieer.</translation>
 <translation id="7485870689360869515">Geen data gevind nie.</translation>
+<translation id="7495290002932347110">'n Dataskending op 'n werf of program het jou wagwoord blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nagaan en jou wagwoord op <ph name="ORIGIN" /> nou verander.</translation>
 <translation id="7498234416455752244">Hou aan wysig</translation>
 <translation id="7508255263130623398">Teruggestuurde beleidtoestel-ID is leeg of stem nie met huidige toestel-ID ooreen nie</translation>
 <translation id="7508870219247277067">Avokadogroen</translation>

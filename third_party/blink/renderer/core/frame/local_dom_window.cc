@@ -561,17 +561,19 @@ void LocalDOMWindow::SchedulePostMessage(
   // surfaces often as a problem (see crbug.com/587012).
   std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
   document_->GetTaskRunner(TaskType::kPostedMessage)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
-                           WrapPersistent(this), WrapPersistent(event),
-                           std::move(target), std::move(location)));
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&LocalDOMWindow::DispatchPostMessage, WrapPersistent(this),
+                    WrapPersistent(event), std::move(target),
+                    std::move(location), source->GetAgentClusterID()));
   probe::AsyncTaskScheduled(document(), "postMessage", event->async_task_id());
 }
 
 void LocalDOMWindow::DispatchPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> intended_target_origin,
-    std::unique_ptr<SourceLocation> location) {
+    std::unique_ptr<SourceLocation> location,
+    const base::UnguessableToken& source_agent_cluster_id) {
   probe::AsyncTask async_task(document(), event->async_task_id());
   if (!IsCurrentlyDisplayedInFrame())
     return;
@@ -579,13 +581,15 @@ void LocalDOMWindow::DispatchPostMessage(
   event->EntangleMessagePorts(document());
 
   DispatchMessageEventWithOriginCheck(intended_target_origin.get(), event,
-                                      std::move(location));
+                                      std::move(location),
+                                      source_agent_cluster_id);
 }
 
 void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     const SecurityOrigin* intended_target_origin,
     MessageEvent* event,
-    std::unique_ptr<SourceLocation> location) {
+    std::unique_ptr<SourceLocation> location,
+    const base::UnguessableToken& source_agent_cluster_id) {
   if (intended_target_origin) {
     // Check target origin now since the target document may have changed since
     // the timer was scheduled.
@@ -624,6 +628,28 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
 
     if (!sender_security_origin->IsSameSchemeHostPort(target_security_origin)) {
       event = MessageEvent::CreateError(event->origin(), event->source());
+    }
+  }
+  if (event->IsLockedToAgentCluster()) {
+    if (!document()->IsSameAgentCluster(source_agent_cluster_id)) {
+      UseCounter::Count(
+          document(),
+          WebFeature::kMessageEventSharedArrayBufferDifferentAgentCluster);
+      // TODO(dtapuska): Make sure this generates an error. See
+      // https://crbug.com/1028736
+      // event = MessageEvent::CreateError(event->origin(), event->source());
+    } else {
+      scoped_refptr<SecurityOrigin> sender_origin =
+          SecurityOrigin::Create(sender);
+      if (!sender_origin->IsSameSchemeHostPort(
+              document()->GetSecurityOrigin())) {
+        UseCounter::Count(
+            document(),
+            WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);
+      } else {
+        UseCounter::Count(document(),
+                          WebFeature::kMessageEventSharedArrayBufferSameOrigin);
+      }
     }
   }
   DispatchEvent(*event);

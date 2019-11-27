@@ -140,7 +140,8 @@ class EmbeddedWorkerTestHelper {
   void OnServiceWorkerReceiver(
       mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
   void OnInstanceClientRequest(mojo::ScopedMessagePipeHandle request_handle);
-  void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
+  void OnServiceWorkerRequest(
+      mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Called by the fakes to destroy themselves.
   void RemoveInstanceClient(FakeEmbeddedWorkerInstanceClient* instance_client);

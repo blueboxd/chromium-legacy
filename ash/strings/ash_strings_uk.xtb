@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Використовується: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Щоб виконати дію зі сповіщенням, розблокуйте пристрій як <ph name="LOGIN_ID" /></translation>
-<translation id="8995603266996330174">Керується доменом <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Введіть батьківський код доступу Family Link.</translation>
 <translation id="9029474291399787231">Доступне оновлення Adobe Flash Player</translation>
 <translation id="9056839673611986238">Пристрій буде відновлено до попереднього стану</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Повноекранна лупа</translation>
 <translation id="9193626018745640770">Трансляція на невідомий пристрій</translation>
 <translation id="9194617393863864469">Увійти як інший користувач…</translation>
+<translation id="9205817095063786319">Пристроєм керує домен <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
 <translation id="9211681782751733685">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Вибрати фоновий малюнок</translation>

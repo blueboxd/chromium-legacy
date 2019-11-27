@@ -105,7 +105,7 @@ TEST_F(ChromeUpdaterNetworkMacTest, NetworkFetcherMacPostRequest) {
   auto fetcher = base::MakeRefCounted<NetworkFetcherFactory>()->Create();
 
   net::EmbeddedTestServer test_server;
-  test_server.RegisterRequestHandler(base::Bind(
+  test_server.RegisterRequestHandler(base::BindRepeating(
       &ChromeUpdaterNetworkMacTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(test_server.Start());
   const GURL url = test_server.GetURL("/echo");
@@ -130,7 +130,7 @@ TEST_F(ChromeUpdaterNetworkMacTest, NetworkFetcherMacDownloadToFile) {
   auto fetcher = base::MakeRefCounted<NetworkFetcherFactory>()->Create();
 
   net::EmbeddedTestServer test_server;
-  test_server.RegisterRequestHandler(base::Bind(
+  test_server.RegisterRequestHandler(base::BindRepeating(
       &ChromeUpdaterNetworkMacTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(test_server.Start());
   const GURL url = test_server.GetURL("/echo");

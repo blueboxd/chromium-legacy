@@ -39,6 +39,9 @@ class PageAggregatorAccess {
   }
 };
 
+// Specify the packing alignment for this class as it's expected to have a
+// specific size.
+#pragma pack(push, 4)
 class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
  public:
   using StorageType = PageAggregatorAccess::StorageType;
@@ -105,12 +108,10 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
 
   DISALLOW_COPY_AND_ASSIGN(Data);
 };
+#pragma pack(pop)
 
 InterventionPolicy PageAggregator::Data::ComputeOriginTrialFreezePolicy()
     const {
-  if (GetNumCurrentFramesForFreezingPolicy(InterventionPolicy::kUnknown))
-    return InterventionPolicy::kUnknown;
-
   if (GetNumCurrentFramesForFreezingPolicy(InterventionPolicy::kOptOut))
     return InterventionPolicy::kOptOut;
 

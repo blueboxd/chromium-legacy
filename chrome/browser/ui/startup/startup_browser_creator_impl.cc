@@ -32,6 +32,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -625,10 +626,14 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
       welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
 #endif  // !defined(OS_CHROMEOS)
 
+  bool serve_extensions_page =
+      extensions::ShouldShowExtensionsCheckupOnStartup(profile_);
+
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
       is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled);
+      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled,
+      serve_extensions_page);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -680,7 +685,8 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_post_crash_launch,
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
-    bool welcome_enabled) {
+    bool welcome_enabled,
+    bool serve_extensions_page) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -741,10 +747,18 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     AppendTabs(prefs_tabs, &tabs);
 
     // Potentially add the New Tab Page. Onboarding content is designed to
-    // replace (and eventually funnel the user to) the NTP. Likewise, URLs
-    // from preferences are explicitly meant to override showing the NTP.
-    if (onboarding_tabs.empty() && prefs_tabs.empty())
-      AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+    // replace (and eventually funnel the user to) the NTP.
+    if (onboarding_tabs.empty()) {
+      // Potentially show the extensions page in addition to the NTP if the user
+      // is part of the extensions checkup experiment and they have not been
+      // redirected to the extensions page upon startup before.
+      AppendTabs(provider.GetExtensionCheckupTabs(serve_extensions_page),
+                 &tabs);
+      // URLs from preferences are explicitly meant to override showing the NTP.
+      if (prefs_tabs.empty()) {
+        AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+      }
+    }
   }
 
   // Maybe add any tabs which the user has previously pinned.

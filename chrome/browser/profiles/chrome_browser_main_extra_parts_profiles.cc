@@ -204,9 +204,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 
 #if !defined(OS_ANDROID)
-  if (apps::AppServiceProxyFactory::IsEnabled()) {
-    apps::AppServiceProxyFactory::GetInstance();
-  }
+  apps::AppServiceProxyFactory::GetInstance();
 #endif
   AboutSigninInternalsFactory::GetInstance();
   AccountConsistencyModeManagerFactory::GetInstance();

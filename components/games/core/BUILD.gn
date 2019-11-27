@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "data_files_parser.cc",
+    "data_files_parser.h",
     "games_constants.cc",
     "games_constants.h",
     "games_features.cc",
@@ -29,6 +31,7 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "data_files_parser_unittest.cc",
     "games_prefs_unittest.cc",
     "games_service_impl_unittest.cc",
   ]
@@ -37,6 +40,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/games/core/proto",
+    "//components/games/core/test:test_support",
     "//components/prefs:test_support",
     "//testing/gmock",
     "//testing/gtest",

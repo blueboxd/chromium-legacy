@@ -20,8 +20,8 @@
 
 namespace {
 
-const char kTestGaiaId[] = "gaia-id-test_user@test.com";
-const char kTestGaiaId2[] = "gaia-id-test_user-2@test.com";
+const char kTestGaiaId[] = "gaia-id-test_user-test.com";
+const char kTestGaiaId2[] = "gaia-id-test_user-2-test.com";
 const char kTestEmail[] = "test_user@test.com";
 const char kTestEmail2[] = "test_user@test-2.com";
 const char kRefreshToken[] = "refresh_token";

@@ -2095,13 +2095,19 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskRemoveOneApp) {
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2, "1.0.0"));
 }
 
+// crbug/1028606 Fails on linux-chromeos-dbg.
+#if defined(OS_CHROMEOS)
+#define MAYBE_UpdateMultiAppKioskAddOneApp DISABLED_UpdateMultiAppKioskAddOneApp
+#else
+#define MAYBE_UpdateMultiAppKioskAddOneApp UpdateMultiAppKioskAddOneApp
+#endif
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 3 which adds a new secondary app in its
 // manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskAddOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",

@@ -84,7 +84,7 @@ BackgroundContents::~BackgroundContents() {
   for (auto& observer : deferred_start_render_host_observer_list_)
     observer.OnDeferredStartRenderHostDestroyed(this);
 
-  extension_host_delegate_->GetExtensionHostQueue()->Remove(this);
+  extensions::ExtensionHostQueue::GetInstance().Remove(this);
 }
 
 const GURL& BackgroundContents::GetURL() const {
@@ -93,7 +93,7 @@ const GURL& BackgroundContents::GetURL() const {
 
 void BackgroundContents::CreateRenderViewSoon(const GURL& url) {
   initial_url_ = url;
-  extension_host_delegate_->GetExtensionHostQueue()->Add(this);
+  extensions::ExtensionHostQueue::GetInstance().Add(this);
 }
 
 void BackgroundContents::CloseContents(WebContents* source) {

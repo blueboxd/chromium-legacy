@@ -218,20 +218,6 @@ suite('TabList', () => {
     assertEquals(tabElements[0].tab, prependedTab);
   });
 
-  test('adds a new tab element to the start when it is active', async () => {
-    const newActiveTab = {
-      alertStates: [],
-      active: true,
-      id: 3,
-      index: 3,
-      title: 'New tab',
-    };
-    webUIListenerCallback('tab-created', newActiveTab);
-    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
-    assertEquals(tabId, newActiveTab.id);
-    assertEquals(newIndex, 0);
-  });
-
   test('removes a tab when tab is removed from current window', async () => {
     const tabToRemove = tabs[0];
     webUIListenerCallback('tab-removed', tabToRemove.id);
@@ -399,22 +385,6 @@ suite('TabList', () => {
     assertEquals(tabId, tabs[draggedIndex].id);
     assertEquals(newIndex, dragOverIndex);
   });
-
-  test(
-      'when the tab strip closes, the active tab should move to the start',
-      async () => {
-        // Mock activating the 2nd tab
-        webUIListenerCallback('tab-active-changed', tabs[1].id);
-        testTabsApiProxy.resetResolver('moveTab');
-
-        // Mock tab strip going from visible to hidden
-        testTabStripEmbedderProxy.setVisible(false);
-        document.dispatchEvent(new Event('visibilitychange'));
-
-        const [moveId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
-        assertEquals(moveId, tabs[1].id);
-        assertEquals(newIndex, 0);
-      });
 
   test('tracks and untracks thumbnails based on viewport', async () => {
     // Wait for slideIn animations to complete updating widths and reset

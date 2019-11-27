@@ -556,7 +556,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> használata</translation>
 <translation id="899350903320462459">Az eszköz zárolásának feloldása az értesítési művelet végrehajtásához a következő felhasználó által: <ph name="LOGIN_ID" />.</translation>
-<translation id="8995603266996330174">Kezelő: <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Adja meg a Family Link szülői hozzáférési kódját.</translation>
 <translation id="9029474291399787231">Rendelkezésre áll az Adobe Flash Player frissítése</translation>
 <translation id="9056839673611986238">Az eszköz korábbi állapotra áll vissza</translation>
@@ -573,6 +572,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9183456764293710005">Teljes képernyős nagyító</translation>
 <translation id="9193626018745640770">Átküldés ismeretlen fogadó eszközre</translation>
 <translation id="9194617393863864469">Bejelentkezés másik felhasználóként…</translation>
+<translation id="9205817095063786319">A(z) <ph name="DOMAIN" /> által kezelt eszköz</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>
 <translation id="9211681782751733685">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Háttérkép beállítása</translation>

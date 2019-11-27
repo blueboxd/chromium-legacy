@@ -41,6 +41,7 @@ extern const base::Feature kIPHDataSaverPreviewFeature;
 extern const base::Feature kIPHDownloadHomeFeature;
 extern const base::Feature kIPHDownloadPageFeature;
 extern const base::Feature kIPHDownloadPageScreenshotFeature;
+extern const base::Feature kIPHChromeDuetHomeButtonFeature;
 extern const base::Feature kIPHChromeDuetSearchFeature;
 extern const base::Feature kIPHChromeDuetTabSwitcherFeature;
 extern const base::Feature kIPHChromeHomeExpandFeature;

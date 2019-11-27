@@ -90,6 +90,8 @@ using indexed_db::PutVarInt;
 using indexed_db::ReportOpenStatus;
 
 namespace {
+using WriteBlobFileCallback = base::RepeatingCallback<
+    bool(/*database_id=*/int64_t, const WriteDescriptor&, ChainedBlobWriter*)>;
 
 FilePath GetBlobDirectoryName(const FilePath& path_base, int64_t database_id) {
   return path_base.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
@@ -342,7 +344,6 @@ bool IsPathTooLong(const FilePath& leveldb_dir) {
 
 Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
                           int64_t database_id,
-                          int64_t object_store_id,
                           const std::string& start_key,
                           const std::string& end_key,
                           bool upper_open) {
@@ -360,7 +361,7 @@ Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
       return InternalInconsistencyStatus();
     }
-    transaction->PutBlobInfo(database_id, object_store_id, user_key, nullptr);
+    transaction->PutBlobInfo(database_id, user_key, nullptr);
   }
   return s;
 }
@@ -373,8 +374,8 @@ Status DeleteBlobsInObjectStore(IndexedDBBackingStore::Transaction* transaction,
       BlobEntryKey::EncodeMinKeyForObjectStore(database_id, object_store_id);
   stop_key =
       BlobEntryKey::EncodeStopKeyForObjectStore(database_id, object_store_id);
-  return DeleteBlobsInRange(transaction, database_id, object_store_id,
-                            start_key, stop_key, true);
+  return DeleteBlobsInRange(transaction, database_id, start_key, stop_key,
+                            true);
 }
 
 bool ObjectStoreCursorOptions(
@@ -546,7 +547,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
 }
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
@@ -572,8 +573,8 @@ constexpr const base::TimeDelta
     IndexedDBBackingStore::kInitialJournalCleaningWindowTime;
 
 leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(!initialized_);
 #endif
   const IndexedDBDataFormatVersion latest_known_data_version =
@@ -748,7 +749,7 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
 Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
     TransactionalLevelDBDatabase* db,
     bool* blobs_exist) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
 
   Status status = leveldb::Status::OK();
   std::vector<base::string16> names;
@@ -800,8 +801,8 @@ Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
 }
 
 Status IndexedDBBackingStore::RevertSchemaToV2() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   const std::string schema_version_key = SchemaVersionKey::Encode();
@@ -814,8 +815,8 @@ Status IndexedDBBackingStore::RevertSchemaToV2() {
 }
 
 V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   const std::string schema_version_key = SchemaVersionKey::Encode();
@@ -840,6 +841,7 @@ V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
 std::unique_ptr<IndexedDBBackingStore::Transaction>
 IndexedDBBackingStore::CreateTransaction(
     blink::mojom::IDBTransactionDurability durability) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return std::make_unique<IndexedDBBackingStore::Transaction>(
       weak_factory_.GetWeakPtr(), durability);
 }
@@ -858,8 +860,8 @@ bool IndexedDBBackingStore::ShouldSyncOnCommit(
 
 leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
     std::vector<IndexedDBDatabaseMetadata>* output) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
 
@@ -906,7 +908,7 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(const FilePath& path_base,
 }
 
 void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
 
   if (!child_process_ids_granted_.count(child_process_id)) {
     child_process_ids_granted_.insert(child_process_id);
@@ -918,8 +920,8 @@ void IndexedDBBackingStore::GrantChildProcessPermissions(int child_process_id) {
 Status IndexedDBBackingStore::DeleteDatabase(
     const base::string16& name,
     TransactionalLevelDBTransaction* transaction) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   IDB_TRACE("IndexedDBBackingStore::DeleteDatabase");
@@ -987,8 +989,8 @@ Status IndexedDBBackingStore::DeleteDatabase(
 }
 
 void IndexedDBBackingStore::Compact() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   db_->CompactAll();
@@ -1000,8 +1002,8 @@ Status IndexedDBBackingStore::GetRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* record) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
 
@@ -1042,7 +1044,7 @@ Status IndexedDBBackingStore::GetRecord(
 }
 
 int64_t IndexedDBBackingStore::GetInMemoryBlobSize() const {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
 
   int64_t total_size = 0;
   for (const auto& kvp : incognito_blob_map_) {
@@ -1062,8 +1064,8 @@ Status IndexedDBBackingStore::PutRecord(
     const IndexedDBKey& key,
     IndexedDBValue* value,
     RecordIdentifier* record_identifier) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
 
@@ -1090,8 +1092,8 @@ Status IndexedDBBackingStore::PutRecord(
   s = leveldb_transaction->Put(object_store_data_key, &v);
   if (!s.ok())
     return s;
-  s = transaction->PutBlobInfoIfNeeded(
-      database_id, object_store_id, object_store_data_key, &value->blob_info);
+  s = transaction->PutBlobInfoIfNeeded(database_id, object_store_data_key,
+                                       &value->blob_info);
   if (!s.ok())
     return s;
 
@@ -1113,7 +1115,7 @@ Status IndexedDBBackingStore::ClearObjectStore(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,
     int64_t object_store_id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
 #if DCHECK_IS_ON()
   DCHECK(initialized_);
 #endif
@@ -1140,7 +1142,7 @@ Status IndexedDBBackingStore::DeleteRecord(
     int64_t database_id,
     int64_t object_store_id,
     const RecordIdentifier& record_identifier) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
 
   IDB_TRACE("IndexedDBBackingStore::DeleteRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -1153,8 +1155,8 @@ Status IndexedDBBackingStore::DeleteRecord(
   Status s = leveldb_transaction->Remove(object_store_data_key);
   if (!s.ok())
     return s;
-  s = transaction->PutBlobInfoIfNeeded(database_id, object_store_id,
-                                       object_store_data_key, nullptr);
+  s = transaction->PutBlobInfoIfNeeded(database_id, object_store_data_key,
+                                       nullptr);
   if (!s.ok())
     return s;
 
@@ -1168,8 +1170,8 @@ Status IndexedDBBackingStore::DeleteRange(
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
 
@@ -1206,8 +1208,8 @@ Status IndexedDBBackingStore::DeleteRange(
   if (!BlobEntryKey::FromObjectStoreDataKey(&stop_key_piece, &end_blob_key))
     return InternalInconsistencyStatus();
 
-  s = DeleteBlobsInRange(transaction, database_id, object_store_id,
-                         start_blob_key.Encode(), end_blob_key.Encode(), false);
+  s = DeleteBlobsInRange(transaction, database_id, start_blob_key.Encode(),
+                         end_blob_key.Encode(), false);
   if (!s.ok())
     return s;
   s = transaction->transaction()->RemoveRange(
@@ -1232,6 +1234,7 @@ Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
     int64_t object_store_id,
     int64_t* key_generator_current_number) {
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -1309,6 +1312,7 @@ Status IndexedDBBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
     int64_t new_number,
     bool check_current) {
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -1340,6 +1344,7 @@ Status IndexedDBBackingStore::KeyExistsInObjectStore(
     RecordIdentifier* found_record_identifier,
     bool* found) {
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   IDB_TRACE("IndexedDBBackingStore::KeyExistsInObjectStore");
@@ -1374,31 +1379,33 @@ Status IndexedDBBackingStore::KeyExistsInObjectStore(
 }
 
 class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
-    : public IndexedDBBackingStore::Transaction::ChainedBlobWriter {
+    : public ChainedBlobWriter {
  public:
-  typedef IndexedDBBackingStore::Transaction::WriteDescriptorVec
-      WriteDescriptorVec;
+  // Must be called on the IDB task runner.
   static scoped_refptr<ChainedBlobWriterImpl> Create(
       int64_t database_id,
-      base::WeakPtr<IndexedDBBackingStore> backing_store,
       WriteDescriptorVec* blobs,
       blink::mojom::IDBTransactionDurability durability,
-      IndexedDBBackingStore::BlobWriteCallback callback) {
+      WriteBlobFileCallback write_file_callback,
+      BlobWriteCallback callback) {
     auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
-        database_id, backing_store, durability, std::move(callback)));
+        database_id, durability, std::move(write_file_callback),
+        std::move(callback)));
     writer->blobs_.swap(*blobs);
     writer->iter_ = writer->blobs_.begin();
-    backing_store->task_runner()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ChainedBlobWriterImpl::WriteNextFile, writer));
     return writer;
   }
 
   void set_delegate(std::unique_ptr<FileWriterDelegate> delegate) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     delegate_.reset(delegate.release());
   }
 
   void ReportWriteCompletion(bool succeeded, int64_t bytes_written) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     DCHECK(waiting_for_callback_);
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
@@ -1420,6 +1427,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
   void Abort() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     aborted_ = true;
     if (!waiting_for_callback_)
       return;
@@ -1427,25 +1435,30 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
   storage::FlushPolicy GetFlushPolicy() const override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     return IndexedDBBackingStore::ShouldSyncOnCommit(durability_)
                ? storage::FlushPolicy::FLUSH_ON_COMPLETION
                : storage::FlushPolicy::NO_FLUSH_ON_COMPLETION;
   }
 
  private:
+  // Must be called on the IDB task runner.
   ChainedBlobWriterImpl(int64_t database_id,
-                        base::WeakPtr<IndexedDBBackingStore> backing_store,
                         blink::mojom::IDBTransactionDurability durability,
-                        IndexedDBBackingStore::BlobWriteCallback callback)
+                        WriteBlobFileCallback write_file_callback,
+                        BlobWriteCallback callback)
       : waiting_for_callback_(false),
         durability_(durability),
         database_id_(database_id),
-        backing_store_(backing_store),
+        write_file_callback_(std::move(write_file_callback)),
         callback_(std::move(callback)),
         aborted_(false) {}
-  ~ChainedBlobWriterImpl() override {}
+  ~ChainedBlobWriterImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+  }
 
   void WriteNextFile() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     DCHECK(!waiting_for_callback_);
     if (aborted_) {
       self_ref_ = nullptr;
@@ -1456,8 +1469,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       std::move(callback_).Run(BlobWriteResult::kRunPhaseTwoAsync);
       return;
     } else {
-      if (!backing_store_ ||
-          !backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
+      if (!write_file_callback_.Run(database_id_, *iter_, this)) {
         std::move(callback_).Run(BlobWriteResult::kFailure);
         return;
       }
@@ -1471,13 +1483,15 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
   int64_t database_id_;
-  base::WeakPtr<IndexedDBBackingStore> backing_store_;
+  WriteBlobFileCallback write_file_callback_;
   // Callback result is useless as call stack is no longer transaction's
   // operations queue. Errors are instead handled in
   // IndexedDBTransaction::BlobWriteComplete.
-  IndexedDBBackingStore::BlobWriteCallback callback_;
+  BlobWriteCallback callback_;
   std::unique_ptr<FileWriterDelegate> delegate_;
   bool aborted_;
+
+  SEQUENCE_CHECKER(idb_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ChainedBlobWriterImpl);
 };
@@ -1485,16 +1499,16 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
 class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                           public base::RefCountedThreadSafe<LocalWriteClosure> {
  public:
-  LocalWriteClosure(IndexedDBBackingStore::Transaction::ChainedBlobWriter*
-                        chained_blob_writer,
-                    base::SequencedTaskRunner* task_runner)
+  LocalWriteClosure(ChainedBlobWriter* chained_blob_writer,
+                    base::SequencedTaskRunner* idb_task_runner)
       : chained_blob_writer_(chained_blob_writer),
-        task_runner_(task_runner),
+        idb_task_runner_(idb_task_runner),
         bytes_written_(0) {}
 
   void Run(base::File::Error rv,
            int64_t bytes,
            FileWriterDelegate::WriteProgressStatus write_status) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     DCHECK_GE(bytes, 0);
     bytes_written_ += bytes;
     if (write_status == FileWriterDelegate::SUCCESS_IO_PENDING)
@@ -1510,16 +1524,15 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     if (success && !bytes_written_) {
       // LocalFileStreamWriter only creates a file if data is actually written.
       // If none was then create one now.
-      task_runner_->PostTask(
+      idb_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&LocalWriteClosure::CreateEmptyFile, this));
     } else if (success && !last_modified_.is_null()) {
-      task_runner_->PostTask(
+      idb_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&LocalWriteClosure::UpdateTimeStamp, this));
     } else {
-      task_runner_->PostTask(
+      idb_task_runner_->PostTask(
           FROM_HERE,
-          base::BindOnce(&IndexedDBBackingStore::Transaction::
-                             ChainedBlobWriter::ReportWriteCompletion,
+          base::BindOnce(&ChainedBlobWriter::ReportWriteCompletion,
                          chained_blob_writer_, success, bytes_written_));
     }
   }
@@ -1530,7 +1543,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer =
         storage::FileStreamWriter::CreateForLocalFile(
-            task_runner_.get(), file_path, 0,
+            idb_task_runner_.get(), file_path, 0,
             storage::FileStreamWriter::CREATE_NEW_FILE);
     std::unique_ptr<FileWriterDelegate> delegate(
         std::make_unique<FileWriterDelegate>(
@@ -1550,14 +1563,14 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     // Make sure the last reference to a ChainedBlobWriter is released (and
     // deleted) on the IDB sequence since it owns a transaction which has
     // sequence affinity.
-    task_runner_->ReleaseSoon(FROM_HERE, std::move(chained_blob_writer_));
+    idb_task_runner_->ReleaseSoon(FROM_HERE, std::move(chained_blob_writer_));
   }
   friend class base::RefCountedThreadSafe<LocalWriteClosure>;
 
   // If necessary, update the timestamps on the file as a final
   // step before reporting success.
   void UpdateTimeStamp() {
-    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     if (!base::TouchFile(file_path_, last_modified_, last_modified_)) {
       // TODO(ericu): Complain quietly; timestamp's probably not vital.
     }
@@ -1566,7 +1579,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
 
   // Create an empty file.
   void CreateEmptyFile() {
-    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     base::File file(file_path_,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     bool success = file.created();
@@ -1578,9 +1591,10 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     chained_blob_writer_->ReportWriteCompletion(success, bytes_written_);
   }
 
-  scoped_refptr<IndexedDBBackingStore::Transaction::ChainedBlobWriter>
-      chained_blob_writer_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  SEQUENCE_CHECKER(idb_sequence_checker_);
+
+  scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
+  scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   int64_t bytes_written_;
 
   FilePath file_path_;
@@ -1591,9 +1605,10 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
 
 bool IndexedDBBackingStore::WriteBlobFile(
     int64_t database_id,
-    const Transaction::WriteDescriptor& descriptor,
-    Transaction::ChainedBlobWriter* chained_blob_writer) {
+    const WriteDescriptor& descriptor,
+    ChainedBlobWriter* chained_blob_writer) {
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   if (!MakeIDBBlobDirectory(blob_path_, database_id, descriptor.key()))
@@ -1626,9 +1641,8 @@ bool IndexedDBBackingStore::WriteBlobFile(
     }
 
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&Transaction::ChainedBlobWriter::ReportWriteCompletion,
-                       chained_blob_writer, true, info.size));
+        FROM_HERE, base::BindOnce(&ChainedBlobWriter::ReportWriteCompletion,
+                                  chained_blob_writer, true, info.size));
   } else {
     DCHECK(descriptor.blob());
     scoped_refptr<LocalWriteClosure> write_closure(
@@ -1647,6 +1661,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
                                              int64_t blob_key) {
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   bool all_blobs = blob_key == DatabaseMetaDataKey::kAllBlobsKey;
@@ -1712,6 +1727,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
 // deleted, the timer will automatically be canceled on destruction.
 void IndexedDBBackingStore::StartJournalCleaningTimer() {
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   ++num_aggregated_journal_cleaning_requests_;
@@ -1751,11 +1767,13 @@ void IndexedDBBackingStore::StartJournalCleaningTimer() {
 // This assumes a file path of dbId/second-to-LSB-of-counter/counter.
 FilePath IndexedDBBackingStore::GetBlobFileName(int64_t database_id,
                                                 int64_t key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return GetBlobFileNameForKey(blob_path_, database_id, key);
 }
 
 bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
                                            int64_t key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   FilePath path = GetBlobFileName(database_id, key);
 #if DCHECK_IS_ON()
   ++num_blob_files_deleted_;
@@ -1766,6 +1784,7 @@ bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
 }
 
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64_t database_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   FilePath path = GetBlobDirectoryName(blob_path_, database_id);
   return base::DeleteFile(path, true);
 }
@@ -1773,6 +1792,7 @@ bool IndexedDBBackingStore::RemoveBlobDirectory(int64_t database_id) const {
 Status IndexedDBBackingStore::CleanUpBlobJournal(
     const std::string& level_db_key) const {
   IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournal");
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(!committing_transaction_count_);
   std::unique_ptr<LevelDBDirectTransaction> journal_transaction =
       transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
@@ -1797,6 +1817,7 @@ Status IndexedDBBackingStore::CleanUpBlobJournal(
 
 Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
     const BlobJournalType& journal) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::CleanUpBlobJournalEntries");
   if (journal.empty())
     return Status::OK();
@@ -1817,10 +1838,12 @@ Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
 }
 
 void IndexedDBBackingStore::WillCommitTransaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   ++committing_transaction_count_;
 }
 
 void IndexedDBBackingStore::DidCommitTransaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK_GT(committing_transaction_count_, 0UL);
   --committing_transaction_count_;
   if (committing_transaction_count_ == 0 &&
@@ -1834,6 +1857,7 @@ Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
     int64_t database_id,
     const std::string& object_store_data_key,
     IndexedDBValue* value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   BlobChangeRecord* change_record = nullptr;
   auto blob_iter = blob_change_map_.find(object_store_data_key);
   if (blob_iter != blob_change_map_.end()) {
@@ -1894,10 +1918,12 @@ Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
 
 base::WeakPtr<IndexedDBBackingStore::Transaction>
 IndexedDBBackingStore::Transaction::AsWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return ptr_factory_.GetWeakPtr();
 }
 
 void IndexedDBBackingStore::CleanRecoveryJournalIgnoreReturn() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   // While a transaction is busy it is not safe to clean the journal.
   if (committing_transaction_count_ > 0) {
     execute_journal_cleaning_on_no_txns_ = true;
@@ -1914,6 +1940,7 @@ Status IndexedDBBackingStore::ClearIndex(
     int64_t index_id) {
   IDB_TRACE("IndexedDBBackingStore::ClearIndex");
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
@@ -1944,6 +1971,7 @@ Status IndexedDBBackingStore::PutIndexDataForRecord(
     const RecordIdentifier& record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutIndexDataForRecord");
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   DCHECK(key.IsValid());
@@ -1974,6 +2002,7 @@ Status IndexedDBBackingStore::FindKeyInIndex(
     bool* found) {
   IDB_TRACE("IndexedDBBackingStore::FindKeyInIndex");
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   DCHECK(KeyPrefix::ValidIds(database_id, object_store_id, index_id));
@@ -2036,6 +2065,7 @@ Status IndexedDBBackingStore::GetPrimaryKeyViaIndex(
     std::unique_ptr<IndexedDBKey>* primary_key) {
   IDB_TRACE("IndexedDBBackingStore::GetPrimaryKeyViaIndex");
 #if DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
@@ -2071,6 +2101,7 @@ Status IndexedDBBackingStore::KeyExistsInIndex(
     const IndexedDBKey& index_key,
     std::unique_ptr<IndexedDBKey>* found_primary_key,
     bool* exists) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::KeyExistsInIndex");
 #if DCHECK_IS_ON()
   DCHECK(initialized_);
@@ -2129,6 +2160,7 @@ IndexedDBBackingStore::Cursor::Cursor(base::WeakPtr<Transaction> transaction,
 IndexedDBBackingStore::Cursor::~Cursor() {}
 
 bool IndexedDBBackingStore::Cursor::FirstSeek(Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
   iterator_ = transaction_->transaction()->CreateIterator();
   {
@@ -2144,6 +2176,7 @@ bool IndexedDBBackingStore::Cursor::FirstSeek(Status* s) {
 }
 
 bool IndexedDBBackingStore::Cursor::Advance(uint32_t count, Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   *s = Status::OK();
   while (count--) {
     if (!Continue(s))
@@ -2156,6 +2189,7 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
                                              const IndexedDBKey* primary_key,
                                              IteratorState next_state,
                                              Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::Cursor::Continue");
   DCHECK(!key || next_state == SEEK);
 
@@ -2172,6 +2206,7 @@ IndexedDBBackingStore::Cursor::ContinueNext(const IndexedDBKey* key,
                                             const IndexedDBKey* primary_key,
                                             IteratorState next_state,
                                             Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(cursor_options_.forward);
   DCHECK(!key || key->IsValid());
   DCHECK(!primary_key || primary_key->IsValid());
@@ -2240,6 +2275,7 @@ IndexedDBBackingStore::Cursor::ContinuePrevious(const IndexedDBKey* key,
                                                 const IndexedDBKey* primary_key,
                                                 IteratorState next_state,
                                                 Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(!cursor_options_.forward);
   DCHECK(!key || key->IsValid());
   DCHECK(!primary_key || primary_key->IsValid());
@@ -2344,6 +2380,7 @@ IndexedDBBackingStore::Cursor::ContinuePrevious(const IndexedDBKey* key,
 }
 
 bool IndexedDBBackingStore::Cursor::HaveEnteredRange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   if (cursor_options_.forward) {
     int compare = CompareIndexKeys(iterator_->Key(), cursor_options_.low_key);
     if (cursor_options_.low_open) {
@@ -2359,6 +2396,7 @@ bool IndexedDBBackingStore::Cursor::HaveEnteredRange() const {
 }
 
 bool IndexedDBBackingStore::Cursor::IsPastBounds() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   if (cursor_options_.forward) {
     int compare = CompareIndexKeys(iterator_->Key(), cursor_options_.high_key);
     if (cursor_options_.high_open) {
@@ -2374,6 +2412,7 @@ bool IndexedDBBackingStore::Cursor::IsPastBounds() const {
 }
 
 const IndexedDBKey& IndexedDBBackingStore::Cursor::primary_key() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return *current_key_;
 }
 
@@ -2388,6 +2427,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       cursor_options) {}
 
   std::unique_ptr<Cursor> Clone() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return base::WrapUnique(new ObjectStoreKeyCursorImpl(this));
   }
 
@@ -2400,6 +2440,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return ObjectStoreDataKey::Encode(cursor_options_.database_id,
                                       cursor_options_.object_store_id, key);
   }
@@ -2422,10 +2463,12 @@ IndexedDBBackingStore::Cursor::CursorOptions::CursorOptions(
 IndexedDBBackingStore::Cursor::CursorOptions::~CursorOptions() {}
 const IndexedDBBackingStore::RecordIdentifier&
 IndexedDBBackingStore::Cursor::record_identifier() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return record_identifier_;
 }
 
 bool ObjectStoreKeyCursorImpl::LoadCurrentRow(Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   StringPiece slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
   if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
@@ -2463,15 +2506,20 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
                                       cursor_options) {}
 
   std::unique_ptr<Cursor> Clone() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return base::WrapUnique(new ObjectStoreCursorImpl(this));
   }
 
   // IndexedDBBackingStore::Cursor
-  IndexedDBValue* value() override { return &current_value_; }
+  IndexedDBValue* value() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+    return &current_value_;
+  }
   bool LoadCurrentRow(Status* s) override;
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return ObjectStoreDataKey::Encode(cursor_options_.database_id,
                                       cursor_options_.object_store_id, key);
   }
@@ -2492,6 +2540,7 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool ObjectStoreCursorImpl::LoadCurrentRow(Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
   StringPiece key_slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
@@ -2536,6 +2585,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       cursor_options) {}
 
   std::unique_ptr<Cursor> Clone() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return base::WrapUnique(new IndexKeyCursorImpl(this));
   }
 
@@ -2544,7 +2594,10 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
     NOTREACHED();
     return nullptr;
   }
-  const IndexedDBKey& primary_key() const override { return *primary_key_; }
+  const IndexedDBKey& primary_key() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+    return *primary_key_;
+  }
   const IndexedDBBackingStore::RecordIdentifier& record_identifier()
       const override {
     NOTREACHED();
@@ -2554,12 +2607,14 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id, key, primary_key);
@@ -2576,6 +2631,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool IndexKeyCursorImpl::LoadCurrentRow(Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
@@ -2649,12 +2705,19 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
                                       cursor_options) {}
 
   std::unique_ptr<Cursor> Clone() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return base::WrapUnique(new IndexCursorImpl(this));
   }
 
   // IndexedDBBackingStore::Cursor
-  IndexedDBValue* value() override { return &current_value_; }
-  const IndexedDBKey& primary_key() const override { return *primary_key_; }
+  IndexedDBValue* value() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+    return &current_value_;
+  }
+  const IndexedDBKey& primary_key() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
+    return *primary_key_;
+  }
   const IndexedDBBackingStore::RecordIdentifier& record_identifier()
       const override {
     NOTREACHED();
@@ -2664,12 +2727,14 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id, key);
   }
   std::string EncodeKey(const IndexedDBKey& key,
                         const IndexedDBKey& primary_key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
     return IndexDataKey::Encode(cursor_options_.database_id,
                                 cursor_options_.object_store_id,
                                 cursor_options_.index_id, key, primary_key);
@@ -2690,6 +2755,7 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool IndexCursorImpl::LoadCurrentRow(Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
@@ -2763,6 +2829,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
     const IndexedDBKeyRange& range,
     blink::mojom::IDBCursorDirection direction,
     Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreCursor");
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
@@ -2790,6 +2857,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
     const IndexedDBKeyRange& range,
     blink::mojom::IDBCursorDirection direction,
     Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreKeyCursor");
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
@@ -2818,6 +2886,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
     const IndexedDBKeyRange& range,
     blink::mojom::IDBCursorDirection direction,
     Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::OpenIndexKeyCursor");
   *s = Status::OK();
   TransactionalLevelDBTransaction* leveldb_transaction =
@@ -2844,6 +2913,7 @@ IndexedDBBackingStore::OpenIndexCursor(
     const IndexedDBKeyRange& range,
     blink::mojom::IDBCursorDirection direction,
     Status* s) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::OpenIndexCursor");
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
@@ -2860,10 +2930,12 @@ IndexedDBBackingStore::OpenIndexCursor(
 }
 
 bool IndexedDBBackingStore::IsBlobCleanupPending() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return journal_cleaning_timer_.IsRunning();
 }
 
 void IndexedDBBackingStore::ForceRunBlobCleanup() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   journal_cleaning_timer_.FireNow();
 }
 
@@ -2877,13 +2949,18 @@ IndexedDBBackingStore::Transaction::Transaction(
                          : nullptr),
       database_id_(-1),
       committing_(false),
-      durability_(durability) {}
+      durability_(durability) {
+  DCHECK(!backing_store_ ||
+         backing_store_->task_runner()->RunsTasksInCurrentSequence());
+}
 
 IndexedDBBackingStore::Transaction::~Transaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(!committing_);
 }
 
 void IndexedDBBackingStore::Transaction::Begin(std::vector<ScopeLock> locks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(backing_store_);
   DCHECK(!transaction_.get());
@@ -2901,6 +2978,7 @@ void IndexedDBBackingStore::Transaction::Begin(std::vector<ScopeLock> locks) {
 Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
     BlobEntryKeyValuePairVec* new_blob_entries,
     WriteDescriptorVec* new_files_to_write) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(backing_store_);
   if (backing_store_->is_incognito())
     return Status::OK();
@@ -2943,7 +3021,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
         return InternalInconsistencyStatus();
     }
     BlobEntryKey blob_entry_key;
-    StringPiece key_piece(iter.second->key());
+    StringPiece key_piece(iter.second->object_store_data_key());
     if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
       NOTREACHED();
       return InternalInconsistencyStatus();
@@ -2958,6 +3036,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
 }
 
 bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(backing_store_);
   if (backing_store_->is_incognito())
     return true;
@@ -2966,7 +3045,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
   // names in blobs_to_remove_, and remove their old blob data entries.
   for (const auto& iter : blob_change_map_) {
     BlobEntryKey blob_entry_key;
-    StringPiece key_piece(iter.second->key());
+    StringPiece key_piece(iter.second->object_store_data_key());
     if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
       NOTREACHED();
       INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
@@ -3005,6 +3084,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
 void IndexedDBBackingStore::Transaction::PartitionBlobsToRemove(
     BlobJournalType* inactive_blobs,
     BlobJournalType* active_blobs) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(backing_store_);
   IndexedDBActiveBlobRegistry* registry =
       backing_store_->active_blob_registry();
@@ -3061,6 +3141,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
 Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseTwo");
   DCHECK(backing_store_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   Status s;
 
   DCHECK(committing_);
@@ -3163,6 +3244,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
     BlobEntryKeyValuePairVec* new_blob_entries,
     WriteDescriptorVec* new_files_to_write,
     BlobWriteCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   IDB_ASYNC_TRACE_BEGIN("IndexedDBBackingStore::Transaction::WriteNewBlobs",
                         this);
   DCHECK(backing_store_);
@@ -3184,8 +3266,17 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
   chained_blob_writer_ = ChainedBlobWriterImpl::Create(
-      database_id_, backing_store_->AsWeakPtr(), new_files_to_write,
-      durability_,
+      database_id_, new_files_to_write, durability_,
+      base::BindRepeating(
+          [](base::WeakPtr<IndexedDBBackingStore> backing_store,
+             int64_t database_id, const WriteDescriptor& descriptor,
+             ChainedBlobWriter* chained_blob_writer) {
+            if (!backing_store)
+              return false;
+            return backing_store->WriteBlobFile(database_id, descriptor,
+                                                chained_blob_writer);
+          },
+          backing_store_->AsWeakPtr()),
       base::BindOnce(
           [](base::WeakPtr<IndexedDBBackingStore::Transaction> transaction,
              void* tracing_end_ptr, BlobWriteCallback final_callback,
@@ -3211,12 +3302,14 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
 }
 
 void IndexedDBBackingStore::Transaction::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   backing_store_.reset();
   transaction_ = nullptr;
 }
 
 leveldb::Status IndexedDBBackingStore::Transaction::Rollback() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Rollback");
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(backing_store_);
 
   if (committing_) {
@@ -3238,38 +3331,16 @@ leveldb::Status IndexedDBBackingStore::Transaction::Rollback() {
 }
 
 uint64_t IndexedDBBackingStore::Transaction::GetTransactionSize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
   return transaction_->GetTransactionSize();
 }
 
-IndexedDBBackingStore::BlobChangeRecord::BlobChangeRecord(
-    const std::string& key,
-    int64_t object_store_id)
-    : key_(key), object_store_id_(object_store_id) {}
-
-IndexedDBBackingStore::BlobChangeRecord::~BlobChangeRecord() = default;
-
-void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
-    std::vector<IndexedDBBlobInfo>* blob_info) {
-  blob_info_.clear();
-  if (blob_info)
-    blob_info_.swap(*blob_info);
-}
-
-std::unique_ptr<IndexedDBBackingStore::BlobChangeRecord>
-IndexedDBBackingStore::BlobChangeRecord::Clone() const {
-  std::unique_ptr<IndexedDBBackingStore::BlobChangeRecord> record(
-      new BlobChangeRecord(key_, object_store_id_));
-  record->blob_info_ = blob_info_;
-
-  return record;
-}
-
 Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     int64_t database_id,
-    int64_t object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   if (!blob_info || blob_info->empty()) {
     blob_change_map_.erase(object_store_data_key);
     incognito_blob_map_.erase(object_store_data_key);
@@ -3289,7 +3360,7 @@ Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     if (!found)
       return Status::OK();
   }
-  PutBlobInfo(database_id, object_store_id, object_store_data_key, blob_info);
+  PutBlobInfo(database_id, object_store_data_key, blob_info);
   return Status::OK();
 }
 
@@ -3299,9 +3370,9 @@ Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
 // changes to exists or index keys here.
 void IndexedDBBackingStore::Transaction::PutBlobInfo(
     int64_t database_id,
-    int64_t object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(!object_store_data_key.empty());
   if (database_id_ < 0)
     database_id_ = database_id;
@@ -3311,45 +3382,13 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
   BlobChangeRecord* record = nullptr;
   if (it == blob_change_map_.end()) {
     std::unique_ptr<BlobChangeRecord> new_record =
-        std::make_unique<BlobChangeRecord>(object_store_data_key,
-                                           object_store_id);
+        std::make_unique<BlobChangeRecord>(object_store_data_key);
     record = new_record.get();
     blob_change_map_[object_store_data_key] = std::move(new_record);
   } else {
     record = it->second.get();
   }
-  DCHECK_EQ(record->object_store_id(), object_store_id);
   record->SetBlobInfo(blob_info);
 }
-
-IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
-    const storage::BlobDataHandle* blob,
-    int64_t key,
-    int64_t size,
-    base::Time last_modified)
-    : is_file_(false),
-      blob_(*blob),
-      key_(key),
-      size_(size),
-      last_modified_(last_modified) {}
-
-IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
-    const FilePath& file_path,
-    int64_t key,
-    int64_t size,
-    base::Time last_modified)
-    : is_file_(true),
-      file_path_(file_path),
-      key_(key),
-      size_(size),
-      last_modified_(last_modified) {}
-
-IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
-    const WriteDescriptor& other) = default;
-IndexedDBBackingStore::Transaction::WriteDescriptor::~WriteDescriptor() =
-    default;
-IndexedDBBackingStore::Transaction::WriteDescriptor&
-IndexedDBBackingStore::Transaction::WriteDescriptor::operator=(
-    const WriteDescriptor& other) = default;
 
 }  // namespace content

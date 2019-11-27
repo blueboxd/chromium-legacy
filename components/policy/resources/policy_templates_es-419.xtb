@@ -445,11 +445,6 @@
 
           Si no la estableces, la lupa estará inicialmente inhabilitada en la pantalla de acceso, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
-<translation id="1676141669324989554">Permite establecer si los usuarios pueden agregar excepciones para habilitar contenido mixto en sitios específicos.
-
-          Puede anularse esta política para patrones de URL específicos mediante las políticas "InsecureContentAllowedForUrls" y "InsecureContentBlockedForUrls".
-
-          Si no se establece esta política, los usuarios podrán agregar excepciones para permitir contenido mixto bloqueable.</translation>
 <translation id="1695708467571967752">Esta política controla si los usuarios pueden reproducir contenido multimedia cuando está bloqueado el dispositivo.
 
       Si se establece como falsa, se inhabilitan los controles multimedia de la pantalla bloqueada.
@@ -3149,9 +3144,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5961137303188584693">Dirección MAC para el NIC integrado del dispositivo</translation>
 <translation id="5966615072639944554">Extensiones que tienen permitido utilizar la API de atestación remota</translation>
 <translation id="5983708779415553259">Comportamiento predeterminado de los sitios que no forman parte de ningún paquete de contenido</translation>
-<translation id="5997107377032983906">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan mostrar contenido mixto (p. ej., contenido HTTP en sitios HTTPS) bloqueable (p. ej., activo).
-
-          Si no se establece esta política, se bloqueará el contenido mixto bloqueable, pero los usuarios podrán establecer excepciones para permitir ese contenido en sitios específicos.</translation>
 <translation id="5997543603646547632">Utilizar reloj con formato de 24 horas de forma predeterminada</translation>
 <translation id="5997846976342452720">Indicar si el buscador de complementos se debe inhabilitar (obsoleto)</translation>
 <translation id="5998198091336830580">Esta política es parte del siguiente grupo atómico (solo se aplican las políticas que provengan de la fuente de mayor prioridad del grupo):</translation>
@@ -3545,9 +3537,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6795485990775913659">Permitir la impresión solo sin PIN</translation>
-<translation id="6800064234889290465">Permite establecer una lista de patrones de URL que especifican los sitios que no pueden mostrar contenido mixto (p. ej., contenido HTTP en sitios HTTPS) bloqueable (p. ej., activo).
-
-          Si no se establece esta política, se bloqueará el contenido mixto bloqueable, pero los usuarios podrán establecer excepciones para permitir ese contenido en sitios específicos.</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>

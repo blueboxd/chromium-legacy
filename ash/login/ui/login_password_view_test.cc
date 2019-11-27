@@ -26,14 +26,15 @@ class LoginPasswordViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     view_ = new LoginPasswordView();
-    view_->Init(base::Bind(&LoginPasswordViewTest::OnPasswordSubmit,
-                           base::Unretained(this)),
-                base::Bind(&LoginPasswordViewTest::OnPasswordTextChanged,
-                           base::Unretained(this)),
-                base::Bind(&LoginPasswordViewTest::OnEasyUnlockIconHovered,
-                           base::Unretained(this)),
-                base::Bind(&LoginPasswordViewTest::OnEasyUnlockIconTapped,
-                           base::Unretained(this)));
+    view_->Init(
+        base::BindRepeating(&LoginPasswordViewTest::OnPasswordSubmit,
+                            base::Unretained(this)),
+        base::BindRepeating(&LoginPasswordViewTest::OnPasswordTextChanged,
+                            base::Unretained(this)),
+        base::BindRepeating(&LoginPasswordViewTest::OnEasyUnlockIconHovered,
+                            base::Unretained(this)),
+        base::BindRepeating(&LoginPasswordViewTest::OnEasyUnlockIconTapped,
+                            base::Unretained(this)));
 
     SetWidget(CreateWidgetWithContent(view_));
   }

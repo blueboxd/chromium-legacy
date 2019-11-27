@@ -113,7 +113,8 @@ public class ChromePreferenceKeysTest {
 
     private void doTestKeysConformToFormat(List<String> usedList, List<String> grandfathered) {
         Set<String> grandfatheredSet = new HashSet<>(grandfathered);
-        Pattern regex = Pattern.compile("Chrome.([A-Z][a-z0-9]+)+.([A-Z][a-z0-9]+)+");
+        String term = "([A-Z][a-z0-9]*)+";
+        Pattern regex = Pattern.compile("Chrome\\." + term + "\\." + term + "(\\.\\*)?");
 
         for (String keyInUse : usedList) {
             if (grandfatheredSet.contains(keyInUse)) {
@@ -128,12 +129,17 @@ public class ChromePreferenceKeysTest {
     // Below are tests to ensure that doTestKeysConformToFormat() works.
 
     private static class TestFormatConstantsClass {
-        public static final String GRANDFATHERED_IN = "grandfathered_in";
-        public static final String NEW1 = "Chrome.FeatureOne.Key1";
-        public static final String NEW2 = "Chrome.Foo.Key";
-        public static final String BROKEN_PREFIX = "Chrom.Foo.Key";
-        public static final String MISSING_FEATURE = "Chrome..Key";
-        public static final String LOWERCASE_KEY = "Chrome.Foo.key";
+        static final String GRANDFATHERED_IN = "grandfathered_in";
+        static final String NEW1 = "Chrome.FeatureOne.Key1";
+        static final String NEW2 = "Chrome.Foo.Key";
+        static final String BROKEN_PREFIX = "Chrom.Foo.Key";
+        static final String MISSING_FEATURE = "Chrome..Key";
+        static final String LOWERCASE_KEY = "Chrome.Foo.key";
+
+        static final KeyPrefix PREFIX = new KeyPrefix("Chrome.FeatureOne.KeyPrefix1.*");
+        static final KeyPrefix PREFIX_EXTRA_LEVEL =
+                new KeyPrefix("Chrome.FeatureOne.KeyPrefix1.ExtraLevel.*");
+        static final KeyPrefix PREFIX_MISSING_LEVEL = new KeyPrefix("Chrome.FeatureOne.*");
     }
 
     @Test
@@ -179,5 +185,28 @@ public class ChromePreferenceKeysTest {
                 Arrays.asList(TestFormatConstantsClass.GRANDFATHERED_IN,
                         TestFormatConstantsClass.NEW1, TestFormatConstantsClass.LOWERCASE_KEY),
                 Arrays.asList(TestFormatConstantsClass.GRANDFATHERED_IN));
+    }
+
+    @Test
+    @SmallTest
+    public void testFormatCheck_prefixCorrect() {
+        doTestKeysConformToFormat(
+                Arrays.asList(TestFormatConstantsClass.PREFIX.pattern()), Collections.emptyList());
+    }
+
+    @Test(expected = AssertionError.class)
+    @SmallTest
+    public void testFormatCheck_prefixExtralevel() {
+        doTestKeysConformToFormat(
+                Arrays.asList(TestFormatConstantsClass.PREFIX_EXTRA_LEVEL.pattern()),
+                Collections.emptyList());
+    }
+
+    @Test(expected = AssertionError.class)
+    @SmallTest
+    public void testFormatCheck_prefixMissingLevel() {
+        doTestKeysConformToFormat(
+                Arrays.asList(TestFormatConstantsClass.PREFIX_MISSING_LEVEL.pattern()),
+                Collections.emptyList());
     }
 }

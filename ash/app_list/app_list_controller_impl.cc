@@ -31,6 +31,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -1176,6 +1177,9 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
 
 bool AppListControllerImpl::ProcessHomeLauncherGesture(
     ui::GestureEvent* event) {
+  if (features::IsDragFromShelfToHomeOrOverviewEnabled())
+    return false;
+
   HomeLauncherGestureHandler* home_launcher_gesture_handler =
       Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   const gfx::PointF event_location =

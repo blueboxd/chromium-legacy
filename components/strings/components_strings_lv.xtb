@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Rādīt vairāk</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Paroles maiņa</translation>
 <translation id="1484290072879560759">Izvēlēties nosūtīšanas adresi</translation>
 <translation id="1492194039220927094">Politiku informatīvie ziņojumi:</translation>
 <translation id="1501859676467574491">Rādī kartes no mana Google konta</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sazinieties ar sistēmas administratoru.</translation>
 <translation id="1736420071277903564">Dators</translation>
-<translation id="1739107442478692187">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pārbaudīt saglabātās paroles un tūlīt nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="1740951997222943430">Ievadiet derīgu mēnesi</translation>
 <translation id="1741613555002899862">Ir jābūt norādītai politikas vērtībai un derīgai virknei, ja DnsOverHttpsMode vērtība ir <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus, vārdu un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Pakalpojums failu izgūšanai no arhīva</translation>
 <translation id="1915697529809968049">Vai vēlaties izmantot Touch ID, nevis CVC?</translation>
 <translation id="1916770123977586577">Lai lietotu atjauninātos iestatījumus šai vietnei, atkārtoti ielādējiet šo lapu</translation>
+<translation id="1917876262703816781">Vietnē vai lietotnē tika atklāta jūsu parole datu noplūdes dēļ. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="1919345977826869612">Reklāmas</translation>
 <translation id="1919367280705858090">Palīdzība par konkrētu kļūdas ziņojumu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nav}=1{1 vietne}zero{# vietnes}one{# vietne}other{# vietnes}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domēni nesaskan</translation>
 <translation id="2096368010154057602">Departaments</translation>
 <translation id="2099652385553570808">Trīskāršs skavojums kreisajā pusē</translation>
-<translation id="2100280972184758440">Jūsu parole ir apdraudēta</translation>
 <translation id="2102134110707549001">Ieteikt drošu paroli…</translation>
 <translation id="2108755909498034140">Restartējiet datoru</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Izsniegts: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Caurums apakšējā labajā malā</translation>
-<translation id="2124528555835617522">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk pārbaudīt saglabātās paroles.</translation>
 <translation id="2129079103035905234">Kustību sensori</translation>
 <translation id="2130448033692577677">Norādītās veidnes, iespējams, netiks lietotas, jo nav iestatīta politika DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
@@ -492,7 +491,6 @@
 <translation id="3282497668470633863">Pievienot vārdu un uzvārdu uz kartes</translation>
 <translation id="3287510313208355388">Lejupielādēt, kad pieejama tiešsaiste</translation>
 <translation id="3293642807462928945">Uzzināt vairāk par politiku <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="3303855915957856445">Netika atrasts neviens meklēšanas rezultāts.</translation>
 <translation id="3320021301628644560">Norēķinu adreses pievienošana</translation>
 <translation id="3324983252691184275">Tumši sarkana</translation>
@@ -905,6 +903,7 @@
 <translation id="5287240709317226393">Rādīt sīkfailus</translation>
 <translation id="5287456746628258573">Šajā vietnē tiek izmantota novecojusi drošības konfigurācija, tādēļ var tikt atklāta jūsu informācija (piemēram, paroles vai kredītkaršu numuri), kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="5288108484102287882">Validējot politikas vērtības, tika konstatētas kļūdas</translation>
+<translation id="5295292838686006428">Vietnē vai lietotnē tika atklāta jūsu parole datu noplūdes dēļ. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk pārbaudīt saglabātās paroles.</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
@@ -955,6 +954,7 @@
 <translation id="5540224163453853">Pieprasīto rakstu nevarēja atrast.</translation>
 <translation id="5541546772353173584">E-pasta adreses pievienošana</translation>
 <translation id="5545756402275714221">Ieteiktie raksti</translation>
+<translation id="5552137475244467770">Pārlūkā Chrome tiek periodiski pārbaudītas jūsu paroles, salīdzinot tās ar tiešsaistē publicētiem sarakstiem. Šo pārbaužu laikā paroles un lietotājvārdi ir šifrēti, lai neviens tos nevarētu lasīt, tostarp Google.</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5560088892362098740">Derīguma termiņš</translation>
 <translation id="5565735124758917034">Aktīvs</translation>
@@ -1046,6 +1046,7 @@
 <translation id="5992691462791905444">Inženierijas Z-veida locījums</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> rezultāti vaicājumam “<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Paroļu pārbaude</translation>
 <translation id="6015796118275082299">Gads</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. lapa}zero{#. lapa}one{#. lapa}other{#. lapa}}</translation>
 <translation id="6017514345406065928">Zaļa</translation>
@@ -1335,6 +1336,7 @@ Papildu informācija:
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="748406663033922918">Izmantot ekrāna bloķēšanu, lai verificētu saglabātos maksājuma veidus.</translation>
 <translation id="7485870689360869515">Dati netika atrasti.</translation>
+<translation id="7495290002932347110">Vietnē vai lietotnē tika atklāta jūsu parole datu noplūdes dēļ. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk pārbaudīt saglabātās paroles un nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="7498234416455752244">Turpināt rediģēšanu</translation>
 <translation id="7508255263130623398">Atgrieztais politikas ierīces ID ir tukšs vai neatbilst pašreizējam ierīces ID.</translation>
 <translation id="7508870219247277067">Avokado zaļa</translation>

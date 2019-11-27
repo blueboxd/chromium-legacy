@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ਜਾਂ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ਰੂਪ-ਰੇਖਾ ਮੋਡ</translation>
 <translation id="4382340674111381977">ਪਿਛਲੇ ਪੰਨੇ 'ਤੇ ਜਾਓ</translation>
+<translation id="4458670250301149821">ਐਪ ਪ੍ਰਤੀਕ ਨੂੰ ਐਪ ਗ੍ਰਿਡ ਵਿੱਚ ਫੋਲਡਰ ਦੇ ਅੰਦਰ/ਬਾਹਰ ਲਿਜਾਓ</translation>
 <translation id="4472417192667361414">ਸਿਸਟਮ ਅਤੇ ਡਿਸਪਲੇ ਸੈਟਿੰਗਾਂ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ਫਿਰ <ph name="LEFT" /> ਜਾਂ <ph name="RIGHT" /> ਜਾਂ <ph name="UP" /> ਜਾਂ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਮਦਦਗਾਰ ਨੂੰ ਦੇਖੋ</translation>
 <translation id="4628718545549558538">ਸਥਿਤੀ ਖੇਤਰ ਨੂੰ ਖੋਲ੍ਹੋ (ਜਿੱਥੇ ਤੁਹਾਡੇ ਖਾਤੇ ਦੀ ਤਸਵੀਰ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ)</translation>
 <translation id="4642092649622328492">ਛੋਟਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਵੋ</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">ਅਗਲਾ ਅੱਖਰ ਮਿਟਾਓ (ਅੱਗੇ ਵਾਲਾ ਮਿਟਾਓ)</translation>
 <translation id="7500368597227394048">ਹਾਈਫਨ</translation>
 <translation id="7611271430932669992">ਫੋਕਸ ਨੂੰ ਪੌਪਅੱਪ ਅਤੇ ਡਾਇਲੌਗਾਂ 'ਤੇ ਲਿਜਾਓ</translation>
+<translation id="7635348532214572995">ਐਪ ਪ੍ਰਤੀਕ ਨੂੰ ਐਪ ਗ੍ਰਿਡ ਵਿੱਚ ਲਿਜਾਓ</translation>
 <translation id="766326951329901120">ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਸਮੱਗਰੀ ਨੂੰ ਸਰਲ ਲਿਖਤ ਵਜੋਂ ਪੇਸਟ ਕਰੋ</translation>
 <translation id="7703010453515335249">ਖੱਬੀ ਬ੍ਰੈਕਟ</translation>
 <translation id="7724603315864178912">ਕੱਟੋ</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਸਮੱਗਰੀ ਪੇਸਟ ਕਰੋ</translation>
 <translation id="9052808072970550123">ਅਗਲੇ ਵਰਤੋਂਕਾਰ 'ਤੇ ਸਵਿੱਚ ਕਰੋ</translation>
 <translation id="906458777597946297">window ਨੂੰ ਅਧਿਕਤਮ ਬਣਾਓ</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ਫਿਰ <ph name="LEFT" /> ਜਾਂ <ph name="RIGHT" /> ਜਾਂ <ph name="UP" /> ਜਾਂ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ਲਾਈਨ ਦੀ ਸ਼ੁਰੂਆਤ 'ਤੇ ਜਾਓ</translation>
 <translation id="9106898733795143799">ਪੰਨਾ ਅਤੇ ਵੈੱਬ ਬ੍ਰਾਊਜ਼ਰ</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> ਲਈ ਕੋਈ ਖੋਜ ਨਤੀਜਾ ਨਹੀਂ</translation>

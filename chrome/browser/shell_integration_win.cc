@@ -69,6 +69,16 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   if (profile_path.empty())
     return base::string16();
 
+  base::FilePath default_user_data_dir;
+  // Return empty string if profile_path is in default user data
+  // dir and is the default profile.
+  if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
+      profile_path.DirName() == default_user_data_dir &&
+      profile_path.BaseName().value() ==
+          base::ASCIIToUTF16(chrome::kInitialProfile)) {
+    return base::string16();
+  }
+
   // Get joined basenames of user data dir and profile.
   base::string16 basenames = profile_path.DirName().BaseName().value() +
       L"." + profile_path.BaseName().value();
@@ -820,8 +830,6 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |updated_properties|.
     base::win::ShortcutProperties updated_properties;
 
-    base::string16 current_app_id;
-
     // Validate the existing app id for the shortcut.
     Microsoft::WRL::ComPtr<IPropertyStore> property_store;
     propvariant.Reset();
@@ -839,8 +847,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
             updated_properties.set_app_id(expected_app_id);
           break;
         case VT_LPWSTR:
-          current_app_id = base::string16(propvariant.get().pwszVal);
-          if (expected_app_id != current_app_id)
+          if (expected_app_id != base::string16(propvariant.get().pwszVal))
             updated_properties.set_app_id(expected_app_id);
           break;
         default:
@@ -854,7 +861,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |default_chromium_model_id|).
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(is_per_user_install));
-    if (current_app_id == default_chromium_model_id) {
+    if (expected_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {

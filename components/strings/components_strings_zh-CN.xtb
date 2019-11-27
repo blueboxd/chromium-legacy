@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">显示更多</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">更改您的密码</translation>
 <translation id="1484290072879560759">选择送货地址</translation>
 <translation id="1492194039220927094">政策推送：</translation>
 <translation id="1501859676467574491">显示您的 Google 帐号中保存的支付卡</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
 <translation id="1736420071277903564">计算机</translation>
-<translation id="1739107442478692187">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="1740951997222943430">请输入有效的失效月份</translation>
 <translation id="1741613555002899862">当 DnsOverHttpsMode 是“<ph name="SECURE_DNS_MODE_SECURE" />”时，必须将此政策指定为有效字符串。</translation>
 <translation id="1743520634839655729">若想在下次购物时更快捷地付款，请将您的付款卡信息、姓名和帐单邮寄地址保存到您的 Google 帐号名下以及这台设备中。</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">解压缩服务</translation>
 <translation id="1915697529809968049">要改用 Touch ID 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
+<translation id="1917876262703816781">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919367280705858090">了解如何解决特定错误消息指出的错误</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">网域不匹配</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="2099652385553570808">三钉（左侧）</translation>
-<translation id="2100280972184758440">您的密码已被泄露</translation>
 <translation id="2102134110707549001">建议安全系数高的密码…</translation>
 <translation id="2108755909498034140">重新启动计算机</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
 <translation id="2119505898009119320">颁发对象：<ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">打孔（右下角）</translation>
-<translation id="2124528555835617522">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即检查已保存的密码。</translation>
 <translation id="2129079103035905234">动态传感器</translation>
 <translation id="2130448033692577677">您指定的模板未必会被应用，因为 DnsOverHttpsMode 政策未设置。</translation>
 <translation id="213826338245044447">移动设备书签</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的现有攻击者可能会安装危险应用来损害您的设备、给您的手机帐单增添隐含费用或窃取您的个人信息。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">未连接到互联网</translation>
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
+<translation id="22320125457191592">为您推荐</translation>
 <translation id="2239100178324503013">立即发送</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
 <translation id="2250931979407627383">边缘装订（左侧）</translation>
@@ -366,6 +366,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">安全警告</translation>
 <translation id="2699302886720511147">接受的银行卡</translation>
 <translation id="2702801445560668637">读取列表</translation>
 <translation id="2704283930420550640">值不符合格式要求。</translation>
@@ -464,6 +465,7 @@
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209034400446768650">此网页可能会收取费用</translation>
 <translation id="3209080785413271048">使用 Windows Hello 验证您保存的付款方式。</translation>
+<translation id="3212581601480735796">您在 <ph name="HOSTNAME" /> 上的活动正被监控</translation>
 <translation id="3215092763954878852">无法使用 WebAuthn</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
@@ -479,7 +481,6 @@
 <translation id="3282497668470633863">添加持卡人姓名</translation>
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
-<translation id="3295439534709115864">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="3303855915957856445">未找到任何搜索结果</translation>
 <translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3324983252691184275">深红色</translation>
@@ -521,6 +522,7 @@
 <translation id="3528485271872257980">深棕色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
+<translation id="3553513561058684206">为您推荐</translation>
 <translation id="3566021033012934673">您的连接不是私密连接</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /><ph name="STATE" /><ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> 上的嵌入式页面显示</translation>
@@ -745,6 +747,7 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4597348597567598915">大小：8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">Google Chrome 不信任此连接的证书，因为该证书的已知用途是网络拦截和监控。</translation>
 <translation id="4635654612248442824">网站 <ph name="ORIGIN" /> 已要求其所有请求都应用一项来源政策，但此政策目前无法应用。</translation>
 <translation id="464342062220857295">搜索功能</translation>
 <translation id="4646534391647090355">立即前往</translation>
@@ -883,6 +886,7 @@
 <translation id="5287240709317226393">显示 Cookie</translation>
 <translation id="5287456746628258573">此网站使用的安全性配置已过期，这可能会导致您的信息（例如密码或信用卡卡号）在发送至此网站时出现泄露。</translation>
 <translation id="5288108484102287882">政策值验证引发了警告</translation>
+<translation id="5295292838686006428">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查您保存的密码。</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5308380583665731573">连接</translation>
@@ -933,6 +937,7 @@
 <translation id="5540224163453853">找不到请求的文章。</translation>
 <translation id="5541546772353173584">添加电子邮件地址</translation>
 <translation id="5545756402275714221">为您推荐的文章</translation>
+<translation id="5552137475244467770">Chrome 会定期检查您的密码是否已被列在网上发布的外泄密码列表内。当 Chrome 进行这项检查时，您的密码和用户名都会被加密，所以它们绝不会被任何人员/任何一方（包括 Google）读取。</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5560088892362098740">到期日期</translation>
 <translation id="5565735124758917034">主动</translation>
@@ -1024,6 +1029,7 @@
 <translation id="5992691462791905444">工程 Z 型折</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">检查您的密码</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{第 1 页}other{第 # 页}}</translation>
 <translation id="6017514345406065928">绿色</translation>
@@ -1312,6 +1318,7 @@
 <translation id="7481312909269577407">前进</translation>
 <translation id="748406663033922918">使用“屏幕锁定”功能验证您保存的付款方式。</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
+<translation id="7495290002932347110">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="7498234416455752244">继续修改</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
 <translation id="7508870219247277067">黄绿色</translation>
@@ -1448,6 +1455,7 @@
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8105368624971345109">关闭</translation>
 <translation id="8118489163946903409">付款方式</translation>
+<translation id="8124023448510659215">Chromium 不信任此连接的证书，因为该证书的已知用途是网络拦截和监控。</translation>
 <translation id="8127301229239896662">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上。请让您的 IT 管理员解决此问题。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
@@ -1591,6 +1599,8 @@
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8962950042226115166">可疑网站</translation>
 <translation id="8968766641738584599">保存卡片</translation>
+<translation id="8969267497192857913">您输入的任何内容、查看的任何网页或从事的任何其他网络活动都正被监视，而且网站上的任何内容都可能会在您不知情的情况下被改动。
+    <ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8975012916872825179">包括电话号码、电子邮件地址和送货地址等信息</translation>
 <translation id="8975263830901772334">已打印的文件的名称</translation>

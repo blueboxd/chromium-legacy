@@ -101,4 +101,9 @@ SurfaceTextureGLOwner::GetAHardwareBuffer() {
   return nullptr;
 }
 
+gfx::Rect SurfaceTextureGLOwner::GetCropRect() {
+  NOTREACHED() << "Don't use GetCropRect with SurfaceTextureGLOwner";
+  return gfx::Rect();
+}
+
 }  // namespace gpu

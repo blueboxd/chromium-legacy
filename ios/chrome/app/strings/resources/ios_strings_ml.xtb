@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">എല്ലാ ടാബുകളിൽ നിന്നും ഭാവി JavaScript കൺസോൾ ലോഗുകളും പിശകുകളും ശേഖരിക്കാൻ, "ലോഗിംഗ് ആരംഭിക്കുക" ബട്ടൺ ടാപ്പ് ചെയ്യുക. ഈ പേജ് അടയ്ക്കുന്നതുവരെയോ "ലോഗിംഗ് നിർത്തുക" ടാപ്പ് ചെയ്യുന്നതുവരെയോ ലോഗുകൾ ശേഖരിക്കും (കൂടാതെ മെമ്മറിയിൽ മാത്രം സ്‌റ്റോർ ചെയ്യുന്നു).</translation>
 <translation id="1657011748321897393">നിങ്ങൾ ഒരു നെറ്റ്‌വർക്കുമായി കണക്റ്റ് ചെയ്യാത്തതിനാൽ പങ്കിടൽ പരാജയപ്പെട്ടു.</translation>
 <translation id="165877110639533037">തുറന്ന ടാബുകൾ ഒന്നുമില്ല</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> എന്നതിൽ നിന്ന് <ph name="TARGET_LANGUAGE" /> എന്നതിലേക്ക്</translation>
 <translation id="168715261339224929">എല്ലാ ഉപകരണങ്ങളിലും നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, 'സമന്വയം' ഓണാക്കുക.</translation>
 <translation id="1687475363370981210">എല്ലാം വായിച്ചതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="1690731385917361335">ഇനങ്ങളൊന്നുമില്ല</translation>
@@ -102,7 +103,6 @@
 <translation id="2273327106802955778">കൂടുതൽ ഓപ്ഷൻ മെനു</translation>
 <translation id="2316709634732130529">നിർദ്ദേശിച്ച പാസ്‌വേഡ് ഉപയോഗിക്കുക</translation>
 <translation id="2320166752086256636">കീബോർഡ് മറയ്‌ക്കുക</translation>
-<translation id="2330129964253841015">പാസ്‌വേഡ് അപഹരിക്കപ്പെട്ടാൽ നിങ്ങൾക്ക് മുന്നറിയിപ്പ് നൽകുന്നു</translation>
 <translation id="2339560363438331454">സമന്വയവും Google സേവനങ്ങളും</translation>
 <translation id="2351097562818989364">നിങ്ങളുടെ വിവർത്തന ക്രമീകരണം റീസെറ്റ് ചെയ്‌തു.</translation>
 <translation id="2359043044084662842">വിവർത്തനം ചെയ്യുക</translation>
@@ -127,6 +127,7 @@
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="2690858294534178585">ക്യാമറ ഉപയോഗത്തിലാണ്</translation>
 <translation id="2691653761409724435">ഓഫ്‌ലൈനിൽ ലഭ്യമല്ല</translation>
+<translation id="2695507686909505111">പേജ് വിവർത്തനം ചെയ്‌തു</translation>
 <translation id="2702801445560668637">വായനാ ലിസ്റ്റ്</translation>
 <translation id="2704606927547763573">പകർത്തി</translation>
 <translation id="2709516037105925701">സ്വയമേവ പൂരിപ്പിക്കൽ</translation>
@@ -206,6 +207,7 @@
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
 <translation id="3783017676699494206">ചിത്രം സംരക്ഷിക്കുക</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
+<translation id="3803696231112616155">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യാനുള്ള നിര്‍ദ്ദേശം</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3915450441834151894">സൈറ്റ് വിവരങ്ങള്‍</translation>
@@ -243,6 +245,7 @@
 <translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു ആപ്പിൽ തുറക്കും.</translation>
 <translation id="4375040482473363939">QR കോഡ് തിരയൽ</translation>
 <translation id="4378154925671717803">ഫോൺ</translation>
+<translation id="4389019817280890563">ഭാഷ മാറ്റാൻ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
 <translation id="4454246407045105932">ഭാഷ ചേർക്കുക</translation>
 <translation id="4476574785019001431">ക്രമീകരണം</translation>
@@ -344,6 +347,7 @@
 <translation id="5871497086027727873">ഒരിനം നീക്കി</translation>
 <translation id="5897956970858271241">പകർത്തിയ ലിങ്ക് സന്ദർശിക്കുക</translation>
 <translation id="5911030830365207728">Google വിവർത്തനം</translation>
+<translation id="5913600720976431809">പേജ് വിവർത്തനം ചെയ്യാനുള്ള ഓപ്ഷനുകൾ</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="5938160824633642847">ഉപകരണത്തിന്റെ സ്‌റ്റോറേജ് ഏകദേശം നിറഞ്ഞു. കുറച്ച് ഇടം സൃഷ്ടിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5948291296578561264">നിങ്ങളുടെ ഫോട്ടോ ലൈബ്രറിയിലേക്ക് ഫോട്ടോകൾ സംരക്ഷിക്കാൻ അനുവദിക്കുന്നു.</translation>
@@ -375,6 +379,7 @@
 <translation id="6219688215832490856">ഒരിക്കലും വിവർത്തനം ചെയ്യരുത്</translation>
 <translation id="6254066287920239840">ബ്രൗസറിന് പകരം ആപ്പിൽ ലിങ്കുകൾ തുറക്കുക.</translation>
 <translation id="6255097610484507482">ക്രെഡിറ്റ് കാര്‍ഡ് എഡിറ്റ് ചെയ്യുക</translation>
+<translation id="6284652193729350524"><ph name="LANGUAGE" /> വിവർത്തനം ചെയ്യാനുള്ള നിർദ്ദേശം</translation>
 <translation id="6303969859164067831">സൈൻ ഔട്ട് ചെയ്‌ത് സമന്വയം ഓഫാക്കുക</translation>
 <translation id="6308436439357671616">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡ് ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="6324528485781869530">സമന്വയ അക്കൗണ്ട് മാറുക</translation>
@@ -429,11 +434,13 @@
 <translation id="6903907808598579934">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="6914583639806229067">നിങ്ങൾ പകർത്തിയ ചിത്രം തിരയുക</translation>
 <translation id="6914783257214138813">എക്‌സ്പോർട്ട് ചെയ്ത ഫയൽ കാണാനാകുന്ന ഏതൊരാൾക്കും നിങ്ങളുടെ പാസ്‌വേഡും കാണാനാകും.</translation>
+<translation id="6930799952781667037">ഈ ഭാഷയിലേക്ക് മാറ്റാൻ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="6944369514868857500">മറ്റൊരു അക്കൗണ്ട് തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6973630695168034713">ഫോൾഡറുകൾ</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
 <translation id="6988572888918530647">നിങ്ങളുടെ Google അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
+<translation id="6995899638241819463">പാസ്‌വേഡുകൾ, ഡാറ്റാ ലംഘനത്തിന്റെ ഭാഗമായി വെളിപ്പെട്ടാൽ നിങ്ങൾക്ക് മുന്നറിയിപ്പ് നൽകുന്നു</translation>
 <translation id="6998989275928107238">സ്വീകര്‍ത്താവ്</translation>
 <translation id="7004499039102548441">സമീപകാല ടാബുകൾ</translation>
 <translation id="7006788746334555276">ഉള്ളടക്ക ക്രമീകരണങ്ങള്‍‌</translation>
@@ -458,6 +465,7 @@
 <translation id="7293171162284876153">സമന്വയം ആരംഭിക്കാൻ, "നിങ്ങളുടെ Chrome ഡാറ്റാ സമന്വയിപ്പിക്കൽ" ഓണാക്കുക.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ശതമാനം ഡൗൺലോഡുചെയ്‌തു</translation>
 <translation id="7346909386216857016">മനസ്സിലായി!</translation>
+<translation id="734758817008927353">കാർഡ് സംരക്ഷിക്കാനുള്ള ഓപ്ഷനുകൾ</translation>
 <translation id="7348502496356775519">ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="7383797227493018512">വായനാ ലിസ്‌റ്റ്</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@
 <translation id="7671141431838911305">ഇൻസ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
+<translation id="7781011649027948662">പേജ് വിവർത്തനം ചെയ്യണോ?</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="778855399387580014">പുതിയ Chrome ടാബിൽ തിരയൽ ആരംഭിക്കുക.</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>

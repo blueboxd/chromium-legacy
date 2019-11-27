@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_consumer.h"
+#import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -87,6 +88,10 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
   OpenNewTabCommand* newTabCommand =
       [OpenNewTabCommand commandWithURLFromChrome:GetPasswordCheckupURL()];
   [self.dispatcher openURLInNewTab:newTabCommand];
+}
+
+- (void)passwordBreachLearnMoreAction {
+  [self.presenter presentLearnMore];
 }
 
 @end

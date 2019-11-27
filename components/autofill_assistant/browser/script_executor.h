@@ -209,9 +209,10 @@ class ScriptExecutor : public ActionDelegate,
   void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   const ClientSettings& GetSettings() override;
-  bool SetForm(std::unique_ptr<FormProto> form,
-               base::RepeatingCallback<void(const FormProto::Result*)> callback)
-      override;
+  bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   void RequireUI() override;
 
  private:

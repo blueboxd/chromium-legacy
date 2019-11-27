@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.config.Configuration;
-import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -441,24 +440,24 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD, true));
         Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
-                        ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
+                        ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0L));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
         Assert.assertEquals((long) FeedConfiguration.MAXIMUM_GC_ATTEMPTS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 0l));
+                configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 0L));
         Assert.assertEquals((long) FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
         Assert.assertEquals((long) FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals((long) FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
+                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0L));
         Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_DELAY_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0l));
+                configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0L));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0l));
+                configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0L));
         Assert.assertEquals((long) FeedConfiguration.STORAGE_MISS_THRESHOLD_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0l));
+                configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0L));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertFalse(

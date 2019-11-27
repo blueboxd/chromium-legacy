@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Vnesite številko.</translation>
 <translation id="4912536737030637138">bibliografski vnos</translation>
+<translation id="492244087561876220">komentar</translation>
 <translation id="4975562563186953947">Št. izbranih: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Vklopi zvok</translation>
 <translation id="49969490063480558">Vnesite nekaj po znaku »<ph name="ATSIGN" />«. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="901493112792887934">trenutni čas v sekundah</translation>
 <translation id="901834265349196618">e-pošta</translation>
+<translation id="9023835124071926463">razdelek s komentarji</translation>
 <translation id="9048119486235211610">krmarjenje</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">zapiranje načina slike v sliki</translation>

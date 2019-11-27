@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -18,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
@@ -163,8 +165,11 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
                 fromX, toX, fromY, toY, Animation.ABSOLUTE, pivotX, Animation.ABSOLUTE, pivotY);
 
         long duration = isEnterAnimation ? ENTER_ANIMATION_DURATION_MS : EXIT_ANIMATION_DURATION_MS;
+        float durationScale =
+                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.Global.ANIMATOR_DURATION_SCALE, 1f);
 
-        animation.setDuration(duration);
+        animation.setDuration((long) (duration * durationScale));
         animation.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         return animation;
     }

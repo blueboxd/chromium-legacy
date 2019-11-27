@@ -229,8 +229,6 @@ public class SiteSettingsPreferencesTest {
      * Tests that the Preferences designated by keys in |expectedKeys|, and only
      * these preferences, will be shown for the category specified by |type|. The
      * order of Preferences matters.
-     *
-     * @throws Exception
      */
     private void checkPreferencesForCategory(
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
@@ -258,8 +256,6 @@ public class SiteSettingsPreferencesTest {
         });
         preferenceActivity.finish();
     }
-
-    // TODO(finnur): Write test for Autoplay.
 
     /**
      * Tests that disabling cookies turns off the third-party cookie toggle.
@@ -431,37 +427,6 @@ public class SiteSettingsPreferencesTest {
     }
 
     /**
-     * Test the Media Menu.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testMediaMenu() {
-        final Preferences preferenceActivity =
-                SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SiteSettingsPreferences siteSettings =
-                    (SiteSettingsPreferences) preferenceActivity.getMainFragment();
-
-            SiteSettingsPreference allSites = (SiteSettingsPreference) siteSettings.findPreference(
-                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));
-            Assert.assertEquals(null, allSites);
-
-            SiteSettingsPreference autoplay = (SiteSettingsPreference) siteSettings.findPreference(
-                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.AUTOPLAY));
-            Assert.assertFalse(autoplay == null);
-
-            SiteSettingsPreference protectedContent =
-                    (SiteSettingsPreference) siteSettings.findPreference(
-                            SiteSettingsCategory.preferenceKey(
-                                    SiteSettingsCategory.Type.PROTECTED_MEDIA));
-            Assert.assertFalse(protectedContent == null);
-
-            preferenceActivity.finish();
-        });
-    }
-
-    /**
      * Tests that only expected Preferences are shown for a category.
      */
     @Test
@@ -469,7 +434,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(20, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -483,8 +448,6 @@ public class SiteSettingsPreferencesTest {
         testCases.put(SiteSettingsCategory.Type.ADS, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.ALL_SITES, new Pair<>(nullArray, nullArray));
         testCases.put(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS,
-                new Pair<>(binaryToggleWithException, binaryToggle));
-        testCases.put(SiteSettingsCategory.Type.AUTOPLAY,
                 new Pair<>(binaryToggleWithException, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.BACKGROUND_SYNC,
                 new Pair<>(binaryToggleWithException, binaryToggle));

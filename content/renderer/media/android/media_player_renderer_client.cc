@@ -63,11 +63,12 @@ void MediaPlayerRendererClient::Initialize(
   // Closure it has before destroying itself on |compositor_task_runner_|,
   // and |this| is garanteed to live until the Closure has been reset.
   stream_texture_wrapper_->Initialize(
-      base::Bind(&MediaPlayerRendererClient::OnFrameAvailable,
-                 base::Unretained(this)),
+      base::BindRepeating(&MediaPlayerRendererClient::OnFrameAvailable,
+                          base::Unretained(this)),
       gfx::Size(1, 1), compositor_task_runner_,
-      base::Bind(&MediaPlayerRendererClient::OnStreamTextureWrapperInitialized,
-                 weak_factory_.GetWeakPtr(), media_resource));
+      base::BindOnce(
+          &MediaPlayerRendererClient::OnStreamTextureWrapperInitialized,
+          weak_factory_.GetWeakPtr(), media_resource));
 }
 
 void MediaPlayerRendererClient::SetCdm(media::CdmContext* cdm_context,
@@ -88,8 +89,8 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
 
   MojoRendererWrapper::Initialize(
       media_resource, client_,
-      base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaPlayerRendererClient::OnScopedSurfaceRequested(
@@ -111,8 +112,8 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
     // TODO(tguilbert): Measure and smooth out the initialization's ordering to
     // have the lowest total initialization time.
     renderer_extension_remote_->InitiateScopedSurfaceRequest(
-        base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
+                       weak_factory_.GetWeakPtr()));
 
     // Signal that we're using MediaPlayer so that we can properly differentiate
     // within our metrics.

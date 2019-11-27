@@ -6,20 +6,21 @@ import './strings.m.js';
 import './item.js';
 import './toolbar.js';
 import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
-import {CrToastManagerElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
 import {States} from './constants.js';
@@ -142,6 +143,10 @@ Polymer({
     });
 
     this.searchService_.loadMore();
+
+    afterNextRender(this, function() {
+      IronA11yAnnouncer.requestAvailability();
+    });
   },
 
   /** @override */
@@ -202,7 +207,6 @@ Polymer({
                 state != States.IN_PROGRESS && state != States.PAUSED);
 
     if (this.inSearchMode_) {
-      IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
         text: this.items_.length == 0 ?
             this.noDownloadsText_() :
@@ -254,14 +258,6 @@ Polymer({
     }
   },
 
-  /**
-   * @return {!CrToastManagerElement}
-   * @private
-   */
-  getToastManagerInstance_: function() {
-    return /** @type {!CrToastManagerElement} */ (this.$$('cr-toast-manager'));
-  },
-
   /** @private */
   onClearAllCommand_() {
     if (!this.$.toolbar.canClearAll()) {
@@ -269,8 +265,10 @@ Polymer({
     }
 
     this.mojoHandler_.clearAll();
-    this.getToastManagerInstance_().show(
-        loadTimeData.getString('toastClearedAll'), true);
+    getToastManager().show(loadTimeData.getString('toastClearedAll'));
+    this.fire('iron-announce', {
+      text: loadTimeData.getString('undoDescription'),
+    });
   },
 
   /** @private */
@@ -279,7 +277,7 @@ Polymer({
       return;
     }
 
-    this.getToastManagerInstance_().hide();
+    getToastManager().hide();
     this.mojoHandler_.undo();
   },
 
@@ -319,7 +317,7 @@ Polymer({
 
   /** @private */
   onUndoClick_: function() {
-    this.getToastManagerInstance_().hide();
+    getToastManager().hide();
     this.mojoHandler_.undo();
   },
 

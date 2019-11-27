@@ -96,8 +96,8 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
 void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
   if (ShouldShowTooltipForView(view)) {
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timer_delay_),
-                 base::Bind(&ShelfTooltipManager::ShowTooltip,
-                            weak_factory_.GetWeakPtr(), view));
+                 base::BindOnce(&ShelfTooltipManager::ShowTooltip,
+                                weak_factory_.GetWeakPtr(), view));
   }
 }
 

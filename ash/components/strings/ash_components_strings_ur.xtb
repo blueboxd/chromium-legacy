@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> یا <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">مجموعی جائزہ کی وضع</translation>
 <translation id="4382340674111381977">پچھلے صفحہ پر جائيں</translation>
+<translation id="4458670250301149821">ایپ گرڈ میں کسی فولڈر میں/سے باہر ایپ آئیکن منتقل کریں</translation>
 <translation id="4472417192667361414">سسٹم اور ڈسپلے کی ترتیبات</translation>
+<translation id="449214506787633354"><ph name="CTRL" />، پھر<ph name="LEFT" /> یا <ph name="RIGHT" /> یا <ph name="UP" /> یا <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">'کی بورڈ شارٹ کٹ مددگار' دیکھیں</translation>
 <translation id="4628718545549558538">اسٹیٹس ایریا کھولیں (جہاں آپ کے اکاؤنٹ کی تصویر نظر آتی ہے)</translation>
 <translation id="4642092649622328492">جزوی اسکرین شاٹ لیں</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">اگلا حرف حذف کریں (آگے سے حذف کریں)</translation>
 <translation id="7500368597227394048">ہائفن</translation>
 <translation id="7611271430932669992">فوکس پوپ اپس اور ڈائیلاگز پر منتقل کریں</translation>
+<translation id="7635348532214572995">ایپ گرڈ کے آس پاس ایپ آئیکن منتقل کریں</translation>
 <translation id="766326951329901120">کلپ بورڈ کے مواد کو سادہ متن کے طور پر پیسٹ کریں</translation>
 <translation id="7703010453515335249">بایاں بریکٹ</translation>
 <translation id="7724603315864178912">کٹ کریں</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">کلپ بورڈ کا مواد پیسٹ کریں</translation>
 <translation id="9052808072970550123">اگلے صارف پر سوئچ کریں</translation>
 <translation id="906458777597946297">ونڈو کو انتہا تک بڑا کریں</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />، پھر<ph name="LEFT" /> یا<ph name="RIGHT" /> یا <ph name="UP" /> یا<ph name="DOWN" /></translation>
 <translation id="9091855755813503076">لائن کے آغاز پر جائیں</translation>
 <translation id="9106898733795143799">صفحہ اور ویب براؤزر</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> کا کوئی تلاش نتیجہ نہیں</translation>

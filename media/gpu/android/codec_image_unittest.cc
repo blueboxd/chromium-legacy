@@ -414,4 +414,13 @@ TEST_F(CodecImageTest, GetAHardwareBufferAfterRelease) {
   EXPECT_FALSE(i->GetAHardwareBuffer());
 }
 
+TEST_F(CodecImageTest, GetCropRect) {
+  auto i = NewImage(kTextureOwner);
+  EXPECT_EQ(
+      codec_buffer_wait_coordinator_->texture_owner()->get_crop_rect_count, 0);
+  i->GetCropRect();
+  EXPECT_EQ(
+      codec_buffer_wait_coordinator_->texture_owner()->get_crop_rect_count, 1);
+}
+
 }  // namespace media

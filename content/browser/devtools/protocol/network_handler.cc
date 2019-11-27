@@ -329,37 +329,6 @@ String resourcePriority(net::RequestPriority priority) {
   return Network::ResourcePriorityEnum::Medium;
 }
 
-String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
-  switch (referrer_policy) {
-    case network::mojom::ReferrerPolicy::kAlways:
-      return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
-    case network::mojom::ReferrerPolicy::kDefault:
-      if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
-        return Network::Request::ReferrerPolicyEnum::
-            StrictOriginWhenCrossOrigin;
-      } else {
-        return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-      }
-    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-      return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-    case network::mojom::ReferrerPolicy::kNever:
-      return Network::Request::ReferrerPolicyEnum::NoReferrer;
-    case network::mojom::ReferrerPolicy::kOrigin:
-      return Network::Request::ReferrerPolicyEnum::Origin;
-    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-      return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
-    case network::mojom::ReferrerPolicy::kSameOrigin:
-      return Network::Request::ReferrerPolicyEnum::SameOrigin;
-    case network::mojom::ReferrerPolicy::kStrictOrigin:
-      return Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
-  }
-  NOTREACHED();
-  return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-}
-
 String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
   switch (referrer_policy) {
     case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
@@ -377,6 +346,32 @@ String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
       return Network::Request::ReferrerPolicyEnum::NoReferrer;
     default:
       break;
+  }
+  NOTREACHED();
+  return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
+}
+
+String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
+  switch (referrer_policy) {
+    case network::mojom::ReferrerPolicy::kAlways:
+      return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
+    case network::mojom::ReferrerPolicy::kDefault:
+      return referrerPolicy(content::Referrer::GetDefaultReferrerPolicy());
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
+      return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
+    case network::mojom::ReferrerPolicy::kNever:
+      return Network::Request::ReferrerPolicyEnum::NoReferrer;
+    case network::mojom::ReferrerPolicy::kOrigin:
+      return Network::Request::ReferrerPolicyEnum::Origin;
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
+      return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
+    case network::mojom::ReferrerPolicy::kSameOrigin:
+      return Network::Request::ReferrerPolicyEnum::SameOrigin;
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
+      return Network::Request::ReferrerPolicyEnum::StrictOrigin;
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
   }
   NOTREACHED();
   return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;

@@ -556,7 +556,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">استخدام <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">فتح قفل الجهاز بواسطة <ph name="LOGIN_ID" /> لتنفيذ إجراء الإشعارات</translation>
-<translation id="8995603266996330174">مدار بواسطة <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">‏يُرجى إدخال رمز الدخول المخصّص للوالدين في Family Link.</translation>
 <translation id="9029474291399787231">‏هناك تحديث جديد لتطبيق Adobe Flash Player</translation>
 <translation id="9056839673611986238">‏سيتم إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك.</translation>
@@ -573,6 +572,7 @@
 <translation id="9183456764293710005">المكبِّر بملء الشاشة</translation>
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
+<translation id="9205817095063786319">جهاز مُدار من خلال <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>

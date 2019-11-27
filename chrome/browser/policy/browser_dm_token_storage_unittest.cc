@@ -115,7 +115,7 @@ TEST_F(BrowserDMTokenStorageTest, RetrieveEnrollmentToken) {
 TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, StoreDMToken) {
   storage_.SetDMToken(GetParam().dm_token_to_store);
   DMToken dm_token = storage_.RetrieveDMToken();
-  if (GetParam().expect_valid || GetParam().expect_empty) {
+  if (GetParam().expect_valid) {
     EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
   }
   EXPECT_EQ(GetParam().expect_valid, dm_token.is_valid());
@@ -124,7 +124,7 @@ TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, StoreDMToken) {
 
   // The DM token should be cached in memory and not read from the system again.
   storage_.SetDMToken("not_saved");
-  if (GetParam().expect_valid || GetParam().expect_empty) {
+  if (GetParam().expect_valid) {
     EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
   }
 }
@@ -153,7 +153,7 @@ TEST_F(BrowserDMTokenStorageTest, ClearDMToken) {
 
 TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, RetrieveDMToken) {
   DMToken dm_token = storage_.RetrieveDMToken();
-  if (GetParam().expect_valid || GetParam().expect_empty) {
+  if (GetParam().expect_valid) {
     EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
   }
   EXPECT_EQ(GetParam().expect_valid, dm_token.is_valid());

@@ -29,7 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 
-using blink::mojom::IdleManagerPtr;
 using blink::mojom::IdleMonitorPtr;
 using ::testing::_;
 using ::testing::InSequence;

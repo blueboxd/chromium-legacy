@@ -192,7 +192,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
     auto month = std::make_unique<views::Combobox>(&month_combobox_model_);
     month->set_listener(this);
     month->SetID(static_cast<int>(DialogViewID::CVC_MONTH));
-    month->SelectValue(credit_card_.ExpirationMonthAsString());
+    month->SelectValue(credit_card_.Expiration2DigitMonthAsString());
     month->SetInvalid(true);
     layout->AddView(std::move(month));
 

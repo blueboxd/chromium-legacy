@@ -10,8 +10,6 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
-#include "cc/animation/keyframe_model.h"
-#include "cc/paint/element_id.h"
 #include "cc/trees/mutator_host.h"
 
 namespace cc {
@@ -19,14 +17,23 @@ namespace cc {
 struct CC_ANIMATION_EXPORT AnimationEvent {
   enum Type { STARTED, FINISHED, ABORTED, TAKEOVER, TIME_UPDATED };
 
+  typedef size_t KeyframeEffectId;
+  struct UniqueKeyframeModelId {
+    int timeline_id;
+    int animation_id;
+    KeyframeEffectId effect_id;
+    int model_id;
+  };
+
   AnimationEvent(Type type,
-                 ElementId element_id,
+                 UniqueKeyframeModelId uid,
                  int group_id,
                  int target_property,
                  base::TimeTicks monotonic_time);
 
   // Constructs AnimationEvent of TIME_UPDATED type.
-  AnimationEvent(WorkletAnimationId worklet_animation_id,
+  AnimationEvent(int timeline_id,
+                 int animation_id,
                  base::Optional<base::TimeDelta> local_time);
 
   AnimationEvent(const AnimationEvent& other);
@@ -34,13 +41,10 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
 
   ~AnimationEvent();
 
+  bool ShouldDispatchToKeyframeEffectAndModel() const;
+
   Type type;
-  // Either element_id or worklet_animation_id are set. worklet_animation_id is
-  // set for TIME_UPDATED event types, element_id is set for other events.
-  // TODO(http://crbug.com/1013727): Make all animation events use animation id
-  // to do targeting;
-  ElementId element_id;
-  WorkletAnimationId worklet_animation_id;
+  UniqueKeyframeModelId uid;
   int group_id;
   int target_property;
   base::TimeTicks monotonic_time;

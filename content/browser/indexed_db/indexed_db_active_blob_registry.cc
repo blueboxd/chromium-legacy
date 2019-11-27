@@ -54,14 +54,13 @@ bool IndexedDBActiveBlobRegistry::MarkBlobInfoDeletedAndCheckIfReferenced(
   return true;
 }
 
-IndexedDBBlobInfo::ReleaseCallback
-IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
-                                                     int64_t blob_number) {
+base::RepeatingClosure IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(
+    int64_t database_id,
+    int64_t blob_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::BindRepeating(
-      &IndexedDBActiveBlobRegistry::MarkBlobInactiveThreadSafe,
-      base::SequencedTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(),
-      database_id, blob_number);
+  return base::BindRepeating(&IndexedDBActiveBlobRegistry::MarkBlobInactive,
+                             weak_factory_.GetWeakPtr(), database_id,
+                             blob_number);
 }
 
 base::RepeatingClosure IndexedDBActiveBlobRegistry::GetMarkBlobActiveCallback(
@@ -143,17 +142,6 @@ void IndexedDBActiveBlobRegistry::MarkBlobInactive(int64_t database_id,
     report_unused_blob_.Run(database_id, blob_number);
   if (blob_reference_tracker_.empty())
     report_outstanding_blobs_.Run(false);
-}
-
-void IndexedDBActiveBlobRegistry::MarkBlobInactiveThreadSafe(
-    scoped_refptr<base::TaskRunner> task_runner,
-    base::WeakPtr<IndexedDBActiveBlobRegistry> weak_ptr,
-    int64_t database_id,
-    int64_t blob_number,
-    const base::FilePath& unused) {
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&IndexedDBActiveBlobRegistry::MarkBlobInactive,
-                                std::move(weak_ptr), database_id, blob_number));
 }
 
 }  // namespace content

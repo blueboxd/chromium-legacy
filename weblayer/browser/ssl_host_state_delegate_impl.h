@@ -56,7 +56,7 @@ class SSLHostStateDelegateImpl : public content::SSLHostStateDelegate {
                  int error) override;
 
   void Clear(
-      const base::Callback<bool(const std::string&)>& host_filter) override;
+      base::RepeatingCallback<bool(const std::string&)> host_filter) override;
 
   // content::SSLHostStateDelegate:
   content::SSLHostStateDelegate::CertJudgment QueryPolicy(

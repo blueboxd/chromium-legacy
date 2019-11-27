@@ -26,10 +26,10 @@
 <dom-module id="discover-pin-setup-module">
   <template>
     <link rel="stylesheet" href="../../oobe_dialog_host.css">
+    <link rel="stylesheet" href="../../oobe_flex_layout.css">
     <style include="iron-flex iron-flex-alignment iron-positioning
                     cr-shared-style">
     </style>
-    <link rel="stylesheet" href="../../oobe_iron_flex_layout_fix.css">
     <style include="settings-shared"></style>
     <link rel="stylesheet" href="discover_module_pin_setup.css">
     <oobe-dialog id="loading" role="dialog" no-header no-footer-padding
@@ -72,6 +72,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="setup" role="dialog" has-buttons
+        footer-shrinkable="[[!isStepHidden_(step_, 'done')]]"
         hidden="[[isPinSetupHidden_(step_)]]">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:lock"
           icon2x="oobe-64:lock">
@@ -96,21 +97,23 @@
           [[i18nDynamic(locale, 'discoverPinSetupSubtitle3WithLogin')]]<br>
         </div>
       </div>
-      <div slot="footer" class="flex layout horizontal center center-justified">
-          <setup-pin-keyboard id="pinKeyboard"
-              hidden="[[!isStepHidden_(step_, 'done')]]"
-              enable-submit="{{enableSubmit_}}"
-              is-confirm-step="{{isConfirmStep_}}"
-              on-pin-submit="onPinSubmit_"
-              on-set-pin-done="onSetPinDone_"
-              set-modes="{{setModes}}"
-              quick-unlock-private="[[quickUnlockPrivate_]]"
-              write-uma="[[writeUma_]]"
-              class="focus-on-show"
-              is-incognito-ui>
-          </setup-pin-keyboard>
-        <img id="done-illustration" hidden="[[isStepHidden_(step_, 'done')]]"
-            class="oobe-illustration"
+      <div slot="footer" class="flex-grow layout vertical center
+          center-justified" hidden="[[!isStepHidden_(step_, 'done')]]">
+        <setup-pin-keyboard id="pinKeyboard"
+            enable-submit="{{enableSubmit_}}"
+            is-confirm-step="{{isConfirmStep_}}"
+            on-pin-submit="onPinSubmit_"
+            on-set-pin-done="onSetPinDone_"
+            set-modes="{{setModes}}"
+            quick-unlock-private="[[quickUnlockPrivate_]]"
+            write-uma="[[writeUma_]]"
+            class="focus-on-show"
+            is-incognito-ui>
+        </setup-pin-keyboard>
+      </div>
+      <div slot="footer" class="flex layout vertical center
+          center-justified" hidden="[[isStepHidden_(step_, 'done')]]">
+        <img id="done-illustration" class="oobe-illustration"
             srcset="images/pin_illustration_1x.svg 1x,
                     images/pin_illustration_2x.svg 2x">
       </div>

@@ -186,3 +186,8 @@ accessibility event - one you're unlikely to generate in your test. It uses
 that event to know when to "stop" dumping events. There isn't currently a
 way to test events that occur after some delay, just ones that happen as
 a direct result of calling `go()`.
+
+### Duplicate Events on UIA
+Windows will "translate" some IA2 events to UIA, and it is not
+possible to turn this feature off. Therefore as our UIA behavior is in addition
+to IA2, we will receive duplicated events for Focus, MenuOpened and MenuClosed.

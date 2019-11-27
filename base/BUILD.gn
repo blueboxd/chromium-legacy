@@ -1602,18 +1602,18 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:fdio",
       "//third_party/fuchsia-sdk/sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk/sdk:io",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:zx",
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:async_default",
-      "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
-      "//third_party/fuchsia-sdk/sdk:async_loop_default",
-      "//third_party/fuchsia-sdk/sdk:deprecatedtimezone",
+      "//third_party/fuchsia-sdk/sdk:async-default",
+      "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
+      "//third_party/fuchsia-sdk/sdk:async-loop-default",
       "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:syslog",
       "//third_party/fuchsia-sdk/sdk:vfs_cpp",
     ]
@@ -3052,10 +3052,10 @@ test("base_unittests") {
       ":test_interface_impl",
       ":testfidl",
       "//third_party/fuchsia-sdk/sdk:async",
-      "//third_party/fuchsia-sdk/sdk:async_default",
+      "//third_party/fuchsia-sdk/sdk:async-default",
       "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:logger",
-      "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
     ]
 

@@ -35,12 +35,16 @@ import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
+import org.chromium.weblayer.NewTabCallback;
+import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,12 +56,12 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     private Profile mProfile;
     private Browser mBrowser;
-    private Tab mTab;
     private EditText mUrlView;
     private ProgressBar mLoadProgressBar;
     private View mMainView;
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
+    private List<Tab> mPreviousTabList = new ArrayList<>();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -133,7 +137,46 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowser = Browser.fromFragment(fragment);
-        mBrowser.getActiveTab().setFullscreenCallback(new FullscreenCallback() {
+        mBrowser.registerTabListCallback(new TabListCallback() {
+            @Override
+            public void onActiveTabChanged(Tab activeTab) {
+                NavigationController navigationController = activeTab.getNavigationController();
+                if (navigationController.getNavigationListSize() > 0) {
+                    mUrlView.setText(
+                            navigationController
+                                    .getNavigationEntryDisplayUri(
+                                            navigationController.getNavigationListCurrentIndex())
+                                    .toString());
+                }
+            }
+        });
+        setTabCallbacks(mBrowser.getActiveTab(), fragment);
+        mProfile = mBrowser.getProfile();
+
+        mBrowser.setTopView(mTopContentsContainer);
+
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (TextUtils.isEmpty(startupUrl)) {
+            startupUrl = "https://google.com";
+        }
+        loadUrl(startupUrl);
+    }
+
+    private void setTabCallbacks(Tab tab, Fragment fragment) {
+        tab.setNewTabCallback(new NewTabCallback() {
+            @Override
+            public void onNewTab(Tab newTab, @NewTabType int type) {
+                setTabCallbacks(newTab, fragment);
+                mPreviousTabList.add(mBrowser.getActiveTab());
+                mBrowser.setActiveTab(newTab);
+            }
+
+            @Override
+            public void onCloseTab() {
+                closeTab(tab);
+            }
+        });
+        tab.setFullscreenCallback(new FullscreenCallback() {
             private int mSystemVisibilityToRestore;
 
             @Override
@@ -167,23 +210,13 @@ public class WebLayerShellActivity extends FragmentActivity {
                 }
             }
         });
-        mProfile = mBrowser.getProfile();
-
-        mBrowser.setTopView(mTopContentsContainer);
-
-        mTab = mBrowser.getActiveTab();
-        String startupUrl = getUrlFromIntent(getIntent());
-        if (TextUtils.isEmpty(startupUrl)) {
-            startupUrl = "https://google.com";
-        }
-        loadUrl(startupUrl);
-        mTab.registerTabCallback(new TabCallback() {
+        tab.registerTabCallback(new TabCallback() {
             @Override
             public void onVisibleUriChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });
-        mTab.getNavigationController().registerNavigationCallback(new NavigationCallback() {
+        tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {
             @Override
             public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mLoadProgressBar.setVisibility(
@@ -195,7 +228,7 @@ public class WebLayerShellActivity extends FragmentActivity {
                 mLoadProgressBar.setProgress((int) Math.round(100 * progress));
             }
         });
-        mTab.setDownloadCallback(new DownloadCallback() {
+        tab.setDownloadCallback(new DownloadCallback() {
             @Override
             public void onDownloadRequested(Uri uri, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {
@@ -205,13 +238,21 @@ public class WebLayerShellActivity extends FragmentActivity {
                 getSystemService(DownloadManager.class).enqueue(request);
             }
         });
-        mTab.setErrorPageCallback(new ErrorPageCallback() {
+        tab.setErrorPageCallback(new ErrorPageCallback() {
             @Override
             public boolean onBackToSafety() {
                 fragment.getActivity().onBackPressed();
                 return true;
             }
         });
+    }
+
+    private void closeTab(Tab tab) {
+        mPreviousTabList.remove(tab);
+        if (mBrowser.getActiveTab() == tab && !mPreviousTabList.isEmpty()) {
+            mBrowser.setActiveTab(mPreviousTabList.remove(mPreviousTabList.size() - 1));
+        }
+        mBrowser.destroyTab(tab);
     }
 
     private Fragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
@@ -240,7 +281,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     public void loadUrl(String url) {
-        mTab.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+        mBrowser.getActiveTab().getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
         mUrlView.clearFocus();
     }
 
@@ -273,6 +314,9 @@ public class WebLayerShellActivity extends FragmentActivity {
             NavigationController controller = mBrowser.getActiveTab().getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();
+                return;
+            } else if (!mPreviousTabList.isEmpty()) {
+                closeTab(mBrowser.getActiveTab());
                 return;
             }
         }

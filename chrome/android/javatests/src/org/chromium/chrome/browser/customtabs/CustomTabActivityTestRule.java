@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CallbackHelper;
@@ -87,10 +85,5 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
         Assert.assertTrue(TabTestUtils.isCustomTab(tab));
-    }
-
-    @Override
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
     }
 }

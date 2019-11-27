@@ -934,7 +934,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2326931316514688470">&amp;Reîncarcă aplicația</translation>
 <translation id="2327492829706409234">Activați aplicația</translation>
 <translation id="2329597144923131178">Conectează-te și accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
-<translation id="2330129964253841015">Avertizează-mă dacă parolele au fost compromise</translation>
 <translation id="2332131598580221120">Vedeți în magazin</translation>
 <translation id="2332192922827071008">Deschide Preferințele</translation>
 <translation id="2332742915001411729">Resetați la valorile prestabilite</translation>
@@ -4099,6 +4098,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6990778048354947307">Temă în culori întunecate</translation>
 <translation id="6991665348624301627">Selectați o destinație</translation>
 <translation id="6992554835374084304">Activează verificarea îmbunătățită a ortografiei</translation>
+<translation id="6995899638241819463">Avertizează-mă dacă parolele au fost expuse în urma încălcării securității datelor</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - Jurnalul de activități</translation>
 <translation id="6997707937646349884">Pe dispozitivele tale:</translation>
 <translation id="6998793565256476099">Înscrie dispozitivul pentru conferințe video</translation>

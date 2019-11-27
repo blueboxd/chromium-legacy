@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_OOBE_DIALOG_SIZE_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_OOBE_DIALOG_SIZE_UTILS_H_
 
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -20,6 +21,11 @@ enum class OobeDialogPaddingMode {
   // Oobe dialog is positioned in limited space and should use narrow padding.
   PADDING_NARROW
 };
+
+// Exposed for testing.
+extern const gfx::Size kMaxDialogSize;
+extern const gfx::Size kMinDialogSize;
+extern const gfx::Insets kMinMargins;
 
 // Position OOBE dialog according to specs inside |host_bounds| excluding shelf.
 // |host_bounds| is in coordinates of oobe dialog widget. |result| is

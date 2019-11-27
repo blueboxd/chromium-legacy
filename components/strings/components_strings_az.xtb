@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Daha çox göstərin</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Parolunuzu dəyişin</translation>
 <translation id="1484290072879560759">Göndəriş Ünvanı seçin</translation>
 <translation id="1492194039220927094">Siyasət bildirişləri:</translation>
 <translation id="1501859676467574491">Google Hesabındakı kartları göstərin</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sistem admini ilə əlaqə yaratmağa çalışın.</translation>
 <translation id="1736420071277903564">Kompüter</translation>
-<translation id="1739107442478692187">İstifadə etdiyiniz sayt və ya tətbiqdə data pozulması baş verdi. Chrome <ph name="ORIGIN" /> ünvanında yadda saxlanılan parolları yoxlamağı və parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="1740951997222943430">Düzgün bitmə ayı daxil edin</translation>
 <translation id="1741613555002899862">Təyin edilməli və DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> olduqda, doğru dəyər olmalıdır.</translation>
 <translation id="1743520634839655729">Növbəti dəfə daha sürətli ödəniş etmək üçün kartı, adı və faktura ünvanını Google Hesabınızda və bu cihazda yadda saxlayın.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Faylların Açılması</translation>
 <translation id="1915697529809968049">CVC əvəzinə Toxunuş ID-i istifadə edilsin?</translation>
 <translation id="1916770123977586577">Yenilənən ayarları bu sayta tətbiq etmək üçün səhifəni təkrar yükləyin</translation>
+<translation id="1917876262703816781">Sayt və ya tətbiqdə data pozulması parolunuzun açıqlanmasına səbəb oldu. Chrome dərhal <ph name="ORIGIN" /> ünvanında parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919367280705858090">Spesifik xəta mesajı ilə bağlı yardım əldə edin</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yoxdur}=1{1 sayt}other{# sayt}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domen uyğunsuzluğu</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2099652385553570808">Soldan üçlü ştapel vurun</translation>
-<translation id="2100280972184758440">Parolunuz ələ keçirilib</translation>
 <translation id="2102134110707549001">Güclü Parol Təklif Edin...</translation>
 <translation id="2108755909498034140">Kompüteri yenidən başladın</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tərəfindən əvəzləndiyi üçün iqnor edin.</translation>
 <translation id="2119505898009119320">Verildi: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Aşağı sağdan deşik açmaq</translation>
-<translation id="2124528555835617522">İstifadə etdiyiniz sayt və ya tətbiqdə data pozulması baş verdi. Chrome dərhal yadda saxlanılan parollarınızı yoxlamağı tövsiyə edir.</translation>
 <translation id="2129079103035905234">Hərəkət sensorları</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode siyasətinin ayarlanmamasına görə qeyd etdiyiniz şablonlar tətbiq edilməyə bilər.</translation>
 <translation id="213826338245044447">Mobil Əlfəcinlər</translation>
@@ -492,7 +491,6 @@
 <translation id="3282497668470633863">Kart üzərindəki adı daxil edin</translation>
 <translation id="3287510313208355388">Onlayn olarkən endirin</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> siyasəti haqqında ətraflı məlumat əldə edin</translation>
-<translation id="3295439534709115864">İstifadə etdiyiniz sayt və ya tətbiqdə data pozulması baş verdi. Chrome dərhal <ph name="ORIGIN" /> ünvanında parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="3303855915957856445">Heç bir axtarış nəticəsi tapılmadı</translation>
 <translation id="3320021301628644560">Və faktura ünvanı</translation>
 <translation id="3324983252691184275">Tünd-qırmızı</translation>
@@ -904,6 +902,7 @@
 <translation id="5287240709317226393">Kukilərə baxın</translation>
 <translation id="5287456746628258573">Bu sayt vaxtı keçmiş təhlükəsizlik konfiqurasiyasından istifadə edir və bu da sayta göndərilən məlumatınızın (məsələn, parol və ya kredit kartı nömrəsi) yayılmasına səbəb ola bilər.</translation>
 <translation id="5288108484102287882">Siyasət dəyərlərinin doğrulanması haqqında xəbərdarlıq var</translation>
+<translation id="5295292838686006428">Sayt və ya tətbiqdə data pozulması parolunuzun açıqlanmasına səbəb oldu. Chrome dərhal yadda saxlanılan parollarınızı yoxlamağı tövsiyə edir.</translation>
 <translation id="5299298092464848405">Siyasət təhlili xətası</translation>
 <translation id="5300589172476337783">Göstərin</translation>
 <translation id="5308380583665731573">Qoşun</translation>
@@ -954,6 +953,7 @@
 <translation id="5540224163453853">Tələb olunan məqaləni tapmaq alınmadı.</translation>
 <translation id="5541546772353173584">E-poçt Əlavə Edin</translation>
 <translation id="5545756402275714221">Sizin üçün təklif edilən məqalələr</translation>
+<translation id="5552137475244467770">Chrome müntəzəm olaraq onlayn yayımlanan siyahılar əsasında parollarınızı yoxlayır. Bunu edərkən, parollar və istifadəçi adları şifrələnir ki, Google daxil olmaqla, heç kim onları oxuya bilməsin.</translation>
 <translation id="5556459405103347317">Yenidən yükləyin</translation>
 <translation id="5560088892362098740">Bitmə Tarixi</translation>
 <translation id="5565735124758917034">Aktiv</translation>
@@ -1045,6 +1045,7 @@
 <translation id="5992691462791905444">Mühəndislikdə Z-qatlama</translation>
 <translation id="6000758707621254961">"<ph name="SEARCH_TEXT" />" üçün <ph name="RESULT_COUNT" /> nəticə</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Parolları yoxlayın</translation>
 <translation id="6015796118275082299">İl</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Səhifə 1}other{Səhifə #}}</translation>
 <translation id="6017514345406065928">Yaşıl</translation>
@@ -1334,6 +1335,7 @@
 <translation id="7481312909269577407">İrəli</translation>
 <translation id="748406663033922918">Yadda saxlanılan ödəniş metodunu doğrulamaq üçün ekran kilidindən istifadə edin.</translation>
 <translation id="7485870689360869515">Heç bir data tapılmadı.</translation>
+<translation id="7495290002932347110">Sayt və ya tətbiqdə data pozulması parolunuzun açıqlanmasına səbəb oldu. Chrome <ph name="ORIGIN" /> ünvanında yadda saxlanılan parolları yoxlamağı və parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="7498234416455752244">Düzəlişə davam edin</translation>
 <translation id="7508255263130623398">Qaytarılmış qaydalar cihaz İD'si boşdur və ya cari cihaz İD'si ilə üst-üstə düşmür</translation>
 <translation id="7508870219247277067">Avokado Yaşılı</translation>

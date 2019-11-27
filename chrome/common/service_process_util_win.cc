@@ -59,9 +59,8 @@ std::string GetObsoleteServiceProcessAutoRunKey() {
 class ServiceProcessTerminateMonitor
     : public base::win::ObjectWatcher::Delegate {
  public:
-  explicit ServiceProcessTerminateMonitor(const base::Closure& terminate_task)
-      : terminate_task_(terminate_task) {
-  }
+  explicit ServiceProcessTerminateMonitor(base::OnceClosure terminate_task)
+      : terminate_task_(std::move(terminate_task)) {}
   void Start() {
     base::string16 event_name = GetServiceProcessTerminateEventName();
     DCHECK(event_name.length() <= MAX_PATH);
@@ -71,16 +70,14 @@ class ServiceProcessTerminateMonitor
 
   // base::ObjectWatcher::Delegate implementation.
   void OnObjectSignaled(HANDLE object) override {
-    if (!terminate_task_.is_null()) {
-      terminate_task_.Run();
-      terminate_task_.Reset();
-    }
+    if (!terminate_task_.is_null())
+      std::move(terminate_task_).Run();
   }
 
  private:
   base::win::ScopedHandle terminate_event_;
   base::win::ObjectWatcher watcher_;
-  base::Closure terminate_task_;
+  base::OnceClosure terminate_task_;
 };
 
 }  // namespace
@@ -225,15 +222,16 @@ bool ServiceProcessState::TakeSingletonLock() {
 
 bool ServiceProcessState::SignalReady(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& terminate_task) {
+    base::OnceClosure terminate_task) {
   DCHECK(state_);
   DCHECK(state_->ready_event.IsValid());
   if (!SetEvent(state_->ready_event.Get())) {
     return false;
   }
   if (!terminate_task.is_null()) {
-    state_->terminate_monitor.reset(
-        new ServiceProcessTerminateMonitor(terminate_task));
+    state_->terminate_monitor =
+        std::make_unique<ServiceProcessTerminateMonitor>(
+            std::move(terminate_task));
     state_->terminate_monitor->Start();
   }
   return true;

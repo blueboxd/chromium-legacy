@@ -67,7 +67,7 @@ bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
 }
 
 #if defined(OS_WIN)
-// Toggles between IAccessible and UI Automation platform API.
+// Enables UI Automation platform API in addition to the IAccessible API.
 const char kEnableExperimentalUIAutomation[] =
     "enable-experimental-ui-automation";
 #endif

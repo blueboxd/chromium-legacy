@@ -1191,7 +1191,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.settings_entity_id = msg.settings_entity_id
     policy_data.service_account_identity = policy.get(
         'service_account_identity',
-        'policy_testserver.py-service_account_identity')
+        'policy_testserver.py-service_account_identity@gmail.com')
     invalidation_source = policy.get('invalidation_source')
     if invalidation_source is not None:
       policy_data.invalidation_source = invalidation_source

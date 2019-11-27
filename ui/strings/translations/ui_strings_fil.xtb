@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Kaliwa papuntang Kanan</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1398853756734560583">Maximize</translation>
-<translation id="1409544243779336081">Rekomendasyon sa app</translation>
 <translation id="1450753235335490080">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Hinanap mo ito dati. Kapag na-delete ang "<ph name="QUERY" />" sa iyong history, permanente itong aalisin sa account mo sa lahat ng iyong device.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto at }one{# minuto at }other{# na minuto at }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Panahon</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 buwan}one{# buwan}other{# na buwan}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> (na) MB/s</translation>
-<translation id="1812519734428420144">Star na rating <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 oras at }one{# oras at }other{# na oras at }}</translation>
 <translation id="1842960171412779397">piliin</translation>
 <translation id="1859234291848436338">Pagsulat ng Direksyon</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7781829728241885113">Kahapon</translation>
 <translation id="7814458197256864873">&amp;Kopyahin</translation>
+<translation id="7848989271541991537">Inilipat sa Page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Huwag i-block</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
 <translation id="7969046989155602842">Command</translation>

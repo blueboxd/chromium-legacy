@@ -58,6 +58,8 @@ class MojoDataItem : public storage::BlobDataItem::DataHandle {
         return nullptr;
       case mojom::BlobDataItemType::kCacheStorage:
         return "DiskCache.CacheStorage";
+      case mojom::BlobDataItemType::kIndexedDB:
+        return "IndexedDB";
     }
   }
 

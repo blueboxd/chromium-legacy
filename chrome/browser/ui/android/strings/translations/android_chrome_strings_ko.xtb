@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
 <translation id="2323763861024343754">사이트 저장공간</translation>
 <translation id="2328985652426384049">로그인할 수 없음</translation>
-<translation id="2330129964253841015">비밀번호가 도용된 경우 알림</translation>
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">주소</translation>
 <translation id="290376772003165898">페이지 언어가 <ph name="LANGUAGE" />가 아닌가요?</translation>
 <translation id="2904414404539560095">탭을 공유할 기기 목록이 전체 높이로 열렸습니다.</translation>
+<translation id="2905036901251765993">근처에 있는 사람과 공유하려면 상대방이 QR 코드를 스캔하도록 하세요.</translation>
 <translation id="2909615210195135082">Google 알림 플랫폼</translation>
 <translation id="2910701580606108292">사이트에서 보호된 콘텐츠를 재생하도록 허용하기 전에 확인</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3658159451045945436">재설정하면 방문한 사이트 목록을 비롯한 데이터 절약 기록이 삭제됩니다.</translation>
+<translation id="3682730288090679318">알림 표시를 요청하지 못하도록 사이트를 자동으로 차단합니다. 사이트에서 알림을 요청하면 페이지 하단에 정보 표시줄이 나타납니다.</translation>
 <translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
@@ -542,6 +543,7 @@
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5087580092889165836">카드 추가</translation>
+<translation id="5096950519211870196">사이트가 알림 표시를 요청하지 못하도록 차단됩니다. 사이트에서 알림을 요청하면 페이지 하단에 정보 표시줄이 나타납니다.</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
@@ -589,6 +591,7 @@
 <translation id="5414836363063783498">확인 중...</translation>
 <translation id="5423934151118863508">자주 방문한 페이지가 여기에 표시됩니다.</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB 사용 가능</translation>
+<translation id="5427766642345310212">알겠습니다. 새로운 알림 요청을 기본적으로 여기에 표시합니다.</translation>
 <translation id="543338862236136125">비밀번호 수정</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
 <translation id="543509235395288790">파일 <ph name="COUNT" />개(<ph name="MEGABYTES" />MB) 다운로드 중</translation>
@@ -687,6 +690,7 @@
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6111020039983847643">데이터 사용됨</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
+<translation id="6113400363611269907">무음으로 메시지 표시</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6140912465461743537">국가/지역</translation>
 <translation id="614940544461990577">다음 방법을 시도해 보세요.</translation>
@@ -1019,6 +1023,7 @@
 <translation id="8503813439785031346">사용자이름</translation>
 <translation id="8514477925623180633">Chrome으로 저장한 비밀번호 내보내기</translation>
 <translation id="8514577642972634246">시크릿 모드로 들어가기</translation>
+<translation id="8516012719330875537">이미지 편집기</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="8523928698583292556">저장된 암호 삭제</translation>
 <translation id="854522910157234410">페이지 열기</translation>

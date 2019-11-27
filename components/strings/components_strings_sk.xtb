@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Zobraziť viac</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Zmeňte heslo</translation>
 <translation id="1484290072879560759">Zvoliť dodaciu adresu</translation>
 <translation id="1492194039220927094">Odosielanie pravidiel:</translation>
 <translation id="1501859676467574491">Zobraziť karty z vášho účtu Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skúste kontaktovať správcu systému.</translation>
 <translation id="1736420071277903564">Počítač</translation>
-<translation id="1739107442478692187">Na webe alebo v aplikácii, ktorú používate, došlo k porušeniu ochrany údajov. Chrome odporúča skontrolovať uložené heslá a ihneď zmeniť heslo na <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Zadajte platný mesiac vypršania platnosti</translation>
 <translation id="1741613555002899862">Keď je pravidlo DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />, musíte ho špecifikovať a uviesť platný reťazec.</translation>
 <translation id="1743520634839655729">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu, meno a fakturačnú adresu do účtu Google a tohto zariadenia.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Rozbaliť službu</translation>
 <translation id="1915697529809968049">Chcete namiesto overovacieho kódu karty použiť Touch ID?</translation>
 <translation id="1916770123977586577">Ak chcete na webe uplatniť aktualizované nastavenia, znova načítajte túto stránku</translation>
+<translation id="1917876262703816781">V rámci webu alebo aplikácie došlo k porušeniu ochrany údajov a vaše heslo bolo prezradené. Chrome odporúča okamžite zmeniť heslo na <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Pomoc s konkrétnym chybovým hlásením</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žiadne}=1{1 web}few{# weby}many{# webu}other{# webov}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domény sa nezhodujú</translation>
 <translation id="2096368010154057602">Department</translation>
 <translation id="2099652385553570808">Tri spinky vľavo</translation>
-<translation id="2100280972184758440">Vaše heslo bolo odhalené</translation>
 <translation id="2102134110707549001">Navrhnúť silné heslo…</translation>
 <translation id="2108755909498034140">Reštartujte počítač</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Vydané pre: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Prederaviť vpravo dole</translation>
-<translation id="2124528555835617522">Na webe alebo v aplikácii, ktorú používate, došlo k porušeniu ochrany údajov. Chrome odporúča okamžite skontrolovať uložené heslá.</translation>
 <translation id="2129079103035905234">Senzory pohybu</translation>
 <translation id="2130448033692577677">Špecifikované šablóny nemusia byť uplatnené, pretože nebolo nastavené pravidlo DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Mobilné záložky</translation>
@@ -481,7 +480,6 @@
 <translation id="3282497668470633863">Pridanie mena na karte</translation>
 <translation id="3287510313208355388">Stiahnuť po obnovení pripojenia</translation>
 <translation id="3293642807462928945">Ďalšie informácie o pravidle <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Na webe alebo v aplikácii, ktorú používate, došlo k porušeniu ochrany údajov. Chrome odporúča okamžite zmeniť heslo na webe <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Nič sa nenašlo</translation>
 <translation id="3320021301628644560">Pridanie fakturačnej adresy</translation>
 <translation id="3324983252691184275">Karmínová</translation>
@@ -888,6 +886,7 @@
 <translation id="5287240709317226393">Zobraziť súbory cookie</translation>
 <translation id="5287456746628258573">Tento web používa zastaranú konfiguráciu zabezpečenia, ktorá môže odhaliť vaše informácie (napríklad heslá alebo čísla kreditných kariet), keď ich naň odošlete.</translation>
 <translation id="5288108484102287882">Overenie hodnôt pravidiel vygenerovalo upozornenia</translation>
+<translation id="5295292838686006428">V rámci webu alebo aplikácie došlo k porušeniu ochrany údajov a vaše heslo bolo prezradené. Chrome odporúča okamžite skontrolovať uložené heslá.</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
@@ -938,6 +937,7 @@
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="5541546772353173584">Pridanie e-mailu</translation>
 <translation id="5545756402275714221">Články pre vás</translation>
+<translation id="5552137475244467770">Chrome pravidelne kontroluje heslá podľa zoznamu, ktorý bol zverejnený online. Vaše heslá a používateľské mená sú pritom šifrované, aby ich nikto nemohol prečítať (ani Google).</translation>
 <translation id="5556459405103347317">Znova načítať</translation>
 <translation id="5560088892362098740">Dátum vypršania platnosti</translation>
 <translation id="5565735124758917034">Aktívne</translation>
@@ -1029,6 +1029,7 @@
 <translation id="5992691462791905444">Inžiniersky záhyb v tvare písmena Z</translation>
 <translation id="6000758707621254961">Viacero výsledkov (<ph name="RESULT_COUNT" />) pre hľadaný výraz „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Kontrola hesiel</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strana 1}few{Strana #}many{Strana #}other{Strana #}}</translation>
 <translation id="6017514345406065928">Zelená</translation>
@@ -1317,6 +1318,7 @@
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="748406663033922918">Overte svoje uložené spôsoby platby pomocou zámky obrazovky.</translation>
 <translation id="7485870689360869515">Nenašli sa žiadne údaje.</translation>
+<translation id="7495290002932347110">V rámci webu alebo aplikácie došlo k porušeniu ochrany údajov a vaše heslo bolo prezradené. Chrome odporúča skontrolovať uložené heslá a okamžite zmeniť heslo na <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Pokračovať v úprave</translation>
 <translation id="7508255263130623398">Identifikátor zariadenia vráteného v rámci záruky je prázdny alebo sa nezhoduje s identifikátorom aktuálneho zariadenia</translation>
 <translation id="7508870219247277067">Žltozelená</translation>

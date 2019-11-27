@@ -25,35 +25,44 @@ class CookieChangeSubscriptionProto;
 // Represents a single subscription to the list of cookies sent to a URL.
 //
 // The included linked list node and service worker registration ID are used by
-// CookieStoreManager.
+// CookieStoreManager. They are ignored when comparing instances.
 class CookieChangeSubscription
     : public base::LinkNode<CookieChangeSubscription> {
  public:
   // Used to read a service worker's subscriptions from the persistent store.
-  static base::Optional<std::vector<CookieChangeSubscription>>
+  //
+  // Returns an empty vector if deserialization failed.
+  static std::vector<std::unique_ptr<CookieChangeSubscription>>
   DeserializeVector(const std::string& proto_string,
                     int64_t service_worker_registration_id);
 
-  // Converts subscriptions from a Mojo API call.
-  static std::vector<CookieChangeSubscription> FromMojoVector(
-      std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
-      int64_t service_worker_registration_id);
-
   // Used to write a service worker's subscriptions to the service worker store.
+  //
+  // The subscriptions vector should not be empty. If a registration does not
+  // have subscriptions, it should not be serialized.
   //
   // Returns the empty string in case of a serialization error.
   static std::string SerializeVector(
-      const std::vector<CookieChangeSubscription>&);
+      const std::vector<std::unique_ptr<CookieChangeSubscription>>&
+          subscriptions);
 
   // Converts a service worker's subscriptions to a Mojo API call result.
   static std::vector<blink::mojom::CookieChangeSubscriptionPtr> ToMojoVector(
-      const std::vector<CookieChangeSubscription>&);
+      const std::vector<std::unique_ptr<CookieChangeSubscription>>&
+          subscription);
 
   // Public for testing.
   //
   // Production code should use the vector-based factory methods above.
-  static base::Optional<CookieChangeSubscription> Create(
+  //
+  // Returns null in case of deserialization error.
+  static std::unique_ptr<CookieChangeSubscription> Create(
       proto::CookieChangeSubscriptionProto proto,
+      int64_t service_worker_registration_id);
+
+  // Converts a subscription from a Mojo API call.
+  CookieChangeSubscription(
+      blink::mojom::CookieChangeSubscriptionPtr mojo_subscription,
       int64_t service_worker_registration_id);
 
   // Public for testing.
@@ -63,10 +72,6 @@ class CookieChangeSubscription
                            std::string name,
                            ::network::mojom::CookieMatchType match_type,
                            int64_t service_worker_registration_id);
-
-  // LinkNode supports move-construction, but not move assignment.
-  CookieChangeSubscription(CookieChangeSubscription&&);
-  CookieChangeSubscription& operator=(CookieChangeSubscription&&) = delete;
 
   ~CookieChangeSubscription();
 
@@ -109,6 +114,12 @@ class CookieChangeSubscription
 
   DISALLOW_COPY_AND_ASSIGN(CookieChangeSubscription);
 };
+
+// Used to deduplicate equivalent subscriptons.
+//
+// Ignores the service worker registration ID and the linked list node.
+bool operator==(const CookieChangeSubscription& lhs,
+                const CookieChangeSubscription& rhs);
 
 }  // namespace content
 

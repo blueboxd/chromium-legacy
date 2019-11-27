@@ -22,6 +22,7 @@ interface BlobDataItemReader {
 enum BlobDataItemType {
   kUnknown,       // Type not known.
   kCacheStorage,  // Data comes from the cache storage system.
+  kIndexedDB,     // Data comes from the IndexedDB storage system.
 };
 
 // A remote representation of a BlobDataItem::DataHandle for cache storage.
@@ -32,8 +33,12 @@ struct BlobDataItem {
   // synchronously, which is why it is in a struct and not the interface.
   uint64 size;
 
-  // The size of the side data.  This is zero if there is no side data.
+  // The size of the side data.  If this is zero, reader.ReadSideData()
+  // should not be called, and there is no side data.
   uint64 side_data_size;
+
+  // The mime type of this data item.  This is empty if unknown.
+  string content_type;
 
   // An interface to read the normal and side data of this entry.
   pending_remote<BlobDataItemReader> reader;

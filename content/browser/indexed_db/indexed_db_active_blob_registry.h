@@ -56,9 +56,9 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
 
   // When called, the returned callback will mark the given blob entry as
   // inactive (i.e. no longer referenced by a client).
-  IndexedDBBlobInfo::ReleaseCallback GetFinalReleaseCallback(
-      int64_t database_id,
-      int64_t blob_number);
+  // This closure must be called on the same sequence as this registry.
+  base::RepeatingClosure GetFinalReleaseCallback(int64_t database_id,
+                                                 int64_t blob_number);
 
   // When called, the returned closure will mark the given blob entry as active
   // (i.e. referenced by the client). Calling this multiple times does nothing.
@@ -81,12 +81,6 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
 
   // Removes a reference to the given blob.
   void MarkBlobInactive(int64_t database_id, int64_t blob_number);
-  static void MarkBlobInactiveThreadSafe(
-      scoped_refptr<base::TaskRunner> task_runner,
-      base::WeakPtr<IndexedDBActiveBlobRegistry> weak_ptr,
-      int64_t database_id,
-      int64_t blob_number,
-      const base::FilePath& unused);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -277,9 +277,9 @@ NetworkServiceTestHelper::~NetworkServiceTestHelper() = default;
 
 void NetworkServiceTestHelper::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
-  registry->AddInterface(
-      base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestReceiver,
-                 base::Unretained(this)));
+  registry->AddInterface(base::BindRepeating(
+      &NetworkServiceTestHelper::BindNetworkServiceTestReceiver,
+      base::Unretained(this)));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   service_manager::SandboxType sandbox_type =

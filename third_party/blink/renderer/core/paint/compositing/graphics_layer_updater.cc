@@ -133,9 +133,8 @@ void GraphicsLayerUpdater::UpdateRecursive(
         if (had_scrolling_layer != !!mapping->ScrollingLayer())
           layers_needing_paint_invalidation.push_back(&layer);
       }
-      mapping->UpdateGraphicsLayerGeometry(
-          compositing_container, context.CompositingStackingContext(),
-          layers_needing_paint_invalidation, context);
+      mapping->UpdateGraphicsLayerGeometry(compositing_container,
+                                           layers_needing_paint_invalidation);
       if (PaintLayerScrollableArea* scrollable_area = layer.GetScrollableArea())
         scrollable_area->PositionOverflowControls();
       update_type = mapping->UpdateTypeForChildren(update_type);

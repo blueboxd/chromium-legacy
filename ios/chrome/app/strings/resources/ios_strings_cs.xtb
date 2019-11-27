@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Nabídka Další</translation>
 <translation id="2316709634732130529">Použít navrhované heslo</translation>
 <translation id="2320166752086256636">Skrýt klávesnici</translation>
-<translation id="2330129964253841015">Upozorňovat v případě ohrožení hesel</translation>
 <translation id="2339560363438331454">Synchronizace a služby Google</translation>
 <translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
 <translation id="2359043044084662842">Přeložit</translation>
@@ -441,6 +440,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6973630695168034713">Složky</translation>
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="6988572888918530647">Spravovat účet Google</translation>
+<translation id="6995899638241819463">Upozorňovat v případě vyzrazení hesel při porušení zabezpečení</translation>
 <translation id="6998989275928107238">Komu</translation>
 <translation id="7004499039102548441">Nedávno použité karty</translation>
 <translation id="7006788746334555276">Nastavení obsahu</translation>

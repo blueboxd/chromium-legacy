@@ -69,8 +69,8 @@ void LockScreenNoteDisplayStateHandler::AttemptNoteLaunchForStylusEject() {
   DCHECK(!launch_timer_.IsRunning());
   launch_timer_.Start(
       FROM_HERE, kNoteLaunchTimeout,
-      base::Bind(&LockScreenNoteDisplayStateHandler::NoteLaunchDone,
-                 weak_ptr_factory_.GetWeakPtr(), false));
+      base::BindOnce(&LockScreenNoteDisplayStateHandler::NoteLaunchDone,
+                     weak_ptr_factory_.GetWeakPtr(), false));
 
   // Delay note launch if backlights are forced off, but the screen hasn't
   // been turned off yet - the note should be launched when the pending

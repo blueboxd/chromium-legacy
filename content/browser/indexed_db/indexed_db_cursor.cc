@@ -128,12 +128,10 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
 
-    if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(),
-            IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                blob_info, &mojo_value->blob_or_file_info))) {
-      return s;
-    }
+    IndexedDBCallbacks::CreateAllBlobs(
+        dispatcher_host.get(),
+        IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+            blob_info, &mojo_value->blob_or_file_info));
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -215,12 +213,10 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
 
-    if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(),
-            IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                blob_info, &mojo_value->blob_or_file_info))) {
-      return s;
-    }
+    IndexedDBCallbacks::CreateAllBlobs(
+        dispatcher_host.get(),
+        IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+            blob_info, &mojo_value->blob_or_file_info));
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -354,10 +350,8 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
         &mojo_values[i]->blob_or_file_info);
   }
 
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(), std::move(value_blobs))) {
-    return s;
-  }
+  IndexedDBCallbacks::CreateAllBlobs(dispatcher_host.get(),
+                                     std::move(value_blobs));
 
   std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(
       blink::mojom::IDBCursorValue::New(std::move(found_keys),

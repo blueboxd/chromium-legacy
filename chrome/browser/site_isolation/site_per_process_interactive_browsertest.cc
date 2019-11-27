@@ -1292,7 +1292,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
           "new Promise((resolve) => {"
           "  iframe1doc = "
           "      document.getElementById('iframe1').contentDocument;"
-          "  resolve(iframe1doc.hasFocus());"
+          "  function timeoutFcn(n) {"
+          "    if (n == 0 || iframe1doc.hasFocus()) {"
+          "      resolve(iframe1doc.hasFocus());"
+          "      return;"
+          "    }"
+          "    window.console.log('Recursing: n = ' + n);"
+          "    setTimeout(() => { timeoutFcn(n-1); }, 1000);"
+          "  };"
+          "  timeoutFcn(5);"
           "});")
           .ExtractBool();
   if (!starts_focused) {

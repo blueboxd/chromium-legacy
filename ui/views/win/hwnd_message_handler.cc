@@ -1832,8 +1832,7 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
           IID_PPV_ARGS(&root));
       reference_result =
           UiaReturnRawElementProvider(hwnd(), w_param, l_param, root.Get());
-    } else if (is_msaa_request &&
-               !::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    } else if (is_msaa_request) {
       // Retrieve MSAA dispatch object for the root view.
       Microsoft::WRL::ComPtr<IAccessible> root(
           delegate_->GetNativeViewAccessible());

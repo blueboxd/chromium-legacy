@@ -780,7 +780,12 @@ class PixelTestPages(object):
             'size': [1, 1],
             'color': [255, 215, 0],
           }
-        ])
+        ]),
+      PixelTestPage(
+        'pixel_precision_rounded_corner.html',
+        base_name + '_PrecisionRoundedCorner',
+        test_rect=[0, 0, 400, 400],
+        browser_args=browser_args)
     ]
 
   # Pages that should be run with experimental canvas features.

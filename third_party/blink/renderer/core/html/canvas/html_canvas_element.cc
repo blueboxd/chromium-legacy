@@ -403,40 +403,32 @@ void HTMLCanvasElement::PreFinalizeFrame() {
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
-  // Low-latency 2d canvases produce their frames after the resource gets
-  // single buffered.
-  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
-    if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      const bool webgl_overlay_enabled =
-          RuntimeEnabledFeatures::WebGLImageChromiumEnabled() ||
-          context_->UsingSwapChain();
-      // TryEnableSingleBuffering() the first time we finalize a frame.
-      if (!ResourceProvider()->IsSingleBuffered()) {
-        ResourceProvider()->TryEnableSingleBuffering();
-        if (Is3d() && webgl_overlay_enabled)
-          context_->ProvideBackBufferToResourceProvider();
-      }
-    }
+  // Low-latency 2d canvases produce their frames after the resource gets single
+  // buffered.
+  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
+      GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+    // TryEnableSingleBuffering() the first time we FinalizeFrame().  This is
+    // a nop if already single buffered or if single buffering is unsupported.
+    ResourceProvider()->TryEnableSingleBuffering();
   }
 }
 
 void HTMLCanvasElement::PostFinalizeFrame() {
-  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
-    if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      const base::TimeTicks start_time = base::TimeTicks::Now();
-      const scoped_refptr<CanvasResource> canvas_resource =
-          ResourceProvider()->ProduceCanvasResource();
-      const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
-      dirty_rect_.Intersect(src_rect);
-      const IntRect int_dirty = EnclosingIntRect(dirty_rect_);
-      const SkIRect damage_rect = SkIRect::MakeXYWH(
-          int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
-      const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
-      frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
-                                       damage_rect, needs_vertical_flip,
-                                       IsOpaque());
-      dirty_rect_ = FloatRect();
-    }
+  if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
+      GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+    const scoped_refptr<CanvasResource> canvas_resource =
+        ResourceProvider()->ProduceCanvasResource();
+    const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
+    dirty_rect_.Intersect(src_rect);
+    const IntRect int_dirty = EnclosingIntRect(dirty_rect_);
+    const SkIRect damage_rect = SkIRect::MakeXYWH(
+        int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
+    const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
+    frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
+                                     damage_rect, needs_vertical_flip,
+                                     IsOpaque());
+    dirty_rect_ = FloatRect();
   }
 
   // If the canvas is visible, notifying listeners is taken care of in

@@ -35,7 +35,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
@@ -187,7 +187,7 @@ chrome::mojom::DynamicParams* GetDynamicConfigParams() {
 }
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : visited_link_slave_(new visitedlink::VisitedLinkSlave) {
+    : visited_link_reader_(new visitedlink::VisitedLinkReader) {
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());

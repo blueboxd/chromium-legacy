@@ -4,7 +4,6 @@
 
 module.exports = {
   'rules': {
-    'no-var': 'error',
     'no-restricted-properties': [
       'error',
       {
@@ -14,6 +13,8 @@ module.exports = {
             'native click() method in tests. See more context at ' +
             'crbug.com/812035.',
       },
-    ]
+    ],
+    'no-var': 'error',
+    'prefer-const': 'error',
   },
 };

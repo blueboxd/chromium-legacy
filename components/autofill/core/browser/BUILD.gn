@@ -88,6 +88,8 @@ jumbo_static_library("browser") {
     "data_model/contact_info.h",
     "data_model/credit_card.cc",
     "data_model/credit_card.h",
+    "data_model/data_model_utils.cc",
+    "data_model/data_model_utils.h",
     "data_model/form_group.cc",
     "data_model/form_group.h",
     "data_model/phone_number.cc",

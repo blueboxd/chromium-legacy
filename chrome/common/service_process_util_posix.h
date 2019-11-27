@@ -51,7 +51,7 @@ class ServiceProcessTerminateMonitor
     kTerminateMessage = 0xdecea5e
   };
 
-  explicit ServiceProcessTerminateMonitor(const base::Closure& terminate_task);
+  explicit ServiceProcessTerminateMonitor(base::OnceClosure terminate_task);
   ~ServiceProcessTerminateMonitor() override;
 
   // MessagePumpForIO::FdWatcher overrides
@@ -59,7 +59,7 @@ class ServiceProcessTerminateMonitor
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
-  base::Closure terminate_task_;
+  base::OnceClosure terminate_task_;
 };
 
 struct ServiceProcessState::StateData {

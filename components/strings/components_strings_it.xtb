@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mostra altro</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Cambia la password</translation>
 <translation id="1484290072879560759">Scegli l'indirizzo di spedizione</translation>
 <translation id="1492194039220927094">Push dei criteri:</translation>
 <translation id="1501859676467574491">Mostra le carte dall'Account Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prova a contattare l'amministratore di sistema.</translation>
 <translation id="1736420071277903564">Computer</translation>
-<translation id="1739107442478692187">Si è verificata una violazione dei dati su un sito o un'app che usi. Chrome ti consiglia di controllare le password che hai salvato e di cambiare subito la password su <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Inserisci un mese di scadenza valido</translation>
 <translation id="1741613555002899862">Deve essere specificato e corrispondere a una stringa valida quando DnsOverHttpsMode è <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Per pagare più velocemente la prossima volta, salva la carta e l'indirizzo di fatturazione sul tuo Account Google e su questo dispositivo.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Servizio di decompressione</translation>
 <translation id="1915697529809968049">Usare Touch ID anziché CVC?</translation>
 <translation id="1916770123977586577">Ricarica la pagina per applicare le impostazioni aggiornate a questo sito</translation>
+<translation id="1917876262703816781">A causa di una violazione dei dati su un sito o un'app, la tua password è stata esposta. Chrome ti consiglia di cambiare subito la password su <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Annunci</translation>
 <translation id="1919367280705858090">Assistenza per un messaggio di errore specifico</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nessuno}=1{1 sito}other{# siti}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Dominio non corrispondente</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
 <translation id="2099652385553570808">Tripla pinzatura a sinistra</translation>
-<translation id="2100280972184758440">La tua password è stata compromessa</translation>
 <translation id="2102134110707549001">Suggerisci password efficace…</translation>
 <translation id="2108755909498034140">Riavvia il computer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Rilasciato a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforatura in basso a destra</translation>
-<translation id="2124528555835617522">Si è verificata una violazione dei dati su un sito o un'app che usi. Chrome ti consiglia di controllare subito le password che hai salvato.</translation>
 <translation id="2129079103035905234">Sensori di movimento</translation>
 <translation id="2130448033692577677">I modelli che hai specificato potrebbero non essere applicati a causa della mancata impostazione del criterio DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero installare app pericolose che danneggiano il tuo dispositivo, generano addebiti nascosti sul tuo credito telefonico o si impossessano dei tuoi dati personali. <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nessuna connessione a Internet</translation>
 <translation id="2230458221926704099">Correggi la connessione con l'<ph name="BEGIN_LINK" />app diagnostica<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Per te</translation>
 <translation id="2239100178324503013">Invia ora</translation>
 <translation id="2248949050832152960">Usa WebAuthn</translation>
 <translation id="2250931979407627383">Impuntura a sinistra</translation>
@@ -374,6 +374,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Avviso di sicurezza</translation>
 <translation id="2699302886720511147">Carte accettate</translation>
 <translation id="2702801445560668637">Elenco di lettura</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
@@ -473,6 +474,7 @@
 <translation id="3207960819495026254">Aggiunto ai preferiti</translation>
 <translation id="3209034400446768650">La pagina potrebbe addebitare denaro</translation>
 <translation id="3209080785413271048">Usa Windows Hello per verificare i metodi di pagamento salvati.</translation>
+<translation id="3212581601480735796">La tua attività su <ph name="HOSTNAME" /> è monitorata</translation>
 <translation id="3215092763954878852">Impossibile usare WebAuthn</translation>
 <translation id="3225919329040284222">Il server ha presentato un certificato che non corrisponde alle previsioni integrate. Queste previsioni sono incluse per determinati siti web con protezione elevata allo scopo di proteggerti.</translation>
 <translation id="3226128629678568754">Premi il pulsante Ricarica per inviare di nuovo i dati necessari per caricare la pagina.</translation>
@@ -488,7 +490,6 @@
 <translation id="3282497668470633863">Aggiungi il nome indicato sulla carta</translation>
 <translation id="3287510313208355388">Scarica quando è online</translation>
 <translation id="3293642807462928945">Scopri di più sulla norma <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Si è verificata una violazione dei dati su un sito o un'app che usi. Chrome consiglia di cambiare subito la password su <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Nessun risultato di ricerca trovato</translation>
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
 <translation id="3324983252691184275">Cremisi</translation>
@@ -531,6 +532,7 @@
 <translation id="3528485271872257980">Marrone scuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Almeno 1 elemento sui dispositivi sincronizzati}=1{1 elemento (e altri sui dispositivi sincronizzati)}other{# elementi (e altri sui dispositivi sincronizzati)}}</translation>
 <translation id="3539171420378717834">Conserva una copia di questa carta sul dispositivo</translation>
+<translation id="3553513561058684206">Per te</translation>
 <translation id="3566021033012934673">La connessione non è privata</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Una pagina incorporata in <ph name="SITE" /> dice</translation>
@@ -761,6 +763,7 @@
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
 <translation id="4597348597567598915">Dimensione 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">Il certificato di questa connessione non è considerato attendibile da Chrome in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
 <translation id="4635654612248442824">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di una norma di partenza
     a tutte le sue richieste, ma questa norma al momento non può essere applicata.</translation>
 <translation id="464342062220857295">Funzionalità di ricerca</translation>
@@ -900,6 +903,7 @@
 <translation id="5287240709317226393">Mostra cookie</translation>
 <translation id="5287456746628258573">Le tue informazioni (ad esempio password o numeri di carte di credito) potrebbero essere a rischio, poiché questo sito utilizza una configurazione di sicurezza obsoleta.</translation>
 <translation id="5288108484102287882">La convalida dei valori della norma ha generato degli avvisi</translation>
+<translation id="5295292838686006428">A causa di una violazione dei dati su un sito o un'app, la tua password è stata esposta. Chrome ti consiglia di controllare subito le password che hai salvato.</translation>
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5308380583665731573">Connessione</translation>
@@ -950,6 +954,7 @@
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
 <translation id="5541546772353173584">Aggiungi email</translation>
 <translation id="5545756402275714221">Articoli per te</translation>
+<translation id="5552137475244467770">Chrome confronta periodicamente le tue password con gli elenchi pubblicati online. Durante questa operazione, le tue password e i tuoi nomi utente vengono criptati, quindi non possono essere letti da nessuno, Google compresa.</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5560088892362098740">Data di scadenza</translation>
 <translation id="5565735124758917034">Attivo</translation>
@@ -1041,6 +1046,7 @@
 <translation id="5992691462791905444">Piegatura a Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> risultati per "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Controlla le tue password</translation>
 <translation id="6015796118275082299">Anno</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
@@ -1329,6 +1335,7 @@ Ulteriori dettagli:
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="748406663033922918">Usa il blocco schermo per verificare i metodi di pagamento salvati.</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
+<translation id="7495290002932347110">A causa di una violazione dei dati su un sito o un'app, la tua password è stata esposta. Chrome ti consiglia di controllare le password che hai salvato e di cambiare subito la password su <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continua modifica</translation>
 <translation id="7508255263130623398">L'ID dispositivo della norma restituito è vuoto o non corrisponde all'ID dispositivo corrente</translation>
 <translation id="7508870219247277067">Verde pisello</translation>
@@ -1465,6 +1472,7 @@ Ulteriori dettagli:
 <translation id="8103161714697287722">Metodo di pagamento</translation>
 <translation id="8105368624971345109">Disattiva</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
+<translation id="8124023448510659215">Il certificato di questa connessione non è considerato attendibile da Chromium in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
@@ -1607,6 +1615,8 @@ Ulteriori dettagli:
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8962950042226115166">Sito sospetto</translation>
 <translation id="8968766641738584599">Salva carta</translation>
+<translation id="8969267497192857913">Tutto ciò che digiti, tutte le pagine che visualizzi e ogni altra attività che svolgi sul Web viene monitorato e i contenuti sul sito potrebbero essere modificati a tua insaputa.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8975012916872825179">Include informazioni come numeri di telefono, indirizzi email e indirizzi di spedizione</translation>
 <translation id="8975263830901772334">Nomi dei file che stampi</translation>

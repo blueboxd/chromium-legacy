@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_METRICS_H_
 #define CONTENT_BROWSER_SMS_SMS_METRICS_H_
 
+#include "third_party/blink/public/common/sms/sms_receiver_destroyed_reason.h"
+
 namespace base {
 class TimeDelta;
 }
@@ -22,6 +24,8 @@ void RecordCancelOnSuccessTime(base::TimeDelta duration);
 // Records the time from when a successful SMS was retrieved to when the user
 // presses the Continue button.
 void RecordContinueOnSuccessTime(base::TimeDelta duration);
+
+void RecordDestroyedReason(blink::SmsReceiverDestroyedReason reason);
 
 }  // namespace content
 

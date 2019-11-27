@@ -11,7 +11,7 @@ source_set("service") {
   ]
 
   public_deps = [
-    "//third_party/fuchsia-sdk/sdk:media_drm",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-media-drm",
   ]
 
   deps = [

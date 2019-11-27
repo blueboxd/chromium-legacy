@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_update.css">
     <oobe-dialog hidden="[[!checkingForUpdate]]" tabindex="0"
-        aria-live="polite" id="checking-for-updates-dialog">
+        aria-live="polite" id="checking-for-updates-dialog" footer-shrinkable>
       <iron-icon icon="oobe-update:googleg" slot="oobe-icon"></iron-icon>
       <h1 slot="title" i18n-content="checkingForUpdates"></h1>
       <div slot="subtitle" class="update-subtitle" id="checkingForUpdatesMsg"
@@ -47,7 +47,8 @@
       </div>
     </oobe-dialog>
     <oobe-dialog hidden="[[!requiresPermissionForCellular]]" tabindex="0"
-        aria-live="polite" has-buttons id="cellular-permission-dialog">
+        aria-live="polite" has-buttons footer-shrinkable
+        id="cellular-permission-dialog">
       <iron-icon icon="oobe-update:googleg" slot="oobe-icon"></iron-icon>
       <h1 slot="title">
           [[i18nRecursive(locale, 'updateOverCellularPromptTitle',
@@ -68,7 +69,7 @@
             on-tap="onNextClicked_"></oobe-next-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="updating-dialog"
+    <oobe-dialog footer-shrinkable id="updating-dialog"
         hidden="[[hideUpdatingScreen_(checkingForUpdate,
                                       requiresPermissionForCellular)]]"
         tabindex="0" aria-live="polite">

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.host.offlineindicator.OfflineIndicatorApi;
+import org.chromium.chrome.browser.feed.library.api.host.offlineindicator.OfflineIndicatorApi;
 
 /**
  * An extension of the {@link OfflineIndicatorApi} with additional methods needed for offline logic

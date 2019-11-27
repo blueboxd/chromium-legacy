@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">അവലോകന മോഡ്</translation>
 <translation id="4382340674111381977">മുമ്പത്തെ പേജിലേക്ക് തിരികെ പോവുക</translation>
+<translation id="4458670250301149821">ആപ്പ് ഗ്രിഡിൽ ഫോൾഡറിന് ഉള്ളിലേക്കോ പുറത്തേക്കോ ഒരു ആപ്പ് ഐക്കൺ നീക്കുക</translation>
 <translation id="4472417192667361414">സിസ്‌റ്റം, ഡിസ്‌പ്ലേ ക്രമീകരണം</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ശേഷം <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> അല്ലെങ്കിൽ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">കീബോഡ് കുറുക്കുവഴി സഹായി കാണുക</translation>
 <translation id="4628718545549558538">സ്‌റ്റാറ്റസ് ഏരിയ തുറക്കുക (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം)</translation>
 <translation id="4642092649622328492">ഭാഗിക സ്‌ക്രീൻഷോട്ട് എടുക്കുക</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">അടുത്ത അക്ഷരം ഇല്ലാതാക്കുക (ഫോർവേഡ് ഡിലീറ്റ്)</translation>
 <translation id="7500368597227394048">ഹൈഫൻ</translation>
 <translation id="7611271430932669992">പോപ്-അപ്പുകളിലേക്കും ഡയലോഗുകളിലേക്കും ഫോക്കസ് നീക്കുക</translation>
+<translation id="7635348532214572995">ആപ്പ് ഗ്രിഡിന് ചുറ്റും ആപ്പ് ഐക്കൺ നീക്കുക</translation>
 <translation id="766326951329901120">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം സാധാരണ വാചകമായി ഒട്ടിക്കുക</translation>
 <translation id="7703010453515335249">ഇടത് ബ്രാക്കറ്റ്</translation>
 <translation id="7724603315864178912">മുറിക്കുക</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം ഒട്ടിക്കുക</translation>
 <translation id="9052808072970550123">അടുത്ത ഉപയോക്താവിലേക്ക് മാറുക</translation>
 <translation id="906458777597946297">വിൻഡോ വലുതാക്കുക</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ശേഷം <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> അല്ലെങ്കിൽ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">വരിയുടെ തുടക്കത്തിലേക്ക് പോകുക</translation>
 <translation id="9106898733795143799">പേജും വെബ് ബ്രൗസറും</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> എന്നതിനായി തിരയൽ ഫലമൊന്നുമില്ല</translation>

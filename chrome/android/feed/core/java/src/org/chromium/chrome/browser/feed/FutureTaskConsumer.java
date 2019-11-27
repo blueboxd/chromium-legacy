@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.common.concurrent.SimpleSettableFuture;
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.feed.library.common.concurrent.SimpleSettableFuture;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.concurrent.ExecutionException;
 

@@ -881,17 +881,8 @@ Status IndexedDBDatabase::GetOperation(
     IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
         &value_blob, value.blob_info, &mojo_value->value->blob_or_file_info);
 
-    if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(), std::move(value_blob))) {
-      IndexedDBDatabaseError error =
-          CreateError(blink::mojom::IDBException::kUnknownError,
-                      "Unknown error", transaction);
-      std::move(callback).Run(
-          blink::mojom::IDBDatabaseGetResult::NewErrorResult(
-              blink::mojom::IDBError::New(error.code(), error.message())));
-      return s;
-    }
-
+    IndexedDBCallbacks::CreateAllBlobs(dispatcher_host.get(),
+                                       std::move(value_blob));
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
     return s;
@@ -952,16 +943,8 @@ Status IndexedDBDatabase::GetOperation(
   IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
       &value_blob, value.blob_info, &mojo_value->value->blob_or_file_info);
 
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(), std::move(value_blob))) {
-    IndexedDBDatabaseError error =
-        CreateError(blink::mojom::IDBException::kUnknownError, "Unknown error",
-                    transaction);
-    std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
-        blink::mojom::IDBError::New(error.code(), error.message())));
-    return s;
-  }
-
+  IndexedDBCallbacks::CreateAllBlobs(dispatcher_host.get(),
+                                     std::move(value_blob));
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
   return s;
@@ -1145,11 +1128,8 @@ Status IndexedDBDatabase::GetAllOperation(
         &mojo_values[i]->value->blob_or_file_info);
   }
 
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(), std::move(value_blobs))) {
-    return s;
-  }
-
+  IndexedDBCallbacks::CreateAllBlobs(dispatcher_host.get(),
+                                     std::move(value_blobs));
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetAllResult::NewValues(std::move(mojo_values)));
   return s;
@@ -1437,12 +1417,11 @@ Status IndexedDBDatabase::OpenCursorOperation(
     blob_info.swap(cursor_ptr->Value()->blob_info);
   }
 
-  if (mojo_value &&
-      !IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(),
-          IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-              blob_info, &mojo_value->blob_or_file_info))) {
-    return s;
+  if (mojo_value) {
+    IndexedDBCallbacks::CreateAllBlobs(
+        dispatcher_host.get(),
+        IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+            blob_info, &mojo_value->blob_or_file_info));
   }
 
   std::move(params->callback)

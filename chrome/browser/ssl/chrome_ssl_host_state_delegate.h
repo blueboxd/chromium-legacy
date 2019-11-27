@@ -44,7 +44,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                  const net::X509Certificate& cert,
                  int error) override;
   void Clear(
-      const base::Callback<bool(const std::string&)>& host_filter) override;
+      base::RepeatingCallback<bool(const std::string&)> host_filter) override;
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
                            int error) override;

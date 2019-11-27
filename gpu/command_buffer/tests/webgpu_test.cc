@@ -93,7 +93,7 @@ void WebGPUTest::Initialize(const Options& options) {
 
   ASSERT_TRUE(
       webgpu()->RequestAdapterAsync(webgpu::PowerPreference::kDefault,
-                                    base::Bind(&OnRequestAdapterCallback)));
+                                    base::BindOnce(&OnRequestAdapterCallback)));
 
   DawnProcTable procs = webgpu()->GetProcs();
   dawnProcSetProcs(&procs);

@@ -4,21 +4,13 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "build/build_config.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
-
-// TODO(crbug.com/1026523): Fix flakiness on Win10.
-#if defined(OS_WIN)
-#define MAYBE_WebLayerWebUIBrowserTest DISABLED_WebLayerWebUIBrowserTest
-#else
-#define MAYBE_WebLayerWebUIBrowserTest WebLayerWebUIBrowserTest
-#endif
 
 namespace weblayer {
 
-using MAYBE_WebLayerWebUIBrowserTest = WebLayerBrowserTest;
+using WebLayerWebUIBrowserTest = WebLayerBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebLayerWebUIBrowserTest, WebUI) {
+IN_PROC_BROWSER_TEST_F(WebLayerWebUIBrowserTest, WebUI) {
   NavigateAndWaitForCompletion(GURL("chrome://weblayer"), shell());
   base::RunLoop run_loop;
   bool result =

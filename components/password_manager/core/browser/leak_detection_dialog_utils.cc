@@ -95,6 +95,10 @@ base::string16 GetTitle(CredentialLeakType leak_type) {
                                        : IDS_CREDENTIAL_LEAK_TITLE_CHANGE);
 }
 
+base::string16 GetLeakDetectionTooltip() {
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE);
+}
+
 bool ShouldCheckPasswords(CredentialLeakType leak_type) {
   return password_manager::IsPasswordUsedOnOtherSites(leak_type) &&
          password_manager::IsSyncingPasswordsNormally(leak_type);

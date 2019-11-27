@@ -2036,7 +2036,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // the full web content.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
-  if (handlingKeyDown_) {
+  if (handlingKeyDown_ && replacementRange.location == NSNotFound) {
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
     shouldRequestTextSubstitutions_ = YES;
   } else {

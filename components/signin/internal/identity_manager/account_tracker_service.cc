@@ -314,7 +314,8 @@ void AccountTrackerService::MigrateToGaiaId() {
   std::vector<CoreAccountId> to_remove;
   std::vector<AccountInfo> migrated_accounts;
   for (const auto& pair : accounts_) {
-    const CoreAccountId new_account_id(pair.second.gaia);
+    const CoreAccountId new_account_id =
+        CoreAccountId::FromGaiaId(pair.second.gaia);
     if (pair.first == new_account_id)
       continue;
 
@@ -456,11 +457,11 @@ void AccountTrackerService::LoadFromPrefs() {
         // Ignore incorrectly persisted non-canonical account ids.
         if (value.find('@') != std::string::npos &&
             value != gaia::CanonicalizeEmail(value)) {
-          to_remove.insert(CoreAccountId(value));
+          to_remove.insert(CoreAccountId::FromString(value));
           continue;
         }
-        CoreAccountId account_id(value);
 
+        CoreAccountId account_id = CoreAccountId::FromString(value);
         StartTrackingAccount(account_id);
         AccountInfo& account_info = accounts_[account_id];
 
@@ -599,17 +600,13 @@ CoreAccountId AccountTrackerService::PickAccountIdForAccount(
   DCHECK(!email.empty());
   switch (GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
-      // Some tests don't use a real email address.  To support these cases,
-      // don't try to canonicalize these strings.
-      return CoreAccountId(email.find('@') == std::string::npos
-                               ? email
-                               : gaia::CanonicalizeEmail(email));
+      return CoreAccountId::FromEmail(gaia::CanonicalizeEmail(email));
     case MIGRATION_IN_PROGRESS:
     case MIGRATION_DONE:
-      return CoreAccountId(gaia);
+      return CoreAccountId::FromGaiaId(gaia);
     default:
       NOTREACHED();
-      return CoreAccountId(email);
+      return CoreAccountId::FromString(email);
   }
 }
 

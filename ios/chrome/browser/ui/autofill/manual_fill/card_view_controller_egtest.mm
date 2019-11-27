@@ -105,14 +105,16 @@ BOOL WaitForKeyboardToAppear() {
 
 @implementation CreditCardViewControllerTestCase
 
-- (void)setUp {
-  [super setUp];
+- (void)launchAppForTestMethod {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod,
                                             kCreditCardScanner}
                                   disabled:{}
                               forceRestart:NO];
+}
 
+- (void)setUp {
+  [super setUp];
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   [ChromeEarlGrey loadURL:URL];

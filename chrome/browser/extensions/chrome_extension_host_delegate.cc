@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/no_destructor.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -20,7 +19,6 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extension_system.h"
 
 namespace extensions {
@@ -87,11 +85,6 @@ bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type,
                                    extension);
-}
-
-ExtensionHostQueue* ChromeExtensionHostDelegate::GetExtensionHostQueue() const {
-  static base::NoDestructor<ExtensionHostQueue> queue;
-  return queue.get();
 }
 
 content::PictureInPictureResult

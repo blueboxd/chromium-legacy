@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/timer/timer.h"
-#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_writer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -26,14 +26,14 @@ class VisitedLinkUpdater;
 // VisitedLinkEventListener broadcasts link coloring database updates to all
 // processes. It also coalesces the updates to avoid excessive broadcasting of
 // messages to the renderers.
-class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
+class VisitedLinkEventListener : public VisitedLinkWriter::Listener,
                                  public content::NotificationObserver {
  public:
   explicit VisitedLinkEventListener(content::BrowserContext* browser_context);
   ~VisitedLinkEventListener() override;
 
   void NewTable(base::ReadOnlySharedMemoryRegion* table_region) override;
-  void Add(VisitedLinkMaster::Fingerprint fingerprint) override;
+  void Add(VisitedLinkWriter::Fingerprint fingerprint) override;
   void Reset(bool invalidate_hashes) override;
 
   // Sets a custom timer to use for coalescing events for testing.

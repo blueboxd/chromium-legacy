@@ -61,17 +61,6 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="protected_content" />
-    <!-- Autoplay -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
-        android:key="autoplay" />
-    <!-- Media -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SiteSettingsPreferences"
-        android:key="media"
-        android:title="@string/media_permission_title"
-        android:icon="@drawable/settings_media"
-        app:iconTint="@color/default_icon_color" />
     <!-- Sound -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"

@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
@@ -136,8 +136,14 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                                     DeepScanningClientResponse response) {
   if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnLargeUnscannedFileEvent(url, file_name, download_digest_sha256,
-                                    mime_type, trigger, content_size);
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "fileTooLarge",
+                               content_size);
+  } else if (result == BinaryUploadService::Result::TIMEOUT) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "scanTimedOut",
+                               content_size);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
@@ -166,10 +172,12 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
 }
 
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {
-  // TODO(domfc): Add UPLOAD, DRAG_AND_DROP and PASTE access points.
+  // TODO(domfc): Add DRAG_AND_DROP and PASTE access points.
   switch (access_point) {
     case DeepScanAccessPoint::DOWNLOAD:
       return "Download";
+    case DeepScanAccessPoint::UPLOAD:
+      return "Upload";
   }
   NOTREACHED();
   return "";
@@ -265,6 +273,8 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
           item->GetFullPath(),
           {item->GetTabUrl(), item->GetTabReferrerUrl()},
           item->GetReceivedBytes(),
+          item->GetMimeType(),
+          item->GetHash(),
           content::DownloadItemUtils::GetBrowserContext(item),
           callback,
           service,

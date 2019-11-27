@@ -224,9 +224,9 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
   }
   base::RunLoop run_loop;
   new OverviewAnimationStateWaiter(
-      state, base::Bind([](base::RunLoop* run_loop,
-                           bool finished) { run_loop->QuitWhenIdle(); },
-                        base::Unretained(&run_loop)));
+      state, base::BindOnce([](base::RunLoop* run_loop,
+                               bool finished) { run_loop->QuitWhenIdle(); },
+                            base::Unretained(&run_loop)));
   run_loop.Run();
 }
 

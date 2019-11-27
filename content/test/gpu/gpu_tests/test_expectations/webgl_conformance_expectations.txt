@@ -256,7 +256,9 @@ crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/sh
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/* [ Failure ]
-crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/* [ RetryOnFailure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
@@ -364,6 +366,7 @@ crbug.com/998498 [ linux amd passthrough ] conformance/textures/misc/tex-input-v
 # Linux passthrough AMD OpenGL
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/webGLArrays.html [ RetryOnFailure ]
+crbug.com/1028639 [ linux amd opengl passthrough ] conformance/ogles/GL/mat/mat_009_to_016.html [ Failure ]
 
 
 ####################

@@ -7,6 +7,7 @@
 #include <utility>
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/trees/animation_effect_timings.h"
@@ -113,7 +114,7 @@ void WorkletAnimation::UpdateState(bool start_ready_animations,
                                    AnimationEvents* events) {
   Animation::UpdateState(start_ready_animations, events);
   if (last_synced_local_time_ != local_time_) {
-    AnimationEvent event(worklet_animation_id_, local_time_);
+    AnimationEvent event(animation_timeline()->id(), id_, local_time_);
     // TODO(http://crbug.com/1013654): Instead of pushing multiple events per
     // single main frame, push just the recent one to be handled by next main
     // frame.
@@ -199,11 +200,6 @@ void WorkletAnimation::SetOutputState(
   // keyframe effect at the moment. https://crbug.com/767043.
   DCHECK_EQ(state.local_times.size(), 1u);
   local_time_ = state.local_times[0];
-}
-
-void WorkletAnimation::NotifyLocalTimeUpdated(const AnimationEvent& event) {
-  if (animation_delegate_)
-    animation_delegate_->NotifyLocalTimeUpdated(event.local_time);
 }
 
 void WorkletAnimation::SetPlaybackRate(double playback_rate) {

@@ -1576,10 +1576,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_RETURN:
       if (MaybeTriggerSecondaryButton(event)) {
         return true;
-      } else if (alt || (shift && command)) {
+      } else if ((alt && !shift) || (shift && command)) {
         model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                              event.time_stamp());
-      } else if (command) {
+      } else if (alt || command) {
         model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
                              event.time_stamp());
       } else if (shift) {

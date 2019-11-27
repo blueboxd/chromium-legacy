@@ -77,6 +77,9 @@ class RlzValueStoreChromeOS : public RlzValueStore {
   bool RemoveValueFromList(const std::string& list_name,
                            const base::Value& value);
 
+  // Returns true if the store contains |access_point|.
+  bool HasAccessPointRlz(AccessPoint access_point) const;
+
   // In-memory store with RLZ data.
   std::unique_ptr<base::DictionaryValue> rlz_store_;
 

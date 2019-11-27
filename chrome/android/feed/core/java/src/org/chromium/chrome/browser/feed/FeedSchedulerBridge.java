@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.feed;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
-import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.feed.library.api.client.requestmanager.RequestManager;
+import org.chromium.chrome.browser.feed.library.api.host.scheduler.SchedulerApi;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feed.NativeRequestBehavior;
 

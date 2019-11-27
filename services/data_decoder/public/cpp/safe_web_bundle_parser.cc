@@ -131,9 +131,4 @@ void SafeWebBundleParser::OnResponseParsed(
   std::move(callback).Run(std::move(response), std::move(error));
 }
 
-void SafeWebBundleParser::SetWebBundleParserFactoryForTesting(
-    mojo::Remote<mojom::WebBundleParserFactory> factory) {
-  factory_ = std::move(factory);
-}
-
 }  // namespace data_decoder

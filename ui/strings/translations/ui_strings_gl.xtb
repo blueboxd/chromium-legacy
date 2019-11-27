@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">De esquerda a dereita</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
-<translation id="1409544243779336081">Recomendación de aplicación</translation>
 <translation id="1450753235335490080">Non se puido compartir este contido: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Xa buscaches isto. Ao eliminar "<ph name="QUERY" />" do historial, quitarase permanentemente da túa conta en todos os teus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Un minuto e }other{# minutos e }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Punto</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# meses}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Valoración en estrelas: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Unha hora e }other{# horas e }}</translation>
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="1859234291848436338">Dirección de escritura</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Onte</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>
+<translation id="7848989271541991537">Moveuse á páxina <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Non bloquear</translation>
 <translation id="7907591526440419938">Abrir ficheiro</translation>
 <translation id="7969046989155602842">Comando</translation>

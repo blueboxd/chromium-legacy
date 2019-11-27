@@ -175,8 +175,8 @@ void SigninViewController::ShowDiceSigninTab(
     const std::string& email_hint,
     const GURL& redirect_url) {
 #if DCHECK_IS_ON()
-  if (AccountConsistencyModeManager::GetMethodForProfile(browser->profile()) !=
-      signin::AccountConsistencyMethod::kDice) {
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(
+          browser->profile())) {
     // Developers often fall into the trap of not configuring the OAuth client
     // ID and client secret and then attempt to sign in to Chromium, which
     // fail as the account consistency is disabled. Explicitly check that the

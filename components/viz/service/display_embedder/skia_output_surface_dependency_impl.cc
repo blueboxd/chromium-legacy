@@ -106,6 +106,22 @@ scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
   }
 }
 
+base::ScopedClosureRunner SkiaOutputSurfaceDependencyImpl::CacheGLSurface(
+    gl::GLSurface* surface) {
+  gpu_service_impl_->main_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&gl::GLSurface::AddRef, base::Unretained(surface)));
+  auto release_callback = base::BindOnce(
+      [](const scoped_refptr<base::TaskRunner>& runner,
+         gl::GLSurface* surface) {
+        runner->PostTask(FROM_HERE, base::BindOnce(&gl::GLSurface::Release,
+                                                   base::Unretained(surface)));
+      },
+      base::WrapRefCounted(gpu_service_impl_->main_runner()),
+      base::Unretained(surface));
+  return base::ScopedClosureRunner(std::move(release_callback));
+}
+
 void SkiaOutputSurfaceDependencyImpl::PostTaskToClientThread(
     base::OnceClosure closure) {
   client_thread_task_runner_->PostTask(FROM_HERE, std::move(closure));

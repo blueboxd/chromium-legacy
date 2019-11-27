@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
 import android.content.Context;
+import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -91,5 +93,11 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     public TabSuggestions createTabSuggestions(ChromeActivity activity) {
         return new TabSuggestionsOrchestrator(
                 activity.getTabModelSelector(), activity.getLifecycleDispatcher());
+    }
+
+    @Override
+    public TabGroupPopupUi createTabGroupPopUi(
+            ThemeColorProvider themeColorProvider, ObservableSupplier<View> parentViewSupplier) {
+        return new TabGroupPopupUiCoordinator(themeColorProvider, parentViewSupplier);
     }
 }

@@ -16,6 +16,7 @@
         <oobe-dialog class="gaia-dialog" role="dialog"
                      id="enrollment-gaia-dialog" has-buttons no-header
                      no-footer-padding
+                     footer-shrinkable
                      show-buttons-overlay="[[authenticatorDialogDisplayed_]]">
           <div slot="footer" class="flex layout vertical">
             <webview id="oauth-enroll-auth-view"
@@ -70,7 +71,8 @@
       </div>
       <div id="step-success" hidden$="[[!eq_(currentStep_, 'success')]]"
           role="alert">
-        <oobe-dialog id="oauth-enroll-success-card" has-buttons>
+        <oobe-dialog id="oauth-enroll-success-card" has-buttons
+            footer-shrinkable>
           <hd-iron-icon slot="oobe-icon"
               icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
           </hd-iron-icon>

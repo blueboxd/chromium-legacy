@@ -10,6 +10,10 @@
   @apply --oobe-default-font;
 }
 
+#top-scroll-container {
+  overflow-y: auto;
+}
+
 #header-container {
   padding-bottom: 0;
   padding-inline-end: var(--oobe-dialog-content-padding);
@@ -49,7 +53,6 @@
 }
 
 #footer-container {
-  overflow-y: auto;
   padding-bottom: 0;
   padding-inline-end: var(--oobe-dialog-content-padding);
   padding-inline-start: var(--oobe-dialog-content-padding);
@@ -60,6 +63,10 @@
 
 #footer-container[noFooterPadding] {
   padding: 0;
+}
+
+#footer-container[footerShrinkable] {
+  flex-shrink: 1;
 }
 
 #oobe-bottom {

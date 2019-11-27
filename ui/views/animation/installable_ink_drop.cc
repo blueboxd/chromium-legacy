@@ -55,8 +55,8 @@ InstallableInkDrop::InstallableInkDrop(View* view)
       animator_(layer_->size(),
                 &visual_state_,
                 animation_container_.get(),
-                base::Bind(&InstallableInkDrop::SchedulePaint,
-                           base::Unretained(this))) {
+                base::BindRepeating(&InstallableInkDrop::SchedulePaint,
+                                    base::Unretained(this))) {
   // Catch if |view_| is destroyed out from under us.
   if (DCHECK_IS_ON())
     view_->AddObserver(this);

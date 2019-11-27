@@ -476,6 +476,12 @@ void ArcGraphicsTracingHandler::StartTracing() {
     jank_detector_->Reset();
   system_stat_colletor_ = std::make_unique<arc::ArcSystemStatCollector>();
   system_stat_colletor_->Start(GetMaxInterval());
+
+  // Timestamp and app information would be updated when |OnTracingStarted| is
+  // called.
+  timestamp_ = base::Time::Now();
+  UpdateActiveArcWindowInfo();
+
   content::TracingController::GetInstance()->StartTracing(
       GetTracingConfig(mode_),
       base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStarted,
@@ -516,8 +522,12 @@ void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
 }
 
 void ArcGraphicsTracingHandler::OnTracingStarted() {
-  timestamp_ = base::Time::Now();
+  // This is an asynchronous call and it may arrive after tracing is actually
+  // stopped.
+  if (!tracing_active_)
+    return;
 
+  timestamp_ = base::Time::Now();
   UpdateActiveArcWindowInfo();
 
   tracing_time_min_ = TRACE_TIME_TICKS_NOW();

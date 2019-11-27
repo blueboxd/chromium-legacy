@@ -27,7 +27,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -48,7 +47,6 @@ struct WebDeviceEmulationParams;
 namespace content {
 
 class DevToolsAgentHostImpl;
-class FileSelectListener;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
@@ -63,7 +61,6 @@ class PageHandler : public DevToolsDomainHandler,
                     public RenderWidgetHostObserver {
  public:
   PageHandler(EmulationHandler* handler,
-              void** active_file_chooser_interceptor,
               bool allow_set_download_behavior,
               bool allow_file_access);
   ~PageHandler() override;
@@ -119,10 +116,6 @@ class PageHandler : public DevToolsDomainHandler,
       std::unique_ptr<NavigationEntries>* entries) override;
   Response NavigateToHistoryEntry(int entry_id) override;
   Response ResetNavigationHistory() override;
-  Response SetInterceptFileChooserDialog(bool enabled) override;
-  Response HandleFileChooser(
-      const std::string& action,
-      Maybe<protocol::Array<std::string>> files) override;
 
   void CaptureScreenshot(
       Maybe<std::string> format,
@@ -173,10 +166,6 @@ class PageHandler : public DevToolsDomainHandler,
   void GetInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
-  bool InterceptFileChooser(RenderFrameHostImpl* rfh,
-                            std::unique_ptr<FileSelectListener>* listener,
-                            const blink::mojom::FileChooserParams& params);
-
  private:
   enum EncodingFormat { PNG, JPEG };
 
@@ -189,7 +178,6 @@ class PageHandler : public DevToolsDomainHandler,
   void ScreencastFrameEncoded(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
       const protocol::Binary& data);
-  void FallbackOrCancelFileChooser();
 
   void ScreenshotCaptured(
       std::unique_ptr<CaptureScreenshotCallback> callback,
@@ -234,9 +222,7 @@ class PageHandler : public DevToolsDomainHandler,
 
   RenderFrameHostImpl* host_;
   EmulationHandler* emulation_handler_;
-  void** active_file_chooser_interceptor_;
   bool allow_set_download_behavior_;
-  const bool allow_file_access_;
 
   std::unique_ptr<Page::Frontend> frontend_;
   ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_{this};
@@ -244,9 +230,6 @@ class PageHandler : public DevToolsDomainHandler,
   scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>
       navigate_callbacks_;
-  std::unique_ptr<FileSelectListener> file_chooser_listener_;
-  std::unique_ptr<blink::mojom::FileChooserParams> file_chooser_params_;
-  base::Optional<std::pair<int, int>> file_chooser_rfh_id_;
 
   base::WeakPtrFactory<PageHandler> weak_factory_{this};
 

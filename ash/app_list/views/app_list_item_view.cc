@@ -724,9 +724,9 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
         touch_drag_timer_.Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(kTouchLongpressDelayInMs),
-            base::Bind(&AppListItemView::OnTouchDragTimer,
-                       base::Unretained(this), event->location(),
-                       event->root_location()));
+            base::BindOnce(&AppListItemView::OnTouchDragTimer,
+                           base::Unretained(this), event->location(),
+                           event->root_location()));
         event->SetHandled();
       }
       break;

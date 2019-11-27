@@ -19,9 +19,22 @@ namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
 using input_method::InputMethodEngineBase;
 
 namespace {
-const char kInputImeApiErrorEngineNotAvailable[] = "Engine is not available";
-const char kInputImeApiErrorSetKeyEventsFail[] = "Could not send key events";
+const char kErrorRouterNotAvailable[] = "The router is not available.";
+const char kErrorSetKeyEventsFail[] = "Could not send key events";
+
+InputMethodEngineBase* GetEngineIfActive(Profile* profile,
+                                         const std::string& extension_id,
+                                         std::string* error) {
+  extensions::InputImeEventRouter* event_router =
+      extensions::GetInputImeEventRouter(profile);
+  CHECK(event_router) << kErrorRouterNotAvailable;
+  InputMethodEngineBase* engine =
+      event_router->GetEngineIfActive(extension_id, error);
+  return engine;
+}
+
 }  // namespace
+
 namespace ui {
 
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
@@ -89,13 +102,13 @@ void ImeObserver::OnKeyEvent(
     return;
   }
 
-  extensions::InputImeEventRouter* event_router =
-      extensions::GetInputImeEventRouter(profile_);
-  if (!event_router || !event_router->GetEngineIfActive(extension_id_))
+  std::string error;
+  InputMethodEngineBase* engine =
+      GetEngineIfActive(profile_, extension_id_, &error);
+  if (!engine)
     return;
   const std::string request_id =
-      event_router->GetEngineIfActive(extension_id_)
-          ->AddPendingKeyEvent(component_id, std::move(callback));
+      engine->AddPendingKeyEvent(component_id, std::move(callback));
 
   input_ime::KeyboardEvent key_data_value;
   key_data_value.type = input_ime::ParseKeyboardEventType(event.type);
@@ -303,92 +316,86 @@ void InputImeEventRouterFactory::RemoveProfile(Profile* profile) {
 ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   std::unique_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    engine->KeyEventHandled(extension_id(), params->request_id,
-                            params->response);
-  }
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
+
+  engine->KeyEventHandled(extension_id(), params->request_id, params->response);
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    std::unique_ptr<SetComposition::Params> parent_params(
-        SetComposition::Params::Create(*args_));
-    const SetComposition::Params::Parameters& params =
-        parent_params->parameters;
-    std::vector<InputMethodEngineBase::SegmentInfo> segments;
-    if (params.segments) {
-      for (const auto& segments_arg : *params.segments) {
-        EXTENSION_FUNCTION_VALIDATE(segments_arg.style !=
-                                    input_ime::UNDERLINE_STYLE_NONE);
-        InputMethodEngineBase::SegmentInfo segment_info;
-        segment_info.start = segments_arg.start;
-        segment_info.end = segments_arg.end;
-        if (segments_arg.style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
-          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-        } else if (segments_arg.style ==
-                   input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
-        } else {
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
-        }
-        segments.push_back(segment_info);
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
+
+  std::unique_ptr<SetComposition::Params> parent_params(
+      SetComposition::Params::Create(*args_));
+  const SetComposition::Params::Parameters& params = parent_params->parameters;
+  std::vector<InputMethodEngineBase::SegmentInfo> segments;
+  if (params.segments) {
+    for (const auto& segments_arg : *params.segments) {
+      EXTENSION_FUNCTION_VALIDATE(segments_arg.style !=
+                                  input_ime::UNDERLINE_STYLE_NONE);
+      InputMethodEngineBase::SegmentInfo segment_info;
+      segment_info.start = segments_arg.start;
+      segment_info.end = segments_arg.end;
+      if (segments_arg.style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
+        segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+      } else if (segments_arg.style ==
+                 input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
+        segment_info.style =
+            InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+      } else {
+        segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
       }
+      segments.push_back(segment_info);
     }
-    int selection_start =
-        params.selection_start ? *params.selection_start : params.cursor;
-    int selection_end =
-        params.selection_end ? *params.selection_end : params.cursor;
-    std::string error;
-    if (!engine->SetComposition(params.context_id, params.text.c_str(),
-                                selection_start, selection_end, params.cursor,
-                                segments, &error)) {
-      std::unique_ptr<base::ListValue> results =
-          std::make_unique<base::ListValue>();
-      results->Append(std::make_unique<base::Value>(false));
-      return RespondNow(ErrorWithArguments(std::move(results), error));
-    }
+  }
+  int selection_start =
+      params.selection_start ? *params.selection_start : params.cursor;
+  int selection_end =
+      params.selection_end ? *params.selection_end : params.cursor;
+  if (!engine->SetComposition(params.context_id, params.text.c_str(),
+                              selection_start, selection_end, params.cursor,
+                              segments, &error)) {
+    std::unique_ptr<base::ListValue> results =
+        std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(std::move(results), error));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    std::unique_ptr<CommitText::Params> parent_params(
-        CommitText::Params::Create(*args_));
-    const CommitText::Params::Parameters& params = parent_params->parameters;
-    std::string error;
-    if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
-      std::unique_ptr<base::ListValue> results =
-          std::make_unique<base::ListValue>();
-      results->Append(std::make_unique<base::Value>(false));
-      return RespondNow(ErrorWithArguments(std::move(results), error));
-    }
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
+
+  std::unique_ptr<CommitText::Params> parent_params(
+      CommitText::Params::Create(*args_));
+  const CommitText::Params::Parameters& params = parent_params->parameters;
+  if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
+    std::unique_ptr<base::ListValue> results =
+        std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(std::move(results), error));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(kInputImeApiErrorEngineNotAvailable));
+    return RespondNow(Error(error));
 
   std::unique_ptr<SendKeyEvents::Params> parent_params(
       SendKeyEvents::Params::Create(*args_));
@@ -411,7 +418,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
   if (!engine->SendKeyEvents(params.context_id, key_data_out))
-    return RespondNow(Error(kInputImeApiErrorSetKeyEventsFail));
+    return RespondNow(Error(kErrorSetKeyEventsFail));
   return RespondNow(NoArguments());
 }
 

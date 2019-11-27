@@ -412,6 +412,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
     kMaxValue = kRefusedBySiteInstance
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Must agree with FramePrioritiesSeen
+  // in enums.xml.
+  enum class FramePrioritiesSeen {
+    kNoFramesSeen = 0,
+    kMixedPrioritiesSeen = 1,
+    kOnlyLowPrioritiesSeen = 2,
+    kOnlyNormalPrioritiesSeen = 3,
+    kMaxValue = kOnlyNormalPrioritiesSeen
+  };
+
   static scoped_refptr<base::SingleThreadTaskRunner>
   GetInProcessRendererThreadTaskRunnerForTesting();
 
@@ -924,6 +935,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Tracks the total number of frames currently hosted in this process.
   // Always 0 unless features::kUseFramePriorityInProcessHost is enabled.
   unsigned int total_frames_ = 0;
+  // These two variables track whether a low/normal priority frame
+  // (respectively) has been attached to the host at any point during its
+  // lifetime.  Used for UMA metrics recorded in destructor.
+  bool low_priority_frames_seen_ = false;
+  bool normal_priority_frames_seen_ = false;
 #if defined(OS_ANDROID)
   // Highest importance of all clients that contribute priority.
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;

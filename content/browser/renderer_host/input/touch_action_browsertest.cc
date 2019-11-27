@@ -476,7 +476,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, TouchActionBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, TouchActionBrowserTest, testing::Bool());
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
     defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \

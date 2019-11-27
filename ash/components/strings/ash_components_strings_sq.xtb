@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ose <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Modaliteti "Përmbledhja"</translation>
 <translation id="4382340674111381977">Kalo mbrapa te faqja e mëparshme</translation>
+<translation id="4458670250301149821">Zhvendos një ikonë aplikacioni te/nga një dosje në rrjetën e aplikacioneve</translation>
 <translation id="4472417192667361414">Cilësimet e sistemit dhe të ekranit</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, më pas <ph name="LEFT" /> ose <ph name="RIGHT" /> ose <ph name="UP" /> ose <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Shiko "Ndihmësin e shkurtoreve të tastierës"</translation>
 <translation id="4628718545549558538">Hap zonën e statusit (ku shfaqet fotografia e llogarisë sate)</translation>
 <translation id="4642092649622328492">Nxirr një pamje të pjesshme të ekranit</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Fshi shkronjën tjetër (fshirje përpara)</translation>
 <translation id="7500368597227394048">vijë ndarëse</translation>
 <translation id="7611271430932669992">Zhvendos fokusin te dritaret kërcyese dhe dialogët</translation>
+<translation id="7635348532214572995">Zhvendos një ikonë aplikacioni në rrjetën e aplikacioneve</translation>
 <translation id="766326951329901120">Ngjit përmbajtjen nga kujtesa e fragmenteve si tekst i thjeshtë</translation>
 <translation id="7703010453515335249">kllapa majtas</translation>
 <translation id="7724603315864178912">Prite</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Ngjit përmbajtjen nga kujtesa e fragmenteve</translation>
 <translation id="9052808072970550123">Kalo te përdoruesi tjetër</translation>
 <translation id="906458777597946297">Zmadho dritaren</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, më pas <ph name="LEFT" /> ose <ph name="RIGHT" /> ose <ph name="UP" /> ose <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Shko në fillim të rreshtit</translation>
 <translation id="9106898733795143799">Faqja dhe shfletuesi i uebit</translation>
 <translation id="9162942292291287644">Asnjë rezultat kërkimi për <ph name="QUERY" /></translation>

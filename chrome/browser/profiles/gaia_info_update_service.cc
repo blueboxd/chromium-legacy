@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/notification_details.h"
@@ -86,17 +87,23 @@ void GAIAInfoUpdateService::Update(const AccountInfo& info) {
   entry->SetGAIAGivenName(base::UTF8ToUTF16(info.given_name));
   entry->SetGAIAName(base::UTF8ToUTF16(info.full_name));
 
+  const base::string16 hosted_domain = base::UTF8ToUTF16(info.hosted_domain);
+  profile_prefs_->SetString(prefs::kGoogleServicesHostedDomain,
+                            base::UTF16ToUTF8(hosted_domain));
+
   if (info.picture_url == kNoPictureURLFound) {
     entry->SetGAIAPicture(gfx::Image());
   } else if (!info.account_image.IsEmpty()) {
+    if (info.account_image.ToSkBitmap()->width() !=
+        signin::kAccountInfoImageSize) {
+      // All newly downloaded images should be of
+      // |signin::kAccountInfoImageSize| size.
+      return;
+    }
     // Only set the image if it is not empty, to avoid clearing the image if we
     // fail to download it on one of the 24 hours interval to refresh the data.
     entry->SetGAIAPicture(info.account_image);
   }
-
-  const base::string16 hosted_domain = base::UTF8ToUTF16(info.hosted_domain);
-  profile_prefs_->SetString(prefs::kGoogleServicesHostedDomain,
-                            base::UTF16ToUTF8(hosted_domain));
 }
 
 // static

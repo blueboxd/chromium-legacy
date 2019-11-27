@@ -35,7 +35,8 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCancelFailsSessionCreation) {
       t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
   t->EnterSessionWithUserGesture();
   t->PollJavaScriptBooleanOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].error != null");
+      "sessionInfos[sessionTypes.IMMERSIVE].error != null",
+      WebXrVrBrowserTestBase::kPollTimeoutMedium);
   t->RunJavaScriptOrFail("verifySessionConsentError(sessionTypes.IMMERSIVE)");
   t->AssertNoJavaScriptErrors();
 
@@ -53,7 +54,8 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCloseFailsSessionCreation) {
       t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
   t->EnterSessionWithUserGesture();
   t->PollJavaScriptBooleanOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].error != null");
+      "sessionInfos[sessionTypes.IMMERSIVE].error != null",
+      WebXrVrBrowserTestBase::kPollTimeoutMedium);
   t->RunJavaScriptOrFail("verifySessionConsentError(sessionTypes.IMMERSIVE)");
   t->AssertNoJavaScriptErrors();
 

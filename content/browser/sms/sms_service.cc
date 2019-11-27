@@ -14,10 +14,13 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsStatus;
 
 namespace content {
@@ -98,6 +101,24 @@ void SmsService::Abort() {
   DCHECK(callback_);
 
   Process(SmsStatus::kAborted, base::nullopt);
+}
+
+void SmsService::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  switch (load_details.type) {
+    case NavigationType::NAVIGATION_TYPE_NEW_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateNewPage);
+      break;
+    case NavigationType::NAVIGATION_TYPE_EXISTING_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateExistingPage);
+      break;
+    case NavigationType::NAVIGATION_TYPE_SAME_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateSamePage);
+      break;
+    default:
+      // Ignore cases we don't care about.
+      break;
+  }
 }
 
 void SmsService::OpenInfoBar(const std::string& one_time_code) {

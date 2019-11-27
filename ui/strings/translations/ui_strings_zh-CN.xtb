@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">从左向右</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1398853756734560583">最大化</translation>
-<translation id="1409544243779336081">推荐的应用</translation>
 <translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">句号</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 个月}other{# 个月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">星级：<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 小时 }other{# 小时 }}</translation>
 <translation id="1842960171412779397">选中</translation>
 <translation id="1859234291848436338">书写方向</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
+<translation id="7848989271541991537">已移至第 <ph name="PAGE_NUMBER" /> 页中第 <ph name="ROW_NUMBER" /> 行与第 <ph name="COLUMN_NUMBER" /> 列的相交处。</translation>
 <translation id="7879499977785298635">不屏蔽</translation>
 <translation id="7907591526440419938">打开文件</translation>
 <translation id="7969046989155602842">Cmd 键</translation>

@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.test.pagecontroller.controllers.ntp;
 
-import com.google.android.libraries.feed.sharedstream.contextmenumanager.R;
-
+import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.R;
 import org.chromium.chrome.test.pagecontroller.controllers.PageController;
 import org.chromium.chrome.test.pagecontroller.controllers.urlpage.UrlPage;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;

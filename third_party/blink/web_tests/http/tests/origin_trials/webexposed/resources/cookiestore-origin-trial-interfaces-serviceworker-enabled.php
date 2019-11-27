@@ -9,9 +9,10 @@ importScripts('/resources/testharness.js',
 
 test(t => {
   OriginTrialsHelper.check_properties_exist(this, {
-     'CookieStore': ['get', 'getAll', 'set', 'delete', 'subscribeToChanges',
-                     'getChangeSubscriptions'],
+     'CookieStore': ['get', 'getAll', 'set', 'delete'],
+     'CookieStoreManager': ['getSubscriptions', 'subscribe', 'unsubscribe'],
      'ExtendableCookieChangeEvent': ['changed', 'deleted'],
+     'ServiceWorkerRegistration': ['cookies'],
   });
 }, 'Cookie Store API interfaces and properties in Origin-Trial enabled serviceworker.');
 

@@ -23,8 +23,7 @@ group("telemetry_chrome_test") {
     data_deps += [
       "//android_webview/test:webview_instrumentation_apk",
       "//chrome/android:chrome_public_apk",
-      "//weblayer/shell/android:weblayer_support_apk",
-      "//weblayer/shell/android:weblayer_shell_apk",
+      ":telemetry_weblayer_apks",
     ]
 
     if (enable_chrome_android_internal) {
@@ -69,6 +68,22 @@ group("telemetry_chrome_test") {
     data_deps += [
       "//build/win:copy_cdb_to_output",
       "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
+  }
+}
+
+group("telemetry_weblayer_apks") {
+  testonly = true
+
+  data_deps = []
+  if (is_android) {
+    data_deps += [
+      "//weblayer/shell/android:weblayer_support_apk",
+      "//weblayer/shell/android:weblayer_shell_apk",
+
+      # TODO(crbug.com/1022823): Uncomment the following line after
+      # the chromium_perf.py recipe has been set up to use this build rule.
+      #"//weblayer/shell/android:weblayer_shell_system_webview_apk",
     ]
   }
 }

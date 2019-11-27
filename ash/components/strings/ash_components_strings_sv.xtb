@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Översiktsläge</translation>
 <translation id="4382340674111381977">Återgå till föregående sida</translation>
+<translation id="4458670250301149821">Flytta appikoner till eller från en mapp i rutnätet för appar</translation>
 <translation id="4472417192667361414">System- och visningsinställningar</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> följt av <ph name="LEFT" /> eller <ph name="RIGHT" /> eller <ph name="UP" /> eller <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Visa hjälpen för kortkommandon</translation>
 <translation id="4628718545549558538">Klicka i statusfältet där kontobilden visas</translation>
 <translation id="4642092649622328492">Ta en skärmdump av en del av skärmen</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Radera nästa bokstav (radera framåt)</translation>
 <translation id="7500368597227394048">bindestreck</translation>
 <translation id="7611271430932669992">Flytta fokus till popupfönster och dialogrutor</translation>
+<translation id="7635348532214572995">Flytta appikoner i rutnätet för appar</translation>
 <translation id="766326951329901120">Klistra in innehållet i Urklipp som oformaterad text</translation>
 <translation id="7703010453515335249">vänster parentes</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Klistra in innehållet i Urklipp</translation>
 <translation id="9052808072970550123">Växla till nästa användare</translation>
 <translation id="906458777597946297">Maximera fönstret</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> följt av <ph name="LEFT" /> eller <ph name="RIGHT" /> eller <ph name="UP" /> eller <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Gå till början av raden</translation>
 <translation id="9106898733795143799">Sidor och webbläsare</translation>
 <translation id="9162942292291287644">Inget sökresultat för <ph name="QUERY" /></translation>

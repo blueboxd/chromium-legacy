@@ -345,20 +345,27 @@ encouraged and enforced by Chrome metrics team through reviews.
 
 #### How to choose expiry for histograms
 
-For new histograms if it is used for launching a project for which the timeline
-is known then pick an expiry based on your project timeline. Otherwise, we
-recommend choosing 3-6 months.
+If you are adding a histogram that will be used to evaluate a feature launch,
+set an expiry date consistent with the expected feature launch date. Otherwise,
+we recommend choosing 3-6 months.
 
-For already existing histograms here are different scenarios:
+Here are some guidelines for common scenarios:
 
-*   Owner moved to different project - find new owner
-*   Owner doesn’t use it, team doesn’t use it - remove
-*   Not in use now, but maybe useful in the far future - remove
-*   Not in use now, but maybe useful in the near future - pick 3 months or 2
-    milestone ahead
-*   Actively in use now, useful for short term - pick 3-6 month or appropriate
-    number of milestones ahead
-*   Actively in use, seems useful for indefinite time - pick 1 year or more
+*   If the listed owner moved to different project, find a new owner.
+*   If neither the owner nor the team uses the histogram, remove it.
+*   If the histogram is not in use now, but might be useful in the far future,
+    remove it.
+*   If the histogram is not in use now, but might be useful in the near
+    future, pick ~3 months or ~2 milestones ahead.
+*   If the histogram is actively in use now and useful for a short term, pick
+    3-6 month or 2-4 milestones ahead.
+*   If the histogram is actively in use and seems useful for an indefinite time,
+    pick 1 year.
+
+We also have a tool that automatically extends expiry dates. The 80% more
+frequently accessed histograms are pushed out every Tuesday, to 6 months from
+the date of the run. Googlers can view the [design
+doc](https://docs.google.com/document/d/1IEAeBF9UnYQMDfyh2gdvE7WlUKsfIXIZUw7qNoU89A4).
 
 ### Expired histogram notifier
 

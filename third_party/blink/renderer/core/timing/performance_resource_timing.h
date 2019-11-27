@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_RESOURCE_TIMING_H_
 
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -125,6 +126,8 @@ class CORE_EXPORT PerformanceResourceTiming
   scoped_refptr<ResourceLoadTiming> timing_;
   base::TimeTicks last_redirect_end_time_;
   base::TimeTicks response_end_;
+  mojom::RequestContextType context_type_ =
+      mojom::RequestContextType::UNSPECIFIED;
   uint64_t transfer_size_ = 0;
   uint64_t encoded_body_size_ = 0;
   uint64_t decoded_body_size_ = 0;

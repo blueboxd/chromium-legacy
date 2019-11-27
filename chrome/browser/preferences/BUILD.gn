@@ -7,6 +7,7 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   java_files = [
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefix.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
     "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java",
@@ -34,7 +35,10 @@ java_cpp_enum("java_enums_srcjar") {
 
 android_library("javatests") {
   testonly = true
-  java_files = [ "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java" ]
+  java_files = [
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefixTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",

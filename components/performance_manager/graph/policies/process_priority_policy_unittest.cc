@@ -62,8 +62,8 @@ class ProcessPriorityPolicyTest : public PerformanceManagerTestHarness {
     // It's safe to pass unretained as we clear the callback before being
     // torn down.
     ProcessPriorityPolicy::SetCallbackForTesting(
-        base::Bind(&ProcessPriorityPolicyTest::OnSetPriorityWrapper,
-                   base::Unretained(this)));
+        base::BindRepeating(&ProcessPriorityPolicyTest::OnSetPriorityWrapper,
+                            base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -106,7 +106,7 @@ class ProcessPriorityPolicyTest : public PerformanceManagerTestHarness {
 TEST_F(ProcessPriorityPolicyTest, GraphReflectedToRenderProcessHost) {
   // Create an instance of the process priority policy.
   PerformanceManager::CallOnGraph(
-      FROM_HERE, base::Bind([](Graph* graph) {
+      FROM_HERE, base::BindOnce([](Graph* graph) {
         std::unique_ptr<ProcessPriorityPolicy> policy(
             new ProcessPriorityPolicy());
         graph->PassToGraph(std::move(policy));

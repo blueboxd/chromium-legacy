@@ -184,11 +184,11 @@ BASE_EXPORT bool RemoveChars(const std::string& input,
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BASE_EXPORT bool ReplaceChars(const string16& input,
                               StringPiece16 replace_chars,
-                              const string16& replace_with,
+                              StringPiece16 replace_with,
                               string16* output);
 BASE_EXPORT bool ReplaceChars(const std::string& input,
                               StringPiece replace_chars,
-                              const std::string& replace_with,
+                              StringPiece replace_with,
                               std::string* output);
 
 enum TrimPositions {

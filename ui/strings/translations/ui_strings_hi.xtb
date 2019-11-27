@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">बाएं से दाएं</translation>
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1398853756734560583">बड़ा करें</translation>
-<translation id="1409544243779336081">ऐप्लिकेशन का सुझाव</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> शेयर नहीं किया जा सकता</translation>
 <translation id="1498028757988366001">आपने पहले इसे खोजा है. अगर आप "<ph name="QUERY" />" को अपने इतिहास से मिटा देते हैं, तो यह सभी डिवाइस पर मौजूद आपके खाते से हटा दिया जाएगा.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">अवधि</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 माह}one{# माह}other{# माह}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> एमबी/सेकंड</translation>
-<translation id="1812519734428420144">तारा रेटिंग <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 घंटा और }one{# घंटे और }other{# घंटे और }}</translation>
 <translation id="1842960171412779397">चुनें</translation>
 <translation id="1859234291848436338">लिखने के निर्देश</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7781829728241885113">बीता कल</translation>
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाएं</translation>
+<translation id="7848989271541991537">पेज <ph name="PAGE_NUMBER" />, लाइन <ph name="ROW_NUMBER" />, कॉलम <ph name="COLUMN_NUMBER" /> पर जाएं.</translation>
 <translation id="7879499977785298635">ब्लॉक नहीं करें</translation>
 <translation id="7907591526440419938">फ़ाइल खोलें</translation>
 <translation id="7969046989155602842">निर्देश</translation>

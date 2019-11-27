@@ -2481,6 +2481,10 @@ enum WebFeature {
   kV8PortalHost_PostMessage_Method = 3100,
   kV8PortalActivateEvent_Data_AttributeGetter = 3101,
   kV8PortalActivateEvent_AdoptPredecessor_Method = 3102,
+  kLinkRelPrefetchForSignedExchanges = 3103,
+  kMessageEventSharedArrayBufferSameOrigin = 3104,
+  kMessageEventSharedArrayBufferSameAgentCluster = 3105,
+  kMessageEventSharedArrayBufferDifferentAgentCluster = 3106,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

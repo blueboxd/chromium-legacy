@@ -41,34 +41,6 @@ public class SyncPreferenceUtils {
     private static final String MY_ACCOUNT_URL = "https://myaccount.google.com/smartlink/home";
 
     /**
-     * Checks if sync error icon should be shown. Show sync error icon if sync is off because
-     * of error, passphrase required or disabled in Android.
-     */
-    public static boolean showSyncErrorIcon(Context context) {
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
-            return true;
-        }
-
-        ProfileSyncService profileSyncService = ProfileSyncService.get();
-        if (profileSyncService != null) {
-            if (profileSyncService.hasUnrecoverableError()) {
-                return true;
-            }
-
-            if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
-                return true;
-            }
-
-            if (profileSyncService.isSyncActive()
-                    && profileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Return a short summary of the current sync status.
      */
     public static String getSyncStatusSummary(Context context) {

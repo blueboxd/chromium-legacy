@@ -84,10 +84,10 @@ TEST(CSVPasswordIteratorTest, MostRowsCorrect) {
 
   CSVPasswordIterator check = iter;
   for (size_t i = 0; i < base::size(kExpectedUsernames); ++i) {
-    EXPECT_EQ(CSVPassword::Status::kOK, (check++)->Parse(nullptr))
+    EXPECT_EQ(CSVPassword::Status::kOK, (check++)->TryParse())
         << "on line " << i;
   }
-  EXPECT_NE(CSVPassword::Status::kOK, check->Parse(nullptr));
+  EXPECT_NE(CSVPassword::Status::kOK, check->TryParse());
 
   for (const base::StringPiece& expected_username : kExpectedUsernames) {
     PasswordForm result = (iter++)->ParseValid();
@@ -120,7 +120,7 @@ TEST(CSVPasswordIteratorTest, LastRowCorrect) {
   EXPECT_EQ("http://no-failure.example.com/", pf.signon_realm);
 
   // After iterating over all lines, there is no more data to parse.
-  EXPECT_NE(CSVPassword::Status::kOK, iter->Parse(nullptr));
+  EXPECT_NE(CSVPassword::Status::kOK, iter->TryParse());
 }
 
 TEST(CSVPasswordIteratorTest, NoRowCorrect) {

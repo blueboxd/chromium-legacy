@@ -92,6 +92,8 @@
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
 #include "components/metal_util/test_shader.h"
+#include "content/public/common/content_features.h"
+#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #endif
@@ -155,6 +157,13 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 #if defined(OS_WIN)
     media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+#endif
+
+#if defined(OS_MACOSX)
+    if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
+      TRACE_EVENT0("gpu", "Initialize VideoToolbox");
+      media::InitializeVideoToolbox();
+    }
 #endif
 
     // On Linux, reading system memory doesn't work through the GPU sandbox.

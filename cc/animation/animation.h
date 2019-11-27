@@ -102,11 +102,12 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void AddToTicking();
   void RemoveFromTicking();
 
-  // AnimationDelegate routing.
-  void NotifyKeyframeModelStarted(const AnimationEvent& event);
-  void NotifyKeyframeModelFinished(const AnimationEvent& event);
-  void NotifyKeyframeModelAborted(const AnimationEvent& event);
-  void NotifyKeyframeModelTakeover(const AnimationEvent& event);
+  // Dispatches animation event to the animation keyframe effect and model when
+  // appropriate, based on the event characteristics.
+  // Delegates animation event that was successfully dispatched or doesn't need
+  // to be dispatched.
+  void DispatchAndDelegateAnimationEvent(const AnimationEvent& event);
+
   size_t TickingKeyframeModelsCount() const;
   bool AffectsCustomProperty() const;
 
@@ -146,6 +147,9 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
   void PushAttachedKeyframeEffectsToImplThread(Animation* animation_impl) const;
   void PushPropertiesToImplThread(Animation* animation_impl);
+
+  // Delegates animation event
+  void DelegateAnimationEvent(const AnimationEvent& event);
 
  protected:
   explicit Animation(int id);

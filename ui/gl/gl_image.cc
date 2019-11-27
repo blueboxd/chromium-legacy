@@ -34,6 +34,10 @@ std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 GLImage::GetAHardwareBuffer() {
   return nullptr;
 }
+
+gfx::Rect GLImage::GetCropRect() {
+  return gfx::Rect();
+}
 #endif
 
 bool GLImage::HasMutableState() const {

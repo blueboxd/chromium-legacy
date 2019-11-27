@@ -37,7 +37,7 @@ class RenderProcessHostProxy;
 // it.
 class ProcessNode : public Node {
  public:
-  using FrameNodeVisitor = base::Callback<bool(const FrameNode*)>;
+  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
   using Observer = ProcessNodeObserver;
   class ObserverDefaultImpl;
 

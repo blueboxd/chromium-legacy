@@ -16,6 +16,7 @@ class LiveTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUp() override;
   void TearDown() override;
+  void PostRunTestOnMainThread() override;
 
   const TestAccountsUtil* GetTestAccountsUtil() const {
     return &test_accounts_;

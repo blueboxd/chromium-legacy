@@ -67,7 +67,7 @@ void InitializeKstaled() {
   DCHECK(debugd_client);
 
   debugd_client->SetKstaledRatio(static_cast<uint8_t>(feature_ratio),
-                                 base::Bind(&OnRatioSet));
+                                 base::BindOnce(&OnRatioSet));
 }
 
 }  // namespace chromeos

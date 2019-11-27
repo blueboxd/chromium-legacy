@@ -7,12 +7,14 @@
 
 namespace chromeos {
 
+constexpr gfx::Size kMaxDialogSize{768, 768};
+// Min height should match --oobe-dialog-min-height;
+constexpr gfx::Size kMinDialogSize{464, 384};
+constexpr gfx::Insets kMinMargins{48, 48};
+
 namespace {
 
-constexpr gfx::Size kMaxDialogSize{768, 768};
 constexpr int kDialogHeightForWidePadding = 640;
-constexpr gfx::Size kMinDialogSize{464, 464};
-constexpr gfx::Insets kMinMargins{48, 48};
 
 }  // namespace
 

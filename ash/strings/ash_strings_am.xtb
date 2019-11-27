@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">ኤችኤስፒኤ</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" />ን በመጠቀም ላይ</translation>
 <translation id="899350903320462459">የማሳወቅ እርምጃውን ለማከናወን መሣሪያን እንደ <ph name="LOGIN_ID" /> ይክፈቱ</translation>
-<translation id="8995603266996330174">የተቀናበረው በ<ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">የ Family Link ወላጅ መዳረሻ ኮድ ያስገቡ።</translation>
 <translation id="9029474291399787231">የAdobe Flash Player ዝማኔ ይገኛል</translation>
 <translation id="9056839673611986238">መሣሪያ ይቀነሳል</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">የሙሉ ማያ ገጽ ማጉያ</translation>
 <translation id="9193626018745640770">በማይታወቅ ተቀባይ ላይ Cast በማድረግ ላይ</translation>
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
+<translation id="9205817095063786319">መሣሪያ የሚተዳደረው በ<ph name="DOMAIN" /> ነው</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>
 <translation id="9211681782751733685">ባትሪ ሙሉ በሙሉ ኃይል እስኪሞላ ድረስ <ph name="TIME_REMAINING" /> ይቀራል።</translation>
 <translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>

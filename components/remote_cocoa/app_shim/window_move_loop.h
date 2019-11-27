@@ -40,7 +40,7 @@ class CocoaWindowMoveLoop {
 
   // Pointer to a stack variable holding the exit reason.
   LoopExitReason* exit_reason_ref_ = nullptr;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // WeakPtrFactory for event monitor safety.
   base::WeakPtrFactory<CocoaWindowMoveLoop> weak_factory_;

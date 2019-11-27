@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
 /**

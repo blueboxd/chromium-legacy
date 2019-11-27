@@ -10,6 +10,8 @@ import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.browser.customtabs.TrustedWebUtils;
+
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -18,15 +20,13 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
@@ -152,7 +152,10 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     public static void assertToolbarShowState(ChromeActivity activity, boolean showState) {
         Assert.assertEquals(showState,
                 TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> TabBrowserControlsState.get(activity.getActivityTab()).canShow()));
+                        ()
+                                -> TabBrowserControlsConstraintsHelper
+                                           .get(activity.getActivityTab())
+                                           .canShow()));
     }
 
     /**

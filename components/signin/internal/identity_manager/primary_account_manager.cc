@@ -107,8 +107,9 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
 
   bool consented =
       client_->GetPrefs()->GetBoolean(prefs::kGoogleServicesConsentedToSync);
+  CoreAccountId account_id = CoreAccountId::FromString(pref_account_id);
   CoreAccountInfo account_info =
-      account_tracker_service_->GetAccountInfo(CoreAccountId(pref_account_id));
+      account_tracker_service_->GetAccountInfo(account_id);
   if (consented) {
     DCHECK(!account_info.account_id.empty());
     // First reset the state, because SetAuthenticatedAccountInfo can only be

@@ -23,6 +23,7 @@
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_blob_storage.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
@@ -202,8 +203,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   bool IsTaskQueueEmpty() const;
   bool HasPendingTasks() const;
 
-  leveldb::Status BlobWriteComplete(
-      IndexedDBBackingStore::BlobWriteResult result);
+  leveldb::Status BlobWriteComplete(BlobWriteResult result);
   void CloseOpenCursorBindings();
   void CloseOpenCursors();
   leveldb::Status CommitPhaseTwo();

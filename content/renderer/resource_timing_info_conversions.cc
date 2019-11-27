@@ -24,6 +24,7 @@ ResourceTimingInfo WebResourceTimingInfoToResourceTimingInfo(
   resource_timing.alpn_negotiated_protocol =
       info.alpn_negotiated_protocol.Utf8();
   resource_timing.connection_info = info.connection_info.Utf8();
+  resource_timing.context_type = info.context_type;
 
   if (!info.timing.IsNull()) {
     resource_timing.timing.emplace();
@@ -84,6 +85,7 @@ blink::WebResourceTimingInfo ResourceTimingInfoToWebResourceTimingInfo(
       blink::WebString::FromUTF8(resource_timing.alpn_negotiated_protocol);
   info.connection_info =
       blink::WebString::FromUTF8(resource_timing.connection_info);
+  info.context_type = resource_timing.context_type;
 
   if (resource_timing.timing) {
     info.timing.Initialize();

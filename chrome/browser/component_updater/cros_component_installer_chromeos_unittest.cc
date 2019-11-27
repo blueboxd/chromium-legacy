@@ -118,9 +118,10 @@ class TestUpdater : public OnDemandUpdater {
                       Callback callback) override {
     const std::string& name = component_id_to_name_[id];
     ASSERT_FALSE(name.empty());
-    // Technically, this is a supported use case for background updates, but not
-    // needed for this tests.
-    ASSERT_FALSE(HasPendingUpdate(name));
+    if (HasPendingUpdate(name)) {
+      std::move(callback).Run(update_client::Error::UPDATE_IN_PROGRESS);
+      return;
+    }
 
     if (priority == OnDemandUpdater::Priority::BACKGROUND) {
       background_updates_.emplace(name, std::move(callback));
@@ -258,20 +259,31 @@ class CrOSComponentInstallerTest : public testing::Test {
   }
 
   // Creates a mock ComponentUpdateService. It sets the service up to expect a
+  // |times| registration request for the component |component_name|, and to
+  // redirect on-demand update requests to |updater|.
+  std::unique_ptr<MockComponentUpdateService>
+  CreateUpdateServiceForMultiRegistration(const std::string& component_name,
+                                          TestUpdater* updater,
+                                          int times) {
+    auto service = std::make_unique<MockComponentUpdateService>();
+    EXPECT_CALL(*service,
+                RegisterComponent(CrxComponentWithName(component_name)))
+        .Times(times)
+        .WillRepeatedly(
+            testing::Invoke(updater, &TestUpdater::RegisterComponent));
+
+    EXPECT_CALL(*service, GetOnDemandUpdater())
+        .WillRepeatedly(testing::ReturnRef(*updater));
+    return service;
+  }
+
+  // Creates a mock ComponentUpdateService. It sets the service up to expect a
   // single registration request for the component |component_name|, and to
   // redirect on-demand update requests to |updater|.
   std::unique_ptr<MockComponentUpdateService>
   CreateUpdateServiceForSingleRegistration(const std::string& component_name,
                                            TestUpdater* updater) {
-    auto service = std::make_unique<MockComponentUpdateService>();
-    EXPECT_CALL(*service,
-                RegisterComponent(CrxComponentWithName(component_name)))
-        .Times(1)
-        .WillOnce(testing::Invoke(updater, &TestUpdater::RegisterComponent));
-
-    EXPECT_CALL(*service, GetOnDemandUpdater())
-        .WillRepeatedly(testing::ReturnRef(*updater));
-    return service;
+    return CreateUpdateServiceForMultiRegistration(component_name, updater, 1);
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -612,6 +624,64 @@ TEST_F(CrOSComponentInstallerTest, LoadNonInstalledComponent_DontForce_Mount) {
   VerifyComponentLoaded(cros_component_manager, kTestComponentName, load_result,
                         GetInstalledComponentPath(kTestComponentName, "2.0"));
   EXPECT_EQ(base::FilePath(kTestComponentMountPath), mount_path);
+}
+
+TEST_F(CrOSComponentInstallerTest, LoadNonInstalledComponent_ForceTwice) {
+  image_loader_client()->SetMountPathForComponent(
+      kTestComponentName, base::FilePath(kTestComponentMountPath));
+
+  TestUpdater updater;
+  std::unique_ptr<MockComponentUpdateService> update_service =
+      CreateUpdateServiceForMultiRegistration(kTestComponentName, &updater, 2);
+  component_updater::CrOSComponentInstaller cros_component_manager(
+      nullptr, update_service.get());
+
+  base::Optional<CrOSComponentManager::Error> load_result1;
+  base::FilePath mount_path1;
+  cros_component_manager.Load(
+      kTestComponentName, CrOSComponentManager::MountPolicy::kMount,
+      CrOSComponentManager::UpdatePolicy::kForce,
+      base::BindOnce(&RecordLoadResult, &load_result1, &mount_path1));
+
+  base::Optional<CrOSComponentManager::Error> load_result2;
+  base::FilePath mount_path2;
+  cros_component_manager.Load(
+      kTestComponentName, CrOSComponentManager::MountPolicy::kMount,
+      CrOSComponentManager::UpdatePolicy::kForce,
+      base::BindOnce(&RecordLoadResult, &load_result2, &mount_path2));
+  RunUntilIdle();
+
+  base::Optional<base::FilePath> unpacked_path = CreateUnpackedComponent(
+      kTestComponentName, "2.0", kTestComponentValidMinEnvVersion);
+  ASSERT_TRUE(unpacked_path.has_value());
+  ASSERT_TRUE(updater.FinishForegroundUpdate(
+      kTestComponentName, update_client::Error::NONE, unpacked_path.value()));
+  RunUntilIdle();
+
+  EXPECT_FALSE(updater.HasPendingUpdate(kTestComponentName));
+
+  // Order of the load attempts is not deterministic, but one will have no error
+  // and a non-empty mount_path, the other will have error UPDATE_IN_PROGRESS
+  // and empty mount_path.
+  if (!mount_path1.empty()) {
+    VerifyComponentLoaded(cros_component_manager, kTestComponentName,
+                          load_result1,
+                          GetInstalledComponentPath(kTestComponentName, "2.0"));
+    EXPECT_EQ(base::FilePath(kTestComponentMountPath), mount_path1);
+    // Other load should have got a UPDATE_IN_PROGRESS error.
+    ASSERT_TRUE(load_result2.has_value());
+    EXPECT_EQ(load_result2.value(),
+              CrOSComponentManager::Error::UPDATE_IN_PROGRESS);
+  } else {
+    VerifyComponentLoaded(cros_component_manager, kTestComponentName,
+                          load_result2,
+                          GetInstalledComponentPath(kTestComponentName, "2.0"));
+    EXPECT_EQ(base::FilePath(kTestComponentMountPath), mount_path2);
+    // Other load should have got a UPDATE_IN_PROGRESS error.
+    ASSERT_TRUE(load_result1.has_value());
+    EXPECT_EQ(load_result1.value(),
+              CrOSComponentManager::Error::UPDATE_IN_PROGRESS);
+  }
 }
 
 TEST_F(CrOSComponentInstallerTest,

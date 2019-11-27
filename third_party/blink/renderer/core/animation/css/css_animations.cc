@@ -406,7 +406,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                   CreateKeyframeEffectModel(resolver, animating_element,
                                             element, &style, parent_style, name,
                                             keyframe_timing_function.get(), i),
-                  timing, is_paused, animation->UnlimitedCurrentTimeInternal()),
+                  timing, is_paused, animation->UnlimitedCurrentTime()),
               specified_timing, keyframes_rule,
               animation_data->PlayStateList());
           if (is_paused != was_paused)

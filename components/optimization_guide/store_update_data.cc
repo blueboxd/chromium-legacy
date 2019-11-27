@@ -157,8 +157,8 @@ void StoreUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
                                  std::move(entry_proto));
 }
 
-void StoreUpdateData::MoveHostModelFeaturesIntoUpdateData(
-    proto::HostModelFeatures&& host_model_features) {
+void StoreUpdateData::CopyHostModelFeaturesIntoUpdateData(
+    const proto::HostModelFeatures& host_model_features) {
   // All future modifications must be made by the same thread. Note, |this| may
   // have been constructed on another thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -174,14 +174,13 @@ void StoreUpdateData::MoveHostModelFeaturesIntoUpdateData(
       OptimizationGuideStore::StoreEntryType::kHostModelFeatures));
   entry_proto.set_expiry_time_secs(
       expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
-  entry_proto.set_allocated_host_model_features(
-      new proto::HostModelFeatures(std::move(host_model_features)));
+  entry_proto.mutable_host_model_features()->CopyFrom(host_model_features);
   entries_to_save_->emplace_back(std::move(host_model_features_entry_key),
                                  std::move(entry_proto));
 }
 
-void StoreUpdateData::MovePredictionModelIntoUpdateData(
-    proto::PredictionModel&& prediction_model) {
+void StoreUpdateData::CopyPredictionModelIntoUpdateData(
+    const proto::PredictionModel& prediction_model) {
   // All future modifications must be made by the same thread. Note, |this| may
   // have been constructed on another thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -196,8 +195,7 @@ void StoreUpdateData::MovePredictionModelIntoUpdateData(
   proto::StoreEntry entry_proto;
   entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
       OptimizationGuideStore::StoreEntryType::kPredictionModel));
-  entry_proto.set_allocated_prediction_model(
-      new proto::PredictionModel(std::move(prediction_model)));
+  entry_proto.mutable_prediction_model()->CopyFrom(prediction_model);
   entries_to_save_->emplace_back(std::move(prediction_model_entry_key),
                                  std::move(entry_proto));
 }

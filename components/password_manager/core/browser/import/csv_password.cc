@@ -36,6 +36,23 @@ CSVPassword::CSVPassword(const ColumnMap& map, base::StringPiece csv_row)
 CSVPassword::~CSVPassword() = default;
 
 CSVPassword::Status CSVPassword::Parse(PasswordForm* form) const {
+  DCHECK(form) << "Null target PasswordForm. Use TryParse() if the resulting "
+                  "PasswordForm is not needed.";
+  return ParseImpl(form);
+}
+
+CSVPassword::Status CSVPassword::TryParse() const {
+  return ParseImpl(nullptr);
+}
+
+PasswordForm CSVPassword::ParseValid() const {
+  PasswordForm result;
+  Status status = ParseImpl(&result);
+  DCHECK_EQ(Status::kOK, status);
+  return result;
+}
+
+CSVPassword::Status CSVPassword::ParseImpl(PasswordForm* form) const {
   // |map_| must be an (1) injective and (2) surjective (3) partial map. (3) is
   // enforced by its type, (2) is checked later in the code and (1) follows from
   // (2) and the following size() check.
@@ -90,13 +107,6 @@ CSVPassword::Status CSVPassword::Parse(PasswordForm* form) const {
   form->username_value = Convert(username);
   form->password_value = Convert(password);
   return Status::kOK;
-}
-
-PasswordForm CSVPassword::ParseValid() const {
-  PasswordForm result;
-  Status status = Parse(&result);
-  DCHECK_EQ(Status::kOK, status);
-  return result;
 }
 
 }  // namespace password_manager

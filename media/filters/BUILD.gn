@@ -215,10 +215,10 @@ jumbo_source_set("filters") {
       "//gpu/ipc/common",
       "//media/fuchsia/cdm",
       "//media/fuchsia/common",
-      "//third_party/fuchsia-sdk/sdk:media",
-      "//third_party/fuchsia-sdk/sdk:mediacodec",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-media",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-mediacodec",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
-      "//third_party/fuchsia-sdk/sdk:sysmem",
       "//ui/ozone",
     ]
   }
@@ -323,8 +323,8 @@ source_set("unit_tests") {
     deps += [
       "//components/viz/test:test_support",
       "//gpu/command_buffer/client",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
-      "//third_party/fuchsia-sdk/sdk:sysmem",
     ]
   }
 

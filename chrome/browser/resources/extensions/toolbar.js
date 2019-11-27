@@ -11,7 +11,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import './pack_dialog.js';
 
-import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -184,15 +184,15 @@ Polymer({
 
     this.isUpdating_ = true;
 
-    const toastManager = getInstance();
+    const toastManager = getToastManager();
     // Keep the toast open indefinitely.
     toastManager.duration = 0;
-    toastManager.show(this.i18n('toolbarUpdatingToast'), false);
+    toastManager.show(this.i18n('toolbarUpdatingToast'));
     this.delegate.updateAllExtensions().then(
         () => {
           toastManager.hide();
           toastManager.duration = 3000;
-          toastManager.show(this.i18n('toolbarUpdateDone'), false);
+          toastManager.show(this.i18n('toolbarUpdateDone'));
           this.isUpdating_ = false;
         },
         () => {

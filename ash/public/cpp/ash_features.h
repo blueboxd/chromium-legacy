@@ -15,6 +15,12 @@ namespace features {
 // See https://crbug.com/1021193 for more details.
 ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
 
+// Enables the Auto Night Light feature which sets the default schedule type to
+// sunset-to-sunrise until the user changes it to something else. This feature
+// is not exposed to the end user, and is enabled only via cros_config for
+// certain devices.
+ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -134,6 +140,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
 ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
 
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
+
+ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 

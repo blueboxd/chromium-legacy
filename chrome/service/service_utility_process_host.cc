@@ -438,10 +438,10 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
 
   base::PostTaskAndReplyWithResult(
       client_task_runner_.get(), FROM_HERE,
-      base::Bind(&Client::MetafileAvailable, client_.get(), scale_factor,
-                 base::Passed(&emf_region)),
-      base::Bind(&ServiceUtilityProcessHost::OnMetafileSpooled,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&Client::MetafileAvailable, client_.get(), scale_factor,
+                     base::Passed(&emf_region)),
+      base::BindOnce(&ServiceUtilityProcessHost::OnMetafileSpooled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {

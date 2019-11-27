@@ -72,7 +72,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyDangerousDownloadEvent[];
   static const char kKeyInterstitialEvent[];
   static const char kKeySensitiveDataEvent[];
-  static const char kKeyLargeUnscannedFileEvent[];
+  static const char kKeyUnscannedFileEvent[];
 
   // String constants for the "trigger" event field.
   static const char kTriggerFileDownload[];
@@ -128,13 +128,14 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       const std::string& trigger,
       const int64_t content_size);
 
-  // Notifies listeners that deep scanning failed, since the file was too large.
-  void OnLargeUnscannedFileEvent(const GURL& url,
-                                 const std::string& file_name,
-                                 const std::string& download_digest_sha256,
-                                 const std::string& mime_type,
-                                 const std::string& trigger,
-                                 const int64_t content_size);
+  // Notifies listeners that deep scanning failed, for the given |reason|.
+  void OnUnscannedFileEvent(const GURL& url,
+                            const std::string& file_name,
+                            const std::string& download_digest_sha256,
+                            const std::string& mime_type,
+                            const std::string& trigger,
+                            const std::string& reason,
+                            const int64_t content_size);
 
   // Notifies listeners that the user saw a download warning.
   // - |url| is the download URL

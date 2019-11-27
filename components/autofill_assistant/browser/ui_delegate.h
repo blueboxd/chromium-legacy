@@ -126,6 +126,9 @@ class UiDelegate {
   // Called when the user clicks a link on the terms & conditions message.
   virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
 
+  // Called when the user clicks a link in the form action.
+  virtual void OnFormActionLinkClicked(int link) = 0;
+
   // Sets the start of the date/time range.
   virtual void SetDateTimeRangeStart(int year,
                                      int month,

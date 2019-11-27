@@ -186,7 +186,6 @@ class CORE_EXPORT PaintLayerCompositor {
 
   void EnableCompositingModeIfNeeded();
 
-  void AdjustOverlayFullscreenVideoPosition(GraphicsLayer*);
   GraphicsLayer* OverlayFullscreenVideoGraphicsLayer() const;
 
   // Checks the given graphics layer against the compositor's horizontal and

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/cookie_store/cookie_store_manager.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "url/origin.h"
 
 namespace content {
@@ -19,19 +20,31 @@ CookieStoreHost::~CookieStoreHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void CookieStoreHost::AppendSubscriptions(
+void CookieStoreHost::AddSubscriptions(
     int64_t service_worker_registration_id,
     std::vector<blink::mojom::CookieChangeSubscriptionPtr> subscriptions,
-    AppendSubscriptionsCallback callback) {
+    AddSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  manager_->AppendSubscriptions(service_worker_registration_id, origin_,
-                                std::move(subscriptions), std::move(callback));
+  manager_->AddSubscriptions(
+      service_worker_registration_id, origin_, std::move(subscriptions),
+      mojo::GetBadMessageCallback(), std::move(callback));
+}
+
+void CookieStoreHost::RemoveSubscriptions(
+    int64_t service_worker_registration_id,
+    std::vector<blink::mojom::CookieChangeSubscriptionPtr> subscriptions,
+    RemoveSubscriptionsCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  manager_->RemoveSubscriptions(
+      service_worker_registration_id, origin_, std::move(subscriptions),
+      mojo::GetBadMessageCallback(), std::move(callback));
 }
 
 void CookieStoreHost::GetSubscriptions(int64_t service_worker_registration_id,
                                        GetSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   manager_->GetSubscriptions(service_worker_registration_id, origin_,
+                             mojo::GetBadMessageCallback(),
                              std::move(callback));
 }
 

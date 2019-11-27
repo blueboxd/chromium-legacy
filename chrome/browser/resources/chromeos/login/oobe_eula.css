@@ -19,14 +19,14 @@ a {
 }
 
 #installationSettings {
-  margin-inline-start: 20px;
-  margin-top: 31px; /* = 44 - font size */
+  margin-inline-start: 16px;
+  margin-top: 16px;
 }
 
 #logging {
   color: rgba(0, 0, 0, 0.54);
-  margin-inline-start: 20px;
-  margin-top: 23px; /* = 36 - font size */
+  margin-inline-start: 16px;
+  margin-top: 16px;
 }
 
 cr-toggle {

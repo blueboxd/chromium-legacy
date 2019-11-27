@@ -452,11 +452,6 @@
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng đọc chính tả sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
-<translation id="1676141669324989554">Cho phép bạn thiết lập việc người dùng có thể thêm trường hợp ngoại lệ để cho phép nội dung hỗn hợp trên các trang cụ thể hay không.
-
-          Bạn có thể ghi đè chính sách này cho các mẫu URL cụ thể bằng chính sách 'InsecureContentAllowedForUrls' và 'InsecureContentBlockedForUrls'.
-
-          Nếu bạn không đặt chính sách này, thì người dùng sẽ được phép thêm trường hợp ngoại lệ để cho phép nội dung hỗn hợp có thể chặn.</translation>
 <translation id="1695708467571967752">Chính sách này kiểm soát việc người dùng có thể phát nội dung đa phương tiện khi thiết bị đang khóa hay không.
 
       Nếu bạn đặt chính sách này thành False, thì các chức năng điều khiển nội dung đa phương tiện trên màn hình khóa sẽ bị tắt.
@@ -3241,9 +3236,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5961137303188584693">Địa chỉ MAC trên NIC tích hợp của thiết bị</translation>
 <translation id="5966615072639944554">Tiện ích được phép sử dụng API chứng thực từ xa</translation>
 <translation id="5983708779415553259">Thao tác mặc định cho trang web không nằm trong bất kỳ gói nội dung nào</translation>
-<translation id="5997107377032983906">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định trang web được phép hiển thị nội dung hỗn hợp (tức là nội dung HTTP trên các trang web HTTPS) có thể chặn (tức là đang hoạt động).
-
-          Nếu bạn không đặt chính sách này thì nội dung hỗn hợp có thể chặn sẽ bị chặn, nhưng người dùng có thể đặt các trường hợp ngoại lệ để cho phép nội dung này trên các trang web cụ thể.</translation>
 <translation id="5997543603646547632">Sử dụng đồng hồ 24 giờ theo mặc định</translation>
 <translation id="5997846976342452720">Chỉ định xem có nên tắt trình tìm kiếm plugin hay không (không được dùng nữa)</translation>
 <translation id="5998198091336830580">Chính sách này thuộc nhóm không thể phân chia sau đây (chỉ áp dụng các chính sách thuộc nguồn có mức ưu tiên cao nhất trong nhóm):</translation>
@@ -3642,9 +3634,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6795485990775913659">Chỉ cho phép in khi không có mã PIN</translation>
-<translation id="6800064234889290465">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định trang web không được phép hiển thị nội dung hỗn hợp (tức là nội dung HTTP trên các trang web HTTPS) có thể chặn (tức là đang hoạt động).
-
-          Nếu bạn không đặt chính sách này thì nội dung hỗn hợp có thể chặn sẽ bị chặn, nhưng người dùng có thể đặt các trường hợp ngoại lệ để cho phép nội dung này trên các trang web cụ thể.</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="6813263547126514821">Bật và tắt nguồn</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>

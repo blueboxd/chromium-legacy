@@ -179,7 +179,6 @@ TEST(DecisionDetailsTest, TabManagerLifecycleStateChangeUkm) {
   EXPECT_FALSE(details.AddReason(
       DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT));
-  EXPECT_FALSE(details.AddReason(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::GLOBAL_BLACKLIST));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::HEURISTIC_AUDIO));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::HEURISTIC_FAVICON));
@@ -224,8 +223,6 @@ TEST(DecisionDetailsTest, TabManagerLifecycleStateChangeUkm) {
       entry, ukm_builder.kFailureLifecyclesEnterprisePolicyOptOutName, 1);
   ukm_recorder.ExpectEntryMetric(entry,
                                  ukm_builder.kFailureOriginTrialOptOutName, 1);
-  ukm_recorder.ExpectEntryMetric(entry,
-                                 ukm_builder.kFailureOriginTrialUnknownName, 1);
   ukm_recorder.ExpectEntryMetric(entry, ukm_builder.kFailureGlobalBlacklistName,
                                  1);
   ukm_recorder.ExpectEntryMetric(entry, ukm_builder.kFailureHeuristicAudioName,

@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.feed.action;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
-import com.google.android.libraries.feed.api.host.action.ActionApi;
-
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
+import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;

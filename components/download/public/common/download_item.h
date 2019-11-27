@@ -32,6 +32,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_source.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -326,6 +327,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Whether this download is a SavePackage download.
   virtual bool IsSavePackageDownload() const = 0;
+
+  // DownloadSource prompting this download.
+  virtual DownloadSource GetDownloadSource() const = 0;
 
   //    Destination State accessors --------------------------------------------
 

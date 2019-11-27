@@ -17,6 +17,9 @@
 
 using base::android::JavaParamRef;
 
+// TODO(crbug.com/1028580) Pass |j_account_id| as a
+// org.chromium.components.signin.identitymanager.CoreAccountId and convert it
+// to CoreAccountId using ConvertFromJavaCoreAccountId.
 static void JNI_ConsentAuditorBridge_RecordConsent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -42,6 +45,7 @@ static void JNI_ConsentAuditorBridge_RecordConsent(
   }
   ConsentAuditorFactory::GetForProfile(
       ProfileAndroid::FromProfileAndroid(j_profile))
-      ->RecordSyncConsent(CoreAccountId(ConvertJavaStringToUTF8(j_account_id)),
-                          sync_consent);
+      ->RecordSyncConsent(
+          CoreAccountId::FromString(ConvertJavaStringToUTF8(j_account_id)),
+          sync_consent);
 }

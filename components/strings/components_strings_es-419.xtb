@@ -176,7 +176,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Intenta comunicarte con el administrador del sistema.</translation>
 <translation id="1736420071277903564">Computadora</translation>
-<translation id="1739107442478692187">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda revisar las contraseñas que tengas guardadas y cambiar la que usas en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="1740951997222943430">Ingresa una fecha de vencimiento válida</translation>
 <translation id="1741613555002899862">Esta política debe especificarse y tener una string válida, cuando DnsOverHttpsMode es <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta, nombre y dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
@@ -242,7 +241,6 @@
 <translation id="2094505752054353250">El dominio no coincide.</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2099652385553570808">Grapas triples a la izquierda</translation>
-<translation id="2100280972184758440">Se vulneró tu contraseña</translation>
 <translation id="2102134110707549001">Sugerir contraseña segura…</translation>
 <translation id="2108755909498034140">Reinicia la computadora.</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +248,6 @@
 <translation id="2114841414352855701">Se ignoró porque fue anulada por <ph name="POLICY_NAME" /> .</translation>
 <translation id="2119505898009119320">Emitida a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforación en la esquina inferior derecha</translation>
-<translation id="2124528555835617522">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.</translation>
 <translation id="2129079103035905234">Sensores de movimiento</translation>
 <translation id="2130448033692577677">Debido a que no se estableció la política DnsOverHttpsMode, es posible que no se apliquen las plantillas que especificaste.</translation>
 <translation id="213826338245044447">Favoritos del celular</translation>
@@ -493,7 +490,6 @@
 <translation id="3282497668470633863">Agregar el nombre en la tarjeta</translation>
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda cambiar ahora la contraseña que usas en <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
@@ -957,6 +953,7 @@
 <translation id="5540224163453853">No se pudo encontrar el artículo solicitado.</translation>
 <translation id="5541546772353173584">Agregar correo electrónico</translation>
 <translation id="5545756402275714221">Artículos para ti</translation>
+<translation id="5552137475244467770">Chrome revisa tus contraseñas de forma periódica para comprobar si aparecen en listas que se hayan publicado en línea. Durante esta acción, se encriptan tus contraseñas y nombres de usuario para que nadie, ni siquiera Google, pueda leer esta información.</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5560088892362098740">Fecha de vencimiento</translation>
 <translation id="5565735124758917034">Activo</translation>
@@ -1048,6 +1045,7 @@
 <translation id="5992691462791905444">Plegado en Z para ingeniería</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Revisa tus contraseñas</translation>
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>

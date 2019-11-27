@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Дэлгэрэнгүй харуулах</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Нууц үгээ өөрчилнө үү</translation>
 <translation id="1484290072879560759">Тээвэрлэлтийн хаяг сонгох</translation>
 <translation id="1492194039220927094">Удирдамжийн хэрэгжүүлэлт:</translation>
 <translation id="1501859676467574491">Google Бүртгэлээсээ карт харуулах</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Системийн админтай холбоо барина уу.</translation>
 <translation id="1736420071277903564">Компьютер</translation>
-<translation id="1739107442478692187">Таны ашигладаг сайт эсвэл апп дээр өгөгдлийн зөрчил гарлаа. Хадгалсан нууц үгээ шалгаж, <ph name="ORIGIN" /> дээрх нууц үгээ одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
 <translation id="1740951997222943430">Дуусах сарыг зөв оруулна уу</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode-г <ph name="SECURE_DNS_MODE_SECURE" /> байх үед тодорхойлогдсон бөгөөд хүчинтэй стринг байх ёстой.</translation>
 <translation id="1743520634839655729">Дараагийн удаа төлбөрөө хурдан төлөхийн тулд Google Бүртгэл ба энэ төхөөрөмждөө карт, нэр болон тооцооны хаягаа хадгална уу.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Багц задлах үйлчилгээ</translation>
 <translation id="1915697529809968049">Карт баталгаажуулалтын кодын оронд Touch ID-г ашиглах уу?</translation>
 <translation id="1916770123977586577">Шинэчилсэн тохиргоогоо энэ сайтад хэрэгжүүлэхийн тулд энэ хуудсыг дахин ачааллана уу</translation>
+<translation id="1917876262703816781">Сайт эсвэл аппын өгөгдлийн зөрчлийн улмаас таны нууц үгийг задруулсан байна. <ph name="ORIGIN" /> дээрх нууц үгээ одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
 <translation id="1919345977826869612">Зар</translation>
 <translation id="1919367280705858090">Тодорхой алдаатай зурвасаар тусламж авах</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Байхгүй}=1{1 сайт}other{# сайт}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Домэйн нэр нийцэхгүй байна</translation>
 <translation id="2096368010154057602">Хэлтэс</translation>
 <translation id="2099652385553570808">Зүүн ирмэг дагуу гурван удаа үдэх</translation>
-<translation id="2100280972184758440">Таны нууц үгийн нууцлал алдагдсан байна</translation>
 <translation id="2102134110707549001">Хүчтэй нууц үг санал болгох...</translation>
 <translation id="2108755909498034140">Компьютероо дахин эхлүүлэх</translation>
 <translation id="2111256659903765347">Супер-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> нь өөрчилсөн учир энэ журам хүчингүй.</translation>
 <translation id="2119505898009119320"><ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />] руу олгосон</translation>
 <translation id="2119867082804433120">Баруун доод буланд нэг нүх цоолох</translation>
-<translation id="2124528555835617522">Таны ашигладаг сайт эсвэл апп дээр өгөгдлийн зөрчил гарлаа. Хадгалсан нууц үгээ одоо шалгахыг Chrome зөвлөж байна.</translation>
 <translation id="2129079103035905234">Хөдөлгөөн мэдрэгч</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode удирдамжийг тохируулаагүй байгаа учраас таны тодорхойлсон загваруудыг хэрэгжүүлэхгүй байж болзошгүй.</translation>
 <translation id="213826338245044447">Гар утасны хавчуургууд</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-н халдагчид таны төхөөрөмжийг гэмтээж болзошгүй аюултай апп суулгах, таны мобайл тооцоонд нэмэлт төлбөр гаргах, таны хувийн мэдээллийг хулгайлах боломжтой. <ph name="BEGIN_LEARN_MORE_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Интернэт алга</translation>
 <translation id="2230458221926704099">Та <ph name="BEGIN_LINK" />оношилгоо апп<ph name="END_LINK" /> ашиглан холболтоо засна уу</translation>
+<translation id="22320125457191592">Танд зориулсан</translation>
 <translation id="2239100178324503013">Одоо илгээх</translation>
 <translation id="2248949050832152960">WebAuthn ашиглах</translation>
 <translation id="2250931979407627383">Зүүн ирмэгийг нь нийлүүлж үдэх</translation>
@@ -374,6 +374,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Үлдээх</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Аюулгүй байдлын анхааруулга</translation>
 <translation id="2699302886720511147">Зөвшөөрсөн карт</translation>
 <translation id="2702801445560668637">Унших жагсаалт</translation>
 <translation id="2704283930420550640">Утга нь форматтай таарахгүй байна.</translation>
@@ -476,6 +477,7 @@
 <translation id="3207960819495026254">Хавчуурга хадгалагдсан</translation>
 <translation id="3209034400446768650">Хуудас төлбөр нэхэмжилж болзошгүй</translation>
 <translation id="3209080785413271048">Хадгалсан төлбөрийн хэрэгслээ бататгахын тулд Windows Hello-г ашиглана уу.</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> дээрх таны үйл ажиллагааг хянаж байна</translation>
 <translation id="3215092763954878852">WebAuthn-г ашиглаж чадсангүй</translation>
 <translation id="3225919329040284222">Серверөөс өгсөн гэрчилгээ нь өгөгдсөн хүлээлттэй таарахгүй байна. Эдгээр хүлээлтүүдийг таныг хамгаалахын тулд тодорхой, аюулгүйн өндөр зэрэглэлийн 
 вэбсайтуудад оруулж өгдөг.</translation>
@@ -492,7 +494,6 @@
 <translation id="3282497668470633863">Картанд нэр нэмэх</translation>
 <translation id="3287510313208355388">Онлайн үедээ татна уу</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> удирдамжийн талаар дэлгэрэнгүй үзэх</translation>
-<translation id="3295439534709115864">Таны ашигладаг сайт эсвэл апп дээр өгөгдлийн зөрчил гарлаа. <ph name="ORIGIN" /> дээрх нууц үгээ одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
 <translation id="3303855915957856445">Хайлтын илэрц олдсонгүй</translation>
 <translation id="3320021301628644560">Тооцооны хаяг нэмэх</translation>
 <translation id="3324983252691184275">Улаан хүрэн</translation>
@@ -535,6 +536,7 @@
 <translation id="3528485271872257980">Хар хүрэн</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Синк хийсэн төхөөрөмжид хамгийн багадаа 1 зүйл байна}=1{1 зүйл (болон түүнээс дээш зүйл синк хийсэн төхөөрөмжид байна)}other{# зүйл (болон түүнээс дээш зүйл синк хийсэн төхөөрөмжид байна)}}</translation>
 <translation id="3539171420378717834">Энэ төхөөрөмж дээр тус картын хуулбарыг хадгалах</translation>
+<translation id="3553513561058684206">Танд зориулсан</translation>
 <translation id="3566021033012934673">Таны холболт хаалттай бус байна</translation>
 <translation id="3574305903863751447"><ph name="CITY" /> , <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" />-н оруулсан хуудас хэлэхдээ</translation>
@@ -765,6 +767,7 @@
 <translation id="4594403342090139922">Устгах үйлдлийг буцаах</translation>
 <translation id="4597348597567598915">Хэмжээ 8</translation>
 <translation id="4600854749408232102">C6/C5 (Дугтуй)</translation>
+<translation id="4613966523036881546">Энэ холболтын сертификатыг сүлжээний дундаас өгөгдөл цуглуулах болон хяналт хийхэд ашигладаг гэж мэдэгдсэн тул Google Chrome түүнд итгэхгүй байна.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> сайт нь үндсэн удирдамжийг
     бүх хүсэлтдээ хэрэгжүүлэх хүсэлт тавьсан боловч энэ удирдамжийг одоогоор хэрэгжүүлэх боломжгүй байна.</translation>
 <translation id="464342062220857295">Онцлогийг хайх</translation>
@@ -904,6 +907,7 @@
 <translation id="5287240709317226393">Күүки харуулах</translation>
 <translation id="5287456746628258573">Энэ сайт нь аюулгүй байдлын хуучирсан тохируулгыг ашиглаж байгаа бөгөөд энэ нь таны мэдээллийг (жишээлбэл, нууц үг эсвэл кредит картын дугаар) уг сайт руу илгээх үед ил болгож болзошгүй.</translation>
 <translation id="5288108484102287882">Удирдамжийн утгыг баталгаажуулсан хэдий ч анхааруулга гарч ирлээ</translation>
+<translation id="5295292838686006428">Сайт эсвэл аппын өгөгдлийн зөрчлийн улмаас таны нууц үгийг задруулсан байна. Хадгалсан нууц үгээ одоо шалгахыг Chrome зөвлөж байна.</translation>
 <translation id="5299298092464848405">Алдааны шинжлэх журам</translation>
 <translation id="5300589172476337783">Харуулах</translation>
 <translation id="5308380583665731573">Холбо</translation>
@@ -1045,6 +1049,7 @@
 <translation id="5992691462791905444">Инженерчлэлийн Z-нугалаа</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />'-н <ph name="RESULT_COUNT" /> илэрц</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Нууц үгээ шалгах</translation>
 <translation id="6015796118275082299">Жил</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Хуудас 1}other{Хуудас #}}</translation>
 <translation id="6017514345406065928">Ногоон</translation>
@@ -1333,6 +1338,7 @@
 <translation id="7481312909269577407">Forward</translation>
 <translation id="748406663033922918">Хадгалсан төлбөрийн хэрэгслээ бататгахын тулд дэлгэцийн түгжээг ашиглана уу.</translation>
 <translation id="7485870689360869515">Мэдээлэл байхгүй байна.</translation>
+<translation id="7495290002932347110">Сайт эсвэл аппын өгөгдлийн зөрчлийн улмаас таны нууц үгийг задруулсан байна. Хадгалсан нууц үгээ шалгаж, <ph name="ORIGIN" /> дээрх нууц үгээ одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
 <translation id="7498234416455752244">Үргэлжлүүлэн засах</translation>
 <translation id="7508255263130623398">Буцаасан удирдамжийн төхөөрөмжийн id хоосон, эсвэл одоогийн төхөөрөмжийн id-тай тохирохгүй байна</translation>
 <translation id="7508870219247277067">Авокадо ногоон</translation>
@@ -1469,6 +1475,7 @@
 <translation id="8103161714697287722">Төлбөрийн төрөл</translation>
 <translation id="8105368624971345109">Унтраах</translation>
 <translation id="8118489163946903409">Төлбөрийн арга</translation>
+<translation id="8124023448510659215">Энэ холболтын сертификатыг сүлжээний дундаас өгөгдөл цуглуулах болон хяналт хийхэд ашигладаг гэж мэдэгдсэн тул Chromium түүнд итгэхгүй байна.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />"-г таны компьютер эсвэл сүлжээнд зөв суулгаагүй байна. Энэ асуудлыг шийдвэрлэхийн тулд админтайгаа холбогдоно уу.</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8149426793427495338">Таны компьютер идэвхгүй болсон байна.</translation>
@@ -1611,6 +1618,8 @@
 <translation id="8957210676456822347">Captive Portal Authorization</translation>
 <translation id="8962950042226115166">Сэжигтэй сайт</translation>
 <translation id="8968766641738584599">Картыг хадгалах</translation>
+<translation id="8969267497192857913">Таны бичдэг дурын зүйл, таны үздэг дурын хуудас эсвэл вэб дээрх бусад дурын үйл ажиллагааг хянаж үздэг бөгөөд сайтуудын контентыг танд мэдэгдэлгүйгээр өөрчилж болзошгүй.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Серверийн сертификатын хугацаа дууссан байна.</translation>
 <translation id="8975012916872825179">Утасны дугаар, имэйл хаяг болон тээвэрлэх хаяг зэрэг мэдээллийг багтаадаг</translation>
 <translation id="8975263830901772334">Таны хэвлэх файлуудын нэр</translation>

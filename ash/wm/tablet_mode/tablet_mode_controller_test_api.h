@@ -30,12 +30,14 @@ class TabletModeControllerTestApi {
   void EnterTabletMode();
   void LeaveTabletMode();
 
-  // Called to attach an external mouse. If we're currently in tablet mode,
-  // tablet mode will be ended because of this.
+  // Called to attach an external mouse/touchpad. If we're currently in tablet
+  // mode, tablet mode will be ended because of this.
   void AttachExternalMouse();
+  void AttachExternalTouchpad();
 
-  // Called in association with the above to remove all attached mouse devices.
-  void DettachAllMouseDevices();
+  // Called in association with the above to remove all mice/touchpads.
+  void DetachAllMice();
+  void DetachAllTouchpads();
 
   void TriggerLidUpdate(const gfx::Vector3dF& lid);
   void TriggerBaseAndLidUpdate(const gfx::Vector3dF& base,

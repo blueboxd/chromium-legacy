@@ -184,7 +184,6 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
 }  // namespace
 
 PageHandler::PageHandler(EmulationHandler* emulation_handler,
-                         void** active_file_chooser_interceptor,
                          bool allow_set_download_behavior,
                          bool allow_file_access)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
@@ -202,9 +201,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       last_surface_size_(gfx::Size()),
       host_(nullptr),
       emulation_handler_(emulation_handler),
-      active_file_chooser_interceptor_(active_file_chooser_interceptor),
-      allow_set_download_behavior_(allow_set_download_behavior),
-      allow_file_access_(allow_file_access) {
+      allow_set_download_behavior_(allow_set_download_behavior) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
@@ -353,8 +350,6 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
-
-  SetInterceptFileChooserDialog(false);
 
   if (video_consumer_)
     video_consumer_->StopCapture();
@@ -614,114 +609,6 @@ Response PageHandler::ResetNavigationHistory() {
   NavigationController& controller = web_contents->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
   return Response::OK();
-}
-
-Response PageHandler::SetInterceptFileChooserDialog(bool enabled) {
-  if (!allow_file_access_)
-    return Response::Error("Not Allowed");
-  if (*active_file_chooser_interceptor_ == this && enabled)
-    return Response::OK();
-  if (*active_file_chooser_interceptor_ &&
-      *active_file_chooser_interceptor_ != this) {
-    return enabled
-               ? Response::Error(
-                     "Cannot enable file chooser interception because other "
-                     "protocol client already intercepts it")
-               : Response::Error("File chooser interception was not enabled");
-  }
-  *active_file_chooser_interceptor_ = enabled ? this : nullptr;
-  if (!enabled && file_chooser_listener_)
-    FallbackOrCancelFileChooser();
-  return Response::OK();
-}
-
-Response PageHandler::HandleFileChooser(
-    const std::string& action,
-    Maybe<protocol::Array<std::string>> optional_files) {
-  if (!host_)
-    return Response::Error("Cannot resolve file paths");
-  if (!file_chooser_listener_)
-    return Response::Error("No pending file chooser");
-
-  if (action == Page::HandleFileChooser::ActionEnum::Fallback) {
-    if (optional_files.isJust()) {
-      return Response::InvalidParams(
-          "Either 'ignore' or 'files' parameter should be specified; received "
-          "both");
-    }
-    FallbackOrCancelFileChooser();
-    return Response::OK();
-  }
-
-  if (action == Page::HandleFileChooser::ActionEnum::Accept) {
-    if (!optional_files.isJust())
-      return Response::InvalidParams("Files must be specified");
-    std::unique_ptr<protocol::Array<std::string>> files =
-        optional_files.takeJust();
-    if (file_chooser_params_->mode ==
-            blink::mojom::FileChooserParams::Mode::kOpen &&
-        files->size() > 1) {
-      return Response::Error("Expected to accept a single file");
-    }
-    std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
-    for (const std::string& file : *files) {
-      base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file);
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-          host_->GetProcess()->GetID(), file_path);
-      chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
-          blink::mojom::NativeFileInfo::New(file_path, base::string16())));
-    }
-    file_chooser_listener_->FileSelected(
-        std::move(chooser_files), base::FilePath(), file_chooser_params_->mode);
-    file_chooser_listener_.reset();
-    file_chooser_params_.reset();
-    file_chooser_rfh_id_.reset();
-    return Response::OK();
-  }
-
-  if (action == Page::HandleFileChooser::ActionEnum::Cancel) {
-    file_chooser_listener_->FileSelectionCanceled();
-    file_chooser_listener_.reset();
-    file_chooser_params_.reset();
-    file_chooser_rfh_id_.reset();
-    return Response::OK();
-  }
-
-  return Response::InvalidParams("Unknown action '" + action + "'");
-}
-
-void PageHandler::FallbackOrCancelFileChooser() {
-  RenderFrameHost* rfh = RenderFrameHost::FromID(file_chooser_rfh_id_->first,
-                                                 file_chooser_rfh_id_->second);
-  WebContents* web_contents = GetWebContents();
-  if (rfh && web_contents && web_contents->GetDelegate()) {
-    web_contents->GetDelegate()->RunFileChooser(
-        rfh, std::move(file_chooser_listener_), *file_chooser_params_);
-  } else {
-    file_chooser_listener_->FileSelectionCanceled();
-  }
-  file_chooser_listener_.reset();
-  file_chooser_params_.reset();
-  file_chooser_rfh_id_.reset();
-}
-
-bool PageHandler::InterceptFileChooser(
-    RenderFrameHostImpl* rfh,
-    std::unique_ptr<FileSelectListener>* listener,
-    const blink::mojom::FileChooserParams& params) {
-  if (*active_file_chooser_interceptor_ != this)
-    return false;
-  file_chooser_rfh_id_ =
-      std::make_pair<int, int>(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  DCHECK(!file_chooser_listener_);
-  file_chooser_listener_ = std::move(*listener);
-  file_chooser_params_ =
-      std::make_unique<blink::mojom::FileChooserParams>(params);
-  frontend_->FileChooserOpened(
-      params.mode == blink::mojom::FileChooserParams::Mode::kOpen
-          ? Page::FileChooserOpened::ModeEnum::SelectSingle
-          : Page::FileChooserOpened::ModeEnum::SelectMultiple);
-  return true;
 }
 
 void PageHandler::CaptureSnapshot(

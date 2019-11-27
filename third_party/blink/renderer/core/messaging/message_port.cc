@@ -307,21 +307,33 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
 }
 
 Event* MessagePort::CreateMessageEvent(BlinkTransferableMessage& message) {
+  ExecutionContext* context = GetExecutionContext();
   // Dispatch a messageerror event when the target is a remote origin that is
   // not allowed to access the message's data.
   if (message.message->IsOriginCheckRequired()) {
-    const SecurityOrigin* target_origin =
-        GetExecutionContext()->GetSecurityOrigin();
+    const SecurityOrigin* target_origin = context->GetSecurityOrigin();
     if (!message.sender_origin ||
         !message.sender_origin->IsSameSchemeHostPort(target_origin)) {
       return MessageEvent::CreateError();
     }
   }
 
-  if (message.locked_agent_cluster_id &&
-      !GetExecutionContext()->IsSameAgentCluster(
-          *message.locked_agent_cluster_id)) {
-    return MessageEvent::CreateError();
+  if (message.locked_agent_cluster_id) {
+    if (!context->IsSameAgentCluster(*message.locked_agent_cluster_id)) {
+      UseCounter::Count(
+          context,
+          WebFeature::kMessageEventSharedArrayBufferDifferentAgentCluster);
+      return MessageEvent::CreateError();
+    }
+    const SecurityOrigin* target_origin = context->GetSecurityOrigin();
+    if (!message.sender_origin ||
+        !message.sender_origin->IsSameSchemeHostPort(target_origin)) {
+      UseCounter::Count(
+          context, WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);
+    } else {
+      UseCounter::Count(context,
+                        WebFeature::kMessageEventSharedArrayBufferSameOrigin);
+    }
   }
 
   MessagePortArray* ports = MessagePort::EntanglePorts(

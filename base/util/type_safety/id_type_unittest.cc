@@ -45,7 +45,7 @@ TEST_P(IdTypeSpecificValueTest, UnsafeValueRoundtrips) {
   EXPECT_EQ(original_value, final_value);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          IdTypeSpecificValueTest,
                          ::testing::Values(std::numeric_limits<int>::min(),
                                            -1,

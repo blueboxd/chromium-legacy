@@ -58,7 +58,8 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "content/public/common/result_codes.h"
-#include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/rlz_lib_clear.h"
+#include "rlz/lib/supplementary_branding.h"
 
 using base::win::RegKey;
 

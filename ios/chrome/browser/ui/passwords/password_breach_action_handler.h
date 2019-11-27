@@ -15,6 +15,9 @@
 // The "Primary Action" should be excecuted.
 - (void)passwordBreachPrimaryAction;
 
+// The "Learn More" info should be presented.
+- (void)passwordBreachLearnMoreAction;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PASSWORDS_PASSWORD_BREACH_ACTION_HANDLER_H_

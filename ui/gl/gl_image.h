@@ -139,6 +139,10 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // returned.
   virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer();
+
+  // Provides the crop rectangle associated with the image. The crop rectangle
+  // specifies the region of valid pixels in the image.
+  virtual gfx::Rect GetCropRect();
 #endif
 
   // An identifier for subclasses. Necessary for safe downcasting.

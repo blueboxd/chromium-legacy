@@ -10,8 +10,6 @@ namespace autofill {
 
 const char kProjectPrefix[] = "StrikeDatabaseIntegratorTest";
 const int kMaxStrikesLimit = 6;
-// Expiry time is 1 year.
-const long long kExpiryTimeMicros = (long long)1000000 * 60 * 60 * 24 * 365;
 
 StrikeDatabaseIntegratorTestStrikeDatabase::
     StrikeDatabaseIntegratorTestStrikeDatabase(StrikeDatabase* strike_database)
@@ -30,8 +28,9 @@ int StrikeDatabaseIntegratorTestStrikeDatabase::GetMaxStrikesLimit() {
   return kMaxStrikesLimit;
 }
 
-long long StrikeDatabaseIntegratorTestStrikeDatabase::GetExpiryTimeMicros() {
-  return kExpiryTimeMicros;
+int64_t StrikeDatabaseIntegratorTestStrikeDatabase::GetExpiryTimeMicros() {
+  // Expiry time is 1 year.
+  return (int64_t)1000000 * 60 * 60 * 24 * 365;
 }
 
 bool StrikeDatabaseIntegratorTestStrikeDatabase::UniqueIdsRequired() {

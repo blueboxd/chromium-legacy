@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Rodyti daugiau</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Pakeiskite slaptažodį</translation>
 <translation id="1484290072879560759">Pasirinkti pristatymo adresą</translation>
 <translation id="1492194039220927094">Politikos gavimas:</translation>
 <translation id="1501859676467574491">Rodyti korteles iš „Google“ paskyros</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Pabandykite susisiekti su sistemos administratoriumi.</translation>
 <translation id="1736420071277903564">Kompiuteris</translation>
-<translation id="1739107442478692187">Naudojamoje svetainėje arba programoje įvyko duomenų saugos pažeidimas. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius ir pakeisti <ph name="ORIGIN" /> slaptažodį.</translation>
 <translation id="1740951997222943430">Įveskite tinkamą galiojimo laiko pabaigos mėnesį</translation>
 <translation id="1741613555002899862">Kai „DnsOverHttpsMode“ yra „<ph name="SECURE_DNS_MODE_SECURE" />“, turi būti nurodyta ir tinkama eilutė.</translation>
 <translation id="1743520634839655729">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę, vardą bei pavardę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Išpakavimo paslauga</translation>
 <translation id="1915697529809968049">Naudoti „Touch ID“ vietoj CVC?</translation>
 <translation id="1916770123977586577">Kad pritaikytumėte atnaujintus nustatymus šioje svetainėje, iš naujo įkelkite šį puslapį</translation>
+<translation id="1917876262703816781">Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleistas jūsų slaptažodis. „Chrome“ rekomenduoja dabar pakeisti <ph name="ORIGIN" /> slaptažodį.</translation>
 <translation id="1919345977826869612">Skelbimai</translation>
 <translation id="1919367280705858090">Gaukite pagalbos dėl konkretaus klaidos pranešimo</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nėra}=1{1 svetainė}one{# svetainė}few{# svetainės}many{# svetainės}other{# svetainių}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domeno neatitikimas</translation>
 <translation id="2096368010154057602">Departamentas</translation>
 <translation id="2099652385553570808">Trys sankabėlės kairėje</translation>
-<translation id="2100280972184758440">Jūsų slaptažodis buvo pažeistas</translation>
 <translation id="2102134110707549001">Siūlyti sudėtingą slaptažodį…</translation>
 <translation id="2108755909498034140">Iš naujo paleiskite kompiuterį</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME" />“.</translation>
 <translation id="2119505898009119320">Išdavė „<ph name="ORGANIZATION" />“ [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Skylė apačioje dešinėje</translation>
-<translation id="2124528555835617522">Naudojamoje svetainėje arba programoje įvyko duomenų saugos pažeidimas. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.</translation>
 <translation id="2129079103035905234">Judesio jutikliai</translation>
 <translation id="2130448033692577677">Jūsų nurodyti šablonai gali būti netaikomi dėl to, kad nenustatyta „DnsOverHttpsMode“ politika.</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
@@ -495,7 +494,6 @@
 <translation id="3282497668470633863">Ant kortelės pateikto vardo pridėjimas</translation>
 <translation id="3287510313208355388">Atsisiųsti prisijungus</translation>
 <translation id="3293642807462928945">Sužinokite daugiau apie „<ph name="POLICY_NAME" />“ politiką</translation>
-<translation id="3295439534709115864">Naudojamoje svetainėje arba programoje įvyko duomenų saugos pažeidimas. „Chrome“ rekomenduoja dabar pakeisti <ph name="ORIGIN" /> slaptažodį.</translation>
 <translation id="3303855915957856445">Nerasta jokių paieškos rezultatų</translation>
 <translation id="3320021301628644560">Atsiskaitymo adreso pridėjimas</translation>
 <translation id="3324983252691184275">Tamsiai raudona</translation>
@@ -909,6 +907,7 @@
 <translation id="5287240709317226393">Rodyti slapukus</translation>
 <translation id="5287456746628258573">Šioje svetainėje naudojama pasenusi saugos konfigūracija, todėl gali būti atskleista į šią svetainę siunčiama informacija (pvz., slaptažodžiai ar kredito kortelių numeriai).</translation>
 <translation id="5288108484102287882">Patvirtinant politikos vertes pateikta įspėjimų</translation>
+<translation id="5295292838686006428">Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleistas jūsų slaptažodis. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
@@ -959,6 +958,7 @@
 <translation id="5540224163453853">Nepavyko rasti straipsnio, dėl kurio pateikta užklausa.</translation>
 <translation id="5541546772353173584">El. pašto adreso pridėjimas</translation>
 <translation id="5545756402275714221">Jums skirti straipsniai</translation>
+<translation id="5552137475244467770">„Chrome“ periodiškai tikrina, ar jūsų slaptažodžiai nebuvo įtraukti į internete paskelbtus sąrašus. Tai atliekant, slaptažodžiai ir naudotojų vardai užšifruojami, kad niekas negalėtų jų perskaityti, įskaitant „Google“.</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5560088892362098740">Galiojimo laiko pabaigos data</translation>
 <translation id="5565735124758917034">Aktyvus</translation>
@@ -1050,6 +1050,7 @@
 <translation id="5992691462791905444">Neproporcingas Z formos perlenkimas</translation>
 <translation id="6000758707621254961">Rezultatų pagal užklausą „<ph name="SEARCH_TEXT" />“: <ph name="RESULT_COUNT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Patikrinkite slaptažodžius</translation>
 <translation id="6015796118275082299">Metai</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1 puslapis}one{# puslapis}few{# puslapiai}many{# puslapio}other{# puslapių}}</translation>
 <translation id="6017514345406065928">Žalia</translation>
@@ -1339,6 +1340,7 @@ Papildoma išsami informacija:
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="748406663033922918">Patvirtinkite išsaugotus mokėjimo metodus naudodami ekrano užraktą.</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
+<translation id="7495290002932347110">Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleistas jūsų slaptažodis. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius ir pakeisti <ph name="ORIGIN" /> slaptažodį.</translation>
 <translation id="7498234416455752244">Toliau redaguoti</translation>
 <translation id="7508255263130623398">Sugrąžinto politikos įrenginio ID nenurodytas arba neatitinka dabartinio įrenginio ID</translation>
 <translation id="7508870219247277067">Avokado žalia</translation>

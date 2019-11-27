@@ -143,11 +143,12 @@ void GattBatteryPercentageFetcher::SetAdapterAndStartFetching(
     return;
   }
   DCHECK(!connection_);
+  // TODO(crbug/1007780): This function should take OnceCallbacks.
   device->CreateGattConnection(
-      base::Bind(&GattBatteryPercentageFetcher::OnGattConnected,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&GattBatteryPercentageFetcher::OnGattConnectError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&GattBatteryPercentageFetcher::OnGattConnected,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&GattBatteryPercentageFetcher::OnGattConnectError,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GattBatteryPercentageFetcher::OnGattConnected(
@@ -224,10 +225,10 @@ void GattBatteryPercentageFetcher::AttemptToReadBatteryCharacteristic() {
   // Service standard. If multiple characteristics are present, arbitrarily
   // choose the first one.
   characteristics[0]->ReadRemoteCharacteristic(
-      base::Bind(&GattBatteryPercentageFetcher::OnReadBatteryLevel,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&GattBatteryPercentageFetcher::OnReadBatteryLevelError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GattBatteryPercentageFetcher::OnReadBatteryLevel,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&GattBatteryPercentageFetcher::OnReadBatteryLevelError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GattBatteryPercentageFetcher::OnReadBatteryLevel(

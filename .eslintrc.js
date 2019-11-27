@@ -45,6 +45,8 @@ module.exports = {
         'message': 'Use Object.defineProperty',
       },
     ],
+    'no-var': 'error',
+    'prefer-const': 'error',
     'semi': ['error', 'always'],
 
     // TODO(dpapad): Add more checks according to our styleguide.

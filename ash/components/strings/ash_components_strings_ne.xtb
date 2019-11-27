@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> वा <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">परिदृश्य मोड</translation>
 <translation id="4382340674111381977">अघिल्लो पृष्ठमा फर्कनुहोस्</translation>
+<translation id="4458670250301149821">अनुप्रयोगको ग्रिडमा कुनै अनुप्रयोगको आइकन फोल्डर भित्र/बाहिर सार्नुहोस्</translation>
 <translation id="4472417192667361414">प्रणाली तथा प्रदर्शनसम्बन्धी सेटिङहरू</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, त्यसपछि <ph name="LEFT" /> वा <ph name="RIGHT" /> वा <ph name="UP" /> वा <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">किबोर्ड सर्टकटसम्बन्धी मद्दतकर्ता हेर्नुहोस्‌</translation>
 <translation id="4628718545549558538">वस्तुस्थिति क्षेत्र खोल्नुहोस् (यो तपाईंको खाताको तस्बिर देखिने ठाउँ हो)</translation>
 <translation id="4642092649622328492">आंशिक स्क्रिनसट लिनुहोस्</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">अर्को अक्षर मेट्‌नुहोस् (अगाडिबाट मेट्‌नुहोस्)</translation>
 <translation id="7500368597227394048">हाइफन</translation>
 <translation id="7611271430932669992">पपअप र संवादहरूमा केन्द्रित गर्नुहोस्</translation>
+<translation id="7635348532214572995">अनुप्रयोगको आइकनलाई अनुप्रयोगको ग्रिड वरिपरि सार्नुहोस्</translation>
 <translation id="766326951329901120">क्लिपबोर्डको सामग्रीलाई सादा पाठका रूपमा टाँस्नुहोस्</translation>
 <translation id="7703010453515335249">बायाँ कोष्ठक</translation>
 <translation id="7724603315864178912">काट्नुहोस्</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">क्लिपबोर्डमा भएको सामग्री टाँस्नुहोस्</translation>
 <translation id="9052808072970550123">अर्को प्रयोगकर्तामा बदल्नुहोस्‌</translation>
 <translation id="906458777597946297">सन्झ्याल</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, त्यसपछि <ph name="LEFT" /> वा <ph name="RIGHT" /> वा <ph name="UP" /> वा <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">रेखाको सुरुमा जानुहोस्</translation>
 <translation id="9106898733795143799">पृष्ठ तथा वेब ब्राउजर</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> सम्बन्धी कुनै खोजको परिणाम फेला परेन</translation>

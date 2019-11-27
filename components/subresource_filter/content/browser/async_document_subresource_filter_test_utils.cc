@@ -41,7 +41,7 @@ void TestActivationStateCallbackReceiver::Callback(
   ++callback_count_;
   last_activation_state_ = activation_state;
   if (quit_closure_)
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
 }
 
 }  // namespace testing

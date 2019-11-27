@@ -161,8 +161,12 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     public boolean canMakePayment() {
         return PaymentsExperimentalFeatures.isEnabled(
                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)
-                ? getMissingFields() == CompletionStatus.COMPLETE && mHaveRequestedAutofillData
+                ? strictCanMakePayment()
                 : mHasValidNumberAndName;
+    }
+
+    public boolean strictCanMakePayment() {
+        return getMissingFields() == CompletionStatus.COMPLETE && mHaveRequestedAutofillData;
     }
 
     @Override

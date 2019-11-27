@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Modalità panoramica</translation>
 <translation id="4382340674111381977">Torna alla pagina precedente</translation>
+<translation id="4458670250301149821">Sposta un'icona dell'app all'interno/all'esterno di una cartella sulla griglia delle app</translation>
 <translation id="4472417192667361414">Impostazioni di sistema e di visualizzazione</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, poi <ph name="LEFT" /> o <ph name="RIGHT" /> o <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Visualizza la guida relativa alle scorciatoie da tastiera</translation>
 <translation id="4628718545549558538">Apre l'area di stato (dove è visualizzata l'immagine del tuo account)</translation>
 <translation id="4642092649622328492">Acquisisce lo screenshot parziale</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Elimina la lettera successiva (eliminazione in avanti)</translation>
 <translation id="7500368597227394048">trattino</translation>
 <translation id="7611271430932669992">Consente di spostare lo stato attivo su finestre di dialogo e popup</translation>
+<translation id="7635348532214572995">Sposta l'icona dell'app sulla griglia delle app</translation>
 <translation id="766326951329901120">Incolla i contenuti dagli appunti come testo normale</translation>
 <translation id="7703010453515335249">parentesi quadra aperta</translation>
 <translation id="7724603315864178912">Taglia</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Incolla i contenuti dagli appunti</translation>
 <translation id="9052808072970550123">Passa all'utente successivo</translation>
 <translation id="906458777597946297">Ingrandisci la finestra</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, poi <ph name="LEFT" /> o <ph name="RIGHT" /> o <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Vai all'inizio della riga</translation>
 <translation id="9106898733795143799">Pagina e browser web</translation>
 <translation id="9162942292291287644">Nessun risultato di ricerca relativo a <ph name="QUERY" /></translation>

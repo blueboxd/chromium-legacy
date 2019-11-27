@@ -153,6 +153,27 @@ async_test(t => {
   t.add_cleanup(() => { document.body.removeChild(iframe); });
 }, 'srcdoc iframe should receive the same agent as the parent\'s.');
 
+async_test(t => {
+  let iframe = document.createElement('iframe');
+  iframe.src =
+    'http://127.0.0.1:8000/security/resources/agent-equality-after-detach.html';
+
+  window.addEventListener(
+    'message',
+    t.step_func(evt => {
+      if (evt.data[0] !== 'same-origin detach test') {
+        return;
+      }
+      assert_equals(evt.data.length, 4);
+      assert_equals(evt.data[1], evt.data[2]);
+      assert_equals(evt.data[1], evt.data[3]);
+      t.done();
+    }));
+
+  document.body.appendChild(iframe);
+  t.add_cleanup(() => { document.body.removeChild(iframe); });
+}, 'Same-origin documents must share the same agent even after detaching.');
+
 // TODO(yutak): Add tests that check agents after navigations.
 </script>
 </body>

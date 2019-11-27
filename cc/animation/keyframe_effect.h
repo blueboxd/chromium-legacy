@@ -105,14 +105,9 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
 
   void KeyframeModelAdded();
 
-  // The following methods should be called to notify the KeyframeEffect that
-  // an animation event has been received for the same target (ElementId) as
-  // this keyframe_effect. If the event matches a KeyframeModel owned by this
-  // KeyframeEffect the call will return true, else it will return false.
-  bool NotifyKeyframeModelStarted(const AnimationEvent& event);
-  bool NotifyKeyframeModelFinished(const AnimationEvent& event);
-  void NotifyKeyframeModelTakeover(const AnimationEvent& event);
-  bool NotifyKeyframeModelAborted(const AnimationEvent& event);
+  // Dispatches animation event to a keyframe model specified as part of the
+  // event. Returns true if the event is dispatched, false otherwise.
+  bool DispatchAnimationEventToKeyframeModel(const AnimationEvent& event);
 
   // Returns true if there are any KeyframeModels that have neither finished
   // nor aborted.

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/state.h"
@@ -85,7 +86,8 @@ class ScriptExecutorDelegate {
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
   virtual bool SetForm(
       std::unique_ptr<FormProto> form,
-      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {

@@ -65,15 +65,13 @@ class StoreUpdateData {
   // called, |hint| is no longer valid.
   void MoveHintIntoUpdateData(proto::Hint&& hint);
 
-  // Moves |host_model_features| in this update data. Afterwards,
-  // |host_model_features| is no longer valid.
-  void MoveHostModelFeaturesIntoUpdateData(
-      proto::HostModelFeatures&& host_model_features);
+  // Copies |host_model_features| into this update data.
+  void CopyHostModelFeaturesIntoUpdateData(
+      const proto::HostModelFeatures& host_model_features);
 
-  // Moves |prediction_model| in this update data. Afterwards,
-  // |prediction_model| is no longer valid.
-  void MovePredictionModelIntoUpdateData(
-      proto::PredictionModel&& prediction_model);
+  // Copies |prediction_model| into this update data.
+  void CopyPredictionModelIntoUpdateData(
+      const proto::PredictionModel& prediction_model);
 
   // Returns the store entry updates along with ownership to them.
   std::unique_ptr<EntryVector> TakeUpdateEntries();

@@ -593,11 +593,6 @@ public abstract class StackLayoutBase extends Layout {
     }
 
     @Override
-    public void onTabsAllClosing(long time, boolean incognito) {
-        super.onTabsAllClosing(time, incognito);
-    }
-
-    @Override
     public boolean handlesCloseAll() {
         return true;
     }
@@ -1642,11 +1637,6 @@ public abstract class StackLayoutBase extends Layout {
                 mLayoutAnimations.get(i).first.cancel();
             }
         }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
     }
 
     @Override

@@ -11,7 +11,7 @@
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/recursive_cross_process_lock_posix.h"
-#include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/supplementary_branding.h"
 
 #import <Foundation/Foundation.h>
 #include <pthread.h>

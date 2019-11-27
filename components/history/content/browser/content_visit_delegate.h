@@ -18,13 +18,13 @@ class BrowserContext;
 }
 
 namespace visitedlink {
-class VisitedLinkMaster;
+class VisitedLinkWriter;
 }
 
 namespace history {
 
 // ContentVisitDelegate bridge VisitDelegate events to
-// visitedlink::VisitedLinkMaster.
+// visitedlink::VisitedLinkWriter.
 class ContentVisitDelegate : public VisitDelegate,
                              public visitedlink::VisitedLinkDelegate {
  public:
@@ -44,7 +44,7 @@ class ContentVisitDelegate : public VisitDelegate,
       visitedlink::VisitedLinkDelegate::URLEnumerator>& enumerator) override;
 
   HistoryService* history_service_;  // Weak.
-  std::unique_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
+  std::unique_ptr<visitedlink::VisitedLinkWriter> visitedlink_writer_;
   base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVisitDelegate);

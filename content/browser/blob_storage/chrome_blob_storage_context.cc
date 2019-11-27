@@ -163,6 +163,7 @@ storage::BlobStorageContext* ChromeBlobStorageContext::context() const {
 void ChromeBlobStorageContext::BindMojoContext(
     mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(context_) << "InitializeOnIOThread must be called first";
   context_->Bind(std::move(receiver));
 }
 

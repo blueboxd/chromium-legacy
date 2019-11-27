@@ -72,9 +72,7 @@ class ProtoInputStream : public google::protobuf::io::ZeroCopyInputStream {
 
 class TracedValueProtoWriterTest : public testing::Test {
  public:
-  void SetUp() override { RegisterTracedValueProtoWriter(true); }
-
-  void TearDown() override { RegisterTracedValueProtoWriter(false); }
+  void SetUp() override { RegisterTracedValueProtoWriter(); }
 };
 
 const NestedValue* FindDictEntry(const NestedValue* dict, const char* name) {

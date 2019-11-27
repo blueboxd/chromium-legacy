@@ -4,11 +4,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/features.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -267,6 +269,19 @@ TEST_F(URLRequestQuicTest, TestGetRequest) {
 }
 
 TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
+  // Skip test if "split cache" is enabled while "partition connections" is
+  // disabled, as it breaks push.
+  if (base::FeatureList::IsEnabled(
+          net::features::kSplitCacheByNetworkIsolationKey) &&
+      !base::FeatureList::IsEnabled(
+          net::features::kPartitionConnectionsByNetworkIsolationKey)) {
+    return;
+  }
+
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example.com"));
+  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
@@ -277,6 +292,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   std::unique_ptr<URLRequest> request_0 =
       CreateRequest(GURL(url_0), DEFAULT_PRIORITY, &delegate_0);
 
+  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
@@ -295,6 +311,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
 
+  request->set_network_isolation_key(kTestNetworkIsolationKey);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 
@@ -340,6 +357,19 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 }
 
 TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
+  // Skip test if "split cache" is enabled while "partition connections" is
+  // disabled, as it breaks push.
+  if (base::FeatureList::IsEnabled(
+          net::features::kSplitCacheByNetworkIsolationKey) &&
+      !base::FeatureList::IsEnabled(
+          net::features::kPartitionConnectionsByNetworkIsolationKey)) {
+    return;
+  }
+
+  const url::Origin kOrigin1 =
+      url::Origin::Create(GURL("http://www.example.com"));
+  const NetworkIsolationKey kTestNetworkIsolationKey(kOrigin1, kOrigin1);
+
   Init();
 
   // Send a request to the pushed url: /kitten-1.jpg to pull the resource into
@@ -350,6 +380,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request_0 =
       CreateRequest(GURL(url_0), DEFAULT_PRIORITY, &delegate_0);
 
+  request_0->set_network_isolation_key(kTestNetworkIsolationKey);
   request_0->Start();
   ASSERT_TRUE(request_0->is_pending());
 
@@ -368,6 +399,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request_1 =
       CreateRequest(GURL(url_1), DEFAULT_PRIORITY, &delegate_1);
 
+  request_1->set_network_isolation_key(kTestNetworkIsolationKey);
   request_1->Start();
   ASSERT_TRUE(request_1->is_pending());
 
@@ -386,6 +418,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
 
+  request->set_network_isolation_key(kTestNetworkIsolationKey);
   request->Start();
   ASSERT_TRUE(request->is_pending());
 

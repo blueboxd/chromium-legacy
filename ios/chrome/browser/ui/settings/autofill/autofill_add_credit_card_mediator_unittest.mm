@@ -181,10 +181,10 @@ TEST_F(AutofillAddCreditCardMediatorTest, TestAlreadyExistsCreditCardNumber) {
   // Test if the credit card data was replaced by the new data.
   EXPECT_TRUE(savedCreditCard);
 
-  EXPECT_EQ(savedCreditCard->ExpirationMonthAsString(),
+  EXPECT_EQ(savedCreditCard->Expiration2DigitMonthAsString(),
             base::SysNSStringToUTF16(@"12"));
 
-  EXPECT_EQ(savedCreditCard->ExpirationMonthAsString(),
+  EXPECT_EQ(savedCreditCard->Expiration2DigitMonthAsString(),
             base::SysNSStringToUTF16(@"12"));
 
   EXPECT_EQ(savedCreditCard->Expiration4DigitYearAsString(),

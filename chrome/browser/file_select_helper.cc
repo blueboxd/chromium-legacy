@@ -341,7 +341,8 @@ void FileSelectHelper::PerformSafeBrowsingDeepScanIfNeeded(
     safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
         web_contents_, std::move(data),
         base::BindOnce(&FileSelectHelper::DeepScanCompletionCallback, this,
-                       std::move(list)));
+                       std::move(list)),
+        safe_browsing::DeepScanAccessPoint::UPLOAD);
   } else {
     NotifyListenerAndEnd(std::move(list));
   }

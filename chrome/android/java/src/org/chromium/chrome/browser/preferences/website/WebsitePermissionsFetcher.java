@@ -119,8 +119,6 @@ public class WebsitePermissionsFetcher {
         queue.add(new ExceptionInfoFetcher(ContentSettingsType.BACKGROUND_SYNC));
         // Automatic Downloads permission is per-origin.
         queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOMATIC_DOWNLOADS));
-        // Autoplay permission is per-origin.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOPLAY));
         // USB device permission is per-origin and per-embedder.
         queue.add(new ChooserExceptionInfoFetcher(ContentSettingsType.USB_GUARD));
         // Clipboard info is per-origin.
@@ -202,9 +200,6 @@ public class WebsitePermissionsFetcher {
         } else if (category.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));
-        } else if (category.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
-            // Autoplay permission is per-origin.
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOPLAY));
         } else if (category.showSites(SiteSettingsCategory.Type.USB)) {
             // USB device permission is per-origin.
             queue.add(new ChooserExceptionInfoFetcher(ContentSettingsType.USB_GUARD));

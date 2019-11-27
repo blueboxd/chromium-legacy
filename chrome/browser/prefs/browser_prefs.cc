@@ -208,6 +208,7 @@
 #include "chrome/browser/android/usage_stats/usage_stats_bridge.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
+#include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/feed/buildflags.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
@@ -886,6 +887,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
   GeolocationPermissionContextAndroid::RegisterProfilePrefs(registry);
+  KnownInterceptionDisclosureInfoBarDelegate::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
   usage_stats::UsageStatsBridge::RegisterProfilePrefs(registry);

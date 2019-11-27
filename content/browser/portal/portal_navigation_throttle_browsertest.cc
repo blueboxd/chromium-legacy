@@ -20,6 +20,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -245,6 +246,28 @@ IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
                                            "not.portal.test", destination_url);
   EXPECT_FALSE(NavigatePortalViaSrcAttribute(portal, redirect_url, 1));
   EXPECT_EQ(portal->GetPortalContents()->GetLastCommittedURL(), redirect_url);
+}
+
+IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
+                       LogsConsoleWarning) {
+  ASSERT_TRUE(NavigateToURL(
+      GetWebContents(),
+      embedded_test_server()->GetURL("portal.test", "/title1.html")));
+
+  auto* old_delegate = GetWebContents()->GetDelegate();
+  ConsoleObserverDelegate console_delegate(GetWebContents(),
+                                           "*portal*cross-origin*");
+  GetWebContents()->SetDelegate(&console_delegate);
+
+  Portal* portal = InsertAndWaitForPortal(
+      embedded_test_server()->GetURL("not.portal.test", "/title2.html"),
+      /*expected_to_succeed=*/false);
+  EXPECT_NE(portal, nullptr);
+
+  console_delegate.Wait();
+  EXPECT_THAT(console_delegate.message(),
+              ::testing::HasSubstr("http://not.portal.test"));
+  GetWebContents()->SetDelegate(old_delegate);
 }
 
 }  // namespace

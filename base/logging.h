@@ -720,9 +720,9 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define CHECK_GT(val1, val2) CHECK_OP(GT, > , val1, val2)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define DCHECK_IS_ON() 0
+#define DCHECK_IS_ON() false
 #else
-#define DCHECK_IS_ON() 1
+#define DCHECK_IS_ON() true
 #endif
 
 // Definitions for DLOG et al.

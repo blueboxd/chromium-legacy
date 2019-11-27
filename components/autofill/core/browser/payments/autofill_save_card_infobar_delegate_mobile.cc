@@ -52,7 +52,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)),
       card_last_four_digits_(card.LastFourDigits()),
       cardholder_name_(card.GetRawInfo(CREDIT_CARD_NAME_FULL)),
-      expiration_date_month_(card.ExpirationMonthAsString()),
+      expiration_date_month_(card.Expiration2DigitMonthAsString()),
       expiration_date_year_(card.Expiration4DigitYearAsString()),
       legal_message_lines_(legal_message_lines),
       is_off_the_record_(is_off_the_record) {

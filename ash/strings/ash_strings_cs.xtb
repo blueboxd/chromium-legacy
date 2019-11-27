@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Metoda zadávání: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Chcete-li provést akci s oznámením, odemkněte zařízení jako <ph name="LOGIN_ID" /></translation>
-<translation id="8995603266996330174">Správce: <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Zadejte svůj rodičovský přístupový kód služby Family Link.</translation>
 <translation id="9029474291399787231">Je k dispozici aktualizace přehrávače Adobe Flash Player</translation>
 <translation id="9056839673611986238">V zařízení bude obnovena předchozí verze systému</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Zvětšení obrazovky</translation>
 <translation id="9193626018745640770">Odesílání do neznámého přijímače</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
+<translation id="9205817095063786319">Zařízení spravuje organizace <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>
 <translation id="9211681782751733685">Doba zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Nastavit tapetu</translation>

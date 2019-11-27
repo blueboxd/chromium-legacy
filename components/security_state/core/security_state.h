@@ -214,7 +214,7 @@ constexpr SecurityLevel kDisplayedInsecureContentWarningLevel = WARNING;
 constexpr SecurityLevel kRanInsecureContentLevel = DANGEROUS;
 
 // Returns true if the given |url|'s origin should be considered secure.
-using IsOriginSecureCallback = base::Callback<bool(const GURL& url)>;
+using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL& url)>;
 
 // Returns a SecurityLevel to describe the current page.
 // |visible_security_state| contains the relevant security state.

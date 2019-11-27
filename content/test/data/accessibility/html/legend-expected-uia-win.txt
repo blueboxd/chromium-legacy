@@ -2,5 +2,8 @@ document
 ++form
 ++++group Name='Browser Engines:'
 ++++++description
+++++++++description Name='Browser Engines:' IsControlElement=false
+++++++description Name='Browser: ' IsControlElement=false
 ++++++textbox
+++++++description Name=' Rendering Engine: ' IsControlElement=false
 ++++++textbox

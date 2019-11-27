@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Уншихад тохиромжтой болох хүртэл хүрээг томруулж татна уу. Бичвэр дээр хоёр удаа товшсоны дараагаар текстийн хэмжээ томорч харагдана.</translation>
 <translation id="2323763861024343754">Сайтын сан</translation>
 <translation id="2328985652426384049">Нэвтрэх боломжгүй</translation>
-<translation id="2330129964253841015">Нууц үгийн нууцлал алдагдвал танд анхааруулах</translation>
 <translation id="2349710944427398404">Бүртгэл, хавчуурга, хадгалсан тохиргоо зэрэг Chrome-н ашигласан нийт өгөгдөл</translation>
 <translation id="2353636109065292463">Таны интернэт холболтыг шалгаж байна</translation>
 <translation id="2359808026110333948">Цааш</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Хаягууд</translation>
 <translation id="290376772003165898">Хуудас <ph name="LANGUAGE" /> хэл дээр биш байна уу?</translation>
 <translation id="2904414404539560095">Таб хуваалцах төхөөрөмжийн жагсаалтыг бүрэн өндрөөр нээлээ.</translation>
+<translation id="2905036901251765993">Ойролцоо байгаа хүмүүстэй хуваалцахын тулд тэдэнд энэ хурдан хариу үйлдлийн кодыг скан хийхийг зөвшөөрнө үү</translation>
 <translation id="2909615210195135082">Google мэдэгдлийн платформ</translation>
 <translation id="2910701580606108292">Сайтад хамгаалалттай контент тоглуулахыг зөвшөөрөхөөс өмнө асуух</translation>
 <translation id="2913331724188855103">Cookie data-г хадгалах мөн унших боломжийг сайтуудад олгох (зөвлөж байна)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Нууц үгийг харуулах</translation>
 <translation id="363596933471559332">Хадгалсан итгэмжлэлийг ашиглан вэбсайтад автоматаар нэвтрэх. Энэ үйлдлийг идэвхжүүлээгүй тохиолдолд аливаа вэбсайтад хандах бүрт таниас баталгаажуулалт шаардана.</translation>
 <translation id="3658159451045945436">Шинэчилснээр таны зочилсон сайтын жагсаалт зэрэг өгөгдөл хадгалалтын түүхийг устгана.</translation>
+<translation id="3682730288090679318">Танд мэдэгдэл харуулах эсэхийг асуухыг сайтуудад автоматаар хориглохын тулд идэвхжүүлэх. Хэрэв сайт мэдэгдлийн хүсэлт тавивал хуудасны доод хэсэгт мэдээллийн цонх харагдана.</translation>
 <translation id="3692944402865947621">Сангийн байршил олдоогүй тул <ph name="FILE_NAME" />-г татаж чадсангүй.</translation>
 <translation id="3714981814255182093">Find Bar-г нээх</translation>
 <translation id="3716182511346448902">Энэ хуудас хэт их хэмжээний санах ой ашиглаж байгаа тул үүнийг Chrome түр зогсоосон болно.</translation>
@@ -541,6 +542,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5048398596102334565">Сайтад хөдөлгөөн мэдрэгчид хандахыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="5063480226653192405">Ашиглалт</translation>
 <translation id="5087580092889165836">Карт нэмэх</translation>
+<translation id="5096950519211870196">Танд мэдэгдэл харуулах эсэхийг асуухыг сайтуудад хориглоно. Хэрэв сайт мэдэгдлийн хүсэлт тавивал хуудасны доод хэсэгт мэдээллийн цонх харагдана.</translation>
 <translation id="5100237604440890931">Задарсан, энд дарж өргөтгөнө үү.</translation>
 <translation id="510275257476243843">1 цаг үлдсэн</translation>
 <translation id="5123685120097942451">Нууцлалтай чихтэй хуудас</translation>
@@ -588,6 +590,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5414836363063783498">Баталгаажуулж байна ...</translation>
 <translation id="5423934151118863508">Таны хамгийн их зочилсон хуудас энд гарч ирэх болно</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> гигабайт боломжтой</translation>
+<translation id="5427766642345310212">Ойлголоо. Өгөгдмөл тохиргоогоор мэдэгдлийн шинэ хүсэлт нь энд харагдана.</translation>
 <translation id="543338862236136125">Нууц үг засах</translation>
 <translation id="5433691172869980887">Хэрэглэгчийн нэрийг хуулсан</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> файлыг татаж байна (<ph name="MEGABYTES" />).</translation>
@@ -686,6 +689,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6108923351542677676">Тохиргоо хийгдэж байна...</translation>
 <translation id="6111020039983847643">ашигласан дата</translation>
 <translation id="6112702117600201073">Хуудсыг дахин сэргээж байна</translation>
+<translation id="6113400363611269907">Сануулгыг чимээгүй харуулах</translation>
 <translation id="6127379762771434464">Хамгийн их зочилсон вэбсайтуудыг устгасан</translation>
 <translation id="6140912465461743537">Улс/бүс</translation>
 <translation id="614940544461990577">Оролдож үзэх:</translation>
@@ -1018,6 +1022,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8503813439785031346">Хэрэглэгчийн нэр</translation>
 <translation id="8514477925623180633">Chrome-р хадгалсан нууц үгийг экспортлох</translation>
 <translation id="8514577642972634246">Нууцлалын горимд нэвтрэх</translation>
+<translation id="8516012719330875537">Зураг засагч</translation>
 <translation id="851751545965956758">Сайтуудыг төхөөрөмжүүдэд холбогдохыг нь блоклох</translation>
 <translation id="8523928698583292556">Хадгалсан нууц үгийг устгах</translation>
 <translation id="854522910157234410">Энэ хуудсыг нээх</translation>

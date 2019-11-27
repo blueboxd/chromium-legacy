@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.StopSource;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -206,7 +206,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     public boolean isSyncingUrlsWithKeystorePassphrase() {
         return mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.getPreferredDataTypes().contains(ModelType.TYPED_URLS)
-                && mProfileSyncService.getPassphraseType() == Passphrase.Type.KEYSTORE;
+                && (mProfileSyncService.getPassphraseType() == PassphraseType.KEYSTORE_PASSPHRASE
+                        || mProfileSyncService.getPassphraseType()
+                                == PassphraseType.TRUSTED_VAULT_PASSPHRASE);
     }
 
     /**

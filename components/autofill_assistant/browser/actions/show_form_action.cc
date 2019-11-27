@@ -31,10 +31,11 @@ void ShowFormAction::InternalProcessAction(ProcessActionCallback callback) {
   if (!delegate_->SetForm(
           std::make_unique<FormProto>(proto_.show_form().form()),
           base::BindRepeating(&ShowFormAction::OnFormValuesChanged,
-                              weak_ptr_factory_.GetWeakPtr()))) {
+                              weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&ShowFormAction::OnCancelForm,
+                         weak_ptr_factory_.GetWeakPtr()))) {
     // The form contains unsupported or invalid inputs.
-    UpdateProcessedAction(UNSUPPORTED);
-    std::move(callback_).Run(std::move(processed_action_proto_));
+    EndAction(ClientStatus(UNSUPPORTED));
     return;
   }
 }
@@ -58,6 +59,10 @@ void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   user_actions->emplace_back(std::move(user_action));
   delegate_->Prompt(std::move(user_actions));
+}
+
+void ShowFormAction::OnCancelForm(const ClientStatus& status) {
+  EndAction(status);
 }
 
 bool ShowFormAction::IsFormValid(const FormProto& form,
@@ -175,9 +180,12 @@ bool ShowFormAction::IsSelectionInputValid(
 }
 
 void ShowFormAction::OnButtonClicked() {
-  DCHECK(callback_);
-  delegate_->SetForm(nullptr, base::DoNothing());
-  UpdateProcessedAction(ACTION_APPLIED);
+  EndAction(ClientStatus(ACTION_APPLIED));
+}
+
+void ShowFormAction::EndAction(const ClientStatus& status) {
+  delegate_->SetForm(nullptr, base::DoNothing(), base::DoNothing());
+  UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
 

@@ -16,7 +16,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -379,11 +379,11 @@ public class ProfileSyncService {
      * This method should only be used if you want to know the raw value. For checking whether
      * we should ask the user for a passphrase, use isPassphraseRequiredForPreferredDataTypes().
      */
-    public @Passphrase.Type int getPassphraseType() {
+    public @PassphraseType int getPassphraseType() {
         assert isEngineInitialized();
         int passphraseType = ProfileSyncServiceJni.get().getPassphraseType(
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
-        if (passphraseType < 0 || passphraseType >= Passphrase.Type.NUM_ENTRIES) {
+        if (passphraseType < 0 || passphraseType > PassphraseType.MAX_VALUE) {
             throw new IllegalArgumentException();
         }
         return passphraseType;

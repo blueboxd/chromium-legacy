@@ -20,6 +20,7 @@
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"
+#include "rlz/lib/machine_deal_win.h"
 #elif defined(OS_POSIX)
 #include "base/files/file_path.h"
 #include "rlz/lib/rlz_value_store.h"

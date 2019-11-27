@@ -171,8 +171,7 @@ class OptimizationGuideStoreTest : public testing::Test {
         prediction_model = CreatePredictionModel();
     prediction_model->mutable_model_info()->set_optimization_target(
         optimization_target);
-    update_data->MovePredictionModelIntoUpdateData(
-        std::move(*prediction_model));
+    update_data->CopyPredictionModelIntoUpdateData(*prediction_model);
   }
 
   // Moves |host_model_features_count| into |update_data|.
@@ -186,8 +185,7 @@ class OptimizationGuideStoreTest : public testing::Test {
       model_feature->set_feature_name("host_feat1");
       model_feature->set_double_value(2.0);
       host_model_features.set_host(host_suffix);
-      update_data->MoveHostModelFeaturesIntoUpdateData(
-          std::move(host_model_features));
+      update_data->CopyHostModelFeaturesIntoUpdateData(host_model_features);
     }
   }
 

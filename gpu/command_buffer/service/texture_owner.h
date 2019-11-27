@@ -92,6 +92,10 @@ class GPU_GLES2_EXPORT TextureOwner
   virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() = 0;
 
+  // Provides the crop rectangle associated with the most recent image. The
+  // crop rectangle specifies the region of valid pixels in the image.
+  virtual gfx::Rect GetCropRect() = 0;
+
   // Set the callback function to run when a new frame is available.
   // |frame_available_cb| is thread safe and can be called on any thread. This
   // method should be called only once, i.e., once a callback is provided, it

@@ -112,7 +112,7 @@ base::Optional<gfx::Transform> GetMojoFromInputSource(
     return base::nullopt;
   }
 
-  auto viewer_from_pointer =
+  gfx::Transform viewer_from_pointer =
       *input_source_state->description->input_from_pointer;
 
   return mojo_from_viewer * viewer_from_pointer;
@@ -721,7 +721,7 @@ ArCoreImpl::GetHitTestSubscriptionResults(
         *maybe_mojo_from_native_origin));
   }
 
-  for (auto& subscribtion_id_and_data :
+  for (const auto& subscribtion_id_and_data :
        hit_test_subscription_id_to_transient_hit_test_data_) {
     auto input_source_ids_and_transforms =
         GetMojoFromInputSources(subscribtion_id_and_data.second.profile_name,
@@ -810,9 +810,7 @@ ArCoreImpl::GetMojoFromInputSources(
 
   for (const auto& input_state : *maybe_input_state) {
     if (input_state && input_state->description) {
-      if (std::count(input_state->description->profiles.begin(),
-                     input_state->description->profiles.end(),
-                     profile_name) > 0) {
+      if (base::Contains(input_state->description->profiles, profile_name)) {
         // Input source represented by input_state matches the profile, find
         // the transform and grab input source id.
         base::Optional<gfx::Transform> maybe_mojo_from_input_source =
@@ -1021,7 +1019,7 @@ bool ArCoreImpl::RequestHitTest(
                         &ar_trackable_type);
 
     // Only consider trackables listed in arcore_entity_types.
-    if (arcore_entity_types.count(ar_trackable_type) == 0) {
+    if (!base::Contains(arcore_entity_types, ar_trackable_type)) {
       DVLOG(2)
           << __func__
           << ": hit a trackable that is not in entity types set, ignoring it";

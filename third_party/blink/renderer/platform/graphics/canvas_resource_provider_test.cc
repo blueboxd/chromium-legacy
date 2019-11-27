@@ -430,7 +430,7 @@ TEST_F(CanvasResourceProviderTest,
       ExternalCanvasResource::Create(
           mailbox, kSize, GL_TEXTURE_2D, kColorParams,
           SharedGpuContext::ContextProviderWrapper(), provider->CreateWeakPtr(),
-          kMedium_SkFilterQuality);
+          kMedium_SkFilterQuality, /*is_origin_top_left=*/true);
 
   // NewOrRecycledResource() would return nullptr before an ImportResource().
   EXPECT_TRUE(provider->ImportResource(resource));

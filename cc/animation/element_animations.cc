@@ -175,41 +175,6 @@ void ElementAnimations::RemoveKeyframeEffectsFromTicking() const {
     keyframe_effect.RemoveFromTicking();
 }
 
-void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
-  DCHECK(!event.is_impl_only);
-  for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (keyframe_effect.NotifyKeyframeModelStarted(event))
-      break;
-  }
-}
-
-void ElementAnimations::NotifyAnimationFinished(const AnimationEvent& event) {
-  DCHECK(!event.is_impl_only);
-  for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (keyframe_effect.NotifyKeyframeModelFinished(event))
-      break;
-  }
-}
-
-void ElementAnimations::NotifyAnimationTakeover(const AnimationEvent& event) {
-  DCHECK(!event.is_impl_only);
-  DCHECK(event.target_property == TargetProperty::SCROLL_OFFSET);
-
-  for (auto& keyframe_effect : keyframe_effects_list_)
-    keyframe_effect.NotifyKeyframeModelTakeover(event);
-}
-
-void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
-  DCHECK(!event.is_impl_only);
-
-  for (auto& keyframe_effect : keyframe_effects_list_) {
-    if (keyframe_effect.NotifyKeyframeModelAborted(event))
-      break;
-  }
-
-  UpdateClientAnimationState();
-}
-
 bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   for (auto& keyframe_effect : keyframe_effects_list_) {
     if (!keyframe_effect.AnimationsPreserveAxisAlignment())

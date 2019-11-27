@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
-<translation id="1409544243779336081">యాప్ సిఫార్సు</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1498028757988366001">మీరు దీని కోసం గతంలో వెతికారు. మీ చరిత్ర నుండి "<ph name="QUERY" />"ను తొలగిస్తే, మీ ఖాతాతో సైన్ ఇన్ చేసి ఉన్న మీ పరికరాలు అన్నింటిలో అది శాశ్వతంగా తీసివేయబడుతుంది.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">వ్యవధి</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 నెల}other{# నెలలు}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">నక్షత్ర రేటింగ్ <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 గంట మరియు }other{# గంటలు మరియు }}</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="1859234291848436338">వ్రాసే దిశ</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7781829728241885113">నిన్న</translation>
 <translation id="7814458197256864873">&amp;కాపీ</translation>
+<translation id="7848989271541991537"><ph name="PAGE_NUMBER" />వ పేజీలో <ph name="ROW_NUMBER" />వ అడ్డు వరుస, '<ph name="COLUMN_NUMBER" />' నిలువు వరుసకు తరలించబడింది.</translation>
 <translation id="7879499977785298635">బ్లాక్ చేయవద్దు</translation>
 <translation id="7907591526440419938">ఫైల్‌ను తెరువు</translation>
 <translation id="7969046989155602842">ఆదేశం</translation>

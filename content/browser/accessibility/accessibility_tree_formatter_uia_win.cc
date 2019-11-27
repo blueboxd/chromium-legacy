@@ -970,6 +970,12 @@ void AccessibilityTreeFormatterUia::BuildCacheRequests() {
   CHECK(children_cache_request_.Get());
   children_cache_request_->put_TreeScope(TreeScope_Children);
 
+  // Set filter to include all nodes in the raw view.
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> raw_view_condition;
+  uia_->get_RawViewCondition(&raw_view_condition);
+  CHECK(raw_view_condition.Get());
+  children_cache_request_->put_TreeFilter(raw_view_condition.Get());
+
   // Create cache request for requesting information about a node.
   uia_->CreateCacheRequest(&element_cache_request_);
   CHECK(element_cache_request_.Get());

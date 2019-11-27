@@ -121,11 +121,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
   void SetOffsetFromLayoutObject(const IntSize&);
 
-  // The position of the layer (the location of its top-left corner in its
-  // parent).
-  const gfx::PointF& GetPosition() const;
-  void SetPosition(const gfx::PointF&);
-
   // The size of the layer.
   const gfx::Size& Size() const;
   void SetSize(const gfx::Size&);

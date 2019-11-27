@@ -187,6 +187,10 @@ class CORE_EXPORT MessageEvent final : public Event {
   // messageerror event instead of message event.
   bool IsOriginCheckRequiredToAccessData() const;
 
+  // Returns true when |data_as_serialized_script_value_| is locked to an
+  // agent cluster.
+  bool IsLockedToAgentCluster() const;
+
   void EntangleMessagePorts(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;

@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, TargetBlankAnchor) {
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
   EXPECT_EQ(
-      GURL("about:blank"),
+      GURL(url::kAboutBlankURL),
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
 }
 
@@ -555,7 +555,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, BeforeUnload_NoDialog) {
   // Try to navigate away from the page. If the beforeunload listener is
   // triggered and a dialog is shown, this navigation will never complete,
   // causing the test to timeout and fail.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 }
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
@@ -568,7 +568,60 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   // toggle IPC has had time to reach the browser.
   ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "");
 
-  web_contents->GetController().LoadURL(GURL("about:blank"), {},
+  web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
+                                        ui::PAGE_TRANSITION_TYPED, "");
+
+  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+      ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
+  EXPECT_FALSE(before_unload_dialog->is_reload());
+  before_unload_dialog->OnAccept(base::string16(), false);
+}
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       BeforeUnloadEnabled_WithoutUserActivation) {
+  ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadWithUserActivation.csv"));
+  auto* web_contents = GetEmbedderWebContents();
+  // Prepare frames but don't trigger user activation.
+  content::PrepContentsForBeforeUnloadTest(web_contents, false);
+
+  // Even though this test's JS setup enables BeforeUnload dialogs, the dialog
+  // is still suppressed here because of lack of user activation.  As a result,
+  // the following navigation away from the page works fine.  If a beforeunload
+  // dialog were shown, this navigation would fail, causing the test to timeout.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+}
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       BeforeUnloadEnabled_WithUserActivation) {
+  // Only run this test in cross-process mode.
+  if (!GetParam())
+    return;
+
+  ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadWithUserActivation.csv"));
+  auto* web_contents = GetEmbedderWebContents();
+  // Prepare frames but don't trigger user activation across all frames.
+  content::PrepContentsForBeforeUnloadTest(web_contents, false);
+
+  // Make sure we have a guestviewmanager.
+  auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+
+  // Add a filter for FrameHostMsg_UpdateUserActivationState IPC.
+  auto filter =
+      base::MakeRefCounted<content::UpdateUserActivationStateMsgWaiter>();
+  guest_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+
+  // Activate |guest_contents| through a click, then wait until the activation
+  // IPC reaches the browser process.
+  SimulateMouseClick(guest_contents, 0, blink::WebMouseEvent::Button::kLeft);
+  filter->Wait();
+
+  // Wait for a round trip to the outer renderer to ensure any beforeunload
+  // toggle IPC has had time to reach the browser.
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "");
+
+  // Try to navigate away, this should invoke a beforeunload dialog.
+  web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
                                         ui::PAGE_TRANSITION_TYPED, "");
 
   app_modal::JavaScriptAppModalDialog* before_unload_dialog =

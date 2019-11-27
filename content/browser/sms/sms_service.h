@@ -23,6 +23,7 @@ namespace content {
 
 class RenderFrameHost;
 class SmsFetcher;
+struct LoadCommittedDetails;
 
 // SmsService handles mojo connections from the renderer, observing the incoming
 // SMS messages from an SmsFetcher.
@@ -55,6 +56,11 @@ class CONTENT_EXPORT SmsService
   // content::SmsQueue::Subscriber
   void OnReceive(const std::string& one_time_code,
                  const std::string& sms) override;
+
+ protected:
+  // content::WebContentsObserver:
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
 
  private:
   void OpenInfoBar(const std::string& one_time_code);

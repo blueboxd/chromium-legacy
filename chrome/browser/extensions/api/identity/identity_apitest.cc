@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -510,11 +509,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
 
 class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
  public:
-  IdentityGetAccountsFunctionTest() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    feature_list_.InitAndEnableFeature(kExtensionsAllAccountsFeature);
-#endif
-  }
+  IdentityGetAccountsFunctionTest() = default;
 
  protected:
   testing::AssertionResult ExpectGetAccounts(
@@ -582,9 +577,6 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 
     return testing::AssertionFailure(msg);
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, AllAccountsOn) {
@@ -626,32 +618,6 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, TwoAccountsSignedIn) {
   } else {
     EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary_example.com"}));
   }
-}
-
-class IdentityOldProfilesGetAccountsFunctionTest
-    : public IdentityGetAccountsFunctionTest {
- public:
-  IdentityOldProfilesGetAccountsFunctionTest() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    // Disable the feature that was enabled by the parent class.
-    feature_list_.InitAndDisableFeature(kExtensionsAllAccountsFeature);
-#endif
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
-                       AllAccountsOff) {
-  EXPECT_TRUE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
-}
-
-IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
-                       TwoAccountsSignedIn) {
-  SignIn("primary@example.com");
-  identity_test_env()->MakeAccountAvailable("secondary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary_example.com"}));
 }
 
 class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
@@ -718,11 +684,7 @@ class GetAuthTokenFunctionTest
     : public IdentityTestWithSignin,
       public signin::IdentityManager::DiagnosticsObserver {
  public:
-  GetAuthTokenFunctionTest() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    feature_list_.InitAndEnableFeature(kExtensionsAllAccountsFeature);
-#endif
-  }
+  GetAuthTokenFunctionTest() = default;
 
   std::string IssueLoginAccessTokenForAccount(const CoreAccountId& account_id) {
     std::string access_token = "access_token-" + account_id.id;
@@ -823,7 +785,6 @@ class GetAuthTokenFunctionTest
     std::move(on_access_token_requested_).Run();
   }
 
-  base::test::ScopedFeatureList feature_list_;
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;
 };

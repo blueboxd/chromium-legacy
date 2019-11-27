@@ -184,6 +184,11 @@ class PolicyFetchClientObserver : public CloudPolicyClient::Observer {
   void OnRegistrationStateChanged(CloudPolicyClient* client) override {}
 
   void OnClientError(CloudPolicyClient* client) override {
+    // This is called when policy fetching fails and is used in
+    // ChromeBrowserCloudManagementController to unenroll the browser. The
+    // status must be DM_STATUS_SERVICE_DEVICE_NOT_FOUND for this to happen.
+    EXPECT_EQ(client->status(), DM_STATUS_SERVICE_DEVICE_NOT_FOUND);
+
     std::move(quit_closure_).Run();
   }
 
@@ -581,6 +586,8 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
     test_server_->RegisterClient(kDMToken, kClientID, {} /* state_keys */);
   }
 
+  DMToken retrieve_dm_token() { return storage_.RetrieveDMToken(); }
+
   const std::string dm_token() const { return GetParam(); }
 
  private:
@@ -623,8 +630,23 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
   if (dm_token() != kInvalidDMToken) {
     EXPECT_EQ(1u, policy_map.size());
     EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value));
+
+    // The token in storage should be valid.
+    DMToken token = retrieve_dm_token();
+    EXPECT_TRUE(token.is_valid());
+
+    // The test server will register with "fake_device_management_token" if
+    // Chrome is started without a DM token.
+    if (dm_token().empty())
+      EXPECT_EQ(token.value(), "fake_device_management_token");
+    else
+      EXPECT_EQ(token.value(), kDMToken);
   } else {
     EXPECT_EQ(0u, policy_map.size());
+
+    // The token in storage should be invalid.
+    DMToken token = retrieve_dm_token();
+    EXPECT_TRUE(token.is_invalid());
   }
 }
 

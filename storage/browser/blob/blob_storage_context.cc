@@ -673,6 +673,8 @@ void BlobStorageContext::RegisterFromDataItem(
   }
   std::unique_ptr<BlobDataBuilder> builder =
       std::make_unique<BlobDataBuilder>(uuid);
+  if (!item->content_type.empty())
+    builder->set_content_type(item->content_type);
   builder->AppendMojoDataItem(std::move(item));
   std::unique_ptr<BlobDataHandle> handle = AddFinishedBlob(std::move(builder));
   BlobImpl::Create(std::move(handle), std::move(blob));

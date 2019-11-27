@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -603,21 +604,13 @@ void NavigationSimulatorImpl::Commit() {
     request_->set_response_headers_for_testing(response_headers);
   }
 
-  bool is_cross_process_navigation =
-      previous_rfh->GetProcess() != render_frame_host_->GetProcess();
-
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), same_document_);
 
-  // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
-  // commit time.
-  if (is_cross_process_navigation && !drop_swap_out_ack_) {
-    previous_rfh->OnMessageReceived(
-        FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
-  }
+  SimulateSwapOutACKForPreviousFrameIfNeeded(previous_rfh);
 
   loading_scenario_ =
       TestRenderFrameHost::LoadingScenario::NewDocumentNavigation;
@@ -748,21 +741,13 @@ void NavigationSimulatorImpl::CommitErrorPage() {
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
 
-  bool is_cross_process_navigation =
-      previous_rfh->GetProcess() != render_frame_host_->GetProcess();
-
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, true /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), false /* same_document */);
 
-  // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
-  // commit time.
-  if (is_cross_process_navigation && !drop_swap_out_ack_) {
-    previous_rfh->OnMessageReceived(
-        FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
-  }
+  SimulateSwapOutACKForPreviousFrameIfNeeded(previous_rfh);
 
   state_ = FINISHED;
   if (!keep_loading_)
@@ -1022,6 +1007,21 @@ void NavigationSimulatorImpl::DidFinishNavigation(
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
   if (request == request_) {
     num_did_finish_navigation_called_++;
+    if (navigation_handle->IsServedFromBackForwardCache()) {
+      // Back-forward cache navigations commit and finish synchronously, unlike
+      // all other navigations, which wait for a reply from the renderer.
+      // The |state_| is normally updated to 'FINISHED' when we simulate a
+      // renderer reply at the end of the NavigationSimulatorImpl::Commit()
+      // function, but we have not reached this stage yet.
+      // Set |state_| to FINISHED to ensure that we would not try to simulate
+      // navigation commit for the second time.
+      RenderFrameHostImpl* previous_rfh = RenderFrameHostImpl::FromID(
+          navigation_handle->GetPreviousRenderFrameHostId());
+      CHECK(previous_rfh) << "Previous RenderFrameHost should not be destroyed "
+                             "without a SwapOut_ACK";
+      SimulateSwapOutACKForPreviousFrameIfNeeded(previous_rfh);
+      state_ = FINISHED;
+    }
     request_ = nullptr;
     if (was_aborted_)
       CHECK_EQ(net::ERR_ABORTED, request->GetNetErrorCode());
@@ -1351,6 +1351,22 @@ void NavigationSimulatorImpl::FailLoading(
     const base::string16& error_description) {
   CHECK(render_frame_host_);
   render_frame_host_->DidFailLoadWithError(url, error_code, error_description);
+}
+
+void NavigationSimulatorImpl::SimulateSwapOutACKForPreviousFrameIfNeeded(
+    RenderFrameHostImpl* previous_rfh) {
+  // Do not dispatch SwapOutACK if the navigation was committed in the same
+  // RenderFrameHost.
+  if (previous_rfh == render_frame_host_)
+    return;
+  if (drop_swap_out_ack_)
+    return;
+  // The previous RenderFrameHost entered the back-forward cache and hasn't been
+  // requested to swap out. The browser process do not expect any swap out ACK.
+  if (previous_rfh->is_in_back_forward_cache())
+    return;
+  previous_rfh->OnMessageReceived(
+      FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
 }
 
 }  // namespace content

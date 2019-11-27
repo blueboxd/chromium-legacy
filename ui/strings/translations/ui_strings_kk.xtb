@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Солдан оңға</translation>
 <translation id="1383876407941801731">Іздеу</translation>
 <translation id="1398853756734560583">Жаю</translation>
-<translation id="1409544243779336081">Қолданба ұсынысы</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> бөлісу мүмкін емес</translation>
 <translation id="1498028757988366001">Оны бұған дейін іздегенсіз. Тарихтан "<ph name="QUERY" />" сұрауын жойып тастасаңыз, ол барлық құрылғыңыздағы есептік жазбаңыздан өшіп қалады.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут және }other{# минут және }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Кезең</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ай}other{# ай}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> МБ/с</translation>
-<translation id="1812519734428420144">Жұлдызшалы рейтинг: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 сағат және }other{# сағат және }}</translation>
 <translation id="1842960171412779397">таңдау</translation>
 <translation id="1859234291848436338">Жазу бағыты</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7781829728241885113">Кеше</translation>
 <translation id="7814458197256864873">&amp;Көшіру</translation>
+<translation id="7848989271541991537">Мына жерге жылжытылды: <ph name="PAGE_NUMBER" />-бет, <ph name="ROW_NUMBER" />-жол, <ph name="COLUMN_NUMBER" />-баған.</translation>
 <translation id="7879499977785298635">Бөгемеу</translation>
 <translation id="7907591526440419938">Файлды ашу</translation>
 <translation id="7969046989155602842">Пәрмен</translation>

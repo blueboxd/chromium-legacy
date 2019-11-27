@@ -18,7 +18,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
-#include "content/public/browser/file_select_listener.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
@@ -328,22 +327,6 @@ bool WillCreateURLLoaderFactory(
                        had_interceptors;
   }
   return had_interceptors;
-}
-
-bool InterceptFileChooser(
-    RenderFrameHostImpl* rfh,
-    std::unique_ptr<content::FileSelectListener>* listener,
-    const blink::mojom::FileChooserParams& params) {
-  DevToolsAgentHostImpl* agent_host = RenderFrameDevToolsAgentHost::GetFor(rfh);
-  if (!agent_host)
-    return false;
-  std::vector<protocol::PageHandler*> page_handlers =
-      protocol::PageHandler::ForAgentHost(agent_host);
-  for (auto* handler : page_handlers) {
-    if (handler->InterceptFileChooser(rfh, listener, params))
-      return true;
-  }
-  return false;
 }
 
 bool WillCreateURLLoaderFactoryForServiceWorker(

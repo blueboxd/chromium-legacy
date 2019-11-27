@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Daha fazla göster</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Şifrenizi değiştirin</translation>
 <translation id="1484290072879560759">Gönderim Adresi Seç</translation>
 <translation id="1492194039220927094">Politikalar aktarılabilir:</translation>
 <translation id="1501859676467574491">Google Hesabımdaki kartları göster</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sistem yöneticisiyle iletişime geçmeyi deneyin.</translation>
 <translation id="1736420071277903564">Bilgisayar</translation>
-<translation id="1739107442478692187">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi ve <ph name="ORIGIN" /> şifrenizi değiştirmenizi öneriyor.</translation>
 <translation id="1740951997222943430">Geçerli bir son kullanma ayı girin</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> olduğunda, DnsOverHttpsTemplate belirtilmeli ve geçerli bir dize olmalıdır.</translation>
 <translation id="1743520634839655729">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı, adınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Sıkıştırma Açma Hizmeti</translation>
 <translation id="1915697529809968049">CVC yerine Touch ID kullanılsın mı?</translation>
 <translation id="1916770123977586577">Güncellenen ayarlarınızı bu siteye uygulamak için sayfayı yeniden yükleyin</translation>
+<translation id="1917876262703816781">Bir site veya uygulamadaki veri ihlali nedeniyle şifreniz ifşa oldu. Chrome, <ph name="ORIGIN" /> şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919367280705858090">Belirli bir hata mesajıyla ilgili yardım alma</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yok}=1{1 site}other{# site}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Alan adı uyuşmazlığı</translation>
 <translation id="2096368010154057602">Bölüm</translation>
 <translation id="2099652385553570808">Solda üçlü tel zımba</translation>
-<translation id="2100280972184758440">Şifrenizin güvenliği ihlal edildi</translation>
 <translation id="2102134110707549001">Güçlü Şifre Öner…</translation>
 <translation id="2108755909498034140">Bilgisayarınızı yeniden başlatın</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
 <translation id="2119505898009119320">Verildiği kuruluş: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Sağ altta delik</translation>
-<translation id="2124528555835617522">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi öneriyor.</translation>
 <translation id="2129079103035905234">Hareket Sensörleri</translation>
 <translation id="2130448033692577677">Belirttiğiniz şablonlar, DnsOverHttpsMode politikası ayarlanmadığı için uygulanamayabilir.</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
@@ -490,7 +489,6 @@
 <translation id="3282497668470633863">Kart üzerindeki ismi ekle</translation>
 <translation id="3287510313208355388">Çevrimiçi olduğunda indir</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> politikası ile ilgili daha fazla bilgi edinin</translation>
-<translation id="3295439534709115864">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, <ph name="ORIGIN" /> şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="3303855915957856445">Arama sonucu bulunamadı</translation>
 <translation id="3320021301628644560">Fatura adresi ekle</translation>
 <translation id="3324983252691184275">Kızıl</translation>
@@ -903,6 +901,7 @@
 <translation id="5287240709317226393">Çerezleri göster</translation>
 <translation id="5287456746628258573">Bu site, eski bir güvenlik yapılandırması kullanıyor. Bu siteye gönderildiğinde bilgileriniz (ör. şifreler veya kredi kartı numaraları) gösterilebilir.</translation>
 <translation id="5288108484102287882">Politika değerlerini doğrulama işlemi uyarılarla sonuçlandı</translation>
+<translation id="5295292838686006428">Bir site veya uygulamadaki veri ihlali nedeniyle şifreniz ifşa oldu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi öneriyor.</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5308380583665731573">Bağlan</translation>
@@ -953,6 +952,7 @@
 <translation id="5540224163453853">İstenen makale bulunamadı.</translation>
 <translation id="5541546772353173584">E-posta Adresi Ekleyin</translation>
 <translation id="5545756402275714221">Sizin için Seçilmiş Makaleler</translation>
+<translation id="5552137475244467770">Chrome, internette yayınlanan listelerle karşılaştırarak şifrelerinizi belirli aralıklarla kontrol eder. Bu işlem sırasında şifreleriniz ve kullanıcı adlarınız şifrelendiğinden, Google dahil olmak üzere hiç kimse tarafından okunamaz.</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5560088892362098740">Son Kullanma Tarihi</translation>
 <translation id="5565735124758917034">Etkin</translation>
@@ -1044,6 +1044,7 @@
 <translation id="5992691462791905444">Yarım Z katlama</translation>
 <translation id="6000758707621254961">"<ph name="SEARCH_TEXT" />" için bulunan <ph name="RESULT_COUNT" /> sonuç gösteriliyor</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Şifrelerinizi kontrol edin</translation>
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. sayfa}other{#. sayfa}}</translation>
 <translation id="6017514345406065928">Yeşil</translation>
@@ -1333,6 +1334,7 @@ Ek ayrıntılar:
 <translation id="7481312909269577407">İleri</translation>
 <translation id="748406663033922918">Kayıtlı ödeme yöntemlerinizi doğrulamak için ekran kilidini kullanın.</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
+<translation id="7495290002932347110">Bir site veya uygulamadaki veri ihlali nedeniyle şifreniz ifşa oldu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi ve <ph name="ORIGIN" /> şifrenizi değiştirmenizi öneriyor.</translation>
 <translation id="7498234416455752244">Düzenlemeye devam et</translation>
 <translation id="7508255263130623398">Döndürülen politika cihaz kimliği boş veya mevcut cihaz kimliğiyle eşleşmiyor</translation>
 <translation id="7508870219247277067">Avokado Yeşili</translation>

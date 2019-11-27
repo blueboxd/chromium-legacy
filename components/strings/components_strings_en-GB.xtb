@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Show more</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Change your password</translation>
 <translation id="1484290072879560759">Choose delivery address</translation>
 <translation id="1492194039220927094">Policies push:</translation>
 <translation id="1501859676467574491">Show cards from your Google Account</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Try contacting the system admin.</translation>
 <translation id="1736420071277903564">Computer</translation>
-<translation id="1739107442478692187">A data breach occurred on a site or app that you use. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="1740951997222943430">Enter a valid expiry month</translation>
 <translation id="1741613555002899862">Must be specified and a valid string when DnsOverHttpsMode is <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">To pay faster next time, save your card, name and billing address to your Google Account and to this device.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Unzip Service</translation>
 <translation id="1915697529809968049">Use touch ID instead of CVC?</translation>
 <translation id="1916770123977586577">To apply your updated settings to this site, reload this page</translation>
+<translation id="1917876262703816781">A data breach on a site or app exposed your password. Chrome recommends changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1919367280705858090">Get help with a specific error message</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{None}=1{1 site}other{# sites}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domain mismatch</translation>
 <translation id="2096368010154057602">Department</translation>
 <translation id="2099652385553570808">Triple staple left</translation>
-<translation id="2100280972184758440">Your password was compromised</translation>
 <translation id="2102134110707549001">Suggest strong password…</translation>
 <translation id="2108755909498034140">Restart your computer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignored because it was overridden by <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Issued to: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Punch bottom right</translation>
-<translation id="2124528555835617522">A data breach occurred on a site or app that you use. Chrome recommends checking your saved passwords now.</translation>
 <translation id="2129079103035905234">Motion Sensors</translation>
 <translation id="2130448033692577677">The templates that you've specified may not be applied due to the DnsOverHttpsMode policy not being set.</translation>
 <translation id="213826338245044447">Mobile Bookmarks</translation>
@@ -486,7 +485,6 @@
 <translation id="3282497668470633863">Add name on card</translation>
 <translation id="3287510313208355388">Download when online</translation>
 <translation id="3293642807462928945">Learn more about <ph name="POLICY_NAME" /> policy</translation>
-<translation id="3295439534709115864">A data breach occurred on a site or app that you use. Chrome recommends changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="3303855915957856445">No search results found</translation>
 <translation id="3320021301628644560">Add billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
@@ -894,6 +892,7 @@
 <translation id="5287240709317226393">Show cookies</translation>
 <translation id="5287456746628258573">This site uses an outdated security configuration, which may expose your information (for example, passwords or credit card numbers) when it is sent to this site.</translation>
 <translation id="5288108484102287882">Validation of policy values has raised warnings</translation>
+<translation id="5295292838686006428">A data breach on a site or app exposed your password. Chrome recommends checking your saved passwords now.</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5308380583665731573">Connect</translation>
@@ -944,6 +943,7 @@
 <translation id="5540224163453853">Could not find the requested article.</translation>
 <translation id="5541546772353173584">Add Email</translation>
 <translation id="5545756402275714221">Articles for You</translation>
+<translation id="5552137475244467770">Chrome periodically checks your passwords against lists that have been published online. When doing this, your passwords and usernames are encrypted, so they can’t be read by anyone, including Google.</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5560088892362098740">Expiry Date</translation>
 <translation id="5565735124758917034">Active</translation>
@@ -1035,6 +1035,7 @@
 <translation id="5992691462791905444">Engineering Z-fold</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Check your passwords</translation>
 <translation id="6015796118275082299">Year</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
 <translation id="6017514345406065928">Green</translation>
@@ -1324,6 +1325,7 @@ Additional details:
 <translation id="7481312909269577407">Forward</translation>
 <translation id="748406663033922918">Use screen lock to verify your saved payment methods.</translation>
 <translation id="7485870689360869515">No data found.</translation>
+<translation id="7495290002932347110">A data breach on a site or app exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="7498234416455752244">Keep editing</translation>
 <translation id="7508255263130623398">Returned policy device ID is empty or doesn't match current device ID</translation>
 <translation id="7508870219247277067">Avocado green</translation>

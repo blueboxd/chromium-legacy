@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> hoặc <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Chế độ tổng quan</translation>
 <translation id="4382340674111381977">Quay lại trang trước</translation>
+<translation id="4458670250301149821">Di chuyển một biểu tượng ứng dụng vào/ra khỏi một thư mục trong lưới ứng dụng</translation>
 <translation id="4472417192667361414">Cài đặt hiển thị và hệ thống</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, sau đó là <ph name="LEFT" />/<ph name="RIGHT" /> hoặc <ph name="UP" />/<ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Xem Trình trợ giúp về phím tắt</translation>
 <translation id="4628718545549558538">Mở khu vực trạng thái (nơi ảnh tài khoản của bạn xuất hiện)</translation>
 <translation id="4642092649622328492">Chụp ảnh một phần màn hình</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Xóa chữ cái tiếp theo (xóa tiến)</translation>
 <translation id="7500368597227394048">dấu gạch nối</translation>
 <translation id="7611271430932669992">Di chuyển tiêu điểm đến cửa sổ bật lên và hộp thoại</translation>
+<translation id="7635348532214572995">Di chuyển một biểu tượng ứng dụng xung quanh lưới ứng dụng</translation>
 <translation id="766326951329901120">Dán nội dung từ khay nhớ tạm dưới dạng văn bản thuần túy</translation>
 <translation id="7703010453515335249">dấu ngoặc vuông trái</translation>
 <translation id="7724603315864178912">Cắt</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Dán nội dung từ khay nhớ tạm</translation>
 <translation id="9052808072970550123">Chuyển sang người dùng tiếp theo</translation>
 <translation id="906458777597946297">Phóng to cửa sổ</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, sau đó là <ph name="LEFT" />/<ph name="RIGHT" /> hoặc <ph name="UP" />/<ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Chuyển đến đầu dòng</translation>
 <translation id="9106898733795143799">Trang và trình duyệt web</translation>
 <translation id="9162942292291287644">Không có kết quả tìm kiếm nào cho <ph name="QUERY" /></translation>

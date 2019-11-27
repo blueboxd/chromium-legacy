@@ -612,8 +612,10 @@ void FragmentShader::SetRoundedCornerFunctions(
           if (r == 0.0)
             return src;
 
-          // Vector to the corner's center this frag is in.
-          vec2 cornerCenter = GetCenter(isCorner, r);
+          // Vector to the corner's center this fragment is in.
+          // Due to precision errors on android, this variable requires a highp.
+          // See https://crbug.com/1009322
+          RoundedCornerPrecision vec2 cornerCenter = GetCenter(isCorner, r);
 
           // Vector from the center of the corner to the current fragment center
           vec2 cxy = rcCoord - cornerCenter;
@@ -630,6 +632,12 @@ void FragmentShader::SetRoundedCornerFunctions(
   std::string shader;
   shader.reserve(shader_string->size() + 2048);
   shader += "precision mediump float;";
+  shader +=
+      "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+      "  #define RoundedCornerPrecision highp\n"
+      "#else\n"
+      "  #define RoundedCornerPrecision mediump\n"
+      "#endif\n";
   kUniforms.AppendToString(&shader);
   kFunctionRcUtility.AppendToString(&shader);
   kFunctionApplyRoundedCorner.AppendToString(&shader);

@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> пайдалану</translation>
 <translation id="899350903320462459">Хабарландыруда ұсынылған әрекетті орындау үшін <ph name="LOGIN_ID" /> арқылы құрылғының құлпын ашыңыз</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> басқарады</translation>
 <translation id="9017320285115481645">Family Link ата-ананың рұқсат кодын енгізіңіз.</translation>
 <translation id="9029474291399787231">Adobe Flash Player қолданбасының жаңартылған нұсқасы қолжетімді</translation>
 <translation id="9056839673611986238">Құрылғы алдыңғы нұсқаға қайтарылды</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Толық экран ұлғайтқышы</translation>
 <translation id="9193626018745640770">Белгісіз қабылдағышта трансляциялауда</translation>
 <translation id="9194617393863864469">Басқа пайдаланушыны кіргізу…</translation>
+<translation id="9205817095063786319">Құрылғыны <ph name="DOMAIN" /> басқарады</translation>
 <translation id="9210037371811586452">Бірыңғай жұмыс үстелі режимінен шығуда</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> өткен соң, батарея толық зарядталады.</translation>
 <translation id="9215934040295798075">Тұсқағазды орнату</translation>

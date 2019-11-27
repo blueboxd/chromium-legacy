@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_STRIKE_DATABASE_INTEGRATOR_BASE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_STRIKE_DATABASE_INTEGRATOR_BASE_H_
 
+#include <stdint.h>
+
 #include "components/autofill/core/browser/payments/strike_database.h"
 
 namespace autofill {
@@ -95,7 +97,7 @@ class StrikeDatabaseIntegratorBase {
   virtual int GetMaxStrikesLimit() = 0;
 
   // Returns the time after which the most recent strike should expire.
-  virtual long long GetExpiryTimeMicros() = 0;
+  virtual int64_t GetExpiryTimeMicros() = 0;
 
   // Returns whether or not a unique string identifier is required for every
   // strike in this project.

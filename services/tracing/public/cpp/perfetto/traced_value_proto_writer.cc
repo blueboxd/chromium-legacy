@@ -258,11 +258,7 @@ std::unique_ptr<TracedValue::Writer> CreateNestedValueProtoWriter(
 
 }  // namespace
 
-void RegisterTracedValueProtoWriter(bool enable) {
-  if (!enable) {
-    TracedValue::SetWriterFactoryCallback(nullptr);
-    return;
-  }
+void RegisterTracedValueProtoWriter() {
   TracedValue::SetWriterFactoryCallback(&CreateNestedValueProtoWriter);
 }
 

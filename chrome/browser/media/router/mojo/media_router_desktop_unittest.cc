@@ -49,11 +49,10 @@ class NullMessageObserver : public RouteMessageObserver {
 
 }  // namespace
 
-template <bool enable_cast_discovery>
-class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
+class MediaRouterDesktopTest : public MediaRouterMojoTest {
  public:
-  MediaRouterDesktopTestBase() {}
-  ~MediaRouterDesktopTestBase() override {}
+  MediaRouterDesktopTest() {}
+  ~MediaRouterDesktopTest() override {}
 
   DualMediaSinkService* media_sink_service() {
     return media_sink_service_.get();
@@ -66,20 +65,13 @@ class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
  protected:
   std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
     std::unique_ptr<MockCastMediaSinkService> cast_media_sink_service;
-    if (enable_cast_discovery) {
-      // We disable the DIAL MRP because initializing the DIAL MRP requires
-      // initialization of objects it depends on, which is outside the scope of
-      // this unit test. DIAL MRP initialization is covered by Media Router
-      // browser tests.
-      feature_list_.InitWithFeatures({kEnableCastDiscovery},
-                                     {kDialMediaRouteProvider});
-      cast_media_sink_service = std::make_unique<MockCastMediaSinkService>();
-      cast_media_sink_service_ = cast_media_sink_service.get();
-    } else {
-      feature_list_.InitWithFeatures(
-          {}, {kEnableCastDiscovery, kDialMediaRouteProvider});
-    }
-
+    // We disable the DIAL MRP because initializing the DIAL MRP requires
+    // initialization of objects it depends on, which is outside the scope of
+    // this unit test. DIAL MRP initialization is covered by Media Router
+    // browser tests.
+    feature_list_.InitAndDisableFeature(kDialMediaRouteProvider);
+    cast_media_sink_service = std::make_unique<MockCastMediaSinkService>();
+    cast_media_sink_service_ = cast_media_sink_service.get();
     media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
         new DualMediaSinkService(std::move(cast_media_sink_service),
                                  std::make_unique<MockDialMediaSinkService>()));
@@ -94,12 +86,8 @@ class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
   // Owned by |media_sink_service_|.
   MockCastMediaSinkService* cast_media_sink_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktopTestBase);
+  DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktopTest);
 };
-
-using MediaRouterDesktopTest = MediaRouterDesktopTestBase<true>;
-using MediaRouterDesktopTestCastDiscoveryDisabled =
-    MediaRouterDesktopTestBase<false>;
 
 #if defined(OS_WIN)
 TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
@@ -117,23 +105,6 @@ TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
   // we've already seen an mdns-enabling event.
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
   EXPECT_CALL(*cast_media_sink_service(), StartMdnsDiscovery());
-  RegisterExtensionProvider();
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(MediaRouterDesktopTestCastDiscoveryDisabled,
-       EnableMdnsAfterEachRegister) {
-  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
-  RegisterExtensionProvider();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
-  router()->OnUserGesture();
-  base::RunLoop().RunUntilIdle();
-
-  // EnableMdnsDiscovery() is called on this RegisterExtensionProvider() because
-  // we've already seen an mdns-enabling event.
-  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
   RegisterExtensionProvider();
   base::RunLoop().RunUntilIdle();
 }

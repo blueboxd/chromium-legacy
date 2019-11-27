@@ -53,7 +53,7 @@ class AwSSLHostStateDelegate : public content::SSLHostStateDelegate {
                  int error) override;
 
   void Clear(
-      const base::Callback<bool(const std::string&)>& host_filter) override;
+      base::RepeatingCallback<bool(const std::string&)> host_filter) override;
 
   // Queries whether |cert| is allowed or denied for |host| and |error|.
   content::SSLHostStateDelegate::CertJudgment QueryPolicy(

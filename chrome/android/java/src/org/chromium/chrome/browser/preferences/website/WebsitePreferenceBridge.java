@@ -346,9 +346,6 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 WebsitePreferenceBridgeJni.get().setAutomaticDownloadsEnabled(allow);
                 break;
-            case ContentSettingsType.AUTOPLAY:
-                WebsitePreferenceBridgeJni.get().setAutoplayEnabled(allow);
-                break;
             case ContentSettingsType.BACKGROUND_SYNC:
                 WebsitePreferenceBridgeJni.get().setBackgroundSyncEnabled(allow);
                 break;
@@ -400,8 +397,6 @@ public class WebsitePreferenceBridge {
                 return isContentSettingEnabled(contentSettingsType);
             case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 return WebsitePreferenceBridgeJni.get().getAutomaticDownloadsEnabled();
-            case ContentSettingsType.AUTOPLAY:
-                return WebsitePreferenceBridgeJni.get().getAutoplayEnabled();
             case ContentSettingsType.BACKGROUND_SYNC:
                 return WebsitePreferenceBridgeJni.get().getBackgroundSyncEnabled();
             case ContentSettingsType.COOKIES:
@@ -588,7 +583,6 @@ public class WebsitePreferenceBridge {
         boolean getAcceptCookiesUserModifiable();
         boolean getAcceptCookiesManagedByCustodian();
         boolean getAutomaticDownloadsEnabled();
-        boolean getAutoplayEnabled();
         boolean getBackgroundSyncEnabled();
         boolean getAllowLocationUserModifiable();
         boolean getLocationAllowedByPolicy();
@@ -604,7 +598,6 @@ public class WebsitePreferenceBridge {
         boolean getSensorsEnabled();
         boolean getSoundEnabled();
         void setAutomaticDownloadsEnabled(boolean enabled);
-        void setAutoplayEnabled(boolean enabled);
         void setAllowCookiesEnabled(boolean enabled);
         void setBackgroundSyncEnabled(boolean enabled);
         void setClipboardEnabled(boolean enabled);

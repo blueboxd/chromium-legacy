@@ -355,6 +355,12 @@ CodecImage::GetAHardwareBuffer() {
   return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();
 }
 
+gfx::Rect CodecImage::GetCropRect() {
+  if (!codec_buffer_wait_coordinator_)
+    return gfx::Rect();
+  return codec_buffer_wait_coordinator_->texture_owner()->GetCropRect();
+}
+
 bool CodecImage::HasMutableState() const {
   return false;
 }

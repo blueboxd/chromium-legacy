@@ -157,14 +157,12 @@ void RequestSender::OnNetworkFetcherComplete(
   VLOG(1) << "request completed from url: " << original_url.spec();
 
   int error = -1;
-  if (response_body && response_code_ == 200) {
-    DCHECK_EQ(0, net_error);
+  if (!net_error && response_code_ == 200)
     error = 0;
-  } else if (response_code_ != -1) {
+  else if (response_code_ != -1)
     error = response_code_;
-  } else {
+  else
     error = net_error;
-  }
 
   int retry_after_sec = -1;
   if (original_url.SchemeIsCryptographic() && error > 0)

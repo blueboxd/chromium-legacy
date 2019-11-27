@@ -336,7 +336,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 - (BOOL)shouldHandleMergeCaseForIdentity:(ChromeIdentity*)identity
                             browserState:
                                 (ios::ChromeBrowserState*)browserState {
-  CoreAccountId lastSignedInAccountId(
+  CoreAccountId lastSignedInAccountId = CoreAccountId::FromString(
       browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastAccountId));
   CoreAccountId currentSignedInAccountId =
       IdentityManagerFactory::GetForBrowserState(browserState)

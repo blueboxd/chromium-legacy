@@ -30,7 +30,6 @@ import org.chromium.third_party.android.R;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * Specific {@link ChartView} that displays {@link ChartNetworkSeriesView} for inspection ranges.

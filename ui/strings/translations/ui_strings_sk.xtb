@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Zľava doprava</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
-<translation id="1409544243779336081">Odporúčanie aplikácie</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> sa nedá zdieľať</translation>
 <translation id="1498028757988366001">Toto ste už vyhľadávali. Odstránením dopytu <ph name="QUERY" /> z histórie ho natrvalo vymažete zo svojho účtu vo všetkých zariadeniach.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minúta a }few{# minúty a }many{# minúty a }other{# minút a }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">.</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mesiac}few{# mesiace}many{# mesiaca}other{# mesiacov}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Hodnotenie: <ph name="RATING_SCORE" /> hviezd.</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Pred 1 hodinou a }few{Pred # hodinami a }many{Pred # hodinou a }other{Pred # hodinami a }}</translation>
 <translation id="1842960171412779397">vybrať</translation>
 <translation id="1859234291848436338">Smer písania</translation>

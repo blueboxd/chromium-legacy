@@ -930,7 +930,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2326931316514688470">Tətbiqi yenidən yükləyin</translation>
 <translation id="2327492829706409234">Tətbiqi aktiv edin</translation>
 <translation id="2329597144923131178">Bütün cihazlarınızda əlfəcin, tarixçə, parol və digər ayarları əldə etmək üçün daxil olun.</translation>
-<translation id="2330129964253841015">Parol ələ keçirildikdə xəbərdarlıq edilsin</translation>
 <translation id="2332131598580221120">Marketdə baxın</translation>
 <translation id="2332192922827071008">Tərcihləri Açın</translation>
 <translation id="2332742915001411729">Defolta sıfırlayın</translation>
@@ -4090,6 +4089,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6990778048354947307">Qara Tema</translation>
 <translation id="6991665348624301627">Təyinat yeri seçin</translation>
 <translation id="6992554835374084304">Təkmilləşdirilmiş orfoqrafik yoxlanışı aktiv edin</translation>
+<translation id="6995899638241819463">Data pozulması halında parolların ələ keçirilib-keçirilmədiyi bildirilir</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - Fəaliyyət Qeydi</translation>
 <translation id="6997707937646349884">Cihazlarınızda:</translation>
 <translation id="6998793565256476099">Video görüş üçün cihazı qeydiyyatdan keçirin</translation>

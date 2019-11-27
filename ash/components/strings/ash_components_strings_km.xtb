@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ឬ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">មុខងារ​ទិដ្ឋភាពរួម</translation>
 <translation id="4382340674111381977">ត្រឡប់​ទៅទំព័រ​ពីមុន</translation>
+<translation id="4458670250301149821">ផ្លាស់ទីរូប​កម្មវិធីចូល/ចេញពី​ថតនៅក្នុង​ក្រឡាកម្មវិធី</translation>
 <translation id="4472417192667361414">ការ​កំណត់​ប្រព័ន្ធ និង​ការបង្ហាញ</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> បន្ទាប់មក <ph name="LEFT" /> ឬ <ph name="RIGHT" /> ឬ <ph name="UP" /> ឬ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">មើល​កម្មវិធី​ជំនួយផ្លូវកាត់ក្ដារ​ចុច</translation>
 <translation id="4628718545549558538">បើក​តំបន់​ស្ថាន​ភាព (ត្រង់​កន្លែង​ដែល​រូបភាព​គណនី​របស់អ្នក​បង្ហាញ)</translation>
 <translation id="4642092649622328492">ថត​រូប​អេក្រង់​មួយ​ផ្នែក</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">លុប​អក្សរ​បន្ទាប់ (លុប​ដេញទៅ​មុខ)</translation>
 <translation id="7500368597227394048">សហសញ្ញា</translation>
 <translation id="7611271430932669992">ផ្លាស់ទី​ការ​ផ្ដោត​ទៅ​ផ្ទាំង​លោតឡើង ឬ​ប្រអប់​បញ្ចូល</translation>
+<translation id="7635348532214572995">ផ្លាស់ទីរូបកម្មវិធី​នៅជុំវិញ​ក្រឡាកម្មវិធី</translation>
 <translation id="766326951329901120">ដាក់​ខ្លឹមសារ​ចូល​ពីអង្គចងចាំ​ជា​អត្ថបទ​ធម្មតា</translation>
 <translation id="7703010453515335249">តង្កៀបខាងឆ្វេង</translation>
 <translation id="7724603315864178912">កាត់</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ដាក់ចូល​ខ្លឹមសារ​ពីអង្គ​ចងចាំ</translation>
 <translation id="9052808072970550123">ប្ដូរទៅ​អ្នកប្រើប្រាស់​បន្ទាប់</translation>
 <translation id="906458777597946297">ពង្រីកផ្ទាំង</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> បន្ទាប់មក <ph name="LEFT" /> ឬ <ph name="RIGHT" /> ឬ <ph name="UP" /> ឬ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ទៅកាន់ផ្នែកខាងដើមបន្ទាត់</translation>
 <translation id="9106898733795143799">ទំព័រ និង​កម្មវិធី​រុករក​តាម​អ៊ីនធឺណិត</translation>
 <translation id="9162942292291287644">គ្មាន​លទ្ធផល​ស្វែងរក​សម្រាប់ <ph name="QUERY" /> ទេ</translation>

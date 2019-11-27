@@ -5,8 +5,8 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 [
-    RuntimeEnabled=CookieStore,
-    ImplementedAs=ServiceWorkerGlobalScopeCookieStore
+  RuntimeEnabled=CookieStore,
+  ImplementedAs=GlobalCookieStore
 ] partial interface ServiceWorkerGlobalScope {
   [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
   attribute EventHandler oncookiechange;

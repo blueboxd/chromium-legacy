@@ -4,6 +4,7 @@
 <translation id="1003088604756913841">Abrir link numa nova janela da aplicação <ph name="APP" /></translation>
 <translation id="1004218526896219317">Acesso a sites</translation>
 <translation id="1005274289863221750">Utilizar o seu microfone e a câmara</translation>
+<translation id="1005333234656240382">Pretende ativar a depuração do adb?</translation>
 <translation id="1006873397406093306">Esta extensão pode ler e alterar os seus dados em sites. É possível controlar os sites aos quais a extensão pode aceder.</translation>
 <translation id="1007408791287232274">Não foi possível carregar dispositivos.</translation>
 <translation id="1008186147501209563">Exportar marcadores</translation>
@@ -31,6 +32,7 @@
 <translation id="1036982837258183574">Premir |<ph name="ACCELERATOR" />| para sair do ecrã inteiro</translation>
 <translation id="1038168778161626396">Cifrar apenas</translation>
 <translation id="1039337018183941703">Ficheiro inválido ou danificado</translation>
+<translation id="1039850285407663109">O ficheiro selecionado é desconhecido e pode ser perigoso. Pondere analisar este ficheiro antes de o abrir.</translation>
 <translation id="1041175011127912238">Esta página não está a responder.</translation>
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">O seu computador também tem a biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. A RLZ atribui uma etiqueta não exclusiva e não identificável a nível pessoal para medir as pesquisas e a utilização de <ph name="SHORT_PRODUCT_NAME" /> impulsionada por uma campanha promocional específica. Estas etiquetas por vezes aparecem em consultas da Pesquisa Google em <ph name="PRODUCT_NAME" />.</translation>
@@ -102,6 +104,7 @@
 <translation id="1143142264369994168">Signatário do certificado</translation>
 <translation id="1145292499998999162">Plug-in bloqueado</translation>
 <translation id="1145532888383813076">Pesquise no dispositivo, nas aplicações e na Web.</translation>
+<translation id="1145593918056169051">A impressora parou</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
 <translation id="114721135501989771">Inteligên. Google no Chrome</translation>
 <translation id="1147991416141538220">Para solicitar acesso, contacte o administrador deste dispositivo.</translation>
@@ -201,6 +204,7 @@
 <translation id="1274997165432133392">Cookies e outros dados do site</translation>
 <translation id="127668050356036882">Fechar todas as janelas</translation>
 <translation id="1280820357415527819">A pesquisar redes móveis…</translation>
+<translation id="1282420830958964167">O limite na aplicação "<ph name="APP_NAME" />" que um dos teus pais definiu esgotou-se. Amanhã, podes utilizá-la durante <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1285484354230578868">Armazenar dados na sua conta Google Drive</translation>
 <translation id="1288037062697528143">A Luz noturna irá ativar-se automaticamente ao pôr-do-sol.</translation>
@@ -231,6 +235,7 @@
 <translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1327074568633507428">Impressora no Google Cloud Print</translation>
 <translation id="1327272175893960498">Permissões Kerberos</translation>
+<translation id="1327495825214193325">Para ativar a depuração do adb, tem de reiniciar este <ph name="DEVICE_TYPE" />. A desativação requer a reposição das definições de fábrica.</translation>
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1329584516321524826">Atualizado mesmo agora</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
@@ -364,6 +369,7 @@
 <translation id="1512210426710821809">A única forma de anular esta ação é reinstalar o <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Importado do Safari</translation>
 <translation id="1515163294334130951">Iniciar</translation>
+<translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Anfitrião</translation>
 <translation id="1521442365706402292">Gerir certificados</translation>
 <translation id="1521774566618522728">Ativo hoje</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
@@ -440,6 +446,7 @@
 <translation id="1627276047960621195">Descritores de ficheiros</translation>
 <translation id="1627408615528139100">Já transferido</translation>
 <translation id="1629314197035607094">A palavra-passe expirou.</translation>
+<translation id="1630768113285622200">Reiniciar e continuar</translation>
 <translation id="1632803087685957583">Permite-lhe ajustar a taxa de repetição do teclado, a previsão de palavras e muito mais</translation>
 <translation id="1635033183663317347">Instalada pelo supervisor.</translation>
 <translation id="1637224376458524414">Obter este marcador no seu iPhone</translation>
@@ -516,6 +523,7 @@
 <translation id="1733383495376208985">Encriptar dados sincronizados com a sua própria <ph name="BEGIN_LINK" />frase de acesso de sincronização<ph name="END_LINK" />. Não estão incluídos métodos de pagamento e endereços do Google Pay.</translation>
 <translation id="1734212868489994726">Azul claro</translation>
 <translation id="1734824808160898225">O <ph name="PRODUCT_NAME" /> pode não conseguir manter-se atualizado.</translation>
+<translation id="173628468822554835">Compreendido. Por predefinição, os novos sites que visitar não lhe vão enviar notificações.</translation>
 <translation id="1736419249208073774">Explorar</translation>
 <translation id="1737968601308870607">Erro de ficheiro</translation>
 <translation id="1741314857973421784">Continuar</translation>
@@ -611,6 +619,7 @@
 <translation id="1858585891038687145">Confiar neste certificado para identificar fabricantes de software</translation>
 <translation id="1861262398884155592">Esta pasta está vazia</translation>
 <translation id="1863182668524159459">Nenhuma porta de série encontrada.</translation>
+<translation id="1863552924692672565">O ficheiro <ph name="FILE_NAME" /> é desconhecido. Analise-o para minimizar o risco.</translation>
 <translation id="1864111464094315414">Início de sessão</translation>
 <translation id="1864400682872660285">Mais frio</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
@@ -925,7 +934,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2326931316514688470">&amp;Recarregar aplicação</translation>
 <translation id="2327492829706409234">Ativar aplicação</translation>
 <translation id="2329597144923131178">Inicie sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
-<translation id="2330129964253841015">Enviar-lhe um aviso se as palavras-passe forem comprometidas</translation>
 <translation id="2332131598580221120">Ver na loja</translation>
 <translation id="2332192922827071008">Abrir as Preferências</translation>
 <translation id="2332742915001411729">Repor predefinição</translation>
@@ -948,6 +956,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2352810082280059586">As notas do ecrã de bloqueio são automaticamente guardadas na aplicação <ph name="LOCK_SCREEN_APP_NAME" />. A nota mais recente permanece no ecrã de bloqueio.</translation>
 <translation id="2353297238722298836">Câmara e microfone permitidos</translation>
 <translation id="2356070529366658676">Perguntar</translation>
+<translation id="2357330829548294574">Remover <ph name="USER_NAME" /></translation>
 <translation id="2359345697448000899">Faça a gestão das suas extensões clicando em Extensões no menu Ferramentas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="236117173274098341">Otimizar</translation>
@@ -1054,6 +1063,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Ecrã #}other{Ecrãs #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> de <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507253002925770350">Permissão removida</translation>
+<translation id="2507397597949272797">A aplicação <ph name="NAME" /> foi colocada em pausa</translation>
 <translation id="2508428939232952663">Conta da Google Play Store</translation>
 <translation id="2509495747794740764">O valor de dimensionamento tem de ser um número entre 10 e 200.</translation>
 <translation id="2509566264613697683">8x</translation>
@@ -1110,6 +1120,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2585724835339714757">Este separador está a partilhar o seu ecrã.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2586672484245266891">Introduza um URL mais curto.</translation>
+<translation id="2587922766792651800">Tempo limite excedido</translation>
 <translation id="2588636910004461974">Dispositivos de <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Pesquise no Google ou escreva o URL</translation>
 <translation id="2603115962224169880">Limpar o computador</translation>
@@ -1131,6 +1142,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="26224892172169984">Não permitir que os Web sites processem protocolos</translation>
 <translation id="2624142942574147739">Esta página está a aceder à sua câmara e microfone.</translation>
 <translation id="2626799779920242286">Tente novamente mais tarde.</translation>
+<translation id="2628770867680720336">Tem de efetuar a reposição de dados de fábrica deste Chromebook para ativar a depuração do adb. <ph name="BEGIN_LINK_LEARN_MORE" />Saber mais<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Programar aplicações para Android</translation>
 <translation id="2630681426381349926">Estabelecer ligação a Wi-Fi para começar</translation>
 <translation id="2631120081682787498">Tem a certeza de que pretende fechar este separador?</translation>
@@ -1143,6 +1155,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2636625531157955190">O Chrome não consegue aceder à imagem.</translation>
 <translation id="2637400434494156704">PIN incorreto. Tem mais uma tentativa.</translation>
 <translation id="2638087589890736295">A frase de acesso é necessária para iniciar a sincronização</translation>
+<translation id="264083724974021997">Associar ao seu telemóvel – Caixa de diálogo</translation>
 <translation id="2642111877055905627">Bola de futebol</translation>
 <translation id="2643698698624765890">Faça a gestão das suas extensões clicando em Extensões no menu Janela.</translation>
 <translation id="264810637653812429">Não foram encontrados dispositivos compatíveis.</translation>
@@ -1503,6 +1516,7 @@ Pretende pará-lo?</translation>
 <translation id="3151786313568798007">Orientação</translation>
 <translation id="3154351730702813399">O gestor do dispositivo pode monitorizar a sua atividade de navegação:</translation>
 <translation id="3154429428035006212">Offline durante mais de um mês</translation>
+<translation id="3154736273843608862">O limite no <ph name="IDS_SHORT_PRODUCT_NAME" /> que um dos teus pais definiu esgotou-se.</translation>
 <translation id="3156531245809797194">Para utilizar o Chrome, inicie sessão.</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3158033540161634471">Configurar a sua impressão digital</translation>
@@ -1529,6 +1543,7 @@ Pretende pará-lo?</translation>
 <translation id="3202131003361292969">Caminho</translation>
 <translation id="3202173864863109533">O som deste separador foi desativado.</translation>
 <translation id="3208703785962634733">Não confirmado</translation>
+<translation id="32101887417650595">Não é possível estabelecer ligação à impressora</translation>
 <translation id="321084946921799184">Amarelo e branco</translation>
 <translation id="321356136776075234">UO do dispositivo (por exemplo, UO=Chromebooks, DC=exemplo, DC=com)</translation>
 <translation id="3217843140356091325">Pretende criar um atalho?</translation>
@@ -1536,6 +1551,7 @@ Pretende pará-lo?</translation>
 <translation id="321834671654278338">Desinstalador para o Linux</translation>
 <translation id="3220586366024592812">O processo do conector <ph name="CLOUD_PRINT_NAME" /> falhou. Reiniciar?</translation>
 <translation id="3222066309010235055">Pré-renderizar: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
+<translation id="3223531857777746191">Botão Repor</translation>
 <translation id="3225084153129302039">Avatar roxo predefinido</translation>
 <translation id="3225319735946384299">Assinatura de código</translation>
 <translation id="3227137524299004712">Microfone</translation>
@@ -1730,6 +1746,7 @@ Pretende pará-lo?</translation>
 <translation id="351152300840026870">Tipo de letra com largura fixa</translation>
 <translation id="3511528412952710609">Curto</translation>
 <translation id="3514373592552233661">As redes preferidas terão prioridade em relação a outras redes conhecidas caso mais do que uma estejam disponíveis</translation>
+<translation id="3515983984924808886">Toque novamente na chave de segurança para confirmar a reposição. Todas as informações armazenadas na chave de segurança, incluindo o respetivo PIN, serão eliminadas.</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="351952459507671940">Adicionar a novo grupo</translation>
 <translation id="3523642406908660543">Perguntar quando um site pretender utilizar um plug-in para aceder ao seu computador (recomendado)</translation>
@@ -1749,6 +1766,7 @@ Pretende pará-lo?</translation>
 <translation id="3544879808695557954">Nome de utilizador (opcional)</translation>
 <translation id="354602065659584722">Software prejudicial removido</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
+<translation id="3548162552723420559">Ajusta a cor do ecrã consoante o ambiente.</translation>
 <translation id="3550915441744863158">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
 <translation id="3552780134252864554">Apagar à saída</translation>
@@ -1866,6 +1884,7 @@ Pretende pará-lo?</translation>
 <translation id="3699624789011381381">Endereço de email</translation>
 <translation id="3699920817649120894">Pretende desativar a sincronização e a personalização?</translation>
 <translation id="3700888195348409686">A apresentar (<ph name="PAGE_ORIGIN" />)…</translation>
+<translation id="3701167022068948696">Corrigir agora</translation>
 <translation id="3702500414347826004">As suas páginas iniciais foram alteradas para incluir <ph name="URL" />.</translation>
 <translation id="3703699162703116302">Permissão atualizada</translation>
 <translation id="370415077757856453">JavaScript bloqueado</translation>
@@ -1986,6 +2005,7 @@ Pretende pará-lo?</translation>
 <translation id="3850914401008572843"><ph name="ORIGIN" /> não consegue abrir esta pasta porque contém ficheiros de sistema</translation>
 <translation id="3851428669031642514">Carregar scripts não seguros</translation>
 <translation id="3854599674806204102">Escolha uma opção</translation>
+<translation id="3854976556788175030">O tabuleiro de saída está cheio</translation>
 <translation id="3855441664322950881">Comprimir extensão</translation>
 <translation id="3855676282923585394">Importar marcadores e definições...</translation>
 <translation id="3856800405688283469">Selecionar fuso horário</translation>
@@ -2179,6 +2199,7 @@ Pretende pará-lo?</translation>
 <translation id="4109135793348361820">Mover a janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Transferência concluída: <ph name="FILE_NAME" />. Prima Shift+F6 para aceder à área da barra de transferências.</translation>
 <translation id="4110895898888439383">Navegar na Web no Modo de alto contraste</translation>
+<translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
 <translation id="4115002065223188701">Rede fora do alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo utilizam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -2236,6 +2257,7 @@ Pretende pará-lo?</translation>
 <translation id="4211851069413100178">Envie dados de utilização e diagnóstico. Ajude a melhorar a experiência Android ao enviar automaticamente dados de diagnóstico, de utilização do dispositivo e das aplicações para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta <ph name="BEGIN_LINK1" />definição<ph name="END_LINK1" /> é aplicada pelo proprietário. O proprietário pode optar por enviar dados de diagnóstico e de utilização deste dispositivo para a Google. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">O acesso a este recurso foi proibido pelo servidor.</translation>
+<translation id="4218274196133425560">Remover a exceção para <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Ocorreu um erro durante a ativação.</translation>
 <translation id="4222772810963087151">Detalhes da compilação</translation>
 <translation id="4225397296022057997">Em todos os sites</translation>
@@ -2497,6 +2519,7 @@ Pretende pará-lo?</translation>
 <translation id="4634771451598206121">Iniciar sessão novamente...</translation>
 <translation id="4635398712689569051">A página <ph name="PAGE_NAME" /> não está disponível para os utilizadores convidados.</translation>
 <translation id="4637083375689622795">Mais ações, <ph name="EMAIL" /></translation>
+<translation id="4638930039313743000">Ativar a depuração do adb</translation>
 <translation id="4641539339823703554">Não foi possível ao Chrome definir a hora do sistema. Verifique as horas abaixo e corrija se necessário.</translation>
 <translation id="4643612240819915418">Abrir víde&amp;o num novo separador</translation>
 <translation id="4645676300727003670">&amp;Manter</translation>
@@ -2567,6 +2590,7 @@ Pretende pará-lo?</translation>
 <translation id="4750394297954878236">Sugestões</translation>
 <translation id="475088594373173692">Primeiro utilizador</translation>
 <translation id="4751476147751820511">Sensores de movimento ou de luz</translation>
+<translation id="4756269098451810636">Imagem partilhada a partir do <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Parar/atualizar</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4759238208242260848">Transferências</translation>
@@ -2591,6 +2615,7 @@ Pretende pará-lo?</translation>
 <translation id="4798236378408895261">Anexar <ph name="BEGIN_LINK" />registos do Bluetooth<ph name="END_LINK" /> (interno da Google)</translation>
 <translation id="4801448226354548035">Ocultar contas</translation>
 <translation id="4801512016965057443">Permitir roaming de dados móveis</translation>
+<translation id="4804756772600045300">Se continuar, vai ativar a depuração do adb para criar e testar aplicações para Android. Tenha em atenção que a depuração do adb permite a instalação de aplicações de teste que não foram validadas pela Google.</translation>
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4804827417948292437">Abacate</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
@@ -2720,6 +2745,7 @@ Pretende pará-lo?</translation>
 <translation id="4977942889532008999">Confirmar acesso</translation>
 <translation id="4980805016576257426">Esta extensão contém um software malicioso.</translation>
 <translation id="4981449534399733132">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />inicie a sessão<ph name="END_LINK" />.</translation>
+<translation id="4986728572522335985">Isto elimina todos os dados na chave de segurança, incluindo o respetivo PIN</translation>
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="49896407730300355">Rodar para a &amp;esquerda</translation>
 <translation id="4989966318180235467">Inspecionar página de fundo</translation>
@@ -2750,6 +2776,7 @@ Pretende pará-lo?</translation>
 <translation id="503498442187459473"><ph name="HOST" /> pretende utilizar a câmara e o microfone.</translation>
 <translation id="5036662165765606524">Não permitir que os sites transfiram vários ficheiros automaticamente</translation>
 <translation id="5037676449506322593">Selecionar tudo</translation>
+<translation id="5038022729081036555">Amanhã, podes utilizá-lo durante <ph name="TIME_LIMIT" />.</translation>
 <translation id="5038863510258510803">A ativar...</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5042282098504489593">Abra as Definições para ligar o <ph name="USB_DEVICE_NAME" /> ao Linux.</translation>
@@ -2916,6 +2943,7 @@ Pretende pará-lo?</translation>
 <translation id="52912272896845572">O ficheiro de chave privada é inválido.</translation>
 <translation id="529175790091471945">Formatar este dispositivo</translation>
 <translation id="5293170712604732402">Repor as predefinições originais das definições</translation>
+<translation id="5296471962619441686">Corrija o erro para retomar a sincronização.</translation>
 <translation id="5297082477358294722">Palavra-passe guardada. Veja e faça a gestão das palavras-passe guardadas em <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema criado por</translation>
 <translation id="5299109548848736476">Não monitorizar</translation>
@@ -3243,6 +3271,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5764797882307050727">Liberte algum espaço no dispositivo.</translation>
 <translation id="5765425701854290211">Infelizmente, alguns ficheiros estavam danificados, pelo que a atualização não foi concluída com êxito. Os seus ficheiros sincronizados estão seguros.</translation>
 <translation id="5765491088802881382">Não existe nenhuma rede disponível</translation>
+<translation id="5769519078756170258">Anfitrião ou domínio a excluir</translation>
 <translation id="5771816112378578655">Configuração em curso...</translation>
 <translation id="5772265531560382923">{NUM_PAGES,plural, =1{Pode aguardar que a página responda ou sair da mesma.}other{Pode aguardar que as páginas respondam ou sair das mesmas.}}</translation>
 <translation id="577322787686508614">A operação de leitura não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
@@ -3497,6 +3526,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6112727384379533756">Adicionar uma permissão</translation>
 <translation id="6112931163620622315">Verificar o seu telemóvel</translation>
 <translation id="6112952769866305444">Editar pessoa: <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
+<translation id="6113400363611269907">Mostrar pedidos discretamente</translation>
 <translation id="6113942107547980621">Para utilizar o Smart Lock, mude para o perfil de utilizador principal no seu telemóvel</translation>
 <translation id="6116338172782435947">Ver o texto e as imagens copiados para a área de transferência</translation>
 <translation id="6116921718742659598">Alterar idioma e definições de introdução</translation>
@@ -3539,6 +3569,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6169040057125497443">Verifique o microfone.</translation>
 <translation id="6169666352732958425">Não é possível transmitir o ambiente de trabalho.</translation>
 <translation id="6170470584681422115">Sanduíche</translation>
+<translation id="6170498031581934115">Não foi possível ativar a depuração do adb. Aceda às Definições e tente novamente.</translation>
 <translation id="6173623053897475761">Introduza o PIN novamente</translation>
 <translation id="6175314957787328458">GUID de Domínio do Windows</translation>
 <translation id="6176043333338857209">O Bluetooth vai ser ativado temporariamente para comunicar com a sua chave de segurança.</translation>
@@ -3633,6 +3664,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6316806695097060329">Este dispositivo <ph name="SHORT_PRODUCT_NAME" /> foi concebido para lhe proporcionar a melhor experiência Web.</translation>
 <translation id="6317318380444133405">Já não é suportada.</translation>
 <translation id="6317369057005134371">A aguardar janela da aplicação...</translation>
+<translation id="6317608858038767920">Servidor de nomes personalizado <ph name="INPUT_INDEX" /></translation>
 <translation id="6318407754858604988">A transferência foi iniciada.</translation>
 <translation id="6318944945640833942">Não foi possível detetar uma impressora. Introduza o endereço de impressão novamente.</translation>
 <translation id="6322653941595359182">Envie e receba mensagens de texto com o Chromebook.</translation>
@@ -3850,6 +3882,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Infelizmente, o seu computador está configurado com um ID de hardware formatado incorretamente. Este facto impede que o Chrome OS faça a atualização das últimas correções de segurança e o seu computador <ph name="BEGIN_BOLD" />pode estar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir o seu perfil. Termine sessão e inicie-a novamente.</translation>
+<translation id="6667776121818773738">Imagem partilhada a partir de outro dispositivo</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Pretende que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador ligado</translation>
@@ -4024,6 +4057,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6923132443355966645">Deslocar/clicar</translation>
 <translation id="6923633482430812883">Erro ao montar a partilha. Verifique se o servidor de ficheiros ao qual está a ligar suporta o SMBv2 ou posterior.</translation>
 <translation id="6930036377490597025">Chave de segurança externa ou sensor incorporado</translation>
+<translation id="6935286146439255109">Não existe um tabuleiro de papel</translation>
 <translation id="693807610556624488">A operação de escrita excede o comprimento máximo do atributo para: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6941937518557314510">Inicie sessão no <ph name="TOKEN_NAME" /> para autenticar em <ph name="HOST_NAME" /> com o seu certificado.</translation>
 <translation id="6943176775188458830">Cancelar impressão</translation>
@@ -4065,6 +4099,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6990778048354947307">Tema Escuro</translation>
 <translation id="6991665348624301627">Selecione um destino</translation>
 <translation id="6992554835374084304">Ative a verificação ortográfica avançada</translation>
+<translation id="6995899638241819463">Enviar-lhe um aviso se as palavras-passe forem expostas numa violação de dados</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Registo de atividade</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
 <translation id="6998793565256476099">Inscrever dispositivo para videoconferência</translation>
@@ -4116,6 +4151,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7065534935986314333">Acerca do sistema</translation>
 <translation id="706626672220389329">Erro ao montar a partilha. A partilha especificada já está montada.</translation>
 <translation id="7066944511817949584">Falha ao ligar a "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7067396782363924830">Cores ambiente</translation>
 <translation id="7067725467529581407">Não voltar a mostrar.</translation>
 <translation id="7069811530847688087">O Website <ph name="WEBSITE" /> pode exigir um tipo de chave de segurança mais recente ou diferente.</translation>
 <translation id="7070484045139057854">Permite ler e alterar os dados do site</translation>
@@ -4161,6 +4197,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7121728544325372695">Traços inteligentes</translation>
 <translation id="7123360114020465152">Já não é suportada.</translation>
 <translation id="7127980134843952133">Histórico de transferências</translation>
+<translation id="7128151990937044829">Apresentar um indicador na barra de endereço quando as notificações estão bloqueadas</translation>
 <translation id="7128239828194367697">Gerar código QR para esta página</translation>
 <translation id="7131040479572660648">Ler os seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adicionar pá&amp;gina...</translation>
@@ -4352,6 +4389,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7401778920660465883">Ignore esta mensagem</translation>
 <translation id="740624631517654988">Janelas de pop-up bloqueadas</translation>
 <translation id="7407430846095439694">Importar e vincular</translation>
+<translation id="7407504355934009739">A maioria das pessoas bloqueia as notificações deste site.</translation>
 <translation id="7409549334477097887">Extra grande</translation>
 <translation id="7409836189476010449">Executar o Flash</translation>
 <translation id="7410344089573941623">Perguntar se <ph name="HOST" /> pretende aceder à sua câmara e microfone</translation>
@@ -4465,6 +4503,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7581462281756524039">Uma ferramenta de limpeza</translation>
 <translation id="7582582252461552277">Preferir esta rede</translation>
 <translation id="7583948862126372804">Contagem</translation>
+<translation id="7584578941316704630">Pretende analisar antes de abrir?</translation>
 <translation id="7586498138629385861">O Chrome continuará em execução enquanto as Aplicações Chrome estiverem abertas.</translation>
 <translation id="7589461650300748890">Pare. Tenha cuidado.</translation>
 <translation id="7591957897535945411">Esta página foi traduzida.</translation>
@@ -4798,6 +4837,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8013993649590906847">Se uma imagem não tiver uma descrição útil, o Chrome tenta fornecer uma. Para criar as descrições, são enviadas imagens para a Google.</translation>
 <translation id="8014154204619229810">O atualizador está em execução atualmente. Atualize dentro de um minuto para verificar novamente.</translation>
 <translation id="8014206674403687691">Não é possível reverter para a versão anteriormente instalada do <ph name="IDS_SHORT_PRODUCT_NAME" />. Repita o processo de Powerwash do dispositivo.</translation>
+<translation id="8015163965024115122">O limite no <ph name="IDS_SHORT_PRODUCT_NAME" /> ou nas aplicações do <ph name="IDS_SHORT_PRODUCT_NAME" /> que um dos teus pais definiu esgotou-se.</translation>
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
@@ -4847,6 +4887,8 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8076492880354921740">Separadores</translation>
 <translation id="8076835018653442223">O acesso a ficheiros locais no seu dispositivo foi desativado pelo seu administrador.</translation>
 <translation id="808089508890593134">Google</translation>
+<translation id="8081989000209387414">Pretende desativar a depuração do adb?</translation>
+<translation id="8082390128630131497">A desativação da depuração do adb vai repor as definições de fábrica deste <ph name="DEVICE_TYPE" />. Todos os dados locais e contas de utilizador serão apagados.</translation>
 <translation id="8084114998886531721">Palavra-passe guardada</translation>
 <translation id="8086015605808120405">A configurar <ph name="PRINTER_NAME" />…</translation>
 <translation id="8086442853986205778">Configurar <ph name="PRINTER_NAME" /></translation>
@@ -4862,6 +4904,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8101987792947961127">Powerwash necessário no próximo reinício</translation>
 <translation id="8102159139658438129">Aceda a <ph name="LINK_BEGIN" />Definições<ph name="LINK_END" /> para ver as opções para o telemóvel associado.</translation>
 <translation id="8104696615244072556">Efetue um Powerwash ao dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e regresse à versão anterior.</translation>
+<translation id="8106661353233173262">Ocorreu um erro. A análise do ficheiro excedeu o tempo limite.</translation>
 <translation id="8107015733319732394">A instalar a Google Play Store no <ph name="DEVICE_TYPE" />… Esta ação pode demorar alguns minutos.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Sem cookies de terceiros}=1{1 cookie de terceiros está bloqueado}other{# cookies de terceiros estão bloqueados}}</translation>
 <translation id="810875025413331850">Não foram encontrados dispositivos nas proximidades.</translation>
@@ -4936,6 +4979,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8214489666383623925">Abrir ficheiro...</translation>
 <translation id="8214962590150211830">Remover esta pessoa</translation>
 <translation id="8217399928341212914">Continuar a bloquear transferências automáticas de vários ficheiros</translation>
+<translation id="8221491193165283816">Normalmente, bloqueia as notificações. Para permitir que este site lhe apresente notificações, clique aqui.</translation>
 <translation id="8225265270453771718">Partilhe uma janela da aplicação</translation>
 <translation id="8225753906568652947">Resgatar as suas ofertas</translation>
 <translation id="8226222018808695353">Proibido</translation>
@@ -5205,10 +5249,12 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8627795981664801467">Apenas ligações seguras</translation>
 <translation id="8630903300770275248">Importar utilizador supervisionado</translation>
 <translation id="8631032106121706562">Pétalas</translation>
+<translation id="863109444997383731">Os sites não lhe podem pedir para apresentar notificações. Se um site lhe pedir para apresentar notificações, é apresentado um indicador de bloqueio na barra de endereço.</translation>
 <translation id="8635628933471165173">A atualizar…</translation>
 <translation id="8637542770513281060">O seu computador contém um módulo seguro, que é utilizado para implementar várias funcionalidades de segurança essenciais no Chrome OS. Aceda ao Centro de Ajuda do Chromebook em https://support.google.com/chromebook/?p=sm para saber mais.</translation>
 <translation id="8637688295594795546">Actualização do sistema disponível. A preparar a transferência...</translation>
 <translation id="8639047128869322042">A procurar software prejudicial...</translation>
+<translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Porta</translation>
 <translation id="8642900771896232685">2 segundos</translation>
 <translation id="8642947597466641025">Aumentar o tamanho do texto</translation>
 <translation id="8644655801811752511">Não é possível repor esta chave de segurança. Experimente repor a chave imediatamente depois de a inserir.</translation>
@@ -5373,6 +5419,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8838601485495657486">Opaco</translation>
 <translation id="8838770651474809439">Hambúrguer</translation>
 <translation id="883911313571074303">Anotar imagem</translation>
+<translation id="8842594465773264717">Eliminar esta impressão digital</translation>
 <translation id="8845001906332463065">Obter ajuda</translation>
 <translation id="8846132060409673887">Consultar o fabricante e modelo deste computador</translation>
 <translation id="8846141544112579928">A pesquisar teclado...</translation>
@@ -5569,6 +5616,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9116799625073598554">Aplicação para tirar notas</translation>
 <translation id="9117030152748022724">Efetue a gestão das suas aplicações</translation>
 <translation id="9121814364785106365">Abrir como separador fixo</translation>
+<translation id="9122176249172999202">O <ph name="IDS_SHORT_PRODUCT_NAME" /> foi colocado em pausa</translation>
 <translation id="9124003689441359348">As palavras-passe guardadas aparecem aqui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rest.)</translation>
 <translation id="9128317794749765148">Não foi possível concluir a configuração</translation>

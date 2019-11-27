@@ -37,6 +37,7 @@ class GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
+  gfx::Rect GetCropRect() override;
 
  protected:
   void OnTextureDestroyed(gles2::AbstractTexture*) override;

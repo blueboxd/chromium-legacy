@@ -12,84 +12,77 @@
   SDK.multitargetNetworkManager.clearBrowserCache();
 
   async function runTests() {
-    // Loads a WASM module that is smaller than the threshold. It should compile
-    // but not be cached.
-    function loadSmallWasmModule(iframe_window) {
-      const url = 'http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors'
-      return iframe_window.instantiateModule(url);
-    }
-    // Loads a WASM module that is larger than the caching threshold. It should
-    // compile and be cached.
-    function loadLargeWasmModule(iframe_window) {
-      const url = 'http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=large.wasm&cors'
-      return iframe_window.instantiateModule(url);
-    }
-    // Load the same large WASM module with a different URL. It should miss
-    // the cache, compile and be cached.
-    function loadOtherLargeWasmModule(iframe_window) {
-      const url = 'http://localhost:8000/wasm/resources/load-wasm.php?name=large.wasm&cors'
-      return iframe_window.instantiateModule(url);
-    }
+    // Asynchronous function to initiate tests in an iframe, and wait until
+    // compilation has finished.
+    const loadFrame = (url) => new Promise((resolve) => {
+      function receiveMessage(e) {
+        if (e.data == 'done') {
+          resolve(e);
+          window.removeEventListener('message', receiveMessage);
+        }
+      }
+      window.addEventListener('message', receiveMessage);
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      document.body.appendChild(iframe);
+    });
+
+    // Test same-origin.
+    await loadFrame('http://127.0.0.1:8000/wasm/resources/wasm-cache-iframe.html');
+    // Ensure another origin must recompile everything.
+    await loadFrame('http://localhost:8000/wasm/resources/wasm-cache-iframe.html');
 
     let script = document.createElement('script');
     script.type = 'module';
     script.text = 'window.finishTest()';
     document.body.appendChild(script);
-
-    const frameId = 'frame_id';
-    const iframe_window = document.getElementById(frameId).contentWindow;
-
-    await loadSmallWasmModule(iframe_window);
-    await loadLargeWasmModule(iframe_window);
-
-    // Second loads. The small module should compile again and not be cached.
-    await loadSmallWasmModule(iframe_window);
-    // The large module should hit the cache.
-    await loadLargeWasmModule(iframe_window);
-
-    // Loading the large module from a different URL should miss the cache,
-    // compile, and be cached.
-    await loadOtherLargeWasmModule(iframe_window);
+    return new Promise(resolve => window.finishTest = resolve);
   }
 
   await TestRunner.evaluateInPagePromise(runTests.toString());
 
   TestRunner.addResult(
-      '---First navigation - produce and consume code cache ------\n');
 
-  // Create a same origin iframe.
-  const scope = 'http://127.0.0.1:8000/wasm/resources/wasm-cache-iframe.html';
-  await TestRunner.addIframe(scope, {id: 'frame_id'});
-  await PerformanceTestRunner.startTimeline();
+`WebAssembly trace events may be generated on multiple background threads, so
+the test sorts them by URL and type to make the output deterministic. We fetch
+2 small and 2 large .wasm resources, from 2 different origins. From these
+8 fetches, we expect:
 
-  await TestRunner.callFunctionInPageAsync('runTests');
-  await PerformanceTestRunner.stopTimeline();
+v8.wasm.cachedModule: 2 .wasm modules are cached
+v8.wasm.streamFromResponseCallback: 8 .wasm resources are fetched
+v8.wasm.compiledModule: 2 for large.wasm, 4 for small.wasm
+v8.wasm.moduleCacheHit: 2 for large.wasm
+`
+);
 
-  const events = new Set([
-    TimelineModel.TimelineModel.RecordType.WasmStreamFromResponseCallback,
-    TimelineModel.TimelineModel.RecordType.WasmCompiledModule,
-    TimelineModel.TimelineModel.RecordType.WasmCachedModule,
-    TimelineModel.TimelineModel.RecordType.WasmModuleCacheHit,
-    TimelineModel.TimelineModel.RecordType.WasmModuleCacheInvalid]);
-  const tracingModel = PerformanceTestRunner.tracingModel();
+  await PerformanceTestRunner.invokeWithTracing('runTests', processEvents);
 
-  tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t =>
-      t.events().filter(event => events.has(event.name)).forEach(PerformanceTestRunner.printTraceEventProperties)));
+  function processEvents() {
+    // Since some WebAssembly compile events may be reported on different
+    // threads, sort events by URL and type, to get a deterministic test.
+    function compareEvents(a, b) {
+      let url_a = a.args['url'] || '';
+      let url_b = b.args['url'] || '';
+      if (url_a != url_b)
+        return url_a.compareTo(url_b);
+      return a.name.compareTo(b.name);
+    }
 
-  // Second navigation
-  TestRunner.addResult(
-      '\n--- Second navigation - from a different origin ------\n');
-  await PerformanceTestRunner.startTimeline();
+    const event_types = new Set([
+      TimelineModel.TimelineModel.RecordType.WasmStreamFromResponseCallback,
+      TimelineModel.TimelineModel.RecordType.WasmCompiledModule,
+      TimelineModel.TimelineModel.RecordType.WasmCachedModule,
+      TimelineModel.TimelineModel.RecordType.WasmModuleCacheHit,
+      TimelineModel.TimelineModel.RecordType.WasmModuleCacheInvalid]);
+    const tracingModel = PerformanceTestRunner.tracingModel();
 
-  // Create a cross origin iframe.
-  const other_scope = 'http://localhost:8000/wasm/resources/wasm-cache-iframe.html';
-  await TestRunner.addIframe(other_scope, {id: 'frame_id'});
+    let events = new Array();
+    PerformanceTestRunner.tracingModel().sortedProcesses().forEach(
+      p => p.sortedThreads().forEach(
+        t => events = events.concat(t.events().filter(event => event_types.has(event.name)))));
+    events.sort(compareEvents);
+    events.forEach(PerformanceTestRunner.printTraceEventProperties);
 
-  await TestRunner.callFunctionInPageAsync('runTests');
-  await PerformanceTestRunner.stopTimeline();
-
-  tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t =>
-      t.events().filter(event => events.has(event.name)).forEach(PerformanceTestRunner.printTraceEventProperties)));
-
-  TestRunner.completeTest();
+    TestRunner.completeTest();
+  }
 })();

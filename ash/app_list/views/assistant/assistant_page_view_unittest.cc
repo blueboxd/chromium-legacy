@@ -258,6 +258,33 @@ TEST_F(AssistantPageViewTest,
   EXPECT_HAS_FOCUS(input_text_field());
 }
 
+TEST_F(AssistantPageViewTest, RememberAndShowHistory) {
+  ShowAssistantUiInTextMode();
+  EXPECT_HAS_FOCUS(input_text_field());
+
+  MockAssistantInteractionWithQueryAndResponse("query 1", "response 1");
+  MockAssistantInteractionWithQueryAndResponse("query 2", "response 2");
+
+  EXPECT_HAS_FOCUS(input_text_field());
+
+  EXPECT_TRUE(input_text_field()->GetText().empty());
+
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
+
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
+
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
+
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_DOWN, /*flags=*/0);
+  EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
+
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_DOWN, /*flags=*/0);
+  EXPECT_TRUE(input_text_field()->GetText().empty());
+}
+
 // Tests the |AssistantPageView| with tablet mode enabled.
 class AssistantPageViewTabletModeTest : public AssistantAshTestBase {
  public:

@@ -2333,7 +2333,9 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
       intended_target_origin.Get(), msg_event,
-      std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
+      std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
+      event.locked_agent_cluster_id() ? event.locked_agent_cluster_id().value()
+                                      : base::UnguessableToken());
 }
 
 WebNode WebLocalFrameImpl::ContextMenuNode() const {

@@ -15,20 +15,7 @@ def generate_sharding_map(
   """Generate sharding map.
 
     Args:
-      benchmarks_to_shard is a list all benchmarks to be sharded. Its
-      structure is as follows:
-      [{
-         "name": "benchmark_1",
-         "stories": [ "storyA", "storyB",...],
-         "repeat": <number of pageset_repeat>
-        },
-        {
-         "name": "benchmark_2",
-         "stories": [ "storyA", "storyB",...],
-         "repeat": <number of pageset_repeat>
-        },
-         ...
-      ]
+      benchmarks_to_shard is a list of bot_platforms.BenchmarkConfig objects.
 
       The "stories" field contains a list of ordered story names. Notes that
       this should match the actual order of how the benchmark stories are
@@ -37,14 +24,15 @@ def generate_sharding_map(
   """
   # Sort the list of benchmarks to be sharded by benchmark's name to make the
   # execution of this algorithm deterministic.
-  benchmarks_to_shard.sort(key=lambda entry: entry['name'])
+  benchmarks_to_shard.sort(key=lambda entry: entry.name)
+  benchmark_name_to_config = {b.name: b for b in benchmarks_to_shard}
 
   story_timing_list = _gather_timing_data(
       benchmarks_to_shard, timing_data, True)
 
   all_stories = {}
   for b in benchmarks_to_shard:
-    all_stories[b['name']] = b['stories']
+    all_stories[b.name] = b.stories
 
   total_time = sum(p[1] for p in story_timing_list)
   expected_time_per_shard = total_time/num_shards
@@ -96,7 +84,8 @@ def generate_sharding_map(
         stories_in_shard.append(candidate_story)
         debug_map[shard_name][candidate_story] = candidate_story_duration
         last_diff = abs(total_time_scheduled - expected_total_time)
-        _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories)
+        _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories,
+                                 benchmark_name_to_config)
       else:
         break
     # Double time_per_shard to account for reference benchmark run.
@@ -127,7 +116,7 @@ def generate_sharding_map(
 
 
 def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
-    all_stories):
+    all_stories, benchmark_name_to_config):
   benchmarks = collections.OrderedDict()
   for story in stories_in_shard:
     (b, story) = story.split('/', 1)
@@ -145,10 +134,7 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
       benchmarks_in_shard[b]['begin'] = first_story
     if last_story != len(all_stories[b]):
       benchmarks_in_shard[b]['end'] = last_story
-    # TODO(crbug.com/965158): Currently we unconditionally run the full story
-    # set. Instead we should allow choosing certain benchmarks to run
-    # the abridged story set instead.
-    benchmarks_in_shard[b]['abridged'] = False
+    benchmarks_in_shard[b]['abridged'] = benchmark_name_to_config[b].abridged
   sharding_map[str(shard_index)] = {'benchmarks': benchmarks_in_shard}
 
 
@@ -156,8 +142,8 @@ def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
   story_timing_dict = {}
   benchmarks_data_by_name = {}
   for b in benchmarks_to_shard:
-    story_list = b['stories']
-    benchmarks_data_by_name[b['name']] = b
+    story_list = b.stories
+    benchmarks_data_by_name[b.name] = b
     # Initialize the duration of all stories to be shard to 1 * repeat.
     # The reasons are:
     # 1) Even if the stories are skipped, they still have non neligible
@@ -168,7 +154,7 @@ def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
     #    initializing them to zero will make the algorithm put all the stories
     #    into the first shard.
     for story in story_list:
-      story_timing_dict[b['name'] + '/' + story] = b['repeat']
+      story_timing_dict[b.name + '/' + story] = b.repeat
 
   for run in timing_data:
     benchmark = run['name'].split('/', 1)[0]
@@ -176,13 +162,13 @@ def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
       if run['duration']:
         if repeat:
           story_timing_dict[run['name']] = (float(run['duration'])
-              * benchmarks_data_by_name[benchmark]['repeat'])
+              * benchmarks_data_by_name[benchmark].repeat)
         else:
           story_timing_dict[run['name']] = float(run['duration'])
   story_timing_list = []
   for entry in benchmarks_to_shard:
-    benchmark_name = entry['name']
-    for story_name in entry['stories']:
+    benchmark_name = entry.name
+    for story_name in entry.stories:
       test_name = '%s/%s' % (benchmark_name, story_name)
       story_timing_list.append((test_name, story_timing_dict[test_name]))
   return story_timing_list
@@ -205,7 +191,7 @@ def test_sharding_map(
   results = collections.OrderedDict()
   all_stories = {}
   for b in benchmarks_to_shard:
-    all_stories[b['name']] = b['stories']
+    all_stories[b.name] = b.stories
 
   sharding_map.pop('extra_infos', None)
   for shard in sharding_map:

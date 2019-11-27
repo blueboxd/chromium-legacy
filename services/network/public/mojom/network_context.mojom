@@ -536,8 +536,15 @@ struct URLLoaderFactoryParams {
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
 
-  // True if web related security (e.g., CORS) should be disabled. This is
-  // mainly used by people testing their sites, via a command line switch.
+  // Indicate whether a request is not from web page ( probably from chrome
+  // extension background page ).
+  bool unsafe_non_webby_initiator = false;
+
+  // If `true`, this factory is being created for a context that isn't
+  // considered to be of the web. "Site"-based features, like Fetch
+  // Metadata's `Sec-Fetch-Site` header will treat all requests from
+  // this factory as initiated by the user agent itself, not from any
+  // particular page.
   bool disable_web_security = false;
 
   // https://mikewest.github.io/corpp/#integration-html

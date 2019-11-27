@@ -838,7 +838,7 @@ void CrostiniManager::OnInstallTerminaComponent(
     CrostiniResultCallback callback,
     bool is_update_checked,
     component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& result) {
+    const base::FilePath& path) {
   bool is_successful =
       error == component_updater::CrOSComponentManager::Error::NONE;
 
@@ -878,10 +878,17 @@ void CrostiniManager::OnInstallTerminaComponent(
     VLOG(1) << "cros-termina update check successful.";
     termina_update_check_needed_ = false;
   }
+  CrostiniResult result = CrostiniResult::SUCCESS;
+  if (!is_successful) {
+    if (error ==
+        component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS) {
+      result = CrostiniResult::LOAD_COMPONENT_UPDATE_IN_PROGRESS;
+    } else {
+      result = CrostiniResult::LOAD_COMPONENT_FAILED;
+    }
+  }
 
-  std::move(callback).Run(is_successful
-                              ? CrostiniResult::SUCCESS
-                              : CrostiniResult::LOAD_COMPONENT_FAILED);
+  std::move(callback).Run(result);
 }
 
 bool CrostiniManager::UninstallTerminaComponent() {

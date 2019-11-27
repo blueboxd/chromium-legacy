@@ -126,7 +126,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
-  base::Optional<double> UnlimitedCurrentTimeInternal() const;
+  base::Optional<double> UnlimitedCurrentTime() const;
 
   // https://drafts.csswg.org/web-animations/#play-states
   static const char* PlayStateString(AnimationPlayState);

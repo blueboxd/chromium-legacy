@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1398853756734560583">تكبير</translation>
-<translation id="1409544243779336081">اقتراح التطبيقات</translation>
 <translation id="1450753235335490080">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1498028757988366001">لقد بحثت عن هذا الموضوع من قبل. سيؤدي حذف "<ph name="QUERY" />" من السجل إلى إزالته نهائيًا من حسابك على جميع أجهزتك.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">الفترة</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{شهر واحد}zero{# شهر}two{شهران (#)}few{# أشهر}many{# شهرًا}other{# شهر}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ميغابايات/ثانية</translation>
-<translation id="1812519734428420144">تقييم بالنجوم <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ساعة واحدة و }zero{# من الساعات و }two{ساعتان (#) و }few{# ساعات و }many{# ساعة و }other{# من الساعات و }}</translation>
 <translation id="1842960171412779397">الاختيار</translation>
 <translation id="1859234291848436338">اتجاه الكتابة</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
+<translation id="7848989271541991537">تم الانتقال إلى الصفحة رقم <ph name="PAGE_NUMBER" />، الصف رقم <ph name="ROW_NUMBER" /> والعمود رقم <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">عدم الحظر</translation>
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="7969046989155602842">Command</translation>

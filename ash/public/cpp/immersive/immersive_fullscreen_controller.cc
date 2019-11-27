@@ -411,7 +411,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
   // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
   top_edge_hover_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kMouseRevealDelayMs),
-      base::Bind(
+      base::BindOnce(
           &ImmersiveFullscreenController::AcquireLocatedEventRevealedLock,
           base::Unretained(this)));
 }

@@ -54,6 +54,8 @@ class CheckClientDownloadRequestBase {
       base::FilePath full_path,
       TabUrls tab_urls,
       size_t file_size,
+      std::string mime_type,
+      std::string hash,
       content::BrowserContext* browser_context,
       CheckDownloadCallback callback,
       DownloadProtectionService* service,
@@ -215,6 +217,12 @@ class CheckClientDownloadRequestBase {
 
   int file_count_;
   int directory_count_;
+
+  // The mime type of the download, if known.
+  std::string mime_type_;
+
+  // The hash of the download, if known.
+  std::string hash_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequestBase);
 };  // namespace safe_browsing

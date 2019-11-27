@@ -107,11 +107,6 @@ public class ContentSettingsResources {
                             R.string.automatic_downloads_permission_title,
                             R.string.automatic_downloads_permission_title, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, R.string.website_settings_category_ask, 0));
-            localMap.put(ContentSettingsType.AUTOPLAY,
-                    new ResourceItem(R.drawable.settings_autoplay, R.string.autoplay_title,
-                            R.string.autoplay_title, ContentSettingValues.ALLOW,
-                            ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_autoplay_allowed, 0));
             localMap.put(ContentSettingsType.BACKGROUND_SYNC,
                     new ResourceItem(R.drawable.permission_background_sync,
                             R.string.background_sync_permission_title,

@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProtoAppender
   perfetto::protos::pbzero::DebugAnnotation* annotation_proto_;
 };
 
-void COMPONENT_EXPORT(TRACING_CPP) RegisterTracedValueProtoWriter(bool enable);
+void COMPONENT_EXPORT(TRACING_CPP) RegisterTracedValueProtoWriter();
 
 }  // namespace tracing
 

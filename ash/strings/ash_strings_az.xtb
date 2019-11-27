@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> işlədilir</translation>
 <translation id="899350903320462459">Bildiriş əməliyyatını icra etmək üçün cihazı <ph name="LOGIN_ID" /> olaraq kiliddən çıxarın</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> tərəfindən idarə olunur</translation>
 <translation id="9017320285115481645">Family Link valideyn girişi kodunu daxil edin.</translation>
 <translation id="9029474291399787231">Adobe Flash Player güncəlləməsi əlçatandır</translation>
 <translation id="9056839673611986238">Cihaz bərpa ediləcək</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Tam Ekran Böyüdücüsü</translation>
 <translation id="9193626018745640770">Naməlum alıcı yayımı</translation>
 <translation id="9194617393863864469">Digər istifadəçi hesabına daxil olun...</translation>
+<translation id="9205817095063786319">Cihaz <ph name="DOMAIN" /> tərəfindən idarə olunur</translation>
 <translation id="9210037371811586452">Vahid masaüstü rejimindən çıxır</translation>
 <translation id="9211681782751733685">Batareyanın tam dolmağına <ph name="TIME_REMAINING" /> qalır.</translation>
 <translation id="9215934040295798075">Divar kağızı ayarlayın</translation>

@@ -176,7 +176,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Essayez de communiquer avec l'administrateur système.</translation>
 <translation id="1736420071277903564">Ordinateur</translation>
-<translation id="1739107442478692187">Une violation de données s'est produite sur un site ou dans une application que vous utilisez. Chrome vous recommande de vérifier vos mots de passe enregistrés et de modifier votre mot de passe sur <ph name="ORIGIN" /> maintenant.</translation>
 <translation id="1740951997222943430">Entrez un mois d'expiration valide</translation>
 <translation id="1741613555002899862">Doit être indiquée et être une chaîne valide lorsque la politique DnsOverHttpsMode est définie à <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Pour accélérer le paiement la prochaine fois, enregistrez votre carte, votre nom et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
@@ -242,7 +241,6 @@
 <translation id="2094505752054353250">Le domaine ne correspond pas</translation>
 <translation id="2096368010154057602">Département</translation>
 <translation id="2099652385553570808">Triple agrafe à gauche</translation>
-<translation id="2100280972184758440">Votre mot de passe a été compromis</translation>
 <translation id="2102134110707549001">Suggérer un mot de passe fort…</translation>
 <translation id="2108755909498034140">Redémarrer l'ordinateur</translation>
 <translation id="2111256659903765347">Super A</translation>
@@ -250,7 +248,6 @@
 <translation id="2114841414352855701">Politique sans effet, car remplacée par <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Délivré à : <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforation en bas à droite</translation>
-<translation id="2124528555835617522">Une violation de données s'est produite sur un site ou dans une application que vous utilisez. Chrome vous recommande de vérifier vos mots de passe enregistrés.</translation>
 <translation id="2129079103035905234">Capteurs de mouvements</translation>
 <translation id="2130448033692577677">Les modèles que vous avez indiqués pourraient ne pas être appliqués si la politique DnsOverHttpsMode n'est pas définie.</translation>
 <translation id="213826338245044447">Favoris d'appareil mobile</translation>
@@ -274,6 +271,7 @@
 <translation id="2218879909401188352">Les cyberpirates actuellement à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient installer des applications dangereuses afin d'endommager votre appareil, d'ajouter des frais cachés à votre facture de téléphonie cellulaire ou de voler vos données personnelles. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Aucune connexion Internet</translation>
 <translation id="2230458221926704099">Réparez votre connexion à l'aide de l'<ph name="BEGIN_LINK" />application de diagnostic<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Pour vous</translation>
 <translation id="2239100178324503013">Envoyer maintenant</translation>
 <translation id="2248949050832152960">Utiliser WebAuthn</translation>
 <translation id="2250931979407627383">Agrafage par le bord droit</translation>
@@ -366,6 +364,7 @@
 <translation id="2676271551327853224">Roc 8K</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2684561033061424857">11 po x 12 po</translation>
+<translation id="2691924980723297736">Mise en garde</translation>
 <translation id="2699302886720511147">Cartes acceptées</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
 <translation id="2704283930420550640">La valeur ne correspond pas au format.</translation>
@@ -466,6 +465,7 @@
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3209034400446768650">Cette page peut exiger des frais</translation>
 <translation id="3209080785413271048">Utilisez Windows Hello pour vérifier les modes de paiement enregistrés.</translation>
+<translation id="3212581601480735796">Votre activité sur <ph name="HOSTNAME" /> est surveillée</translation>
 <translation id="3215092763954878852">Impossible d'utiliser WebAuthn</translation>
 <translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3226128629678568754">Appuyez sur le bouton d'actualisation pour soumettre de nouveau les données nécessaires pour charger la page.</translation>
@@ -481,7 +481,6 @@
 <translation id="3282497668470633863">Ajouter le nom sur la carte</translation>
 <translation id="3287510313208355388">Télécharger en ligne</translation>
 <translation id="3293642807462928945">En savoir plus sur la politique <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Une violation de données s'est produite sur un site ou dans une application que vous utilisez. Chrome vous recommande de changer votre mot de passe sur <ph name="ORIGIN" /> maintenant.</translation>
 <translation id="3303855915957856445">Aucun résultat de recherche n'a été trouvé</translation>
 <translation id="3320021301628644560">Ajouter l'adresse de facturation</translation>
 <translation id="3324983252691184275">Cramoisi</translation>
@@ -524,6 +523,7 @@
 <translation id="3528485271872257980">Brun foncé</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Au moins 1 élément sur des appareils synchronisés}=1{1 élément (et plus sur des appareils synchronisés)}one{# élément (et plus sur des appareils synchronisés)}other{# éléments (et plus sur des appareils synchronisés)}}</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>
+<translation id="3553513561058684206">Pour vous</translation>
 <translation id="3566021033012934673">Votre connexion n'est pas privée</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Une page intégrée à <ph name="SITE" /> indique</translation>
@@ -749,6 +749,7 @@
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4597348597567598915">Taille 8</translation>
 <translation id="4600854749408232102">Enveloppe C6/C5</translation>
+<translation id="4613966523036881546">Le certificat de cette connexion n'est pas considéré comme fiable par Google Chrome, parce qu'on sait qu'elle est utilisée pour intercepter et surveiller le réseau.</translation>
 <translation id="4635654612248442824">Le site <ph name="ORIGIN" /> a exigé qu'une politique de sécurité soit appliquée à toutes ses demandes, mais cette politique ne peut pas être appliquée actuellement.</translation>
 <translation id="464342062220857295">Rechercher des fonctionnalités</translation>
 <translation id="4646534391647090355">Y accéder maintenant</translation>
@@ -1028,6 +1029,7 @@
 <translation id="5992691462791905444">Technique de pli en Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> résultats trouvés pour « <ph name="SEARCH_TEXT" /> »</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Vérifier vos mots de passe</translation>
 <translation id="6015796118275082299">Année</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Vert</translation>
@@ -1453,6 +1455,7 @@ Détails supplémentaires :
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8105368624971345109">Désactiver</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
+<translation id="8124023448510659215">Le certificat de cette connexion n'est pas considéré comme fiable par Chromium, parce qu'on sait qu'elle est utilisée pour intercepter et surveiller le réseau.</translation>
 <translation id="8127301229239896662">« <ph name="SOFTWARE_NAME" /> » n'a pas été correctement installé sur votre ordinateur ou votre réseau. Demandez à votre administrateur informatique de résoudre ce problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
@@ -1595,6 +1598,8 @@ Détails supplémentaires :
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8962950042226115166">Site suspect</translation>
 <translation id="8968766641738584599">Enregistrer la carte</translation>
+<translation id="8969267497192857913">Tout ce que vous rédigez, toutes les pages que vous consultez ou toute autre activité sur le Web sont sous surveillance, et le contenu des sites peut être changé sans que vous le sachiez.
+    <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8975012916872825179">Inclut des données telles que des numéros de téléphone, des adresses de courriel et des adresses de livraison</translation>
 <translation id="8975263830901772334">Les noms des fichiers que vous imprimez</translation>

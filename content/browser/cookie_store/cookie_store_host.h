@@ -21,7 +21,7 @@ class CookieStoreManager;
 // The bulk of the CookieStore implementation is in the CookieStoreManager
 // class. Each StoragePartition has a single associated CookieStoreManager
 // instance. By contrast, each CookieStore mojo connection has an associated
-// CoookieStoreHost instance, which stores the per-connection state.
+// CookieStoreHost instance, which stores the per-connection state.
 //
 // Instances of this class must be accessed exclusively on the IO thread,
 // because they call into CookieStoreManager directly.
@@ -31,10 +31,14 @@ class CookieStoreHost : public blink::mojom::CookieStore {
   ~CookieStoreHost() override;
 
   // content::mojom::CookieStore
-  void AppendSubscriptions(
+  void AddSubscriptions(
       int64_t service_worker_registration_id,
-      std::vector<blink::mojom::CookieChangeSubscriptionPtr>,
-      AppendSubscriptionsCallback callback) override;
+      std::vector<blink::mojom::CookieChangeSubscriptionPtr> subscriptions,
+      AddSubscriptionsCallback callback) override;
+  void RemoveSubscriptions(
+      int64_t service_worker_registration_id,
+      std::vector<blink::mojom::CookieChangeSubscriptionPtr> subscriptions,
+      RemoveSubscriptionsCallback callback) override;
   void GetSubscriptions(int64_t service_worker_registration_id,
                         GetSubscriptionsCallback callback) override;
 

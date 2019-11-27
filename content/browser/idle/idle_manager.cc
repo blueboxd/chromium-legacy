@@ -74,10 +74,11 @@ IdleManager::~IdleManager() {
   }
 }
 
-void IdleManager::CreateService(blink::mojom::IdleManagerRequest request) {
+void IdleManager::CreateService(
+    mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void IdleManager::AddMonitor(
@@ -86,7 +87,7 @@ void IdleManager::AddMonitor(
     AddMonitorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (threshold < kMinimumThreshold) {
-    bindings_.ReportBadMessage("Minimum threshold is 60 seconds.");
+    receivers_.ReportBadMessage("Minimum threshold is 60 seconds.");
     return;
   }
 

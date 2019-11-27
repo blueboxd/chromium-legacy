@@ -31,8 +31,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -339,6 +341,17 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
+
+  // Stores a boolean in ExtensionPrefs so we can make sure that the user is
+  // redirected to the extensions page upon startup once. We're using
+  // GetVisibleURL() because the load hasn't committed and this check isn't used
+  // for a security decision, however a stronger check will be implemented if we
+  // decide to invest more in this experiment.
+  if (web_ui->GetWebContents()->GetVisibleURL().query_piece().starts_with(
+          "checkup")) {
+    ExtensionPrefs::Get(profile)->SetUserHasSeenExtensionsCheckupOnStartup(
+        true);
+  }
 }
 
 ExtensionsUI::~ExtensionsUI() {}

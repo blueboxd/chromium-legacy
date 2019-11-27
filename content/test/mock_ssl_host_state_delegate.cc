@@ -18,7 +18,7 @@ void MockSSLHostStateDelegate::AllowCert(const std::string& host,
 }
 
 void MockSSLHostStateDelegate::Clear(
-    const base::Callback<bool(const std::string&)>& host_filter) {
+    base::RepeatingCallback<bool(const std::string&)> host_filter) {
   if (host_filter.is_null()) {
     exceptions_.clear();
   } else {

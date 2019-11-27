@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -166,6 +167,13 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     return;
   }
 
+  bool intercepted = false;
+  probe::FileChooserOpened(document.GetFrame(), &input, &intercepted);
+  if (intercepted) {
+    event.SetDefaultHandled();
+    return;
+  }
+
   if (ChromeClient* chrome_client = GetChromeClient()) {
     FileChooserParams params;
     bool is_directory =
@@ -188,7 +196,6 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
         document, document.IsSecureContext()
                       ? WebFeature::kInputTypeFileSecureOriginOpenChooser
                       : WebFeature::kInputTypeFileInsecureOriginOpenChooser);
-
     chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
   }
   event.SetDefaultHandled();

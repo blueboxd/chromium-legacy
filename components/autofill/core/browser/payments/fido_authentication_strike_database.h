@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_FIDO_AUTHENTICATION_STRIKE_DATABASE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_FIDO_AUTHENTICATION_STRIKE_DATABASE_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "components/autofill/core/browser/payments/strike_database.h"
@@ -29,7 +30,7 @@ class FidoAuthenticationStrikeDatabase : public StrikeDatabaseIntegratorBase {
 
   std::string GetProjectPrefix() override;
   int GetMaxStrikesLimit() override;
-  long long GetExpiryTimeMicros() override;
+  int64_t GetExpiryTimeMicros() override;
   bool UniqueIdsRequired() override;
 };
 

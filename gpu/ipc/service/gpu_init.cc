@@ -360,8 +360,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     } else {  // use_swiftshader == true
       switch (gpu_preferences_.use_vulkan) {
         case gpu::VulkanImplementationName::kNative: {
-          // Collect GPU info, so we can use backlist to disable vulkan if it is
-          // needed.
+          // Collect GPU info, so we can use blacklist to disable vulkan if it
+          // is needed.
           gpu::GPUInfo gpu_info;
           if (!CollectGraphicsInfo(&gpu_info, gpu_preferences_))
             return false;

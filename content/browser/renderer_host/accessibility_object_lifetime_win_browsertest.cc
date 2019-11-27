@@ -26,9 +26,10 @@ class AccessibilityObjectLifetimeWinBrowserTest
         shell()->web_contents()->GetRenderWidgetHostView());
   }
 
-  void CacheRootNode() {
+  void CacheRootNode(bool is_uia_request) {
     GetView()
-        ->legacy_render_widget_host_HWND_->GetOrCreateWindowRootAccessible()
+        ->legacy_render_widget_host_HWND_
+        ->GetOrCreateWindowRootAccessible(is_uia_request)
         ->QueryInterface(IID_PPV_ARGS(&test_node_));
   }
 
@@ -51,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeWinBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Cache a pointer to the root node we return to Windows.
-  CacheRootNode();
+  CacheRootNode(false);
 
   // Repeatedly call the public API to obtain an accessibility object. If our
   // code is leaking references, this will drive up the reference count.
@@ -156,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectLifetimeUiaWinBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Cache a pointer to the root node we return to Windows.
-  CacheRootNode();
+  CacheRootNode(false);
 
   Microsoft::WRL::ComPtr<IUIAutomation> uia;
   ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,

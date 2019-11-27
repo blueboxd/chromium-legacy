@@ -25,10 +25,10 @@
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "dbus/bus.h"
-#include "rlz/lib/financial_ping.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/recursive_cross_process_lock_posix.h"
-#include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/supplementary_branding.h"
+#include "rlz/lib/time_util.h"
 
 namespace rlz_lib {
 
@@ -189,7 +189,7 @@ bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
   // TODO(wzang): make sure time is correct (check that npupdate has updated
   // successfully).
   if (!HasRlzEmbargoEndDatePassed()) {
-    *time = FinancialPing::GetSystemTimeAsInt64();
+    *time = GetSystemTimeAsInt64();
     return true;
   }
 
@@ -216,11 +216,8 @@ bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
   // |new_rlz| will contain only install cohort.  The second time it will
   // contain both install and first search cohorts.  Ignoring the second
   // means the first search cohort will never be stored.
-  char dummy[kMaxRlzLength + 1];
-  if (ReadAccessPointRlz(access_point, dummy, base::size(dummy)) &&
-      dummy[0] != 0) {
+  if (HasAccessPointRlz(access_point))
     return true;
-  }
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(
@@ -436,6 +433,13 @@ bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
   size_t index;
   list_value->Remove(value, &index);
   return true;
+}
+
+bool RlzValueStoreChromeOS::HasAccessPointRlz(AccessPoint access_point) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const auto* value =
+      rlz_store_->FindStringKey(GetKeyName(kAccessPointKey, access_point));
+  return value && !value->empty();
 }
 
 namespace {

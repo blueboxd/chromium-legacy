@@ -109,7 +109,7 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
       base::RunLoop run_loop;
       ui::GrabWindowSnapshotAndScaleAsync(
           window, bounds, bounds.size(),
-          base::Bind(
+          base::BindOnce(
               [](base::RunLoop* run_loop, gfx::Image* image,
                  gfx::Image got_image) {
                 run_loop->Quit();

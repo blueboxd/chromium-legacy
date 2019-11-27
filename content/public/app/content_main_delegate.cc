@@ -64,7 +64,7 @@ void ContentMainDelegate::AdjustServiceProcessCommandLine(
     base::CommandLine* command_line) {}
 
 void ContentMainDelegate::OnServiceManagerInitialized(
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     service_manager::BackgroundServiceManager* service_manager) {}
 
 bool ContentMainDelegate::ShouldCreateFeatureList() {

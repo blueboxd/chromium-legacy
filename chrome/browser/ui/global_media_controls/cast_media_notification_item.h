@@ -23,7 +23,8 @@ class CastMediaNotificationItem
     : public media_message_center::MediaNotificationItem,
       public media_router::mojom::MediaStatusObserver {
  public:
-  CastMediaNotificationItem(media_message_center::MediaNotificationController*
+  CastMediaNotificationItem(const media_router::MediaRoute& route,
+                            media_message_center::MediaNotificationController*
                                 notification_controller);
   CastMediaNotificationItem(const CastMediaNotificationItem&) = delete;
   CastMediaNotificationItem& operator=(const CastMediaNotificationItem&) =
@@ -40,13 +41,23 @@ class CastMediaNotificationItem
   void OnMediaStatusUpdated(
       media_router::mojom::MediaStatusPtr status) override;
 
-  base::WeakPtr<media_message_center::MediaNotificationItem> GetWeakPtr() {
+  base::WeakPtr<CastMediaNotificationItem> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
+  void UpdateView();
+
+  media_message_center::MediaNotificationController* const
+      notification_controller_;
   media_message_center::MediaNotificationView* view_ = nullptr;
+
+  const media_router::MediaRoute::Id media_route_id_;
+  media_session::MediaMetadata metadata_;
+  std::vector<media_session::mojom::MediaSessionAction> actions_;
   media_session::mojom::MediaSessionInfoPtr session_info_;
+  mojo::Receiver<media_router::mojom::MediaStatusObserver> observer_receiver_{
+      this};
   base::WeakPtrFactory<CastMediaNotificationItem> weak_ptr_factory_{this};
 };
 

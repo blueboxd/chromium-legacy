@@ -87,7 +87,8 @@ bool IsLegacyServiceId(const std::string& account_id) {
 }
 
 CoreAccountId RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
-  return CoreAccountId(prefixed_account_id.substr(kAccountIdPrefixLength));
+  return CoreAccountId::FromString(
+      prefixed_account_id.substr(kAccountIdPrefixLength));
 }
 
 signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
@@ -430,8 +431,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   // to support legacy account IDs, and will not be needed after switching to
   // gaia IDs.
   if (primary_account_id.id.find('@') != std::string::npos) {
-    loading_primary_account_id_ =
-        CoreAccountId(gaia::CanonicalizeEmail(primary_account_id.id));
+    loading_primary_account_id_ = CoreAccountId::FromEmail(
+        gaia::CanonicalizeEmail(primary_account_id.id));
   } else {
     loading_primary_account_id_ = primary_account_id;
   }
@@ -552,8 +553,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
               // account id, make sure not to overwrite a refresh token from
               // a canonical version.  If no canonical version was loaded, then
               // re-persist this refresh token with the canonical account id.
-              CoreAccountId canon_account_id =
-                  CoreAccountId(gaia::CanonicalizeEmail(account_id.id));
+              CoreAccountId canon_account_id = CoreAccountId::FromEmail(
+                  gaia::CanonicalizeEmail(account_id.id));
               if (canon_account_id != account_id) {
                 ClearPersistedCredentials(account_id);
                 if (db_tokens.count(

@@ -66,6 +66,10 @@ class MockFactory final : public mojom::WebBundleParserFactory {
   };
 
   MockFactory() {}
+  void AddReceiver(
+      mojo::PendingReceiver<mojom::WebBundleParserFactory> receiver) {
+    receivers_.Add(this, std::move(receiver));
+  }
   MockParser* GetCreatedParser() {
     base::RunLoop().RunUntilIdle();
     return parser_.get();
@@ -85,6 +89,7 @@ class MockFactory final : public mojom::WebBundleParserFactory {
   }
 
   std::unique_ptr<MockParser> parser_;
+  mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFactory);
 };
@@ -108,19 +113,21 @@ class MockDataSource final : public mojom::BundleDataSource {
 
 class SafeWebBundleParserTest : public testing::Test {
  public:
-  MockFactory* InitializeMockFactory(SafeWebBundleParser* parser) {
-    std::unique_ptr<MockFactory> factory = std::make_unique<MockFactory>();
-    MockFactory* raw_factory = factory.get();
-    mojo::Remote<mojom::WebBundleParserFactory> remote;
-    mojo::MakeSelfOwnedReceiver(std::move(factory),
-                                remote.BindNewPipeAndPassReceiver());
-    parser->SetWebBundleParserFactoryForTesting(std::move(remote));
-    return raw_factory;
+  MockFactory* InitializeMockFactory() {
+    DCHECK(!factory_);
+    factory_ = std::make_unique<MockFactory>();
+
+    in_process_data_decoder_.service()
+        .SetWebBundleParserFactoryBinderForTesting(base::BindRepeating(
+            &MockFactory::AddReceiver, base::Unretained(factory_.get())));
+
+    return factory_.get();
   }
 
  private:
   base::test::TaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+  std::unique_ptr<MockFactory> factory_;
 };
 
 TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
@@ -219,7 +226,7 @@ TEST_F(SafeWebBundleParserTest, CallWithoutOpen) {
 
 TEST_F(SafeWebBundleParserTest, UseMockFactory) {
   SafeWebBundleParser parser;
-  MockFactory* raw_factory = InitializeMockFactory(&parser);
+  MockFactory* raw_factory = InitializeMockFactory();
 
   EXPECT_FALSE(raw_factory->GetCreatedParser());
   base::File test_file =
@@ -242,7 +249,7 @@ TEST_F(SafeWebBundleParserTest, UseMockFactory) {
 
 TEST_F(SafeWebBundleParserTest, ConnectionError) {
   SafeWebBundleParser parser;
-  MockFactory* raw_factory = InitializeMockFactory(&parser);
+  MockFactory* raw_factory = InitializeMockFactory();
 
   mojo::PendingRemote<mojom::BundleDataSource> remote_data_source;
   auto data_source = std::make_unique<MockDataSource>(

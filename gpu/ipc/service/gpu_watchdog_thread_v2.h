@@ -112,6 +112,19 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Histogram recorded in OnWatchdogTimeout()
   void GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent timeout_event);
 
+#if defined(OS_WIN)
+  // The extra timeout the GPU main thread needs to make a progress.
+  void WindowsNumOfExtraTimeoutsHistogram();
+#endif
+
+  // The wait time in OnWatchdogTimeout() for the GPU main thread to make a
+  // progress.
+  void GpuWatchdogWaitTimeHistogram(base::TimeDelta wait_time);
+
+  // Used for metrics. It's 1 minute after the event.
+  bool WithinOneMinFromPowerResumed();
+  bool WithinOneMinFromForegrounded();
+
   // This counter is only written on the gpu thread, and read on both threads.
   base::subtle::Atomic32 arm_disarm_counter_ = 0;
   // The counter number read in the last OnWatchdogTimeout() on the watchdog
@@ -157,7 +170,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // continue due to not enough thread time.
   int count_of_more_gpu_thread_time_allowed_ = 0;
 
-  base::TimeDelta extented_thread_time_;
+  // The accumulated timeout time the GPU main thread was given.
+  base::TimeDelta time_in_extra_timeouts_;
 #endif
 
   // The system has entered the power suspension mode.
@@ -183,8 +197,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // For the experiment and the debugging purpose
   bool in_gpu_initialization_ = false;
-  int num_of_timeout_after_power_resume_ = 0;
-  int num_of_timeout_after_foregrounded_ = 0;
+  size_t num_of_timeout_after_power_resume_ = 0;
+  size_t num_of_timeout_after_foregrounded_ = 0;
+  bool foregrounded_event_ = false;
+  bool power_resumed_event_ = false;
   base::TimeDelta max_wait_time_;
 
   // For gpu testing only.

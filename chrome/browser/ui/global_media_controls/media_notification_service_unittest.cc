@@ -569,13 +569,13 @@ TEST_F(MediaNotificationServiceCastTest, CountCastSessionsAsActive) {
                                        "sink_id", "description", true, true);
   media_route.set_controller_type(media_router::RouteControllerType::kGeneric);
 
-  EXPECT_CALL(observer(), OnNotificationListChanged());
+  EXPECT_CALL(observer(), OnNotificationListChanged()).Times(AtLeast(1));
   EXPECT_FALSE(HasActiveNotifications());
   SimulateMediaRoutesUpdate({media_route});
   EXPECT_TRUE(HasActiveNotifications());
   testing::Mock::VerifyAndClearExpectations(&observer());
 
-  EXPECT_CALL(observer(), OnNotificationListChanged());
+  EXPECT_CALL(observer(), OnNotificationListChanged()).Times(AtLeast(1));
   SimulateMediaRoutesUpdate({});
   EXPECT_FALSE(HasActiveNotifications());
   testing::Mock::VerifyAndClearExpectations(&observer());

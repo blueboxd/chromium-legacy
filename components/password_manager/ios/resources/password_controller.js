@@ -271,7 +271,7 @@ const fillPasswordFormWithData = function(
     }
     const inputs = getFormInputElements(form);
     const usernameIdentifier = formData.fields[0].name;
-    var usernameInput = null;
+    let usernameInput = null;
     if (usernameIdentifier != '') {
       usernameInput = findInputByFieldIdentifier(inputs, usernameIdentifier);
       if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||

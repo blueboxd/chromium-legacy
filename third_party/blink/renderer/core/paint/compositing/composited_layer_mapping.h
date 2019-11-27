@@ -98,9 +98,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const PaintLayer* compositing_container);
   void UpdateGraphicsLayerGeometry(
       const PaintLayer* compositing_container,
-      const PaintLayer* compositing_stacking_context,
-      Vector<PaintLayer*>& layers_needing_paint_invalidation,
-      GraphicsLayerUpdater::UpdateContext& update_context);
+      Vector<PaintLayer*>& layers_needing_paint_invalidation);
 
   // Update whether background paints onto scrolling contents layer.
   // Returns (through the reference params) what invalidations are needed.
@@ -306,26 +304,19 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const PaintLayer* compositing_container,
       IntPoint& graphics_layer_parent_location);
   void UpdateSquashingLayerGeometry(
-      const IntPoint& graphics_layer_parent_location,
       const PaintLayer* compositing_container,
       const IntPoint& snapped_offset_from_composited_ancestor,
       Vector<GraphicsLayerPaintInfo>& layers,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
-  void UpdateMainGraphicsLayerGeometry(
-      const IntRect& relative_compositing_bounds,
-      const IntRect& local_compositing_bounds,
-      const IntPoint& graphics_layer_parent_location,
-      GraphicsLayerUpdater::UpdateContext& update_context);
+  void UpdateMainGraphicsLayerGeometry(const IntRect& local_compositing_bounds);
   void UpdateOverflowControlsHostLayerGeometry(
-      const PaintLayer* compositing_stacking_context,
-      const PaintLayer* compositing_container,
-      IntPoint graphics_layer_parent_location);
+      const PaintLayer* compositing_container);
   void UpdateChildTransformLayerGeometry();
   void UpdateMaskLayerGeometry();
   void UpdateForegroundLayerGeometry();
   void UpdateDecorationOutlineLayerGeometry(
       const IntSize& relative_compositing_bounds_size);
-  void UpdateScrollingLayerGeometry(const IntRect& local_compositing_bounds);
+  void UpdateScrollingLayerGeometry();
 
   void CreatePrimaryGraphicsLayer();
   void DestroyGraphicsLayers();
@@ -364,8 +355,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void ComputeBoundsOfOwningLayer(
       const PaintLayer* composited_ancestor,
       IntRect& local_compositing_bounds,
-      IntRect& compositing_bounds_relative_to_composited_ancestor,
-      PhysicalOffset& offset_from_composited_ancestor,
       IntPoint& snapped_offset_from_composited_ancestor);
 
   GraphicsLayerPaintingPhase PaintingPhaseForPrimaryLayer() const;
@@ -388,7 +377,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   Color LayoutObjectBackgroundColor() const;
   void UpdateBackgroundColor();
   void UpdateContentsRect();
-  void UpdateAfterPartResize();
   void UpdateCompositingReasons();
 
   static bool HasVisibleNonCompositingDescendant(PaintLayer* parent);
@@ -412,9 +400,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Clear the groupedMapping entry on the layer at the given index, only if
   // that layer does not appear earlier in the set of layers for this object.
   bool InvalidateLayerIfNoPrecedingEntry(wtf_size_t);
-
-  // Main GraphicsLayer of the CLM for the iframe's content document.
-  GraphicsLayer* FrameContentsGraphicsLayer() const;
 
   PaintLayer& owning_layer_;
 

@@ -29,6 +29,7 @@
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -62,20 +63,15 @@ constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(16);
 // The amount of time to wait after a successful fetch of models and host model
 // features before requesting an update from the remote Optimization Guide
 // Service.
-//
-// TODO(mcrouse): Remove this when the models and features are placed into the
-// store and rely on the store to provide the update time.
 constexpr base::TimeDelta kUpdateModelsAndFeaturesDelay =
     base::TimeDelta::FromHours(24);
 
-// Provide a random time delta in seconds between |kFetchRandomMinDelay| and
-// |kFetchRandomMaxDelay|.
+// Provide a random time delta in seconds before fetching models and host model
+// features.
 base::TimeDelta RandomFetchDelay() {
-  // TODO(crbug/1027526): Add finch support for the random delay ranges.
-  constexpr int kFetchRandomMinDelaySecs = 30;
-  constexpr int kFetchRandomMaxDelaySecs = 180;
-  return base::TimeDelta::FromSeconds(
-      base::RandInt(kFetchRandomMinDelaySecs, kFetchRandomMaxDelaySecs));
+  return base::TimeDelta::FromSeconds(base::RandInt(
+      optimization_guide::features::PredictionModelFetchRandomMinDelaySecs(),
+      optimization_guide::features::PredictionModelFetchRandomMaxDelaySecs()));
 }
 
 }  // namespace
@@ -421,31 +417,15 @@ void PredictionManager::OnModelsAndHostFeaturesFetched(
   if (!get_models_response_data)
     return;
 
-  // TODO(crbug/1001194): Asynchronously store the models and host model
-  // features within the persistent store.
+  // Update host model features, even if empty so the store metadata
+  // that contains the update time for new models and features to be fetched
+  // from the remote Optimization Guide Service is updated.
+  UpdateHostModelFeatures((*get_models_response_data)->host_model_features());
 
-  // The set of host model features that the models in
-  // |get_models_response_data| required in order to be evaluated. Every host
-  // model feature returned should contain all the features for the models
-  // currently supported.
-  base::flat_set<std::string> host_model_features;
-  if ((*get_models_response_data)->host_model_features_size() > 0) {
-    UpdateHostModelFeatures((*get_models_response_data)->host_model_features());
+  // If no models were returned, no updates to the store are required.
+  if ((*get_models_response_data)->models_size() > 0)
+    UpdatePredictionModels((*get_models_response_data)->models());
 
-    host_model_features.reserve((*get_models_response_data)
-                                    ->host_model_features(0)
-                                    .model_features_size());
-    for (const auto& model_feature :
-         (*get_models_response_data)->host_model_features(0).model_features()) {
-      if (model_feature.has_feature_name())
-        host_model_features.insert(model_feature.feature_name());
-    }
-  }
-
-  if ((*get_models_response_data)->models_size() > 0) {
-    UpdatePredictionModels((*get_models_response_data)->mutable_models(),
-                           host_model_features);
-  }
   // TODO(crbug/1001194): After the models and host model features are stored
   // asynchronously, the timer will be set based on the update time provided
   // by the store.
@@ -459,8 +439,21 @@ void PredictionManager::UpdateHostModelFeatures(
     const google::protobuf::RepeatedPtrField<proto::HostModelFeatures>&
         host_model_features) {
   SEQUENCE_CHECKER(sequence_checker_);
-  for (const auto& host_model_features : host_model_features)
-    ProcessAndStoreHostModelFeatures(host_model_features);
+  std::unique_ptr<StoreUpdateData> host_model_features_update_data =
+      StoreUpdateData::CreateHostModelFeaturesStoreUpdateData(
+          /*update_time=*/clock_->Now() + kUpdateModelsAndFeaturesDelay,
+          /*expiry_time=*/clock_->Now() +
+              features::StoredHostModelFeaturesFreshnessDuration());
+  for (const auto& host_model_features : host_model_features) {
+    if (ProcessAndStoreHostModelFeatures(host_model_features)) {
+      host_model_features_update_data->CopyHostModelFeaturesIntoUpdateData(
+          host_model_features);
+    }
+  }
+  model_and_features_store_->UpdateHostModelFeatures(
+      std::move(host_model_features_update_data),
+      base::BindOnce(&PredictionManager::OnHostModelFeaturesStored,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<PredictionModel> PredictionManager::CreatePredictionModel(
@@ -471,13 +464,41 @@ std::unique_ptr<PredictionModel> PredictionManager::CreatePredictionModel(
 }
 
 void PredictionManager::UpdatePredictionModels(
-    google::protobuf::RepeatedPtrField<proto::PredictionModel>*
-        prediction_models,
-    const base::flat_set<std::string>& host_model_features) {
+    const google::protobuf::RepeatedPtrField<proto::PredictionModel>&
+        prediction_models) {
   SEQUENCE_CHECKER(sequence_checker_);
-  std::unique_ptr<PredictionModel> prediction_model;
-  for (auto& model : *prediction_models)
-    ProcessAndStorePredictionModel(model);
+  std::unique_ptr<StoreUpdateData> prediction_model_update_data =
+      StoreUpdateData::CreatePredictionModelStoreUpdateData();
+  bool models_to_store = false;
+  for (const auto& model : prediction_models) {
+    if (ProcessAndStorePredictionModel(model)) {
+      prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
+      models_to_store = true;
+    }
+  }
+  if (models_to_store) {
+    model_and_features_store_->UpdatePredictionModels(
+        std::move(prediction_model_update_data),
+        base::BindOnce(&PredictionManager::OnPredictionModelsStored,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void PredictionManager::OnPredictionModelsStored() {
+  SEQUENCE_CHECKER(sequence_checker_);
+  LOCAL_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", true);
+}
+
+void PredictionManager::OnHostModelFeaturesStored() {
+  SEQUENCE_CHECKER(sequence_checker_);
+  LOCAL_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true);
+  // TODO(crbug/1027596): Stopping the timer can be removed once the fetch
+  // callback refactor is done. Otherwise, at the start of a fetch, a timer is
+  // running to handle the cases that a fetch fails but the callback is not run.
+  fetch_timer_.Stop();
+  ScheduleModelsAndHostModelFeaturesFetch();
 }
 
 void PredictionManager::OnStoreInitialized() {
@@ -557,42 +578,42 @@ void PredictionManager::OnLoadPredictionModel(
     ProcessAndStorePredictionModel(*model);
 }
 
-void PredictionManager::ProcessAndStorePredictionModel(
+bool PredictionManager::ProcessAndStorePredictionModel(
     const proto::PredictionModel& model) {
   SEQUENCE_CHECKER(sequence_checker_);
   if (!model.model_info().has_optimization_target())
-    return;
+    return false;
   if (!registered_optimization_targets_.contains(
           model.model_info().optimization_target())) {
-    return;
+    return false;
   }
 
   std::unique_ptr<PredictionModel> prediction_model =
       CreatePredictionModel(model);
   if (!prediction_model)
-    return;
+    return false;
 
   auto it = optimization_target_prediction_model_map_.find(
       model.model_info().optimization_target());
   if (it == optimization_target_prediction_model_map_.end()) {
     optimization_target_prediction_model_map_.emplace(
         model.model_info().optimization_target(), std::move(prediction_model));
-    return;
+    return true;
   }
   if (it->second->GetVersion() != prediction_model->GetVersion()) {
     it->second = std::move(prediction_model);
-    return;
+    return true;
   }
-  return;
+  return false;
 }
 
-void PredictionManager::ProcessAndStoreHostModelFeatures(
+bool PredictionManager::ProcessAndStoreHostModelFeatures(
     const proto::HostModelFeatures& host_model_features) {
   SEQUENCE_CHECKER(sequence_checker_);
   if (!host_model_features.has_host())
-    return;
+    return false;
   if (host_model_features.model_features_size() == 0)
-    return;
+    return false;
 
   base::flat_map<std::string, float> model_features_for_host;
   model_features_for_host.reserve(host_model_features.model_features_size());
@@ -618,11 +639,11 @@ void PredictionManager::ProcessAndStoreHostModelFeatures(
     }
   }
   if (model_features_for_host.size() == 0)
-    return;
+    return false;
 
   host_model_features_map_[host_model_features.host()] =
       model_features_for_host;
-  return;
+  return true;
 }
 
 void PredictionManager::MaybeScheduleModelAndHostModelFeaturesFetch() {

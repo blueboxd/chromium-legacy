@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> या <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">खास जानकारी मोड</translation>
 <translation id="4382340674111381977">पिछले पेज पर वापस जाएं</translation>
+<translation id="4458670250301149821">ऐप्लिकेशन के ग्रिड में किसी ऐप्लिकेशन आइकॉन को किसी फ़ोल्डर के अंदर या बाहर ले जाएं</translation>
 <translation id="4472417192667361414">सिस्टम और डिसप्ले की सेटिंग</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, फिर <ph name="LEFT" /> या <ph name="RIGHT" /> या <ph name="UP" /> या <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट सहायक देखें</translation>
 <translation id="4628718545549558538">हाल बताने वाली जगह खोलें (जहां आपके खाते की तस्वीर दिखाई देती है)</translation>
 <translation id="4642092649622328492">आंशिक स्क्रीनशॉट लें</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">अगला अक्षर मिटाएं (आगे से मिटाएं)</translation>
 <translation id="7500368597227394048">हाइफ़न</translation>
 <translation id="7611271430932669992">फ़ोकस को पॉपअप और संवाद पर ले जाएं</translation>
+<translation id="7635348532214572995">ऐप्लिकेशन के ग्रिड में किसी ऐप्लिकेशन आइकॉन को एक जगह से दूसरी जगह पर ले जाएं</translation>
 <translation id="766326951329901120">क्लिपबोर्ड की सामग्री सादे पाठ की तरह चिपकाएं</translation>
 <translation id="7703010453515335249">दायां ब्रैकेट</translation>
 <translation id="7724603315864178912">काटें</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">क्लिपबोर्ड से सामग्री चिपकाएं</translation>
 <translation id="9052808072970550123">अगले उपयोगकर्ता पर स्विच करें</translation>
 <translation id="906458777597946297">विंडो को बड़ा करें</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, फिर <ph name="LEFT" /> या <ph name="RIGHT" /> या <ph name="UP" /> या <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">लाइन के शुरू में जाएं</translation>
 <translation id="9106898733795143799">पेज और वेब ब्राउज़र</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> के लिए कोई सर्च नतीजा नहीं</translation>

@@ -450,11 +450,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si cette règle n'est pas configurée, la loupe est initialement désactivée sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
-<translation id="1676141669324989554">Permet de définir si les utilisateurs peuvent ajouter ou non des exceptions qui autorisent l'affichage de contenu mixte sur des sites spécifiques.
-
-          Pour les formats d'URL spécifiques, les règles "InsecureContentAllowedForUrls" et "InsecureContentBlockedForUrls" peuvent être utilisées à la place de cette règle.
-
-          Si cette règle n'est pas configurée, les utilisateurs peuvent ajouter des exceptions qui autorisent le contenu mixte pouvant être bloqué.</translation>
 <translation id="1695708467571967752">Cette règle détermine si les utilisateurs peuvent ou non lire des contenus multimédias lorsque l'appareil est verrouillé.
 
       Si cette règle est définie sur "False", les commandes multimédias sont désactivées sur l'écran de verrouillage.
@@ -2722,7 +2717,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5208240613060747912">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="5212118847531454979">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
+<translation id="5212118847531454979">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour l'application d'une mise à jour en attente.
 
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés, et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
 
@@ -3243,9 +3238,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5961137303188584693">Adresse MAC de la carte d'interface réseau intégrée de l'appareil</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
-<translation id="5997107377032983906">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à afficher un contenu mixte (c.-à-d. un contenu HTTP sur des sites HTTPS) blocable (actif).
-
-          Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, mais les utilisateurs peuvent définir des exceptions afin d'autoriser l'affichage de ce type de contenu sur des sites spécifiques.</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="5997846976342452720">Indiquer si l'outil de recherche de plug-ins doit être désactivé (obsolète)</translation>
 <translation id="5998198091336830580">Cette règle fait partie du groupe atomique suivant (seules les règles issues de la source ayant la plus haute priorité dans le groupe sont appliquées) :</translation>
@@ -3644,9 +3636,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Définir le répertoire des profils itinérants</translation>
 <translation id="6795485990775913659">Autoriser l'impression sans code uniquement</translation>
-<translation id="6800064234889290465">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher un contenu mixte (c.-à-d. un contenu HTTP sur des sites HTTPS) blocable (actif).
-
-          Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, mais les utilisateurs peuvent définir des exceptions afin d'autoriser l'affichage de ce type de contenu sur des sites spécifiques.</translation>
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="6813263547126514821">Démarrage et arrêt</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
@@ -4566,7 +4555,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Si vous désactivez ce paramètre, les pages sont analysées pour détecter les balises Meta.
 
           Si cette règle n'est pas définie, les pages sont analysées pour détecter les balises Meta.</translation>
-<translation id="829641334878002866">Vous permet de définir le délai, en millisecondes, entre la première notification vous avertissant qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente et la fin du délai spécifié par la règle <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+<translation id="829641334878002866">Vous permet de définir le délai, en millisecondes, entre la première notification vous avertissant qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour l'application d'une mise à jour en attente et la fin du délai spécifié par la règle <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Si cette règle n'est pas définie, le délai par défaut est fixé à 259 200 000 millisecondes (trois jours) pour les appareils <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8300455783946254851">Cette règle désactive la synchronisation avec Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> en cas de connexion à un réseau mobile lorsque vous la définissez sur "True". Dans ce cas, les données ne sont synchronisées avec Google Drive qu'en cas de connexion Wi-Fi ou Ethernet.

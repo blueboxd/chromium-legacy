@@ -41,6 +41,7 @@ source_set("google_services") {
     "//components/browser_sync",
     "//components/google/core/common",
     "//components/metrics",
+    "//components/password_manager/core/common",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",

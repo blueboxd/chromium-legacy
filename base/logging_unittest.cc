@@ -120,7 +120,7 @@ TEST_F(LoggingTest, BasicLogging) {
   SetMinLogLevel(LOG_INFO);
 
   EXPECT_TRUE(LOG_IS_ON(INFO));
-  EXPECT_TRUE((DCHECK_IS_ON() != 0) == DLOG_IS_ON(INFO));
+  EXPECT_EQ(DCHECK_IS_ON(), DLOG_IS_ON(INFO));
   EXPECT_TRUE(VLOG_IS_ON(0));
 
   LOG(INFO) << mock_log_source.Log();
@@ -1034,7 +1034,7 @@ TEST_F(LoggingTest, FuchsiaLogging) {
   SetMinLogLevel(LOG_INFO);
 
   EXPECT_TRUE(LOG_IS_ON(INFO));
-  EXPECT_TRUE((DCHECK_IS_ON() != 0) == DLOG_IS_ON(INFO));
+  EXPECT_EQ(DCHECK_IS_ON(), DLOG_IS_ON(INFO));
 
   ZX_LOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();
   ZX_DLOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();

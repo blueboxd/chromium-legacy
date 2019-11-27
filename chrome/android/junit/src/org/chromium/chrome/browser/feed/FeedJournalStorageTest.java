@@ -14,11 +14,6 @@ import static org.mockito.Mockito.verify;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.storage.CommitResult;
-import com.google.android.libraries.feed.api.host.storage.JournalMutation;
-import com.google.android.libraries.feed.common.Result;
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +27,10 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
+import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
+import org.chromium.chrome.browser.feed.library.common.Result;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;

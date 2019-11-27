@@ -174,7 +174,7 @@ class FrameNodeImpl
         mojom::InterventionPolicy,
         const mojom::InterventionPolicy&,
         &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
-        origin_trial_freeze_policy{mojom::InterventionPolicy::kUnknown};
+        origin_trial_freeze_policy{mojom::InterventionPolicy::kDefault};
   };
 
   // Invoked by subframes on joining/leaving the graph.

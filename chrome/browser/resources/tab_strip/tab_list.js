@@ -130,12 +130,6 @@ class TabListElement extends CustomElement {
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
 
-      const mruCheckbox = this.shadowRoot.querySelector('#mruCheckbox');
-      mruCheckbox.checked = tabStripOptions.mruEnabled;
-      mruCheckbox.addEventListener('change', () => {
-        tabStripOptions.mruEnabled = mruCheckbox.checked;
-      });
-
       const autoCloseCheckbox =
           this.shadowRoot.querySelector('#autoCloseCheckbox');
       autoCloseCheckbox.checked = tabStripOptions.autoCloseEnabled;
@@ -170,7 +164,7 @@ class TabListElement extends CustomElement {
 
     this.tabsApi_.getTabs().then(tabs => {
       tabs.forEach(tab => this.onTabCreated_(tab));
-      this.moveOrScrollToActiveTab_();
+      this.scrollToActiveTab_();
 
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
@@ -255,23 +249,6 @@ class TabListElement extends CustomElement {
     }
   }
 
-  /** @private */
-  moveOrScrollToActiveTab_() {
-    const activeTab = this.getActiveTab_();
-    if (!activeTab) {
-      return;
-    }
-
-    if (tabStripOptions.mruEnabled &&
-        !this.tabStripEmbedderProxy_.isVisible() && !activeTab.tab.pinned &&
-        this.tabsContainerElement_.firstChild !== activeTab) {
-      this.tabsApi_.moveTab(
-          activeTab.tab.id, this.pinnedTabsContainerElement_.childElementCount);
-    } else {
-      this.scrollToTab_(activeTab);
-    }
-  }
-
   /**
    * @param {!Event} event
    * @private
@@ -284,7 +261,7 @@ class TabListElement extends CustomElement {
 
   /** @private */
   onDocumentVisibilityChange_() {
-    this.moveOrScrollToActiveTab_();
+    this.scrollToActiveTab_();
     Array.from(this.tabsContainerElement_.children)
         .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
   }
@@ -338,16 +315,6 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    if (tabStripOptions.mruEnabled && !draggedItem.tab.pinned) {
-      // If MRU is enabled, unpinned tabs should not be draggable.
-      event.preventDefault();
-      return;
-    }
-
-    if (tabStripOptions.mruEnabled) {
-      assert(draggedItem.tab.pinned);
-    }
-
     this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
     this.draggedItem_.setDragging(true);
     event.dataTransfer.effectAllowed = 'move';
@@ -387,7 +354,7 @@ class TabListElement extends CustomElement {
     if (newlyActiveTab) {
       newlyActiveTab.tab = /** @type {!TabData} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
-      this.moveOrScrollToActiveTab_();
+      this.scrollToActiveTab_();
     }
   }
 
@@ -397,21 +364,8 @@ class TabListElement extends CustomElement {
    */
   onTabCreated_(tab) {
     const tabElement = this.createTabElement_(tab);
-    if (tabStripOptions.mruEnabled && tab.active && !tab.pinned &&
-        tab.index !== this.pinnedTabsContainerElement_.childElementCount) {
-      // Newly created active tabs should first be moved to the very beginning
-      // of the tab strip to enforce the tab strip's most recently used ordering
-      this.tabsApi_
-          .moveTab(tab.id, this.pinnedTabsContainerElement_.childElementCount)
-          .then(() => {
-            this.insertTabOrMoveTo_(
-                tabElement, this.pinnedTabsContainerElement_.childElementCount);
-            this.addAnimationPromise_(tabElement.slideIn());
-          });
-    } else {
-      this.insertTabOrMoveTo_(tabElement, tab.index);
-      this.addAnimationPromise_(tabElement.slideIn());
-    }
+    this.insertTabOrMoveTo_(tabElement, tab.index);
+    this.addAnimationPromise_(tabElement.slideIn());
   }
 
   /**
@@ -488,6 +442,16 @@ class TabListElement extends CustomElement {
       // previously focused element when the focus returns to this window.
       this.shadowRoot.activeElement.blur();
     }
+  }
+
+  /** @private */
+  scrollToActiveTab_() {
+    const activeTab = this.getActiveTab_();
+    if (!activeTab) {
+      return;
+    }
+
+    this.scrollToTab_(activeTab);
   }
 
   /**

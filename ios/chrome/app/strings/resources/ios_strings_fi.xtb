@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Lisäasetusvalikko</translation>
 <translation id="2316709634732130529">Käytä salasanaehdotusta</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
-<translation id="2330129964253841015">Varoita, jos salasanoja vaarantuu</translation>
 <translation id="2339560363438331454">Synkronointi ja Google-palvelut</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2359043044084662842">Käännä</translation>
@@ -441,6 +440,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6973630695168034713">Kansiot</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Hallinnoi Google-tiliäsi</translation>
+<translation id="6995899638241819463">Varoita, jos salasanoja vaarantuu tietosuojaloukkauksessa</translation>
 <translation id="6998989275928107238">Vastaanottaja</translation>
 <translation id="7004499039102548441">Hiljattain suljetut välilehdet</translation>
 <translation id="7006788746334555276">Sisältöasetukset</translation>

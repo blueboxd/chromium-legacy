@@ -389,8 +389,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           render_thread->GetWorkerTaskRunner(),
           render_thread->compositor_task_runner(),
           video_frame_compositor_task_runner,
-          base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
-                     base::Unretained(blink::MainThreadIsolate())),
+          base::BindRepeating(
+              &v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+              base::Unretained(blink::MainThreadIsolate())),
           initial_cdm, request_routing_token_cb_, media_observer,
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),
@@ -506,10 +507,11 @@ MediaFactory::CreateRendererFactorySelector(
 
   if (!use_mojo_renderer_factory) {
     factory_selector->AddBaseFactory(
-        FactoryType::DEFAULT, std::make_unique<media::DefaultRendererFactory>(
-                                  media_log, decoder_factory,
-                                  base::Bind(&RenderThreadImpl::GetGpuFactories,
-                                             base::Unretained(render_thread))));
+        FactoryType::DEFAULT,
+        std::make_unique<media::DefaultRendererFactory>(
+            media_log, decoder_factory,
+            base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                                base::Unretained(render_thread))));
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)

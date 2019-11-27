@@ -294,6 +294,15 @@
       },
     },
   },
+  'cc_unittests': {
+    'modifications': {
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+    },
+  },
   'checkbins': {
     'remove_from': [
       'linux-archive-dbg',
@@ -424,6 +433,11 @@
           'shards': 5,
         },
       },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
   },
   'content_browsertests': {
@@ -498,6 +512,11 @@
       'Linux Tests': {
         'swarming': {
           'idempotent': False, # https://crbug.com/1013093
+        },
+      },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 15,
         },
       },
       'linux-chromeos-rel': {
@@ -832,7 +851,7 @@
       'Linux TSan Tests': {
         # These are slow on the TSan bots for some reason, crbug.com/794372
         'swarming': {
-          'shards': 6,
+          'shards': 20,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -2199,6 +2218,11 @@
         # crbug.com/794372
         'swarming': {
           'shards': 5,
+        },
+      },
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 2,
         },
       },
       'Marshmallow 64 bit Tester': {

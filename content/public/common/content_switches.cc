@@ -495,6 +495,13 @@ const char kEnableOopRasterization[] = "enable-oop-rasterization";
 // Turns on skia deferred display list for out of process raster.
 const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
 
+// Pins the default referrer policy to the pre-M80 value of
+// no-referrer-when-downgrade.
+// TODO(crbug.com/1016541): After M82, remove when the corresponding
+// enterprise policy has been deleted.
+const char kForceLegacyDefaultReferrerPolicy[] =
+    "force-legacy-default-referrer-policy";
+
 // The number of multisample antialiasing samples for GPU rasterization.
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.
 const char kGpuRasterizationMSAASampleCount[] =

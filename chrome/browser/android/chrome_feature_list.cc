@@ -138,6 +138,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadProgressInfoBar,
     &kDownloadRename,
     &kDrawVerticallyEdgeToEdge,
+    &kDuetTabStripIntegrationAndroid,
     &kEphemeralTab,
     &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
@@ -195,6 +196,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &net::features::kCookiesWithoutSameSiteMustBeSecure,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
     &payments::features::kPaymentRequestSkipToGPay,
+    &payments::features::kPaymentRequestSkipToGPayIfNoCard,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kStrictHasEnrolledAutofillInstrument,
     &payments::features::kWebPaymentMicrotransaction,
@@ -413,6 +415,9 @@ const base::Feature kDownloadNotificationBadge{
 
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDuetTabStripIntegrationAndroid{
+    "DuetTabStripIntegrationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEphemeralTab{"EphemeralTab",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

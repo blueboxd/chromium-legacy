@@ -512,7 +512,7 @@ TEST_F(DiceSigninUiUtilTest,
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
-      kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
+      kSecondaryGaiaID, kSecondaryEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
@@ -542,7 +542,7 @@ TEST_F(DiceSigninUiUtilTest,
       kMainGaiaID, kMainEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
-      kSecondaryEmail, kSecondaryGaiaID, "refresh_token", false,
+      kSecondaryGaiaID, kSecondaryEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));

@@ -34,7 +34,7 @@ js_modulizer("modulize") {
   namespace_rewrites = [
     "cr.isMac|isMac",
     "cr.isWindows|isWindows",
-    "cr.toastManager.getInstance|getInstance",
+    "cr.toastManager.getToastManager|getToastManager",
     "MockInteractions.blur|blur",
     "MockInteractions.downAndUp|downAndUp",
     "MockInteractions.keyDownOn|keyDownOn",

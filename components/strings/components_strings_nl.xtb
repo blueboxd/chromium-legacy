@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Meer weergeven</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Je wachtwoord wijzigen</translation>
 <translation id="1484290072879560759">Verzendadres kiezen</translation>
 <translation id="1492194039220927094">Pushen van beleid:</translation>
 <translation id="1501859676467574491">Passen uit je Google-account weergeven</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Probeer contact op te nemen met de systeembeheerder.</translation>
 <translation id="1736420071277903564">Computer</translation>
-<translation id="1739107442478692187">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan nu je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="1740951997222943430">Geef een geldige vervalmaand op</translation>
 <translation id="1741613555002899862">Moet gespecificeerd zijn en een geldige tekenreeks zijn als DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> is.</translation>
 <translation id="1743520634839655729">Sla je pas, naam en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Uitpakservice</translation>
 <translation id="1915697529809968049">Touch ID gebruiken in plaats van CVC?</translation>
 <translation id="1916770123977586577">Laad deze pagina opnieuw om je geüpdatete instellingen toe te passen op deze site</translation>
+<translation id="1917876262703816781">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan om je wachtwoord op <ph name="ORIGIN" /> nu te wijzigen.</translation>
 <translation id="1919345977826869612">Advertenties</translation>
 <translation id="1919367280705858090">Hulp bij een specifieke foutmelding</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Geen}=1{1 site}other{# sites}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domeinen komen niet overeen</translation>
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2099652385553570808">Drie nietjes links</translation>
-<translation id="2100280972184758440">Je wachtwoord is niet meer veilig</translation>
 <translation id="2102134110707549001">Sterk wachtwoord voorstellen…</translation>
 <translation id="2108755909498034140">Je computer opnieuw opstarten</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Verleend aan: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforatie rechtsonder</translation>
-<translation id="2124528555835617522">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="2129079103035905234">Bewegingssensoren</translation>
 <translation id="2130448033692577677">De gespecificeerde templates worden misschien niet toegepast omdat het beleid DnsOverHttpsMode niet is ingesteld.</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
@@ -481,7 +480,6 @@
 <translation id="3282497668470633863">Naam op pas toevoegen</translation>
 <translation id="3287510313208355388">Downloaden wanneer online</translation>
 <translation id="3293642807462928945">Meer informatie over het beleid <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan om je wachtwoord op <ph name="ORIGIN" /> nu te wijzigen.</translation>
 <translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
 <translation id="3324983252691184275">Karmozijnrood</translation>
@@ -887,6 +885,7 @@
 <translation id="5287240709317226393">Cookies weergeven</translation>
 <translation id="5287456746628258573">Deze site gebruikt een verouderde beveiligingsconfiguratie, waardoor je gegevens (zoals wachtwoorden of creditcardnummers) openbaar kunnen worden gemaakt als ze naar deze site worden gestuurd.</translation>
 <translation id="5288108484102287882">Tijdens de validatie van de beleidswaarden zijn er waarschuwingen geconstateerd</translation>
+<translation id="5295292838686006428">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
@@ -937,6 +936,7 @@
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
 <translation id="5541546772353173584">E-mailadres toevoegen</translation>
 <translation id="5545756402275714221">Artikelen voor jou</translation>
+<translation id="5552137475244467770">Chrome vergelijkt periodiek je wachtwoorden met lijsten die online zijn gepubliceerd. Als dit wordt gedaan, zijn je wachtwoorden en gebruikersnamen versleuteld, zodat ze door niemand (inclusief Google) kunnen worden gelezen.</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5560088892362098740">Vervaldatum</translation>
 <translation id="5565735124758917034">Actief</translation>
@@ -1028,6 +1028,7 @@
 <translation id="5992691462791905444">Zizagvouw 2-slag oneven center</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultaten voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Je wachtwoorden controleren</translation>
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
 <translation id="6017514345406065928">Groen</translation>
@@ -1316,6 +1317,7 @@ Aanvullende informatie:
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="748406663033922918">Gebruik schermvergrendeling om je opgeslagen betaalmethoden te verifiëren.</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
+<translation id="7495290002932347110">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app. Chrome raadt je aan nu je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="7498234416455752244">Doorgaan met bewerken</translation>
 <translation id="7508255263130623398">Geretourneerde apparaat-ID voor beleid is leeg of komt niet overeen met de huidige apparaat-ID</translation>
 <translation id="7508870219247277067">Avocadogroen</translation>

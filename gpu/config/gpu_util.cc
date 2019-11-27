@@ -237,15 +237,14 @@ GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
-GpuFeatureStatus GetGpuCompositingFeatureStatus(
-    const std::set<int>& blacklisted_features,
-    bool use_swift_shader) {
+GpuFeatureStatus GetGLFeatureStatus(const std::set<int>& blacklisted_features,
+                                    bool use_swift_shader) {
   if (use_swift_shader) {
     // This is for testing only. Chrome should exercise the GPU accelerated
     // path on top of SwiftShader driver.
     return kGpuFeatureStatusEnabled;
   }
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_GPU_COMPOSITING))
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_GL))
     return kGpuFeatureStatusBlacklisted;
   return kGpuFeatureStatusEnabled;
 }
@@ -308,8 +307,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   GpuFeatureInfo gpu_feature_info;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
@@ -329,6 +326,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
@@ -346,8 +345,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
   GpuFeatureInfo gpu_feature_info;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
@@ -367,6 +364,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
@@ -384,8 +383,6 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   GpuFeatureInfo gpu_feature_info;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
       kGpuFeatureStatusSoftware;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
       kGpuFeatureStatusSoftware;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
@@ -405,6 +402,8 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
+      kGpuFeatureStatusDisabled;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       kGpuFeatureStatusDisabled;
@@ -478,8 +477,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
       GetAcceleratedVideoDecodeFeatureStatus(blacklisted_features,
                                              use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-      GetGpuCompositingFeatureStatus(blacklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE] =
       GetProtectedVideoDecodeFeatureStatus(blacklisted_features, gpu_info,
                                            use_swift_shader);
@@ -489,6 +486,8 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
       GetAndroidSurfaceControlFeatureStatus(blacklisted_features,
                                             gpu_preferences);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
+      GetGLFeatureStatus(blacklisted_features, use_swift_shader);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
       GetMetalFeatureStatus(blacklisted_features, gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
@@ -663,13 +662,14 @@ bool EnableSwiftShaderIfNeeded(base::CommandLine* command_line,
                                bool disable_software_rasterizer,
                                bool blacklist_needs_more_info) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-  if (disable_software_rasterizer)
+  if (disable_software_rasterizer || blacklist_needs_more_info)
     return false;
   // Don't overwrite user preference.
   if (command_line->HasSwitch(switches::kUseGL))
     return false;
-  if (!blacklist_needs_more_info &&
-      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] !=
+  if (gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] !=
+          kGpuFeatureStatusEnabled ||
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] !=
           kGpuFeatureStatusEnabled) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);

@@ -1867,7 +1867,16 @@ void HandleCrashDump(const BreakpadInfo& info) {
     while ((entry = crash_key_iterator.Next())) {
       if (g_use_crash_key_white_list && !IsInWhiteList(entry->key))
         continue;
-      writer.AddPairString(entry->key, entry->value);
+      size_t key_size, value_size;
+      // Check for malformed messages.
+      key_size = entry->key[CrashKeyStorage::key_size - 1] != '\0'
+                     ? CrashKeyStorage::key_size - 1
+                     : my_strlen(entry->key);
+      value_size = entry->value[CrashKeyStorage::value_size - 1] != '\0'
+                       ? CrashKeyStorage::value_size - 1
+                       : my_strlen(entry->value);
+
+      writer.AddPairData(entry->key, key_size, entry->value, value_size);
       writer.AddBoundary();
       writer.Flush();
     }

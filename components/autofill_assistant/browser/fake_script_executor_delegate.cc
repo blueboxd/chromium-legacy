@@ -166,7 +166,8 @@ void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
 
 bool FakeScriptExecutorDelegate::SetForm(
     std::unique_ptr<FormProto> form,
-    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+    base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+    base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   return true;
 }
 }  // namespace autofill_assistant

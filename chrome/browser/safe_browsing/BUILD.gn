@@ -137,12 +137,14 @@ jumbo_static_library("safe_browsing") {
         "client_side_detection_service.h",
         "client_side_model_loader.cc",
         "client_side_model_loader.h",
+        "cloud_content_scanning/binary_fcm_service.cc",
+        "cloud_content_scanning/binary_fcm_service.h",
+        "cloud_content_scanning/binary_upload_service.cc",
+        "cloud_content_scanning/binary_upload_service.h",
         "cloud_content_scanning/deep_scanning_dialog_delegate.cc",
         "cloud_content_scanning/deep_scanning_dialog_delegate.h",
-        "download_protection/binary_fcm_service.cc",
-        "download_protection/binary_fcm_service.h",
-        "download_protection/binary_upload_service.cc",
-        "download_protection/binary_upload_service.h",
+        "cloud_content_scanning/multipart_uploader.cc",
+        "cloud_content_scanning/multipart_uploader.h",
         "download_protection/check_client_download_request.cc",
         "download_protection/check_client_download_request.h",
         "download_protection/check_client_download_request_base.cc",
@@ -165,8 +167,6 @@ jumbo_static_library("safe_browsing") {
         "download_protection/download_url_sb_client.h",
         "download_protection/file_analyzer.cc",
         "download_protection/file_analyzer.h",
-        "download_protection/multipart_uploader.cc",
-        "download_protection/multipart_uploader.h",
         "download_protection/path_sanitizer.cc",
         "download_protection/path_sanitizer.h",
         "download_protection/ppapi_download_request.cc",
@@ -298,8 +298,8 @@ source_set("test_support") {
 
   if (safe_browsing_mode == 1) {
     sources += [
-      "download_protection/test_binary_upload_service.cc",
-      "download_protection/test_binary_upload_service.h",
+      "cloud_content_scanning/test_binary_upload_service.cc",
+      "cloud_content_scanning/test_binary_upload_service.h",
     ]
   }
 }

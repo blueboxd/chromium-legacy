@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">ਹੋਰ ਦਿਖਾਓ</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">ਆਪਣਾ ਪਾਸਵਰਡ ਬਦਲੋ</translation>
 <translation id="1484290072879560759">ਸ਼ਿਪਿੰਗ ਪਤਾ ਚੁਣੋ</translation>
 <translation id="1492194039220927094">ਨੀਤੀਆਂ ਦਾ ਅਮਲੀਕਰਨ:</translation>
 <translation id="1501859676467574491">ਤੁਹਾਡੇ Google ਖਾਤੇ ਤੋਂ ਕਾਰਡ ਦਿਖਾਓ</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ਸਿਸਟਮ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="1736420071277903564">ਕੰਪਿਊਟਰ</translation>
-<translation id="1739107442478692187">ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤੀ ਜਾਂਦੀ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਈ ਹੈ। Chrome ਤੁਹਾਡੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਅਤੇ ਹੁਣੇ <ph name="ORIGIN" /> ਸਾਈਟ ਦਾ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="1740951997222943430">ਇੱਕ ਵੈਧ ਮਿਆਦ ਸਮਾਪਤੀ ਮਹੀਨਾ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode ਦੇ <ph name="SECURE_DNS_MODE_SECURE" /> ਹੋਣ 'ਤੇ ਨਿਰਧਾਰਤ ਹੋਣਾ ਅਤੇ ਸਤਰ ਦਾ ਵੈਧ ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈ।</translation>
 <translation id="1743520634839655729">ਅਗਲੀ ਵਾਰ ਵਧੇਰੇ ਤੇਜ਼ੀ ਨਾਲ ਭੁਗਤਾਨ ਕਰਨ ਲਈ, ਆਪਣੇ 'Google ਖਾਤੇ' ਅਤੇ ਇਸ ਡੀਵਾਈਸ ਵਿੱਚ ਆਪਣਾ ਕਾਰਡ, ਨਾਮ ਅਤੇ ਬਿਲਿੰਗ ਪਤਾ ਰੱਖਿਅਤ ਕਰੋ।</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">ਅਣ-ਜ਼ਿਪ ਸੇਵਾ</translation>
 <translation id="1915697529809968049">ਕੀ CVC ਦੀ ਬਜਾਏ ਸਪਰਸ਼ ਆਈਡੀ ਨੂੰ ਵਰਤਣਾ ਹੈ?</translation>
 <translation id="1916770123977586577">ਇਸ ਸਾਈਟ 'ਤੇ ਆਪਣੀਆਂ ਅੱਪਡੇਟ ਕੀਤੀ ਸੈਟਿੰਗਾਂ ਲਾਗੂ ਕਰਨ ਲਈ, ਇਸ ਪੰਨੇ ਨੂੰ ਰੀਲੋਡ ਕਰੋ</translation>
+<translation id="1917876262703816781">ਕਿਸੇ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਣ ਕਾਰਨ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਉਜਾਗਰ ਹੋਇਆ। Chrome <ph name="ORIGIN" /> ਦੇ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨੂੰ ਹੁਣੇ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="1919345977826869612">ਵਿਗਿਆਪਨ</translation>
 <translation id="1919367280705858090">ਇੱਕ ਖਾਸ ਗੜਬੜ-ਸੁਨੇਹਾ ਸੰਬੰਧੀ ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{1 ਸਾਈਟ}other{# ਸਾਈਟਾਂ}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">ਡੋਮੇਨ ਮਿਸਮੈਚ</translation>
 <translation id="2096368010154057602">ਵਿਭਾਗ</translation>
 <translation id="2099652385553570808">ਖੱਬੇ ਪਾਸੇ ਤਿੰਨ ਪਿੰਨਾਂ</translation>
-<translation id="2100280972184758440">ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨਾਲ ਛੇੜਛਾੜ ਹੋਈ ਸੀ</translation>
 <translation id="2102134110707549001">ਮਜ਼ਬੂਤ ਪਾਸਵਰਡ ਸੁਝਾਓ…</translation>
 <translation id="2108755909498034140">ਆਪਣੇ ਕੰਪਿਊਟਰ ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">ਅਣਡਿੱਠ ਕੀਤਾ ਕਿਉਂਕਿ ਇਹ <ph name="POLICY_NAME" /> ਵੱਲੋਂ ਓਵਰਰਾਈਡ ਕੀਤਾ ਸੀ।</translation>
 <translation id="2119505898009119320">ਇਹਨਾਂ ਨੂੰ ਜਾਰੀ ਕੀਤਾ ਗਿਆ: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">ਹੇਠਾਂ ਸੱਜੇ ਪਾਸੇ ਮੋਰੀ</translation>
-<translation id="2124528555835617522">ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤੀ ਜਾਂਦੀ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਈ ਹੈ। Chrome ਤੁਹਾਡੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਦੀ ਹੁਣੇ ਜਾਂਚ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="2129079103035905234">ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰ</translation>
 <translation id="2130448033692577677">ਤੁਹਾਡੇ ਵੱਲੋਂ ਨਿਰਧਾਰਤ ਕੀਤੇ ਟੈਮਪਲੇਟ DnsOverHttpsMode ਨੀਤੀ ਸੈੱਟ ਨਾ ਕੀਤੇ ਜਾਣ ਕਾਰਨ ਸ਼ਾਇਦ ਲਾਗੂ ਨਹੀਂ ਕੀਤੇ ਜਾ ਸਕਦੇ।</translation>
 <translation id="213826338245044447">ਮੋਬਾਈਲ ਬੁੱਕਮਾਰਕਸ</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">ਇਸ ਵੇਲੇ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 'ਤੇ ਹਮਲਾਵਰ ਤੁਹਾਡੀ ਡੀਵਾਈਸ 'ਤੇ ਖਤਰਨਾਕ ਐਪਾਂ ਨੂੰ ਸਥਾਪਤ ਕਰ ਸਕਦੇ ਹਨ, ਜੋ ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਨੂੰ ਨੁਕਸਾਨ ਪਹੁੰਚਾ ਸਕਦੀਆਂ ਹਨ, ਤੁਹਾਡੇ ਮੋਬਾਈਲ ਬਿਲ ਵਿੱਚ ਗੁੱਝੇ ਖਰਚੇ ਸ਼ਾਮਲ ਕਰ ਸਕਦੀਆਂ ਹਨ, ਜਾਂ ਤੁਹਾਡੀ ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਨੂੰ ਚੋਰੀ ਕਰ ਸਕਦੀਆਂ ਹਨ। <ph name="BEGIN_LEARN_MORE_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ਇੰਟਰਨੈੱਟ ਨਹੀਂ</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ਨਿਦਾਨ ਐਪ<ph name="END_LINK" /> ਦੀ ਵਰਤੋਂ ਨਾਲ ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਨੂੰ ਠੀਕ ਕਰੋ</translation>
+<translation id="22320125457191592">ਤੁਹਾਡੇ ਲਈ</translation>
 <translation id="2239100178324503013">ਹੁਣੇ ਭੇਜੋ</translation>
 <translation id="2248949050832152960">WebAuthn ਨੂੰ ਵਰਤੋ</translation>
 <translation id="2250931979407627383">ਖੱਬੇ ਕਿਨਾਰੇ ਤੋਂ ਸਿਲਾਈ</translation>
@@ -374,6 +374,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ਛੱਡੋ</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">ਸੁਰੱਖਿਆ ਚਿਤਾਵਨੀ</translation>
 <translation id="2699302886720511147">ਮਨਜ਼ੂਰਸ਼ੁਦਾ ਕਾਰਡ</translation>
 <translation id="2702801445560668637">ਵਾਚਣ ਸੂਚੀ</translation>
 <translation id="2704283930420550640">ਵੈਲਯੂ ਫੌਰਮੈਟ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ।</translation>
@@ -473,6 +474,7 @@
 <translation id="3207960819495026254">ਬੁੱਕਮਾਰਕ ਕੀਤੇ</translation>
 <translation id="3209034400446768650">ਸ਼ਾਇਦ ਪੰਨੇ ਵੱਲੋਂ ਖਰਚੇ ਲਏ ਜਾਣ</translation>
 <translation id="3209080785413271048">ਤੁਹਾਡੀਆਂ ਰੱਖਿਅਤ ਕੀਤੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ Windows Hello ਵਰਤੋ।</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> 'ਤੇ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਦੀ ਨਿਗਰਾਨੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="3215092763954878852">WebAuthn ਨੂੰ ਨਹੀਂ ਵਰਤ ਸਕਦੇ</translation>
 <translation id="3225919329040284222">ਸਰਵਰ ਨੇ ਇੱਕ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਪੇਸ਼ ਕੀਤਾ ਸੀ ਜੋ ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਅਨੁਮਾਨਾਂ ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ। ਇਹ ਅਨੁਮਾਨਾਂ ਨੂੰ ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ ਹੈ ਤਾਂ ਕਿ ਉੱਚ-ਸੁਰੱਖਿਆ ਵਾਲੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਦੀ ਰੱਖਿਆ ਕੀਤੀ ਜਾਵੇ।</translation>
 <translation id="3226128629678568754">ਪੰਨਾ ਲੋਡ ਕਰਨ ਲਈ ਲੋੜੀਂਦਾ ਡਾਟਾ ਮੁੜ ਸਪੁਰਦ ਕਰਨ ਲਈ ਰੀਲੋਡ ਬਟਨ ਦਬਾਓ।</translation>
@@ -488,7 +490,6 @@
 <translation id="3282497668470633863">ਕਾਰਡ 'ਤੇ ਨਾਮ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="3287510313208355388">ਆਨਲਾਈਨ ਹੋਣ 'ਤੇ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ਨੀਤੀ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
-<translation id="3295439534709115864">ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤੀ ਜਾਂਦੀ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਈ ਹੈ। Chrome <ph name="ORIGIN" /> ਦੇ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨੂੰ ਹੁਣੇ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="3303855915957856445">ਕੋਈ ਖੋਜ ਨਤੀਜੇ ਨਹੀਂ ਮਿਲੇ</translation>
 <translation id="3320021301628644560">ਬਿਲਿੰਗ ਪਤਾ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="3324983252691184275">ਸੂਹਾ</translation>
@@ -531,6 +532,7 @@
 <translation id="3528485271872257980">ਗੂੜ੍ਹਾ ਭੂਰਾ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਘੱਟੋ-ਘੱਟ 1 ਆਈਟਮ}=1{1 ਆਈਟਮ (ਅਤੇ ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}other{ # ਆਈਟਮਾਂ (ਅਤੇ ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}}</translation>
 <translation id="3539171420378717834">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਇਸ ਕਾਰਡ ਦੀ ਇੱਕ ਕਾਪੀ ਰੱਖੋ</translation>
+<translation id="3553513561058684206">ਤੁਹਾਡੇ ਲਈ</translation>
 <translation id="3566021033012934673">ਤੁਹਾਡਾ ਕਨੈਕਸ਼ਨ ਨਿੱਜੀ ਨਹੀਂ ਹੈ</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> 'ਤੇ ਇੱਕ ਪਰੋਏ ਗਏ ਪੰਨੇ ਦੇ ਮੁਤਾਬਕ</translation>
@@ -760,6 +762,7 @@
 <translation id="4594403342090139922">&amp;ਮਿਟਾਏ ਗਏ ਨੂੰ ਅਣਕੀਤਾ ਕਰੋ</translation>
 <translation id="4597348597567598915">ਆਕਾਰ 8</translation>
 <translation id="4600854749408232102">C6/C5 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
+<translation id="4613966523036881546">Google Chrome ਨੂੰ ਇਸ ਕਨੈਕਸ਼ਨ ਦੇ ਪ੍ਰਮਾਣ-ਪੱਤਰ 'ਤੇ ਭਰੋਸਾ ਨਹੀਂ ਹੈ, ਕਿਉਂਕਿ ਇਸਨੂੰ ਨੈੱਟਵਰਕ ਇੰਟਰਸੈਪਸ਼ਨ ਅਤੇ ਨਿਗਰਾਨੀ ਲਈ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="4635654612248442824">ਸਾਈਟ <ph name="ORIGIN" /> ਨੇ ਬੇਨਤੀ ਕੀਤੀ ਕਿ
     ਮੂਲ ਸੰਬੰਧੀ ਨੀਤੀ ਨੂੰ ਉਸ ਦੀਆਂ ਸਾਰੀਆਂ ਬੇਨਤੀਆਂ 'ਤੇ ਲਾਗੂ ਕੀਤਾ ਜਾਵੇ, ਪਰ ਇਸ ਨੀਤੀ ਨੂੰ ਫਿਲਹਾਲ ਲਾਗੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
 <translation id="464342062220857295">'ਖੋਜ' ਦੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ</translation>
@@ -899,6 +902,7 @@
 <translation id="5287240709317226393">ਕੁਕੀਜ਼ ਦਿਖਾਓ</translation>
 <translation id="5287456746628258573">ਇਹ ਸਾਈਟ ਪੁਰਾਣੇ ਸੁਰੱਖਿਆ ਸੰਰੂਪਣ ਦੀ ਵਰਤੋਂ ਕਰਦੀ ਹੈ, ਜਿਸ ਨਾਲ ਇਸ ਸਾਈਟ 'ਤੇ ਭੇਜੀ ਜਾਣ ਵਾਲੀ ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ (ਉਦਾਹਰਨ ਲਈ, ਪਾਸਵਰਡ ਜਾਂ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਨੰਬਰ) ਪ੍ਰਗਟ ਹੋ ਸਕਦੀ ਹੈ।</translation>
 <translation id="5288108484102287882">ਨੀਤੀ ਮੁੱਲਾਂ ਦੇ ਪ੍ਰਮਾਣੀਕਰਨ ਨੇ ਚਿਤਾਵਨੀਆਂ ਉਭਾਰੀਆਂ ਹਨ</translation>
+<translation id="5295292838686006428">ਕਿਸੇ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਣ ਕਾਰਨ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਉਜਾਗਰ ਹੋਇਆ। Chrome ਤੁਹਾਡੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਦੀ ਹੁਣੇ ਜਾਂਚ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="5299298092464848405">ਨੀਤੀ ਪਾਰਸ ਕਰਨ ਵਿੱਚ ਗੜਬੜ</translation>
 <translation id="5300589172476337783">ਦਿਖਾਓ</translation>
 <translation id="5308380583665731573">ਕਨੈਕਟ ਕਰੋ</translation>
@@ -949,6 +953,7 @@
 <translation id="5540224163453853">ਬੇਨਤੀ ਕੀਤਾ ਲੇਖ ਨਹੀਂ ਲੱਭ ਸਕਿਆ।</translation>
 <translation id="5541546772353173584">ਈਮੇਲ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="5545756402275714221">ਤੁਹਾਡੇ ਲਈ ਲੇਖ</translation>
+<translation id="5552137475244467770">Chrome ਨਿਯਮਿਤ ਤੌਰ 'ਤੇ ਆਨਲਾਈਨ ਪ੍ਰਕਾਸ਼ਿਤ ਕੀਤੀਆਂ ਗਈਆਂ ਸੂਚੀਆਂ ਨਾਲ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰਦਾ ਹੈ। ਅਜਿਹਾ ਕਰਨ ਵੇਲੇ, ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਅਤੇ ਵਰਤੋਂਕਾਰ ਨਾਮ ਇਨਕ੍ਰਿਪਟਡ ਕੀਤੇ ਜਾਂਦੇ ਹਨ, ਇਸ ਲਈ ਉਹ Google ਸਮੇਤ ਕਿਸੇ ਵੱਲੋਂ ਵੀ ਪੜ੍ਹੇ ਨਹੀਂ ਜਾ ਸਕਦੇ।</translation>
 <translation id="5556459405103347317">ਰੀਲੋਡ ਕਰੋ</translation>
 <translation id="5560088892362098740">ਮਿਆਦ ਸਮਾਪਤੀ ਦੀ ਮਿਤੀ</translation>
 <translation id="5565735124758917034">ਸਕਿਰਿਆ</translation>
@@ -1040,6 +1045,7 @@
 <translation id="5992691462791905444">ਇੰਜੀਨੀਅਰਿੰਗ Z-ਤਹਿ</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' ਲਈ <ph name="RESULT_COUNT" /> ਨਤੀਜੇ</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="6015796118275082299">ਸਾਲ</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ਪੰਨਾ 1}one{ਪੰਨਾ #}other{ਪੰਨਾ #}}</translation>
 <translation id="6017514345406065928">ਹਰਾ</translation>
@@ -1328,6 +1334,7 @@
 <translation id="7481312909269577407">ਅੱਗੇ ਭੇਜੋ</translation>
 <translation id="748406663033922918">ਤੁਹਾਡੀਆਂ ਰੱਖਿਅਤ ਕੀਤੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ ਲਾਕ ਵਰਤੋ।</translation>
 <translation id="7485870689360869515">ਕੋਈ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।</translation>
+<translation id="7495290002932347110">ਕਿਸੇ ਸਾਈਟ ਜਾਂ ਐਪ 'ਤੇ ਡਾਟਾ ਉਲੰਘਣਾ ਹੋਣ ਕਾਰਨ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਉਜਾਗਰ ਹੋਇਆ। Chrome ਤੁਹਾਡੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਅਤੇ ਹੁਣੇ <ph name="ORIGIN" /> ਸਾਈਟ ਦਾ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="7498234416455752244">ਸੰਪਾਦਨ ਕਰਦੇ ਰਹੋ</translation>
 <translation id="7508255263130623398">ਵਾਪਸੀ ਸੰਬੰਧੀ ਨੀਤੀ ਡੀਵਾਈਸ ਆਈ.ਡੀ. ਖਾਲੀ ਹੈ ਜਾਂ ਵਰਤਮਾਨ ਡੀਵਾਈਸ ਆਈ.ਡੀ. ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ ਹੈ</translation>
 <translation id="7508870219247277067">ਐਵੋਕਾਡੋ ਹਰਾ</translation>
@@ -1464,6 +1471,7 @@
 <translation id="8103161714697287722">ਭੁਗਤਾਨ ਵਿਧੀ</translation>
 <translation id="8105368624971345109">ਬੰਦ ਕਰੋ</translation>
 <translation id="8118489163946903409">ਭੁਗਤਾਨ ਵਿਧੀ</translation>
+<translation id="8124023448510659215">Chromium ਨੂੰ ਇਸ ਕਨੈਕਸ਼ਨ ਦੇ ਪ੍ਰਮਾਣ-ਪੱਤਰ 'ਤੇ ਭਰੋਸਾ ਨਹੀਂ ਹੈ, ਕਿਉਂਕਿ ਇਸਨੂੰ ਨੈੱਟਵਰਕ ਇੰਟਰਸੈਪਸ਼ਨ ਅਤੇ ਨਿਗਰਾਨੀ ਲਈ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਜਾਂ ਨੈੱਟਵਰਕ 'ਤੇ ਚੰਗੀ ਤਰ੍ਹਾਂ ਸਥਾਪਤ ਨਹੀਂ ਹੋਇਆ। ਆਪਣੇ ਆਈ.ਟੀ. ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਇਸ ਸਮੱਸਿਆ ਨੂੰ ਹੱਲ ਕਰਨ ਲਈ ਕਹੋ।</translation>
 <translation id="8131740175452115882">ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="8149426793427495338">ਤੁਹਾਡਾ ਕੰਪਿਊਟਰ ਸਲੀਪ ਮੋਡ ਵਿੱਚ ਚਲਾ ਗਿਆ।</translation>
@@ -1606,6 +1614,8 @@
 <translation id="8957210676456822347">ਕੈਪਟਿਵ ਪੋਰਟਲ ਇਖਤਿਆਰੀਕਰਨ</translation>
 <translation id="8962950042226115166">ਸ਼ੱਕੀ ਸਾਈਟ</translation>
 <translation id="8968766641738584599">ਕਾਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>
+<translation id="8969267497192857913">ਤੁਸੀਂ ਜੋ ਵੀ ਟਾਈਪ ਕਰਦੇ ਹੋ, ਤੁਸੀਂ ਜੋ ਵੀ ਪੰਨੇ ਦੇਖਦੇ ਹੋ ਜਾਂ ਵੈੱਬ 'ਤੇ ਕੋਈ ਵੀ ਹੋਰ ਸਰਗਰਮੀ ਕਰਦੇ ਹੋ, ਉਸ 'ਤੇ ਨਜ਼ਰ ਰੱਖੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਸਾਈਟਾਂ 'ਤੇ ਸਮੱਗਰੀ ਨੂੰ ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ ਤੋਂ ਬਿਨਾਂ ਬਦਲਿਆ ਜਾ ਸਕਦਾ ਹੈ।
+    <ph name="BEGIN_LEARN_MORE_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">ਸਰਵਰ ਦੇ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਦੀ ਮਿਆਦ ਪੁੱਗ ਗਈ ਹੈ।</translation>
 <translation id="8975012916872825179">ਫ਼ੋਨ ਨੰਬਰ, ਈਮੇਲ ਪਤੇ, ਅਤੇ ਸ਼ਿਪਿੰਗ ਪਤੇ ਜਿਹੀ ਜਾਣਕਾਰੀ ਸ਼ਾਮਲ ਕਰਦਾ ਹੈ</translation>
 <translation id="8975263830901772334">ਤੁਹਾਡੇ ਵੱਲੋਂ ਪ੍ਰਿੰਟ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਦੇ ਨਾਮ</translation>

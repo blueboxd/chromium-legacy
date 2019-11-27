@@ -26,34 +26,16 @@ import java.util.List;
  * Microphone, etc. By clicking into one of these categories, the user can see or and modify
  * permissions that have been granted to websites, as well as enable or disable permissions
  * browser-wide.
- *
- * TODO(chouinard): The media sub-menu no longer needs to be modified programmatically based on
- * version/experiment so the organization of this menu should be simplified, probably by moving
- * Media to its own dedicated PreferenceFragment rather than sharing this one.
  */
 public class SiteSettingsPreferences
         extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page
-    // are defined in the SiteSettingsCategory, additional keys
-    // are listed here.
-    static final String MEDIA_KEY = "media";
-
-    // Whether this class is handling showing the Media sub-menu (and not the main menu).
-    boolean mMediaSubMenu;
+    // are defined in the SiteSettingsCategory.
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
         getActivity().setTitle(R.string.prefs_site_settings);
-
-        if (getArguments() != null) {
-            String category =
-                    getArguments().getString(SingleCategoryPreferences.EXTRA_CATEGORY, "");
-            if (MEDIA_KEY.equals(category)) {
-                mMediaSubMenu = true;
-                getActivity().setTitle(findPreference(MEDIA_KEY).getTitle().toString());
-            }
-        }
 
         configurePreferences();
         updatePreferenceStates();
@@ -70,65 +52,47 @@ public class SiteSettingsPreferences
     }
 
     private void configurePreferences() {
-        if (mMediaSubMenu) {
-            // The Media sub-menu only contains Protected Content and Autoplay, so remove all other
-            // menus.
-            for (@Type int i = 0; i < Type.NUM_ENTRIES; i++) {
-                if (i == Type.AUTOPLAY || i == Type.PROTECTED_MEDIA) continue;
-                getPreferenceScreen().removePreference(findPreference(i));
-            }
-            getPreferenceScreen().removePreference(findPreference(MEDIA_KEY));
-        } else {
-            // These will be tucked under the Media subkey, so don't show them on the main menu.
-            getPreferenceScreen().removePreference(findPreference(Type.AUTOPLAY));
-            getPreferenceScreen().removePreference(findPreference(Type.PROTECTED_MEDIA));
-
-            // TODO(csharrison): Remove this condition once the experimental UI lands. It is not
-            // great to dynamically remove the preference in this way.
-            if (!SiteSettingsCategory.adsCategoryEnabled()) {
-                getPreferenceScreen().removePreference(findPreference(Type.ADS));
-            }
-            CommandLine commandLine = CommandLine.getInstance();
-            if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
-                getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
-            }
-            if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
-                getPreferenceScreen().removePreference(findPreference(Type.NFC));
-            }
+        // TODO(csharrison): Remove this condition once the experimental UI lands. It is not
+        // great to dynamically remove the preference in this way.
+        if (!SiteSettingsCategory.adsCategoryEnabled()) {
+            getPreferenceScreen().removePreference(findPreference(Type.ADS));
+        }
+        CommandLine commandLine = CommandLine.getInstance();
+        if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
+            getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
+        }
+        if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+            getPreferenceScreen().removePreference(findPreference(Type.NFC));
         }
     }
 
     private void updatePreferenceStates() {
         // Preferences that navigate to Website Settings.
         List<Integer> websitePrefs = new ArrayList<Integer>();
-        if (mMediaSubMenu) {
-            websitePrefs.add(Type.PROTECTED_MEDIA);
-            websitePrefs.add(Type.AUTOPLAY);
-        } else {
-            if (SiteSettingsCategory.adsCategoryEnabled()) {
-                websitePrefs.add(Type.ADS);
-            }
-            websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
-            websitePrefs.add(Type.BACKGROUND_SYNC);
-            CommandLine commandLine = CommandLine.getInstance();
-            if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
-                websitePrefs.add(Type.BLUETOOTH_SCANNING);
-            }
-            websitePrefs.add(Type.CAMERA);
-            websitePrefs.add(Type.CLIPBOARD);
-            websitePrefs.add(Type.COOKIES);
-            websitePrefs.add(Type.JAVASCRIPT);
-            websitePrefs.add(Type.DEVICE_LOCATION);
-            websitePrefs.add(Type.MICROPHONE);
-            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
-                websitePrefs.add(Type.NFC);
-            }
-            websitePrefs.add(Type.NOTIFICATIONS);
-            websitePrefs.add(Type.POPUPS);
-            websitePrefs.add(Type.SENSORS);
-            websitePrefs.add(Type.SOUND);
-            websitePrefs.add(Type.USB);
+        if (SiteSettingsCategory.adsCategoryEnabled()) {
+            websitePrefs.add(Type.ADS);
         }
+        websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
+        websitePrefs.add(Type.BACKGROUND_SYNC);
+        CommandLine commandLine = CommandLine.getInstance();
+        if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
+            websitePrefs.add(Type.BLUETOOTH_SCANNING);
+        }
+        websitePrefs.add(Type.CAMERA);
+        websitePrefs.add(Type.CLIPBOARD);
+        websitePrefs.add(Type.COOKIES);
+        websitePrefs.add(Type.JAVASCRIPT);
+        websitePrefs.add(Type.DEVICE_LOCATION);
+        websitePrefs.add(Type.MICROPHONE);
+        if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+            websitePrefs.add(Type.NFC);
+        }
+        websitePrefs.add(Type.NOTIFICATIONS);
+        websitePrefs.add(Type.POPUPS);
+        websitePrefs.add(Type.SENSORS);
+        websitePrefs.add(Type.PROTECTED_MEDIA);
+        websitePrefs.add(Type.SOUND);
+        websitePrefs.add(Type.USB);
 
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.
@@ -186,8 +150,6 @@ public class SiteSettingsPreferences
         }
 
         Preference p = findPreference(Type.ALL_SITES);
-        if (p != null) p.setOnPreferenceClickListener(this);
-        p = findPreference(MEDIA_KEY);
         if (p != null) p.setOnPreferenceClickListener(this);
         // TODO(finnur): Re-move this for Storage once it can be moved to the 'Usage' menu.
         p = findPreference(Type.USE_STORAGE);

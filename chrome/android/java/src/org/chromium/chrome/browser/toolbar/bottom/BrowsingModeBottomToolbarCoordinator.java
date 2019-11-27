@@ -95,6 +95,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         mHomeButton.setWrapperView(mToolbarRoot.findViewById(R.id.home_button_wrapper));
         mHomeButton.setOnClickListener(homeButtonListener);
         mHomeButton.setActivityTabProvider(mTabProvider);
+        setupIPH(FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE, mHomeButton, homeButtonListener);
 
         mShareButton = mToolbarRoot.findViewById(R.id.share_button);
         mShareButton.setWrapperView(mToolbarRoot.findViewById(R.id.share_button_wrapper));
@@ -109,6 +110,8 @@ public class BrowsingModeBottomToolbarCoordinator {
         mSearchAccelerator.setWrapperView(
                 mToolbarRoot.findViewById(R.id.search_accelerator_wrapper));
         mSearchAccelerator.setOnClickListener(searchAcceleratorListener);
+        setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator,
+                searchAcceleratorListener);
 
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(mToolbarRoot);
         // TODO(amaralp): Make this adhere to MVC framework.
@@ -122,11 +125,16 @@ public class BrowsingModeBottomToolbarCoordinator {
                 (view) -> tabSwitcherLongClickListner.onLongClick(mTabSwitcherButtonView));
         mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setWrapperView(mToolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
-
-        setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator,
-                searchAcceleratorListener);
     }
 
+    /**
+     * Setup and show the IPH bubble for Chrome Duet if needed.
+     * @param feature A String identifying the feature.
+     * @param anchor The view to anchor the IPH to.
+     * @param listener An {@link OnClickListener} that is triggered when IPH is clicked. {@link
+     *         HomeButton} and {@link SearchAccelerator} need to pass this parameter, {@link
+     *         TabSwitcherButtonView} just passes null.
+     */
     void setupIPH(@FeatureConstants String feature, View anchor, OnClickListener listener) {
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
@@ -135,7 +143,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tabImpl = (TabImpl) tab;
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(tabImpl.getProfile());
                 final Runnable completeRunnable = () -> {
-                    listener.onClick(anchor);
+                    if (listener != null) {
+                        listener.onClick(anchor);
+                    }
                 };
                 tracker.addOnInitializedCallback((ready) -> {
                     mMediator.showIPH(
@@ -172,9 +182,10 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);
         mTabSwitcherButtonCoordinator.setTabCountProvider(tabCountProvider);
-
-        setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView,
-                tabSwitcherListener);
+        // Send null to IPH here to avoid tabSwitcherListener to be called twince, since
+        // mTabSwitcherButtonView has it own OnClickListener, but other buttons set OnClickListener
+        // to their wrappers.
+        setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView, null);
 
         assert menuButtonHelper != null;
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);

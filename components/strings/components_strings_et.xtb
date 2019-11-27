@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Kuva rohkem</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Muutke oma parooli</translation>
 <translation id="1484290072879560759">Valige tarneaadress</translation>
 <translation id="1492194039220927094">Reeglite saatmine:</translation>
 <translation id="1501859676467574491">Kuva kaardid minu Google'i kontolt</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Proovige ühendust võtta süsteemiadministraatoriga.</translation>
 <translation id="1736420071277903564">Arvuti</translation>
-<translation id="1739107442478692187">Teie kasutataval saidil või rakenduses esines andmetega seotud rikkumine. Chrome soovitab salvestatud paroole kontrollida ja teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="1740951997222943430">Sisestage kehtiv aegumiskuu</translation>
 <translation id="1741613555002899862">Peab olema määratud ja kehtiv string, kui reegli DnsOverHttpsMode väärtus on <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Kui soovite järgmisel korral kiiremini maksta, salvestage kaart, nimi ja arveldusaadress oma Google'i kontole ja sellesse seadmesse.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Lahtipakkimisteenus</translation>
 <translation id="1915697529809968049">Kas kasutada CVC asemel Touch ID-d?</translation>
 <translation id="1916770123977586577">Laadige leht uuesti, et rakendada värskendatud seaded saidile</translation>
+<translation id="1917876262703816781">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="1919345977826869612">Reklaamid</translation>
 <translation id="1919367280705858090">Konkreetse veateate puhul abi hankimine</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ühtegi}=1{1 sait}other{# saiti}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domeeni vastuolu</translation>
 <translation id="2096368010154057602">Osakond</translation>
 <translation id="2099652385553570808">Kolm kirjaklambrit vasakul</translation>
-<translation id="2100280972184758440">Teie parool sattus ohtu</translation>
 <translation id="2102134110707549001">Soovita tugevat parooli …</translation>
 <translation id="2108755909498034140">Taaskäivitage oma arvuti</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME" /> alistab selle.</translation>
 <translation id="2119505898009119320">Väljastatud: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Auk paremal all</translation>
-<translation id="2124528555835617522">Teie kasutataval saidil või rakenduses esines andmetega seotud rikkumine. Chrome soovitab teil salvestatud paroole kohe kontrollida.</translation>
 <translation id="2129079103035905234">Liikumisandurid</translation>
 <translation id="2130448033692577677">Teie määratud malle ei pruugita rakendada, kuna reeglit DnsOverHttpsMode pole määratud.</translation>
 <translation id="213826338245044447">Mobiili järjehoidjad</translation>
@@ -494,7 +493,6 @@
 <translation id="3282497668470633863">Kaardil oleva nime lisamine</translation>
 <translation id="3287510313208355388">Laadi alla, kui ühendus on saadaval</translation>
 <translation id="3293642807462928945">Lisateave reegli <ph name="POLICY_NAME" /> kohta</translation>
-<translation id="3295439534709115864">Teie kasutataval saidil või rakenduses esines andmetega seotud rikkumine. Chrome soovitab teil teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="3303855915957856445">Otsingutulemusi ei leitud</translation>
 <translation id="3320021301628644560">Arveldusaadressi lisamine</translation>
 <translation id="3324983252691184275">Tulipunane</translation>
@@ -908,6 +906,7 @@
 <translation id="5287240709317226393">Kuva küpsised</translation>
 <translation id="5287456746628258573">See sait kasutab vananenud turvaseadistust, mis võib paljastada teie teabe (näiteks paroolid või krediitkaardinumbrid), kui see saadetakse sellele saidile.</translation>
 <translation id="5288108484102287882">Reegli väärtuste valideerimisel ilmnesid hoiatused</translation>
+<translation id="5295292838686006428">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kohe kontrollida.</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
@@ -958,6 +957,7 @@
 <translation id="5540224163453853">Taotletud artiklit ei õnnestunud leida.</translation>
 <translation id="5541546772353173584">E-posti aadressi lisamine</translation>
 <translation id="5545756402275714221">Teile soovitatud artiklid</translation>
+<translation id="5552137475244467770">Chrome võrdleb teie paroole regulaarselt veebis avaldatud loenditega. Selle käigus on teie paroolid ja kasutajanimed krüpteeritud, et mitte keegi (sh Google) ei saaks neid lugeda.</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5560088892362098740">Aegumiskuupäev</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
@@ -1049,6 +1049,7 @@
 <translation id="5992691462791905444">Z-kujuliselt volditud</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> tulemust otsingule „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Kontrollige oma paroole</translation>
 <translation id="6015796118275082299">Aasta</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Lk 1}other{Lk #}}</translation>
 <translation id="6017514345406065928">Roheline</translation>
@@ -1338,6 +1339,7 @@ Lisateave:
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="748406663033922918">Kasutage oma salvestatud makseviiside kinnitamiseks ekraanilukku.</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
+<translation id="7495290002932347110">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kontrollida ja teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="7498234416455752244">Jätka muutmist</translation>
 <translation id="7508255263130623398">Tagastatud reegli seadme-ID on tühi või ei kattu praeguse seadme-ID-ga</translation>
 <translation id="7508870219247277067">Avokaadoroheline</translation>

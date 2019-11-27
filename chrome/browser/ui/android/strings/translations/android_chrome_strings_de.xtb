@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="2323763861024343754">Websitespeicher</translation>
 <translation id="2328985652426384049">Anmeldung nicht möglich</translation>
-<translation id="2330129964253841015">Warnen, wenn Passwörter nicht mehr sicher sind</translation>
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
 <translation id="2353636109065292463">Internetverbindung überprüfen</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -816,6 +815,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6989267951144302301">Fehler beim Download</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
+<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
 <translation id="7015203776128479407">Die erstmalige Einrichtung der Synchronisierung wurde nicht abgeschlossen. Synchronisierung ist deaktiviert.</translation>
 <translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>

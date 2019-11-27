@@ -110,7 +110,7 @@ public class UiLocatorHelper {
      * Get text from a single node using locator.
      * @param locator          Locator used to find the nodes.
      * @return                 Text field of the node.
-     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public String getOneText(@NonNull IUi2Locator locator) {
         return getOneElement(locator, CONVERTER_TEXT);
@@ -120,7 +120,7 @@ public class UiLocatorHelper {
      * Get list of text using locator.
      * @param locator          Locator used to find the nodes.
      * @return                 List of text.
-     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public List<String> getAllTexts(@NonNull IUi2Locator locator) {
         return getAllElements(locator, CONVERTER_TEXT);
@@ -155,7 +155,7 @@ public class UiLocatorHelper {
      * Get content description from a single node using locator.
      * @param locator          Locator used to find the nodes.
      * @return                 Content description field of the node.
-     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public String getOneDescription(@NonNull IUi2Locator locator) {
         return getOneElement(locator, CONVERTER_DESC);
@@ -165,7 +165,7 @@ public class UiLocatorHelper {
      * Get list of content descriptions using locator.
      * @param locator          Locator used to find the nodes.
      * @return                 List of content descriptions.
-     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public List<String> getAllDescriptions(@NonNull IUi2Locator locator) {
         return getAllElements(locator, CONVERTER_DESC);
@@ -201,7 +201,7 @@ public class UiLocatorHelper {
      * Get checked status from a single node using locator.
      * @param locator           Locator used to find the nodes.
      * @return                  checked status of the node.
-     * @throws  UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws  UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public Boolean getOneChecked(@NonNull IUi2Locator locator) {
         return getOneElement(locator, CONVERTER_CHECKED);
@@ -211,7 +211,7 @@ public class UiLocatorHelper {
      * Get list of checked statuses using locator.
      * @param locator          Locator used to find the nodes.
      * @return                 List of checked statuses.
-     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException if locator didn't find any nodes within timeout interval.
      */
     public List<Boolean> getAllChecked(@NonNull IUi2Locator locator) {
         return getAllElements(locator, CONVERTER_CHECKED);
@@ -244,7 +244,7 @@ public class UiLocatorHelper {
 
     /**
      * Returns the first element found using locator.
-     * Throws UiLocationError if not found.
+     * Throws UiLocationException if not found.
      * @param locator Locator to use to find the element.
      * @return        UiObject2
      */
@@ -275,7 +275,7 @@ public class UiLocatorHelper {
      * Return a list of UiObject2 nodes matching locator, will retry up to timeout.
      * @param locator          Locator to use to find the element.
      * @return                 list of elements matching the locator
-     * @throws UiLocationError if locator didn't find any nodes.
+     * @throws UiLocationException if locator didn't find any nodes.
      */
     public List<UiObject2> getAll(IUi2Locator locator) {
         long startTime = Utils.currentTime();
@@ -341,7 +341,7 @@ public class UiLocatorHelper {
          *                      an element gets cutoff at a scroll boundary.
          * @return              The element if construction is successful, null
          *                      otherwise.
-         * @throws              Should throw a UiLocationError or
+         * @throws UiLocationException Should throw a UiLocationException or
          *                      UiStaleObjectException if getCustomElements
          *                      should re-obtain a root using its provided
          *                      locator.

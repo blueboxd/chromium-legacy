@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">درحال استفاده از <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">به‌عنوان <ph name="LOGIN_ID" />، قفل دستگاه را باز کنید تا کنش اعلان اجرا شود</translation>
-<translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">‏کد دسترسی والدین Family Link را وارد کنید</translation>
 <translation id="9029474291399787231">‏به‌روزرسانی Adobe Flash Player دردسترس است</translation>
 <translation id="9056839673611986238">دستگاه عقب‌گرد می‌کند</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">ذره‌بین تمام‌صفحه</translation>
 <translation id="9193626018745640770">درحال ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
+<translation id="9205817095063786319">دستگاه تحت‌مدیریت <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> زمان تا شارژ کامل باتری باقی‌مانده است.</translation>
 <translation id="9215934040295798075">تنظیم کاغذدیواری</translation>

@@ -71,6 +71,7 @@ class MockInputApi(object):
     self.python_executable = sys.executable
     self.platform = sys.platform
     self.subprocess = subprocess
+    self.sys = sys
     self.files = []
     self.is_committing = False
     self.change = MockChange([])

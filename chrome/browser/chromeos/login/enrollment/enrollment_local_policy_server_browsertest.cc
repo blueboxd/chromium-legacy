@@ -250,8 +250,9 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 
 // Simple manual enrollment with license selection.
 // Enrollment selection UI should be displayed during enrollment.
+// Disable due to flaky crash/timeout on ChromeOS. https://crbug.com/1028650
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       ManualEnrollmentWithMultipleLicenses) {
+                       DISABLED_ManualEnrollmentWithMultipleLicenses) {
   policy_server_.ExpectAvailableLicenseCount(5 /* perpetual */, 5 /* annual */,
                                              5 /* kiosk */);
 
@@ -363,8 +364,10 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // Error during enrollment : 417 - Consumer account with packaged license.
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       EnrollmentErrorConsumerAccountWithPackagedLicense) {
+// Disable due to flaky crash/timeout on ChromeOS. https://crbug.com/1028650
+IN_PROC_BROWSER_TEST_F(
+    EnrollmentLocalPolicyServerBase,
+    DISABLED_EnrollmentErrorConsumerAccountWithPackagedLicense) {
   policy_server_.SetExpectedDeviceEnrollmentError(417);
 
   TriggerEnrollmentAndSignInSuccessfully();

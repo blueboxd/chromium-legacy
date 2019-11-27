@@ -20,6 +20,8 @@ bool OsSupportsWebAppFileHandling();
 // Do OS-specific registration to handle opening files with the specified
 // |file_extensions| and |mime_types| with the PWA with the specified |app_id|.
 // This may also involve creating a shim app to launch Chrome from.
+// Note: Some operating systems (such as Chrome OS) may not need to do any work
+// here.
 void RegisterFileHandlersForWebApp(const AppId& app_id,
                                    const std::string& app_name,
                                    Profile* profile,

@@ -13,19 +13,19 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_writer.h"
 #include "url/gurl.h"
 
 namespace history {
 namespace {
 
 // URLIterator from std::vector<GURL>
-class URLIteratorFromURLs : public visitedlink::VisitedLinkMaster::URLIterator {
+class URLIteratorFromURLs : public visitedlink::VisitedLinkWriter::URLIterator {
  public:
   explicit URLIteratorFromURLs(const std::vector<GURL>& urls)
       : itr_(urls.begin()), end_(urls.end()) {}
 
-  // visitedlink::VisitedLinkMaster::URLIterator implementation.
+  // visitedlink::VisitedLinkWriter::URLIterator implementation.
   const GURL& NextURL() override { return *(itr_++); }
   bool HasNextURL() const override { return itr_ != end_; }
 
@@ -86,9 +86,8 @@ void IterateUrlsDBTask::DoneRunOnMainThread() {
 ContentVisitDelegate::ContentVisitDelegate(
     content::BrowserContext* browser_context)
     : history_service_(nullptr),
-      visitedlink_master_(
-          new visitedlink::VisitedLinkMaster(browser_context, this, true)) {
-}
+      visitedlink_writer_(
+          new visitedlink::VisitedLinkWriter(browser_context, this, true)) {}
 
 ContentVisitDelegate::~ContentVisitDelegate() {
 }
@@ -96,24 +95,24 @@ ContentVisitDelegate::~ContentVisitDelegate() {
 bool ContentVisitDelegate::Init(HistoryService* history_service) {
   DCHECK(history_service);
   history_service_ = history_service;
-  return visitedlink_master_->Init();
+  return visitedlink_writer_->Init();
 }
 
 void ContentVisitDelegate::AddURL(const GURL& url) {
-  visitedlink_master_->AddURL(url);
+  visitedlink_writer_->AddURL(url);
 }
 
 void ContentVisitDelegate::AddURLs(const std::vector<GURL>& urls) {
-  visitedlink_master_->AddURLs(urls);
+  visitedlink_writer_->AddURLs(urls);
 }
 
 void ContentVisitDelegate::DeleteURLs(const std::vector<GURL>& urls) {
   URLIteratorFromURLs iterator(urls);
-  visitedlink_master_->DeleteURLs(&iterator);
+  visitedlink_writer_->DeleteURLs(&iterator);
 }
 
 void ContentVisitDelegate::DeleteAllURLs() {
-  visitedlink_master_->DeleteAllURLs();
+  visitedlink_writer_->DeleteAllURLs();
 }
 
 void ContentVisitDelegate::RebuildTable(

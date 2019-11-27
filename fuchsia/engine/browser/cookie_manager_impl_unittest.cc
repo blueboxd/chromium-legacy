@@ -74,7 +74,7 @@ class CookieManagerImplTest : public testing::Test {
     net::CookieOptions options;
     mojo_cookie_manager_->SetCanonicalCookie(
         *CreateCookie(name, value), "https", options,
-        base::Bind([](net::CanonicalCookie::CookieInclusionStatus status) {
+        base::BindOnce([](net::CanonicalCookie::CookieInclusionStatus status) {
           EXPECT_TRUE(status.IsInclude());
         }));
   }
@@ -85,7 +85,7 @@ class CookieManagerImplTest : public testing::Test {
 
     mojo_cookie_manager_->DeleteCanonicalCookie(
         *CreateCookie(name, value),
-        base::Bind([](bool success) { EXPECT_TRUE(success); }));
+        base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   }
 
   // Synchronously fetches all cookies via the |cookie_manager_|.

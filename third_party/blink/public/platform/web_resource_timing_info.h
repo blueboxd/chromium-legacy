@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
@@ -64,6 +65,8 @@ struct WebResourceTimingInfo {
   uint64_t transfer_size = 0U;
   uint64_t encoded_body_size = 0U;
   uint64_t decoded_body_size = 0U;
+  mojom::RequestContextType context_type =
+      mojom::RequestContextType::UNSPECIFIED;
 
   bool did_reuse_connection = false;
   bool is_secure_context = false;

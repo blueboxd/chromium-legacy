@@ -934,7 +934,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2326931316514688470">&amp;Atkārtoti ielādēt lietotni</translation>
 <translation id="2327492829706409234">Iespējot lietotni</translation>
 <translation id="2329597144923131178">Pierakstieties, lai grāmatzīmes, vēsture, paroles u.c. būtu pieejamas visās jūsu ierīcēs.</translation>
-<translation id="2330129964253841015">Brīdināt, ja paroles tiek apdraudētas</translation>
 <translation id="2332131598580221120">Skatīt veikalā</translation>
 <translation id="2332192922827071008">Atvērt preferences</translation>
 <translation id="2332742915001411729">Atiestatīt noklusējuma iestatījumus</translation>
@@ -4099,6 +4098,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6990778048354947307">Tumšais motīvs</translation>
 <translation id="6991665348624301627">Printera atlase</translation>
 <translation id="6992554835374084304">Uzlabotās pareizrakstības pārbaudes ieslēgšana</translation>
+<translation id="6995899638241819463">Brīdināt, ja paroles tiek atklātas datu noplūdes dēļ</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />— darbību žurnāls</translation>
 <translation id="6997707937646349884">Jūsu ierīcēs:</translation>
 <translation id="6998793565256476099">Reģistrēt ierīci videokonferencēm</translation>

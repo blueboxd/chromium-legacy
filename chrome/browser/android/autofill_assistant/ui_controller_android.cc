@@ -848,6 +848,10 @@ void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
   ui_delegate_->OnTermsAndConditionsLinkClicked(link);
 }
 
+void UiControllerAndroid::OnFormActionLinkClicked(int link) {
+  ui_delegate_->OnFormActionLinkClicked(link);
+}
+
 void UiControllerAndroid::OnDateTimeRangeStartChanged(int year,
                                                       int month,
                                                       int day,

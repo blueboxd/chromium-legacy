@@ -7,9 +7,6 @@ package org.chromium.chrome.browser.feed;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
-import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
-import com.google.android.libraries.feed.testing.conformance.scheduler.SchedulerConformanceTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,6 +19,8 @@ import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.chrome.browser.feed.library.api.client.requestmanager.RequestManager;
+import org.chromium.chrome.browser.feed.library.testing.conformance.scheduler.SchedulerConformanceTest;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;

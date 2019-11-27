@@ -666,12 +666,13 @@ scoped_refptr<ExternalCanvasResource> ExternalCanvasResource::Create(
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality) {
+    SkFilterQuality filter_quality,
+    bool is_origin_top_left) {
   TRACE_EVENT0("blink", "ExternalCanvasResource::Create");
-  auto resource = AdoptRef(
-      new ExternalCanvasResource(mailbox, size, texture_target, color_params,
-                                 std::move(context_provider_wrapper),
-                                 std::move(provider), filter_quality));
+  auto resource = AdoptRef(new ExternalCanvasResource(
+      mailbox, size, texture_target, color_params,
+      std::move(context_provider_wrapper), std::move(provider), filter_quality,
+      is_origin_top_left));
   return resource->IsValid() ? resource : nullptr;
 }
 
@@ -684,7 +685,7 @@ bool ExternalCanvasResource::IsValid() const {
 }
 
 void ExternalCanvasResource::Abandon() {
-  // We don't need to do anything since we don't own the mailbox.
+  // We don't need to destroy the shared image mailbox since we don't own it.
 }
 
 void ExternalCanvasResource::TakeSkImage(sk_sp<SkImage> image) {
@@ -692,8 +693,23 @@ void ExternalCanvasResource::TakeSkImage(sk_sp<SkImage> image) {
 }
 
 scoped_refptr<StaticBitmapImage> ExternalCanvasResource::Bitmap() {
-  NOTREACHED();
-  return nullptr;
+  TRACE_EVENT0("blink", "ExternalCanvasResource::Bitmap");
+  if (!IsValid())
+    return nullptr;
+
+  // The |release_callback| keeps a ref on this resource to ensure the backing
+  // shared image is kept alive until the lifetime of the image.
+  auto release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
+      [](scoped_refptr<ExternalCanvasResource> resource,
+         const gpu::SyncToken& sync_token, bool is_lost) {
+        // Do nothing but hold onto the refptr.
+      },
+      base::RetainedRef(this)));
+
+  return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
+      mailbox_, GetSyncToken(), /*shared_image_texture_id=*/0u,
+      CreateSkImageInfo(), texture_target_, context_provider_wrapper_,
+      owning_thread_id_, is_origin_top_left_, std::move(release_callback));
 }
 
 void ExternalCanvasResource::TearDown() {
@@ -733,12 +749,14 @@ ExternalCanvasResource::ExternalCanvasResource(
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality)
+    SkFilterQuality filter_quality,
+    bool is_origin_top_left)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       size_(size),
+      mailbox_(mailbox),
       texture_target_(texture_target),
-      mailbox_(mailbox) {}
+      is_origin_top_left_(is_origin_top_left) {}
 
 // CanvasResourceSwapChain
 //==============================================================================

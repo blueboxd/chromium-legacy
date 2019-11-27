@@ -8,24 +8,23 @@ import android.util.Base64;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.google.android.libraries.feed.api.host.config.Configuration;
-import com.google.android.libraries.feed.api.host.network.HttpRequest;
-import com.google.android.libraries.feed.api.host.network.HttpRequest.HttpMethod;
-import com.google.android.libraries.feed.api.host.network.HttpResponse;
-import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.common.logging.Logger;
-import com.google.android.libraries.feed.feedrequestmanager.RequestHelper;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistryLite;
-import com.google.search.now.wire.feed.FeedRequestProto.FeedRequest;
-import com.google.search.now.wire.feed.RequestProto.Request;
-import com.google.search.now.wire.feed.ResponseProto.Response;
-import com.google.search.now.wire.feed.mockserver.MockServerProto.ConditionalResponse;
-import com.google.search.now.wire.feed.mockserver.MockServerProto.MockServer;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
+import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
+import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest.HttpMethod;
+import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
+import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.chrome.browser.feed.library.feedrequestmanager.RequestHelper;
+import org.chromium.components.feed.core.proto.wire.FeedRequestProto.FeedRequest;
+import org.chromium.components.feed.core.proto.wire.RequestProto.Request;
+import org.chromium.components.feed.core.proto.wire.ResponseProto.Response;
+import org.chromium.components.feed.core.proto.wire.mockserver.MockServerProto.ConditionalResponse;
+import org.chromium.components.feed.core.proto.wire.mockserver.MockServerProto.MockServer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.FileInputStream;
@@ -33,8 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** A network client that returns configurable responses
- *  modified from com.google.android.libraries.feed.mocknetworkclient.MockServerNetworkClient
+/**
+ * A network client that returns configurable responses
+ *  modified from org.chromium.chrome.browser.feed.library.mocknetworkclient.MockServerNetworkClient
  */
 public class TestNetworkClient implements NetworkClient {
     private static final String TAG = "TestNetworkClient";
@@ -96,7 +96,6 @@ public class TestNetworkClient implements NetworkClient {
             if (requestToken != null) {
                 for (ConditionalResponse response : mMockServer.getConditionalResponsesList()) {
                     if (!response.hasContinuationToken()) {
-                        Logger.w(TAG, "Conditional response without a token");
                         continue;
                     }
                     if (requestToken.equals(response.getContinuationToken())) {

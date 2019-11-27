@@ -12,6 +12,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -73,6 +74,8 @@ struct ResourceTimingInfo {
   base::Optional<ResourceLoadTiming> timing;
   base::TimeTicks last_redirect_end_time;
   base::TimeTicks response_end;
+  blink::mojom::RequestContextType context_type =
+      blink::mojom::RequestContextType::UNSPECIFIED;
   uint64_t transfer_size = 0;
   uint64_t encoded_body_size = 0;
   uint64_t decoded_body_size = 0;

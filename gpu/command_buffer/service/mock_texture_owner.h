@@ -44,9 +44,15 @@ class MockTextureOwner : public TextureOwner {
     return nullptr;
   }
 
+  gfx::Rect GetCropRect() override {
+    ++get_crop_rect_count;
+    return gfx::Rect();
+  }
+
   gl::GLContext* fake_context;
   gl::GLSurface* fake_surface;
   int get_a_hardware_buffer_count = 0;
+  int get_crop_rect_count = 0;
   bool expect_update_tex_image;
 
  protected:

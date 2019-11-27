@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Továbbiak megjelenítése</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Módosítsa jelszavát</translation>
 <translation id="1484290072879560759">Szállítási cím kiválasztása</translation>
 <translation id="1492194039220927094">Irányelvek leküldése:</translation>
 <translation id="1501859676467574491">Jelenítsen meg kártyákat az Ön Google-fiókjából</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Próbálja felvenni a kapcsolatot a rendszergazdával.</translation>
 <translation id="1736420071277903564">Számítógép</translation>
-<translation id="1739107442478692187">Adatvédelmi incidens történt az Ön által használt egyik webhelyen vagy alkalmazásban. A Chrome azt javasolja, hogy ellenőrizze mentett jelszavait, és azonnal módosítsa a(z) <ph name="ORIGIN" /> webhelyen használt jelszavát.</translation>
 <translation id="1740951997222943430">Érvényes lejárati hónapot kell megadnia</translation>
 <translation id="1741613555002899862">Meg kell adni, és érvényes karakterláncnak kell lennie, ha a DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">A következő alkalommal gyorsabban fizethet, ha kártyáját, nevét és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Kicsomagolási szolgáltatás</translation>
 <translation id="1915697529809968049">A Touch ID funkciót szeretné használni a CVC helyett?</translation>
 <translation id="1916770123977586577">A frissített beállításoknak a webhelyen történő alkalmazásához töltse be újra az oldalt</translation>
+<translation id="1917876262703816781">Az egyik webhelyen vagy alkalmazásban történt adatvédelmi incidens során nyilvánosságra került az Ön jelszava. A Chrome azt javasolja, hogy azonnal módosítsa a(z) <ph name="ORIGIN" /> webhelyen használt jelszavát.</translation>
 <translation id="1919345977826869612">Hirdetések</translation>
 <translation id="1919367280705858090">Segítség kérése adott hibaüzenet esetén</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nincs}=1{1 webhely}other{# webhely}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domainkeveredés</translation>
 <translation id="2096368010154057602">Megye</translation>
 <translation id="2099652385553570808">Három kapocs a bal oldalon</translation>
-<translation id="2100280972184758440">Jelszava illetéktelen kezekbe került</translation>
 <translation id="2102134110707549001">Erős jelszó ajánlása…</translation>
 <translation id="2108755909498034140">Indítsa újra a számítógépet</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME" /> felülírta.</translation>
 <translation id="2119505898009119320">Tulajdonos: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Lyuk jobbra lent</translation>
-<translation id="2124528555835617522">Adatvédelmi incidens történt az Ön által használt egyik webhelyen vagy alkalmazásban. A Chrome azt javasolja, hogy azonnal ellenőrizze mentett jelszavait.</translation>
 <translation id="2129079103035905234">Mozgásérzékelők</translation>
 <translation id="2130448033692577677">A megadott sablonok nem alkalmazhatók, mert nincs beállítva a DnsOverHttpsMode házirend.</translation>
 <translation id="213826338245044447">Mobilos könyvjelzők</translation>
@@ -490,7 +489,6 @@
 <translation id="3282497668470633863">Adja meg a kártyán szereplő nevet</translation>
 <translation id="3287510313208355388">Letöltés online állapotban</translation>
 <translation id="3293642807462928945">További információ a(z) <ph name="POLICY_NAME" /> házirendről</translation>
-<translation id="3295439534709115864">Adatvédelmi incidens történt az Ön által használt egyik webhelyen vagy alkalmazásban. A Chrome azt javasolja, hogy azonnal módosítsa a(z) <ph name="ORIGIN" /> webhelyen használt jelszavát.</translation>
 <translation id="3303855915957856445">Nincs találat</translation>
 <translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
 <translation id="3324983252691184275">Karmazsinvörös</translation>
@@ -904,6 +902,7 @@
 <translation id="5287240709317226393">Cookie-k megjelenítése</translation>
 <translation id="5287456746628258573">Ez a webhely elavult biztonsági konfigurációt használ, ezért előfordulhat, hogy mások látják az Ön adatait (például jelszavait vagy hitelkártyaszámait), amikor elküldi őket a webhelynek.</translation>
 <translation id="5288108484102287882">A házirendértékek ellenőrzése során figyelmeztetések merültek fel</translation>
+<translation id="5295292838686006428">Az egyik webhelyen vagy alkalmazásban történt adatvédelmi incidens során nyilvánosságra került az Ön jelszava. A Chrome azt javasolja, hogy azonnal ellenőrizze mentett jelszavait.</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
@@ -954,6 +953,7 @@
 <translation id="5540224163453853">A kért cikk nem található.</translation>
 <translation id="5541546772353173584">E-mail-cím hozzáadása</translation>
 <translation id="5545756402275714221">Cikkek Önnek</translation>
+<translation id="5552137475244467770">A Chrome rendszeres időközönként online közzétett listák alapján ellenőrzi az Ön jelszavait. Az eljárás során jelszavai és felhasználónevei titkosítva vannak, így senki nem láthatja őket, még a Google sem.</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5560088892362098740">Lejárati dátum</translation>
 <translation id="5565735124758917034">Aktív</translation>
@@ -1045,6 +1045,7 @@
 <translation id="5992691462791905444">Z-hajtás hellyel kötés, lyukasztás és kapcsok számára</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> találat a következőre: <ph name="SEARCH_TEXT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Jelszavak ellenőrzése</translation>
 <translation id="6015796118275082299">Év</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. oldal}other{#. oldal}}</translation>
 <translation id="6017514345406065928">Zöld</translation>
@@ -1334,6 +1335,7 @@ További részletek:
 <translation id="7481312909269577407">Előre</translation>
 <translation id="748406663033922918">A mentett fizetési módok ellenőrzéséhez használja a képernyőzárat.</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
+<translation id="7495290002932347110">Az egyik webhelyen vagy alkalmazásban történt adatvédelmi incidens során nyilvánosságra került az Ön jelszava. A Chrome azt javasolja, hogy ellenőrizze mentett jelszavait, és azonnal módosítsa a(z) <ph name="ORIGIN" /> webhelyen használt jelszavát.</translation>
 <translation id="7498234416455752244">Szerkesztés folytatása</translation>
 <translation id="7508255263130623398">A visszakapott házirend eszközazonosítója üres, vagy nem felel meg a jelenlegi eszközazonosítónak</translation>
 <translation id="7508870219247277067">Avokádózöld</translation>

@@ -273,7 +273,7 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
 // thread creation of the object URL and the main thread usage of the object URL
 // for starting attachment to HTMLME.
 const base::Feature kRevokeMediaSourceObjectURLOnAttach{
-    "RevokeMediaSourceObjectURLOnAttach", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RevokeMediaSourceObjectURLOnAttach", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the instance from ChromeosVideoDecoderFactory in
 // MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.

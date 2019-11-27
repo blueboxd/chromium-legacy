@@ -16,6 +16,8 @@ namespace features {
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCompositorThreadedScrollbarScrolling;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kExperimentalFlingAnimation;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSettingsShowsPerKeyboardSettings;
@@ -42,8 +44,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 #if defined(OS_WIN)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCalculateNativeWinOcclusion;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kExperimentalFlingAnimation;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputPaneOnScreenKeyboard;
 COMPONENT_EXPORT(UI_BASE_FEATURES)

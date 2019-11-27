@@ -663,7 +663,15 @@ class WindowStateChangeObserver : public aura::WindowObserver {
 class EventGenerator {
  public:
   EventGenerator(aura::WindowTreeHost* host, base::OnceClosure closure)
-      : host_(host), closure_(std::move(closure)), weak_ptr_factory_(this) {}
+      : host_(host),
+        interval_(base::TimeDelta::FromSeconds(1) /
+                  std::max(host->compositor()->refresh_rate(), 60.0f)),
+        closure_(std::move(closure)),
+        weak_ptr_factory_(this) {
+    LOG_IF(ERROR, host->compositor()->refresh_rate() < 30.0f)
+        << "Refresh rate (" << host->compositor()->refresh_rate()
+        << ") is too low.";
+  }
   ~EventGenerator() = default;
 
   void ScheduleMouseEvent(ui::EventType type,
@@ -678,14 +686,11 @@ class EventGenerator {
   }
 
   void Run() {
-    last_event_timestamp_ = base::TimeTicks::Now();
+    next_event_timestamp_ = base::TimeTicks::Now();
     SendEvent();
   }
 
-  base::TimeDelta GetInterval() const {
-    return base::TimeDelta::FromSeconds(1) /
-           host_->compositor()->refresh_rate();
-  }
+  const base::TimeDelta& interval() const { return interval_; }
 
  private:
   void SendEvent() {
@@ -700,19 +705,30 @@ class EventGenerator {
       api.set_time_stamp(base::TimeTicks::Now());
     }
     host_->SendEventToSink(event.get());
-    base::TimeTicks current_timestamp = base::TimeTicks::Now();
-    base::TimeDelta interval =
-        last_event_timestamp_ + GetInterval() - current_timestamp;
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&EventGenerator::SendEvent,
-                       weak_ptr_factory_.GetWeakPtr()),
-        interval);
-    last_event_timestamp_ = current_timestamp;
+
+    next_event_timestamp_ += interval_;
+    auto now = base::TimeTicks::Now();
+    base::TimeDelta interval = next_event_timestamp_ - now;
+    auto runner = base::SequencedTaskRunnerHandle::Get();
+    auto closure = base::BindOnce(&EventGenerator::SendEvent,
+                                  weak_ptr_factory_.GetWeakPtr());
+    if (interval <= base::TimeDelta()) {
+      // Looks like event handling could take too long time -- still generate
+      // the next event with resetting the interval.
+      LOG(ERROR) << "The handling of the event spent long time and there is "
+                 << "no time to delay. The next event is supposed to happen at "
+                 << next_event_timestamp_ << " but now at " << now << ". "
+                 << "Posting the next event immediately.";
+      next_event_timestamp_ = now;
+      runner->PostTask(FROM_HERE, std::move(closure));
+    } else {
+      runner->PostDelayedTask(FROM_HERE, std::move(closure), interval);
+    }
   }
 
-  base::TimeTicks last_event_timestamp_;
   aura::WindowTreeHost* const host_;
+  base::TimeTicks next_event_timestamp_;
+  const base::TimeDelta interval_;
   base::OnceClosure closure_;
   std::deque<std::unique_ptr<ui::Event>> events_;
 
@@ -3693,7 +3709,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
 
   int64_t steps =
       std::max(base::TimeDelta::FromMilliseconds(params->duration_in_ms) /
-                   event_generator_->GetInterval(),
+                   event_generator_->interval(),
                static_cast<int64_t>(1));
   int flags = env->mouse_button_flags();
   ui::EventType type = (flags == 0) ? ui::ET_MOUSE_MOVED : ui::ET_MOUSE_DRAGGED;

@@ -37,7 +37,7 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
       const service_manager::Identity& identity,
       base::CommandLine* command_line) override;
   void OnServiceManagerInitialized(
-      const base::Closure& quit_closure,
+      base::OnceClosure quit_closure,
       service_manager::BackgroundServiceManager* service_manager) override;
   std::unique_ptr<service_manager::Service> CreateEmbeddedService(
       const std::string& service_name) override;

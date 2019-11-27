@@ -118,7 +118,6 @@ For more information on when to use `const char *` vs `const char[]`, see
 - **What:** This checks that we don't have symbols with “ForTest” in their name
   in an optimized release binary.
 - **Why:** To prevent shipping unused test-only code to end-users.
-- *This check is currently disabled (limit set to 100)*.
 
 #### What to do if the Check Fails?
 

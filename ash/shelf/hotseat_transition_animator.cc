@@ -5,8 +5,6 @@
 #include "ash/shelf/hotseat_transition_animator.h"
 
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/shelf/hotseat_widget.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -15,7 +13,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rounded_corners_f.h"
 
 namespace ash {
 
@@ -68,8 +65,47 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   if (!ShouldDoAnimation(old_state, new_state))
     return;
 
-  SetAnimationStartProperties(old_state, new_state);
-  StartAnimation(old_state, new_state);
+  StopObservingImplicitAnimations();
+
+  const bool animating_to_shown_hotseat = new_state == HotseatState::kShown;
+
+  gfx::Rect target_bounds = shelf_widget_->GetOpaqueBackground()->bounds();
+  target_bounds.set_height(ShelfConfig::Get()->in_app_shelf_size());
+  target_bounds.set_y(
+      animating_to_shown_hotseat ? ShelfConfig::Get()->system_shelf_size() : 0);
+  shelf_widget_->GetAnimatingBackground()->SetBounds(target_bounds);
+
+  int starting_y;
+  if (animating_to_shown_hotseat) {
+    // This animation is triggered after bounds have been set in the shelf. When
+    // transitioning to HotseatState::kShown, the shelf increases in size. To
+    // prevent the background from jumping, adjust the y position to account for
+    // the size increase.
+    starting_y = ShelfConfig::Get()->system_shelf_size() -
+                 ShelfConfig::Get()->in_app_shelf_size();
+  } else {
+    starting_y = ShelfConfig::Get()->shelf_size();
+  }
+  gfx::Transform transform;
+  const int y_offset = starting_y - target_bounds.y();
+  transform.Translate(0, y_offset);
+  shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
+
+  {
+    ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(
+        shelf_widget_->GetAnimatingBackground()->GetAnimator());
+    shelf_bg_animation_setter.SetTransitionDuration(
+        ShelfConfig::Get()->hotseat_background_animation_duration());
+    shelf_bg_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    shelf_bg_animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    animation_complete_callback_ = base::BindOnce(
+        &HotseatTransitionAnimator::NotifyHotseatTransitionAnimationEnded,
+        weak_ptr_factory_.GetWeakPtr(), old_state, new_state);
+    shelf_bg_animation_setter.AddObserver(this);
+
+    shelf_widget_->GetAnimatingBackground()->SetTransform(gfx::Transform());
+  }
 
   for (auto& observer : observers_)
     observer.OnHotseatTransitionAnimationStarted(old_state, new_state);
@@ -85,85 +121,6 @@ bool HotseatTransitionAnimator::ShouldDoAnimation(HotseatState old_state,
   return (new_state == HotseatState::kShown ||
           old_state == HotseatState::kShown) &&
          Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
-void HotseatTransitionAnimator::SetAnimationStartProperties(
-    HotseatState old_state,
-    HotseatState new_state) {
-  // The hotseat is either changing to, or away from, the kShown hotseat.
-  // If it is animating away from kShown, the animating background should
-  // appear to morph from the hotseat background to the in-app shelf.
-  // If the Shelf is animating to kShown, the animating background should
-  // appear to morph from the in-app shelf into the hotseat background.
-  const bool animate_to_shown_hotseat = new_state == HotseatState::kShown;
-
-  gfx::Rect background_bounds;
-  if (animate_to_shown_hotseat) {
-    // For both kHidden and kExtended to kShown, the |animating_background_|
-    // should animate from the in-ap shelf into the hotseat background in kShown
-    // state.
-    background_bounds = shelf_widget_->GetOpaqueBackground()->bounds();
-    const int offset = ShelfConfig::Get()->shelf_size() -
-                       ShelfConfig::Get()->in_app_shelf_size();
-    background_bounds.Offset(0, offset);
-    background_bounds.set_height(ShelfConfig::Get()->in_app_shelf_size());
-  } else {
-    background_bounds =
-        shelf_widget_->hotseat_widget()->GetHotseatBackgroundBounds();
-  }
-  shelf_widget_->GetAnimatingBackground()->SetBounds(background_bounds);
-  shelf_widget_->GetAnimatingBackground()->SetColor(
-      animate_to_shown_hotseat ? ShelfConfig::Get()->GetMaximizedShelfColor()
-                               : ShelfConfig::Get()->GetDefaultShelfColor());
-  shelf_widget_->GetAnimatingBackground()->SetRoundedCornerRadius(
-      animate_to_shown_hotseat ? gfx::RoundedCornersF()
-                               : shelf_widget_->hotseat_widget()
-                                     ->GetOpaqueBackground()
-                                     ->rounded_corner_radii());
-}
-
-void HotseatTransitionAnimator::StartAnimation(HotseatState old_state,
-                                               HotseatState new_state) {
-  StopObservingImplicitAnimations();
-  ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(
-      shelf_widget_->GetAnimatingBackground()->GetAnimator());
-  shelf_bg_animation_setter.SetTransitionDuration(
-      ShelfConfig::Get()->hotseat_background_animation_duration());
-  shelf_bg_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-  shelf_bg_animation_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animation_complete_callback_ = base::BindOnce(
-      &HotseatTransitionAnimator::NotifyHotseatTransitionAnimationEnded,
-      weak_ptr_factory_.GetWeakPtr(), old_state, new_state);
-  shelf_bg_animation_setter.AddObserver(this);
-
-  const bool animating_to_shown_hotseat = new_state == HotseatState::kShown;
-  gfx::Rect target_bounds;
-  if (animating_to_shown_hotseat) {
-    // The animating background should animate from in-app shelf into the
-    // hotseat.
-    gfx::Rect shown_hotseat_bounds_in_shelf =
-        shelf_widget_->hotseat_widget()->GetHotseatBackgroundBounds();
-    shown_hotseat_bounds_in_shelf.set_y(
-        shelf_widget_->shelf_layout_manager()->CalculateHotseatYInShelf(
-            new_state));
-    target_bounds = shown_hotseat_bounds_in_shelf;
-  } else {
-    target_bounds = gfx::Rect(
-        gfx::Point(),
-        gfx::Size(shelf_widget_->GetOpaqueBackground()->bounds().size()));
-  }
-
-  shelf_widget_->GetAnimatingBackground()->SetBounds(target_bounds);
-  shelf_widget_->GetAnimatingBackground()->SetRoundedCornerRadius(
-      animating_to_shown_hotseat ? shelf_widget_->hotseat_widget()
-                                       ->GetOpaqueBackground()
-                                       ->rounded_corner_radii()
-                                 : gfx::RoundedCornersF());
-  shelf_widget_->GetAnimatingBackground()->SetColor(
-      animating_to_shown_hotseat
-          ? ShelfConfig::Get()->GetDefaultShelfColor()
-          : ShelfConfig::Get()->GetMaximizedShelfColor());
 }
 
 void HotseatTransitionAnimator::NotifyHotseatTransitionAnimationEnded(

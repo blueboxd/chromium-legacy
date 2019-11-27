@@ -42,7 +42,7 @@ using testing::StrictMock;
 
 namespace {
 
-const char kEmail[] = "foo_email";
+const char kEmail[] = "foo_email@gmail.com";
 const char kSuggestionsUrlPath[] = "/chromesuggestions";
 const char kBlacklistUrlPath[] = "/chromesuggestions/blacklist";
 const char kBlacklistClearUrlPath[] = "/chromesuggestions/blacklist/clear";

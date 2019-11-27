@@ -33,6 +33,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
       uint32_t shared_image_usage);
   ~SkiaOutputDeviceBufferQueue() override;
 
+  static std::unique_ptr<SkiaOutputDeviceBufferQueue> Create(
+      SkiaOutputSurfaceDependency* deps,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
+
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
   void PostSubBuffer(const gfx::Rect& rect,
@@ -50,6 +54,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   gl::GLImage* GetOverlayImage() override;
   // Creates and submits gpu fence
   std::unique_ptr<gfx::GpuFence> SubmitOverlayGpuFence() override;
+
+  gl::GLSurface* gl_surface() { return gl_surface_.get(); }
 
  private:
   friend class SkiaOutputDeviceBufferQueueTest;

@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Выкарыстоўваецца <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Разблакіруйце прыладу як <ph name="LOGIN_ID" />, каб выканаць дзеянне па апавяшчэнні</translation>
-<translation id="8995603266996330174">Пад кіраваннем дамена <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Увядзіце бацькоўскі код доступу Family Link.</translation>
 <translation id="9029474291399787231">Даступнае абнаўленне Adobe Flash Player</translation>
 <translation id="9056839673611986238">Версія АС прылады будзе адкочана</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Поўнаэкранная лупа</translation>
 <translation id="9193626018745640770">Трансляцыя невядомаму атрымальніку</translation>
 <translation id="9194617393863864469">Выканаць уваход для іншага карыстальніка...</translation>
+<translation id="9205817095063786319">Прыладай кіруе <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Выконваецца выхад з рэжыму адзінага працоўнага стала</translation>
 <translation id="9211681782751733685">Засталося часу да поўнай зарадкі акумулятара: <ph name="TIME_REMAINING" /></translation>
 <translation id="9215934040295798075">Задаць шпалеры</translation>

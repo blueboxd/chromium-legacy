@@ -59,13 +59,15 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
 
     /**
      * Maybe show the IPH bubble for Chrome Duet.
+     * @param feature A String identifying the feature.
      * @param activity An activity to attach the IPH to.
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
+     * @param completeRunnable The Runnable to be called if the user tab on the view.
      */
     void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
             Tracker tracker, Runnable completeRunnable) {
-        if (!tracker.shouldTriggerHelpUI(feature)) return;
+        if (!tracker.shouldTriggerHelpUI(feature) || !anchor.isEnabled()) return;
         int innerBackgroundColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_primary_color);
         int baseBubbleColor =
@@ -82,6 +84,10 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
         @StringRes
         int descId = 0;
         switch (feature) {
+            case FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE:
+                titleId = R.string.iph_duet_home_button_title;
+                descId = R.string.iph_duet_home_button_description;
+                break;
             case FeatureConstants.CHROME_DUET_SEARCH_FEATURE:
                 titleId = R.string.iph_duet_search_title;
                 descId = R.string.iph_duet_search_description;

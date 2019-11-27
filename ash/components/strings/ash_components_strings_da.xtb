@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Oversigt</translation>
 <translation id="4382340674111381977">Gå tilbage til den forrige side</translation>
+<translation id="4458670250301149821">Flyt et appikon ind i eller ud af en mappe i oversigten over apps</translation>
 <translation id="4472417192667361414">System- og visningsindstillinger</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> efterfulgt af <ph name="LEFT" /> eller <ph name="RIGHT" /> eller <ph name="UP" /> eller <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Se Hjælp til tastaturgenveje</translation>
 <translation id="4628718545549558538">Åbn statusområdet (hvor dit kontobillede vises)</translation>
 <translation id="4642092649622328492">Tag et delvist screenshot</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Slet det næste bogstav (slet fremad)</translation>
 <translation id="7500368597227394048">bindestreg</translation>
 <translation id="7611271430932669992">Flyt fokus til pop op-vinduer og dialogbokse</translation>
+<translation id="7635348532214572995">Flyt rundt på et appikon i appoversigten</translation>
 <translation id="766326951329901120">Indsæt indholdet fra udklipsholderen som almindelig tekst</translation>
 <translation id="7703010453515335249">venstre vinkelparentes</translation>
 <translation id="7724603315864178912">Klip</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Indsæt indholdet fra udklipsholderen</translation>
 <translation id="9052808072970550123">Skift til næste bruger</translation>
 <translation id="906458777597946297">Maksimér vinduet</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> efterfulgt af <ph name="LEFT" /> eller <ph name="RIGHT" /> eller <ph name="UP" /> eller <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Gå til begyndelsen af linjen</translation>
 <translation id="9106898733795143799">Side- og webbrowser</translation>
 <translation id="9162942292291287644">Der er ingen søgeresultater for <ph name="QUERY" /></translation>

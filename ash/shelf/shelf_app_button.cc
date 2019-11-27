@@ -537,9 +537,10 @@ bool ShelfAppButton::OnMousePressed(const ui::MouseEvent& event) {
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
 
   if (shelf_view_->IsDraggedView(this)) {
-    drag_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
-        base::Bind(&ShelfAppButton::OnTouchDragTimer, base::Unretained(this)));
+    drag_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
+                      base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
+                                     base::Unretained(this)));
   }
   return true;
 }

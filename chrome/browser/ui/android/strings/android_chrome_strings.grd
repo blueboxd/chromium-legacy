@@ -922,9 +922,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ADS_PERMISSION_TITLE" desc="Title for the ads permission [CHAR-LIMIT=32]">
          Ads
       </message>
-      <message name="IDS_AUTOPLAY_TITLE" desc='Title for the Autoplay settings screen [CHAR-LIMIT=32]'>
-        Autoplay
-      </message>
       <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
         Cookies
       </message>
@@ -936,9 +933,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_JAVASCRIPT_PERMISSION_TITLE" desc="Title of the permission to run javascript [CHAR-LIMIT=32]">
         JavaScript
-      </message>
-      <message name="IDS_MEDIA_PERMISSION_TITLE" desc="Title of the menu containing the media permissions [CHAR-LIMIT=32]">
-        Media
       </message>
       <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows and redirects [CHAR-LIMIT=32]">
         Pop-ups and redirects
@@ -987,9 +981,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_TOAST" desc="The toast shown when a new site has been added to the whitelist.">
         Site <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph> added
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_AUTOPLAY" desc="The description for the allow autoplay of muted videos for website dialog.">
-        Allow autoplay of muted videos for a specific site.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_JAVASCRIPT_ALLOW" desc="The description for the allow Javascript for website dialog.">
         Allow JavaScript for a specific site.
@@ -1068,9 +1059,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
         Allow sites to save and read cookie data (recommended)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AUTOPLAY_ALLOWED" desc="Summary text explaining that sites are allowed to automatically play muted videos and that it is the recommended setting.">
-        Allow sites to automatically play muted videos (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_JAVASCRIPT_ALLOWED" desc="Summary text explaining that sites are allowed to run Javascript and that it is the recommended setting.">
         Allow sites to run JavaScript (recommended)
@@ -3939,6 +3927,12 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- Chrome Duet -->
+      <message name="IDS_IPH_DUET_HOME_BUTTON_TITLE" desc="This string appears in an overlay that explains a new UI to users. The title of the feature highlight bubble that explains what is home button in bottom toolbar for.">
+        Get back home easily
+      </message>
+      <message name="IDS_IPH_DUET_HOME_BUTTON_DESCRIPTION" desc="This string appears in an overlay that explains a new UI to users. The text in the feature highlight bubble that explains what is home button in bottom toolbar for.">
+        Tap here to quickly access your homepage from anywhere
+      </message>
       <message name="IDS_IPH_DUET_SEARCH_TITLE" desc="This string appears in an overlay that explains a new UI to users. 'Search' refers to searching the web, and 'explore' refers to Chrome's suggested content.">
         Search &amp; explore
       </message>
@@ -4041,6 +4035,13 @@ The site does NOT gain access to the camera. The camera images are only visible 
               failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
               'Installing Test Dummy for Chrome…').">
         Test Dummy
+      </message>
+
+      <message name="IDS_STACK_UNWINDER_MODULE_TITLE"
+        desc="Text shown when the stack unwinder module is referenced in install start, success,
+              failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
+              'Installing Stack Unwinder for Chrome…').">
+        Stack Unwinder
       </message>
 
       <message name="IDS_EXTRA_ICU_MODULE_TITLE"

@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="2323763861024343754">Vietnes krātuve</translation>
 <translation id="2328985652426384049">Nevar pierakstīties</translation>
-<translation id="2330129964253841015">Brīdināt, ja paroles tiek apdraudētas</translation>
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
 <translation id="2359808026110333948">Turpināt</translation>
@@ -816,6 +815,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6989267951144302301">Nevarēja lejupielādēt</translation>
 <translation id="6990079615885386641">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Jautāt, pirms atļaut vietnēm izmantot jūsu mikrofonu (ieteicams)</translation>
+<translation id="6995899638241819463">Brīdināt, ja paroles tiek atklātas datu noplūdes dēļ</translation>
 <translation id="7015203776128479407">Sākotnējā sinhronizācijas iestatīšana netika pabeigta. Sinhronizācija ir izslēgta.</translation>
 <translation id="7016516562562142042">Atļauta pašreizējai meklētājprogrammai</translation>
 <translation id="7022756207310403729">Atvērt pārlūkā</translation>

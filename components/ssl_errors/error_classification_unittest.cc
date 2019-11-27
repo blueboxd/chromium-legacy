@@ -400,7 +400,8 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
       ssl_errors::NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC_ATTEMPT, 1);
 
   // First sync attempt is pending.
-  test_server.RegisterRequestHandler(base::Bind(&NetworkErrorResponseHandler));
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&NetworkErrorResponseHandler));
   test_server.StartAcceptingConnections();
   EXPECT_TRUE(network_time_tracker.QueryTimeServiceForTesting());
   EXPECT_EQ(

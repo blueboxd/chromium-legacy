@@ -162,12 +162,6 @@ class DownloadItemView : public views::InkDropHostView,
   // The space on the right side of the dangerous download label.
   static constexpr int kLabelPadding = 8;
 
-  // Height/width of the warning icon, also in dp.
-  static constexpr int kWarningIconSize = 20;
-
-  // Height/width of the erro icon, also in dp.
-  static constexpr int kErrorIconSize = 20;
-
   void OpenDownload();
 
   // Submits the downloaded file to the safebrowsing download feedback service.
@@ -313,6 +307,12 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Opens a file while async scanning is still pending.
   void OpenDownloadDuringAsyncScanning();
+
+  // Returns the height/width of the warning icon, in dp.
+  static int GetWarningIconSize();
+
+  // Returns the height/width of the error icon, in dp.
+  static int GetErrorIconSize();
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;

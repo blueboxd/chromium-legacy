@@ -227,6 +227,7 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
   void Initialize(bool purge_existing_data,
                   base::OnceClosure callback) override {
     init_callback_ = std::move(callback);
+    status_ = Status::kAvailable;
   }
 
   void RunInitCallback() { std::move(init_callback_).Run(); }
@@ -262,11 +263,24 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
     return true;
   }
 
+  void UpdateHostModelFeatures(
+      std::unique_ptr<StoreUpdateData> host_model_features_update_data,
+      base::OnceClosure callback) override {
+    host_model_features_update_time_ =
+        *host_model_features_update_data->update_time();
+    std::move(callback).Run();
+  }
+
+  void UpdatePredictionModels(
+      std::unique_ptr<StoreUpdateData> prediction_models_update_data,
+      base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
+
   bool WasModelLoaded() const { return model_loaded_; }
   bool WasHostModelFeaturesLoaded() const {
     return host_model_features_loaded_;
   }
-
  private:
   base::OnceClosure init_callback_;
   bool model_loaded_ = false;
@@ -323,7 +337,7 @@ class TestPredictionManager : public PredictionManager {
 
   void UpdatePredictionModelsForTesting(
       proto::GetModelsResponse* get_models_response) {
-    UpdatePredictionModels(get_models_response->mutable_models(), {});
+    UpdatePredictionModels(get_models_response->models());
   }
 
  private:
@@ -552,6 +566,7 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
+  base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -568,6 +583,8 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
 
   prediction_manager()->UpdatePredictionModelsForTesting(
       get_models_response.get());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
 
   get_models_response =
       BuildGetModelsResponse({} /* hosts */, {} /* client features */);
@@ -705,6 +722,7 @@ TEST_F(PredictionManagerTest,
 }
 
 TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -720,6 +738,10 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
 
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
 
   OptimizationGuideNavigationData* nav_data =
       OptimizationGuideNavigationData::GetFromNavigationHandle(
@@ -795,6 +817,7 @@ TEST_F(PredictionManagerTest,
 }
 
 TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
+  base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -817,6 +840,10 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
           prediction_manager()->GetPredictionModelForTesting(
               proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_FALSE(test_prediction_model);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithUnsupportedOptimizationTarget) {
@@ -853,6 +880,7 @@ TEST_F(PredictionManagerTest, UpdateModelWithUnsupportedOptimizationTarget) {
           prediction_manager()->GetPredictionModelForTesting(
               proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_FALSE(test_prediction_model);
+  EXPECT_FALSE(models_and_features_store()->WasModelLoaded());
 }
 
 TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
@@ -865,6 +893,7 @@ TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
 
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+  SetStoreInitialized();
 
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com", "example2.com"}, {});
@@ -891,7 +920,7 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://foo.com"));
+          GURL("https://bar.com"));
 
   CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -901,12 +930,7 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
-  std::unique_ptr<proto::GetModelsResponse> get_models_response =
-      BuildGetModelsResponse({"example1.com", "example2.com"}, {});
-  prediction_manager()->UpdateHostModelFeaturesForTesting(
-      get_models_response.get());
-  prediction_manager()->UpdatePredictionModelsForTesting(
-      get_models_response.get());
+  SetStoreInitialized();
 
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
@@ -926,8 +950,9 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
       false, 1);
 
   EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
-  EXPECT_EQ(2u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+      "bar.com"));
+  // One item loaded from the store when initialized.
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
@@ -941,6 +966,8 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
+  SetStoreInitialized();
+
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)->clear_host();
@@ -950,7 +977,8 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
 
   EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
       "example1.com"));
-  EXPECT_EQ(0u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  // One item loaded from the store when initialized.
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
@@ -963,6 +991,7 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
 
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+  SetStoreInitialized();
 
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
@@ -973,7 +1002,8 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
 
   EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
       "example1.com"));
-  EXPECT_EQ(0u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  // One item loaded from the store when initialized.
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
@@ -987,6 +1017,8 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
+  SetStoreInitialized();
+
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)
@@ -998,7 +1030,8 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
 
   EXPECT_FALSE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
       "example1.com"));
-  EXPECT_EQ(0u, prediction_manager()->GetHostModelFeaturesForTesting().size());
+  // One item loaded from the store when initialized.
+  EXPECT_EQ(1u, prediction_manager()->GetHostModelFeaturesForTesting().size());
 }
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
@@ -1012,6 +1045,7 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
+  SetStoreInitialized();
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)
@@ -1040,6 +1074,7 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
+  SetStoreInitialized();
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)
@@ -1070,6 +1105,7 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
+  SetStoreInitialized();
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({"example1.com"}, {});
   get_models_response->mutable_host_model_features(0)
@@ -1139,6 +1175,8 @@ TEST_P(PredictionManagerTest, ClientFeature) {
 
   prediction_manager()->RegisterOptimizationTargets(
       {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
 
   std::unique_ptr<proto::GetModelsResponse> get_models_response =
       BuildGetModelsResponse({}, {GetParam()});

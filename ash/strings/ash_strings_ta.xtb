@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> பயன்படுத்தப்படுகிறது</translation>
 <translation id="899350903320462459">அறிவிப்பில் வந்த செயலைச் செய்வதற்கு, சாதனத்தை <ph name="LOGIN_ID" /> ஆகத் திறக்கவும்</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="9017320285115481645">Family Link பெற்றோர் அணுகல் குறியீட்டை உள்ளிடவும்.</translation>
 <translation id="9029474291399787231">Adobe Flash Player புதுப்பிப்பு உள்ளது</translation>
 <translation id="9056839673611986238">சாதனம் மீட்டமைக்கப்படும்</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">முழுத்திரைப் பெரிதாக்கி</translation>
 <translation id="9193626018745640770">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
 <translation id="9194617393863864469">வேறொருவராக உள்நுழை...</translation>
+<translation id="9205817095063786319">சாதன நிர்வாகி: <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறையிலிருந்து வெளியேறுகிறது</translation>
 <translation id="9211681782751733685">பேட்டரி முழுவதும் சார்ஜ் ஆவதற்கான நேரம்: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">வால்பேப்பரை அமை</translation>

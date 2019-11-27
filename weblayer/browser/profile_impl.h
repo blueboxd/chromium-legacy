@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_BROWSER_PROFILE_IMPL_H_
 #define WEBLAYER_BROWSER_PROFILE_IMPL_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -24,6 +25,13 @@ namespace weblayer {
 
 class ProfileImpl : public Profile {
  public:
+  // Return the cache directory path for this BrowserContext. On some
+  // platforms, file in cache directory may be deleted by the operating
+  // system. So it is suitable for storing data that can be recreated such
+  // as caches.
+  // |context| must not be null.
+  static base::FilePath GetCachePath(content::BrowserContext* context);
+
   explicit ProfileImpl(const std::string& name);
   ~ProfileImpl() override;
 
@@ -54,6 +62,9 @@ class ProfileImpl : public Profile {
 
   // Callback when the system locale has been updated.
   void OnLocaleChanged();
+
+  const std::string name_;
+  base::FilePath data_path_;
 
   std::unique_ptr<BrowserContextImpl> browser_context_;
 

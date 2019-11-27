@@ -90,12 +90,20 @@ class CheckClientDownloadRequestUMATest
 INSTANTIATE_TEST_SUITE_P(
     Tests,
     CheckClientDownloadRequestUMATest,
-    testing::Combine(testing::Values(DeepScanAccessPoint::DOWNLOAD),
+    testing::Combine(testing::Values(DeepScanAccessPoint::DOWNLOAD,
+                                     DeepScanAccessPoint::UPLOAD),
                      testing::ValuesIn(kAllBinaryUploadServiceResults)));
 
 TEST_P(CheckClientDownloadRequestUMATest, SuccessfulScanVerdicts) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         DeepScanningClientResponse());
+  // We expect at least 2 histograms (<access-point>.Duration and
+  // <access-point>.<result>.Duration), but only expect a third histogram in the
+  // success case (bytes/seconds).
+  uint64_t expected_histograms = success() ? 3u : 2u;
+  EXPECT_EQ(
+      expected_histograms,
+      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
   if (success()) {
     histograms().ExpectUniqueSample(
         "SafeBrowsing.DeepScan." + access_point_string() + ".BytesPerSeconds",
@@ -119,6 +127,9 @@ TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulDlpScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         response);
 
+  EXPECT_EQ(
+      2u,
+      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
   histograms().ExpectTimeBucketCount(
       "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
       1);
@@ -137,6 +148,9 @@ TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulMalwareScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         response);
 
+  EXPECT_EQ(
+      2u,
+      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
   histograms().ExpectTimeBucketCount(
       "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
       1);
@@ -148,14 +162,33 @@ TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulMalwareScanVerdict) {
 
 TEST_P(CheckClientDownloadRequestUMATest, BypassScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes,
-                        "BypassedByUser", true);
+                        "BypassedByUser", false);
 
+  EXPECT_EQ(
+      2u,
+      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
   histograms().ExpectTimeBucketCount(
       "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
       1);
   histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
                                          access_point_string() +
                                          ".BypassedByUser.Duration",
+                                     kDuration, 1);
+}
+
+TEST_P(CheckClientDownloadRequestUMATest, CancelledByUser) {
+  RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes,
+                        "CancelledByUser", false);
+
+  EXPECT_EQ(
+      2u,
+      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+  histograms().ExpectTimeBucketCount(
+      "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
+      1);
+  histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
+                                         access_point_string() +
+                                         ".CancelledByUser.Duration",
                                      kDuration, 1);
 }
 

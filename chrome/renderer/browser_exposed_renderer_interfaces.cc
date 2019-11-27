@@ -14,7 +14,7 @@
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 
@@ -57,7 +57,7 @@ void ExposeChromeRendererInterfacesToBrowser(
     ChromeContentRendererClient* client,
     mojo::BinderMap* binders) {
   binders->Add(
-      client->GetChromeObserver()->visited_link_slave()->GetBindCallback(),
+      client->GetChromeObserver()->visited_link_reader()->GetBindCallback(),
       base::SequencedTaskRunnerHandle::Get());
 
   binders->Add(base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,

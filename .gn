@@ -381,7 +381,6 @@ check_targets = [
   "//third_party/espresso/*",
   "//third_party/expat/*",
   "//third_party/eyesfree/*",
-  "//third_party/feed/*",
 
   # "//third_party/ffmpeg/*",  # android_cronet only https://crbug.com/898793
   "//third_party/flac/*",

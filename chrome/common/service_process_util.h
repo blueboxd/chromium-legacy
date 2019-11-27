@@ -87,7 +87,7 @@ class ServiceProcessState {
   // |task_runner| must be of type IO and is the loop that POSIX uses
   // to monitor the service process.
   bool SignalReady(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   const base::Closure& terminate_task);
+                   base::OnceClosure terminate_task);
 
   // Signal that the service process is stopped.
   void SignalStopped();

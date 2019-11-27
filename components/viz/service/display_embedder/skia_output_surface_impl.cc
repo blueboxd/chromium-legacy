@@ -893,10 +893,8 @@ void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
 }
 
 base::ScopedClosureRunner SkiaOutputSurfaceImpl::GetCacheBackBufferCb() {
-  // TODO(weiliangc) : Add support for this once SkiaRenderer works with
-  // SurfaceControl.
-  CHECK(false);
-  return base::ScopedClosureRunner();
+  DCHECK(impl_on_gpu_->gl_surface());
+  return dependency_->CacheGLSurface(impl_on_gpu_->gl_surface());
 }
 
 void SkiaOutputSurfaceImpl::AddContextLostObserver(

@@ -264,9 +264,9 @@ void PageTimingMetricsSender::EnsureSendTimer() {
   // sending metrics as soon as possible.
   int delay_ms =
       have_sent_ipc_ ? buffer_timer_delay_ms_ : kInitialTimerDelayMillis;
-  timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
-      base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
+  timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+                base::BindOnce(&PageTimingMetricsSender::SendNow,
+                               base::Unretained(this)));
 }
 
 void PageTimingMetricsSender::SendNow() {

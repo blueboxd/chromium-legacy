@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
 <translation id="9017320285115481645">Family Link पालक ॲक्सेस कोड एंटर करा.</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">फुल-स्क्रीन मॅग्निफायर</translation>
 <translation id="9193626018745640770">एका अज्ञात मिळवणाऱ्यावर कास्ट करत आहे</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
+<translation id="9205817095063786319">डिव्हाइस <ph name="DOMAIN" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोडमधून बाहेर पडत आहे</translation>
 <translation id="9211681782751733685">बॅटरी पूर्णपणे चार्ज होण्यासाठी <ph name="TIME_REMAINING" /> तास बाकी.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करा</translation>

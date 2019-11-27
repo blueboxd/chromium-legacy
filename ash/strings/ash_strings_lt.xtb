@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Naudojama <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Atrakinkite įrenginį su <ph name="LOGIN_ID" />, kad galėtumėte įvykdyti pranešimo veiksmą</translation>
-<translation id="8995603266996330174">Valdoma „<ph name="DOMAIN" />“</translation>
 <translation id="9017320285115481645">Įveskite „Family Link“ tėvų prieigos kodą.</translation>
 <translation id="9029474291399787231">Pasiekiamas „Adobe Flash Player“ naujinys</translation>
 <translation id="9056839673611986238">Įrenginys bus atkurtas</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Viso ekrano didinimas</translation>
 <translation id="9193626018745640770">Perduodama į nežinomą imtuvą</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
+<translation id="9205817095063786319">Įrenginį tvarko <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
 <translation id="9211681782751733685">Iki akumuliatoriaus įkrovimo liko <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Nustatyti ekrano foną</translation>

@@ -125,8 +125,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
     // which is the format used for the animated avators.
     if (!user.basic_user_info.avatar.bytes.empty()) {
       DecodeAnimation(user.basic_user_info.avatar.bytes,
-                      base::Bind(&LoginUserView::UserImage::OnImageDecoded,
-                                 weak_factory_.GetWeakPtr()));
+                      base::BindOnce(&LoginUserView::UserImage::OnImageDecoded,
+                                     weak_factory_.GetWeakPtr()));
     }
   }
 
@@ -361,7 +361,8 @@ LoginUserView::LoginUserView(
     setup_layer(dropdown_);
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
-      this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
+      this,
+      base::BindRepeating(&LoginUserView::OnHover, base::Unretained(this)));
 }
 
 LoginUserView::~LoginUserView() = default;

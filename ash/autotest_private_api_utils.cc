@@ -86,7 +86,7 @@ std::vector<aura::Window*> GetAppWindowList() {
 }
 
 bool WaitForLauncherState(AppListViewState target_state,
-                          base::Closure closure) {
+                          base::OnceClosure closure) {
   // In the tablet mode, some of the app-list state switching is handled
   // differently. For open and close, HomeLauncherGestureHandler handles the
   // gestures and animation. HomeLauncherStateWaiter can wait for such
@@ -111,7 +111,7 @@ bool WaitForLauncherState(AppListViewState target_state,
     // deteching if the home launcher is animating to visibile/invisible require
     // some refactoring.
     bool target_visible = target_state != ash::AppListViewState::kClosed;
-    new HomeLauncherStateWaiter(target_visible, closure);
+    new HomeLauncherStateWaiter(target_visible, std::move(closure));
   } else {
     // Don't wait if the launcher is already in the target state and not
     // animating.
@@ -127,7 +127,7 @@ bool WaitForLauncherState(AppListViewState target_state,
       std::move(closure).Run();
       return true;
     }
-    new LauncherStateWaiter(target_state, closure);
+    new LauncherStateWaiter(target_state, std::move(closure));
   }
   return false;
 }

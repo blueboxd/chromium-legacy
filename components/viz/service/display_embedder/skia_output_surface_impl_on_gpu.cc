@@ -847,7 +847,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   scoped_output_device_paint_.reset();
 
   if (output_surface_plane_) {
-    DCHECK(!is_using_vulkan());
     if (gl::GLImage* image = output_device_->GetOverlayImage()) {
       std::unique_ptr<gfx::GpuFence> gpu_fence =
           output_device_->SubmitOverlayGpuFence();
@@ -1400,9 +1399,17 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
           did_swap_buffer_complete_callback_);
     }
 #else
-    output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-        vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-        did_swap_buffer_complete_callback_);
+    auto output_device = SkiaOutputDeviceBufferQueue::Create(
+        dependency_, did_swap_buffer_complete_callback_);
+    if (output_device) {
+      // TODO(https://crbug.com/1012401): don't depend on GL.
+      gl_surface_ = output_device->gl_surface();
+      output_device_ = std::move(output_device);
+    } else {
+      output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+          did_swap_buffer_complete_callback_);
+    }
 #endif
   }
 #endif

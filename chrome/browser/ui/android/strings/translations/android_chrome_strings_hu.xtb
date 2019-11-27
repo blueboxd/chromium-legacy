@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget. A szövegnek legalább ekkorának kell lennie, miután duplán koppint egy bekezdésre.</translation>
 <translation id="2323763861024343754">Webhely tárhelye</translation>
 <translation id="2328985652426384049">Nem sikerült a bejelentkezés</translation>
-<translation id="2330129964253841015">Figyelmeztetés, ha jelszavai illetéktelen kezekbe kerülnek</translation>
 <translation id="2349710944427398404">A Chrome által használt teljes adatmennyiség, beleértve a fiókokat, könyvjelzőket és mentett beállításokat is</translation>
 <translation id="2353636109065292463">Az internetkapcsolat ellenőrzése</translation>
 <translation id="2359808026110333948">Tovább</translation>
@@ -816,6 +815,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6989267951144302301">A letöltés sikertelen</translation>
 <translation id="6990079615885386641">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a mikrofon használatát (ajánlott)</translation>
+<translation id="6995899638241819463">Figyelmeztetés, ha jelszavai adatvédelmi incidens során nyilvánosságra kerülnek</translation>
 <translation id="7015203776128479407">A szinkronizálás kezdeti beállítása nem fejeződött be. A szinkronizálás ki van kapcsolva.</translation>
 <translation id="7016516562562142042">Engedélyezett a jelenlegi keresőmotor számára</translation>
 <translation id="7022756207310403729">Megnyitás böngészőben</translation>

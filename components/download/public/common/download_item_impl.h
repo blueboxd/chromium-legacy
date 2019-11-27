@@ -258,6 +258,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   const std::string& GetLastModifiedTime() const override;
   const std::string& GetETag() const override;
   bool IsSavePackageDownload() const override;
+  DownloadSource GetDownloadSource() const override;
   const base::FilePath& GetFullPath() const override;
   const base::FilePath& GetTargetFilePath() const override;
   const base::FilePath& GetForcedFilePath() const override;
@@ -364,8 +365,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   }
 
   bool fetch_error_body() const { return fetch_error_body_; }
-
-  DownloadSource download_source() const { return download_source_; }
 
   uint64_t ukm_download_id() const { return ukm_download_id_; }
 

@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Отключете устройството като <ph name="LOGIN_ID" />, за да се изпълни действието от известието</translation>
-<translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Въведете кода за достъп на родител от Family Link.</translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
 <translation id="9056839673611986238">Устройството ще бъде върнато към по-ранна версия</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Лупа за увеличаване на целия екран</translation>
 <translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
+<translation id="9205817095063786319">Устройството се управлява от <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
 <translation id="9211681782751733685">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Задаване на тапета</translation>

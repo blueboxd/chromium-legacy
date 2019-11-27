@@ -45,6 +45,7 @@ int HttpCacheLookupManager::LookupTransaction::StartLookup(
   });
 
   request_->url = push_helper_->GetURL();
+  request_->network_isolation_key = push_helper_->GetNetworkIsolationKey();
   request_->method = "GET";
   request_->load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
   cache->CreateTransaction(DEFAULT_PRIORITY, &transaction_);

@@ -934,7 +934,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2326931316514688470">Alkalmazás új&amp;ratöltése</translation>
 <translation id="2327492829706409234">Alkalmazás engedélyezése</translation>
 <translation id="2329597144923131178">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
-<translation id="2330129964253841015">Figyelmeztetés, ha jelszavai illetéktelen kezekbe kerülnek</translation>
 <translation id="2332131598580221120">Megtekintés az áruházban</translation>
 <translation id="2332192922827071008">A beállítások megnyitása</translation>
 <translation id="2332742915001411729">Visszaállítás az alapértékre</translation>
@@ -4100,6 +4099,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6990778048354947307">Sötét téma</translation>
 <translation id="6991665348624301627">Válasszon egy célhelyet</translation>
 <translation id="6992554835374084304">A továbbfejlesztett helyesírás-ellenőrzés bekapcsolása</translation>
+<translation id="6995899638241819463">Figyelmeztetés, ha jelszavai adatvédelmi incidens során nyilvánosságra kerülnek</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Tevékenységnapló</translation>
 <translation id="6997707937646349884">Az Ön eszközein:</translation>
 <translation id="6998793565256476099">Eszköz felvétele a videokonferenciába</translation>

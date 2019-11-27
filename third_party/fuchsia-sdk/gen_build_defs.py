@@ -27,11 +27,10 @@ def SerializeListOfStrings(strings):
   return '[' + ','.join(['"{}"'.format(s) for s in strings]) + ']'
 
 def ReformatTargetName(dep_name):
-  """Removes the namespace from |target| and substitutes invalid target
-  characters with valid ones (e.g. hyphens become underscores)."""
+  """"Substitutes characters in |dep_name| which are not valid in GN target
+  names (e.g. dots become hyphens)."""
 
-  assert not '.' in dep_name, "Invalid target name: %s" % dep_name
-  reformatted_name = dep_name.replace('-','_')
+  reformatted_name = dep_name.replace('.','-')
   return reformatted_name
 
 def ConvertCommonFields(json):
@@ -40,7 +39,8 @@ def ConvertCommonFields(json):
 
   return {
     'target_name': ReformatTargetName(json['name']),
-    'public_deps': [':' + ReformatTargetName(dep) for dep in json['deps']]
+    'public_deps': [':' + ReformatTargetName(dep) for dep in (
+        json['deps'] + json.get('fidl_deps', []))]
   }
 
 def FormatGNTarget(fields):
@@ -73,19 +73,6 @@ def FormatGNTarget(fields):
 
   return output
 
-def ReformatFidlTargetName(dep_name):
-  """Converts a FIDL |dep_name| consisting of dot-delimited namespaces, and
-  package name, to a single underscore delimited name."""
-
-  assert not '-' in dep_name, "Invalid FIDL target name: %s" % dep_name
-
-  # For convenience, treat "fuchsia.*" namespace as top-level.
-  if dep_name[:8] == 'fuchsia.':
-    dep_name = dep_name[8:]
-
-  reformatted_name = dep_name.replace('.','_')
-  return reformatted_name
-
 def ConvertFidlLibrary(json):
   """Converts a fidl_library manifest entry to a GN target.
 
@@ -94,13 +81,9 @@ def ConvertFidlLibrary(json):
   Returns:
     The GN target definition, represented as a string."""
 
-  converted = {
-      'public_deps': [
-          ':' + ReformatFidlTargetName(dep) for dep in json['deps']],
-      'sources': json['sources'],
-      'target_name': ReformatFidlTargetName(json['name']),
-      'type': 'fuchsia_sdk_fidl_pkg'
-  }
+  converted = ConvertCommonFields(json)
+  converted['type'] = 'fuchsia_sdk_fidl_pkg'
+  converted['sources'] = json['sources']
 
   # Override the package name & namespace, otherwise the rule will generate
   # a top-level package with |target_name| as its directory name.
@@ -151,8 +134,6 @@ def ConvertCcSourceLibrary(json):
   converted['sources'] = list(set(converted['sources']))
 
   converted['include_dirs'] = [json['root'] + '/include']
-  converted['public_deps'] += \
-      [':' + ReformatFidlTargetName(dep) for dep in json['fidl_deps']]
 
   return converted
 
@@ -194,12 +175,42 @@ def ConvertSdkManifests():
       convert_function = _CONVERSION_FUNCTION_MAP.get(part['type'])
       if convert_function is None:
         raise Exception('Unexpected SDK artifact type %s in %s.' %
-                        (parsed['type'], part['meta']))
+                        (part['type'], part['meta']))
 
       converted = convert_function(parsed)
-      if converted:
-        buildfile.write(FormatGNTarget(converted) + '\n\n')
+      if not converted:
+        continue
 
+      buildfile.write(FormatGNTarget(converted) + '\n\n')
+
+      # TODO(fxb/42135): Remove this hack once dependencies have been updated.
+      # Create dummy targets using the old short names, which depend on the
+      # new fully-qualified names, to allow old dependencies to work.
+      if part['type'] == 'fidl_library':
+        target_name = ReformatTargetName(parsed['name'])
+
+        # Generate an old-style FIDL library target name, by stripping the
+        # "fuchsia-" prefix and replacing hyphens with underscores.
+        short_target_name = target_name[8:].replace('-', '_')
+
+        # fuchsia.inspect's short name clashes with the inspect source library.
+        if short_target_name == 'inspect':
+          continue
+
+        fields = {
+            'target_name' : short_target_name,
+            'type': 'group',
+            'public_deps': [ ':' + target_name]
+        }
+        buildfile.write(FormatGNTarget(fields) + '\n\n')
+      elif '-' in parsed['name']:
+        target_name = ReformatTargetName(parsed['name'])
+        fields = {
+            'target_name' : target_name.replace('-', '_'),
+            'type': 'group',
+            'public_deps': [ ':' + target_name]
+        }
+        buildfile.write(FormatGNTarget(fields) + '\n\n')
 
 if __name__ == '__main__':
   sys.exit(ConvertSdkManifests())

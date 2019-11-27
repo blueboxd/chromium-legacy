@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Yana</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Parolingizni almashtiring</translation>
 <translation id="1484290072879560759">Yetkazib berish manzilini tanlang</translation>
 <translation id="1492194039220927094">Push-xabar orqali yuboriladigan siyosatlar:</translation>
 <translation id="1501859676467574491">Google hisobingizdagi kartalarni ochish</translation>
@@ -175,7 +176,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Tizim administratori bilan bog‘lanish.</translation>
 <translation id="1736420071277903564">Kompyuter</translation>
-<translation id="1739107442478692187">Siz ishlatadigan sayt yoki ilovada axborotlar oshkor etilgan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="1740951997222943430">Muddati tugaydigan oyni xatosiz kiriting</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode –<ph name="SECURE_DNS_MODE_SECURE" /> boʻlganda qator kiritilishi va yaroqli boʻlishi kerak.</translation>
 <translation id="1743520634839655729">Keyingi safar tezroq to‘lash uchun kartangizni Google hisobingiz va ushbu qurilmada saqlang.</translation>
@@ -209,6 +209,7 @@
 <translation id="1914326953223720820">Arxivdan chiqarish xizmati</translation>
 <translation id="1915697529809968049">CVC oʻrniga Touch ID ishlatilsinmi?</translation>
 <translation id="1916770123977586577">Yangilangan sozlamalar bu saytda ishlashi uchun sahifani yangilang</translation>
+<translation id="1917876262703816781">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919367280705858090">Maxsus turdagi xato xabarlari asosida yordam olish</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yo‘q}=1{1 ta sayt}other{# ta sayt}}</translation>
@@ -241,7 +242,6 @@
 <translation id="2094505752054353250">Domen noto‘g‘ri kiritildi</translation>
 <translation id="2096368010154057602">Okrug</translation>
 <translation id="2099652385553570808">Chapdan 3 marta steplerlash</translation>
-<translation id="2100280972184758440">Parolingiz oshkor etilgan</translation>
 <translation id="2102134110707549001">Ishonchli parol yaratish…</translation>
 <translation id="2108755909498034140">Kompyuterni o‘chirib yoqing</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -249,7 +249,6 @@
 <translation id="2114841414352855701">Inkor qilindi, chunki <ph name="POLICY_NAME" /> parametri undan ustunroq.</translation>
 <translation id="2119505898009119320">Kimga berilgan: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Quyi oʻngdan teshik ochish</translation>
-<translation id="2124528555835617522">Siz ishlatadigan sayt yoki ilovada axborotlar oshkor etilgan. Chrome saqlangan parollaringizni hoziroq tekshirishni tavsiya qiladi.</translation>
 <translation id="2129079103035905234">Harakat sensorlari</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode qoidasi sozlanmagani sababli siz tanlangan andozalar tatbiq qilinmasligi mumkin.</translation>
 <translation id="213826338245044447">Mobil xatcho‘plar</translation>
@@ -273,6 +272,7 @@
 <translation id="2218879909401188352">Firibgarlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytida xavfli ilovalarni o‘rnatishlari mumkin. Bu ilovalar qurilmangizni buzishi, mobil hisobingizdan pul o‘g‘irlashi yoki shaxsiy ma’lumotlaringizni olishi mumkin. <ph name="BEGIN_LEARN_MORE_LINK" />Batafsil<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Internet yo‘q</translation>
 <translation id="2230458221926704099">Aloqani sozlash uchun <ph name="BEGIN_LINK" />tashxis ilovasidan<ph name="END_LINK" /> foydalaning</translation>
+<translation id="22320125457191592">Siz uchun</translation>
 <translation id="2239100178324503013">Hozir yuborish</translation>
 <translation id="2248949050832152960">WebAuthn ishlatish</translation>
 <translation id="2250931979407627383">Chap chekkasini tikish</translation>
@@ -373,6 +373,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Tark etish</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Ogohlantirish</translation>
 <translation id="2699302886720511147">Qabul qilinadigan kartalar</translation>
 <translation id="2702801445560668637">Mutolaa ro‘yxati</translation>
 <translation id="2704283930420550640">Qiymat to‘g‘ri formatda emas.</translation>
@@ -473,6 +474,7 @@
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
 <translation id="3209034400446768650">Sahifa pul yechib olishi mumkin</translation>
 <translation id="3209080785413271048">Saqlangan toʻlov usullarini Windows Hello orqali tasdiqlash.</translation>
+<translation id="3212581601480735796"><ph name="HOSTNAME" /> saytidagi harakatlaringiz kuzatuv ostida</translation>
 <translation id="3215092763954878852">WebAuthn ishlatib boʻlmadi</translation>
 <translation id="3225919329040284222">Serverdagi sertifikat ba’zi saytlardagi yuqori darajali havfsizlik ichki parametrlariga mos kelmaydi.</translation>
 <translation id="3226128629678568754">Ba’zi ma’lumotlarni qayta kiritish uchun sahifa yuklanishi kerak, “yangilash” tugmasini bosing.</translation>
@@ -488,7 +490,6 @@
 <translation id="3282497668470633863">Karta egasining ismini kiriting</translation>
 <translation id="3287510313208355388">Internet ulanganda yuklab olish</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> parametri haqida batafsil axborot olish</translation>
-<translation id="3295439534709115864">Siz ishlatadigan sayt yoki ilovada axborotlar oshkor etilgan. Chrome hoziroq <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="3303855915957856445">Qidiruv hech qanday natija bermadi</translation>
 <translation id="3320021301628644560">To‘lov manzilini kiriting</translation>
 <translation id="3324983252691184275">Malina rang</translation>
@@ -530,6 +531,7 @@
 <translation id="3528485271872257980">Toʻq jigarrang</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{sinxronlangan qurilmalarda kamida 1 element}=1{1 ta element (boshqalari esa sinxronlangan qurilmalarda)}other{# ta element (boshqalari sinxronlangan qurilmalarda)}}</translation>
 <translation id="3539171420378717834">Karta ma’lumotlarini bu qurilmada saqlash</translation>
+<translation id="3553513561058684206">Siz uchun</translation>
 <translation id="3566021033012934673">Ulanishingiz himoyalanmagan</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> saytidagi amalni tasdiqlang</translation>
@@ -759,6 +761,7 @@
 <translation id="4594403342090139922">&amp;O‘chirishni bekor qilish</translation>
 <translation id="4597348597567598915">Hajmi: 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chrome tomonidan ishonchsiz deb belgilandi.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
     lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
 <translation id="464342062220857295">Funksiyalar qidiruvi</translation>
@@ -898,6 +901,7 @@
 <translation id="5287240709317226393">Cookie fayllarini ko‘rsatish</translation>
 <translation id="5287456746628258573">Bu sayt eskirgan xavfsizlik sozlamasidan foydalanadi. maʼlumotlaringiz (masalan, parol va kredit kartalari nomlari) shu saytga yuborilganda ular xavf ostida qolishi mumkin.</translation>
 <translation id="5288108484102287882">Parametr qiymatlari tekshiruvida ogohlantiruvlar aniqlandi</translation>
+<translation id="5295292838686006428">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome saqlangan parollaringizni hoziroq tekshirishni tavsiya qiladi.</translation>
 <translation id="5299298092464848405">Siyosatni analiz qilishda xatolik yuz berdi</translation>
 <translation id="5300589172476337783">Ko‘rsatish</translation>
 <translation id="5308380583665731573">Ulanish</translation>
@@ -948,6 +952,7 @@
 <translation id="5540224163453853">So‘ralgan maqola topilmadi.</translation>
 <translation id="5541546772353173584">Email manzilini qo‘shing</translation>
 <translation id="5545756402275714221">Sizga atalgan maqolalar</translation>
+<translation id="5552137475244467770">Vaqti-vaqti bilan Chrome internetda oshkor etilgan roʻyxatlarda parolingiz borligini tekshirib turadi. Bunda parolingiz va foydalanuvchi nomingiz shifrlanadi va hatto Google xodimlariga ham koʻrinmaydi.</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
 <translation id="5560088892362098740">Tugash muddati</translation>
 <translation id="5565735124758917034">Faol</translation>
@@ -1039,6 +1044,7 @@
 <translation id="5992691462791905444">Engineering-Z shaklida taxlash</translation>
 <translation id="6000758707621254961">“<ph name="SEARCH_TEXT" />” uchun <ph name="RESULT_COUNT" /> ta natija</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Parollarni tekshiring</translation>
 <translation id="6015796118275082299">Yil</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1-sahifa}other{#-sahifa}}</translation>
 <translation id="6017514345406065928">Yashil</translation>
@@ -1327,6 +1333,7 @@ Batafsil axborot:
 <translation id="7481312909269577407">Oldinga</translation>
 <translation id="748406663033922918">Saqlangan toʻlov usullarini ekran qulfi yordamida tasdiqlash.</translation>
 <translation id="7485870689360869515">Ma‘lumotlar topilmadi.</translation>
+<translation id="7495290002932347110">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="7498234416455752244">Tahrirlashda davom etish</translation>
 <translation id="7508255263130623398">Qurilmaning qaytarilgan identifikatori bo‘sh yoki joriy qurilma identifikatoriga mos kelmaydi</translation>
 <translation id="7508870219247277067">Yashil avokado</translation>
@@ -1463,6 +1470,7 @@ Batafsil axborot:
 <translation id="8103161714697287722">To‘lov usuli</translation>
 <translation id="8105368624971345109">O‘chirib qo‘yish</translation>
 <translation id="8118489163946903409">To‘lov usuli</translation>
+<translation id="8124023448510659215">Bu ulanish tarmoq paketlarini tutib olishi kuzatilmoqda, shu sababli uning sertifikati Chromium tomonidan ishonchsiz deb belgilandi.</translation>
 <translation id="8127301229239896662">Kompyuter yoki tarmog‘ingizda “<ph name="SOFTWARE_NAME" />” dasturi noto‘g‘ri o‘rnatilgan. Muammo yechimini administratordan so‘rang.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8149426793427495338">Kompyuteringiz uyqu rejimiga o‘tib qoldi.</translation>
@@ -1605,6 +1613,8 @@ Batafsil axborot:
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>
 <translation id="8968766641738584599">Karta eslab qolinsin</translation>
+<translation id="8969267497192857913">Internetdagi harakatlaringiz (qidirayotgan soʻrovlar, ochayotgan sahifalar va boshqa amallar) kuzatuv ostida, saytlar kontenti oʻzgarishi mumkin.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Batafsil<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Server sertifikati eskirdi.</translation>
 <translation id="8975012916872825179">Telefon raqamlari, epochta va eltib berish manzillari kabi ma’lumotlarni eslab qoladi</translation>
 <translation id="8975263830901772334">Chop etiladigan fayllar nomlari</translation>

@@ -46,7 +46,7 @@ cast_source_set("net") {
 
     deps += [
       "//chromecast/base:chromecast_switches",
-      "//third_party/fuchsia-sdk/sdk:hardware_ethernet",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-hardware-ethernet",
     ]
   }
 }

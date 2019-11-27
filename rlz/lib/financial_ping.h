@@ -58,11 +58,6 @@ class FinancialPing {
   // Ping the financial server with request. Writes to RlzValueStore.
   static PingResponse PingServer(const char* request, std::string* response);
 
-  // Returns the time relative to a fixed point in the past in multiples of
-  // 100 ns stepts. The point in the past is arbitrary but can't change, as the
-  // result of this value is stored on disk.
-  static int64_t GetSystemTimeAsInt64();
-
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
   static bool SetURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
 #endif

@@ -5,6 +5,7 @@
 #include "ash/app_list/views/app_list_view.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -765,10 +766,6 @@ bool AppListView::Back() {
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
   views::WidgetDelegateView::OnPaint(canvas);
-  if (!next_paint_callback_.is_null()) {
-    next_paint_callback_.Run();
-    next_paint_callback_.Reset();
-  }
 }
 
 const char* AppListView::GetClassName() const {
@@ -841,6 +838,10 @@ views::View* AppListView::GetAppListBackgroundShieldForTest() {
 
 SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
   return app_list_background_shield_->GetColorForTest();
+}
+
+bool AppListView::IsShowingEmbeddedAssistantUI() const {
+  return app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI();
 }
 
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
@@ -2249,10 +2250,6 @@ bool AppListView::ShouldIgnoreScrollEvents() {
   // changes or transtions.
   return GetWidget()->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
-}
-
-bool AppListView::IsShowingEmbeddedAssistantUI() const {
-  return app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI();
 }
 
 int AppListView::GetPreferredWidgetYForState(

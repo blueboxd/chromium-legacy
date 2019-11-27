@@ -108,7 +108,7 @@ ExtensionHost::~ExtensionHost() {
   // Remove ourselves from the queue as late as possible (before effectively
   // destroying self, but after everything else) so that queues that are
   // monitoring lifetime get a chance to see stop-loading events.
-  delegate_->GetExtensionHostQueue()->Remove(this);
+  ExtensionHostQueue::GetInstance().Remove(this);
 
   // Deliberately stop observing |host_contents_| because its destruction
   // events (like DidStopLoading, it turns out) can call back into
@@ -138,7 +138,7 @@ void ExtensionHost::CreateRenderViewSoon() {
     // to defer.
     CreateRenderViewNow();
   } else {
-    delegate_->GetExtensionHostQueue()->Add(this);
+    ExtensionHostQueue::GetInstance().Add(this);
   }
 }
 

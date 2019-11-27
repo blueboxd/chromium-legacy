@@ -18,7 +18,27 @@ constexpr int kBitstreamAudioCodecPcmSurround = 0b010000;
 constexpr int kBitstreamAudioCodecMpegHAudio = 0b100000;
 constexpr int kBitstreamAudioCodecAll = 0b111111;
 
+// Supported bitstream audio codecs and their associated properties.
+struct BitstreamAudioCodecsInfo {
+  // Bitmap of supported bitstream audio codecs.
+  int codecs = kBitstreamAudioCodecNone;
+
+  // Bitmap specifying which of the corresponding codecs in |codecs| support
+  // spatial rendering.
+  int spatial_rendering = kBitstreamAudioCodecNone;
+
+  BitstreamAudioCodecsInfo operator&(
+      const BitstreamAudioCodecsInfo& other) const;
+
+  bool operator==(const BitstreamAudioCodecsInfo& other) const;
+  bool operator!=(const BitstreamAudioCodecsInfo& other) const;
+
+  BitstreamAudioCodecsInfo ApplyCodecMask(int mask) const;
+};
+
 std::string BitstreamAudioCodecsToString(int codecs);
+std::string BitstreamAudioCodecsInfoToString(
+    const BitstreamAudioCodecsInfo& info);
 
 }  // namespace chromecast
 

@@ -5,7 +5,9 @@
 #ifndef ASH_ASSISTANT_TEST_TEST_ASSISTANT_SERVICE_H_
 #define ASH_ASSISTANT_TEST_TEST_ASSISTANT_SERVICE_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -24,28 +26,23 @@ class SanityCheckSubscriber;
 // chain calls to the provided |AddXYZ| methods.
 //
 // Example usage:
-//     assistant_service()->SetInteractionResponse(
-//         InteractionResponse()
-//             .AddTextResponse("The response text")
-//             .AddResolution(InteractionResponse::Resolution::kNormal)
-//             .Clone());
+//     auto response = std::make_unique<InteractionResponse>();
+//     response->AddTextResponse("The response text")
+//             ->AddResolution(InteractionResponse::Resolution::kNormal);
+//     assistant_service()->SetInteractionResponse(std::move(response));
 class InteractionResponse {
  public:
   using Resolution = chromeos::assistant::mojom::AssistantInteractionResolution;
   class Response;
 
   InteractionResponse();
-  InteractionResponse(InteractionResponse&& other);
-  InteractionResponse& operator=(InteractionResponse&& other);
   ~InteractionResponse();
 
-  InteractionResponse Clone() const;
-
   // A simple textual response.
-  InteractionResponse& AddTextResponse(const std::string& text);
+  InteractionResponse* AddTextResponse(const std::string& text);
   // If used this will cause us to finish the interaction by passing the given
   // |resolution| to |AssistantInteractionSubscriber::OnInteractionFinished|.
-  InteractionResponse& AddResolution(Resolution resolution);
+  InteractionResponse* AddResolution(Resolution resolution);
 
   void SendTo(
       chromeos::assistant::mojom::AssistantInteractionSubscriber* receiver);
@@ -78,7 +75,7 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   CreateRemoteAndBind();
 
   // Set the response that will be invoked when the next interaction starts.
-  void SetInteractionResponse(InteractionResponse&& response);
+  void SetInteractionResponse(std::unique_ptr<InteractionResponse> response);
 
   // Returns the current interaction.
   base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
@@ -120,14 +117,15 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
           chromeos::assistant::mojom::AssistantQuerySource::kUnspecified,
       const std::string& query = std::string());
   void SendInteractionResponse();
-  InteractionResponse PopInteractionResponse();
 
   mojo::Receiver<chromeos::assistant::mojom::Assistant> receiver_{this};
   mojo::RemoteSet<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
   std::unique_ptr<SanityCheckSubscriber> sanity_check_subscriber_;
   std::unique_ptr<CurrentInteractionSubscriber> current_interaction_subscriber_;
-  InteractionResponse interaction_response_;
+  std::unique_ptr<InteractionResponse> interaction_response_;
+
+  bool running_active_interaction_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestAssistantService);
 };

@@ -880,7 +880,9 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
   scoped_refptr<FakePictureLayer> scroll_layer_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
+// TODO(crbug.com/1018213):  [BlinkGenPropertyTrees] Scroll Animation should be
+// taken over from cc when scroll is unpromoted.
+// MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
 
 // Verifies that an impl-only scroll offset animation gets updated when the
 // scroll offset is adjusted on the main thread.

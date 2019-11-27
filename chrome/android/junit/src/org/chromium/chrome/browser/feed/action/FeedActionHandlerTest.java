@@ -20,8 +20,6 @@ import static org.mockito.Mockito.when;
 import android.support.test.filters.SmallTest;
 import android.util.ArrayMap;
 
-import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +36,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
+import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.tab.TabImpl;

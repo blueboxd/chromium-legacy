@@ -315,9 +315,6 @@ public class WebsitePermissionsFetcherTest {
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.AUTOMATIC_DOWNLOADS, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource));
-        websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.AUTOPLAY, googleOrigin,
-                        ContentSettingValues.DEFAULT, preferenceSource));
 
         // Add storage info.
         int storageSize = 256;
@@ -365,8 +362,6 @@ public class WebsitePermissionsFetcherTest {
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
                     site.getContentSettingPermission(
                             ContentSettingException.Type.AUTOMATIC_DOWNLOADS));
-            Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.AUTOPLAY));
 
             // Check storage info.
             ArrayList<StorageInfo> storageInfos = new ArrayList<>(site.getStorageInfo());
@@ -514,9 +509,9 @@ public class WebsitePermissionsFetcherTest {
         String preferenceSource = "preference";
         ArrayList<Integer> contentSettingExceptionTypes = new ArrayList<>(Arrays.asList(
                 ContentSettingException.Type.ADS, ContentSettingException.Type.AUTOMATIC_DOWNLOADS,
-                ContentSettingException.Type.AUTOPLAY, ContentSettingException.Type.BACKGROUND_SYNC,
-                ContentSettingException.Type.COOKIE, ContentSettingException.Type.JAVASCRIPT,
-                ContentSettingException.Type.POPUP, ContentSettingException.Type.SOUND));
+                ContentSettingException.Type.BACKGROUND_SYNC, ContentSettingException.Type.COOKIE,
+                ContentSettingException.Type.JAVASCRIPT, ContentSettingException.Type.POPUP,
+                ContentSettingException.Type.SOUND));
 
         for (@ContentSettingsType int type : contentSettingExceptionTypes) {
             @ContentSettingsType

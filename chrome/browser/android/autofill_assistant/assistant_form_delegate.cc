@@ -40,6 +40,13 @@ void AssistantFormDelegate::OnChoiceSelectionChanged(
   ui_controller_->OnChoiceSelectionChanged(input_index, choice_index, selected);
 }
 
+void AssistantFormDelegate::OnLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint link) {
+  ui_controller_->OnFormActionLinkClicked(link);
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantFormDelegate::GetJavaObject() {
   return java_assistant_form_delegate_;

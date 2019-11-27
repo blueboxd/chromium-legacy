@@ -42,6 +42,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   gpu::SurfaceHandle GetSurfaceHandle() override;
   scoped_refptr<gl::GLSurface> CreateGLSurface(
       base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
+  base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   void ScheduleGrContextCleanup() override;
 

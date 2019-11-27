@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -66,6 +67,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1019,6 +1021,104 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 }
 
 #endif  // !defined(OS_CHROMEOS)
+
+class StartupBrowserCreatorExtensionsCheckupExperimentTest
+    : public extensions::ExtensionBrowserTest {
+ public:
+  // ExtensionsBrowserTest opens about::blank via the command line, and
+  // command-line tabs supersede all others, except pinned tabs.
+  StartupBrowserCreatorExtensionsCheckupExperimentTest() {
+    set_open_about_blank_on_browser_launch(false);
+  }
+
+  void SetUp() override {
+    // Enable the extensions checkup experiment.
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        extensions_features::kExtensionsCheckupTool,
+        {{extensions_features::kExtensionsCheckupToolEntryPointParameter,
+          "startup"}});
+    extensions::ExtensionBrowserTest::SetUp();
+  }
+
+  void AddExtension() {
+    // Adds a non policy-installed extension to the extension registry.
+    const Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII("good.crx"));
+    ASSERT_TRUE(extension);
+
+    constexpr char kGoodExtensionId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile());
+    EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodExtensionId));
+
+    extensions::ExtensionPrefs* prefs =
+        extensions::ExtensionPrefs::Get(profile());
+    EXPECT_TRUE(prefs->GetInstalledExtensionInfo(kGoodExtensionId));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(
+      StartupBrowserCreatorExtensionsCheckupExperimentTest);
+};
+
+// Test that when the extensions checkup experiment is enabled for the startup
+// entry point and a user has extensions installed, the user is directed to the
+// chrome://extensions page upon startup.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorExtensionsCheckupExperimentTest,
+                       PRE_ExtensionsCheckup) {
+  AddExtension();
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorExtensionsCheckupExperimentTest,
+                       ExtensionsCheckup) {
+  // The new browser should have exactly two tabs (chrome://extensions page and
+  // the NTP).
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  content::WebContents* extensions_tab = tab_strip->GetWebContentsAt(0);
+
+  // Check that the tab showing the extensions page is the active tab.
+  EXPECT_EQ(extensions_tab, tab_strip->GetActiveWebContents());
+
+  // Check that both the extensions page and the ntp page are shown.
+  ASSERT_EQ(2, tab_strip->count());
+  EXPECT_EQ("chrome://extensions/?checkup=shown",
+            extensions_tab->GetLastCommittedURL());
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
+            tab_strip->GetWebContentsAt(1)->GetLastCommittedURL());
+
+  // Once the user sees the extensions page upon startup, they should not see it
+  // again.
+  Browser* other_browser = CreateBrowser(browser()->profile());
+
+  // Make sure we are observing a new browser instance.
+  EXPECT_NE(other_browser, browser());
+
+  TabStripModel* other_tab_strip = other_browser->tab_strip_model();
+  ASSERT_EQ(1, other_tab_strip->count());
+  EXPECT_NE("chrome://extensions/?checkup=shown",
+            other_tab_strip->GetWebContentsAt(0)->GetLastCommittedURL());
+}
+
+// Test that when the extensions checkup experiment has been shown and the
+// browser is started again, the user is not directed to the
+// chrome://extensions page upon startup.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorExtensionsCheckupExperimentTest,
+                       PRE_ExtensionsCheckupAlreadyShown) {
+  AddExtension();
+  extensions::ExtensionPrefs::Get(profile())
+      ->SetUserHasSeenExtensionsCheckupOnStartup(true);
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorExtensionsCheckupExperimentTest,
+                       ExtensionsCheckupAlreadyShown) {
+  // The new browser should have exactly one tab (the NTP).
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ(chrome::kChromeUINewTabURL,
+            tab_strip->GetActiveWebContents()->GetLastCommittedURL());
+}
 
 // These tests are not applicable to Chrome OS as neither master_preferences nor
 // the onboarding promos exist there.

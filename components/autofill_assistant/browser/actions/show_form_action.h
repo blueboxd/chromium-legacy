@@ -25,6 +25,7 @@ class ShowFormAction : public Action {
   void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnFormValuesChanged(const FormProto::Result* form_result);
+  void OnCancelForm(const ClientStatus& status);
   void OnButtonClicked();
   bool IsFormValid(const FormProto& form, const FormProto::Result& result);
   bool IsCounterInputValid(const CounterInputProto& input,
@@ -35,6 +36,7 @@ class ShowFormAction : public Action {
       const CounterInputProto::Result& result);
   bool IsSelectionInputValid(const SelectionInputProto& input,
                              const SelectionInputProto::Result& result);
+  void EndAction(const ClientStatus& status);
 
   ProcessActionCallback callback_;
   base::WeakPtrFactory<ShowFormAction> weak_ptr_factory_{this};

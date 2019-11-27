@@ -100,8 +100,9 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
       sk_sp<SkColorSpace>,
       SkColorType = kN32_SkColorType);
 
-  static size_t GetSizeInBytes(const IntRect& rect,
-                               const CanvasColorParams& color_params);
+  static base::CheckedNumeric<size_t> GetSizeInBytes(
+      const IntRect& rect,
+      const CanvasColorParams& color_params);
 
   static bool MayHaveStrayArea(scoped_refptr<StaticBitmapImage> src_image,
                                const IntRect& rect);

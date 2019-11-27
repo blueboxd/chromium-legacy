@@ -552,7 +552,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ব্যৱহাৰ কৰি</translation>
 <translation id="899350903320462459">জাননী সম্পর্কীয় কার্যসমূহ কৰিবলৈ <ph name="LOGIN_ID" /> হিচাপে ডিভাইচটো আনলক কৰক</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> দ্বাৰা পৰিচালিত</translation>
 <translation id="9017320285115481645">Family Linkৰ অভিভাৱকৰ এক্সেছ ক'ডটো দিয়ক।</translation>
 <translation id="9029474291399787231">Adobe Flash Playerৰ আপডে’ট উপলব্ধ</translation>
 <translation id="9056839673611986238">ডিভাইচটো ৰ’লবেক কৰা হ’ব</translation>
@@ -569,6 +568,7 @@
 <translation id="9183456764293710005">পূৰ্ণ স্ক্রীনৰ বিৱৰ্ধক</translation>
 <translation id="9193626018745640770">কোনো অজ্ঞাত ৰিচিভাৰ কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="9194617393863864469">অন্য ব্যৱহাৰকাৰীক ছাইন ইন কৰাওক...</translation>
+<translation id="9205817095063786319">ডিভাইচ <ph name="DOMAIN" />এ পৰিচালনা কৰে</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ ম’ড বন্ধ কৰি আছে</translation>
 <translation id="9211681782751733685">বেটাৰী সম্পূৰ্ণ চ্চাৰ্জ হ’বলৈ <ph name="TIME_REMAINING" /> বাকী আছে।</translation>
 <translation id="9215934040295798075">ৱালপেপাৰ ছেট কৰক</translation>

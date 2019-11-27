@@ -80,7 +80,20 @@ namespace {
 const char kXkbPrefix[] = "xkb:";
 const char kErrorFailToShowInputView[] =
     "Unable to show the input view window.";
-const char kInputImeApiEngineNotAvaliable[] = "Engine is not available";
+const char kErrorRouterNotAvailable[] = "The router is not available.";
+
+InputMethodEngineBase* GetEngineIfActive(
+    content::BrowserContext* browser_context,
+    const std::string& extension_id,
+    std::string* error) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  extensions::InputImeEventRouter* event_router =
+      extensions::GetInputImeEventRouter(profile);
+  CHECK(event_router) << kErrorRouterNotAvailable;
+  InputMethodEngineBase* engine =
+      event_router->GetEngineIfActive(extension_id, error);
+  return engine;
+}
 
 }  // namespace
 
@@ -344,77 +357,69 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateSetCompositionRangeFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  std::string error;
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    const auto parent_params = SetCompositionRange::Params::Create(*args_);
-    const auto& params = parent_params->parameters;
-    std::vector<InputMethodEngineBase::SegmentInfo> segments;
-    if (params.segments) {
-      for (const auto& segments_arg : *params.segments) {
-        InputMethodEngineBase::SegmentInfo segment_info;
-        segment_info.start = segments_arg.start;
-        segment_info.end = segments_arg.end;
-        switch (segments_arg.style) {
-          case input_method_private::UNDERLINE_STYLE_UNDERLINE:
-            segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-            break;
-          case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
-            segment_info.style =
-                InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
-            break;
-          case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
-            segment_info.style =
-                InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
-            break;
-          case input_method_private::UNDERLINE_STYLE_NONE:
-            EXTENSION_FUNCTION_VALIDATE(false);
-            break;
-        }
-        segments.push_back(segment_info);
-      }
-    } else {
-      // Default to a single segment that spans the entire range.
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
+
+  const auto parent_params = SetCompositionRange::Params::Create(*args_);
+  const auto& params = parent_params->parameters;
+  std::vector<InputMethodEngineBase::SegmentInfo> segments;
+  if (params.segments) {
+    for (const auto& segments_arg : *params.segments) {
       InputMethodEngineBase::SegmentInfo segment_info;
-      segment_info.start = 0;
-      segment_info.end = params.selection_before + params.selection_after;
-      segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+      segment_info.start = segments_arg.start;
+      segment_info.end = segments_arg.end;
+      switch (segments_arg.style) {
+        case input_method_private::UNDERLINE_STYLE_UNDERLINE:
+          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+          break;
+        case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
+          segment_info.style =
+              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+          break;
+        case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
+          segment_info.style =
+              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
+          break;
+        case input_method_private::UNDERLINE_STYLE_NONE:
+          EXTENSION_FUNCTION_VALIDATE(false);
+          break;
+      }
       segments.push_back(segment_info);
     }
-    std::string error;
-    if (!engine->SetCompositionRange(params.context_id, params.selection_before,
-                                     params.selection_after, segments,
-                                     &error)) {
-      auto results = std::make_unique<base::ListValue>();
-      results->Append(std::make_unique<base::Value>(false));
-      return RespondNow(ErrorWithArguments(std::move(results), error));
-    }
+  } else {
+    // Default to a single segment that spans the entire range.
+    InputMethodEngineBase::SegmentInfo segment_info;
+    segment_info.start = 0;
+    segment_info.end = params.selection_before + params.selection_after;
+    segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+    segments.push_back(segment_info);
+  }
+
+  if (!engine->SetCompositionRange(params.context_id, params.selection_before,
+                                   params.selection_after, segments, &error)) {
+    auto results = std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(std::move(results), error));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateSetSelectionRangeFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  std::string error;
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-
-  if (!engine) {
-    auto results = std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
-    return RespondNow(
-        ErrorWithArguments(std::move(results), kInputImeApiEngineNotAvaliable));
-  }
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(error));
 
   std::unique_ptr<SetSelectionRange::Params> parent_params(
       SetSelectionRange::Params::Create(*args_));
   const SetSelectionRange::Params::Parameters& params =
       parent_params->parameters;
 
-  std::string error;
   if (!engine->SetSelectionRange(params.context_id, *params.selection_start,
                                  *params.selection_end, &error)) {
     auto results = std::make_unique<base::ListValue>();

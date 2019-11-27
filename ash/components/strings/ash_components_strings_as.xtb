@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> বা <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">অৱলোকন ম’ড</translation>
 <translation id="4382340674111381977">পূর্বৱর্তী পৃষ্ঠালৈ উভতি যাওক</translation>
+<translation id="4458670250301149821">এপৰ গ্ৰীডত থকা এটা ফ’ল্ডাৰৰ ভিতৰলৈ/বাহিৰলৈ এটা এপৰ চিহ্ন স্থানান্তৰ কৰক</translation>
 <translation id="4472417192667361414">ছিষ্টেম আৰু ডিছপ্লে ছেটিংসমূহ</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, তাৰ পাছত <ph name="LEFT" /> অথবা <ph name="RIGHT" /> অথবা <ph name="UP" /> অথবা <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">কীব'ৰ্ডৰ শ্বৰ্টকাট সহায়ক চাওক</translation>
 <translation id="4628718545549558538">বিভিন্ন স্থিতি দেখুওৱা ঠাইখিনি খোলক (আপোনাৰ একাউণ্টৰ ছবি ওলোৱা ঠাইখিনি)</translation>
 <translation id="4642092649622328492">আংশিক স্ক্ৰীণশ্বট লওক</translation>
@@ -169,6 +171,7 @@
 <translation id="7439718573248533901">পৰৱৰ্তী আখৰটো মচক (ফ’ৰৱাৰ্ড মচক)</translation>
 <translation id="7500368597227394048">হাইফেন</translation>
 <translation id="7611271430932669992">পপআপ আৰু ডায়েলগলৈ ফ’কাছ স্থানান্তৰ কৰক</translation>
+<translation id="7635348532214572995">এপৰ গ্ৰীডত এটা এপ্‌ চিহ্ন স্থানান্তৰ কৰক</translation>
 <translation id="766326951329901120">ক্লিপব’ৰ্ডৰ পৰা সমল সাধাৰণ পাঠ হিচাপে পেষ্ট কৰক</translation>
 <translation id="7703010453515335249">বাওঁ-বন্ধনী</translation>
 <translation id="7724603315864178912">কাট কৰক</translation>
@@ -202,6 +205,7 @@
 <translation id="9041599225465145264">ক্লিপব’ৰ্ডৰ পৰা সমল পে’ষ্ট কৰক</translation>
 <translation id="9052808072970550123">পৰৱৰ্তী ব্যৱহাৰকাৰীলৈ সলনি কৰক</translation>
 <translation id="906458777597946297">ৱিণ্ড’ৰ আকাৰ সৰ্বাধিক মাত্ৰালৈ বঢ়াওক</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, তাৰ পাছত <ph name="LEFT" /> অথবা <ph name="RIGHT" /> অথবা <ph name="UP" /> অথবা <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">শাৰীৰ আৰম্ভণিলৈ যাওক</translation>
 <translation id="9106898733795143799">পৃষ্ঠা আৰু ৱেব ব্ৰাউজাৰ</translation>
 <translation id="9162942292291287644"><ph name="QUERY" />ৰ কোনো সন্ধানৰ ফলাফল নাই</translation>

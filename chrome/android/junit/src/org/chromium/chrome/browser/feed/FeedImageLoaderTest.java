@@ -15,10 +15,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
-import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +32,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.host.imageloader.BundledAssets;
+import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.image_fetcher.CachedImageFetcher;
 
 import java.util.Arrays;

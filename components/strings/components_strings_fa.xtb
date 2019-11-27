@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">بیشتر ببینید</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">گذرواژه‌تان را تغییر دهید</translation>
 <translation id="1484290072879560759">انتخاب نشانی تحویل کالا</translation>
 <translation id="1492194039220927094">اعمال خط‌مشی‌ها:</translation>
 <translation id="1501859676467574491">‏کارت‌ها را از حساب Google خود نمایش دهید</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">با سرپرست سیستم تماس بگیرید.</translation>
 <translation id="1736420071277903564">رایانه</translation>
-<translation id="1739107442478692187">‏در یکی از سایت‌ها یا برنامه‌هایی که استفاده می‌کنید، نقض داده‌ رخ داده است. Chrome توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و اکنون گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="1740951997222943430">ماه انقضای معتبری وارد کنید</translation>
 <translation id="1741613555002899862">‏وقتی DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> است، باید مشخص شده باشد و رشته‌ای معتبر باشد</translation>
 <translation id="1743520634839655729">‏برای اینکه دفعه بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت، نام و نشانی صورت‌حسابتان را در حساب Google خود و این دستگاه ذخیره کنید.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">سرویس خارج کردن از فشرده‌سازی</translation>
 <translation id="1915697529809968049">‏به‌جای CVC از شناسه لمسی استفاده شود؟</translation>
 <translation id="1916770123977586577">برای اعمال کردن تنظیمات به‌روزرسانی‌شده خود در این سایت، این صفحه را تازه‌سازی کنید</translation>
+<translation id="1917876262703816781">‏نقض داده در سایت یا برنامه‌ای باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند هم‌حالا گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919367280705858090">دریافت راهنمایی برای پیام خطایی خاص</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{هیچ‌کدام}=1{۱ سایت}one{# سایت}other{# سایت}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
 <translation id="2096368010154057602">اداره</translation>
 <translation id="2099652385553570808">سه منگنه در چپ</translation>
-<translation id="2100280972184758440">گذرواژه‌تان درمعرض خطر است</translation>
 <translation id="2102134110707549001">پیشنهاد گذرواژه قوی…</translation>
 <translation id="2108755909498034140">رایانه را راه‌اندازی مجدد کنید</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
 <translation id="2119505898009119320">صادر شده برای: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">سوراخ کردن پایین راست</translation>
-<translation id="2124528555835617522">‏در یکی از سایت‌ها یا برنامه‌هایی که استفاده می‌کنید، نقض داده‌ رخ داده است. Chrome توصیه می‌کند اکنون گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="2129079103035905234">حسگرهای حرکتی</translation>
 <translation id="2130448033692577677">‏چون خط‌مشی DnsOverHttpsMode تنظیم نشده است، ممکن است الگوهایی که مشخص کردید اعمال نشوند.</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
@@ -274,6 +273,7 @@
 <translation id="2218879909401188352">درحال‌حاضر مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> می‌توانند برنامه‌های خطرناکی نصب کنند که به دستگاهتان آسیب بزند، هزینه‌های پنهانی به صورت‌حساب دستگاه همراهتان اضافه کند یا اطلاعات شخصی‌تان را سرقت کند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">اتصال اینترنت وجود ندارد</translation>
 <translation id="2230458221926704099">با استفاده از <ph name="BEGIN_LINK" />برنامه عیب‌یابی<ph name="END_LINK" />، مشکل اتصالتان را برطرف کنید</translation>
+<translation id="22320125457191592">برای شما</translation>
 <translation id="2239100178324503013">اکنون ارسال شود</translation>
 <translation id="2248949050832152960">‏استفاده از WebAuthn</translation>
 <translation id="2250931979407627383">دوختن لبه از چپ</translation>
@@ -375,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">هشدار ایمنی</translation>
 <translation id="2699302886720511147">کارت‌های قابل‌‌قبول</translation>
 <translation id="2702801445560668637">فهرست خواندن</translation>
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
@@ -475,6 +476,7 @@
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
 <translation id="3209034400446768650">ممکن است این صفحه از شما هزینه کسر کند</translation>
 <translation id="3209080785413271048">‏از Windows Hello برای به‌تأیید رساندن روش‌های پرداخت ذخیره‌شده‌تان استفاده کنید.</translation>
+<translation id="3212581601480735796">بر فعالیت شما در <ph name="HOSTNAME" /> نظارت می‌شود</translation>
 <translation id="3215092763954878852">‏استفاده از WebAuthn ممکن نشد</translation>
 <translation id="3225919329040284222">سرور گواهی را نشان می‌دهد که با موارد پیش‌بینی‌شده داخلی مطابقت ندارد. این پیش‌بینی‌ها به‌طور حتم وب‌سایتهای دارای امنیت بالا را جهت محافظت از شما در بر می‌گیرند.</translation>
 <translation id="3226128629678568754">دکمه تازه‌سازی را فشار دهید تا داده‌های مورد نیاز برای بارگیری صفحه مجدداً ارسال شود.</translation>
@@ -490,7 +492,6 @@
 <translation id="3282497668470633863">افزودن نام روی کارت</translation>
 <translation id="3287510313208355388">بارگیری بعد از آنلاین شدن</translation>
 <translation id="3293642807462928945">درباره خطمشی <ph name="POLICY_NAME" /> بیشتر بدانید</translation>
-<translation id="3295439534709115864">‏در یکی از سایت‌ها یا برنامه‌هایی که استفاده می‌کنید، نقض داده‌ رخ داده است. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="3303855915957856445">هیچ نتیجه‌ای برای جستجو یافت نشد</translation>
 <translation id="3320021301628644560">افزودن نشانی صورتحساب</translation>
 <translation id="3324983252691184275">زرشکی</translation>
@@ -533,6 +534,7 @@
 <translation id="3528485271872257980">قهوه‌ای تیره</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{حداقل ۱ مورد در دستگاه‌های همگام‌سازی‌شده}=1{۱ مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}one{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}other{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}}</translation>
 <translation id="3539171420378717834">یک کپی از این کارت در این دستگاه نگهداری شود</translation>
+<translation id="3553513561058684206">برای شما</translation>
 <translation id="3566021033012934673">اتصال شما خصوصی نیست</translation>
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
@@ -763,6 +765,7 @@
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
 <translation id="4597348597567598915">اندازه ۸</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">‏گواهی این اتصال مورد اعتماد Google Chrome نیست، زیرا تشخیص داده شده است که برای نفوذ به شبکه و نظارت استفاده می‌شود.</translation>
 <translation id="4635654612248442824">سایت <ph name="ORIGIN" /> درخواست کرده است خط‌مشی اصلی
     برای همه درخواست‌هایش اعمال شود، اما این خط‌مشی درحال‌حاضر نمی‌تواند اعمال شود.</translation>
 <translation id="464342062220857295">ویژگی‌های جستجو</translation>
@@ -902,6 +905,7 @@
 <translation id="5287240709317226393">نمایش کوکی‌ها</translation>
 <translation id="5287456746628258573">پیکربندی امنیتی این سایت قدیمی است و ممکن است اطلاعاتتان (برای مثال، گذرواژه‌ها یا شماره کارت‌های اعتباری) را هنگام ارسال به این سایت افشا کند.</translation>
 <translation id="5288108484102287882">اعتبارسنجی مقادیر خط‌مشی با چند هشدار به پایان رسید</translation>
+<translation id="5295292838686006428">‏نقض داده در سایت یا برنامه‌ای باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5308380583665731573">اتصال</translation>
@@ -952,6 +956,7 @@
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
 <translation id="5541546772353173584">افزودن ایمیل</translation>
 <translation id="5545756402275714221">مقاله‌هایی برای شما</translation>
+<translation id="5552137475244467770">‏Chrome به‌طور دوره‌ای گذرواژه‌هایتان را با فهرست‌هایی که به‌صورت آنلاین منتشر می‌شود مقایسه می‌کند. هنگام انجام این کار، نام‌های کاربری و گذرواژه‌های شما رمزگذاری می‌شود تا توسط اشخاص دیگر، ازجمله Google خوانده نشود.</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5560088892362098740">تاریخ انقضا</translation>
 <translation id="5565735124758917034">فعال</translation>
@@ -1043,6 +1048,7 @@
 <translation id="5992691462791905444">‏تاخوردگی Z شکل مهندسی</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">بررسی گذرواژه</translation>
 <translation id="6015796118275082299">سال</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحه ۱}one{صفحه #}other{صفحه #}}</translation>
 <translation id="6017514345406065928">سبز</translation>
@@ -1332,6 +1338,7 @@
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="748406663033922918">از قفل صفحه برای به‌تأیید رساندن روش‌های پرداخت ذخیره‌شده استفاده کنید.</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
+<translation id="7495290002932347110">‏نقض داده در سایت یا برنامه‌ای باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="7498234416455752244">ادامه ویرایش</translation>
 <translation id="7508255263130623398">شناسه دستگاه خط‌مشی برگردانده‌شده خالی است یا با شناسه کنونی دستگاه مطابقت ندارد</translation>
 <translation id="7508870219247277067">سبز مایل به زرد</translation>
@@ -1468,6 +1475,7 @@
 <translation id="8103161714697287722">روش پرداخت</translation>
 <translation id="8105368624971345109">خاموش کردن</translation>
 <translation id="8118489163946903409">روش پرداخت</translation>
+<translation id="8124023448510659215">‏گواهی این اتصال مورد اعتماد Chromium نیست، زیرا تشخیص داده شده است که برای نفوذ به شبکه و نظارت استفاده می‌شود.</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» به‌درستی در رایانه یا شبکه‌تان پیکربندی نشد. از سرپرست فناوری اطلاعات خود بخواهید این مشکل را حل کند.</translation>
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
@@ -1610,6 +1618,8 @@
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8962950042226115166">سایت مشکوک</translation>
 <translation id="8968766641738584599">ذخیره کارت</translation>
+<translation id="8969267497192857913">هرچه تایپ کنید، هر صفحه‌ای که می‌ببینید، یا هر فعالیتی که در وب تماشا می‌شود، و محتوای سایت‌ها ممکن است بدون اطلاع شما تغییر کند.
+    <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8975012916872825179">شامل اطلاعاتی مانند شماره تلفن، نشانی ایمیل و نشانی تحویل کالا می‌شود</translation>
 <translation id="8975263830901772334">نام فایل‌هایی که چاپ می‌کنید</translation>

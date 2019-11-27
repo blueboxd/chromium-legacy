@@ -38,7 +38,7 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   void Start() override;
   void Stop() override;
   service_manager::Connector* GetConnector() override;
-  void SetConnectionLostClosure(const base::Closure& closure) override;
+  void SetConnectionLostClosure(base::OnceClosure closure) override;
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
@@ -56,7 +56,7 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<IOThreadContext> context_;
 
-  base::Closure connection_lost_handler_;
+  base::OnceClosure connection_lost_handler_;
 
   base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_{this};
 

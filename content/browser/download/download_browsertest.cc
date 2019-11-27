@@ -198,19 +198,19 @@ class DownloadFileWithDelay : public download::DownloadFileImpl {
   // storing it in the factory that produced this object for later
   // retrieval.
   void RenameAndUniquify(const base::FilePath& full_path,
-                         const RenameCompletionCallback& callback) override;
+                         RenameCompletionCallback callback) override;
   void RenameAndAnnotate(
       const base::FilePath& full_path,
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url,
       mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-      const RenameCompletionCallback& callback) override;
+      RenameCompletionCallback callback) override;
 
  private:
   static void RenameCallbackWrapper(
       const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
-      const RenameCompletionCallback& original_callback,
+      RenameCompletionCallback original_callback,
       download::DownloadInterruptReason reason,
       const base::FilePath& path);
 
@@ -238,14 +238,14 @@ class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override;
 
-  void AddRenameCallback(base::Closure callback);
-  void GetAllRenameCallbacks(std::vector<base::Closure>* results);
+  void AddRenameCallback(base::OnceClosure callback);
+  void GetAllRenameCallbacks(std::vector<base::OnceClosure>* results);
 
   // Do not return until GetAllRenameCallbacks() will return a non-empty list.
   void WaitForSomeCallback();
 
  private:
-  std::vector<base::Closure> rename_callbacks_;
+  std::vector<base::OnceClosure> rename_callbacks_;
   base::OnceClosure stop_waiting_;
   base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_{this};
 
@@ -270,11 +270,11 @@ DownloadFileWithDelay::~DownloadFileWithDelay() {}
 
 void DownloadFileWithDelay::RenameAndUniquify(
     const base::FilePath& full_path,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   download::DownloadFileImpl::RenameAndUniquify(
-      full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
-                            owner_, callback));
+      full_path, base::BindOnce(DownloadFileWithDelay::RenameCallbackWrapper,
+                                owner_, std::move(callback)));
 }
 
 void DownloadFileWithDelay::RenameAndAnnotate(
@@ -283,24 +283,25 @@ void DownloadFileWithDelay::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   download::DownloadFileImpl::RenameAndAnnotate(
       full_path, client_guid, source_url, referrer_url, mojo::NullRemote(),
-      base::Bind(DownloadFileWithDelay::RenameCallbackWrapper, owner_,
-                 callback));
+      base::BindOnce(DownloadFileWithDelay::RenameCallbackWrapper, owner_,
+                     std::move(callback)));
 }
 
 // static
 void DownloadFileWithDelay::RenameCallbackWrapper(
     const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
-    const RenameCompletionCallback& original_callback,
+    RenameCompletionCallback original_callback,
     download::DownloadInterruptReason reason,
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!factory)
     return;
-  factory->AddRenameCallback(base::Bind(original_callback, reason, path));
+  factory->AddRenameCallback(
+      base::BindOnce(std::move(original_callback), reason, path));
 }
 
 DownloadFileWithDelayFactory::DownloadFileWithDelayFactory() {}
@@ -318,7 +319,8 @@ download::DownloadFile* DownloadFileWithDelayFactory::CreateFile(
       download_id, observer, weak_ptr_factory_.GetWeakPtr());
 }
 
-void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
+void DownloadFileWithDelayFactory::AddRenameCallback(
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   rename_callbacks_.push_back(std::move(callback));
   if (stop_waiting_)
@@ -326,7 +328,7 @@ void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
 }
 
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(
-    std::vector<base::Closure>* results) {
+    std::vector<base::OnceClosure>* results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   results->swap(rename_callbacks_);
 }
@@ -1473,10 +1475,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Wait until the second (final) rename callback is posted.
@@ -1495,7 +1497,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
   EXPECT_EQ(download::DownloadItem::CANCELLED, items[0]->GetState());
 
   // Run final rename callback.
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Check state.
@@ -1522,10 +1524,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Wait until the second (final) rename callback is posted.
@@ -1534,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   ASSERT_EQ(1u, callbacks.size());
 
   // Call it.
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Confirm download still IN_PROGRESS (internal state COMPLETING).
@@ -1628,10 +1630,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Wait until the second (final) rename callback is posted.
@@ -1640,7 +1642,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   ASSERT_EQ(1u, callbacks.size());
 
   // Call it.
-  callbacks[0].Run();
+  std::move(callbacks[0]).Run();
   callbacks.clear();
 
   // Confirm download isn't complete yet.

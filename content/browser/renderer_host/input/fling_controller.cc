@@ -396,7 +396,9 @@ bool FlingController::UpdateCurrentFlingState(
           current_fling_parameters_.source_device,
           current_fling_parameters_.velocity,
           gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
-          GetContentClient()->browser()->ShouldUseMobileFlingCurve()));
+          GetContentClient()->browser()->ShouldUseMobileFlingCurve(),
+          current_fling_parameters_.global_point,
+          event_sender_client_->GetRootWidgetViewportSize()));
   return true;
 }
 

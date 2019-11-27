@@ -557,7 +557,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> käytössä</translation>
 <translation id="899350903320462459">Avaa laitteen lukitus tunnuksella <ph name="LOGIN_ID" />, niin voit käyttää ilmoitustoimintoa</translation>
-<translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Syötä vanhemman Family Link ‑käyttökoodi</translation>
 <translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>
 <translation id="9056839673611986238">Laite palautetaan</translation>
@@ -574,6 +573,7 @@
 <translation id="9183456764293710005">Koko näytön suurennus</translation>
 <translation id="9193626018745640770">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
+<translation id="9205817095063786319">Laitteen ylläpitäjä: <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
 <translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>

@@ -45,7 +45,7 @@ static_library("runtime") {
     "//base",
     "//gin",
     "//third_party/fuchsia-sdk/sdk:async",
-    "//third_party/fuchsia-sdk/sdk:async_default",
+    "//third_party/fuchsia-sdk/sdk:async-default",
     "//v8",
   ]
 }

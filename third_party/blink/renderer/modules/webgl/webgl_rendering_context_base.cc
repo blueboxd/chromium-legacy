@@ -1419,15 +1419,12 @@ bool WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
-  if (GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain())
-    GetDrawingBuffer()->PresentSwapChain();
-  marked_canvas_dirty_ = false;
-
-  // For low-latency canvases
-  const bool webgl_overlay_enabled =
-      RuntimeEnabledFeatures::WebGLImageChromiumEnabled() || UsingSwapChain();
-  if (canvas() && canvas()->LowLatencyEnabled() && !webgl_overlay_enabled)
+  if (Host()->LowLatencyEnabled()) {
+    // PaintRenderingResultsToCanvas will export drawing buffer if the resource
+    // provider is single buffered.  Otherwise it will copy the drawing buffer.
     PaintRenderingResultsToCanvas(kBackBuffer);
+  }
+  marked_canvas_dirty_ = false;
 }
 
 void WebGLRenderingContextBase::OnErrorMessage(const char* message,
@@ -1574,7 +1571,7 @@ void WebGLRenderingContextBase::SetIsHidden(bool hidden) {
 
 bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     SourceDrawingBuffer source_buffer) {
-  if (isContextLost())
+  if (isContextLost() || !GetDrawingBuffer())
     return false;
 
   bool must_clear_now = ClearIfComposited() != kSkipped;
@@ -1588,8 +1585,28 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     Host()->DiscardResourceProvider();
   }
 
-  if (!Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
+  CanvasResourceProvider* resource_provider =
+      Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
+  if (!resource_provider)
     return false;
+
+  if (Host()->LowLatencyEnabled() &&
+      resource_provider->SupportsSingleBuffering()) {
+    // It's possible single buffering isn't enabled yet because we haven't
+    // finished the first frame e.g. this gets called first due to drawImage.
+    resource_provider->TryEnableSingleBuffering();
+    DCHECK(resource_provider->IsSingleBuffered());
+    // Single buffered passthrough resource provider doesn't have backing
+    // texture. We need to export the backbuffer mailbox directly without
+    // copying.
+    if (!resource_provider->ImportResource(GetDrawingBuffer()->AsCanvasResource(
+            resource_provider->CreateWeakPtr()))) {
+      // This isn't expected to fail for single buffered resource provider.
+      NOTREACHED();
+      return false;
+    }
+    return true;
+  }
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
@@ -1607,23 +1624,6 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   return true;
 }
 
-void WebGLRenderingContextBase::ProvideBackBufferToResourceProvider() const {
-  if (isContextLost())
-    return;
-
-  DCHECK(Host()->ResourceProvider());
-  if (Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size())
-    Host()->DiscardResourceProvider();
-
-  CanvasResourceProvider* resource_provider =
-      Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
-  if (!resource_provider || !resource_provider->IsAccelerated())
-    return;
-
-  resource_provider->ImportResource(
-      GetDrawingBuffer()->AsCanvasResource(resource_provider->CreateWeakPtr()));
-}
-
 bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
   // TODO(http://crbug.com/876140) Determine if device is compatible with
   // current context.
@@ -1633,8 +1633,9 @@ bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
 bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     CanvasResourceProvider* resource_provider,
     SourceDrawingBuffer source_buffer) {
-  if (!drawing_buffer_)
-    return false;
+  DCHECK(drawing_buffer_);
+  DCHECK(resource_provider);
+  DCHECK(!resource_provider->IsSingleBuffered());
   if (resource_provider->IsAccelerated()) {
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
         SharedGpuContext::ContextProviderWrapper();

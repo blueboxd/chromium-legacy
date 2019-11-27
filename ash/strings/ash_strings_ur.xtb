@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> کے ذریعے</translation>
 <translation id="899350903320462459">اطلاع کی کارروائی کرنے کیلئے، آلے کو بطور <ph name="LOGIN_ID" /> غیر مقفل کریں</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> کے زیر انتظام</translation>
 <translation id="9017320285115481645">‏Family Link کا والدین کا رسائی کا کوڈ درج کریں۔</translation>
 <translation id="9029474291399787231">‏Adobe Flash Player اپ ڈیٹ دستیاب ہے</translation>
 <translation id="9056839673611986238">آلہ کو رول بیک کیا جائے گا</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">فُل اسکرین میگنیفائر</translation>
 <translation id="9193626018745640770">کسی نامعلوم موصول کنندہ پر کاسٹ کیا جا رہا ہے</translation>
 <translation id="9194617393863864469">کسی دوسرے صارف کے بطور سائن ان کریں…</translation>
+<translation id="9205817095063786319"><ph name="DOMAIN" /> کے زیر انتظام آلہ</translation>
 <translation id="9210037371811586452">یونیفائیڈ ڈیسک ٹاپ وضع سے باہر نکل رہے ہیں</translation>
 <translation id="9211681782751733685">بیٹری کے مکمل طور پر چارج ہونے میں <ph name="TIME_REMAINING" /> باقی ہے۔</translation>
 <translation id="9215934040295798075">وال پیپر سیٹ کریں</translation>

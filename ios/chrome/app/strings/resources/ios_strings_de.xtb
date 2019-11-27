@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Menü "Mehr"</translation>
 <translation id="2316709634732130529">Vorgeschlagenes Passwort verwenden</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
-<translation id="2330129964253841015">Warnen, wenn Passwörter nicht mehr sicher sind</translation>
 <translation id="2339560363438331454">Synchronisierung und Google-Dienste</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2359043044084662842">Übersetzen</translation>
@@ -441,6 +440,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Google-Konto verwalten</translation>
+<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
 <translation id="6998989275928107238">An</translation>
 <translation id="7004499039102548441">Zuletzt geöffnete Tabs</translation>
 <translation id="7006788746334555276">Inhaltseinstellungen</translation>

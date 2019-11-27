@@ -931,7 +931,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2326931316514688470">&amp;Volver a cargar la aplicación</translation>
 <translation id="2327492829706409234">Habilitar aplicación</translation>
 <translation id="2329597144923131178">Accede a tu cuenta para ver los favoritos, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
-<translation id="2330129964253841015">Advertirme si se vulneran las contraseñas</translation>
 <translation id="2332131598580221120">Ver en Chrome Web Store</translation>
 <translation id="2332192922827071008">Abrir preferencias</translation>
 <translation id="2332742915001411729">Restablecer configuración de zoom predeterminada</translation>
@@ -4096,6 +4095,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6990778048354947307">Tema oscuro</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
 <translation id="6992554835374084304">Activa el corrector ortográfico mejorado</translation>
+<translation id="6995899638241819463">Advertirme si quedan expuestas las contraseñas ante una violación de la seguridad de los datos</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />: Registro de actividad</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998793565256476099">Inscribe el dispositivo para realizar videoconferencias</translation>

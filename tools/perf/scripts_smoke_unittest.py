@@ -314,7 +314,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     command = run_performance_tests.TelemetryCommandGenerator(
         'fake_benchmark_name', options, story_selection_config).generate(
             'fake_output_dir')
-    self.assertIn('--run-full-story-set', command)
+    self.assertNotIn('--run-abridged-story-set', command)
     self.assertIn('--story-shard-begin-index=1', command)
     self.assertIn('--story-shard-end-index=5', command)
 
@@ -330,7 +330,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     command = run_performance_tests.TelemetryCommandGenerator(
         'fake_benchmark_name', options, story_selection_config).generate(
             'fake_output_dir')
-    self.assertNotIn('--run-full-story-set', command)
+    self.assertIn('--run-abridged-story-set', command)
 
   def testRunPerformanceTestsGtestArgsParser(self):
      options = run_performance_tests.parse_arguments([

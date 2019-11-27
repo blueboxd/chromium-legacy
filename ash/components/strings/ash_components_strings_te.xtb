@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> లేదా <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">స్థూలదృష్టి మోడ్</translation>
 <translation id="4382340674111381977">మునుపటి పేజీకి తిరిగి వెళ్లండి</translation>
+<translation id="4458670250301149821">యాప్ చిహ్నాన్ని యాప్ గ్రిడ్ లోపల ఫోల్డర్‌లోకి/బయటికి తరలించండి</translation>
 <translation id="4472417192667361414">సిస్టమ్ &amp; డిస్‌ప్లే సెట్టింగ్‌లు</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ఆపై <ph name="LEFT" /> లేదా <ph name="RIGHT" /> లేదా <ph name="UP" /> లేదా <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">కీబోర్డ్ షార్ట్‌కట్ హెల్పర్‌ను చూడండి</translation>
 <translation id="4628718545549558538">స్థితి ప్రాంతాన్ని తెరవండి (మీ ఖాతా చిత్రం కనిపించే స్థలం)</translation>
 <translation id="4642092649622328492">పాక్షిక స్క్రీన్‌షాట్ తీయండి</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">తర్వాతి అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
 <translation id="7500368597227394048">హైఫన్ గుర్తు</translation>
 <translation id="7611271430932669992">దృష్టిని పాప్అప్‌లు మరియు డైలాగ్‌లపైకి మార్చండి</translation>
+<translation id="7635348532214572995">యాప్ గ్రిడ్ పరిధి లోపల యాప్ చిహ్నాన్ని తరలించండి</translation>
 <translation id="766326951329901120">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను సాదా వచనంగా అతికించండి</translation>
 <translation id="7703010453515335249">ఎడమ బ్రాకెట్</translation>
 <translation id="7724603315864178912">కత్తిరించు</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను అతికించండి</translation>
 <translation id="9052808072970550123">తదుపరి వినియోగదారుకు మారండి</translation>
 <translation id="906458777597946297">విండోను విస్తరించు</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ఆపై <ph name="LEFT" /> లేదా <ph name="RIGHT" /> లేదా <ph name="UP" /> లేదా <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">పంక్తి ప్రారంభానికి వెళ్లు</translation>
 <translation id="9106898733795143799">పేజీ మరియు వెబ్ బ్రౌజర్</translation>
 <translation id="9162942292291287644"><ph name="QUERY" />కు శోధన ఫలితాలేవీ లేవు</translation>

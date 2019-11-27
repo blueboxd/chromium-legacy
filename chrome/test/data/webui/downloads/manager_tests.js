@@ -165,7 +165,6 @@ suite('manager tests', function() {
     // Simulate 'alt+c' key combo.
     keyDownOn(document, null, 'alt', isMac ? 'ç' : 'c');
     assertTrue(toastManager.isToastOpen);
-    assertFalse(toastManager.isUndoButtonHidden);
   });
 
   test('toast is hidden when undo-command is fired', () => {
@@ -180,7 +179,7 @@ suite('manager tests', function() {
   test('toast is hidden when undo is clicked', () => {
     toastManager.show('');
     assertTrue(toastManager.isToastOpen);
-    toastManager.dispatchEvent(new Event('undo-click'));
+    manager.$$('cr-toast-manager cr-button').click();
     assertFalse(toastManager.isToastOpen);
   });
 });

@@ -73,6 +73,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let useReticle = document.getElementById('useReticle');
 
+      // Debugging constants.
+      const unsubscribeAfterTouch = false; // unsubscribe from hit test after first touch if in reticle mode?
+
       // XR globals.
       let xrButton = null;
       let xrRefSpace = null;
@@ -258,6 +261,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // at the latest hit point and we should just use its matrix to save
           // an unnecessary requestHitTest call.
           addARObjectAt(arObject.matrix);
+        }
+
+        // Test the cancel method.
+        if(useReticle.checked && unsubscribeAfterTouch && xrViewerSpaceHitTestSource) {
+          xrViewerSpaceHitTestSource.cancel();
+
+          try {
+            xrViewerSpaceHitTestSource.cancel();
+            console.error("double-canceling hit test source should throw!");
+          } catch(ex) {
+            console.debug(ex);
+          }
+
+          xrViewerSpaceHitTestSource = null;
         }
       }
 

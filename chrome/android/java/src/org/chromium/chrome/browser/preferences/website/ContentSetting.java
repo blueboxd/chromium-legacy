@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
  */
 public class ContentSetting {
     // Indexed by {@link ContentSettingValues}.
-    private final static String[] STRING_VALUES = {
+    private static final String[] STRING_VALUES = {
             "DEFAULT", // ContentSettingValues.DEFAULT
             "ALLOW", // ContentSettingValues.ALLOW
             "BLOCK", // ContentSettingValues.BLOCK

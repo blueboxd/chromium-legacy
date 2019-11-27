@@ -8,14 +8,13 @@ import android.app.Activity;
 
 import androidx.annotation.IntDef;
 
-import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
-
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 

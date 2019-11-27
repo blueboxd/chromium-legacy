@@ -2608,7 +2608,14 @@ class DownloadTestWithHistogramTester : public DownloadTest {
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester, SavePageNonHTMLViaGet) {
+#if defined(OS_LINUX)
+#define MAYBE_SavePageNonHTMLViaGet DISABLED_SavePageNonHTMLViaGet
+#else
+#define MAYBE_SavePageNonHTMLViaGet SavePageNonHTMLViaGet
+#endif
+
+IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester,
+                       MAYBE_SavePageNonHTMLViaGet) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);

@@ -55,7 +55,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ChromeTabUtils {
     private static final String TAG = "ChromeTabUtils";
-    public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
+    public static final int TITLE_UPDATE_TIMEOUT_SECONDS = 3;
 
     /**
      * The required page load percentage for the page to be considered ready assuming the
@@ -734,7 +734,7 @@ public class ChromeTabUtils {
     public static void waitForTitle(Tab tab, String newTitle) {
         TabTitleObserver titleObserver = new TabTitleObserver(tab, newTitle);
         try {
-            titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_MS);
+            titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_SECONDS);
         } catch (TimeoutException e) {
             Assert.fail(String.format(Locale.ENGLISH,
                     "Tab title didn't update to %s in time.", newTitle));

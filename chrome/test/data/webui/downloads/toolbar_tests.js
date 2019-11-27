@@ -59,6 +59,5 @@ suite('toolbar tests', function() {
     toolbar.hasClearableDownloads = true;
     toolbar.$$('#moreActionsMenu button').click();
     assertTrue(toastManager.isToastOpen);
-    assertFalse(toastManager.isUndoButtonHidden);
   });
 });

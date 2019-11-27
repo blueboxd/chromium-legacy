@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">請輸入一個數字。</translation>
 <translation id="4912536737030637138">參考書目資料</translation>
+<translation id="492244087561876220">留言</translation>
 <translation id="4975562563186953947">已選取 <ph name="SELECTED_COUNT" /> 個項目</translation>
 <translation id="4992066212339426712">取消靜音</translation>
 <translation id="49969490063480558">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」並不完整。</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
 <translation id="901834265349196618">電郵</translation>
+<translation id="9023835124071926463">留言部分</translation>
 <translation id="9048119486235211610">瀏覽</translation>
 <translation id="9062295712474918030">文件</translation>
 <translation id="9093215626363556771">退出畫中畫</translation>

@@ -128,7 +128,8 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   }
 
   // Return the root accessible object for either MSAA or UI Automation.
-  gfx::NativeViewAccessible GetOrCreateWindowRootAccessible();
+  gfx::NativeViewAccessible GetOrCreateWindowRootAccessible(
+      bool is_uia_request);
 
  protected:
   void OnFinalMessage(HWND hwnd) override;

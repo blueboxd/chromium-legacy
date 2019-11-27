@@ -111,14 +111,14 @@ component("sandbox") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:deprecatedtimezone",
-      "//third_party/fuchsia-sdk/sdk:fonts",
-      "//third_party/fuchsia-sdk/sdk:logger",
-      "//third_party/fuchsia-sdk/sdk:mediacodec",
-      "//third_party/fuchsia-sdk/sdk:net",
-      "//third_party/fuchsia-sdk/sdk:netstack",
-      "//third_party/fuchsia-sdk/sdk:sysmem",
-      "//third_party/fuchsia-sdk/sdk:ui_scenic",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-mediacodec",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-net",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-netstack",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-ui-scenic",
     ]
   }
 }

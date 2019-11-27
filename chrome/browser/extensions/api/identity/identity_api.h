@@ -42,11 +42,6 @@ class Profile;
 
 namespace extensions {
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Enables all accounts in extensions.
-extern const base::Feature kExtensionsAllAccountsFeature;
-#endif
-
 class IdentityTokenCacheValue {
  public:
   IdentityTokenCacheValue();

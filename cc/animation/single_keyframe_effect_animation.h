@@ -50,7 +50,9 @@ class CC_ANIMATION_EXPORT SingleKeyframeEffectAnimation : public Animation {
   virtual void RemoveKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModel(int keyframe_model_id);
 
-  bool NotifyKeyframeModelFinishedForTesting(
+  void NotifyKeyframeModelFinishedForTesting(
+      int timeline_id,
+      int keyframe_model_id,
       TargetProperty::Type target_property,
       int group_id);
   KeyframeModel* GetKeyframeModel(TargetProperty::Type target_property) const;

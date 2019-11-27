@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Nga e majta në të djathtë</translation>
 <translation id="1383876407941801731">Kërko</translation>
 <translation id="1398853756734560583">Zmadho</translation>
-<translation id="1409544243779336081">Rekomandimi për aplikacione</translation>
 <translation id="1450753235335490080">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ke kërkuar për këtë më parë. Fshirja e "<ph name="QUERY" />" nga historiku yt do ta heqë atë përgjithmonë nga llogaria jote në të gjitha pajisjet e tua.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutë dhe }other{# minuta dhe }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Periudha</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 muaj}other{# muaj}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Vlerësimi me yje: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 orë e }other{# orë e }}</translation>
 <translation id="1842960171412779397">përzgjidh</translation>
 <translation id="1859234291848436338">Drejtimi i shkrimit</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7781829728241885113">Dje</translation>
 <translation id="7814458197256864873">&amp;Kopjo</translation>
+<translation id="7848989271541991537">U zhvendos te faqja <ph name="PAGE_NUMBER" />, radha <ph name="ROW_NUMBER" />, kolona <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Mos blloko</translation>
 <translation id="7907591526440419938">Hap skedarin</translation>
 <translation id="7969046989155602842">Komanda</translation>

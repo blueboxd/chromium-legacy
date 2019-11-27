@@ -183,7 +183,6 @@
 <translation id="2321958826496381788">Arrastra o control desprazable ata que poidas ler con comodidade. O texto debe ter polo menos este tamaño despois de facer dobre clic nun parágrafo.</translation>
 <translation id="2323763861024343754">Almacenamento do sitio</translation>
 <translation id="2328985652426384049">Non se puido iniciar sesión</translation>
-<translation id="2330129964253841015">Avisarte se se vulneran os teus contrasinais</translation>
 <translation id="2349710944427398404">Datos totais usados por Chrome, incluídas as contas, os marcadores e a configuración gardada</translation>
 <translation id="2353636109065292463">Comprobando a túa conexión a Internet</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -264,6 +263,7 @@
 <translation id="2903493209154104877">Enderezos</translation>
 <translation id="290376772003165898">A páxina non está en <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">A lista de dispositivos cos que compartir unha pestana está aberta a pantalla completa.</translation>
+<translation id="2905036901251765993">Para compartir contido coas persoas que estean preto, deixa que escaneen este código QR</translation>
 <translation id="2909615210195135082">Plataforma de notificacións de Google</translation>
 <translation id="2910701580606108292">Preguntar antes de permitir que os sitios reproduzan contido protexido</translation>
 <translation id="2913331724188855103">Permitir que os sitios garden e lean datos de cookies (recomendado)</translation>
@@ -358,6 +358,7 @@
 <translation id="3632295766818638029">Mostra o contrasinal</translation>
 <translation id="363596933471559332">Iniciar sesión automaticamente nos sitios web coas credenciais almacenadas. Cando a función estea desactivada, solicitaráseche sempre a verificación antes de iniciar sesión nun sitio web.</translation>
 <translation id="3658159451045945436">O restablecemento borra o historial de aforro de datos, incluída a lista de sitios visitados.</translation>
+<translation id="3682730288090679318">Activa o bloqueo automático de sitios para que non poidan preguntarche se che poden mostrar notificacións. Se un sitio o fai, aparecerá unha barra de información na parte inferior da páxina.</translation>
 <translation id="3692944402865947621">Produciuse un erro ao descargar <ph name="FILE_NAME" /> porque non se pode acceder á localización do almacenamento.</translation>
 <translation id="3714981814255182093">Abrir a barra de busca</translation>
 <translation id="3716182511346448902">Esta páxina utiliza demasiada memoria, así que Chrome pausouna.</translation>
@@ -542,6 +543,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5048398596102334565">Permite aos sitios acceder aos teus sensores de movemento (recomendado)</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5087580092889165836">Engadir tarxeta</translation>
+<translation id="5096950519211870196">Os sitios non poderán preguntarche se che poden mostrar notificacións. Se un sitio o fai, aparecerá unha barra de información na parte inferior da páxina.</translation>
 <translation id="5100237604440890931">Vista contraída (fai clic para ampliala).</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5123685120097942451">Pestana do modo de incógnito</translation>
@@ -589,6 +591,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5414836363063783498">Verificando...</translation>
 <translation id="5423934151118863508">As túas páxinas máis visitadas aparecerán aquí</translation>
 <translation id="5424588387303617268">Espazo dispoñible: <ph name="GIGABYTES" /> GB</translation>
+<translation id="5427766642345310212">De acordo De forma predeterminada, as novas solicitudes de notificacións aparecerán aquí.</translation>
 <translation id="543338862236136125">Editar contrasinal</translation>
 <translation id="5433691172869980887">Copiouse o nome de usuario</translation>
 <translation id="543509235395288790">Descargando <ph name="COUNT" /> ficheiros (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +690,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6111020039983847643">datos utilizados</translation>
 <translation id="6112702117600201073">Actualizando a páxina</translation>
+<translation id="6113400363611269907">Mostrar solicitudes de forma silenciosa</translation>
 <translation id="6127379762771434464">Eliminouse o elemento</translation>
 <translation id="6140912465461743537">País/rexión</translation>
 <translation id="614940544461990577">Proba a facer o seguinte:</translation>
@@ -1019,6 +1023,7 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8503813439785031346">Nome de usuario</translation>
 <translation id="8514477925623180633">Exporta os contrasinais almacenados en Chrome</translation>
 <translation id="8514577642972634246">Entra no modo de incógnito</translation>
+<translation id="8516012719330875537">Editor de imaxes</translation>
 <translation id="851751545965956758">Non permitir que os sitios se conecten aos dispositivos</translation>
 <translation id="8523928698583292556">Elimina o contrasinal almacenado</translation>
 <translation id="854522910157234410">Abrir esta páxina</translation>

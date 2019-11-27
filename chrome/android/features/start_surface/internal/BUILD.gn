@@ -117,7 +117,6 @@ android_library("java") {
       "//chrome/android/public/profiles:java",
       "//content/public/android:content_java",
       "//third_party/android_sdk/androidx_browser:androidx_browser_java",
-      "//third_party/feed_library:feed_lib_java",
       "//ui/android:ui_utils_java",
       "//ui/base/mojom:mojom_java",
     ]

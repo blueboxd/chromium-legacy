@@ -28,6 +28,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -59,6 +60,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests web navigations originating from a WebappActivity.
@@ -101,6 +103,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testRegularLinkOffOriginNoWebappThemeColor() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
@@ -123,6 +126,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testRegularLinkOffOriginThemeColor() throws Exception {
         WebappActivity activity =
@@ -145,6 +149,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testRegularLinkOffOriginTwa() throws Exception {
         Intent launchIntent = mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN);
@@ -172,6 +177,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testFormSubmitOffOrigin() throws Exception {
         Intent launchIntent = mActivityTestRule.createIntent().putExtra(
@@ -257,6 +263,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());

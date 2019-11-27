@@ -118,6 +118,8 @@
     </div>
   </div>
 </div>
-<cr-toast-manager on-undo-click="onUndoClick_" undo-label="$i18n{undo}"
-    undo-description="$i18n{undoDescription}" duration="10000">
+<cr-toast-manager duration="10000">
+  <cr-button aria-label="$i18n{undoDescription}" on-click="onUndoClick_">
+    $i18n{undo}
+  </cr-button>
 </cr-toast-manager>

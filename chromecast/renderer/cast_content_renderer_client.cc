@@ -78,8 +78,7 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(
-          std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
-      supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
+          std::make_unique<media::SupportedCodecProfileLevelsMemo>()) {
 #if defined(OS_ANDROID)
   DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
       << "MediaCodec is not available!";
@@ -243,11 +242,14 @@ bool CastContentRendererClient::IsSupportedAudioType(
   // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
   // device.
   if (type.codec == ::media::kCodecEAC3)
-    return kBitstreamAudioCodecEac3 & supported_bitstream_audio_codecs_;
+    return kBitstreamAudioCodecEac3 &
+           supported_bitstream_audio_codecs_info_.codecs;
   if (type.codec == ::media::kCodecAC3)
-    return kBitstreamAudioCodecAc3 & supported_bitstream_audio_codecs_;
+    return kBitstreamAudioCodecAc3 &
+           supported_bitstream_audio_codecs_info_.codecs;
   if (type.codec == ::media::kCodecMpegHAudio)
-    return kBitstreamAudioCodecMpegHAudio & supported_bitstream_audio_codecs_;
+    return kBitstreamAudioCodecMpegHAudio &
+           supported_bitstream_audio_codecs_info_.codecs;
 
   // TODO(sanfin): Implement this for Android.
   return true;
@@ -288,11 +290,14 @@ bool CastContentRendererClient::IsSupportedVideoType(
 bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
     ::media::AudioCodec codec) {
   return (codec == ::media::kCodecAC3 &&
-          (kBitstreamAudioCodecAc3 & supported_bitstream_audio_codecs_)) ||
+          (kBitstreamAudioCodecAc3 &
+           supported_bitstream_audio_codecs_info_.codecs)) ||
          (codec == ::media::kCodecEAC3 &&
-          (kBitstreamAudioCodecEac3 & supported_bitstream_audio_codecs_)) ||
+          (kBitstreamAudioCodecEac3 &
+           supported_bitstream_audio_codecs_info_.codecs)) ||
          (codec == ::media::kCodecMpegHAudio &&
-          (kBitstreamAudioCodecMpegHAudio & supported_bitstream_audio_codecs_));
+          (kBitstreamAudioCodecMpegHAudio &
+           supported_bitstream_audio_codecs_info_.codecs));
 }
 
 blink::WebPrescientNetworking*
@@ -333,8 +338,8 @@ void CastContentRendererClient::
 }
 
 void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
-    int codecs) {
-  supported_bitstream_audio_codecs_ = codecs;
+    const BitstreamAudioCodecsInfo& info) {
+  supported_bitstream_audio_codecs_info_ = info;
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>

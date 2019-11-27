@@ -359,7 +359,7 @@ jumbo_static_library("content_shell_lib") {
       "//components/crash/content/app:test_support",
       "//components/crash/content/browser",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:ui_policy" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:fuchsia-ui-policy" ]
   }
 
   # Annoyingly, this target and web_test_support have circular includes.

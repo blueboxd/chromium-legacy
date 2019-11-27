@@ -25,7 +25,7 @@ VisitedLinkCommon::~VisitedLinkCommon() {
 }
 
 // FIXME: this uses linear probing, it should be replaced with quadratic
-// probing or something better. See VisitedLinkMaster::AddFingerprint
+// probing or something better. See VisitedLinkWriter::AddFingerprint
 bool VisitedLinkCommon::IsVisited(const char* canonical_url,
                                   size_t url_len) const {
   if (url_len == 0)

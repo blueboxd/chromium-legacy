@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">Kwesokunxele kuya kwesokudla</translation>
 <translation id="1383876407941801731">Sesha</translation>
 <translation id="1398853756734560583">Khulisa</translation>
-<translation id="1409544243779336081">Izincomo zohlelo lokusebenza</translation>
 <translation id="1450753235335490080">Ayikwazi ukwabelana nge-<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Useshe lokhu ngaphambilini. Ukususa i-"<ph name="QUERY" />" kusuka kumlando wakho kuzowususa unaphakade kusuka ku-akhawunti yakho kuwo wonke amadivayisi akho.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 iminithi ne- }one{# amaminithi ne- }other{# amaminithi ne- }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">Isikhathi</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 inyanga}one{# izinyanga}other{# izinyanga}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Isilinganiso senkanyezi esingu-<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ihora ne- }one{# amahora ne- }other{# amahora ne- }}</translation>
 <translation id="1842960171412779397">khetha</translation>
 <translation id="1859234291848436338">Ibhala izikhobisi-ndlela</translation>

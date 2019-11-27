@@ -20,12 +20,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
+#include "content/browser/indexed_db/indexed_db_blob_storage.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -44,10 +46,6 @@ namespace blink {
 class IndexedDBKeyRange;
 struct IndexedDBDatabaseMetadata;
 }  // namespace blink
-
-namespace storage {
-class FileWriterDelegate;
-}
 
 namespace content {
 class IndexedDBActiveBlobRegistry;
@@ -93,43 +91,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
   };
 
-  enum class BlobWriteResult {
-    // There was an error writing the blobs.
-    kFailure,
-    // The blobs were written, and phase two should be scheduled asynchronously.
-    // The returned status will be ignored.
-    kRunPhaseTwoAsync,
-    // The blobs were written, and phase two should be run now. The returned
-    // status will be correctly propagated.
-    kRunPhaseTwoAndReturnResult,
-  };
-
-  // The returned status is only used when the result is
-  // |kRunPhaseTwoAndReturnResult|.
-  using BlobWriteCallback = base::OnceCallback<leveldb::Status(
-      IndexedDBBackingStore::BlobWriteResult)>;
-
-  class BlobChangeRecord {
-   public:
-    BlobChangeRecord(const std::string& key, int64_t object_store_id);
-    ~BlobChangeRecord();
-
-    const std::string& key() const { return key_; }
-    int64_t object_store_id() const { return object_store_id_; }
-    void SetBlobInfo(std::vector<IndexedDBBlobInfo>* blob_info);
-    std::vector<IndexedDBBlobInfo>& mutable_blob_info() { return blob_info_; }
-    const std::vector<IndexedDBBlobInfo>& blob_info() const {
-      return blob_info_;
-    }
-    std::unique_ptr<BlobChangeRecord> Clone() const;
-
-   private:
-    std::string key_;
-    int64_t object_store_id_;
-    std::vector<IndexedDBBlobInfo> blob_info_;
-    DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
-  };
-
   class CONTENT_EXPORT Transaction {
    public:
     explicit Transaction(base::WeakPtr<IndexedDBBackingStore> backing_store,
@@ -159,11 +120,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     void Reset();
     leveldb::Status PutBlobInfoIfNeeded(
         int64_t database_id,
-        int64_t object_store_id,
         const std::string& object_store_data_key,
         std::vector<IndexedDBBlobInfo>*);
     void PutBlobInfo(int64_t database_id,
-                     int64_t object_store_id,
                      const std::string& object_store_data_key,
                      std::vector<IndexedDBBlobInfo>*);
 
@@ -180,74 +139,11 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     base::WeakPtr<Transaction> AsWeakPtr();
 
-    // This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
-    // under that key.
-    typedef std::vector<std::pair<BlobEntryKey, std::string> >
-        BlobEntryKeyValuePairVec;
-
-    class CONTENT_EXPORT WriteDescriptor {
-     public:
-      WriteDescriptor(const storage::BlobDataHandle* blob,
-                      int64_t key,
-                      int64_t size,
-                      base::Time last_modified);
-      WriteDescriptor(const base::FilePath& path,
-                      int64_t key,
-                      int64_t size,
-                      base::Time last_modified);
-      WriteDescriptor(const WriteDescriptor& other);
-      ~WriteDescriptor();
-      WriteDescriptor& operator=(const WriteDescriptor& other);
-
-      bool is_file() const { return is_file_; }
-      const storage::BlobDataHandle* blob() const {
-        DCHECK(!is_file_);
-        return &blob_.value();
-      }
-      const base::FilePath& file_path() const {
-        DCHECK(is_file_);
-        return file_path_;
-      }
-      int64_t key() const { return key_; }
-      int64_t size() const { return size_; }
-      base::Time last_modified() const { return last_modified_; }
-
-     private:
-      bool is_file_;
-      base::Optional<storage::BlobDataHandle> blob_;
-      base::FilePath file_path_;
-      int64_t key_;
-      int64_t size_;
-      base::Time last_modified_;
-    };
-
-    class ChainedBlobWriter
-        : public base::RefCountedThreadSafe<ChainedBlobWriter> {
-     public:
-      virtual void set_delegate(
-          std::unique_ptr<storage::FileWriterDelegate> delegate) = 0;
-
-      // TODO(ericu): Add a reason in the event of failure.
-      virtual void ReportWriteCompletion(bool succeeded,
-                                         int64_t bytes_written) = 0;
-
-      virtual void Abort() = 0;
-
-      // Whether to flush to the file system when writing or not.
-      virtual storage::FlushPolicy GetFlushPolicy() const = 0;
-
-     protected:
-      friend class base::RefCountedThreadSafe<ChainedBlobWriter>;
-      virtual ~ChainedBlobWriter() {}
-    };
-
     class ChainedBlobWriterImpl;
-
-    typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 
    private:
     // Called by CommitPhaseOne: Identifies the blob entries to write and adds
-    // them to the primary blob journal directly (i.e. not as part of the
+    // them to the recovery blob journal directly (i.e. not as part of the
     // transaction). Populates blobs_to_write_.
     leveldb::Status HandleBlobPreTransaction(
         BlobEntryKeyValuePairVec* new_blob_entries,
@@ -271,6 +167,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     void PartitionBlobsToRemove(BlobJournalType* dead_blobs,
                                 BlobJournalType* live_blobs) const;
 
+    SEQUENCE_CHECKER(idb_sequence_checker_);
+
     // This does NOT mean that this class can outlive the IndexedDBBackingStore.
     // This is only to protect against security issues before this class is
     // refactored away and this isn't necessary.
@@ -284,12 +182,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     int64_t database_id_;
 
     // List of blob files being newly written as part of this transaction.
-    // These will be added to the primary blob journal prior to commit, then
+    // These will be added to the recovery blob journal prior to commit, then
     // removed after a successful commit.
     BlobJournalType blobs_to_write_;
 
     // List of blob files being deleted as part of this transaction. These will
-    // be added to either the primary or live blob journal as appropriate
+    // be added to either the recovery or live blob journal as appropriate
     // following a successful commit.
     BlobJournalType blobs_to_remove_;
     scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
@@ -361,6 +259,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
+
+    SEQUENCE_CHECKER(idb_sequence_checker_);
 
     // This does NOT mean that this class can outlive the Transaction.
     // This is only to protect against security issues before this class is
@@ -605,10 +505,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   leveldb::Status GetCompleteMetadata(
       std::vector<blink::IndexedDBDatabaseMetadata>* output);
 
-  virtual bool WriteBlobFile(
-      int64_t database_id,
-      const Transaction::WriteDescriptor& descriptor,
-      Transaction::ChainedBlobWriter* chained_blob_writer);
+  virtual bool WriteBlobFile(int64_t database_id,
+                             const WriteDescriptor& descriptor,
+                             ChainedBlobWriter* chained_blob_writer);
 
   // Remove the referenced file on disk.
   virtual bool RemoveBlobFile(int64_t database_id, int64_t key) const;
@@ -652,6 +551,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   void WillCommitTransaction();
   // Can run a journal cleaning job if one is pending.
   void DidCommitTransaction();
+
+  SEQUENCE_CHECKER(idb_sequence_checker_);
 
   Mode backing_store_mode_;
   TransactionalLevelDBFactory* const transactional_leveldb_factory_;

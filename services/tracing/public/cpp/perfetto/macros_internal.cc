@@ -28,7 +28,8 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name) {
-  DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END);
+  DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END ||
+         phase == TRACE_EVENT_PHASE_INSTANT);
   DCHECK(category_group_enabled);
   const int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   auto* trace_log = base::trace_event::TraceLog::GetInstance();

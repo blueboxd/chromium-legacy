@@ -581,10 +581,10 @@ void ArcAccessibilityHelperBridge::OnAction(
   if (!tree_source)
     return;
 
-  const int window_id = tree_source->GetWindowId();
-  if (window_id == ui::AXNode::kInvalidAXID)
+  base::Optional<int32_t> window_id = tree_source->window_id();
+  if (!window_id)
     return;
-  action_data->window_id = window_id;
+  action_data->window_id = window_id.value();
 
   switch (data.action) {
     case ax::mojom::Action::kDoDefault:

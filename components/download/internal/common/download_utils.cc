@@ -423,7 +423,7 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   download_info.in_progress_info = in_progress_info;
 
   download_info.ukm_info =
-      UkmInfo(item.download_source(), item.ukm_download_id());
+      UkmInfo(item.GetDownloadSource(), item.ukm_download_id());
   entry.download_info = download_info;
   return entry;
 }

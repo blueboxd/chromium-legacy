@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Plus</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Modifiez votre mot de passe</translation>
 <translation id="1484290072879560759">Sélectionner l'adresse de livraison</translation>
 <translation id="1492194039220927094">Diffusion push des règles : </translation>
 <translation id="1501859676467574491">Afficher les cartes de votre compte Google</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Essayez de contacter l'administrateur système.</translation>
 <translation id="1736420071277903564">Ordinateur</translation>
-<translation id="1739107442478692187">Un site ou une application que vous utilisez a subi une violation des données. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="1740951997222943430">Saisissez un mois d'expiration valide</translation>
 <translation id="1741613555002899862">Cette règle doit être spécifiée avec une chaîne valide lorsque la règle DnsOverHttpsMode est définie sur <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Pour régler plus rapidement vos achats la prochaine fois, enregistrez votre carte, votre nom et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Service de décompression de fichier</translation>
 <translation id="1915697529809968049">Utiliser Touch ID au lieu du code CVC ?</translation>
 <translation id="1916770123977586577">Pour appliquer vos paramètres mis à jour à ce site, actualisez la page</translation>
+<translation id="1917876262703816781">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application. Nous vous recommandons de modifier votre mot de passe pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919367280705858090">Obtenir de l'aide pour un message d'erreur spécifique</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Aucun}=1{1 site}one{# site}other{# sites}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Le domaine ne correspond pas</translation>
 <translation id="2096368010154057602">Département</translation>
 <translation id="2099652385553570808">Triple agrafe à gauche</translation>
-<translation id="2100280972184758440">Votre mot de passe a été piraté</translation>
 <translation id="2102134110707549001">Suggérer un mot de passe sécurisé…</translation>
 <translation id="2108755909498034140">Redémarrez l'ordinateur</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Émis pour : <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforation en bas à droite</translation>
-<translation id="2124528555835617522">Un site ou une application que vous utilisez a subi une violation des données. Nous vous recommandons de vérifier vos mots de passe enregistrés immédiatement.</translation>
 <translation id="2129079103035905234">Capteurs de mouvement</translation>
 <translation id="2130448033692577677">Les modèles que vous avez spécifiés risquent de ne pas être appliqués, car la règle DnsOverHttpsMode n'est pas configurée.</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
@@ -484,7 +483,6 @@
 <translation id="3282497668470633863">Ajouter le nom sur la carte</translation>
 <translation id="3287510313208355388">Télécharger une fois connecté</translation>
 <translation id="3293642807462928945">En savoir plus sur les règles <ph name="POLICY_NAME" />.</translation>
-<translation id="3295439534709115864">Un site ou une application que vous utilisez a subi une violation des données. Nous vous recommandons de changer votre mot de passe pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="3303855915957856445">Aucun résultat de recherche n'a été trouvé.</translation>
 <translation id="3320021301628644560">Ajouter une adresse de facturation</translation>
 <translation id="3324983252691184275">Pourpre</translation>
@@ -892,6 +890,7 @@
 <translation id="5287240709317226393">Afficher les cookies</translation>
 <translation id="5287456746628258573">La configuration de sécurité obsolète de ce site peut exposer vos informations, comme vos mots de passe ou vos numéros de carte de crédit, lorsqu'elles lui sont transmises.</translation>
 <translation id="5288108484102287882">La validation des valeurs de règle a renvoyé des avertissements</translation>
+<translation id="5295292838686006428">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application. Nous vous recommandons de vérifier vos mots de passe enregistrés immédiatement.</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5308380583665731573">Connexion</translation>
@@ -1033,6 +1032,7 @@
 <translation id="5992691462791905444">Technique de pli en Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> résultats pour "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Vérifier vos mots de passe</translation>
 <translation id="6015796118275082299">Année</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Vert</translation>
@@ -1322,6 +1322,7 @@ Informations supplémentaires :
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="748406663033922918">Utilisez le verrouillage de l'écran pour valider vos modes de paiement enregistrés.</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
+<translation id="7495290002932347110">Votre mot de passe a été compromis à la suite d'une violation de données affectant un site ou une application. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="7498234416455752244">Poursuivre les modifications</translation>
 <translation id="7508255263130623398">L'ID d'appareil de la règle renvoyé est vide ou ne correspond pas à l'ID d'appareil actuel.</translation>
 <translation id="7508870219247277067">Vert avocat</translation>

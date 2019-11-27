@@ -112,12 +112,12 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     // have the potential of initiating an autoscroll (if held down for long
     // enough).
     DCHECK(scrollbar_part != ScrollbarPart::THUMB);
-    cancelable_autoscroll_task_ = std::make_unique<base::CancelableClosure>(
-        base::Bind(&ScrollbarController::StartAutoScrollAnimation,
-                   base::Unretained(this),
-                   InitialDeltaToAutoscrollVelocity(
-                       scrollbar, scroll_result.scroll_offset),
-                   scrollbar, scrollbar_part));
+    cancelable_autoscroll_task_ = std::make_unique<base::CancelableOnceClosure>(
+        base::BindOnce(&ScrollbarController::StartAutoScrollAnimation,
+                       base::Unretained(this),
+                       InitialDeltaToAutoscrollVelocity(
+                           scrollbar, scroll_result.scroll_offset),
+                       scrollbar, scrollbar_part));
     layer_tree_host_impl_->task_runner_provider()
         ->ImplThreadTaskRunner()
         ->PostDelayedTask(FROM_HERE, cancelable_autoscroll_task_->callback(),

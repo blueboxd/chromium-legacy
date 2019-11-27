@@ -27,9 +27,9 @@ class InstallableInkDropAnimatorTest : public ::testing::Test {
   InstallableInkDropAnimatorTest()
       : animation_container_(base::MakeRefCounted<gfx::AnimationContainer>()),
         animation_tester_(animation_container_.get()),
-        callback_(
-            base::Bind([](bool* callback_called) { *callback_called = true; },
-                       &callback_called_)) {}
+        callback_(base::BindRepeating(
+            [](bool* callback_called) { *callback_called = true; },
+            &callback_called_)) {}
 
  protected:
   base::test::TaskEnvironment task_environment_;

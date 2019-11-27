@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -514,7 +514,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @Override
     public void releaseOverlayPanelContent() {
         if (getTabModelSelector() == null) return;
-        TabBrowserControlsState.updateEnabledState(getTabModelSelector().getCurrentTab());
+        TabBrowserControlsConstraintsHelper.updateEnabledState(
+                getTabModelSelector().getCurrentTab());
     }
 
     /**

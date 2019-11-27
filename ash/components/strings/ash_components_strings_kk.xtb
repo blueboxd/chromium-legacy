@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> немесе <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Шолу режимі</translation>
 <translation id="4382340674111381977">Алдыңғы бетке өту</translation>
+<translation id="4458670250301149821">Қалта ішіндегі не одан тыс қолданба белгішесін қолданба торына жылжыту</translation>
 <translation id="4472417192667361414">Жүйе және дисплей параметрлері</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, сонан соң <ph name="LEFT" /> не <ph name="RIGHT" /> немесе <ph name="UP" /> не <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Пернелер тіркесімі анықтамалығын қарау</translation>
 <translation id="4628718545549558538">Күй аумағын (есептік жазбаңыздың суреті орналасқан жер) ашу</translation>
 <translation id="4642092649622328492">Экранның бір бөлігін түсіру</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Келесі әріпті жою (алға қарай жою)</translation>
 <translation id="7500368597227394048">сызықша</translation>
 <translation id="7611271430932669992">Қалқымалы терезелерге және диалогтарға өту</translation>
+<translation id="7635348532214572995">Қолданба белгішесін қолданба торының айналасына жылжыту.</translation>
 <translation id="766326951329901120">Мазмұнды буферден қарапайым мәтін ретінде қою</translation>
 <translation id="7703010453515335249">сол жақ жақша</translation>
 <translation id="7724603315864178912">Қиып алу</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Буфердегі мазмұнды қою</translation>
 <translation id="9052808072970550123">Келесі пайдаланушыға ауысу</translation>
 <translation id="906458777597946297">Терезені жаю</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, одан кейін <ph name="LEFT" /> не <ph name="RIGHT" /> немесе <ph name="UP" /> не <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Жолдың басына өту</translation>
 <translation id="9106898733795143799">Бет және браузер</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> сұрауы бойынша ештеңе табылмады</translation>

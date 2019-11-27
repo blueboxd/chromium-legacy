@@ -4,7 +4,6 @@
 <link rel="import" href="../../html/assert.html">
 <link rel="import" href="../../html/cr.html">
 <link rel="import" href="../../html/event_tracker.html">
-<link rel="import" href="../cr_button/cr_button.html">
 <link rel="import" href="cr_toast.html">
 
 <dom-module id="cr-toast-manager">
@@ -32,10 +31,7 @@
     </style>
     <cr-toast id="toast" duration="[[duration]]">
       <div id="content" class="elided-text"></div>
-      <cr-button id="button" hidden$="[[!showUndo_]]" on-click="onUndoClick_"
-          aria-label$="[[undoDescription]]">
-        [[undoLabel]]
-      </cr-button>
+      <slot></slot>
     </cr-toast>
   </template>
   <script src="cr_toast_manager.js"></script>

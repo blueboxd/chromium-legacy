@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -398,14 +399,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 #pragma mark - ManageSyncSettingsServiceDelegate
 
-- (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value {
+- (void)toggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
   {
     // The notifications should be ignored to get smooth switch animations.
     // Notifications are sent by SyncObserverModelBridge while changing
     // settings.
     base::AutoReset<BOOL> autoReset(&_ignoreSyncStateChanges, YES);
-    switchItem.on = value;
-    ItemType itemType = static_cast<ItemType>(switchItem.type);
+    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+    syncSwitchItem.on = value;
+    ItemType itemType = static_cast<ItemType>(item.type);
     switch (itemType) {
       case SyncEverythingItemType:
         self.syncSetupService->SetSyncingAllDataTypes(value);
@@ -423,9 +425,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case PasswordsDataTypeItemType:
       case ReadingListDataTypeItemType:
       case SettingsDataTypeItemType: {
+        DCHECK(syncSwitchItem);
         SyncSetupService::SyncableDatatype dataType =
             static_cast<SyncSetupService::SyncableDatatype>(
-                switchItem.dataType);
+                syncSwitchItem.dataType);
         syncer::ModelType modelType =
             self.syncSetupService->GetModelType(dataType);
         self.syncSetupService->SetDataTypeEnabled(modelType, value);

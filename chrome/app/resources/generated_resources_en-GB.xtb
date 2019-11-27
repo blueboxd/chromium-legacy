@@ -934,7 +934,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
-<translation id="2330129964253841015">Warn you if passwords are compromised</translation>
 <translation id="2332131598580221120">View in store</translation>
 <translation id="2332192922827071008">Open preferences</translation>
 <translation id="2332742915001411729">Reset to default</translation>
@@ -4099,6 +4098,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6990778048354947307">Dark Theme</translation>
 <translation id="6991665348624301627">Select a destination</translation>
 <translation id="6992554835374084304">Turn on enhanced spell check</translation>
+<translation id="6995899638241819463">Warn you if passwords are exposed in a data breach</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Activity Log</translation>
 <translation id="6997707937646349884">On your devices:</translation>
 <translation id="6998793565256476099">Enrol device for video conferencing</translation>

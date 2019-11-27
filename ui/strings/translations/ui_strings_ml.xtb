@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">ഇടതുനിന്ന് വലത്തേക്ക്</translation>
 <translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
-<translation id="1409544243779336081">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> പങ്കിടാനാവുന്നില്ല</translation>
 <translation id="1498028757988366001">നിങ്ങൾ ഇതിനായി മുമ്പ് തിരഞ്ഞിട്ടുണ്ട്. ചരിത്രത്തിൽ നിന്ന് "<ph name="QUERY" />" ഇല്ലാതാക്കുന്നത്, നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലുമുടനീളമുള്ള അക്കൗണ്ടിൽ നിന്ന് അതിനെ ശാശ്വതമായി ഇല്ലാതാക്കും.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{ഒരു മിനിറ്റും }other{# മിനിറ്റും }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">കാലയളവ്</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{ഒരു മാസം}other{# മാസം}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">നക്ഷത്ര റേറ്റിംഗ് <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ഒരു മണിക്കൂറും }other{# മണിക്കൂറും }}</translation>
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="1859234291848436338">എഴുതേണ്ട ദിശ</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="7814458197256864873">&amp;പകര്‍ത്തൂ</translation>
+<translation id="7848989271541991537">പേജ് <ph name="PAGE_NUMBER" />, വരി <ph name="ROW_NUMBER" />, കോളം <ph name="COLUMN_NUMBER" /> എന്നതിലേക്ക് നീക്കി.</translation>
 <translation id="7879499977785298635">ബ്ലോക്ക് ചെയ്യരുത്</translation>
 <translation id="7907591526440419938">ഫയല്‍ തുറക്കുക</translation>
 <translation id="7969046989155602842">കമാൻഡ്</translation>

@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mehr anzeigen</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Passwort ändern</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
 <translation id="1492194039220927094">Richtlinien übernehmen: </translation>
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Setzen Sie sich mit dem Systemadministrator in Verbindung.</translation>
 <translation id="1736420071277903564">Computer</translation>
-<translation id="1739107442478692187">Auf einer Website oder in einer App, die Sie nutzen, ist eine Datenpanne aufgetreten. Chrome empfiehlt, Ihre gespeicherten Passwörter zu überprüfen und Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="1740951997222943430">Geben Sie einen gültigen Ablaufmonat ein</translation>
 <translation id="1741613555002899862">Muss angegeben werden und ein gültiger String sein, wenn "DnsOverHttpsMode" auf <ph name="SECURE_DNS_MODE_SECURE" /> gesetzt ist.</translation>
 <translation id="1743520634839655729">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten, Ihren Namen und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Dienst entpacken</translation>
 <translation id="1915697529809968049">Touch ID anstelle des CVCs verwenden?</translation>
 <translation id="1916770123977586577">Laden Sie diese Seite neu, um die aktualisierten Einstellungen für diese Website zu übernehmen</translation>
+<translation id="1917876262703816781">Durch eine Datenpanne auf einer Website oder in einer App wurde Ihr Passwort preisgegeben. Chrome empfiehlt, Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="1919345977826869612">Werbung</translation>
 <translation id="1919367280705858090">Hilfe bei bestimmten Fehlermeldungen</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Keine}=1{1 Website}other{# Websites}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domains stimmen nicht überein.</translation>
 <translation id="2096368010154057602">Abteilung</translation>
 <translation id="2099652385553570808">Drei Heftklammern links</translation>
-<translation id="2100280972184758440">Ihr Passwort ist nicht mehr sicher</translation>
 <translation id="2102134110707549001">Starkes Passwort vorschlagen…</translation>
 <translation id="2108755909498034140">Computer neu starten</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Wird ignoriert, da sie von <ph name="POLICY_NAME" /> außer Kraft gesetzt wurde.</translation>
 <translation id="2119505898009119320">Ausgestellt für: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Lochung unten rechts</translation>
-<translation id="2124528555835617522">Auf einer Website oder in einer App, die Sie nutzen, ist eine Datenpanne aufgetreten. Chrome empfiehlt, Ihre gespeicherten Passwörter jetzt zu prüfen.</translation>
 <translation id="2129079103035905234">Bewegungssensoren</translation>
 <translation id="2130448033692577677">Die von Ihnen angegebenen Vorlagen können nicht angewendet werden, weil die Richtlinie "DnsOverHttpsMode" nicht konfiguriert ist.</translation>
 <translation id="213826338245044447">Mobile Lesezeichen</translation>
@@ -488,7 +487,6 @@
 <translation id="3282497668470633863">Angabe für "Name auf der Karte" hinzufügen</translation>
 <translation id="3287510313208355388">Herunterladen, sobald eine Internetverbindung besteht</translation>
 <translation id="3293642807462928945">Weitere Informationen zur "<ph name="POLICY_NAME" />"-Richtlinie</translation>
-<translation id="3295439534709115864">Auf einer Website oder in einer App, die Sie nutzen, ist eine Datenpanne aufgetreten. Chrome empfiehlt, Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
 <translation id="3324983252691184275">Purpur</translation>
@@ -897,6 +895,7 @@
 <translation id="5287240709317226393">Cookies anzeigen</translation>
 <translation id="5287456746628258573">Diese Website nutzt eine veraltete Sicherheitskonfiguration. Hierdurch können Informationen wie etwa Passwörter oder Kreditkartennummern, die an diese Website gesendet werden, in die Hände Unbefugter gelangen.</translation>
 <translation id="5288108484102287882">Die Validierung der Richtlinienwerte hat Warnungen ergeben</translation>
+<translation id="5295292838686006428">Durch eine Datenpanne auf einer Website oder in einer App wurde Ihr Passwort preisgegeben. Chrome empfiehlt, Ihre gespeicherten Passwörter jetzt zu prüfen.</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5308380583665731573">Verbinden</translation>
@@ -947,6 +946,7 @@
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
 <translation id="5545756402275714221">Artikel für mich</translation>
+<translation id="5552137475244467770">Chrome prüft gelegentlich, ob Ihre Passwörter auf Listen erscheinen, die online veröffentlicht wurden. Dabei werden Ihre Passwörter und Nutzernamen verschlüsselt, damit sie von niemandem gelesen werden können, auch nicht von Google.</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5560088892362098740">Ablaufdatum</translation>
 <translation id="5565735124758917034">Aktiv</translation>
@@ -1038,6 +1038,7 @@
 <translation id="5992691462791905444">Technische Z-Faltung</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> Ergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Passwörter prüfen</translation>
 <translation id="6015796118275082299">Jahr</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Seite 1}other{Seite #}}</translation>
 <translation id="6017514345406065928">Grün</translation>
@@ -1327,6 +1328,7 @@ Weitere Details:
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="748406663033922918">Displaysperre verwenden, um Ihre gespeicherten Zahlungsmethoden zu bestätigen.</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
+<translation id="7495290002932347110">Durch eine Datenpanne auf einer Website oder in einer App wurde Ihr Passwort preisgegeben. Chrome empfiehlt, Ihre gespeicherten Passwörter zu überprüfen und Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="7498234416455752244">Weiter bearbeiten</translation>
 <translation id="7508255263130623398">Zurückgegebene Geräte-ID der Richtlinie ist leer oder entspricht nicht der aktuellen Geräte-ID</translation>
 <translation id="7508870219247277067">Avocadogrün</translation>

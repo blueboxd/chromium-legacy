@@ -9,8 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 
 namespace content {

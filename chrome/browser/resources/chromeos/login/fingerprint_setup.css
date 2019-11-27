@@ -7,16 +7,6 @@
   font-weight: 400; /* roboto-regular */
 }
 
-#fingerprintUnlockIcon {
-  background-image: -webkit-image-set(
-      url(images/1x/finger_unlock.svg) 1x,
-      url(images/2x/finger_unlock.svg) 2x );
-  background-position: 50% 30%;
-  background-size: 264px 264px;
-  height: 210px;
-  width: 210px;
-}
-
 #sensorLocationContainer {
   height: 242px;
   width: 352px;

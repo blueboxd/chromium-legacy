@@ -451,11 +451,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           설정되지 않으면 처음에는 로그인 화면에서 음성기록이 사용되지 않지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
-<translation id="1676141669324989554">사용자가 특정 사이트에 혼합 콘텐츠를 허용하는 예외를 추가할 수 있는지 여부를 설정하도록 허용합니다.
-
-          'InsecureContentAllowedForUrls' 정책 및 'InsecureContentBlockedForUrls' 정책을 사용하면 특정 URL 패턴에서 이 정책을 재정의할 수 있습니다.
-
-          정책이 설정되지 않으면 사용자는 차단 가능한 혼합 콘텐츠를 허용하는 예외를 추가할 수 있습니다.</translation>
 <translation id="1695708467571967752">이 정책은 기기가 잠겨있을 때 사용자가 미디어를 재생할 수 있는지 결정합니다.
 
       이 정책을 False로 설정하면 잠금 화면의 미디어 제어 기능이 사용 중지됩니다.
@@ -537,9 +532,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책이 true로 설정되어 있으면 가능한 경우 내장 DNS 클라이언트가 사용됩니다.
 
-      false로 설정되면 내장 DNS가 사용되지 않습니다.
+      false로 설정되면 내장 DNS 클라이언트가 사용되지 않습니다.
 
-      설정되지 않으면 macOS, Android(비공개 DNS와 VPN이 모두 사용 설정되지 않은 경우), ChromeOS에서 내장 DNS 클라이언트가 기본으로 사용 설정되며 사용자는 chrome://flags를 수정하거나 명령줄 플래그를 지정하여 내장 DNS 클라이언트 사용 여부를 변경할 수 있습니다.</translation>
+      설정되지 않으면 MacOS, Android(비공개 DNS와 VPN이 모두 사용 설정되지 않은 경우), ChromeOS에서 내장 DNS 클라이언트가 기본으로 사용 설정되며 사용자는 chrome://flags를 수정하거나 명령줄 플래그를 지정하여 내장 DNS 클라이언트 사용 여부를 변경할 수 있습니다.</translation>
 <translation id="1857152770025485173">이 정책은 사용자가 블랙리스트에 포함된 URL의 웹페이지를 로드하지 못하도록 차단합니다. 블랙리스트에는 어떤 URL이 블랙리스트에 포함될지 지정하는 URL 패턴 목록이 있습니다.
 
       URL 패턴 형식은 https://www.chromium.org/administrators/url-blacklist-filter-format에 따라 지정되어야 합니다.
@@ -1420,7 +1415,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책이 비어 있지 않은 문자열로 설정된 경우 DHCP 요청 중에 이 문자열이 기기 호스트 이름으로 사용됩니다.
 
-      문자열에는 <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> 변수가 포함될 수 있으며, 이러한 변수는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체 값은 유효한 호스트 이름이어여 합니다(RFC 1035, 섹션 3.1 준수).
+      문자열에는 <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> 변수가 포함될 수 있으며, 이러한 변수는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체 값은 유효한 호스트 이름이어야 합니다(RFC 1035, 섹션 3.1 준수).
 
       정책이 설정되어 있지 않거나 대체 후 값이 유효한 호스트 이름이 아닌 경우 DHCP 요청에서 어떠한 호스트 이름도 설정되지 않습니다. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
@@ -3243,9 +3238,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5961137303188584693">기기의 내장 NIC MAC 주소</translation>
 <translation id="5966615072639944554">원격 인증 API를 사용하도록 허용된 확장 프로그램입니다.</translation>
 <translation id="5983708779415553259">사이트에 대한 기본 동작이 콘텐츠 팩에 없음</translation>
-<translation id="5997107377032983906">차단 가능한(즉, 활성) 혼합 콘텐츠(예: HTTPS 사이트의 HTTP 콘텐츠) 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
-
-          이 정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠가 차단되지만 사용자는 특정 사이트를 허용하도록 예외를 설정할 수 있습니다.</translation>
 <translation id="5997543603646547632">기본적으로 24시간 표기법 사용</translation>
 <translation id="5997846976342452720">플러그인 Finder 사용 중지 여부 지정(지원 중단됨)</translation>
 <translation id="5998198091336830580">이 정책은 다음 그룹의 일부입니다. 그룹에서 우선순위가 가장 높은 출처의 정책만 적용됩니다.</translation>
@@ -3645,9 +3637,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6786747875388722282">확장 프로그램</translation>
 <translation id="6786967369487349613">로밍 프로필 디렉터리를 설정합니다.</translation>
 <translation id="6795485990775913659">PIN이 없으면 인쇄만 허용</translation>
-<translation id="6800064234889290465">차단 가능한(즉, 활성) 혼합 콘텐츠(예: HTTPS 사이트의 HTTP 콘텐츠) 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
-
-          이 정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠가 차단되지만 사용자는 특정 사이트를 허용하도록 예외를 설정할 수 있습니다.</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="6813263547126514821">전원 및 종료</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>

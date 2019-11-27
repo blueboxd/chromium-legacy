@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -85,7 +84,7 @@ void WilcoDtcSupportdBridgeDelegateImpl::
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());
   wilco_dtc_supportd_service_factory_mojo_remote->Bind(
-      mojo::InterfacePtrInfo<
+      mojo::PendingRemote<
           wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>(
           std::move(server_pipe), 0 /* version */));
   *remote_endpoint_fd =

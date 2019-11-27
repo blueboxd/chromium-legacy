@@ -44,11 +44,6 @@ class SafeWebBundleParser {
                      uint64_t response_length,
                      mojom::WebBundleParser::ParseResponseCallback callback);
 
-  // Sets alternative WebBundleParserFactory that will be used to create
-  // WebBundleParser for testing purpose.
-  void SetWebBundleParserFactoryForTesting(
-      mojo::Remote<mojom::WebBundleParserFactory> factory);
-
   // Sets a callback to be called when the data_decoder service connection is
   // terminated.
   void SetDisconnectCallback(base::OnceClosure callback);

@@ -111,10 +111,10 @@ void ContentServiceManagerMainDelegate::AdjustServiceProcessCommandLine(
 }
 
 void ContentServiceManagerMainDelegate::OnServiceManagerInitialized(
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     service_manager::BackgroundServiceManager* service_manager) {
   return content_main_params_.delegate->OnServiceManagerInitialized(
-      quit_closure, service_manager);
+      std::move(quit_closure), service_manager);
 }
 
 std::unique_ptr<service_manager::Service>

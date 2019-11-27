@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">左から右</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
-<translation id="1409544243779336081">おすすめのアプリ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> を共有できません</translation>
 <translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">ピリオド</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 か月}other{# か月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/秒</translation>
-<translation id="1812519734428420144">評価 <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 時間 }other{# 時間 }}</translation>
 <translation id="1842960171412779397">選択</translation>
 <translation id="1859234291848436338">文章の方向</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="7814458197256864873">コピー(&amp;C)</translation>
+<translation id="7848989271541991537"><ph name="PAGE_NUMBER" /> ページの行 <ph name="ROW_NUMBER" />、列 <ph name="COLUMN_NUMBER" /> に移動しました。</translation>
 <translation id="7879499977785298635">ブロックしない</translation>
 <translation id="7907591526440419938">ファイルを開く</translation>
 <translation id="7969046989155602842">コマンド</translation>

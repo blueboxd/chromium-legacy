@@ -119,11 +119,6 @@ public class DataReductionStatsPreference extends Preference {
         setWidgetLayoutResource(R.layout.data_reduction_stats_layout);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return super.isEnabled();
-    }
-
     /**
      * Updates the preference screen to convey current statistics on data reduction.
      */

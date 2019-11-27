@@ -432,11 +432,8 @@ base::Optional<double> Animation::CurrentTimeInternal() const {
   return hold_time_ ? hold_time_ : CalculateCurrentTime();
 }
 
-base::Optional<double> Animation::UnlimitedCurrentTimeInternal() const {
-#if DCHECK_IS_ON()
-  CurrentTimeInternal();
-#endif
-  return PlayStateInternal() == kPaused || !start_time_
+base::Optional<double> Animation::UnlimitedCurrentTime() const {
+  return CalculateAnimationPlayState() == kPaused || !start_time_
              ? CurrentTimeInternal()
              : CalculateCurrentTime();
 }

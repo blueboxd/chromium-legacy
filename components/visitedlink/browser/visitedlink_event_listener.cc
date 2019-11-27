@@ -152,7 +152,7 @@ void VisitedLinkEventListener::NewTable(
   }
 }
 
-void VisitedLinkEventListener::Add(VisitedLinkMaster::Fingerprint fingerprint) {
+void VisitedLinkEventListener::Add(VisitedLinkWriter::Fingerprint fingerprint) {
   pending_visited_links_.push_back(fingerprint);
 
   if (!coalesce_timer_->IsRunning()) {

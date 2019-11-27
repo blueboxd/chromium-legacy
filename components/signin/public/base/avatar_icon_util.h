@@ -9,6 +9,9 @@ class GURL;
 
 namespace signin {
 
+// Size of |AccountInfo| image.
+extern const int kAccountInfoImageSize;
+
 // Given an image URL this function builds a new URL, appending passed
 // |image_size| and |no_silhouette| parameters. |old_url| must be valid.
 // For example, if |image_size| was set to 256, |no_silhouette| was set to

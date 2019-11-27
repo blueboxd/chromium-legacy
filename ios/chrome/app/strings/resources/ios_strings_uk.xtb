@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Більше опцій</translation>
 <translation id="2316709634732130529">Використати запропонований пароль</translation>
 <translation id="2320166752086256636">Сховати клавіатуру</translation>
-<translation id="2330129964253841015">Попереджати, якщо паролі зламано</translation>
 <translation id="2339560363438331454">Синхрон. та серв. Google</translation>
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
 <translation id="2359043044084662842">Перекласти</translation>
@@ -441,6 +440,7 @@
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="6988572888918530647">Керуйте обліковим записом Google</translation>
+<translation id="6995899638241819463">Попереджати, якщо паролі розкрито через порушення безпеки даних</translation>
 <translation id="6998989275928107238">Кому</translation>
 <translation id="7004499039102548441">Останні вкладки</translation>
 <translation id="7006788746334555276">Веб-контент</translation>

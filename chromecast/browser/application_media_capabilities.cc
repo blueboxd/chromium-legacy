@@ -11,8 +11,7 @@
 namespace chromecast {
 namespace shell {
 
-ApplicationMediaCapabilities::ApplicationMediaCapabilities()
-    : supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {}
+ApplicationMediaCapabilities::ApplicationMediaCapabilities() = default;
 
 ApplicationMediaCapabilities::~ApplicationMediaCapabilities() = default;
 
@@ -22,10 +21,10 @@ void ApplicationMediaCapabilities::AddReceiver(
 }
 
 void ApplicationMediaCapabilities::SetSupportedBitstreamAudioCodecs(
-    int codecs) {
-  supported_bitstream_audio_codecs_ = codecs;
+    const BitstreamAudioCodecsInfo& info) {
+  supported_bitstream_audio_codecs_info_ = info;
   for (auto& observer : observers_)
-    observer->OnSupportedBitstreamAudioCodecsChanged(codecs);
+    observer->OnSupportedBitstreamAudioCodecsChanged(info);
 }
 
 void ApplicationMediaCapabilities::AddObserver(
@@ -34,7 +33,7 @@ void ApplicationMediaCapabilities::AddObserver(
   mojo::Remote<mojom::ApplicationMediaCapabilitiesObserver> observer(
       std::move(observer_remote));
   observer->OnSupportedBitstreamAudioCodecsChanged(
-      supported_bitstream_audio_codecs_);
+      supported_bitstream_audio_codecs_info_);
   observers_.Add(std::move(observer));
 }
 

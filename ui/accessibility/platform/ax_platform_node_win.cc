@@ -4230,7 +4230,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ProviderOptions(ProviderOptions* ret) {
   UIA_VALIDATE_CALL_1_ARG(ret);
 
   *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading |
-         ProviderOptions_RefuseNonClientSupport;
+         ProviderOptions_RefuseNonClientSupport |
+         ProviderOptions_HasNativeIAccessible;
   return S_OK;
 }
 
@@ -6858,9 +6859,6 @@ int AXPlatformNodeWin::MSAAState() const {
 // static
 base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
     ax::mojom::Event event) {
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-    return base::nullopt;
-
   switch (event) {
     case ax::mojom::Event::kAlert:
       return EVENT_SYSTEM_ALERT;

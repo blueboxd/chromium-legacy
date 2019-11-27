@@ -14,14 +14,7 @@ class GURL;
 
 @protocol ApplicationCommands;
 @protocol PasswordBreachConsumer;
-
-// Object presenting the feature.
-@protocol PasswordBreachPresenter <NSObject>
-
-// Informs the presenter that the feature should dismiss.
-- (void)stop;
-
-@end
+@protocol PasswordBreachPresenter;
 
 // Manages the state and interactions of the consumer.
 @interface PasswordBreachMediator : NSObject <PasswordBreachActionHandler>

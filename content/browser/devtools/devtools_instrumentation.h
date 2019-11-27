@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 
 class GURL;
 
@@ -37,7 +36,6 @@ struct ResourceResponse;
 namespace content {
 class SignedExchangeEnvelope;
 class FrameTreeNode;
-class FileSelectListener;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
@@ -59,11 +57,6 @@ bool WillCreateURLLoaderFactory(
     bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
         loader_factory_receiver);
-
-bool InterceptFileChooser(
-    RenderFrameHostImpl* rfh,
-    std::unique_ptr<content::FileSelectListener>* listener,
-    const blink::mojom::FileChooserParams& params);
 
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,

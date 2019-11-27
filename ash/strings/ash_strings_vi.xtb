@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Đang dùng <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
-<translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Nhập mã truy cập dành cho cha mẹ của Family Link.</translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
 <translation id="9056839673611986238">Thiết bị sẽ được hạ cấp hệ điều hành</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Phóng to toàn màn hình</translation>
 <translation id="9193626018745640770">Đang truyền trên bộ thu không xác định</translation>
 <translation id="9194617393863864469">Đăng nhập tài khoản khác...</translation>
+<translation id="9205817095063786319">Thiết bị do <ph name="DOMAIN" /> quản lý</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
 <translation id="9211681782751733685">Còn <ph name="TIME_REMAINING" /> nữa là sạc đầy pin.</translation>
 <translation id="9215934040295798075">Đặt hình nền</translation>

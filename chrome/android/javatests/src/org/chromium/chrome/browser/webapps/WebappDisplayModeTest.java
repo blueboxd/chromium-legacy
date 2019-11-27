@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -28,6 +29,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
 
@@ -90,6 +92,7 @@ public class WebappDisplayModeTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testMinimalUi() {
         WebappActivity activity = startActivity(WebDisplayMode.MINIMAL_UI, "");
 

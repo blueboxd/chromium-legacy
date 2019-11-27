@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.LargeTest;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -34,7 +33,6 @@ import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -130,7 +128,6 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
     @Feature({"RenderTest"})
     public void testRevampedContextMenuViewWithImageLink() throws IOException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            List<Pair<Integer, PropertyModel>> itemList = new ArrayList<>();
             mListItems.add(new ListItem(
                     ListItemType.HEADER, getHeaderModel("Capybara", "www.google.com", true)));
             mListItems.add(new ListItem(ListItemType.DIVIDER, new PropertyModel()));

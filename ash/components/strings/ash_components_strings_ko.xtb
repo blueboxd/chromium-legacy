@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 또는 <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">전체보기 모드</translation>
 <translation id="4382340674111381977">이전 페이지로 돌아가기</translation>
+<translation id="4458670250301149821">앱 그리드에서 폴더 안팎으로 앱 아이콘 이동</translation>
 <translation id="4472417192667361414">시스템 및 디스플레이 설정</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> 다음 <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> 또는 <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">단축키 도우미 보기</translation>
 <translation id="4628718545549558538">상태 영역(계정 사진이 표시되는 위치) 열기</translation>
 <translation id="4642092649622328492">부분 스크린샷 찍기</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">다음 글자를 삭제(앞으로 삭제)</translation>
 <translation id="7500368597227394048">하이픈</translation>
 <translation id="7611271430932669992">포커스를 팝업 및 대화상자로 이동</translation>
+<translation id="7635348532214572995">앱 그리드에서 앱 아이콘 이동</translation>
 <translation id="766326951329901120">클립보드의 콘텐츠를 일반 텍스트로 붙여넣기</translation>
 <translation id="7703010453515335249">왼쪽 대괄호</translation>
 <translation id="7724603315864178912">잘라내기</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">클립보드에서 콘텐츠 붙여넣기</translation>
 <translation id="9052808072970550123">다음 사용자로 전환</translation>
 <translation id="906458777597946297">창 최대화</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 다음 <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> 또는 <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">행의 처음으로 이동</translation>
 <translation id="9106898733795143799">페이지 및 웹브라우저</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> 검색결과 없음</translation>

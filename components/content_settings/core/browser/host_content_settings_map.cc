@@ -752,7 +752,7 @@ void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
     base::Time begin_time,
     base::Time end_time,
-    const PatternSourcePredicate& pattern_predicate) {
+    PatternSourcePredicate pattern_predicate) {
   if (pattern_predicate.is_null() && begin_time.is_null() &&
       (end_time.is_null() || end_time.is_max())) {
     ClearSettingsForOneType(content_type);

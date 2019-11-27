@@ -9,12 +9,12 @@ cr.define('cr.toastManager', () => {
   /* eslint-enable */
 
   /** @return {!cr.toastManager.CrToastManagerElement} */
-  /* #export */ function getInstance() {
+  /* #export */ function getToastManager() {
     return assert(toastManagerInstance);
   }
 
   /** @param {?cr.toastManager.CrToastManagerElement} instance */
-  /* #export */ function setInstance(instance) {
+  function setInstance(instance) {
     assert(!instance || !toastManagerInstance);
     toastManagerInstance = instance;
   }
@@ -31,13 +31,6 @@ cr.define('cr.toastManager', () => {
         type: Number,
         value: 0,
       },
-
-      /** @private */
-      showUndo_: Boolean,
-
-      undoDescription: String,
-
-      undoLabel: String,
     },
 
     /** @return {boolean} */
@@ -45,37 +38,27 @@ cr.define('cr.toastManager', () => {
       return this.$.toast.open;
     },
 
-    /** @return {boolean} */
-    get isUndoButtonHidden() {
-      return this.$.button.hidden;
-    },
-
     /** @override */
     attached: function() {
-      cr.toastManager.setInstance(this);
+      setInstance(this);
     },
 
     /** @override */
     detached: function() {
-      cr.toastManager.setInstance(null);
+      setInstance(null);
     },
 
-    /**
-     * @param {string} label The label to display inside the toast.
-     * @param {boolean} showUndo Whether the undo button should be shown.
-     */
-    show: function(label, showUndo) {
+    /** @param {string} label The label to display inside the toast. */
+    show: function(label) {
       this.$.content.textContent = label;
-      this.showInternal_(showUndo);
-      this.$.toast.show();
+      this.showInternal_();
     },
 
     /**
      * Shows the toast, making certain text fragments collapsible.
      * @param {!Array<!{value: string, collapsible: boolean}>} pieces
-     * @param {boolean} showUndo Whether the undo button should be shown.
      */
-    showForStringPieces: function(pieces, showUndo) {
+    showForStringPieces: function(pieces) {
       const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
@@ -92,41 +75,26 @@ cr.define('cr.toastManager', () => {
         content.appendChild(span);
       });
 
-      this.showInternal_(showUndo);
+      this.showInternal_();
     },
 
-    /**
-     * @param {boolean} showUndo Whether the undo button should be shown.
-     * @private
-     */
-    showInternal_: function(showUndo) {
-      this.showUndo_ = showUndo;
+    /** @private */
+    showInternal_: function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
         text: this.$.content.textContent,
       });
-      if (showUndo && this.undoDescription) {
-        this.fire('iron-announce', {
-          text: this.undoDescription,
-        });
-      }
       this.$.toast.show();
     },
 
     hide: function() {
       this.$.toast.hide();
     },
-
-    /** @private */
-    onUndoClick_: function() {
-      this.fire('undo-click');
-    },
   });
 
   // #cr_define_end
   return {
     CrToastManagerElement: CrToastManagerElement,
-    getInstance: getInstance,
-    setInstance: setInstance,
+    getToastManager: getToastManager,
   };
 });

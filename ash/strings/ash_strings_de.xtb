@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> wird verwendet</translation>
 <translation id="899350903320462459">Wenn Sie die Benachrichtigungsaktion ausführen möchten, entsperren Sie das Gerät als <ph name="LOGIN_ID" /></translation>
-<translation id="8995603266996330174">Verwaltet von <ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Geben Sie Ihren Eltern-Zugangscode für Family Link ein.</translation>
 <translation id="9029474291399787231">Update für den Adobe Flash Player verfügbar</translation>
 <translation id="9056839673611986238">Das Gerät wird zurückgesetzt</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">Vollbildlupe</translation>
 <translation id="9193626018745640770">Streaming an unbekannten Empfänger</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
+<translation id="9205817095063786319">Gerät verwaltet durch <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
 <translation id="9211681782751733685">Noch <ph name="TIME_REMAINING" />, bis der Akku vollständig geladen ist.</translation>
 <translation id="9215934040295798075">Hintergrund festlegen</translation>

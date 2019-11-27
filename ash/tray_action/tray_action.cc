@@ -54,9 +54,9 @@ void TrayAction::SetClient(
     tray_action_client_.Bind(std::move(tray_action_client));
 
     // Makes sure the state is updated in case the connection is lost.
-    tray_action_client_.set_disconnect_handler(
-        base::Bind(&TrayAction::SetClient, base::Unretained(this),
-                   mojo::NullRemote(), mojom::TrayActionState::kNotAvailable));
+    tray_action_client_.set_disconnect_handler(base::BindOnce(
+        &TrayAction::SetClient, base::Unretained(this), mojo::NullRemote(),
+        mojom::TrayActionState::kNotAvailable));
     lock_screen_note_state_ = lock_screen_note_state;
 
     lock_screen_note_display_state_handler_ =

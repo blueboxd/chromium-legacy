@@ -10,12 +10,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Contains String constants with the SharedPreferences keys used by Chrome.
+ * Contains String and {@link KeyPrefix} constants with the SharedPreferences keys used by Chrome.
  *
  * All Chrome layer SharedPreferences keys should be declared in this class.
  *
  * To add a new key:
- * 1. Declare it as a constant in this class. Its value should follow the format
+ * 1. Declare it as a String constant in this class. Its value should follow the format
  *    "Chrome.[Feature].[Key]"
  * 2. Add it to createKeysInUse().
  *
@@ -24,6 +24,17 @@ import java.util.List;
  * 2. Remove the key from createKeysInUse().
  * 3. If the key is in createGrandfatheredFormatKeysForTesting(), remove it from there.
  * 4. Delete the constant.
+ *
+ * To add a new KeyPrefix:
+ * 1. Declare it as a KeyPrefix constant in this class. Its value should follow the format
+ *    "Chrome.[Feature].[KeyPrefix].*"
+ * 2. Add PREFIX_CONSTANT.pattern() to the list of used keys in
+ *    {@link ChromePreferenceKeys#createKeysInUse()} ()}.
+ *
+ * To deprecate a KeyPrefix that is not used anymore:
+ * 1. Add its String value to createDeprecatedKeysForTesting(), including the ".*"
+ * 2. Remove it from createKeysInUse().
+ * 3. Delete the KeyPrefix constant.
  *
  * Tests in ChromePreferenceKeysTest ensure the sanity of this file.
  */
@@ -344,6 +355,13 @@ public final class ChromePreferenceKeys {
     public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
 
     /**
+     * Whether or not the Duet-TabStrip integration is enabled.
+     * Default value is false.
+     */
+    public static final String DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY =
+            "Chrome.Flags.DuetTabstripIntegrationEnabled";
+
+    /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
      * experiment is enabled). Default value is true.
      */
@@ -453,6 +471,7 @@ public final class ChromePreferenceKeys {
                 START_SURFACE_ENABLED_KEY,
                 GRID_TAB_SWITCHER_ENABLED_KEY,
                 TAB_GROUPS_ANDROID_ENABLED_KEY,
+                DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY,
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,

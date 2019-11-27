@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
@@ -633,8 +634,6 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   if (!ReadUint32(&index) || index >= blob_info_array_->size())
     return nullptr;
   const WebBlobInfo& info = (*blob_info_array_)[index];
-  // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
-  double last_modified_ms = info.LastModified() * kMsPerSecond;
   auto blob_handle = info.GetBlobHandle();
   if (!blob_handle) {
     blob_handle =
@@ -642,9 +641,9 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   }
   if (!blob_handle)
     return nullptr;
-  return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
-                                              info.size(), last_modified_ms,
-                                              blob_handle);
+  return File::CreateFromIndexedSerialization(
+      info.FilePath(), info.FileName(), info.size(),
+      ToJsTimeOrNaN(info.LastModified()), blob_handle);
 }
 
 DOMRectReadOnly* V8ScriptValueDeserializer::ReadDOMRectReadOnly() {

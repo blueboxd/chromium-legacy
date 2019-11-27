@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">ડાબેથી જમણે</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
-<translation id="1409544243779336081">ઍપ માટે સુઝાવ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> શેર કરી શકતાં નથી</translation>
 <translation id="1498028757988366001">તમે આ અગાઉ શોધ્યું હતું. "<ph name="QUERY" />"ને તમારા સ્થાન ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા એકાઉન્ટમાંથી કાઢી નાખવામાં આવશે.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">સમયગાળો</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 મહિનો}one{# મહિનો}other{# મહિના}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">સ્ટાર રેટિંગ <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 કલાક અને }one{# કલાક અને }other{# કલાક અને }}</translation>
 <translation id="1842960171412779397">પસંદ કરો</translation>
 <translation id="1859234291848436338">લેખનના દિશાનિર્દેશ</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
 <translation id="7814458197256864873">&amp;કૉપિ કરો</translation>
+<translation id="7848989271541991537">પેજ <ph name="PAGE_NUMBER" />, પંક્તિ <ph name="ROW_NUMBER" />, કૉલમ <ph name="COLUMN_NUMBER" /> પર ખસેડી.</translation>
 <translation id="7879499977785298635">બ્લૉક કરશો નહીં</translation>
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
 <translation id="7969046989155602842">આદેશ</translation>

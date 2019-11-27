@@ -18,7 +18,6 @@
 <translation id="1368832886055348810">由左至右</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1398853756734560583">放到最大</translation>
-<translation id="1409544243779336081">推薦的應用程式</translation>
 <translation id="1450753235335490080">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">你過去曾搜尋這個項目。如果將「<ph name="QUERY" />」從搜尋記錄中刪除，該項目將從你所有裝置上的帳戶記錄中永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分鐘 }other{# 分鐘 }}</translation>
@@ -30,7 +29,6 @@
 <translation id="1801827354178857021">句號</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 個月}other{# 個月}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/秒</translation>
-<translation id="1812519734428420144">星級評等：<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 小時 }other{# 小時 }}</translation>
 <translation id="1842960171412779397">選取</translation>
 <translation id="1859234291848436338">文字方向</translation>
@@ -193,6 +191,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>
+<translation id="7848989271541991537">已移至第 <ph name="PAGE_NUMBER" /> 頁，第 <ph name="ROW_NUMBER" /> 列，第 <ph name="COLUMN_NUMBER" /> 欄。</translation>
 <translation id="7879499977785298635">不要封鎖</translation>
 <translation id="7907591526440419938">開啟檔案</translation>
 <translation id="7969046989155602842">Command 鍵</translation>

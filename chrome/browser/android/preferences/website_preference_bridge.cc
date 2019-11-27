@@ -1063,10 +1063,6 @@ static jboolean JNI_WebsitePreferenceBridge_GetAcceptCookiesManagedByCustodian(
   return IsContentSettingManagedByCustodian(ContentSettingsType::COOKIES);
 }
 
-static jboolean JNI_WebsitePreferenceBridge_GetAutoplayEnabled(JNIEnv* env) {
-  return GetBooleanForContentSetting(ContentSettingsType::AUTOPLAY);
-}
-
 static jboolean JNI_WebsitePreferenceBridge_GetNfcEnabled(JNIEnv* env) {
   return GetBooleanForContentSetting(ContentSettingsType::NFC);
 }
@@ -1118,15 +1114,6 @@ static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationUserModifiable(
 static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationManagedByCustodian(
     JNIEnv* env) {
   return IsContentSettingManagedByCustodian(ContentSettingsType::GEOLOCATION);
-}
-
-static void JNI_WebsitePreferenceBridge_SetAutoplayEnabled(JNIEnv* env,
-                                                           jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
-      ContentSettingsType::AUTOPLAY,
-      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetClipboardEnabled(JNIEnv* env,

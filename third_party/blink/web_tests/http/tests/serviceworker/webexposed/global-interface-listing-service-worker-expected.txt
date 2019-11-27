@@ -165,9 +165,13 @@ interface CookieStore : EventTarget
     method delete
     method get
     method getAll
-    method getChangeSubscriptions
     method set
-    method subscribeToChanges
+interface CookieStoreManager
+    attribute @@toStringTag
+    method constructor
+    method getSubscriptions
+    method subscribe
+    method unsubscribe
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -1320,6 +1324,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter cookies
     getter index
     getter installing
     getter navigationPreload

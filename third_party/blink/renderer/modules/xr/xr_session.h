@@ -239,10 +239,19 @@ class XRSession final
   unsigned int StageParametersId() const { return stage_parameters_id_; }
 
   // Returns true if the session recognizes passed in hit_test_source as still
-  // existing.
+  // existing. Intended to be used by XRFrame to implement
+  // XRFrame.getHitTestResults() &
+  // XRFrame.getHitTestResultsForTransientInput().
   bool ValidateHitTestSourceExists(XRHitTestSource* hit_test_source);
   bool ValidateHitTestSourceExists(
       XRTransientInputHitTestSource* hit_test_source);
+
+  // Removes hit test source (effectively unsubscribing from the hit test).
+  // Intended to be used by hit test source interfaces (XRHitTestSource and
+  // XRTransientInputHitTestSource) to implement cancel() method. Returns true
+  // if hit test source existed and was removed, false otherwise.
+  bool RemoveHitTestSource(XRHitTestSource* hit_test_source);
+  bool RemoveHitTestSource(XRTransientInputHitTestSource* hit_test_source);
 
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 

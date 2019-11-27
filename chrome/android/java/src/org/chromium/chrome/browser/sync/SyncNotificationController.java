@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 
 /**
  * {@link SyncNotificationController} provides functionality for displaying Android notifications
@@ -67,12 +67,12 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                 return;
             }
             switch (mProfileSyncService.getPassphraseType()) {
-                case Passphrase.Type.IMPLICIT: // Falling through intentionally.
-                case Passphrase.Type.FROZEN_IMPLICIT: // Falling through intentionally.
-                case Passphrase.Type.CUSTOM:
+                case PassphraseType.IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.CUSTOM_PASSPHRASE:
                     showSyncNotification(R.string.sync_need_passphrase, createPasswordIntent());
                     break;
-                case Passphrase.Type.KEYSTORE: // Falling through intentionally.
+                case PassphraseType.KEYSTORE_PASSPHRASE: // Falling through intentionally.
                 default:
                     mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
                     return;

@@ -15,6 +15,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_source.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -77,6 +78,7 @@ class FakeDownloadItem : public download::DownloadItem {
   bool HasUserGesture() const override;
   ui::PageTransition GetTransitionType() const override;
   bool IsSavePackageDownload() const override;
+  download::DownloadSource GetDownloadSource() const override;
   const base::FilePath& GetFullPath() const override;
   const base::FilePath& GetForcedFilePath() const override;
   base::FilePath GetTemporaryFilePath() const override;

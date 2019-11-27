@@ -13,15 +13,14 @@ import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-import com.google.android.libraries.feed.api.host.action.ActionApi;
-
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;

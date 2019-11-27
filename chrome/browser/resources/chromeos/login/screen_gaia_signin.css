@@ -97,7 +97,6 @@
   position: absolute;
   right: 0;
   top: 0;
-  visibility: hidden;
 }
 
 :host(.saml) #signin-frame-container {

@@ -555,8 +555,10 @@ const ClientSettings& ScriptExecutor::GetSettings() {
 
 bool ScriptExecutor::SetForm(
     std::unique_ptr<FormProto> form,
-    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
-  return delegate_->SetForm(std::move(form), std::move(callback));
+    base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+    base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
+  return delegate_->SetForm(std::move(form), std::move(changed_callback),
+                            std::move(cancel_callback));
 }
 
 void ScriptExecutor::RequireUI() {

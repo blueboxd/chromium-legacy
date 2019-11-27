@@ -104,40 +104,67 @@ TEST(TemplateExpressionsTest, JSNoReplacementOutsideTemplate) {
       {"console.log('hello world');", "console.log('hello world');"},
       // Has HTML content but nothing to substitute.
       {"Polymer({\n"
-       "  _template: html`\n"
+       "  _template: html`<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">Button Name</button>\n"
-       "  `,\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
        "});",
        "Polymer({\n"
-       "  _template: html`\n"
+       "  _template: html`<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">Button Name</button>\n"
-       "  `,\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
        "});"},
       // Basic substitution with template on 1 line.
       {"Polymer({\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "<div>$i18n{test}</div><!--_html_template_end_-->`,\n"
+       "  is: 'foo-element',\n"
+       "});",
+       "Polymer({\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "<div>word</div><!--_html_template_end_-->`,\n"
+       "  is: 'foo-element',\n"
+       "});"},
+      // No replacement if start/end comments are missing.
+      {"Polymer({\n"
        "  _template: html`<div>$i18n{test}</div>`,\n"
        "  is: 'foo-element',\n"
        "});",
        "Polymer({\n"
-       "  _template: html`<div>word</div>`,\n"
+       "  _template: html`<div>$i18n{test}</div>`,\n"
+       "  is: 'foo-element',\n"
+       "});"},
+      // No replacement outside start/end comments, even if inside the HTML
+      // _template string.
+      {"Polymer({\n"
+       "  _template: $i18n{test} html`$i18n{5}<!--_html_template_start_-->"
+       "<div>Hello</div><!--_html_template_end_-->$i18n{test}`,\n"
+       "  is: 'foo-element',\n"
+       "});",
+       "Polymer({\n"
+       "  _template: $i18n{test} html`$i18n{5}<!--_html_template_start_-->"
+       "<div>Hello</div><!--_html_template_end_-->$i18n{test}`,\n"
        "  is: 'foo-element',\n"
        "});"},
       // Test case in which only the first $i18n{...} should be substituted,
       // since the second is not in the HTML template string.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">$i18n{test}</button>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log($i18n{5}); },\n"
        "});",
        "Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">word</button>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log($i18n{5}); },\n"
@@ -145,37 +172,23 @@ TEST(TemplateExpressionsTest, JSNoReplacementOutsideTemplate) {
       // Test case with multiple valid substitutions.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">$i18n{test}</button>\n"
        "    <span>$i18n{5}</span>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
        "});",
        "Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <button on-click=\"onClick_\">word</button>\n"
        "    <span>number</span>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
-       "});"},
-      // Test cases verifying escaped backticks are not detected as the end of
-      // the template.
-      {"Polymer({\n"
-       "  _template: html`<div>backtick\\`,$i18n{test}</div>`,\n"
-       "  is: 'foo-element',\n"
-       "});",
-       "Polymer({\n"
-       "  _template: html`<div>backtick\\`,word</div>`,\n"
-       "  is: 'foo-element',\n"
-       "});"},
-      {"Polymer({\n"
-       "  _template: html`<div>backtick\\`,$i18n{test}</div>\\\\`,\n"
-       "  is: 'foo-element',\n"
-       "});",
-       "Polymer({\n"
-       "  _template: html`<div>backtick\\`,word</div>\\\\`,\n"
-       "  is: 'foo-element',\n"
        "});"}};
 
   std::string formatted;
@@ -199,62 +212,76 @@ TEST(TemplateExpressionsTest, JSReplacementsEscape) {
       // Substitution with a backtick in the replacement.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <span>\n"
        "      $i18n{backtickSample}\n"
        "    </span>\n"
        "    <button on-click=\"onClick_\">Button</button>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
        "});",
        "Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <span>\n"
        "      \\`, attached: function() { alert(1); },_template: html\\`\n"
        "    </span>\n"
        "    <button on-click=\"onClick_\">Button</button>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "  onClick_: function() { console.log('hello'); },\n"
        "});"},
-      // Backtick in one replacement, HTML escapes in other replacements
-      {"Polymer({\n"
-       "  _template: html`\n"
-       "    <span>\n"
+      // Backtick in one replacement, HTML escapes in other replacements. Class
+      // based syntax.
+      {"class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_--><span>\n"
        "      $i18n{backtickSample}\n"
        "    </span>\n"
        "    <button on-click=\"onClick_\">\n"
        "      $i18n{punctuationSample}.\n"
        "    </button>\n"
-       "    <div>$i18n{htmlSample}</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "  onClick_: function() { console.log('hello'); },\n"
-       "});",
-       "Polymer({\n"
-       "  _template: html`\n"
-       "    <span>\n"
+       "    <div>$i18n{htmlSample}</div><!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'foo-element';\n"
+       "  }\n"
+       "  onClick_() { console.log('hello'); }\n"
+       "};",
+       "class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_--><span>\n"
        "      \\`, attached: function() { alert(1); },_template: html\\`\n"
        "    </span>\n"
        "    <button on-click=\"onClick_\">\n"
        "      a&quot;b&#39;c&lt;d&gt;e&amp;f.\n"
        "    </button>\n"
-       "    <div>&lt;div&gt;hello&lt;/div&gt;</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "  onClick_: function() { console.log('hello'); },\n"
-       "});"},
+       "    <div>&lt;div&gt;hello&lt;/div&gt;</div>"
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'foo-element';\n"
+       "  }\n"
+       "  onClick_() { console.log('hello'); }\n"
+       "};"},
       // Replacement contains a '$' that isn't accompanied by a subsequent '{',
       // so should be replaced correctly.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>Price is: $i18n{dollarSignSample}</div>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "});",
        "Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>Price is: 5$</div>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "});"}};
@@ -276,55 +303,69 @@ TEST(TemplateExpressionsTest, JSReplacementsError) {
   // All these cases should fail.
   const TestCase kTestCases[] = {
       // Nested templates not allowed.
-      {"Polymer({\n"
-       "  _template: html`\n"
+      {"class FooElement extends PolymerElement {\n"
+       "  static get template() { return html`\n"
+       "<!--_html_template_start_-->\n"
        "    _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "      <span>Hello</span>\n"
+       "<!--_html_template_end_-->\n"
        "    `,\n"
        "    <div>World</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "});",
+       "<!--_html_template_end_-->\n"
+       "  `;}\n"
+       "  static get is() { return 'foo-element'; }\n"
+       "};",
        ""},
       // 2 starts, one end.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <span>Hello</span>\n"
        "    <div>World</div>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "});",
        ""},
       // Replacement contains "${".
-      {"Polymer({\n"
-       "  _template: html`\n"
+      {"class FooElement extends PolymerElement {\n"
+       "  static get template() { return html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>$i18n{test}</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "});",
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() { return 'foo-element'; }\n"
+       "};",
        ""},
       // 2 replacements, when combined, create "${".
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>$i18n{testa}$i18n{testb}</div>\n"
+       "<!--_html_template_end_-->\n"
        "  `,\n"
        "  is: 'foo-element',\n"
        "});",
        ""},
       // Replacement, when combined with content preceding it, creates "${".
-      {"Polymer({\n"
-       "  _template: html`\n"
+      {"class FooElement extends PolymerElement {\n"
+       "  static get template() { return html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>Price is: $$i18n{testb}</div>\n"
-       "  `,\n"
-       "  is: 'foo-element',\n"
-       "});",
+       "<!--_html_template_end_-->\n"
+       "  `;}\n"
+       "  static get is() {return 'foo-element'; }\n"
+       "};",
        ""},
       // HTML _template string is not terminated.
       {"Polymer({\n"
        "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
        "    <div>Price is: $i18n{testa}</div>\n"
-       "    <span>Fake ending</span>\\\\\\`,\n"
+       "<!--_html_template_not_end-->\n"
        "  is: 'foo-element',\n"
        "});",
        ""},
@@ -346,43 +387,170 @@ TEST(TemplateExpressionsTest, JSMultipleTemplates) {
   const TestCase kTestCases[] = {
       // Only the second template has substitutions
       {"Polymer({\n"
-       "  _template: html`<div>Hello</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>Hello</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "});"
        "Polymer({\n"
-       "  _template: html`<div>$i18n{5}$i18n{test}</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>$i18n{5}$i18n{test}</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'bar-element',\n"
        "});",
        "Polymer({\n"
-       "  _template: html`<div>Hello</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>Hello</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "});"
        "Polymer({\n"
-       "  _template: html`<div>numberword</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>numberword</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'bar-element',\n"
        "});"},
       // 2 templates, both with substitutions.
       {"Polymer({\n"
-       "  _template: html`<div>$i18n{test}</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>$i18n{test}</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "});"
        "Polymer({\n"
-       "  _template: html`<div>$i18n{5}</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>$i18n{5}</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'bar-element',\n"
        "});",
        "Polymer({\n"
-       "  _template: html`<div>word</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>word</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'foo-element',\n"
        "});"
        "Polymer({\n"
-       "  _template: html`<div>number</div>`,\n"
+       "  _template: html`<!--_html_template_start_-->\n"
+       "    <div>number</div>\n"
+       "<!--_html_template_end_-->`,\n"
        "  is: 'bar-element',\n"
        "});"},
+      // 2 class based templates
+      {"class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <div>$i18n{test}</div>\n"
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'foo-element';\n"
+       "  }\n"
+       "};\n"
+       "class BarElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <div>$i18n{5}</div>\n"
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'bar-element';\n"
+       "  }\n"
+       "};",
+       "class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <div>word</div>\n"
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'foo-element';\n"
+       "  }\n"
+       "};\n"
+       "class BarElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <div>number</div>\n"
+       "<!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() {\n"
+       "    return 'bar-element';\n"
+       "  }\n"
+       "};"},
+      // One element has no UI.
+      {"Polymer({\n"
+       "  _template: null,\n"
+       "  is: 'bar-element',\n"
+       "});\n"
+       "Polymer({\n"
+       "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
+       "    <button on-click=\"onClick_\">$i18n{test}</button>\n"
+       "<!--_html_template_end_-->\n"
+       "  `,\n"
+       "  is: 'foo-element',\n"
+       "  onClick_: function() { console.log('hello'); },\n"
+       "});",
+       "Polymer({\n"
+       "  _template: null,\n"
+       "  is: 'bar-element',\n"
+       "});\n"
+       "Polymer({\n"
+       "  _template: html`\n"
+       "<!--_html_template_start_-->\n"
+       "    <button on-click=\"onClick_\">word</button>\n"
+       "<!--_html_template_end_-->\n"
+       "  `,\n"
+       "  is: 'foo-element',\n"
+       "  onClick_: function() { console.log('hello'); },\n"
+       "});"},
+      // One element only has a template (e.g. style), with class based syntax.
+      {"class StyleElement extends PolymerElement {\n"
+       "  static get template() {return html`<!--_html_template_start_-->\n"
+       "<div></div><!--_html_template_end_-->`;}\n"
+       "};\n"
+       "class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <button on-click=\"onClick_\">$i18n{test}</button>\n"
+       "    <!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() { return 'foo-element'; }\n"
+       "  onClick_() { console.log('hello'); }\n"
+       "};",
+       "class StyleElement extends PolymerElement {\n"
+       "  static get template() {return html`<!--_html_template_start_-->\n"
+       "<div></div><!--_html_template_end_-->`;}\n"
+       "};\n"
+       "class FooElement extends PolymerElement {\n"
+       "  static get template() {\n"
+       "    return html`<!--_html_template_start_-->\n"
+       "      <button on-click=\"onClick_\">word</button>\n"
+       "    <!--_html_template_end_-->`;\n"
+       "  }\n"
+       "  static get is() { return 'foo-element'; }\n"
+       "  onClick_() { console.log('hello'); }\n"
+       "};"},
       // 2 minified templates, both with substitutions.
-      {"Polymer({_template:html`<div>$i18n{test}</div>`,is:'foo-element',});\n"
-       "Polymer({_template:html`<div>$i18n{5}</div>`,is:'bar-element',});",
-       "Polymer({_template:html`<div>word</div>`,is:'foo-element',});\n"
-       "Polymer({_template:html`<div>number</div>`,is:'bar-element',});"}};
+      {"Polymer({_template:html`<!--_html_template_start_--><div>$i18n{test}"
+       "</div><!--_html_template_end_-->`,is:'foo-element',}); "
+       "Polymer({_template:html`<!--_html_template_start_--><div>$i18n{5}"
+       "</div><!--_html_template_end_-->`,is:'bar-element',});",
+       "Polymer({_template:html`<!--_html_template_start_--><div>word</div>"
+       "<!--_html_template_end_-->`,is:'foo-element',}); "
+       "Polymer({_template:html`<!--_html_template_start_--><div>number</div>"
+       "<!--_html_template_end_-->`,is:'bar-element',});"},
+      {"class FooElement extends PolymerElement {"
+       "static get template(){return html`<!--_html_template_start_-->"
+       "<div>$i18n{test}</div><!--_html_template_end_-->`;} "
+       "static get is(){return 'foo-element';}};\n"
+       "Polymer({_template:html`<!--_html_template_start_--><div>$i18n{5}"
+       "</div><!--_html_template_end_-->`,is:'bar-element',});",
+       "class FooElement extends PolymerElement {"
+       "static get template(){return html`<!--_html_template_start_-->"
+       "<div>word</div><!--_html_template_end_-->`;} "
+       "static get is(){return 'foo-element';}};\n"
+       "Polymer({_template:html`<!--_html_template_start_--><div>number</div>"
+       "<!--_html_template_end_-->`,is:'bar-element',});"}};
 
   std::string formatted;
   for (const TestCase test_case : kTestCases) {

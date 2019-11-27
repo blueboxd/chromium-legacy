@@ -6,14 +6,14 @@
 
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 
 namespace android_webview {
 
 void ExposeRendererInterfacesToBrowser(AwContentRendererClient* client,
                                        mojo::BinderMap* binders) {
-  binders->Add(client->visited_link_slave()->GetBindCallback(),
+  binders->Add(client->visited_link_reader()->GetBindCallback(),
                base::ThreadTaskRunnerHandle::Get());
 }
 

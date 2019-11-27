@@ -103,7 +103,6 @@
 <translation id="2273327106802955778">Valmynd fyrir meira</translation>
 <translation id="2316709634732130529">Nota tillögu að aðgangsorði</translation>
 <translation id="2320166752086256636">Fela lyklaborð</translation>
-<translation id="2330129964253841015">Láta vita ef aðgangsorðum er stolið</translation>
 <translation id="2339560363438331454">Samstilling og þjónusta Google</translation>
 <translation id="2351097562818989364">Þýðingarstillingarnar þínar hafa verið núllstilltar.</translation>
 <translation id="2359043044084662842">Þýða</translation>
@@ -441,6 +440,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="6973630695168034713">Möppur</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Stjórnaðu Google reikningnum</translation>
+<translation id="6995899638241819463">Láta vita ef aðgangsorðin þín eru afhjúpuð vegna öryggisbrots</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="7004499039102548441">Nýlegir flipar</translation>
 <translation id="7006788746334555276">Efnisstillingar</translation>

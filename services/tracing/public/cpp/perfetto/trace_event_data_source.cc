@@ -450,8 +450,11 @@ TraceEventDataSource::TraceEventDataSource()
 
 TraceEventDataSource::~TraceEventDataSource() = default;
 
+void TraceEventDataSource::RegisterStartupHooks() {
+  RegisterTracedValueProtoWriter();
+}
+
 void TraceEventDataSource::RegisterWithTraceLog() {
-  RegisterTracedValueProtoWriter(true);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(
       &TraceEventDataSource::OnAddTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
@@ -461,7 +464,6 @@ void TraceEventDataSource::RegisterWithTraceLog() {
 }
 
 void TraceEventDataSource::UnregisterFromTraceLog() {
-  RegisterTracedValueProtoWriter(false);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
   base::AutoLock l(lock_);
   is_enabled_ = false;

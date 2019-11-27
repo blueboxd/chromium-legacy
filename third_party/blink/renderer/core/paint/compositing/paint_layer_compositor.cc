@@ -319,17 +319,6 @@ GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer()
   return video->Layer()->GetCompositedLayerMapping()->MainGraphicsLayer();
 }
 
-void PaintLayerCompositor::AdjustOverlayFullscreenVideoPosition(
-    GraphicsLayer* video_layer) {
-  if (!video_layer)
-    return;
-  // The fullscreen video has layer position equal to its enclosing frame's
-  // scroll position because fullscreen container is fixed-positioned.
-  // We should reset layer position here since it is attached at the
-  // very top level.
-  video_layer->SetPosition(FloatPoint());
-}
-
 void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
     CompositingUpdateType update_type) {
   DCHECK(!HasAcceleratedCompositing());
@@ -486,7 +475,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
         current_parent->SetChildren(child_list);
     }
   }
-  AdjustOverlayFullscreenVideoPosition(OverlayFullscreenVideoGraphicsLayer());
 
   for (unsigned i = 0; i < layers_needing_paint_invalidation.size(); i++) {
     ForceRecomputeVisualRectsIncludingNonCompositingDescendants(

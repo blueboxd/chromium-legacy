@@ -40,11 +40,6 @@ AppServiceProxyFactory* AppServiceProxyFactory::GetInstance() {
   return base::Singleton<AppServiceProxyFactory>::get();
 }
 
-// static
-bool AppServiceProxyFactory::IsEnabled() {
-  return true;
-}
-
 AppServiceProxyFactory::AppServiceProxyFactory()
     : BrowserContextKeyedServiceFactory(
           "AppServiceProxy",

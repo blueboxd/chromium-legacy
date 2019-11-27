@@ -336,10 +336,13 @@ void CrOSComponentInstaller::FinishInstall(const std::string& name,
                                            LoadCallback load_callback,
                                            update_client::Error error) {
   if (error != update_client::Error::NONE) {
+    Error err = Error::INSTALL_FAILURE;
+    if (error == update_client::Error::UPDATE_IN_PROGRESS) {
+      err = Error::UPDATE_IN_PROGRESS;
+    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(load_callback),
-                       ReportError(Error::INSTALL_FAILURE), base::FilePath()));
+        FROM_HERE, base::BindOnce(std::move(load_callback), ReportError(err),
+                                  base::FilePath()));
   } else if (!IsCompatible(name)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

@@ -12,22 +12,29 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_float_size.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/fixed_velocity_curve.h"
 #include "ui/events/gestures/fling_curve.h"
+#include "ui/events/gestures/physics_based_fling_curve.h"
 #include "ui/events/mobile_scroller.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_f.h"
+
+#if defined(OS_WIN)
+#include "ui/display/win/screen_win.h"
+#endif  // defined(OS_WIN)
 
 using blink::WebGestureCurve;
 
 namespace ui {
 namespace {
 
+constexpr float kDefaultPixelsPerInch = 96.0f;
 std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity,
-    bool use_mobile_fling_curve) {
+    bool use_mobile_fling_curve,
+    const gfx::PointF& position_in_screen,
+    const gfx::Size& viewport_size) {
   if (device_source == blink::WebGestureDevice::kSyntheticAutoscroll) {
     return std::make_unique<FixedVelocityCurve>(initial_velocity,
                                                 base::TimeTicks());
@@ -48,6 +55,17 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     return std::move(scroller);
   }
 
+  if (base::FeatureList::IsEnabled(features::kExperimentalFlingAnimation)) {
+    gfx::Vector2dF pixels_per_inch(kDefaultPixelsPerInch,
+                                   kDefaultPixelsPerInch);
+#if defined(OS_WIN)
+    pixels_per_inch =
+        display::win::ScreenWin::GetPixelsPerInch(position_in_screen);
+#endif  // define(OS_WIN)
+    return std::make_unique<PhysicsBasedFlingCurve>(
+        initial_velocity, base::TimeTicks(), pixels_per_inch, viewport_size);
+  }
+
   return std::make_unique<FlingCurve>(initial_velocity, base::TimeTicks());
 }
 
@@ -60,10 +78,13 @@ WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
     const gfx::Vector2dF& initial_velocity,
     const gfx::Vector2dF& initial_offset,
     bool on_main_thread,
-    bool use_mobile_fling_curve) {
+    bool use_mobile_fling_curve,
+    const gfx::PointF& position_in_screen,
+    const gfx::Size& viewport_size) {
   return std::unique_ptr<WebGestureCurve>(new WebGestureCurveImpl(
       CreateDefaultPlatformCurve(device_source, initial_velocity,
-                                 use_mobile_fling_curve),
+                                 use_mobile_fling_curve, position_in_screen,
+                                 viewport_size),
       initial_offset, on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
 }
 

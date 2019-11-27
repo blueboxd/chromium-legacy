@@ -21,6 +21,7 @@ import java.util.List;
 class AssistantFormSelectionInput extends AssistantFormInput {
     interface Delegate {
         void onChoiceSelectionChanged(int choiceIndex, boolean selected);
+        void onLinkClicked(int link);
     }
 
     private final String mLabel;
@@ -46,7 +47,7 @@ class AssistantFormSelectionInput extends AssistantFormInput {
         if (mLabel.isEmpty()) {
             label.setVisibility(View.GONE);
         } else {
-            label.setText(mLabel);
+            AssistantTextUtils.applyVisualAppearanceTags(label, mLabel, mDelegate::onLinkClicked);
         }
 
         if (mChoices.isEmpty()) {
@@ -86,11 +87,12 @@ class AssistantFormSelectionInput extends AssistantFormInput {
             TextView choiceLabel = choiceView.findViewById(R.id.label);
             TextView descriptionLine1 = choiceView.findViewById(R.id.description_line_1);
             TextView descriptionLine2 = choiceView.findViewById(R.id.description_line_2);
-            AssistantTextUtils.applyVisualAppearanceTags(choiceLabel, choice.getLabel(), null);
             AssistantTextUtils.applyVisualAppearanceTags(
-                    descriptionLine1, choice.getDescriptionLine1(), null);
+                    choiceLabel, choice.getLabel(), mDelegate::onLinkClicked);
             AssistantTextUtils.applyVisualAppearanceTags(
-                    descriptionLine2, choice.getDescriptionLine2(), null);
+                    descriptionLine1, choice.getDescriptionLine1(), mDelegate::onLinkClicked);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    descriptionLine2, choice.getDescriptionLine2(), mDelegate::onLinkClicked);
             hideIfEmpty(choiceLabel);
             hideIfEmpty(descriptionLine1);
             hideIfEmpty(descriptionLine2);

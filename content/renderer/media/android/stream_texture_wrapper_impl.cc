@@ -130,7 +130,7 @@ void StreamTextureWrapperImpl::Initialize(
     const base::RepeatingClosure& received_frame_cb,
     const gfx::Size& natural_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    const StreamTextureWrapperInitCB& init_cb) {
+    StreamTextureWrapperInitCB init_cb) {
   DVLOG(2) << __func__;
 
   compositor_task_runner_ = compositor_task_runner;
@@ -140,25 +140,25 @@ void StreamTextureWrapperImpl::Initialize(
       FROM_HERE,
       base::BindOnce(&StreamTextureWrapperImpl::InitializeOnMainThread,
                      weak_factory_.GetWeakPtr(), received_frame_cb,
-                     media::BindToCurrentLoop(init_cb)));
+                     media::BindToCurrentLoop(std::move(init_cb))));
 }
 
 void StreamTextureWrapperImpl::InitializeOnMainThread(
     const base::RepeatingClosure& received_frame_cb,
-    const StreamTextureWrapperInitCB& init_cb) {
+    StreamTextureWrapperInitCB init_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
   // Normally, we have a factory.  However, if the gpu process is restarting,
   // then we might not.
   if (!factory_) {
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
   stream_texture_proxy_ = factory_->CreateProxy();
   if (!stream_texture_proxy_) {
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -173,7 +173,7 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
                      base::Unretained(this)),
       compositor_task_runner_);
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void StreamTextureWrapperImpl::Destroy() {

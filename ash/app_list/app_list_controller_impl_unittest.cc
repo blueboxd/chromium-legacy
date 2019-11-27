@@ -22,6 +22,7 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -910,6 +911,10 @@ TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
 // launcher gesture drag in tablet mode (https://crbug.com/947105).
 TEST_F(AppListControllerImplMetricsTest,
        PresentationTimeRecordedForDragInTabletMode) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
   // Wait until the construction of TabletModeController finishes.
   base::RunLoop().RunUntilIdle();
 

@@ -7,7 +7,7 @@
 
 import("//testing/test.gni")
 
-config("rlz_config") {
+config("rlz_lib_config") {
   defines = [ "RLZ_NETWORK_IMPLEMENTATION_CHROME_NET" ]
 }
 
@@ -27,32 +27,32 @@ source_set("rlz_utils") {
     "lib/string_utils.h",
   ]
 
-  public_configs = [ ":rlz_config" ]
+  public_deps = [
+    "//base",
+  ]
 
   deps = [
-    "//base",
-    "//net",
     "//third_party/zlib",
-    "//url",
   ]
 }
 
 if (!is_android) {
-  source_set("rlz_lib") {
+  source_set("rlz_lib_no_network") {
     sources = [
       "chromeos/lib/rlz_value_store_chromeos.cc",
       "chromeos/lib/rlz_value_store_chromeos.h",
       "ios/lib/machine_id_ios.cc",
       "lib/crc8.cc",
       "lib/crc8.h",
-      "lib/financial_ping.cc",
-      "lib/financial_ping.h",
+      "lib/machine_deal_win.h",
       "lib/machine_id.cc",
       "lib/machine_id.h",
-      "lib/rlz_lib.cc",
-      "lib/rlz_lib.h",
       "lib/rlz_lib_clear.cc",
+      "lib/rlz_lib_clear.h",
       "lib/rlz_value_store.h",
+      "lib/supplementary_branding.cc",
+      "lib/supplementary_branding.h",
+      "lib/time_util.h",
       "mac/lib/machine_id_mac.cc",
       "mac/lib/rlz_value_store_mac.h",
       "mac/lib/rlz_value_store_mac.mm",
@@ -70,27 +70,17 @@ if (!is_android) {
       "win/lib/rlz_value_store_registry.h",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-    public_configs = [ ":rlz_config" ]
+    if (is_win) {
+      sources += [ "lib/time_util_win.cc" ]
+    } else {
+      sources += [ "lib/time_util_base.cc" ]
+    }
 
     deps = [
       ":rlz_utils",
       "//base",
-      "//base/third_party/dynamic_annotations",
-      "//net",
-      "//services/network/public/cpp:cpp",
-      "//services/network/public/mojom",
-      "//url",
     ]
 
-    if (is_posix) {
-      sources += [
-        "lib/recursive_cross_process_lock_posix.cc",
-        "lib/recursive_cross_process_lock_posix.h",
-      ]
-    }
     if (is_chromeos) {
       deps += [
         "//chromeos/dbus",
@@ -114,6 +104,48 @@ if (!is_android) {
       ]
       set_sources_assignment_filter(sources_assignment_filter)
     }
+
+    if (is_posix) {
+      sources += [
+        "lib/recursive_cross_process_lock_posix.cc",
+        "lib/recursive_cross_process_lock_posix.h",
+      ]
+    }
+  }
+
+  source_set("rlz_lib") {
+    sources = [
+      "lib/financial_ping.cc",
+      "lib/financial_ping.h",
+      "lib/rlz_lib.cc",
+      "lib/rlz_lib.h",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    public_deps = [
+      ":rlz_lib_no_network",
+      "//base",
+    ]
+
+    deps = [
+      ":rlz_utils",
+      "//base/third_party/dynamic_annotations",
+      "//net",
+      "//services/network/public/cpp:cpp",
+      "//services/network/public/mojom",
+      "//url",
+    ]
+
+    if (is_chromeos) {
+      deps += [
+        "//chromeos/dbus",
+        "//chromeos/system",
+      ]
+    }
+
+    public_configs = [ ":rlz_lib_config" ]
   }
 
   source_set("test_support") {
@@ -122,15 +154,16 @@ if (!is_android) {
       "test/rlz_test_helpers.cc",
       "test/rlz_test_helpers.h",
     ]
-    deps = [
-      ":rlz_lib",
+    public_deps = [
       "//base",
       "//base/test:test_support",
-      "//services/network/public/cpp:cpp",
       "//testing/gtest",
     ]
+    deps = [
+      ":rlz_lib",
+    ]
     if (is_chromeos) {
-      deps += [ "//chromeos/system" ]
+      public_deps += [ "//chromeos/system" ]
     }
   }
 

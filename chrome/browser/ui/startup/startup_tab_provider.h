@@ -60,6 +60,10 @@ class StartupTabProvider {
   // applications exist.
   virtual StartupTabs GetPostCrashTabs(
       bool has_incompatible_applications) const = 0;
+
+  // Returns tabs related to the extension checkup promo (if applicable).
+  virtual StartupTabs GetExtensionCheckupTabs(
+      bool serve_extensions_page) const = 0;
 };
 
 class StartupTabProviderImpl : public StartupTabProvider {
@@ -129,6 +133,10 @@ class StartupTabProviderImpl : public StartupTabProvider {
   static StartupTabs GetPostCrashTabsForState(
       bool has_incompatible_applications);
 
+  // Determines if the extensions page should be shown.
+  static StartupTabs GetExtensionCheckupTabsForState(
+      bool serve_extensions_page);
+
   // Gets the URL for the Welcome page. If |use_later_run_variant| is true, a
   // URL parameter will be appended so as to access the variant page used when
   // onboarding occurs after the first Chrome execution (e.g., when creating an
@@ -160,6 +168,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
                                 Profile* profile) const override;
   StartupTabs GetPostCrashTabs(
       bool has_incompatible_applications) const override;
+  StartupTabs GetExtensionCheckupTabs(
+      bool serve_extensions_page) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StartupTabProviderImpl);

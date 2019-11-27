@@ -708,8 +708,8 @@ void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
   if (SupportsPresentationFeedback()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
-                   weak_ptr_, vsync_time, interval));
+        base::BindOnce(&DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
+                       weak_ptr_, vsync_time, interval));
   }
 }
 

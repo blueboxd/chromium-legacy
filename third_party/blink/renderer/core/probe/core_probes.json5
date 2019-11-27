@@ -170,6 +170,7 @@
         "DidResizeMainFrame",
         "DidRunJavaScriptDialog",
         "DomContentLoadedEventFired",
+        "FileChooserOpened",
         "FrameAttachedToParent",
         "FrameClearedScheduledNavigation",
         "FrameDetachedFromParent",

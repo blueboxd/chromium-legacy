@@ -472,8 +472,8 @@ void ScreenRotationAnimator::AnimateRotation(
   // Add an observer so that the cloned/copied layers can be cleaned up with the
   // animation completes/aborts.
   ui::CallbackLayerAnimationObserver* observer =
-      new ui::CallbackLayerAnimationObserver(
-          base::Bind(&AnimationEndedCallback, weak_factory_.GetWeakPtr()));
+      new ui::CallbackLayerAnimationObserver(base::BindRepeating(
+          &AnimationEndedCallback, weak_factory_.GetWeakPtr()));
   if (new_layer_tree_owner_)
     new_layer_animation_sequence->AddObserver(observer);
   new_layer_animator->StartAnimation(new_layer_animation_sequence.release());

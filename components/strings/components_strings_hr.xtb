@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Promijenite zaporku</translation>
 <translation id="1484290072879560759">Odaberite adresu za dostavu</translation>
 <translation id="1492194039220927094">Push slanje pravila:</translation>
 <translation id="1501859676467574491">Prikaži kartice s Google računa</translation>
@@ -176,7 +177,6 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Pokušajte kontaktirati administratora sustava.</translation>
 <translation id="1736420071277903564">Računalo</translation>
-<translation id="1739107442478692187">Na web-lokaciji ili u aplikaciji koju koristite došlo je do povrede podataka. Chrome preporučuje da provjerite svoje spremljene zaporke i promijenite ih na <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Unesite važeći mjesec isteka</translation>
 <translation id="1741613555002899862">Mora se navesti kao važeći niz kada je DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Da biste sljedeći put platili brže, spremite karticu, ime i adresu za naplatu na svoj Google račun i ovaj uređaj.</translation>
@@ -210,6 +210,7 @@
 <translation id="1914326953223720820">Usluga raspakiravanja</translation>
 <translation id="1915697529809968049">Želite li koristiti Touch ID umjesto CVC-a?</translation>
 <translation id="1916770123977586577">Ponovo učitajte stranicu da bi se ažurirane postavke primijenile na ovu web-lokaciju</translation>
+<translation id="1917876262703816781">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah promijenite zaporku za <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Oglasi</translation>
 <translation id="1919367280705858090">Pomoć za konkretne poruke pogreške</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nijedna}=1{1 web-lokacija}one{# web-lokacija}few{# web-lokacije}other{# web-lokacija}}</translation>
@@ -242,7 +243,6 @@
 <translation id="2094505752054353250">Domena se ne podudara</translation>
 <translation id="2096368010154057602">Departman</translation>
 <translation id="2099652385553570808">Trostruko spajanje s lijeve strane</translation>
-<translation id="2100280972184758440">Vaša je zaporka ugrožena</translation>
 <translation id="2102134110707549001">Predloži snažnu zaporku…</translation>
 <translation id="2108755909498034140">Ponovo pokrenite računalo</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -250,7 +250,6 @@
 <translation id="2114841414352855701">Zanemareno jer je nadjačano pravilom <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Izdano za: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Bušenje pri dnu desno</translation>
-<translation id="2124528555835617522">Na web-lokaciji ili u aplikaciji koju koristite došlo je do povrede podataka. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
 <translation id="2129079103035905234">Senzori kretanja</translation>
 <translation id="2130448033692577677">Predlošci koje ste naveli ne mogu se primijeniti jer nije postavljeno pravilo DnsOverHttpsMode.</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
@@ -494,7 +493,6 @@
 <translation id="3282497668470633863">Dodajte ime na kartici</translation>
 <translation id="3287510313208355388">Preuzmi online</translation>
 <translation id="3293642807462928945">Saznajte više o pravilu <ph name="POLICY_NAME" /></translation>
-<translation id="3295439534709115864">Na web-lokaciji ili u aplikaciji koju koristite došlo je do povrede podataka. Chrome preporučuje da odmah promijenite zaporku za <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Nisu pronađeni rezultati pretraživanja</translation>
 <translation id="3320021301628644560">Dodajte adresu za naplatu</translation>
 <translation id="3324983252691184275">Grimizna</translation>
@@ -907,6 +905,7 @@
 <translation id="5287240709317226393">Pokaži kolačiće</translation>
 <translation id="5287456746628258573">Ta web-lokacija upotrebljava zastarjelu sigurnosnu konfiguraciju, pa bi vaši podaci (na primjer zaporke ili brojevi kreditnih kartica) mogli biti otkriveni kad se šalju na nju.</translation>
 <translation id="5288108484102287882">Potvrđivanje vrijednosti pravila rezultiralo je upozorenjima</translation>
+<translation id="5295292838686006428">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5308380583665731573">Povežite se</translation>
@@ -957,6 +956,7 @@
 <translation id="5540224163453853">Traženi članak nije pronađen.</translation>
 <translation id="5541546772353173584">Dodajte e-adresu</translation>
 <translation id="5545756402275714221">Preporučeni članci</translation>
+<translation id="5552137475244467770">Chrome povremeno uspoređuje vaše zaporke s javno objavljenim popisima. Tom su prilikom vaše zaporke i korisnička imena kriptirani, tako da ih nitko ne može pročitati, uključujući Google.</translation>
 <translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5560088892362098740">Datum isteka</translation>
 <translation id="5565735124758917034">Aktivno</translation>
@@ -1048,6 +1048,7 @@
 <translation id="5992691462791905444">Presavijanje u obliku harmonike s dva nabora</translation>
 <translation id="6000758707621254961">Rezultata za upit "<ph name="SEARCH_TEXT" />" ima <ph name="RESULT_COUNT" /></translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6014801569448771146">Provjerite zaporke</translation>
 <translation id="6015796118275082299">Godina</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. stranica}one{#. stranica}few{#. stranica}other{#. stranica}}</translation>
 <translation id="6017514345406065928">Zelena</translation>
@@ -1337,6 +1338,7 @@ Dodatne pojedinosti:
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="748406663033922918">Koristite zaključavanje zaslona za potvrđivanje spremljenih načina plaćanja.</translation>
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
+<translation id="7495290002932347110">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da provjerite svoje spremljene zaporke i promijenite ih na <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Nastavi uređivati</translation>
 <translation id="7508255263130623398">Vraćeni ID uređaja pravila prazan je ili ne odgovara trenutačnom ID-u uređaja</translation>
 <translation id="7508870219247277067">Zelenožuta</translation>

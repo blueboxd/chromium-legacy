@@ -555,7 +555,6 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ကို အသုံးပြုနေသည်</translation>
 <translation id="899350903320462459">အကြောင်းကြားခြင်း လုပ်ဆောင်ရန်အတွက် <ph name="LOGIN_ID" /> အဖြစ် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ</translation>
-<translation id="8995603266996330174">စီမံကွပ်ကဲပေးသူ<ph name="DOMAIN" /></translation>
 <translation id="9017320285115481645">Family Link မိဘသုံးကုဒ် ထည့်ပါ။</translation>
 <translation id="9029474291399787231">Adobe Flash Player အပ်ဒိတ် ရနိုင်ပါသည်</translation>
 <translation id="9056839673611986238">စက်ပစ္စည်းကို ယခင်အခြေအနေသို့ ရောက်အောင် ပြန်လည်သွင်းယူသွားပါမည်</translation>
@@ -572,6 +571,7 @@
 <translation id="9183456764293710005">မျက်နှာပြင်အပြည့် မှန်ဘီလူး</translation>
 <translation id="9193626018745640770">အမည်မသိလက်ခံစက်တွင် ကာ့စ်လုပ်နေသည်</translation>
 <translation id="9194617393863864469">အခြားသူ အနေဖြင့် လက်မှတ်ထိုးဝင်ပါ...</translation>
+<translation id="9205817095063786319">စက်ကို <ph name="DOMAIN" /> က စီမံခန့်ခွဲထားပါသည်</translation>
 <translation id="9210037371811586452">ပေါင်းစည်းထားသည့် ကွန်ပျူတာမျက်နှာပြင်မုဒ်မှ ထွက်နေသည်</translation>
 <translation id="9211681782751733685">ဘက်ထရီ အားအပြည့်သွင်းရန် <ph name="TIME_REMAINING" /> လိုသေးသည်။</translation>
 <translation id="9215934040295798075">နောက်ခံပုံ သတ်မှတ်ပါ</translation>

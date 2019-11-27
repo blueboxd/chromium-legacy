@@ -101,6 +101,8 @@ struct GetKeyFromValuePairFirst {
 // Insert and accessor functions:
 //   mapped_type&         operator[](const key_type&);
 //   mapped_type&         operator[](key_type&&);
+//   mapped_type&         at(const K&);
+//   const mapped_type&   at(const K&) const;
 //   pair<iterator, bool> insert(const value_type&);
 //   pair<iterator, bool> insert(value_type&&);
 //   iterator             insert(const_iterator hint, const value_type&);
@@ -197,6 +199,12 @@ class flat_map : public ::base::internal::flat_tree<
   // Takes the first if there are duplicates in the initializer list.
   flat_map& operator=(std::initializer_list<value_type> ilist);
 
+  // Out-of-bound calls to at() will CHECK.
+  template <class K>
+  mapped_type& at(const K& key);
+  template <class K>
+  const mapped_type& at(const K& key) const;
+
   // --------------------------------------------------------------------------
   // Map-specific insert operations.
   //
@@ -270,6 +278,26 @@ auto flat_map<Key, Mapped, Compare>::operator=(
   // likely would be optimized away but still affects our debug builds.
   tree::operator=(ilist);
   return *this;
+}
+
+// ----------------------------------------------------------------------------
+// Lookups.
+
+template <class Key, class Mapped, class Compare>
+template <class K>
+auto flat_map<Key, Mapped, Compare>::at(const K& key) -> mapped_type& {
+  iterator found = tree::find(key);
+  CHECK(found != tree::end());
+  return found->second;
+}
+
+template <class Key, class Mapped, class Compare>
+template <class K>
+auto flat_map<Key, Mapped, Compare>::at(const K& key) const
+    -> const mapped_type& {
+  const_iterator found = tree::find(key);
+  CHECK(found != tree::cend());
+  return found->second;
 }
 
 // ----------------------------------------------------------------------------

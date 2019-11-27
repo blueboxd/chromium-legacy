@@ -24,6 +24,9 @@ class ExtensionHostQueue {
   ExtensionHostQueue(const ExtensionHostQueue& queue) = delete;
   ExtensionHostQueue& operator=(const ExtensionHostQueue& queue) = delete;
 
+  // Returns the single global instance of the ExtensionHostQueue.
+  static ExtensionHostQueue& GetInstance();
+
   // Adds a host to the queue for RenderView creation.
   void Add(DeferredStartRenderHost* host);
 

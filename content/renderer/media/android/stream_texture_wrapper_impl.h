@@ -65,7 +65,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
       const base::RepeatingClosure& received_frame_cb,
       const gfx::Size& natural_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      const StreamTextureWrapperInitCB& init_cb) override;
+      StreamTextureWrapperInitCB init_cb) override;
 
   // Should be called when the Video size changes.
   // Can be called from any thread, but runs on |main_task_runner_|.
@@ -99,7 +99,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void Destroy() override;
 
   void InitializeOnMainThread(const base::RepeatingClosure& received_frame_cb,
-                              const StreamTextureWrapperInitCB& init_cb);
+                              StreamTextureWrapperInitCB init_cb);
 
   void ReallocateVideoFrame();
 

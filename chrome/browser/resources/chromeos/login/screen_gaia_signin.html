@@ -11,7 +11,7 @@
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
         has-buttons no-header no-footer-padding
         show-buttons-overlay="[[!navigationEnabled_]]"
-        hidden="[[!eq_(step_, 'online-gaia')]]">
+        hidden="[[!isStep_(step_, 'online-gaia', 'gaia-loading')]]">
       <div slot="footer" class="flex layout vertical">
         <div id="signin-frame-container"
             class$="[[getSigninFrameContainerClass_(isLoadingUiShown_)]]">
@@ -40,29 +40,29 @@
       </div>
     </oobe-dialog>
     <offline-gaia id="offline-gaia" class="gaia-dialog"
-        hidden="[[!eq_(step_, 'offline-gaia')]]">
+        hidden="[[!isStep_(step_, 'offline-gaia')]]">
     </offline-gaia>
     <offline-ad-login id="offline-ad-auth" class="gaia-dialog"
-        hidden="[[!eq_(step_, 'ad')]]"
+        hidden="[[!isStep_(step_, 'ad')]]"
         i18n-values="ad-welcome-message:loginWelcomeMessage">
     </offline-ad-login>
     <security-token-pin id="pinDialog" parameters="[[pinDialogParameters_]]"
-        hidden="[[!eq_(step_, 'pin')]]"
+        hidden="[[!isStep_(step_, 'pin')]]"
         on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
     </security-token-pin>
     <div id="gaia-step-contents" class="step-contents"
-        hidden="[[!eq_(step_, 'saml-interstitial')]]">
+        hidden="[[!isStep_(step_, 'saml-interstitial')]]">
       <div id="gaia-signin-form-container">
         <saml-interstitial id="saml-interstitial" class="fit gaia-dialog">
         </saml-interstitial>
       </div>
     </div>
     <div id="gaia-loading" class="step-loading gaia-dialog"
-        hidden="[[!eq_(step_, 'loading')]]">
+        hidden="[[!isStep_(step_, 'loading', 'gaia-loading')]]">
       <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
     </div>
     <notification-card id="gaia-whitelist-error" type="fail" class="gaia-dialog"
-        hidden="[[!eq_(step_, 'whitelist-error')]]"
+        hidden="[[!isStep_(step_, 'whitelist-error')]]"
         i18n-values="button-label:tryAgainButton;
                      link-label:learnMoreButton">
     </notification-card>

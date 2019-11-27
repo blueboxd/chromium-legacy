@@ -31,9 +31,9 @@ int LocalCardMigrationStrikeDatabase::GetMaxStrikesLimit() {
   return 6;
 }
 
-long long LocalCardMigrationStrikeDatabase::GetExpiryTimeMicros() {
+int64_t LocalCardMigrationStrikeDatabase::GetExpiryTimeMicros() {
   // Expiry time is 1 year.
-  return (long long)1000000 * 60 * 60 * 24 * 365;
+  return (int64_t)1000000 * 60 * 60 * 24 * 365;
 }
 
 bool LocalCardMigrationStrikeDatabase::UniqueIdsRequired() {

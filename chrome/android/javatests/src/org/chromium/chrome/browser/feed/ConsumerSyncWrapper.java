@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.CountDownLatch;

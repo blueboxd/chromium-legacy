@@ -37,6 +37,10 @@
 #include "weblayer/browser/java/jni/ProfileImpl_jni.h"
 #endif
 
+#if defined(OS_POSIX)
+#include "base/base_paths_posix.h"
+#endif
+
 #if defined(OS_ANDROID)
 using base::android::AttachCurrentThread;
 #endif
@@ -100,7 +104,8 @@ bool IsNameValid(const std::string& name) {
 
 class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
  public:
-  BrowserContextImpl(const base::FilePath& path) : path_(path) {
+  BrowserContextImpl(ProfileImpl* profile_impl, const base::FilePath& path)
+      : profile_impl_(profile_impl), path_(path) {
     resource_context_ = std::make_unique<ResourceContextImpl>();
     content::BrowserContext::Initialize(this, path_);
 
@@ -177,6 +182,8 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
     return nullptr;
   }
 
+  ProfileImpl* profile_impl() const { return profile_impl_; }
+
  private:
   // Creates a simple in-memory pref service.
   // TODO(timvolodine): Investigate whether WebLayer needs persistent pref
@@ -199,6 +206,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
     safe_browsing::RegisterProfilePrefs(pref_registry);
   }
 
+  ProfileImpl* const profile_impl_;
   base::FilePath path_;
   std::unique_ptr<ResourceContextImpl> resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
@@ -237,18 +245,36 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
   base::OnceCallback<void()> callback_;
 };
 
-ProfileImpl::ProfileImpl(const std::string& name) {
+// static
+base::FilePath ProfileImpl::GetCachePath(content::BrowserContext* context) {
+  DCHECK(context);
+  ProfileImpl* profile =
+      static_cast<BrowserContextImpl*>(context)->profile_impl();
+#if defined(OS_POSIX)
   base::FilePath path;
+  {
+    base::ScopedAllowBlocking allow_blocking;
+    CHECK(base::PathService::Get(base::DIR_CACHE, &path));
+    path = path.AppendASCII("profiles").AppendASCII(profile->name_.c_str());
+    if (!base::PathExists(path))
+      base::CreateDirectory(path);
+  }
+  return path;
+#else
+  return profile->data_path_;
+#endif
+}
 
+ProfileImpl::ProfileImpl(const std::string& name) : name_(name) {
   if (!name.empty()) {
     CHECK(IsNameValid(name));
     {
       base::ScopedAllowBlocking allow_blocking;
-      CHECK(base::PathService::Get(DIR_USER_DATA, &path));
-      path = path.AppendASCII("profiles").AppendASCII(name.c_str());
+      CHECK(base::PathService::Get(DIR_USER_DATA, &data_path_));
+      data_path_ = data_path_.AppendASCII("profiles").AppendASCII(name.c_str());
 
-      if (!base::PathExists(path))
-        base::CreateDirectory(path);
+      if (!base::PathExists(data_path_))
+        base::CreateDirectory(data_path_);
     }
   }
 
@@ -256,7 +282,7 @@ ProfileImpl::ProfileImpl(const std::string& name) {
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
 
-  browser_context_ = std::make_unique<BrowserContextImpl>(path);
+  browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
 
   locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
       base::Bind(&ProfileImpl::OnLocaleChanged, base::Unretained(this)));

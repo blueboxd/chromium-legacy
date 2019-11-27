@@ -47,8 +47,8 @@ class GridViewVisibleWaiter {
       return;
 
     check_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(50),
-                       base::Bind(&GridViewVisibleWaiter::OnTimerCheck,
-                                  base::Unretained(this)));
+                       base::BindRepeating(&GridViewVisibleWaiter::OnTimerCheck,
+                                           base::Unretained(this)));
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     check_timer_.Stop();

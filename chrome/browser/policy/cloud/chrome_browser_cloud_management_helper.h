@@ -77,6 +77,11 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
   void SetupRegistrationAndFetchPolicy(const DMToken& dm_token,
                                        const std::string& client_id);
 
+  // Add or remove |observer| to/from the CloudPolicyClient embedded in
+  // |policy_manager_|.
+  void AddClientObserver(CloudPolicyClient::Observer* observer);
+  void RemoveClientObserver(CloudPolicyClient::Observer* observer);
+
   // CloudPolicyService::Observer:
   void OnCloudPolicyServiceInitializationCompleted() override;
 

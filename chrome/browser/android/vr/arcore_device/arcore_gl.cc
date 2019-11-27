@@ -47,7 +47,7 @@ constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
 
 constexpr uint32_t kInputSourceId = 1;
 
-const char* kInputSourceProfileName = "generic-touchscreen";
+const char kInputSourceProfileName[] = "generic-touchscreen";
 
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // We're creating a matrix that transforms viewport UV coordinates (for a

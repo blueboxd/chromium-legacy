@@ -52,6 +52,13 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   void UpdateButtons();
 
+  // Clicking the tab counter button opens and closes the container with
+  // an animation, so it is unsuitable for an interactive test. This
+  // should be called instead. View::SetVisible() isn't sufficient since
+  // the container's preferred size will change.
+  void SetVisibleForTesting(bool visible);
+  views::WebView* web_view_for_testing() const { return web_view_; }
+
  private:
   class AutoCloser;
 

@@ -78,7 +78,8 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
 // Verifies that the sync promo is not displayed for a signed in user.
 TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
   signin::MakePrimaryAccountAvailable(
-      IdentityManagerFactory::GetForProfile(profile()), "fake_username");
+      IdentityManagerFactory::GetForProfile(profile()),
+      "fake_username@gmail.com");
   CreateBubbleView();
   EXPECT_FALSE(bubble_->GetFootnoteViewForTesting());
 }

@@ -119,9 +119,10 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetViewportMode(ViewportMode mode) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
-  bool SetForm(std::unique_ptr<FormProto> form,
-               base::RepeatingCallback<void(const FormProto::Result*)> callback)
-      override;
+  bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
 
@@ -168,6 +169,7 @@ class Controller : public ScriptExecutorDelegate,
       TermsAndConditionsState terms_and_conditions) override;
   void SetLoginOption(std::string identifier) override;
   void OnTermsAndConditionsLinkClicked(int link) override;
+  void OnFormActionLinkClicked(int link) override;
   void SetDateTimeRangeStart(int year,
                              int month,
                              int day,
@@ -369,7 +371,9 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<FormProto> form_;
   std::unique_ptr<FormProto::Result> form_result_;
-  base::RepeatingCallback<void(const FormProto::Result*)> form_callback_ =
+  base::RepeatingCallback<void(const FormProto::Result*)>
+      form_changed_callback_ = base::DoNothing();
+  base::OnceCallback<void(const ClientStatus&)> form_cancel_callback_ =
       base::DoNothing();
 
   // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()

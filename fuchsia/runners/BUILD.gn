@@ -41,13 +41,13 @@ source_set("common") {
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",
-    "//third_party/fuchsia-sdk/sdk:ui_app",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-app",
     "//url",
   ]
   public_deps = [
-    "//third_party/fuchsia-sdk/sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
-    "//third_party/fuchsia-sdk/sdk:web",
   ]
   visibility = [ ":*" ]
 }
@@ -72,14 +72,14 @@ source_set("cast_runner_core") {
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",
-    "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//url",
   ]
   public_deps = [
     ":common",
     "//fuchsia:cast_fidl",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
   ]
   visibility = [ ":*" ]
 }
@@ -128,7 +128,7 @@ source_set("cast_runner_test_core") {
   public_deps = [
     "//base",
     "//fuchsia:cast_fidl",
-    "//third_party/fuchsia-sdk/sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
     "//url",
   ]
   visibility = [ ":*" ]
@@ -148,7 +148,7 @@ test("cast_runner_unittests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
   ]
 }
 
@@ -167,7 +167,7 @@ test("cast_runner_integration_tests") {
     "//fuchsia/base:test_support",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
   package_deps = [ [
@@ -239,7 +239,7 @@ test("web_runner_integration_tests") {
     "//fuchsia/base:modular",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
   ]
   package_deps = [
     [

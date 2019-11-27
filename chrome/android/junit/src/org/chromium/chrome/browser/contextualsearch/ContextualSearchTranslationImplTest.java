@@ -13,8 +13,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.contextualsearch.ContextualSearchTranslationImpl.TranslateBridgeWrapper;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchTranslationImpl.TranslateBridgeWrapper;
 
 import java.util.LinkedHashSet;
 

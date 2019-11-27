@@ -62,6 +62,8 @@ enum class AlarmTimerAction {
 // Enumeration of proactive suggestions deep link actions.
 enum class ProactiveSuggestionsAction {
   kCardClick,
+  kEntryPointClick,
+  kEntryPointClose,
 };
 
 // Enumeration of reminder deep link actions.

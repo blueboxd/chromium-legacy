@@ -25,6 +25,20 @@ class _Expr(object):
         self._is_always_false = expr is False
         self._is_always_true = expr is True
 
+    def __eq__(self, other):
+        if not isinstance(self, other.__class__):
+            return NotImplemented
+        # Assume that, as long as the two texts are the same, the two
+        # expressions must be the same, i.e. |_is_compound|, etc. must be the
+        # same or do not matter.
+        return self.to_text() == other.to_text()
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __hash__(self):
+        return hash(self.to_text())
+
     def __str__(self):
         """
         __str__ is designed to be used when composing another expression.  If
@@ -93,7 +107,7 @@ def expr_and(terms):
         return _Expr(True)
     if len(terms) == 1:
         return terms[0]
-    return _binary_op(" && ", terms)
+    return _binary_op(" && ", expr_uniq(terms))
 
 
 def expr_or(terms):
@@ -108,7 +122,18 @@ def expr_or(terms):
         return _Expr(False)
     if len(terms) == 1:
         return terms[0]
-    return _binary_op(" || ", terms)
+    return _binary_op(" || ", expr_uniq(terms))
+
+
+def expr_uniq(terms):
+    assert isinstance(terms, (list, tuple))
+    assert all(isinstance(term, _Expr) for term in terms)
+
+    uniq_terms = []
+    for term in terms:
+        if term not in uniq_terms:
+            uniq_terms.append(term)
+    return uniq_terms
 
 
 def expr_from_exposure(exposure, in_global=None):

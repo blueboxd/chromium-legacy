@@ -107,7 +107,8 @@ class OmniboxViewIOS : public OmniboxView,
 
   // OmniboxPopupViewSuggestionsDelegate methods
 
-  void OnTopmostSuggestionImageChanged(
+  void OnSelectedMatchImageChanged(
+      bool has_match,
       AutocompleteMatchType::Type match_type,
       base::Optional<SuggestionAnswer::AnswerType> answer_type,
       GURL favicon_url) override;

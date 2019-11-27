@@ -1527,9 +1527,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
 
-          # TODO(https://crbug.com/1002945): Evaluate and possibly enable.
-          "-Wno-sizeof-array-div",
-
           # TODO(https://crbug.com/1016947) Clean up, enable.
           "-Wno-bitwise-conditional-parentheses",
 
@@ -1539,10 +1536,17 @@ config("default_warnings") {
           # TODO(https://crbug.com/1024203) Clean up, enable.
           "-Wno-tautological-bitwise-compare",
         ]
+
         if (is_fuchsia || is_mac) {
           cflags += [
             # TODO(https://crbug.com/999871): Clean up, enable.
             "-Wno-c99-designator",
+          ]
+        }
+        if (is_win) {
+          cflags += [
+            # TODO(https://crbug.com/1002945): Clean up, enable.
+            "-Wno-sizeof-array-div",
           ]
         }
 

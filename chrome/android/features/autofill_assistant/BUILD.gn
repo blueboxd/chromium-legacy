@@ -67,6 +67,7 @@ android_library("java") {
 
   java_files = [
     "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractListObserver.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAccessibilityUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomSheetContent.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantCoordinator.java",

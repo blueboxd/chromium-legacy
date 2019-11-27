@@ -240,12 +240,6 @@ class MediaNotificationServiceTest : public testing::Test {
     item_itr->second.WebContentsDestroyed();
   }
 
-  void SimulateTabFocused(const base::UnguessableToken& id) {
-    auto item_itr = service_->sessions_.find(id.ToString());
-    EXPECT_NE(service_->sessions_.end(), item_itr);
-    item_itr->second.OnWebContentsFocused(nullptr);
-  }
-
   void SimulatePlaybackStateChanged(const base::UnguessableToken& id,
                                     bool playing) {
     MediaSessionInfoPtr session_info(MediaSessionInfo::New());
@@ -263,6 +257,10 @@ class MediaNotificationServiceTest : public testing::Test {
     auto item_itr = service_->sessions_.find(id.ToString());
     EXPECT_NE(service_->sessions_.end(), item_itr);
     item_itr->second.MediaSessionPositionChanged(base::nullopt);
+  }
+
+  void SimulateNotificationClicked(const base::UnguessableToken& id) {
+    service_->OnContainerClicked(id.ToString());
   }
 
   void SimulateDismissButtonClicked(const base::UnguessableToken& id) {
@@ -734,10 +732,10 @@ TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_Interactions) {
   AdvanceClockMinutes(59);
   EXPECT_TRUE(HasActiveNotifications());
 
-  // If the user goes back to the tab, it should reset the hide timer.
+  // If the user clicks to go back to the tab, it should reset the hide timer.
   ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
                                             0);
-  SimulateTabFocused(id);
+  SimulateNotificationClicked(id);
   ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
                                             1);
   AdvanceClockMinutes(50);

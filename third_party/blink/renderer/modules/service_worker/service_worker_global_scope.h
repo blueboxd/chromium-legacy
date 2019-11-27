@@ -356,6 +356,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>;
   void DispatchFetchEventInternal(
       mojom::blink::DispatchFetchEventParamsPtr params,
+      network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventInternalCallback callback);

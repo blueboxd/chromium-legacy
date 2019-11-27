@@ -25,7 +25,7 @@ namespace openscreen {
 struct IPEndpoint;
 
 namespace platform {
-class TlsCredentials;
+struct TlsCredentials;
 struct TlsListenOptions;
 }  // namespace platform
 

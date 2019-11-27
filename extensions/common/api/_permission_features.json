@@ -199,6 +199,13 @@
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"]
   },
+  "crashReportPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "06BE211D5F014BAB34BC22D9DDA09C63A81D828E"   // http://crbug.com/946241
+    ]
+  },
   "declarativeNetRequest": {
     "channel": "beta",
     "extension_types": ["extension"],

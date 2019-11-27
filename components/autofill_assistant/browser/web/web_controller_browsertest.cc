@@ -470,6 +470,15 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     EXPECT_LT(top, container_bottom);
   }
 
+  // Send a Runtime.Evaluate protocol message. Useful for evaluating JS in the
+  // page as there is no ordering guarantee between protocol messages and e.g.
+  // ExecJs().
+  void RuntimeEvaluate(const std::string& code) {
+    web_controller_->devtools_client_->GetRuntime()->Evaluate(
+        code,
+        /* node_frame_id= */ std::string());
+  }
+
  protected:
   std::unique_ptr<WebController> web_controller_;
 
@@ -1307,8 +1316,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {
       base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                      base::Unretained(this), run_loop.QuitClosure(), &result));
 
-  EXPECT_TRUE(
-      content::ExecJs(shell(), "window.dispatchEvent(new Event('resize'))"));
+  RuntimeEvaluate("window.dispatchEvent(new Event('resize'))");
   run_loop.Run();
   EXPECT_EQ(ACTION_APPLIED, result.proto_status());
 }

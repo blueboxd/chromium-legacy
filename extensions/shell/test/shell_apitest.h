@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "extensions/shell/test/shell_test.h"
 
@@ -26,6 +27,11 @@ class ShellApiTest : public AppShellTest {
   // just loaded.
   // |extension_dir| should be a subpath under extensions/test/data.
   const Extension* LoadExtension(const std::string& extension_dir);
+
+  // Loads an unpacked extension. Returns an instance of the extension that was
+  // just loaded.
+  // |extension_path| should be an absolute path to the extension.
+  const Extension* LoadExtension(const base::FilePath& extension_path);
 
   // Loads and launches an unpacked platform app. Returns an instance of the
   // extension that was just loaded.

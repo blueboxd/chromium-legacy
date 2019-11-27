@@ -1510,6 +1510,55 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedCapture) {
   EXPECT_TRUE(called);
 }
 
+TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedMultipleEvents) {
+  CreateTraceEventDataSource();
+
+  {
+    TRACE_EVENT("browser", "bar", [&](perfetto::EventContext ctx) {
+      ctx.event()->set_log_message()->set_body_iid(42);
+    });
+    TRACE_EVENT("browser", "bar", [&](perfetto::EventContext ctx) {
+      ctx.event()->set_log_message()->set_body_iid(43);
+    });
+  }
+
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 5u);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  // The first TRACE_EVENT begin.
+  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, "browser"}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
+
+  // The second TRACE_EVENT begin.
+  e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+  ASSERT_TRUE(e_packet->track_event().has_log_message());
+  EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 43u);
+
+  // The second TRACE_EVENT end.
+  e_packet = producer_client()->GetFinalizedPacket(3);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_END);
+
+  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
+  EXPECT_FALSE(e_packet->track_event().has_log_message());
+
+  // The first TRACE_EVENT end.
+  e_packet = producer_client()->GetFinalizedPacket(4);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_END);
+  EXPECT_FALSE(e_packet->track_event().has_log_message());
+}
+
 // TODO(eseckler): Add startup tracing unittests.
 
 }  // namespace

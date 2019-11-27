@@ -19,15 +19,6 @@
 
 namespace blink {
 
-namespace {
-
-KURL ReparseURLAsHTTPS(KURL url) {
-  url.SetProtocol("https");
-  return url;
-}
-
-}  // namespace
-
 QuicTransport* QuicTransport::Create(ScriptState* script_state,
                                      const String& url,
                                      ExceptionState& exception_state) {
@@ -108,22 +99,11 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
     return;
   }
 
-  // TODO(ricea): Use the URL as-is once "quic-transport" it has been added to
-  // the "special" schemes list.
-  KURL url_as_https = ReparseURLAsHTTPS(url_);
-
-  if (!url_as_https.IsValid()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "The URL '" + url_.ElidedString() + "' is invalid.");
-    return;
-  }
-
-  if (url_as_https.HasFragmentIdentifier()) {
+  if (url_.HasFragmentIdentifier()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "The URL contains a fragment identifier ('#" +
-            url_as_https.FragmentIdentifier() +
+            url_.FragmentIdentifier() +
             "'). Fragment identifiers are not allowed in QuicTransport URLs.");
     return;
   }
@@ -131,7 +111,7 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
   auto* execution_context = GetExecutionContext();
 
   if (!execution_context->GetContentSecurityPolicyForWorld()
-           ->AllowConnectToSource(url_as_https)) {
+           ->AllowConnectToSource(url_)) {
     // TODO(ricea): This error should probably be asynchronous like it is for
     // WebSockets and fetch.
     exception_state.ThrowSecurityError(

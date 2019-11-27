@@ -42,7 +42,7 @@ struct LoginChoice {
   LoginChoice(const std::string& id,
               const std::string& label,
               const std::string& sublabel,
-              const std::string& sublabel_accessibility_hint,
+              const base::Optional<std::string>& sublabel_accessibility_hint,
               int priority,
               const base::Optional<InfoPopupProto>& info_popup);
   LoginChoice(const LoginChoice& another);
@@ -55,7 +55,7 @@ struct LoginChoice {
   // The sublabel to display to the user.
   std::string sublabel;
   // The a11y hint for |sublabel|.
-  std::string sublabel_accessibility_hint;
+  base::Optional<std::string> sublabel_accessibility_hint;
   // The priority to pre-select this choice (-1 == not set/automatic).
   int preselect_priority = -1;
   // The popup to show to provide more information about this login choice.

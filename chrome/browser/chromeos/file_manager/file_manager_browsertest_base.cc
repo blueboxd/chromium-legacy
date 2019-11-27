@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -1464,9 +1465,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     }
 
     if (!IsIncognitoModeTest()) {
-      file_tasks_observer_ =
-          std::make_unique<testing::StrictMock<MockFileTasksObserver>>(
-              profile());
+      if (GetStartWithFileTasksObserver()) {
+        file_tasks_observer_ =
+            std::make_unique<testing::StrictMock<MockFileTasksObserver>>(
+                profile());
+      }
     } else {
       EXPECT_FALSE(file_tasks::FileTasksNotifier::GetForProfile(profile()));
     }
@@ -1538,6 +1541,10 @@ bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {
 
 bool FileManagerBrowserTestBase::GetStartWithNoVolumesMounted() const {
   return false;
+}
+
+bool FileManagerBrowserTestBase::GetStartWithFileTasksObserver() const {
+  return true;
 }
 
 void FileManagerBrowserTestBase::StartTest() {
@@ -1612,6 +1619,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       *output = "false";
     }
 
+    return;
+  }
+
+  if (name == "launchAppOnDownloads") {
+    const base::FilePath downloads_path =
+        file_manager::util::GetDownloadsFolderForProfile(profile());
+    platform_util::OpenItem(profile(), downloads_path,
+                            platform_util::OPEN_FOLDER,
+                            platform_util::OpenOperationCallback());
     return;
   }
 

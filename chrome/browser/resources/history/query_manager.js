@@ -68,12 +68,9 @@ Polymer({
     this.set('queryState.incremental', incremental);
 
     if (incremental) {
-      chrome.send('queryHistoryContinuation');
+      history.BrowserService.getInstance().queryHistoryContinuation();
     } else {
-      chrome.send('queryHistory', [
-        queryState.searchTerm,
-        RESULTS_PER_PAGE,
-      ]);
+      history.BrowserService.getInstance().queryHistory(queryState.searchTerm);
     }
   },
 

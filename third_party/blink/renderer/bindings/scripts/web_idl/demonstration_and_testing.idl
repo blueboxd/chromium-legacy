@@ -20,7 +20,11 @@
 namespace TestNamespace {
   [RaisesException] readonly attribute Promise<boolean> attr1;
   readonly attribute TestInterfaceConstructor attr2;
-  void op1(long x, boolean y, TestInterfaceConstructor z);
+  void op1(long x, TestInterfaceConstructor z, boolean y);
+  void op1(long x, optional DOMString y, optional ExampleDictionary z);
+  [RuntimeEnabled=TestFeature1] void op1(boolean... x);
+  [RuntimeEnabled=TestFeature2] void op1(long x, ArrayBuffer... xx);
+  [RuntimeEnabled=TestFeature2] void op1(long x, DataView... xx);
 };
 
 dictionary ExampleDictionary {

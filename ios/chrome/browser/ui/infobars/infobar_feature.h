@@ -18,6 +18,13 @@ extern const base::Feature kInfobarUIReboot;
 // Use IsConfirmInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kConfirmInfobarMessagesUI;
 
+// Feature to choose whether Confirm Infobars use the new Messages UI or the
+// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// enabled.
+// Use IsCrashRestoreInfobarMessagesUIEnabled() instead of this constant
+// directly.
+extern const base::Feature kCrashRestoreInfobarMessagesUI;
+
 // Feature to choose whether Downloads uses the new Messages UI or the
 // legacy one. Also, in order for it to work kInfobarUIReboot needs to be
 // enabled.
@@ -41,6 +48,9 @@ bool IsInfobarUIRebootEnabled();
 
 // Whether the Confirm Infobar Messages UI is enabled.
 bool IsConfirmInfobarMessagesUIEnabled();
+
+// Whether the Crash Restore Infobar Messages UI is enabled.
+bool IsCrashRestoreInfobarMessagesUIEnabled();
 
 // Whether the Download Infobar Messages UI is enabled.
 bool IsDownloadInfobarMessagesUIEnabled();

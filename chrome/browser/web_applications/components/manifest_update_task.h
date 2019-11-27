@@ -29,7 +29,7 @@ enum ManifestUpdateResult {
   kAppUninstalled = 3,
   kAppIsPlaceholder = 4,
   kAppUpToDate = 5,
-  kAppDataInvalid = 6,
+  kAppNotEligible = 6,
   kAppUpdateFailed = 7,
   kAppUpdated = 8,
   kMaxValue = kAppUpdated,

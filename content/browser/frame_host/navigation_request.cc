@@ -2426,14 +2426,18 @@ void NavigationRequest::CommitNavigation() {
     std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
         controller->GetBackForwardCache().RestoreEntry(nav_entry_id_);
 
-    // The only time restored_bfcache_entry can be nullptr here, is if the
-    // document was evicted from the BackForwardCache since this navigation
-    // started.
-    //
-    // If the document was evicted, it should have re-issued the navigation
-    // (deleting this NavigationRequest), so we should never reach this point
-    // without the document still present in the BackForwardCache.
-    CHECK(restored_bfcache_entry);
+    if (!restored_bfcache_entry) {
+      // The only time restored_bfcache_entry can be nullptr here, is if the
+      // document was evicted from the BackForwardCache since this navigation
+      // started.
+      //
+      // If the document was evicted, it should have posted a task to re-issue
+      // the navigation - ensure that this happened.
+      CHECK(restarting_back_forward_cached_navigation_);
+      return;
+    } else {
+      CHECK(!restarting_back_forward_cached_navigation_);
+    }
 
     // Transfer ownership of this NavigationRequest to the restored
     // RenderFrameHost.
@@ -3890,4 +3894,30 @@ void NavigationRequest::SetSourceSiteInstanceToInitiatorIfNeeded() {
           ->GetRelatedSiteInstance(tuple.GetURL())
           .get());
 }
+
+void NavigationRequest::RestartBackForwardCachedNavigation() {
+  CHECK(IsServedFromBackForwardCache());
+  restarting_back_forward_cached_navigation_ = true;
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&NavigationRequest::RestartBackForwardCachedNavigationImpl,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
+  RenderFrameHostImpl* rfh = rfh_restored_from_back_forward_cache();
+  CHECK(rfh);
+  CHECK_EQ(rfh->frame_tree_node()->navigation_request(), this);
+
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      rfh->frame_tree_node()->navigator()->GetController());
+  int nav_index = controller->GetEntryIndexWithUniqueID(nav_entry_id());
+
+  // If the NavigationEntry was deleted, do not do anything.
+  if (nav_index == -1)
+    return;
+
+  controller->GoToIndex(nav_index);
+}
+
 }  // namespace content

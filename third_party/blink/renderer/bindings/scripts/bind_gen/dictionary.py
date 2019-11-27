@@ -148,12 +148,11 @@ def make_fill_with_dict_members_def(cg_context):
     body.add_template_vars(cg_context.template_bindings())
 
     if dictionary.inherited:
-        _1 = blink_class_name(dictionary.inherited)
-        pattern = ("if (!{_1}::FillWithMembers("
-                   "isolate, creation_context, v8_dictionary)) {{\n"
-                   "  return false;\n"
-                   "}}")
-        body.append(T(_format(pattern, _1=_1)))
+        text = """\
+if (!BaseClass::FillWithMembers(isolate, creation_context, v8_dictionary)) {
+  return false;
+}"""
+        body.append(T(text))
 
     body.append(
         T("return FillWithOwnMembers("
@@ -326,14 +325,13 @@ def make_fill_dict_members_internal_def(cg_context):
     body.add_template_var("exception_state", "exception_state")
 
     if dictionary.inherited:
-        pattern = """\
-{_1}::FillMembersInternal(${isolate}, v8_dictionary, ${exception_state});
-if (${exception_state}.HadException()) {{
+        text = """\
+BaseClass::FillMembersInternal(${isolate}, v8_dictionary, ${exception_state});
+if (${exception_state}.HadException()) {
   return;
-}}
+}
 """
-        _1 = blink_class_name(dictionary.inherited)
-        body.append(T(_format(pattern, _1=_1)))
+        body.append(T(text))
 
     body.extend([
         T("const v8::Eternal<v8::Name>* member_names = "

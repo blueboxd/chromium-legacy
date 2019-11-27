@@ -2717,6 +2717,67 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                       EvictWithPostMessageToCachedClient) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.RegisterRequestHandler(
+      base::BindRepeating(&RequestHandlerForUpdateWorker));
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  SetupCrossSiteRedirector(&https_server);
+  ASSERT_TRUE(https_server.Start());
+  Shell* tab_to_execute_service_worker = shell();
+  Shell* tab_to_be_bfcached = CreateBrowser();
+
+  // 1) Navigate to A in |tab_to_execute_service_worker|.
+  EXPECT_TRUE(NavigateToURL(
+      tab_to_execute_service_worker,
+      https_server.GetURL(
+          "a.com", "/back_forward_cache/service_worker_post_message.html")));
+
+  // 2) Register a service worker.
+  EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker,
+                           "register('service_worker_post_message.js')"));
+
+  // 3) Navigate to A in |tab_to_be_bfcached|.
+  EXPECT_TRUE(NavigateToURL(
+      tab_to_be_bfcached,
+      https_server.GetURL(
+          "a.com", "/back_forward_cache/service_worker_post_message.html")));
+  const std::string script_to_store =
+      "executeCommandOnServiceWorker('StoreClients')";
+  EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, script_to_store));
+  RenderFrameHostImpl* rfh =
+      static_cast<WebContentsImpl*>(tab_to_be_bfcached->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameDeletedObserver deleted_observer_rfh(rfh);
+
+  // 4) Navigate away to B in |tab_to_be_bfcached|.
+  EXPECT_TRUE(NavigateToURL(tab_to_be_bfcached,
+                            https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(deleted_observer_rfh.deleted());
+  EXPECT_TRUE(rfh->is_in_back_forward_cache());
+
+  // 5) Trigger client.postMessage via |tab_to_execute_service_worker|. Cache in
+  // |tab_to_be_bfcached| will be evicted.
+  const std::string script_to_post_message =
+      "executeCommandOnServiceWorker('PostMessageToStoredClients')";
+  EXPECT_EQ("DONE",
+            EvalJs(tab_to_execute_service_worker, script_to_post_message));
+  deleted_observer_rfh.WaitUntilDeleted();
+
+  // 6) Go back to A in |tab_to_be_bfcached|.
+  tab_to_be_bfcached->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(tab_to_be_bfcached->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerPostMessage},
+      FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   constexpr char kKeepalivePath[] = "/keepalive";
 
@@ -4162,6 +4223,156 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest, OrientationCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(resolve => {
+      window.addEventListener("deviceorientation", () => { resolve(); }, true)
+    })
+  )"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_THAT(rfh_a, InBackForwardCache());
+}
+
+// Tests that the orientation sensor's events are not delivered to a page in the
+// back-forward cache.
+//
+// This sets some JS functions in the pages to enable the sensors, capture and
+// validate the events. The a-page should only receive events with alpha=0, the
+// b-page is allowed to receive any alpha value. The test captures 3 events in
+// the a-page, then navigates to the b-page and changes the reading to have
+// alpha=1. While on the b-page it captures 3 more events. If the a-page is
+// still receiving events it should receive one or more of these. Finally it
+// resets the reasing back to have alpha=0 and navigates back to the a-page and
+// catpures 3 more events and verifies that all events on the a-page have
+// alpha=1.
+IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
+                       SensorPausedWhileCached) {
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  provider_->SetRelativeOrientationSensorData(0, 0, 0);
+
+  // JS to cause a page to listen to, capture and validate orientation events.
+  const std::string sensor_js = R"(
+    // Collects events that have happened so far.
+    var events = [];
+    // If set, will be called by handleEvent.
+    var pendingResolve = null;
+
+    // Handles one event, pushing it to |events| and calling |pendingResolve| if
+    // set.
+    function handleEvent(event) {
+      events.push(event);
+      if (pendingResolve !== null) {
+        pendingResolve('event');
+        pendingResolve = null;
+      }
+    }
+
+    // Returns a promise that will resolve when an event is handled.
+    function waitForOneEventPromise() {
+      return new Promise(resolve => {
+        pendingResolve = resolve;
+      });
+    }
+
+    // Pretty print an orientation event.
+    function eventToString(event) {
+      return `${event.alpha} ${event.beta} ${event.gamma}`;
+    }
+
+    // Ensure that we have at least |expectedEventMin| events in |events| and
+    // if set, that |expectedAlpha| matches the alpha of all of those events.
+    function validateEvents(expectedEventMin, expectedAlpha = null) {
+      if (expectedAlpha !== null) {
+        let count = 0;
+        for (event of events) {
+          count++;
+          if (Math.abs(event.alpha - expectedAlpha) > 0.01) {
+            return `fail - ${count}/${events.length}: ` +
+                `${expectedAlpha} != ${event.alpha} (${eventToString(event)})`;
+          }
+        }
+      }
+      if (events.length < expectedEventMin) {
+        return `fail - ${events.length} < ${expectedEventMin}`;
+      }
+      return 'pass';
+    }
+
+    window.addEventListener('deviceorientation', handleEvent);
+  )";
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  ASSERT_TRUE(ExecJs(rfh_a, sensor_js));
+
+  // Collect 3 orientation events.
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0.2);
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0.4);
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  // We should have 3 events with alpha=0.
+  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(3, 0)"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  ASSERT_THAT(rfh_a, InBackForwardCache());
+  ASSERT_NE(rfh_a, rfh_b);
+
+  ASSERT_TRUE(ExecJs(rfh_b, sensor_js));
+
+  // Collect 3 orientation events.
+  provider_->SetRelativeOrientationSensorData(1, 0, 0);
+  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(1, 0, 0.2);
+  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(1, 0, 0.4);
+  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  // We should have 3 events with alpha=1.
+  ASSERT_EQ("pass", EvalJs(rfh_b, "validateEvents(3)"));
+
+  // 3) Go back to A.
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0);
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_EQ(rfh_a, current_frame_host());
+
+  // Collect 3 orientation events.
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0);
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0.2);
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  provider_->UpdateRelativeOrientationSensorData(0, 0, 0.4);
+  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+
+  // We should have the earlier 3 plus another 3 events with alpha=0.
+  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(6, 0)"));
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        AllowedFeaturesForSubframesDoNotEvict) {
   // The main purpose of this test is to check that when a state of a subframe
@@ -4276,4 +4487,35 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestForHighMemoryDevices,
   // greater than the memory threshold.
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    EvictingDocumentsInRelatedSiteInstancesDoesNotRestartNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html#part1"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title1.html#part2"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+
+  // 3) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 4) Go back to A2, but do not wait for the navigation to commit.
+  web_contents()->GetController().GoBack();
+
+  // 5) Go back to A1.
+  // This will attempt to evict A2 from the cache because
+  // their navigation entries have related site instances, while a navigation
+  // to A2 is in flight. Ensure that we do not try to restart it as it should
+  // be superseded by a navigation to A1.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(url_a1, web_contents()->GetURL());
+}
+
 }  // namespace content

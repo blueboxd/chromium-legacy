@@ -24,7 +24,7 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
 
   // CrosSettingsProvider implementation.
   const base::Value* Get(const std::string& path) const override;
-  TrustedStatus PrepareTrustedValues(const base::Closure& callback) override;
+  TrustedStatus PrepareTrustedValues(base::OnceClosure callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
   void SetTrustedStatus(TrustedStatus status);
@@ -58,7 +58,7 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   TrustedStatus trusted_status_ = CrosSettingsProvider::TRUSTED;
 
   // Pending callbacks to invoke when switching away from TEMPORARILY_UNTRUSTED.
-  std::vector<base::Closure> callbacks_;
+  std::vector<base::OnceClosure> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(StubCrosSettingsProvider);
 };

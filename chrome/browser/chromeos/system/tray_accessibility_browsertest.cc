@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   EXPECT_TRUE(IsMenuButtonVisible());
 }
 
-// Verify that the accessiblity system detailed menu remains open when an item
+// Verify that the accessibility system detailed menu remains open when an item
 // is selected or deselected.
 // Do not use a feature which requires an enable/disable confirmation dialog
 // here, as the dialogs change focus and close the detail menu.

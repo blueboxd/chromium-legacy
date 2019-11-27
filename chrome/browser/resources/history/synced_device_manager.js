@@ -82,7 +82,7 @@ Polymer({
     this.focusGrid_ = new cr.ui.FocusGrid();
 
     // Update the sign in state.
-    chrome.send('otherDevicesInitialized');
+    history.BrowserService.getInstance().otherDevicesInitialized();
     history.BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED,
         SyncedTabsHistogram.LIMIT);
@@ -149,7 +149,7 @@ Polymer({
 
   /** @private */
   onSignInTap_: function() {
-    chrome.send('startSignInFlow');
+    history.BrowserService.getInstance().startSignInFlow();
   },
 
   /** @private */

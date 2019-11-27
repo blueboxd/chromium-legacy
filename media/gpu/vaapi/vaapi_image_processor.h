@@ -32,6 +32,7 @@ class VaapiImageProcessor : public ImageProcessor {
       const ImageProcessor::PortConfig& input_config,
       const ImageProcessor::PortConfig& output_config,
       const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       const base::RepeatingClosure& error_cb);
 
   // ImageProcessor implementation.
@@ -39,17 +40,24 @@ class VaapiImageProcessor : public ImageProcessor {
   bool Reset() override;
 
  private:
-  VaapiImageProcessor(const ImageProcessor::PortConfig& input_config,
-                      const ImageProcessor::PortConfig& output_config,
-                      scoped_refptr<VaapiWrapper> vaapi_wrapper);
+  VaapiImageProcessor(
+      const ImageProcessor::PortConfig& input_config,
+      const ImageProcessor::PortConfig& output_config,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner);
 
   // ImageProcessor implementation.
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                        scoped_refptr<VideoFrame> output_frame,
                        FrameReadyCB cb) override;
 
+  void ProcessTask(scoped_refptr<VideoFrame> input_frame,
+                   scoped_refptr<VideoFrame> output_frame,
+                   FrameReadyCB cb);
+
   // Sequence task runner in which the buffer conversion is performed.
   const scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
+  SEQUENCE_CHECKER(processor_sequence_checker_);
 
   // CancelableTaskTracker for posted tasks to |processor_task_runner_|. We
   // can't use CancelableCallback or WeakPtr because we may need to cancel tasks
@@ -57,8 +65,6 @@ class VaapiImageProcessor : public ImageProcessor {
   base::CancelableTaskTracker process_task_tracker_;
 
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-
-  SEQUENCE_CHECKER(client_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageProcessor);
 };

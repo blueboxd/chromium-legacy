@@ -24,8 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace safe_browsing {
 
 class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
@@ -109,43 +107,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };
-
-// Helper function to examine a DeepScanningClientResponse and report the
-// appropriate events to the enterprise admin.
-void MaybeReportDeepScanningVerdict(Profile* profile,
-                                    const GURL& url,
-                                    const std::string& file_name,
-                                    const std::string& download_digest_sha256,
-                                    const std::string& mime_type,
-                                    const std::string& trigger,
-                                    const int64_t content_size,
-                                    BinaryUploadService::Result result,
-                                    DeepScanningClientResponse response);
-
-// Access points used to record UMA metrics. Adding an access point here
-// requires updating histograms.xml by adding histograms with names
-//   "SafeBrowsing.DeepScan.<access-point>.BytesPerSeconds"
-//   "SafeBrowsing.DeepScan.<access-point>.Duration"
-//   "SafeBrowsing.DeepScan.<access-point>.<result>.Duration"
-// TODO(domfc): Add DRAG_AND_DROP and PASTE access points.
-enum class DeepScanAccessPoint {
-  DOWNLOAD,
-  UPLOAD,
-};
-std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
-
-// Helper functions to record DeepScanning UMA metrics for the duration of the
-// request split by its result and bytes/sec for successful requests.
-void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
-                           base::TimeDelta duration,
-                           int64_t total_bytes,
-                           const BinaryUploadService::Result& result,
-                           const DeepScanningClientResponse& response);
-void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
-                           base::TimeDelta duration,
-                           int64_t total_bytes,
-                           const std::string& result,
-                           bool success);
 
 }  // namespace safe_browsing
 

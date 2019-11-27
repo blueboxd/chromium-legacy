@@ -25,6 +25,9 @@
                                      answerType
                              faviconURL:(GURL)faviconURL;
 
+// Reset the left image to be the default search one.
+- (void)setDefaultLeftImage;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_LEFT_IMAGE_CONSUMER_H_

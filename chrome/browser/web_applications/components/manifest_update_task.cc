@@ -82,7 +82,7 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
   DCHECK_EQ(stage_, Stage::kPendingInstallableData);
 
   if (!data.errors.empty()) {
-    DestroySelf(ManifestUpdateResult::kAppDataInvalid);
+    DestroySelf(ManifestUpdateResult::kAppNotEligible);
     return;
   }
 

@@ -121,8 +121,9 @@ cr.define('settings_autofill_page', function() {
     let paymentsManager;
 
 
-    setup(function() {
+    setup(async function() {
       PolymerTest.clearBody();
+      await settings.forceLazyLoaded();
 
       // Override the PasswordManagerImpl for testing.
       passwordManager = new TestPasswordManagerProxy();

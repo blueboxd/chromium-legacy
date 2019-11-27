@@ -452,6 +452,11 @@ enum AuthenticationState {
 }
 
 - (void)updateGradientColors {
+  [CATransaction begin];
+  // If this isn't set, the changes here are automatically animated. The other
+  // color changes for dark mode don't animate, however, so there ends up being
+  // visual desyncing.
+  [CATransaction setDisableActions:YES];
   UIColor* backgroundColor = self.backgroundColor;
 
   if (@available(iOS 13, *)) {
@@ -463,6 +468,7 @@ enum AuthenticationState {
     (id)[backgroundColor colorWithAlphaComponent:0].CGColor,
     (id)backgroundColor.CGColor
   ];
+  [CATransaction commit];
 }
 
 #pragma mark - UIAdaptivePresentationController

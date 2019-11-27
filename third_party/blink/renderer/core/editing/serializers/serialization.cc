@@ -207,8 +207,8 @@ static HTMLElement* HighestAncestorToWrapMarkup(
 
       // Retain the Mail quote level by including all ancestor mail block
       // quotes.
-      if (HTMLQuoteElement* highest_mail_blockquote =
-              ToHTMLQuoteElement(HighestEnclosingNodeOfType(
+      if (auto* highest_mail_blockquote =
+              To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
                   first_node_position, IsMailHTMLBlockquoteElement,
                   kCanCrossEditingBoundary))) {
         special_common_ancestor = highest_mail_blockquote;

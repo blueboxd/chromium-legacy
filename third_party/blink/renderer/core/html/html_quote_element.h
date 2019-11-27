@@ -46,7 +46,25 @@ inline bool IsHTMLQuoteElement(const HTMLElement& element) {
          element.HasTagName(html_names::kBlockquoteTag);
 }
 
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);
+template <>
+struct DowncastTraits<HTMLQuoteElement> {
+  static bool AllowFrom(const HTMLElement& element) {
+    return IsHTMLQuoteElement(element);
+  }
+  static bool AllowFrom(const HTMLElement* element) {
+    return element && IsHTMLQuoteElement(*element);
+  }
+  static bool AllowFrom(const Node& node) {
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    return html_element ? IsHTMLQuoteElement(*html_element) : false;
+  }
+  static bool AllowFrom(const Node* node) {
+    return node && IsA<HTMLQuoteElement>(*node);
+  }
+  static bool AllowFrom(const Element* element) {
+    return element && IsA<HTMLQuoteElement>(*element);
+  }
+};
 
 }  // namespace blink
 

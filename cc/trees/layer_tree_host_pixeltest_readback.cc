@@ -429,7 +429,7 @@ ReadbackTestConfig const kTestConfigs[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostReadbackPixelTest,
                          ::testing::ValuesIn(kTestConfigs));
 
@@ -447,7 +447,7 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostReadbackPixelTestMaybeVulkan,
                          ::testing::ValuesIn(kMaybeVulkanTestConfigs));
 
@@ -531,7 +531,7 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostReadbackDeviceScalePixelTest,
                          ::testing::ValuesIn(kTestConfigs));
 
@@ -571,7 +571,7 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
                base::FilePath(FILE_PATH_LITERAL("srgb_green_in_p3.png")));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostReadbackColorSpacePixelTest,
                          ::testing::ValuesIn(kTestConfigs));
 

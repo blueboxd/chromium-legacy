@@ -2406,6 +2406,7 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
       output_format_fourcc_, egl_image_format_fourcc_, coded_size_,
       egl_image_size_, visible_size_, output_buffer_map_.size(),
       image_processor_device_, image_processor_output_mode,
+      decoder_thread_.task_runner(),
       // Unretained(this) is safe for ErrorCB because |decoder_thread_| is owned
       // by this V4L2VideoDecodeAccelerator and |this| must be valid when
       // ErrorCB is executed.

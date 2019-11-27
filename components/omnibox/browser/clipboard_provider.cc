@@ -258,6 +258,7 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
   AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_URL);
   match.destination_url = url;
+
   // Because the user did not type a related input to get this clipboard
   // suggestion, preserve the subdomain so the user has extra context.
   auto format_types = AutocompleteMatch::GetFormatTypes(false, true);
@@ -265,6 +266,9 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
       url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   if (!match.contents.empty())
     match.contents_class.push_back({0, ACMatchClassification::URL});
+  match.fill_into_edit =
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          url, match.contents, client_->GetSchemeClassifier(), nullptr);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_LINK_FROM_CLIPBOARD));
   if (!match.description.empty())
@@ -300,6 +304,8 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_TEXT);
+  match.fill_into_edit = text;
+
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   if (!default_url)
@@ -395,6 +401,12 @@ void ClipboardProvider::ConstructImageMatchCallback(
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
   if (!match.description.empty())
     match.description_class.push_back({0, ACMatchClassification::NONE});
+
+  // This will end up being something like "Search for Copied Image." This may
+  // seem strange to use for |fill_into_edit, but it is because iOS requires
+  // some text in the text field for the Enter key to work when using keyboard
+  // navigation.
+  match.fill_into_edit = match.description;
 
   TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
   search_args.image_thumbnail_content.assign(image_bytes->front_as<char>(),

@@ -28,7 +28,6 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
@@ -462,12 +461,6 @@ void Font::WillUseFontData(const String& text) const {
       !family.FamilyIsEmpty())
     font_fallback_list_->GetFontSelector()->WillUseFontData(
         GetFontDescription(), family.Family(), text);
-}
-
-scoped_refptr<FontFallbackIterator> Font::CreateFontFallbackIterator(
-    FontFallbackPriority fallback_priority) const {
-  return FontFallbackIterator::Create(font_description_, font_fallback_list_,
-                                      fallback_priority);
 }
 
 GlyphData Font::GetEmphasisMarkGlyphData(const AtomicString& mark) const {

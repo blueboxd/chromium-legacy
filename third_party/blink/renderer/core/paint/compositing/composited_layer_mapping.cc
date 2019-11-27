@@ -1302,15 +1302,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
     f(mapping->DecorationOutlineLayer());
 }
 
-struct AnimatingData {
-  STACK_ALLOCATED();
-
- public:
-  Persistent<Node> owning_node = nullptr;
-  Persistent<Element> animating_element = nullptr;
-  const ComputedStyle* animating_style = nullptr;
-};
-
 // You receive an element id if you have an animation, or you're a scroller (and
 // might impl animate).
 //

@@ -46,13 +46,16 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
       const ImageProcessor::PortConfig& input_config,
       const ImageProcessor::PortConfig& output_config,
       ImageProcessor::OutputMode output_mode,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       ErrorCB error_cb);
 
  private:
-  LibYUVImageProcessor(const ImageProcessor::PortConfig& input_config,
-                       const ImageProcessor::PortConfig& output_config,
-                       std::unique_ptr<VideoFrameMapper> video_frame_mapper,
-                       ErrorCB error_cb);
+  LibYUVImageProcessor(
+      const ImageProcessor::PortConfig& input_config,
+      const ImageProcessor::PortConfig& output_config,
+      std::unique_ptr<VideoFrameMapper> video_frame_mapper,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      ErrorCB error_cb);
 
   // ImageProcessor override
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,

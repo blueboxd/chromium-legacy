@@ -131,14 +131,19 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
           base::android::ConvertUTF8ToJavaString(
               env, login_choice.info_popup->text()));
     }
+    base::android::ScopedJavaLocalRef<jstring> jsublabel_accessibility_hint =
+        nullptr;
+    if (login_choice.sublabel_accessibility_hint.has_value()) {
+      jsublabel_accessibility_hint = base::android::ConvertUTF8ToJavaString(
+          env, login_choice.sublabel_accessibility_hint.value());
+    }
     Java_AssistantCollectUserDataModel_addLoginChoice(
         env, jlist,
         base::android::ConvertUTF8ToJavaString(env, login_choice.identifier),
         base::android::ConvertUTF8ToJavaString(env, login_choice.label),
         base::android::ConvertUTF8ToJavaString(env, login_choice.sublabel),
-        base::android::ConvertUTF8ToJavaString(
-            env, login_choice.sublabel_accessibility_hint),
-        login_choice.preselect_priority, jinfo_popup);
+        jsublabel_accessibility_hint, login_choice.preselect_priority,
+        jinfo_popup);
   }
   return jlist;
 }
@@ -1174,14 +1179,18 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     Java_AssistantDetailsModel_clearDetails(env, jmodel);
     return;
   }
-
+  auto opt_image_accessibility_hint = details->imageAccessibilityHint();
+  base::android::ScopedJavaLocalRef<jstring> jimage_accessibility_hint =
+      nullptr;
+  if (opt_image_accessibility_hint.has_value()) {
+    jimage_accessibility_hint = base::android::ConvertUTF8ToJavaString(
+        env, opt_image_accessibility_hint.value());
+  }
   auto jdetails = Java_AssistantDetails_create(
       env, base::android::ConvertUTF8ToJavaString(env, details->title()),
       details->titleMaxLines(),
       base::android::ConvertUTF8ToJavaString(env, details->imageUrl()),
-      base::android::ConvertUTF8ToJavaString(env,
-                                             details->imageAccessibilityHint()),
-      details->imageAllowClickthrough(),
+      jimage_accessibility_hint, details->imageAllowClickthrough(),
       base::android::ConvertUTF8ToJavaString(env, details->imageDescription()),
       base::android::ConvertUTF8ToJavaString(env, details->imagePositiveText()),
       base::android::ConvertUTF8ToJavaString(env, details->imageNegativeText()),

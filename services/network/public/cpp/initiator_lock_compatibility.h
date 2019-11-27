@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_INITIATOR_LOCK_COMPATIBILITY_H_
-#define SERVICES_NETWORK_INITIATOR_LOCK_COMPATIBILITY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_INITIATOR_LOCK_COMPATIBILITY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_INITIATOR_LOCK_COMPATIBILITY_H_
 
 #include "base/component_export.h"
 #include "base/optional.h"
@@ -53,21 +53,10 @@ enum class InitiatorLockCompatibility {
 // Verifies if |request.request_initiator| matches
 // |factory_params.request_initiator_site_lock|.
 //
-// This overload should only be called for requests from renderer processes
+// This should only be called for requests from renderer processes
 // (ones that are not coverd by the kExcludedPlugin exception).
-COMPONENT_EXPORT(NETWORK_SERVICE)
+COMPONENT_EXPORT(NETWORK_CPP)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const base::Optional<url::Origin>& request_initiator_site_lock,
-    const base::Optional<url::Origin>& request_initiator);
-
-// Verifies if |request.request_initiator| matches
-// |factory_params.request_initiator_site_lock|.
-//
-// This overload takes into account exception for the browser process and/or for
-// renderer processes that embed universal-access plugins.
-COMPONENT_EXPORT(NETWORK_SERVICE)
-InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    uint32_t process_id,
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
 
@@ -86,11 +75,13 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 //
 // TODO(lukasza): Remove this function if https://crrev.com/c/1661114 sticks
 // (i.e. if ResourceRequest::request_initiator is sanitized and made trustworthy
-// by CorsURLLoaderFactory::CreateLoaderAndStart and IsSane).
+// by CorsURLLoaderFactory::CreateLoaderAndStart and IsSane). Once we remove
+// this, this header can be moved to non-public directory.
+COMPONENT_EXPORT(NETWORK_CPP)
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_INITIATOR_LOCK_COMPATIBILITY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_INITIATOR_LOCK_COMPATIBILITY_H_

@@ -210,8 +210,8 @@ void ChromeTlsConnectionFactory::OnTlsUpgrade(
   // TODO(crbug.com/1017903): populate X509 certificate field when it is
   // migrated to a CRYPTO_BUFFER. For motivation, see:
   // https://boringssl.googlesource.com/boringssl/+/HEAD/PORTING.md
-  client_->OnConnected(this, nullptr /* X509 certificate */,
-                       std::move(tls_connection));
+  std::vector<uint8_t> der_x509_certificate;
+  client_->OnConnected(this, der_x509_certificate, std::move(tls_connection));
 }
 
 }  // namespace media_router

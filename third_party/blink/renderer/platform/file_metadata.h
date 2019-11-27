@@ -95,14 +95,6 @@ inline base::Optional<base::Time> JsTimeToOptionalTime(double ms) {
   return base::Time::FromJsTime(ms);
 }
 
-// TODO(crbug.com/988343): Temporary conversion function. This should be
-// removed.
-inline base::Optional<base::Time> DoubleTToOptionalTime(double ms) {
-  if (!IsValidFileTime(ms))
-    return base::nullopt;
-  return base::Time::FromDoubleT(ms);
-}
-
 inline base::Optional<base::Time> NullableTimeToOptionalTime(base::Time time) {
   if (time.is_null())
     return base::nullopt;

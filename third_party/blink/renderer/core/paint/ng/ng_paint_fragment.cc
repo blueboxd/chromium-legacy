@@ -178,38 +178,8 @@ base::Optional<PositionWithAffinity> PositionForPointInChild(
   return base::nullopt;
 }
 
-// ::before, ::after and ::first-letter can be hit test targets.
-bool CanBeHitTestTargetPseudoNode(const Node& node) {
-  auto* pseudo_element = DynamicTo<PseudoElement>(node);
-  if (!pseudo_element)
-    return false;
-  switch (pseudo_element->GetPseudoId()) {
-    case kPseudoIdBefore:
-    case kPseudoIdAfter:
-    case kPseudoIdFirstLetter:
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool IsLastBRInPage(const LayoutObject& layout_object) {
   return layout_object.IsBR() && !layout_object.NextInPreOrder();
-}
-
-const LayoutObject* ListMarkerFromMarkerOrMarkerContent(
-    const LayoutObject* object) {
-  if (object->IsLayoutNGListMarkerIncludingInside())
-    return object;
-
-  // Check if this is a marker content.
-  if (object->IsAnonymous()) {
-    const LayoutObject* parent = object->Parent();
-    if (parent && parent->IsLayoutNGListMarkerIncludingInside())
-      return parent;
-  }
-
-  return nullptr;
 }
 
 }  // namespace
@@ -1150,44 +1120,6 @@ PositionWithAffinity NGPaintFragment::PositionForPoint(
 
   DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
   return PositionForPointInInlineLevelBox(point);
-}
-
-Node* NGPaintFragment::NodeForHitTest() const {
-  if (GetNode())
-    return GetNode();
-
-  if (PhysicalFragment().IsLineBox())
-    return Parent()->NodeForHitTest();
-
-  // When the fragment is a list marker, return the list item.
-  if (const LayoutObject* object = GetLayoutObject()) {
-    if (const LayoutObject* marker =
-            ListMarkerFromMarkerOrMarkerContent(object)) {
-      if (const LayoutNGListItem* list_item =
-              LayoutNGListItem::FromMarker(*marker))
-        return list_item->GetNode();
-      return nullptr;
-    }
-  }
-
-  for (const NGPaintFragment* runner = Parent(); runner;
-       runner = runner->Parent()) {
-    // When the fragment is inside a ::first-letter, ::before or ::after pseudo
-    // node, return the pseudo node.
-    if (Node* node = runner->GetNode()) {
-      if (CanBeHitTestTargetPseudoNode(*node))
-        return node;
-      return nullptr;
-    }
-
-    // When the fragment is inside a list marker, return the list item.
-    if (runner->GetLayoutObject() &&
-        runner->GetLayoutObject()->IsLayoutNGListMarker()) {
-      return runner->NodeForHitTest();
-    }
-  }
-
-  return nullptr;
 }
 
 String NGPaintFragment::DebugName() const {

@@ -31,7 +31,7 @@ const LayerTreeTest::RendererType kRendererTypes[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostMirrorPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 

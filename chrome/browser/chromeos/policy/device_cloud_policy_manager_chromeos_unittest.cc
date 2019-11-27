@@ -823,9 +823,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, status_.store_status());
 }
 
-// Flaky. https://crbug.com/1014318
-TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
-       DISABLED_UnregisterSucceeds) {
+TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
   // Enroll first.
   RunTest();
   ExpectSuccessfulEnrollment();

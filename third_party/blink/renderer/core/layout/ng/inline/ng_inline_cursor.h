@@ -348,6 +348,35 @@ class CORE_EXPORT NGInlineCursor {
 
   // Used in |MoveToNextForSameLayoutObject()| to support culled inline.
   const LayoutInline* layout_inline_ = nullptr;
+
+  friend class NGInlineBackwardCursor;
+};
+
+class CORE_EXPORT NGInlineBackwardCursor {
+  STACK_ALLOCATED();
+
+ public:
+  NGInlineBackwardCursor(const NGInlineCursor& cursor);
+
+  NGInlineCursor CursorForDescendants() const;
+
+  explicit operator bool() const {
+    return current_paint_fragment_ || current_item_;
+  }
+
+  const NGFragmentItem* CurrentItem() const { return current_item_; }
+  const NGPaintFragment* CurrentPaintFragment() const {
+    return current_paint_fragment_;
+  }
+
+  void MoveToPreviousSibling();
+
+ private:
+  Vector<const NGPaintFragment*, 16> sibling_paint_fragments_;
+  Vector<NGInlineCursor::ItemsSpan::iterator, 16> sibling_item_iterators_;
+  const NGPaintFragment* current_paint_fragment_ = nullptr;
+  const NGFragmentItem* current_item_ = nullptr;
+  wtf_size_t current_index_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGInlineCursor&);

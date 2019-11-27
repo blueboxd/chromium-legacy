@@ -16,12 +16,12 @@
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/crash_keys.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/initiator_lock_compatibility.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -31,6 +31,28 @@
 namespace network {
 
 namespace cors {
+
+namespace {
+
+InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
+    uint32_t process_id,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator) {
+  if (process_id == mojom::kBrowserProcessId)
+    return InitiatorLockCompatibility::kBrowserProcess;
+
+  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request_initiator);
+
+  if (result == InitiatorLockCompatibility::kIncorrectLock &&
+      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+    result = InitiatorLockCompatibility::kExcludedUniversalAccessPlugin;
+  }
+
+  return result;
+}
+
+}  // namespace
 
 bool CorsURLLoaderFactory::allow_external_preflights_for_testing_ = false;
 
@@ -207,8 +229,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
 
   // Compare |request_initiator| and |request_initiator_site_lock_|.
   InitiatorLockCompatibility initiator_lock_compatibility =
-      VerifyRequestInitiatorLock(process_id_, request_initiator_site_lock_,
-                                 request.request_initiator);
+      VerifyRequestInitiatorLockWithPluginCheck(
+          process_id_, request_initiator_site_lock_, request.request_initiator);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
       initiator_lock_compatibility);

@@ -91,14 +91,14 @@ Polymer({
   },
 
   /**
-   * Invoked when the "Next" button is clicked.
+   * Invoked when the "Next" button is clicked or Enter is pressed.
    * @private
    */
-  onNextClicked_: function() {
+  onSubmit_: function() {
     if (this.processingCompletion_) {
-      // Race condition: This could happen if Polymer hasn't yet updated the
-      // "disabled" state of the "Next" button before the user clicked on it for
-      // the second time.
+      // Race condition: This could happen if the previous request has not yet
+      // been completed before the next one is sent (for example by pressing
+      // Enter twice)
       return;
     }
     this.processingCompletion_ = true;

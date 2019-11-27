@@ -15,7 +15,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
 
@@ -35,11 +34,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle,
       ServiceWorkerContextWrapper* context_wrapper);
   ~ServiceWorkerNavigationHandleCore();
-
-  // Called when a ServiceWorkerProviderHost was created.
-  void OnCreatedProviderHost(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // Called by corresponding methods in ServiceWorkerNavigationHandle. See
   // comments in the header of ServiceWorkerNavigationHandle for details.

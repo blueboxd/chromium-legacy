@@ -1479,6 +1479,7 @@ enum HistogramValue {
   TERMINALPRIVATE_SETSETTINGS = 1416,
   WEBSTOREPRIVATE_REQUESTEXTENSION = 1417,
   AUTOTESTPRIVATE_INSTALLPLUGINVM = 1418,
+  CRASHREPORTPRIVATE_REPORTERROR = 1419,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

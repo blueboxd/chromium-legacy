@@ -503,6 +503,15 @@ class CONTENT_EXPORT NavigationRequest
   // CreateForCommit().
   bool IsNavigationStarted() const;
 
+  // Restart the navigation restoring the page from the back-forward cache
+  // as a regular non-bfcached history navigation.
+  //
+  // The restart itself is asychronous as it's dangerous to restart navigation
+  // with arbitrary state on the stack (another navigation might be starting,
+  // so this function only posts the actual task to do all the work (see
+  // RestartBackForwardCachedNavigationImpl);
+  void RestartBackForwardCachedNavigation();
+
  private:
   friend class NavigationRequestTest;
 
@@ -814,6 +823,9 @@ class CONTENT_EXPORT NavigationRequest
   // origin, and RequiresSourceSiteInstance() return true.
   void SetSourceSiteInstanceToInitiatorIfNeeded();
 
+  // See RestartBackForwardCachedNavigation.
+  void RestartBackForwardCachedNavigationImpl();
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -1093,6 +1105,11 @@ class CONTENT_EXPORT NavigationRequest
   // True if the NavigationThrottles are running an event, the request then can
   // be cancelled for deferring.
   bool processing_navigation_throttle_ = false;
+
+  // Used only by (D)CHECK.
+  // True if we are restarting this navigation request as RenderFrameHost was
+  // evicted.
+  bool restarting_back_forward_cached_navigation_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

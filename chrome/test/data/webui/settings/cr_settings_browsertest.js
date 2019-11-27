@@ -263,12 +263,12 @@ CrSettingsAutofillPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     '../test_browser_proxy.js',
-    'autofill_page_test.js',
     'ensure_lazy_loaded.js',
     'fake_settings_private.js',
     'passwords_and_autofill_fake_data.js',
     'test_open_window_proxy.js',
     'test_password_manager_proxy.js',
+    'autofill_page_test.js',
   ]),
 };
 

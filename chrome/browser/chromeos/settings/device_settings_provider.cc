@@ -1145,10 +1145,10 @@ const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
 }
 
 DeviceSettingsProvider::TrustedStatus
-DeviceSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+DeviceSettingsProvider::PrepareTrustedValues(base::OnceClosure callback) {
   TrustedStatus status = RequestTrustedEntity();
-  if (status == TEMPORARILY_UNTRUSTED && !cb.is_null())
-    callbacks_.push_back(cb);
+  if (status == TEMPORARILY_UNTRUSTED && !callback.is_null())
+    callbacks_.push_back(std::move(callback));
   return status;
 }
 
@@ -1211,10 +1211,10 @@ bool DeviceSettingsProvider::UpdateFromService() {
   }
 
   // Notify the observers we are done.
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks.swap(callbacks_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 
   return settings_loaded;
 }

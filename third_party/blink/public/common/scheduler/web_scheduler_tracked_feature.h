@@ -59,7 +59,7 @@ enum class WebSchedulerTrackedFeature {
   kRequestedMIDIPermission = 21,
   kRequestedAudioCapturePermission = 22,
   kRequestedVideoCapturePermission = 23,
-  kRequestedSensorsPermission = 24,
+  kRequestedBackForwardCacheBlockedSensors = 24,
   // This covers all background-related permissions, including background sync,
   // background fetch and others.
   kRequestedBackgroundWorkPermission = 26,

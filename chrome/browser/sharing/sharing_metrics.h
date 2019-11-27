@@ -212,4 +212,7 @@ void LogRemoteCopyLoadImageTime(base::TimeDelta time);
 // Logs to UMA the time to decode an image for Remote Copy.
 void LogRemoteCopyDecodeImageTime(base::TimeDelta time);
 
+// Logs to UMA the time to resize an image for Remote Copy.
+void LogRemoteCopyResizeImageTime(base::TimeDelta time);
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

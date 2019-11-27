@@ -13,9 +13,6 @@ namespace spellcheck {
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 
-const base::Feature kSpellingServiceRestApi{"SpellingServiceRestApi",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 const base::Feature kWinUseBrowserSpellChecker{
     "WinUseBrowserSpellChecker", base::FEATURE_DISABLED_BY_DEFAULT};

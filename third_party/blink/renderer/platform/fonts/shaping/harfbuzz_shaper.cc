@@ -855,8 +855,8 @@ void HarfBuzzShaper::ShapeSegment(
       font_description.VariantCaps() != FontDescription::kCapsNormal;
   OpenTypeCapsSupport caps_support;
 
-  scoped_refptr<FontFallbackIterator> fallback_iterator =
-      font->CreateFontFallbackIterator(segment.font_fallback_priority);
+  FontFallbackIterator fallback_iterator(
+      font->CreateFontFallbackIterator(segment.font_fallback_priority));
 
   range_data->reshape_queue.push_back(
       ReshapeQueueItem(kReshapeQueueNextFont, 0, 0));
@@ -867,7 +867,7 @@ void HarfBuzzShaper::ShapeSegment(
   Vector<UChar32> fallback_chars_hint;
   // Reserve sufficient capacity to avoid multiple reallocations, only when a
   // full hint list is needed.
-  if (fallback_iterator->NeedsHintList()) {
+  if (fallback_iterator.NeedsHintList()) {
     fallback_chars_hint.ReserveInitialCapacity(range_data->end -
                                                range_data->start);
   }
@@ -877,7 +877,7 @@ void HarfBuzzShaper::ShapeSegment(
 
     if (current_queue_item.action_ == kReshapeQueueNextFont) {
       if (!CollectFallbackHintChars(range_data->reshape_queue,
-                                    fallback_iterator->NeedsHintList(),
+                                    fallback_iterator.NeedsHintList(),
                                     fallback_chars_hint)) {
         // Give up shaping since we cannot retrieve a font fallback
         // font without a hintlist.
@@ -886,7 +886,7 @@ void HarfBuzzShaper::ShapeSegment(
       }
 
       current_font_data_for_range_set =
-          fallback_iterator->Next(fallback_chars_hint);
+          fallback_iterator.Next(fallback_chars_hint);
       if (!current_font_data_for_range_set->FontData()) {
         DCHECK(range_data->reshape_queue.empty());
         break;
@@ -959,7 +959,7 @@ void HarfBuzzShaper::ShapeSegment(
 
     ExtractShapeResults(range_data, font_cycle_queued, current_queue_item,
                         adjusted_font, segment.script, canvas_rotation,
-                        !fallback_iterator->HasNext(), result);
+                        !fallback_iterator.HasNext(), result);
 
     hb_buffer_reset(range_data->buffer);
   }

@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.details;
 
-import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
-import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
+import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -157,11 +156,8 @@ class AssistantDetailsViewBinder
                 details.getTotalPrice().isEmpty() ? View.GONE : View.VISIBLE);
 
         viewHolder.mImageView.setVisibility(View.VISIBLE);
-        viewHolder.mImageView.setContentDescription(details.getImageAccessibilityHint());
-        viewHolder.mImageView.setImportantForAccessibility(
-                TextUtils.isEmpty(details.getImageAccessibilityHint())
-                        ? IMPORTANT_FOR_ACCESSIBILITY_NO
-                        : IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        setAccessibility(viewHolder.mImageView, details.getImageAccessibilityHint());
+
         if (details.getImageUrl().isEmpty()) {
             if (details.getShowImagePlaceholder()) {
                 viewHolder.mImageView.setImageDrawable(viewHolder.mDefaultImage);

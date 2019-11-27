@@ -128,6 +128,10 @@ void RecordProactiveSuggestionsShowResult(
       base::UmaHistogramSparse(
           base::StringPrintf("%s.CloseByUser", kShowResultHistogram), category);
       break;
+    case ProactiveSuggestionsShowResult::kTeleport:
+      base::UmaHistogramSparse(
+          base::StringPrintf("%s.Teleport", kShowResultHistogram), category);
+      break;
   }
 }
 

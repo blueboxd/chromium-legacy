@@ -142,6 +142,10 @@
   "clipboard.setImageData": {
     "dependencies": ["permission:clipboardWrite"]
   },
+  "crashReportPrivate": {
+    "dependencies": ["permission:crashReportPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "declarativeNetRequest": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"]

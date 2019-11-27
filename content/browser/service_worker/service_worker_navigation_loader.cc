@@ -285,7 +285,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     // It'd be more correct and simpler to remove this path and show an error
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
-    provider_host_->NotifyControllerLost();
+    provider_host_->container_host()->NotifyControllerLost();
     if (fallback_callback_) {
       std::move(fallback_callback_)
           .Run(true /* reset_subresource_loader_params */);

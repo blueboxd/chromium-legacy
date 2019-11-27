@@ -193,12 +193,22 @@ cr.define('settings', function() {
       this.scroller.scrollTop = 0;
       this.classList.add('showing-subpage');
       this.fire('subpage-expand');
-      this.ensureSectionForRoute_(route).then(section => {
-        section.classList.add('expanded');
-        // Fire event used by a11y tests only.
-        this.fire('settings-section-expanded');
 
-        this.fire('show-container');
+      // Explicitly load the lazy_load.html module, since all subpages reside in
+      // the lazy loaded module.
+      // TODO(dpapad): On chrome://os-settings the lazy_load.html file resides
+      // at a different path. Remove conditional logic once this file is not
+      // shared between chrome://settings and chrome://os-settings.
+      const lazyLoadPathPrefix =
+          window.origin === 'chrome://settings' ? '' : '/chromeos';
+      Polymer.importHref(`${lazyLoadPathPrefix}/lazy_load.html`, () => {
+        this.ensureSectionForRoute_(route).then(section => {
+          section.classList.add('expanded');
+          // Fire event used by a11y tests only.
+          this.fire('settings-section-expanded');
+
+          this.fire('show-container');
+        });
       });
     },
 

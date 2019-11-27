@@ -586,6 +586,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateImageProcessor() {
       // Unretained(this) is safe for ErrorCB because |decoder_thread_| is owned
       // by this V4L2VideoDecodeAccelerator and |this| must be valid when
       // ErrorCB is executed.
+      decoder_thread_.task_runner(),
       base::BindRepeating(&V4L2SliceVideoDecodeAccelerator::ImageProcessorError,
                           base::Unretained(this)));
 

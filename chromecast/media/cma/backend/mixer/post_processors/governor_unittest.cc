@@ -81,9 +81,6 @@ class GovernorTest : public ::testing::TestWithParam<float> {
 
 TEST_P(GovernorTest, ZeroVolume) {
   ProcessFrames(0.0f);
-  if (onset_volume_ <= 0.0f) {
-    ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
-  }
   CompareBuffers();
 }
 
@@ -92,15 +89,6 @@ TEST_P(GovernorTest, EpsilonBelowOnset) {
   // make sure triggering volume change.
   float volume = onset_volume_ - 2 * std::numeric_limits<float>::epsilon();
   ProcessFrames(volume);
-  CompareBuffers();
-}
-
-TEST_P(GovernorTest, EpsilonAboveOnset) {
-  // Approximately equaling is inclusive, thus needs more than one epsilon to
-  // make sure triggering volume change.
-  float volume = onset_volume_ + 2 * std::numeric_limits<float>::epsilon();
-  ProcessFrames(volume);
-  ScaleData(expected_.data(), kNumFrames * kNumChannels, clamp_);
   CompareBuffers();
 }
 
@@ -114,29 +102,23 @@ TEST_P(GovernorTest, MaxVolume) {
 
 INSTANTIATE_TEST_SUITE_P(GovernorClampVolumeTest,
                          GovernorTest,
-                         ::testing::Values(0.0f, 0.1f, 0.5f, 0.9f, 1.0f, 1.1f));
+                         ::testing::Values(0.0f, 0.1f, 0.5f));
 
 // Default tests from post_processor_test
 TEST_P(PostProcessorTest, GovernorDelay) {
-  std::string config = MakeConfigString(1.0, 1.0);
+  std::string config = MakeConfigString(0.8, 0.9);
   auto pp = std::make_unique<Governor>(config, kNumChannels);
   TestDelay(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, GovernorRinging) {
-  std::string config = MakeConfigString(1.0, 1.0);
+  std::string config = MakeConfigString(0.8, 0.9);
   auto pp = std::make_unique<Governor>(config, kNumChannels);
   TestRingingTime(pp.get(), sample_rate_);
 }
 
-TEST_P(PostProcessorTest, GovernorPassthrough) {
-  std::string config = MakeConfigString(1.0, 1.0);
-  auto pp = std::make_unique<Governor>(config, kNumChannels);
-  TestPassthrough(pp.get(), sample_rate_);
-}
-
 TEST_P(PostProcessorTest, GovernorBenchmark) {
-  std::string config = MakeConfigString(1.0, 1.0);
+  std::string config = MakeConfigString(0.8, 0.9);
   auto pp = std::make_unique<Governor>(config, kNumChannels);
   AudioProcessorBenchmark(pp.get(), sample_rate_);
 }

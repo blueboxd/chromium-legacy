@@ -127,7 +127,7 @@ void ImageProcessorClient::CreateImageProcessorTask(
   // executed on |image_processor_client_thread_| which is owned by this class.
   image_processor_ = ImageProcessorFactory::Create(
       input_config, output_config, {ImageProcessor::OutputMode::IMPORT},
-      num_buffers,
+      num_buffers, image_processor_client_thread_.task_runner(),
       base::BindRepeating(&ImageProcessorClient::NotifyError,
                           base::Unretained(this)));
   done->Signal();

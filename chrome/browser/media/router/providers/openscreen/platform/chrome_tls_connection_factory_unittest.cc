@@ -39,11 +39,15 @@ class MockTlsConnectionFactoryClient : public TlsConnectionFactory::Client {
  public:
   MOCK_METHOD(void,
               OnAccepted,
-              (TlsConnectionFactory*, X509*, std::unique_ptr<TlsConnection>),
+              (TlsConnectionFactory*,
+               std::vector<uint8_t>,
+               std::unique_ptr<TlsConnection>),
               (override));
   MOCK_METHOD(void,
               OnConnected,
-              (TlsConnectionFactory*, X509*, std::unique_ptr<TlsConnection>),
+              (TlsConnectionFactory*,
+               std::vector<uint8_t>,
+               std::unique_ptr<TlsConnection>),
               (override));
   MOCK_METHOD(void,
               OnConnectionFailed,

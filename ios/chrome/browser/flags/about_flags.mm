@@ -585,6 +585,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"mobile-google-srp", flag_descriptions::kMobileGoogleSRPName,
      flag_descriptions::kMobileGoogleSRPDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kMobileGoogleSRP)},
+    {"messages-crash-restore-infobars",
+     flag_descriptions::kCrashRestoreInfobarMessagesUIName,
+     flag_descriptions::kCrashRestoreInfobarMessagesUIDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCrashRestoreInfobarMessagesUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

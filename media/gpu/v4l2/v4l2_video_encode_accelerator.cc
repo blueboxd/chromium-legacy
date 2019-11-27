@@ -319,7 +319,7 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
       // ALLOCATE mode. For libyuvIP, it accepts only IMPORT.
       {ImageProcessor::OutputMode::ALLOCATE,
        ImageProcessor::OutputMode::IMPORT},
-      kImageProcBufferCount,
+      kImageProcBufferCount, encoder_thread_.task_runner(),
       base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                           weak_this_));
   if (!image_processor_) {

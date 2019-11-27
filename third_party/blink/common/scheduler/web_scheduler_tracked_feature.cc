@@ -59,7 +59,7 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "requested audio capture permission";
     case WebSchedulerTrackedFeature::kRequestedVideoCapturePermission:
       return "requested video capture permission";
-    case WebSchedulerTrackedFeature::kRequestedSensorsPermission:
+    case WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors:
       return "requested sensors permission";
     case WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission:
       return "requested background work permission";

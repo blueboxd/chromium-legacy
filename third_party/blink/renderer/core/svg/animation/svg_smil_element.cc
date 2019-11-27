@@ -772,6 +772,8 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
                                              SMILTime end_after) const {
   // Simplified version of the pseudocode in
   // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
+  const size_t kMaxIterations = std::max(begin_times_.size() * 4, 1000000u);
+  size_t current_iteration = 0;
   while (true) {
     SMILTime temp_begin = FindInstanceTime(kBegin, begin_after, true);
     if (temp_begin.IsUnresolved())
@@ -788,6 +790,8 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     if (begin_after == temp_end)
       temp_end = begin_after + SMILTime::Epsilon();
     begin_after = temp_end;
+    // Debugging signal for crbug.com/1021630.
+    CHECK_LT(current_iteration++, kMaxIterations);
   }
   return SMILInterval::Unresolved();
 }

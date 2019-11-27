@@ -702,13 +702,18 @@ void OmniboxViewIOS::EmphasizeURLComponents() {
 
 #pragma mark - OmniboxPopupViewSuggestionsDelegate
 
-void OmniboxViewIOS::OnTopmostSuggestionImageChanged(
+void OmniboxViewIOS::OnSelectedMatchImageChanged(
+    bool has_match,
     AutocompleteMatchType::Type match_type,
     base::Optional<SuggestionAnswer::AnswerType> answer_type,
     GURL favicon_url) {
-  [left_image_consumer_ setLeftImageForAutocompleteType:match_type
-                                             answerType:answer_type
-                                             faviconURL:favicon_url];
+  if (has_match) {
+    [left_image_consumer_ setLeftImageForAutocompleteType:match_type
+                                               answerType:answer_type
+                                               faviconURL:favicon_url];
+  } else {
+    [left_image_consumer_ setDefaultLeftImage];
+  }
 }
 
 void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {

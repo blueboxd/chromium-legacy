@@ -345,3 +345,7 @@ void LogRemoteCopyLoadImageTime(base::TimeDelta time) {
 void LogRemoteCopyDecodeImageTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.RemoteCopyDecodeImageTime", time);
 }
+
+void LogRemoteCopyResizeImageTime(base::TimeDelta time) {
+  base::UmaHistogramMediumTimes("Sharing.RemoteCopyResizeImageTime", time);
+}

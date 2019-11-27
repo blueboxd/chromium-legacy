@@ -129,7 +129,8 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
           WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
-      FeatureToBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
+      FeatureToBit(WebSchedulerTrackedFeature::
+                       kRequestedBackForwardCacheBlockedSensors) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
       FeatureToBit(WebSchedulerTrackedFeature::kBroadcastChannel) |

@@ -187,6 +187,7 @@ source_set("omnibox_internal") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "omnibox_app_interface.h",

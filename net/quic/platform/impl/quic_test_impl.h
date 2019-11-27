@@ -82,7 +82,7 @@ ParsedQuicVersionVector AllVersionsExcept99();
 #else
 #define EXPECT_QUIC_DEBUG_DEATH_IMPL(condition, message) \
   do {                                                   \
-  } while (0);
+  } while (0)
 #endif
 
 #define QUIC_SLOW_TEST_IMPL(name) DISABLED_##name

@@ -43,6 +43,8 @@ constexpr char kStopAlarmTimerRinging[] = "stopAlarmTimerRinging";
 
 // Supported proactive suggestions action deep link param values.
 constexpr char kCardClick[] = "cardClick";
+constexpr char kEntryPointClick[] = "entryPointClick";
+constexpr char kEntryPointClose[] = "entryPointClose";
 
 // Supported reminder action deep link param values.
 constexpr char kCreateReminder[] = "create";
@@ -237,6 +239,10 @@ GetDeepLinkParamAsProactiveSuggestionsAction(
   const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
   if (value == kCardClick)
     return ProactiveSuggestionsAction::kCardClick;
+  if (value == kEntryPointClick)
+    return ProactiveSuggestionsAction::kEntryPointClick;
+  if (value == kEntryPointClose)
+    return ProactiveSuggestionsAction::kEntryPointClose;
   return base::nullopt;
 }
 

@@ -51,12 +51,15 @@ OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
 void OmniboxPopupViewIOS::UpdateEditViewIcon() {
   const AutocompleteResult& result = model_->result();
 
-  // TODO (crbug.com/1024885): Use a better fallback icon than the icon for the
-  // first match.
-  const AutocompleteMatch& match =
-      model_->selected_line() == OmniboxPopupModel::kNoMatch
-          ? *result.begin()
-          : result.match_at(model_->selected_line());
+  // Use default icon as a fallback
+  if (model_->selected_line() == OmniboxPopupModel::kNoMatch) {
+    delegate_->OnSelectedMatchImageChanged(/*has_match=*/false,
+                                           AutocompleteMatchType::NUM_TYPES,
+                                           base::nullopt, GURL());
+    return;
+  }
+
+  const AutocompleteMatch& match = result.match_at(model_->selected_line());
 
   base::Optional<SuggestionAnswer::AnswerType> optAnswerType = base::nullopt;
   if (match.answer && match.answer->type() > 0 &&
@@ -65,8 +68,8 @@ void OmniboxPopupViewIOS::UpdateEditViewIcon() {
     optAnswerType =
         static_cast<SuggestionAnswer::AnswerType>(match.answer->type());
   }
-  delegate_->OnTopmostSuggestionImageChanged(match.type, optAnswerType,
-                                             match.destination_url);
+  delegate_->OnSelectedMatchImageChanged(/*has_match=*/true, match.type,
+                                         optAnswerType, match.destination_url);
 }
 
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {

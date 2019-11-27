@@ -80,6 +80,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& DontObserveFileTasks() {
+    observe_file_tasks = false;
+    return *this;
+  }
+
   // Show the startup browser. Some tests invoke the file picker dialog during
   // the test. Requesting a file picker from a background page is forbidden by
   // the apps platform, and it's a bug that these tests do so.
@@ -128,6 +133,7 @@ struct TestCase {
   bool files_ng = false;
   bool enable_native_smb = true;
   bool mount_no_volumes = false;
+  bool observe_file_tasks = true;
 };
 
 // ZipCase: FilesAppBrowserTest with zip/unzip support.
@@ -193,6 +199,10 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     return GetParam().mount_no_volumes;
   }
 
+  bool GetStartWithFileTasksObserver() const override {
+    return GetParam().observe_file_tasks;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
 };
@@ -239,6 +249,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayDownloads"),
         TestCase("fileDisplayDownloads").InGuestMode(),
         TestCase("fileDisplayDownloads").TabletMode(),
+        TestCase("fileDisplayLaunchOnDownloads").DontObserveFileTasks(),
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive"),
         TestCase("fileDisplayDriveOffline").Offline(),

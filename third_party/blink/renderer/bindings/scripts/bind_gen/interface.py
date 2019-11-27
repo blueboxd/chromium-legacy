@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
 import os.path
+
+import web_idl
 
 from . import name_style
 from .blink_v8_bridge import blink_class_name
@@ -11,6 +14,7 @@ from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import make_v8_to_blink_value_variadic
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
+from .code_node import LiteralNode
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
@@ -18,6 +22,8 @@ from .code_node import TextNode
 from .code_node import UnlikelyExitNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
+from .codegen_expr import expr_from_exposure
+from .codegen_expr import expr_or
 from .codegen_utils import collect_include_headers
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
@@ -240,6 +246,15 @@ def bind_v8_set_return_value(code_node, cg_context):
     code_node.add_template_var("v8_set_return_value", TextNode(text))
 
 
+_callback_common_binders = (
+    bind_blink_api_arguments,
+    bind_blink_api_call,
+    bind_callback_local_vars,
+    bind_return_value,
+    bind_v8_set_return_value,
+)
+
+
 def make_check_receiver(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -315,6 +330,273 @@ def make_log_activity(cg_context):
             "platform/bindings/v8_dom_activity_logger.h",
         ]))
     return node
+
+
+def _make_overloaded_function_name(function_like):
+    if isinstance(function_like, web_idl.Constructor):
+        return name_style.func("constructor", "overload",
+                               function_like.overload_index + 1)
+    else:
+        return name_style.func(function_like.identifier, "op", "overload",
+                               function_like.overload_index + 1)
+
+
+def _make_overload_dispatcher_per_arg_size(items):
+    """
+    https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
+
+    Args:
+        items: Partial list of an "effective overload set" with the same
+            type list size.
+
+    Returns:
+        A pair of a resulting CodeNode and a boolean flag that is True if there
+        exists a case that overload resolution will fail, i.e. a bailout that
+        throws a TypeError is necessary.
+    """
+    # Variables shared with nested functions
+    if len(items) > 1:
+        arg_index = web_idl.OverloadGroup.distinguishing_argument_index(items)
+    else:
+        arg_index = None
+    func_like = None
+    dispatcher_nodes = SymbolScopeNode()
+
+    # True if there exists a case that overload resolution will fail.
+    can_fail = True
+
+    def find_test(item, test):
+        # |test| is a callable that takes (t, u) where:
+        #   t = the idl_type (in the original form)
+        #   u = the unwrapped version of t
+        idl_type = item.type_list[arg_index]
+        t = idl_type
+        u = idl_type.unwrap()
+        return test(t, u) or (u.is_union and any(
+            [test(m, m.unwrap()) for m in u.flattened_member_types]))
+
+    def find(test):
+        for item in items:
+            if find_test(item, test):
+                return item.function_like
+        return None
+
+    def find_all_interfaces():
+        result = []  # [(func_like, idl_type), ...]
+        for item in items:
+            idl_type = item.type_list[arg_index].unwrap()
+            if idl_type.is_interface:
+                result.append((item.function_like, idl_type))
+            if idl_type.is_union:
+                for member_type in idl_type.flattened_member_types:
+                    if member_type.unwrap().is_interface:
+                        result.append((item.function_like,
+                                       member_type.unwrap()))
+        return result
+
+    def make_node(pattern):
+        value = _format("${info}[{}]", arg_index)
+        func_name = _make_overloaded_function_name(func_like)
+        return TextNode(_format(pattern, value=value, func_name=func_name))
+
+    def dispatch_if(expr):
+        if expr is True:
+            pattern = "return {func_name}(${info});"
+        else:
+            pattern = ("if (" + expr + ") {{\n"
+                       "  return {func_name}(${info});\n"
+                       "}}")
+        node = make_node(pattern)
+        conditional = expr_from_exposure(func_like.exposure)
+        if not conditional.is_always_true:
+            node = SymbolScopeNode([
+                TextNode("if (" + conditional.to_text() + ") {"),
+                node,
+                TextNode("}"),
+            ])
+        dispatcher_nodes.append(node)
+        return expr is True and conditional.is_always_true
+
+    if len(items) == 1:
+        func_like = items[0].function_like
+        can_fail = False
+        return make_node("return {func_name}(${info});"), can_fail
+
+    # 12.2. If V is undefined, ...
+    func_like = find(lambda t, u: t.is_optional)
+    if func_like:
+        dispatch_if("{value}->IsUndefined()")
+
+    # 12.3. if V is null or undefined, ...
+    func_like = find(
+        lambda t, u: t.does_include_nullable_type or u.is_dictionary)
+    if func_like:
+        dispatch_if("{value}->IsNullOrUndefined()")
+
+    # 12.4. if V is a platform object, ...
+    def inheritance_length(func_and_type):
+        return len(func_and_type[1].type_definition_object.
+                   inclusive_inherited_interfaces)
+
+    # Attempt to match from most derived to least derived.
+    for func_like, idl_type in sorted(
+            find_all_interfaces(), key=inheritance_length, reverse=True):
+        cgc = CodeGenContext(
+            interface=idl_type.unwrap().type_definition_object)
+        dispatch_if(
+            _format("{}::HasInstance(${isolate}, {value})", cgc.v8_class))
+
+    is_typedef_name = lambda t, name: t.is_typedef and t.identifier == name
+    func_like_a = find(
+        lambda t, u: is_typedef_name(t.unwrap(typedef=False),
+                                     "ArrayBufferView"))
+    func_like_b = find(
+        lambda t, u: is_typedef_name(t.unwrap(typedef=False), "BufferSource"))
+    if func_like_a or func_like_b:
+        # V8 specific optimization: ArrayBufferView
+        if func_like_a:
+            func_like = func_like_a
+            dispatch_if("{value}->IsArrayBufferView()")
+        if func_like_b:
+            func_like = func_like_b
+            dispatch_if("{value}->IsArrayBufferView() || "
+                        "{value}->IsArrayBuffer() || "
+                        "{value}->IsSharedArrayBuffer()")
+    else:
+        # 12.5. if Type(V) is Object, V has an [[ArrayBufferData]] internal
+        #   slot, ...
+        func_like = find(lambda t, u: u.is_array_buffer)
+        if func_like:
+            dispatch_if("{value}->IsArrayBuffer() || "
+                        "{value}->IsSharedArrayBuffer()")
+
+        # 12.6. if Type(V) is Object, V has a [[DataView]] internal slot, ...
+        func_like = find(lambda t, u: u.is_data_view)
+        if func_like:
+            dispatch_if("{value}->IsDataView()")
+
+        # 12.7. if Type(V) is Object, V has a [[TypedArrayName]] internal slot,
+        #   ...
+        func_like = find(lambda t, u: u.is_typed_array_type)
+        if func_like:
+            dispatch_if("{value}->IsTypedArray()")
+
+    # 12.8. if IsCallable(V) is true, ...
+    func_like = find(lambda t, u: u.is_callback_function)
+    if func_like:
+        dispatch_if("{value}->IsFunction()")
+
+    # 12.9. if Type(V) is Object and ... @@iterator ...
+    func_like = find(lambda t, u: u.is_sequence or u.is_frozen_array)
+    if func_like:
+        dispatch_if("{value}->IsArray() || "  # Excessive optimization
+                    "bindings::IsEsIterableObject"
+                    "(${isolate}, {value}, ${exception_state})")
+        dispatcher_nodes.append(
+            TextNode("if (${exception_state}.HadException()) {\n"
+                     "  return;\n"
+                     "}"))
+
+    # 12.10. if Type(V) is Object and ...
+    def is_es_object_type(t, u):
+        return (u.is_callback_interface or u.is_dictionary or u.is_record
+                or u.is_object)
+
+    func_like = find(is_es_object_type)
+    if func_like:
+        dispatch_if("{value}->IsObject()")
+
+    # 12.11. if Type(V) is Boolean and ...
+    func_like = find(lambda t, u: u.is_boolean)
+    if func_like:
+        dispatch_if("{value}->IsBoolean()")
+
+    # 12.12. if Type(V) is Number and ...
+    func_like = find(lambda t, u: u.is_numeric)
+    if func_like:
+        dispatch_if("{value}->IsNumber()")
+
+    # 12.13. if there is an entry in S that has ... a string type ...
+    # 12.14. if there is an entry in S that has ... a numeric type ...
+    # 12.15. if there is an entry in S that has ... boolean ...
+    # 12.16. if there is an entry in S that has any ...
+    func_likes = [
+        find(lambda t, u: u.is_string),
+        find(lambda t, u: u.is_numeric),
+        find(lambda t, u: u.is_boolean),
+        find(lambda t, u: u.is_any),
+    ]
+    for func_like in func_likes:
+        if func_like:
+            if dispatch_if(True):
+                can_fail = False
+                break
+
+    return dispatcher_nodes, can_fail
+
+
+def make_overload_dispatcher(cg_context):
+    # https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
+
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    overload_group = cg_context.property_
+    items = overload_group.effective_overload_set()
+    args_size = lambda item: len(item.type_list)
+    items_grouped_by_arg_size = itertools.groupby(
+        sorted(items, key=args_size, reverse=True), key=args_size)
+
+    branches = SymbolScopeNode()
+    did_use_break = False
+    for arg_size, items in items_grouped_by_arg_size:
+        items = list(items)
+
+        node, can_fail = _make_overload_dispatcher_per_arg_size(items)
+
+        if arg_size > 0:
+            node = SymbolScopeNode([
+                T("if (${info}.Length() >= " + str(arg_size) + ") {"),
+                node,
+                T("break;") if can_fail else None,
+                T("}"),
+            ])
+            did_use_break = did_use_break or can_fail
+
+        terms = map(
+            lambda item: expr_from_exposure(item.function_like.exposure),
+            items)
+        conditional = expr_or(terms)
+        if not conditional.is_always_true:
+            node = SymbolScopeNode([
+                T("if (" + conditional.to_text() + ") {"),
+                node,
+                T("}"),
+            ])
+
+        branches.append(node)
+
+    if did_use_break:
+        branches = SymbolScopeNode([
+            T("do {  // Dummy loop for use of 'break'"),
+            branches,
+            T("} while (false);"),
+        ])
+    # Make the entire branches an indivisible chunk so that SymbolDefinitionNode
+    # will not be inserted in-between.
+    branches = LiteralNode(branches)
+
+    if not did_use_break and arg_size == 0 and conditional.is_always_true:
+        return branches
+
+    return SymbolScopeNode([
+        branches,
+        T(""),
+        T("${exception_state}.ThrowTypeError"
+          "(\"Overload resolution failed.\");\n"
+          "return;"),
+    ])
 
 
 def make_report_deprecate_as(cg_context):
@@ -421,27 +703,16 @@ def make_runtime_call_timer_scope(cg_context):
     return node
 
 
-_callback_common_binders = (
-    bind_blink_api_arguments,
-    bind_blink_api_call,
-    bind_callback_local_vars,
-    bind_return_value,
-    bind_v8_set_return_value,
-)
-
-
-def make_attribute_get_def(cg_context):
+def make_attribute_get_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
 
     T = TextNode
 
     cg_context = cg_context.make_copy(attribute_get=True)
 
-    func_name = name_style.func(cg_context.attribute.identifier,
-                                "AttributeGetCallback")
-
     func_def = FunctionDefinitionNode(
-        name=T(func_name),
+        name=T(function_name),
         arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
         return_type=T("void"))
 
@@ -466,16 +737,21 @@ def make_attribute_get_def(cg_context):
     return func_def
 
 
-def make_operation_def(cg_context):
+def make_attribute_set_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    return None
+
+
+def make_operation_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
 
     T = TextNode
 
-    func_name = name_style.func(cg_context.operation.identifier,
-                                "OperationCallback")
-
     func_def = FunctionDefinitionNode(
-        name=T(func_name),
+        name=T(function_name),
         arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
         return_type=T("void"))
 
@@ -498,6 +774,49 @@ def make_operation_def(cg_context):
     ])
 
     return func_def
+
+
+def make_overload_dispatcher_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    T = TextNode
+
+    func_def = FunctionDefinitionNode(
+        name=T(function_name),
+        arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
+        return_type=T("void"))
+
+    body = func_def.body
+    body.add_template_var("info", "info")
+    body.add_template_vars(cg_context.template_bindings())
+
+    bind_callback_local_vars(body, cg_context)
+
+    body.append(make_overload_dispatcher(cg_context))
+
+    return func_def
+
+
+def make_operation_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    operation_group = cg_context.constructor_group or cg_context.operation_group
+
+    if len(operation_group) == 1:
+        return make_operation_function_def(
+            cg_context.make_copy(operation=operation_group[0]), function_name)
+
+    node = SymbolScopeNode()
+    for operation in operation_group:
+        node.append(
+            make_operation_function_def(
+                cg_context.make_copy(operation=operation),
+                _make_overloaded_function_name(operation)))
+    node.append(
+        make_overload_dispatcher_function_def(cg_context, function_name))
+    return node
 
 
 def bind_template_installer_local_vars(code_node, cg_context):
@@ -582,7 +901,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("Element")
+    interface = web_idl_database.find("TestInterfaceConstructor")
 
     cg_context = CodeGenContext(interface=interface)
 
@@ -596,15 +915,31 @@ def generate_interfaces(web_idl_database, output_dirs):
     code_node = SymbolScopeNode()
 
     for attribute in interface.attributes:
+        func_name = name_style.func(attribute.identifier,
+                                    "AttributeGetCallback")
         code_node.append(
-            make_attribute_get_def(cg_context.make_copy(attribute=attribute)))
+            make_attribute_get_callback_def(
+                cg_context.make_copy(attribute=attribute), func_name))
+        func_name = name_style.func(attribute.identifier,
+                                    "AttributeSetCallback")
+        code_node.append(
+            make_attribute_set_callback_def(
+                cg_context.make_copy(attribute=attribute), func_name))
+
+    for constructor_group in interface.constructor_groups:
+        func_name = name_style.func("ConstructorCallback")
+        code_node.append(
+            make_operation_callback_def(
+                cg_context.make_copy(constructor_group=constructor_group),
+                func_name))
 
     for operation_group in interface.operation_groups:
-        for operation in operation_group:
-            code_node.append(
-                make_operation_def(
-                    cg_context.make_copy(
-                        operation_group=operation_group, operation=operation)))
+        func_name = name_style.func(operation_group.identifier,
+                                    "OperationCallback")
+        code_node.append(
+            make_operation_callback_def(
+                cg_context.make_copy(operation_group=operation_group),
+                func_name))
 
     code_node.append(make_install_interface_template_def(cg_context))
 

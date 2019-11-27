@@ -27,26 +27,28 @@ std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
     const ImageProcessor::PortConfig& output_config,
     const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
     size_t num_buffers,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessor::ErrorCB error_cb) {
   std::unique_ptr<ImageProcessor> image_processor;
 #if BUILDFLAG(USE_VAAPI)
-  image_processor = VaapiImageProcessor::Create(
-      input_config, output_config, preferred_output_modes, error_cb);
+  image_processor = VaapiImageProcessor::Create(input_config, output_config,
+                                                preferred_output_modes,
+                                                client_task_runner, error_cb);
   if (image_processor)
     return image_processor;
 #endif  // BUILDFLAG(USE_VAAPI)
 #if BUILDFLAG(USE_V4L2_CODEC)
   for (auto output_mode : preferred_output_modes) {
     image_processor = V4L2ImageProcessor::Create(
-        V4L2Device::Create(), input_config, output_config, output_mode,
-        num_buffers, error_cb);
+        client_task_runner, V4L2Device::Create(), input_config, output_config,
+        output_mode, num_buffers, error_cb);
     if (image_processor)
       return image_processor;
   }
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
   for (auto output_mode : preferred_output_modes) {
-    image_processor = LibYUVImageProcessor::Create(input_config, output_config,
-                                                   output_mode, error_cb);
+    image_processor = LibYUVImageProcessor::Create(
+        input_config, output_config, output_mode, client_task_runner, error_cb);
     if (image_processor)
       return image_processor;
   }

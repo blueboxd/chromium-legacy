@@ -14,6 +14,3 @@
 # 16/100 failures.
 # https://chromium-swarm.appspot.com/task?id=48104c14d9892f10
 -BookmarksCommandManagerTest.All
-
-# https://crbug.com/1017594
--IsolatedAppTest.CrossProcessClientRedirect

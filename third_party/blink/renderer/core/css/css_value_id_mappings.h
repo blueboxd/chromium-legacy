@@ -356,6 +356,10 @@ inline CSSValueID PlatformEnumToCSSValueID(EDisplay v) {
     return CSSValueID::kInlineGrid;
   if (v == EDisplay::kContents)
     return CSSValueID::kContents;
+  if (v == EDisplay::kMath)
+    return CSSValueID::kMath;
+  if (v == EDisplay::kInlineMath)
+    return CSSValueID::kInlineMath;
 
   NOTREACHED();
   return CSSValueID::kInline;

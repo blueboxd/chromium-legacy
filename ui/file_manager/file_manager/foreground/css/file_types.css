@@ -96,13 +96,6 @@
   -webkit-mask-image: url(../images/filetype/filetype_team_drive.svg);
 }
 
-/* TODO(fukino): Check if 'form' is in use, and remove this if possible. */
-[file-type-icon='form'] {
-  background-image: -webkit-image-set(
-      url(../images/filetype/filetype_form.png) 1x,
-      url(../images/filetype/2x/filetype_form.png) 2x);
-}
-
 [file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_gdoc.png) 1x,
@@ -141,14 +134,14 @@
 
 [file-type-icon='gform'] {
   background-image: -webkit-image-set(
-      url(../images/filetype/filetype_form.png) 1x,
-      url(../images/filetype/2x/filetype_form.png) 2x);
+      url(../images/filetype/filetype_gform.png) 1x,
+      url(../images/filetype/2x/filetype_gform.png) 2x);
 }
 
 [file-type-icon='gmap'] {
   background-image: -webkit-image-set(
-      url(../images/filetype/filetype_map.png) 1x,
-      url(../images/filetype/2x/filetype_map.png) 2x);
+      url(../images/filetype/filetype_gmap.png) 1x,
+      url(../images/filetype/2x/filetype_gmap.png) 2x);
 }
 
 [file-type-icon='gsite'] {

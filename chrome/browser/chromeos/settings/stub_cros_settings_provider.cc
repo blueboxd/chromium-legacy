@@ -37,9 +37,9 @@ const base::Value* StubCrosSettingsProvider::Get(
 }
 
 CrosSettingsProvider::TrustedStatus
-    StubCrosSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+StubCrosSettingsProvider::PrepareTrustedValues(base::OnceClosure callback) {
   if (trusted_status_ == TEMPORARILY_UNTRUSTED)
-    callbacks_.push_back(cb);
+    callbacks_.push_back(std::move(callback));
   return trusted_status_;
 }
 
@@ -50,9 +50,9 @@ bool StubCrosSettingsProvider::HandlesSetting(const std::string& path) const {
 void StubCrosSettingsProvider::SetTrustedStatus(TrustedStatus status) {
   trusted_status_ = status;
   if (trusted_status_ != TEMPORARILY_UNTRUSTED) {
-    std::vector<base::Closure> callbacks_to_invoke = std::move(callbacks_);
-    for (base::Closure cb : callbacks_to_invoke)
-      cb.Run();
+    std::vector<base::OnceClosure> callbacks_to_invoke = std::move(callbacks_);
+    for (base::OnceClosure& callback : callbacks_to_invoke)
+      std::move(callback).Run();
   }
 }
 

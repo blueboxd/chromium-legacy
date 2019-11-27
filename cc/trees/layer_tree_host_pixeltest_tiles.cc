@@ -186,7 +186,7 @@ std::vector<TilesTestConfig> const kTestCases = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidation,
                          ::testing::ValuesIn(kTestCases));
 
@@ -214,7 +214,7 @@ std::vector<TilesTestConfig> const kTestCasesMultiThread = {
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =
     LayerTreeHostTilesTestPartialInvalidation;
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidationMultiThread,
                          ::testing::ValuesIn(kTestCasesMultiThread));
 
@@ -244,7 +244,7 @@ using LayerTreeHostTilesTestPartialInvalidationLowBitDepth =
 // RGBA4444 format using either SwiftShader or native Vulkan. See
 // crbug.com/987278 for details
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
     ::testing::Values(
         TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH},

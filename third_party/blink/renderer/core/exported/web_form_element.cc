@@ -79,7 +79,7 @@ void WebFormElement::GetFormControlElements(
 WebFormElement::WebFormElement(HTMLFormElement* e) : WebElement(e) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebFormElement,
-                           IsHTMLFormElement(ConstUnwrap<Node>()))
+                           IsA<HTMLFormElement>(ConstUnwrap<Node>()))
 
 WebFormElement& WebFormElement::operator=(HTMLFormElement* e) {
   private_ = e;

@@ -77,7 +77,7 @@ LayerTreeTest::RendererType const kRendererTypes[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -91,7 +91,7 @@ LayerTreeTest::RendererType const kRendererTypesGpu[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersPixelTestGPU,
                          ::testing::ValuesIn(kRendererTypesGpu));
 
@@ -472,7 +472,7 @@ class LayerTreeHostFiltersScaledPixelTest
   float device_scale_factor_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersScaledPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -1153,7 +1153,7 @@ class BackdropFilterOffsetTest : public LayerTreeHostFiltersPixelTest {
   float device_scale_factor_ = 1;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          BackdropFilterOffsetTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -1200,7 +1200,7 @@ class BackdropFilterInvertTest : public LayerTreeHostFiltersPixelTest {
   float device_scale_factor_ = 1;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          BackdropFilterInvertTest,
                          ::testing::ValuesIn(kRendererTypes));
 

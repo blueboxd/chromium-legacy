@@ -279,7 +279,8 @@ class GCMClientImpl
   void DefaultStoreCallback(bool success);
 
   // Callback for store operation where result does not matter.
-  void IgnoreWriteResultCallback(bool success);
+  void IgnoreWriteResultCallback(const std::string& operation_suffix_for_uma,
+                                 bool success);
 
   // Callback for destroying the GCM store.
   void DestroyStoreCallback(bool success);

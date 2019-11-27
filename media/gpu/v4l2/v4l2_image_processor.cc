@@ -23,7 +23,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_types.h"
@@ -68,11 +67,13 @@ V4L2ImageProcessor::V4L2ImageProcessor(
     OutputMode output_mode,
     size_t num_buffers,
     ErrorCB error_cb)
-    : ImageProcessor(input_config, output_config, output_mode),
+    : ImageProcessor(input_config,
+                     output_config,
+                     output_mode,
+                     std::move(client_task_runner)),
       input_memory_type_(input_memory_type),
       output_memory_type_(output_memory_type),
       device_(device),
-      client_task_runner_(std::move(client_task_runner)),
       device_task_runner_(
           base::CreateSingleThreadTaskRunner({base::ThreadPool()})),
       // We poll V4L2 device on this task runner, which blocks the task runner.
@@ -185,6 +186,7 @@ v4l2_memory InputStorageTypeToV4L2Memory(VideoFrame::StorageType storage_type) {
 
 // static
 std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<V4L2Device> device,
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
@@ -317,7 +319,7 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   }
 
   auto processor = base::WrapUnique(new V4L2ImageProcessor(
-      base::SequencedTaskRunnerHandle::Get(), std::move(device),
+      std::move(client_task_runner), std::move(device),
       ImageProcessor::PortConfig(input_config.fourcc, negotiated_input_size,
                                  input_planes, input_config.visible_size,
                                  {input_storage_type}),

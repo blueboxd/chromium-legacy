@@ -84,7 +84,7 @@ LayerTreeTest::RendererType const kRendererTypes[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostScrollbarsPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -255,7 +255,7 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
   ~PaintedOverlayScrollbar() override = default;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostOverlayScrollbarsPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 

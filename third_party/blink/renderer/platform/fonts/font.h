@@ -27,6 +27,7 @@
 
 #include "cc/paint/node_id.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -53,7 +54,6 @@ namespace blink {
 struct CharacterRange;
 class FloatPoint;
 class FloatRect;
-class FontFallbackIterator;
 class FontData;
 class FontSelector;
 class ShapeCache;
@@ -230,8 +230,11 @@ class PLATFORM_EXPORT Font {
 
  public:
   FontSelector* GetFontSelector() const;
-  scoped_refptr<FontFallbackIterator> CreateFontFallbackIterator(
-      FontFallbackPriority) const;
+  FontFallbackIterator CreateFontFallbackIterator(
+      FontFallbackPriority fallback_priority) const {
+    return FontFallbackIterator(font_description_, font_fallback_list_,
+                                fallback_priority);
+  }
 
   void WillUseFontData(const String& text) const;
 

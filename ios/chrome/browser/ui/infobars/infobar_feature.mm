@@ -17,6 +17,12 @@ const base::Feature kInfobarUIReboot{"InfobarUIReboot",
 const base::Feature kConfirmInfobarMessagesUI{"ConfirmInfobarMessagesUI",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Feature enabled by default since it will always be checked along
+// kInfobarUIReboot, effectively working as a kill switch. Meaning that if
+// kInfobarUIReboot is not enabled this feature won't work.
+const base::Feature kCrashRestoreInfobarMessagesUI{
+    "CrashRestoreInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kDownloadInfobarMessagesUI{
     "DownloadInfobarMessagesUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -40,6 +46,11 @@ bool IsInfobarUIRebootEnabled() {
 
 bool IsConfirmInfobarMessagesUIEnabled() {
   return base::FeatureList::IsEnabled(kConfirmInfobarMessagesUI) &&
+         IsInfobarUIRebootEnabled();
+}
+
+bool IsCrashRestoreInfobarMessagesUIEnabled() {
+  return base::FeatureList::IsEnabled(kCrashRestoreInfobarMessagesUI) &&
          IsInfobarUIRebootEnabled();
 }
 

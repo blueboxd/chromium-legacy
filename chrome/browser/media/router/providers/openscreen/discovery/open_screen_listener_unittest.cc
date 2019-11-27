@@ -34,7 +34,7 @@ class MockServiceListenerObserver
   MOCK_METHOD1(OnReceiverRemoved, void(const openscreen::ServiceInfo&));
   MOCK_METHOD0(OnAllReceiversRemoved, void());
 
-  MOCK_METHOD1(OnError, void(openscreen::ServiceListenerError));
+  MOCK_METHOD1(OnError, void(openscreen::osp::ServiceListenerError));
   MOCK_METHOD1(OnMetrics, void(openscreen::ServiceListener::Metrics));
 };
 

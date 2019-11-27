@@ -454,6 +454,9 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   DCHECK_GE(document_time, SMILTime());
   DCHECK(!priority_queue_.IsEmpty());
 
+  const size_t kMaxIterations = std::max(priority_queue_.size() * 16, 1000000u);
+  size_t current_iteration = 0;
+
   base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_, true);
   while (priority_queue_.Min() <= document_time) {
     SVGSMILElement* element = priority_queue_.MinElement();
@@ -462,6 +465,8 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
     SMILTime next_interval_time =
         element->ComputeNextIntervalTime(document_time);
     priority_queue_.Update(next_interval_time, element);
+    // Debugging signal for crbug.com/1021630.
+    CHECK_LT(current_iteration++, kMaxIterations);
   }
 }
 

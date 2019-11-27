@@ -111,6 +111,8 @@ TEST_F(ClipboardProviderTest, ClipboardIsCurrentURL) {
 }
 
 TEST_F(ClipboardProviderTest, HasMultipleMatches) {
+  EXPECT_CALL(*client_.get(), GetSchemeClassifier())
+      .WillOnce(testing::ReturnRef(classifier_));
   provider_->Start(CreateAutocompleteInput(true), false);
   ASSERT_GE(provider_->matches().size(), 1U);
   EXPECT_EQ(GURL(kClipboardURL), provider_->matches().back().destination_url);
@@ -128,6 +130,8 @@ TEST_F(ClipboardProviderTest, MatchesText) {
   ASSERT_GE(provider_->matches().size(), 1U);
   EXPECT_EQ(base::UTF8ToUTF16(kClipboardTitleText),
             provider_->matches().back().contents);
+  EXPECT_EQ(base::UTF8ToUTF16(kClipboardText),
+            provider_->matches().back().fill_into_edit);
 }
 
 TEST_F(ClipboardProviderTest, MatchesImage) {

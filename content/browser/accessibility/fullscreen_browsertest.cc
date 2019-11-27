@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFullscreenBrowserTest,
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
 
-  // Initially there are 3 links in the accessiblity tree.
+  // Initially there are 3 links in the accessibility tree.
   EXPECT_EQ(3, CountLinks(manager->GetRoot()));
 
   // Enter fullscreen by finding the button and performing the default action,

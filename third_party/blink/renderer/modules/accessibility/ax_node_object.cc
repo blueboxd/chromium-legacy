@@ -765,7 +765,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       GetNode()->HasTagName(html_names::kRtTag))
     return ax::mojom::Role::kRubyAnnotation;
 
-  if (IsHTMLFormElement(*GetNode()))
+  if (IsA<HTMLFormElement>(*GetNode()))
     return ax::mojom::Role::kForm;
 
   if (GetNode()->HasTagName(html_names::kAbbrTag))

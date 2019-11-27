@@ -410,7 +410,7 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
       CreateProviderHostForWindow(helper_->mock_render_process_id(), true,
                                   context()->AsWeakPtr(), &endpoint);
 
-  version->AddControllee(host.get());
+  version->AddControllee(host->container_host());
   base::RunLoop().RunUntilIdle();
 
   TestServiceWorkerContextObserver observer(context_wrapper());

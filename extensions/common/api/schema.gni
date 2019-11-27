@@ -63,6 +63,7 @@ extensions_api_schema_files_ = [
 
 if (is_chromeos) {
   extensions_api_schema_files_ += [
+    "crash_report_private.idl",
     "diagnostics.idl",
     "lock_screen_data.idl",
     "media_perception_private.idl",

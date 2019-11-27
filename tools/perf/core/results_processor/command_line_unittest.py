@@ -46,6 +46,8 @@ class ProcessOptionsTestCase(unittest.TestCase):
 
     mock.patch(module('_DefaultOutputDir'),
                return_value='/path/to/output_dir').start()
+    mock.patch(module('path_util.GetChromiumSrcDir'),
+               return_value='/path/to/chromium').start()
 
   def tearDown(self):
     mock.patch.stopall()
@@ -134,6 +136,32 @@ class TestProcessOptions(ProcessOptionsTestCase):
         ['--output-format', 'html', '--output-format', 'csv',
          '--output-format', 'html', '--output-format', 'csv'])
     self.assertEqual(options.output_formats, ['csv', 'html'])
+
+  def testTraceProcessorPath_noBuildDir(self):
+    options = self.ParseArgs([])
+    self.assertIsNone(options.trace_processor_path)
+
+  def testTraceProcessorPath_oneBuildDir(self):
+    def isfile(path):
+      return path == '/path/to/chromium/out/Release/trace_processor_shell'
+
+    with mock.patch(module('os.path.isfile')) as isfile_patch:
+      isfile_patch.side_effect = isfile
+      options = self.ParseArgs([])
+
+    self.assertEqual(options.trace_processor_path,
+                     '/path/to/chromium/out/Release/trace_processor_shell')
+
+  def testTraceProcessorPath_twoBuildDirs(self):
+    def isfile(path):
+      return path in ['/path/to/chromium/out/Release/trace_processor_shell',
+                      '/path/to/chromium/out/Debug/trace_processor_shell']
+
+    with mock.patch(module('os.path.isfile')) as isfile_patch:
+      isfile_patch.side_effect = isfile
+      options = self.ParseArgs([])
+
+    self.assertIsNone(options.trace_processor_path)
 
 
 class StandaloneTestProcessOptions(ProcessOptionsTestCase):

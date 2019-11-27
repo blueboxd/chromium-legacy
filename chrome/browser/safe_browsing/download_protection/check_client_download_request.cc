@@ -23,6 +23,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
@@ -49,26 +50,6 @@ using content::BrowserThread;
 using policy::BrowserDMTokenStorage;
 
 namespace {
-
-constexpr int kMinBytesPerSecond = 1;
-constexpr int kMaxBytesPerSecond = 100 * 1024 * 1024;  // 100 MB/s
-
-// TODO(drubery): This function would be simpler if the ClientDownloadResponse
-// and MalwareDeepScanningVerdict used the same enum.
-std::string MalwareVerdictToThreatType(
-    MalwareDeepScanningVerdict::Verdict verdict) {
-  switch (verdict) {
-    case MalwareDeepScanningVerdict::CLEAN:
-      return "SAFE";
-    case MalwareDeepScanningVerdict::UWS:
-      return "POTENTIALLY_UNWANTED";
-    case MalwareDeepScanningVerdict::MALWARE:
-      return "DANGEROUS";
-    case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
-    default:
-      return "UNKNOWN";
-  }
-}
 
 void DeepScanningClientResponseToDownloadCheckResult(
     const DeepScanningClientResponse& response,
@@ -124,142 +105,6 @@ void DeepScanningClientResponseToDownloadCheckResult(
 }
 
 }  // namespace
-
-void MaybeReportDeepScanningVerdict(Profile* profile,
-                                    const GURL& url,
-                                    const std::string& file_name,
-                                    const std::string& download_digest_sha256,
-                                    const std::string& mime_type,
-                                    const std::string& trigger,
-                                    const int64_t content_size,
-                                    BinaryUploadService::Result result,
-                                    DeepScanningClientResponse response) {
-  if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "fileTooLarge",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::TIMEOUT) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "scanTimedOut",
-                               content_size);
-  }
-
-  if (result != BinaryUploadService::Result::SUCCESS)
-    return;
-
-  if (response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::UWS ||
-      response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::MALWARE) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnDangerousDeepScanningResult(
-            url, file_name, download_digest_sha256,
-            MalwareVerdictToThreatType(
-                response.malware_scan_verdict().verdict()),
-            mime_type, trigger, content_size);
-  }
-
-  if (response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
-    if (!response.dlp_scan_verdict().triggered_rules().empty()) {
-      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-          ->OnSensitiveDataEvent(response.dlp_scan_verdict(), url, file_name,
-                                 download_digest_sha256, mime_type, trigger,
-                                 content_size);
-    }
-  }
-}
-
-std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {
-  // TODO(domfc): Add DRAG_AND_DROP and PASTE access points.
-  switch (access_point) {
-    case DeepScanAccessPoint::DOWNLOAD:
-      return "Download";
-    case DeepScanAccessPoint::UPLOAD:
-      return "Upload";
-  }
-  NOTREACHED();
-  return "";
-}
-
-void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
-                           base::TimeDelta duration,
-                           int64_t total_bytes,
-                           const BinaryUploadService::Result& result,
-                           const DeepScanningClientResponse& response) {
-  bool dlp_verdict_success = response.has_dlp_scan_verdict()
-                                 ? response.dlp_scan_verdict().status() ==
-                                       DlpDeepScanningVerdict::SUCCESS
-                                 : true;
-  bool malware_verdict_success =
-      response.has_malware_scan_verdict()
-          ? response.malware_scan_verdict().verdict() !=
-                MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED
-          : true;
-  bool success = dlp_verdict_success && malware_verdict_success;
-  std::string result_value;
-  switch (result) {
-    case BinaryUploadService::Result::SUCCESS:
-      if (success)
-        result_value = "Success";
-      else
-        result_value = "FailedToGetVerdict";
-      break;
-    case BinaryUploadService::Result::UPLOAD_FAILURE:
-      result_value = "UploadFailure";
-      break;
-    case BinaryUploadService::Result::TIMEOUT:
-      result_value = "Timeout";
-      break;
-    case BinaryUploadService::Result::FILE_TOO_LARGE:
-      result_value = "FileTooLarge";
-      break;
-    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      result_value = "FailedToGetToken";
-      break;
-    case BinaryUploadService::Result::UNKNOWN:
-      result_value = "Unknown";
-      break;
-  }
-
-  // Update |success| so non-SUCCESS results don't log the bytes/sec metric.
-  success &= (result == BinaryUploadService::Result::SUCCESS);
-
-  RecordDeepScanMetrics(access_point, duration, total_bytes, result_value,
-                        success);
-}
-
-void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
-                           base::TimeDelta duration,
-                           int64_t total_bytes,
-                           const std::string& result,
-                           bool success) {
-  // Don't record metrics if the duration is unusable.
-  if (duration.InMilliseconds() == 0)
-    return;
-
-  std::string access_point_string = DeepScanAccessPointToString(access_point);
-  if (success) {
-    base::UmaHistogramCustomCounts(
-        "SafeBrowsing.DeepScan." + access_point_string + ".BytesPerSeconds",
-        (1000 * total_bytes) / duration.InMilliseconds(),
-        /*min=*/kMinBytesPerSecond,
-        /*max=*/kMaxBytesPerSecond,
-        /*buckets=*/50);
-  }
-
-  // The scanning timeout is 5 minutes, so the bucket maximum time is 30 minutes
-  // in order to be lenient and avoid having lots of data in the overlow bucket.
-  base::UmaHistogramCustomTimes("SafeBrowsing.DeepScan." + access_point_string +
-                                    "." + result + ".Duration",
-                                duration, base::TimeDelta::FromMilliseconds(1),
-                                base::TimeDelta::FromMinutes(30), 50);
-  base::UmaHistogramCustomTimes(
-      "SafeBrowsing.DeepScan." + access_point_string + ".Duration", duration,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(30),
-      50);
-}
 
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,

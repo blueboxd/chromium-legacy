@@ -71,6 +71,11 @@ class AssistantProactiveSuggestionsController
   void OnProactiveSuggestionsViewPressed() override;
 
  private:
+  void OnCardClickDeepLinkReceived(
+      const std::map<std::string, std::string>& params);
+  void OnEntryPointClickDeepLinkReceived(
+      const std::map<std::string, std::string>& params);
+
   void MaybeShowUi();
   void CloseUi(ProactiveSuggestionsShowResult result);
   void HideUi();

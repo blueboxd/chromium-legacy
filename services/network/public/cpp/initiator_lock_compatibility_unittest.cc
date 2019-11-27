@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/initiator_lock_compatibility.h"
 
 #include "base/optional.h"
 #include "services/network/public/cpp/resource_request.h"

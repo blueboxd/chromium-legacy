@@ -8,7 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "services/network/cross_origin_resource_policy.h"
+#include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -21,6 +21,7 @@ namespace {
 
 const int kNoVolume = -1;
 const float kEpsilon = std::numeric_limits<float>::epsilon();
+const float kMaxOnSetVolume = 0.989;  // -0.1dB
 
 // Configuration strings:
 const char kOnsetVolumeKey[] = "onset_volume";
@@ -37,6 +38,8 @@ Governor::Governor(const std::string& config, int input_channels)
   CHECK(config_dict) << "Governor config is not valid json: " << config;
   CHECK(config_dict->GetDouble(kOnsetVolumeKey, &onset_volume_));
   CHECK(config_dict->GetDouble(kClampMultiplierKey, &clamp_multiplier_));
+  CHECK_LE(onset_volume_, clamp_multiplier_);
+  CHECK_LE(onset_volume_, kMaxOnSetVolume);
   slew_volume_.SetVolume(1.0);
   LOG(INFO) << "Created a governor: onset_volume = " << onset_volume_
             << ", clamp_multiplier = " << clamp_multiplier_;
@@ -71,9 +74,12 @@ void Governor::ProcessFrames(float* data,
 }
 
 float Governor::GetGovernorMultiplier() {
-  // If |volume_| is greater than or "equal" to |onset_volume_|.
-  if (volume_ > onset_volume_ - kEpsilon) {
-    return clamp_multiplier_;
+  if (volume_ > onset_volume_) {
+    float effective_volume =
+        onset_volume_ + (volume_ - onset_volume_) *
+                            (clamp_multiplier_ - onset_volume_) /
+                            (1. - onset_volume_);
+    return effective_volume / volume_;
   }
   return 1.0;
 }

@@ -19,8 +19,9 @@
 
 namespace ash {
 
-using DeepLinkParam = assistant::util::DeepLinkParam;
-using DeepLinkType = assistant::util::DeepLinkType;
+using assistant::util::DeepLinkParam;
+using assistant::util::DeepLinkType;
+using assistant::util::ProactiveSuggestionsAction;
 
 AssistantProactiveSuggestionsController::
     AssistantProactiveSuggestionsController(
@@ -66,36 +67,24 @@ void AssistantProactiveSuggestionsController::OnDeepLinkReceived(
   if (type != DeepLinkType::kProactiveSuggestions)
     return;
 
-  // Currently, the only supported deep link action is |kCardClick|.
+  // Proactive suggestions deep links should specify an |action|.
   const base::Optional<assistant::util::ProactiveSuggestionsAction> action =
       assistant::util::GetDeepLinkParamAsProactiveSuggestionsAction(
           params, DeepLinkParam::kAction);
-  if (action != assistant::util::ProactiveSuggestionsAction::kCardClick)
+  if (!action.has_value())
     return;
 
-  // A deep link of action type |kCardClick| should specify an |kHref| value
-  // which is a URL to be handled by Assistant (likely opened in the browser).
-  const base::Optional<GURL> url =
-      assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
-  if (url)
-    assistant_controller_->OpenUrl(url.value());
-
-  // For metrics tracking, obtain the |category| of the content associated w/
-  // the proactive suggestion card that was clicked...
-  const base::Optional<int> category =
-      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kCategory);
-
-  // ...as well as the |index| of the card within its list...
-  const base::Optional<int> index =
-      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kIndex);
-
-  // ...and finally the VE ID associated w/ the type of card itself.
-  const base::Optional<int> veId =
-      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kVeId);
-
-  // We record all of these metrics in UMA to track engagement.
-  assistant::metrics::RecordProactiveSuggestionsCardClick(category, index,
-                                                          veId);
+  switch (action.value()) {
+    case ProactiveSuggestionsAction::kCardClick:
+      OnCardClickDeepLinkReceived(params);
+      return;
+    case ProactiveSuggestionsAction::kEntryPointClick:
+      OnEntryPointClickDeepLinkReceived(params);
+      return;
+    case ProactiveSuggestionsAction::kEntryPointClose:
+      OnProactiveSuggestionsCloseButtonPressed();
+      return;
+  }
 }
 
 void AssistantProactiveSuggestionsController::
@@ -219,6 +208,58 @@ void AssistantProactiveSuggestionsController::
 
   // Clicking on the proactive suggestions view causes the user to enter
   // Assistant UI where a proactive suggestions interaction will be initiated.
+  assistant_controller_->ui_controller()->ShowUi(
+      AssistantEntryPoint::kProactiveSuggestions);
+}
+
+void AssistantProactiveSuggestionsController::OnCardClickDeepLinkReceived(
+    const std::map<std::string, std::string>& params) {
+  // A deep link of action type |kCardClick| should specify an |kHref| value
+  // which is a URL to be handled by Assistant (likely opened in the browser).
+  const base::Optional<GURL> url =
+      assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
+  if (url)
+    assistant_controller_->OpenUrl(url.value());
+
+  // For metrics tracking, obtain the |category| of the content associated w/
+  // the proactive suggestion card that was clicked...
+  const base::Optional<int> category =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kCategory);
+
+  // ...as well as the |index| of the card within its list...
+  const base::Optional<int> index =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kIndex);
+
+  // ...and finally the VE ID associated w/ the type of card itself.
+  const base::Optional<int> veId =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kVeId);
+
+  // We record all of these metrics in UMA to track engagement.
+  assistant::metrics::RecordProactiveSuggestionsCardClick(category, index,
+                                                          veId);
+}
+
+void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
+    const std::map<std::string, std::string>& params) {
+  // A deeplink resulting from a click on the proactive suggestions entry point
+  // may optionally specify an |kHref| value to teleport to.
+  const base::Optional<GURL> teleport =
+      assistant::util::GetDeepLinkParamAsGURL(params, DeepLinkParam::kHref);
+
+  // If an |kHref| was specified to teleport to, we'll handle it instead of
+  // opening Assistant UI to show the associated set of proactive suggestions.
+  // This allows the rich, content-forward entry point to teleport the user
+  // directly to a result in the browser if so desired instead of always having
+  // to direct the user to the complete inline collection.
+  if (teleport.has_value()) {
+    CloseUi(ProactiveSuggestionsShowResult::kTeleport);
+    assistant_controller_->OpenUrl(teleport.value());
+    return;
+  }
+
+  // When no |kHref| is specified, we handle this as a normal click on the entry
+  // point to open the set of proactive suggestions inline in Assistant UI.
+  CloseUi(ProactiveSuggestionsShowResult::kClick);
   assistant_controller_->ui_controller()->ShowUi(
       AssistantEntryPoint::kProactiveSuggestions);
 }

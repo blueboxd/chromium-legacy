@@ -15,10 +15,14 @@ enum class WindowOpenDisposition;
 
 class OmniboxPopupViewSuggestionsDelegate {
  public:
-  // Called whenever the topmost suggestion image has changed.
-  // Current UI should only use |matchType|; new UI may use |answerType| and
-  // |faviconURL| if available.
-  virtual void OnTopmostSuggestionImageChanged(
+  // Called whenever the selected image has changed.
+  // has_match indicates if there is a selected match. When there's no selected
+  // match (for example, on NTP with no zero suggest, there's no default match),
+  // values in match_type, answer_type, and favicon_url are invalid and a
+  // default image should be used instead. Current UI should only use
+  // |matchType|; new UI may use |answerType| and |faviconURL| if available.
+  virtual void OnSelectedMatchImageChanged(
+      bool has_match,
       AutocompleteMatchType::Type match_type,
       base::Optional<SuggestionAnswer::AnswerType> answer_type,
       GURL favicon_url) = 0;

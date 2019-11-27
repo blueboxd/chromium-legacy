@@ -81,11 +81,6 @@ void MediaNotificationService::Session::WebContentsDestroyed() {
   owner_->RemoveItem(id_);
 }
 
-void MediaNotificationService::Session::OnWebContentsFocused(
-    content::RenderWidgetHost*) {
-  OnSessionInteractedWith();
-}
-
 void MediaNotificationService::Session::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   bool playing =
@@ -363,6 +358,8 @@ void MediaNotificationService::OnContainerClicked(const std::string& id) {
   auto it = sessions_.find(id);
   if (it == sessions_.end())
     return;
+
+  it->second.OnSessionInteractedWith();
 
   content::WebContents* web_contents = it->second.web_contents();
   if (!web_contents)

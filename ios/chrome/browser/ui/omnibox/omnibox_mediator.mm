@@ -120,6 +120,20 @@ const CGFloat kOmniboxIconSize = 16;
   }
 }
 
+- (void)setDefaultLeftImage {
+  UIImage* image = GetOmniboxSuggestionIconForAutocompleteMatchType(
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, /* is_starred */ false);
+  [self.consumer updateAutocompleteIcon:image];
+
+  __weak OmniboxMediator* weakSelf = self;
+  if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon)) {
+    // Show Default Search Engine favicon.
+    [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
+      [weakSelf.consumer updateAutocompleteIcon:image];
+    }];
+  }
+}
+
 // Loads a favicon for a given page URL.
 // |pageURL| is url for the page that needs a favicon
 // |completion| handler might be called multiple

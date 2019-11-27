@@ -57,7 +57,8 @@ class EncodedFormDataMojomTraitsTest : public testing::Test {
 TEST_F(EncodedFormDataTest, DeepCopy) {
   scoped_refptr<EncodedFormData> original(EncodedFormData::Create());
   original->AppendData("Foo", 3);
-  original->AppendFileRange("example.txt", 12345, 56789, 9999.0);
+  original->AppendFileRange("example.txt", 12345, 56789,
+                            base::Time::FromDoubleT(9999.0));
   original->AppendBlob("originalUUID", nullptr);
 
   Vector<char> boundary_vector;
@@ -83,7 +84,8 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   EXPECT_EQ(String("example.txt"), copy_elements[1].filename_);
   EXPECT_EQ(12345ll, copy_elements[1].file_start_);
   EXPECT_EQ(56789ll, copy_elements[1].file_length_);
-  EXPECT_EQ(9999.0, copy_elements[1].expected_file_modification_time_);
+  EXPECT_EQ(9999.0,
+            copy_elements[1].expected_file_modification_time_->ToDoubleT());
 
   EXPECT_EQ(FormDataElement::kEncodedBlob, copy_elements[2].type_);
   EXPECT_EQ(String("originalUUID"), copy_elements[2].blob_uuid_);
@@ -131,7 +133,7 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
   original2.file_start_ = 0;
   original2.file_length_ = 4;
   original2.filename_ = "file.name";
-  original2.expected_file_modification_time_ = base::Time::Now().ToDoubleT();
+  original2.expected_file_modification_time_ = base::Time::Now();
   FormDataElement copied2;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
               blink::mojom::blink::FetchAPIDataElement>(&original2, &copied2));

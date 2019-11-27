@@ -1353,6 +1353,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
 
 void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
     mojom::blink::DispatchFetchEventParamsPtr params,
+    network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
     mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
         response_callback,
     DispatchFetchEventInternalCallback callback) {
@@ -1386,10 +1387,8 @@ void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
   WaitUntilObserver* wait_until_observer =
       WaitUntilObserver::Create(this, WaitUntilObserver::kFetch, event_id);
   FetchRespondWithObserver* respond_with_observer =
-      FetchRespondWithObserver::Create(
-          this, event_id, fetch_request.url, fetch_request.mode,
-          fetch_request.redirect_mode, fetch_request.frame_type,
-          fetch_request.request_context_type, wait_until_observer);
+      FetchRespondWithObserver::Create(this, event_id, requestor_coep,
+                                       fetch_request, wait_until_observer);
   Request* request =
       Request::Create(ScriptController()->GetScriptState(), fetch_request,
                       Request::ForServiceWorkerFetchEvent::kTrue);
@@ -1441,15 +1440,17 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
   // TODO(https://crbug.com/999049): Retrieve the COEP value from
   // controller_receivers_.current_context() and respect it on the corresponding
   // respondWith().
+  network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep =
+      controller_receivers_.current_context();
   if (RequestedTermination()) {
     timeout_timer_->PushPendingTask(
         WTF::Bind(&ServiceWorkerGlobalScope::DispatchFetchEventInternal,
-                  WrapWeakPersistent(this), std::move(params),
+                  WrapWeakPersistent(this), std::move(params), requestor_coep,
                   std::move(response_callback), std::move(callback)));
     return;
   }
-  DispatchFetchEventInternal(std::move(params), std::move(response_callback),
-                             std::move(callback));
+  DispatchFetchEventInternal(std::move(params), requestor_coep,
+                             std::move(response_callback), std::move(callback));
 }
 
 void ServiceWorkerGlobalScope::Clone(
@@ -1701,8 +1702,12 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
         response_callback,
     DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
-  DispatchFetchEventInternal(std::move(params), std::move(response_callback),
-                             std::move(callback));
+  // We can use kNone as a |requestor_coep| for the main resource because it
+  // must be the same origin.
+  DispatchFetchEventInternal(
+      std::move(params),
+      network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+      std::move(response_callback), std::move(callback));
 }
 
 void ServiceWorkerGlobalScope::DispatchNotificationClickEvent(

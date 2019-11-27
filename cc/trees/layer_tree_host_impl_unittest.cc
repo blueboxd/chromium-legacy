@@ -9404,7 +9404,7 @@ class LayerTreeHostImplTestWithRenderer
   RendererType renderer_type() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostImplTestWithRenderer,
                          ::testing::Values(RENDERER_GL, RENDERER_SKIA));
 

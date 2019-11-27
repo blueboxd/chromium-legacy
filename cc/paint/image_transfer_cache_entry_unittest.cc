@@ -396,7 +396,7 @@ std::string TestParamToString(
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ImageTransferCacheEntryTest,
                          ::testing::Values(YUVDecodeFormat::kYUV3,
                                            YUVDecodeFormat::kYVU3,

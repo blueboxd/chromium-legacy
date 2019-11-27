@@ -1376,7 +1376,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1410,7 +1410,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1543,7 +1543,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       helper_->context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(

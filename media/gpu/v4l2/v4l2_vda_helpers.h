@@ -40,6 +40,7 @@ uint32_t FindImageProcessorOutputFormat(V4L2Device* ip_device);
 // |nb_buffers| is the exact number of output buffers that the IP must create.
 // |image_processor_output_mode| specifies whether the IP must allocate its
 // own buffers or rely on imported ones.
+// |client_task_runner| is the task runner for interacting with image processor.
 // |error_cb| is the error callback passed to V4L2ImageProcessor::Create().
 std::unique_ptr<ImageProcessor> CreateImageProcessor(
     uint32_t vda_output_format,
@@ -50,6 +51,7 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
     size_t nb_buffers,
     scoped_refptr<V4L2Device> image_processor_device,
     ImageProcessor::OutputMode image_processor_output_mode,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessor::ErrorCB error_cb);
 
 }  // namespace v4l2_vda_helpers

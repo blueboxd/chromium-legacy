@@ -637,7 +637,10 @@ CollectUserDataAction::CreateOptionsFromProto() {
                 collect_user_data_options->login_choices.size()),
             login_option.custom().label(),
             login_option.sublabel(),
-            login_option.sublabel_accessibility_hint(),
+            login_option.has_sublabel_accessibility_hint()
+                ? base::make_optional(
+                      login_option.sublabel_accessibility_hint())
+                : base::nullopt,
             login_option.has_preselection_priority()
                 ? login_option.preselection_priority()
                 : -1,

@@ -655,7 +655,7 @@ void ProfileMenuView::BuildProfileManagementHeading() {
 void ProfileMenuView::BuildSelectableProfiles() {
   auto profile_entries = g_browser_process->profile_manager()
                              ->GetProfileAttributesStorage()
-                             .GetAllProfilesAttributes();
+                             .GetAllProfilesAttributesSortedByName();
   for (ProfileAttributesEntry* profile_entry : profile_entries) {
     // The current profile is excluded.
     if (profile_entry->GetPath() == browser()->profile()->GetPath())

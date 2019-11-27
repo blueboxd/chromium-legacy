@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 
@@ -33,6 +34,40 @@ class NGInlineCursorTest : public NGLayoutTest,
     for (NGInlineCursor cursor(start); cursor; cursor.MoveToNext())
       list.push_back(ToDebugString(cursor));
     return list;
+  }
+
+  Vector<String> SiblingsToDebugStringList(const NGInlineCursor& start) {
+    Vector<String> list;
+    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+      list.push_back(ToDebugString(cursor));
+    return list;
+  }
+
+  // Test |MoveToNextSibling| and |NGInlineBackwardCursor| return the same
+  // instances, except that the order is reversed.
+  void TestPrevoiusSibling(const NGInlineCursor& start) {
+    if (start.IsPaintFragmentCursor()) {
+      Vector<const NGPaintFragment*> forwards;
+      for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+        forwards.push_back(cursor.CurrentPaintFragment());
+      Vector<const NGPaintFragment*> backwards;
+      for (NGInlineBackwardCursor cursor(start); cursor;
+           cursor.MoveToPreviousSibling())
+        backwards.push_back(cursor.CurrentPaintFragment());
+      backwards.Reverse();
+      EXPECT_THAT(backwards, forwards);
+      return;
+    }
+    DCHECK(start.IsItemCursor());
+    Vector<const NGFragmentItem*> forwards;
+    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+      forwards.push_back(cursor.CurrentItem());
+    Vector<const NGFragmentItem*> backwards;
+    for (NGInlineBackwardCursor cursor(start); cursor;
+         cursor.MoveToPreviousSibling())
+      backwards.push_back(cursor.CurrentItem());
+    backwards.Reverse();
+    EXPECT_THAT(backwards, forwards);
   }
 
   String ToDebugString(const NGInlineCursor& cursor) {
@@ -510,33 +545,27 @@ TEST_P(NGInlineCursorTest, NextForSameLayoutObject) {
   EXPECT_THAT(list, ElementsAre("abc", "", "def", "", "ghi"));
 }
 
-TEST_P(NGInlineCursorTest, NextSibling) {
+TEST_P(NGInlineCursorTest, Sibling) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("a, b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root>abc<a>DEF<b>GHI</b></a>xyz</div>");
   cursor.MoveToFirstChild();  // go to "abc"
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextSibling();
-  }
+  Vector<String> list = SiblingsToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre("abc", "LayoutInline A", "xyz"));
+  TestPrevoiusSibling(cursor);
 }
 
-TEST_P(NGInlineCursorTest, NextSibling2) {
+TEST_P(NGInlineCursorTest, Sibling2) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("a, b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root><a>abc<b>def</b>xyz</a></div>");
   cursor.MoveToFirstChild();  // go to <a>abc</a>
   cursor.MoveToFirstChild();  // go to "abc"
-  Vector<String> list;
-  while (cursor) {
-    list.push_back(ToDebugString(cursor));
-    cursor.MoveToNextSibling();
-  }
+  Vector<String> list = SiblingsToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre("abc", "LayoutInline B", "xyz"));
+  TestPrevoiusSibling(cursor);
 }
 
 TEST_P(NGInlineCursorTest, NextSkippingChildren) {

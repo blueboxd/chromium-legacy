@@ -73,7 +73,7 @@ const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
 
 // The timezone is always trusted.
 CrosSettingsProvider::TrustedStatus
-SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+SystemSettingsProvider::PrepareTrustedValues(base::OnceClosure cb) {
   return TRUSTED;
 }
 

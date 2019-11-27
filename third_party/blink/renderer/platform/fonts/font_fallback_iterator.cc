@@ -12,14 +12,6 @@
 
 namespace blink {
 
-scoped_refptr<FontFallbackIterator> FontFallbackIterator::Create(
-    const FontDescription& description,
-    scoped_refptr<FontFallbackList> fallback_list,
-    FontFallbackPriority font_fallback_priority) {
-  return base::AdoptRef(new FontFallbackIterator(
-      description, std::move(fallback_list), font_fallback_priority));
-}
-
 FontFallbackIterator::FontFallbackIterator(
     const FontDescription& description,
     scoped_refptr<FontFallbackList> fallback_list,

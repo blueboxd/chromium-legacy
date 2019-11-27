@@ -8,12 +8,10 @@ import os
 import shutil
 import subprocess
 
-from core import path_util
 from py_utils import tempfile_ext
 
 
-DEFAULT_TP_PATH = os.path.join(
-    path_util.GetChromiumSrcDir(), 'out', 'Debug', 'trace_processor_shell')
+TP_BINARY_NAME = 'trace_processor_shell'
 EXPORT_JSON_QUERY_TEMPLATE = 'select export_json(%s)\n'
 
 
@@ -23,6 +21,9 @@ def _SqlString(s):
 
 
 def ConvertProtoTracesToJson(trace_processor_path, proto_files, json_path):
+  if trace_processor_path is None:
+    raise RuntimeError('Trace processor executable is not supplied. '
+                       'Please use the --trace-processor-path flag.')
   if not os.path.isfile(trace_processor_path):
     raise RuntimeError("Can't find trace processor executable at %s" %
                        trace_processor_path)

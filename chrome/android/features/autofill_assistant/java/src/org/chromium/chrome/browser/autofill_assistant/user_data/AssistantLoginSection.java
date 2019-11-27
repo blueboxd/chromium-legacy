@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
-import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
-import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
+import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -59,11 +58,7 @@ public class AssistantLoginSection extends AssistantCollectUserDataSection<Assis
             sublabelView.setVisibility(View.GONE);
         } else {
             sublabelView.setText(option.getSublabel());
-            sublabelView.setContentDescription(option.getSublabelAccessibilityHint());
-            sublabelView.setImportantForAccessibility(
-                    TextUtils.isEmpty(option.getSublabelAccessibilityHint())
-                            ? IMPORTANT_FOR_ACCESSIBILITY_NO
-                            : IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+            setAccessibility(sublabelView, option.getSublabelAccessibilityHint());
         }
     }
 

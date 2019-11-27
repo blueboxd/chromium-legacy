@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var FilesQuickView = Polymer({
+const FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
@@ -38,6 +38,12 @@ var FilesQuickView = Polymer({
     // Text shown when there is no playback/preview available.
     noPlaybackText: String,
     noPreviewText: String,
+
+    /**
+     * True if the Files app window is a dialog, e.g. save-as or open-with.
+     * @type {boolean}
+     */
+    isModal: Boolean,
   },
 
   listeners: {
@@ -118,6 +124,17 @@ var FilesQuickView = Polymer({
    * @param {!Event} event
    */
   onOpenInNewButtonTap: function(event) {},
+
+  /**
+   * @param {boolean} hasTask
+   * @param {boolean} isModal
+   * @return {boolean}
+   *
+   * @private
+   */
+  shouldShowOpenButton_: function(hasTask, isModal) {
+    return hasTask && !isModal;
+  },
 
   /**
    * @param {!Event} event tap event.

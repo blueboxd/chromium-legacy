@@ -535,14 +535,6 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
     interned_source_locations_.Clear();
     interned_log_message_bodies_.Clear();
   }
-
-#if defined(OS_ANDROID)
-  // Send the original trace event to atrace. Since we send COMPLETE events,
-  // make sure not to send the END events that were split from a COMPLETE event.
-  if (!is_end_of_a_complete_event) {
-    trace_event->SendToATrace();
-  }
-#endif
 }
 
 void TrackEventThreadLocalEventSink::EmitStoredInternedData(

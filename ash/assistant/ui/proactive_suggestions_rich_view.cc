@@ -55,6 +55,7 @@ void ProactiveSuggestionsRichView::InitLayout() {
             cursor: default;
             margin: 0;
             padding: 0;
+            text-decoration: none;
             user-select: none;
           }
           body {
@@ -62,8 +63,15 @@ void ProactiveSuggestionsRichView::InitLayout() {
             background-color: #3c4043;
             display: flex;
             height: 32px;
-            overflow: hidden;
             max-width: 280px;
+            overflow: hidden;
+          }
+          .EntryPoint {
+            align-items: center;
+            display: flex;
+            flex: 1 1 auto;
+            height: 100%;
+            overflow: hidden;
           }
           .Icon {
             background-image:
@@ -99,9 +107,13 @@ void ProactiveSuggestionsRichView::InitLayout() {
             -webkit-mask-size: 16px;
           }
         </style>
-        <div class="Icon"></div>
-        <p class="Label">Related pages</p>
-        <div class="Close"></div>
+        <a class="EntryPoint" href="googleassistant://proactive-suggestions?action=entryPointClick">
+          <div class="Icon"></div>
+          <p class="Label">Related pages</p>
+        </a>
+        <a href="googleassistant://proactive-suggestions?action=entryPointClose">
+          <div class="Close"></div>
+        </a>
       </body>
     </html>
     )",
@@ -132,11 +144,8 @@ void ProactiveSuggestionsRichView::DidSuppressNavigation(
     const GURL& url,
     WindowOpenDisposition disposition,
     bool from_user_gesture) {
-  if (!from_user_gesture)
-    return;
-
-  // TODO(dmblack): Handle clicks.
-  NOTIMPLEMENTED();
+  if (from_user_gesture)
+    delegate()->OpenUrlFromView(url);
 }
 
 }  // namespace ash

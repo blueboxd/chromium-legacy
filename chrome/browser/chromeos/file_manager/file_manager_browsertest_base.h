@@ -69,6 +69,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetEnableFilesNg() const;
   virtual bool GetEnableNativeSmb() const;
   virtual bool GetStartWithNoVolumesMounted() const;
+  virtual bool GetStartWithFileTasksObserver() const;
 
   // Launches the test extension from GetTestExtensionManifestName() and uses
   // it to drive the testing the actual FileManager component extension under

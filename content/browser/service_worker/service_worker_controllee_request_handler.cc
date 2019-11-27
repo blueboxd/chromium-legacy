@@ -192,7 +192,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // not be intercepted. (It might get intercepted later if the controller
   // changes due to skipWaiting() so SetController is sent.)
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
-      provider_host_->GetRemoteControllerServiceWorker();
+      container_host->GetRemoteControllerServiceWorker();
   if (remote.is_bound()) {
     controller_info->remote_controller = remote.Unbind();
   }

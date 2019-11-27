@@ -1772,9 +1772,8 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   GetDocument().UpdateStyleAndLayout();
 
   VisiblePosition caret = EndingVisibleSelection().VisibleStart();
-  HTMLQuoteElement* highest_blockquote =
-      ToHTMLQuoteElement(HighestEnclosingNodeOfType(
-          caret.DeepEquivalent(), &IsMailHTMLBlockquoteElement));
+  auto* highest_blockquote = To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
+      caret.DeepEquivalent(), &IsMailHTMLBlockquoteElement));
   if (!highest_blockquote)
     return false;
 

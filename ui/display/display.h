@@ -269,8 +269,8 @@ class DISPLAY_EXPORT Display final {
     depth_per_component_ = depth_per_component;
   }
 
-  // True if this is a monochrome display (e.g, for accessiblity). Used by media
-  // query APIs.
+  // True if this is a monochrome display (e.g, for accessibility). Used by
+  // media query APIs.
   bool is_monochrome() const { return is_monochrome_; }
   void set_is_monochrome(bool is_monochrome) { is_monochrome_ = is_monochrome; }
 

@@ -102,6 +102,14 @@ cr.define('history', function() {
     }
 
     /**
+     * @param {string} histogram
+     * @param {number} time
+     */
+    recordTime(histogram, time) {
+      chrome.send('metricsHandler:recordTime', [histogram, time]);
+    }
+
+    /**
      * @param {boolean} successful
      * @private
      */
@@ -123,6 +131,34 @@ cr.define('history', function() {
 
     menuPromoShown() {
       chrome.send('menuPromoShown');
+    }
+
+    /**
+     * @param {string} url
+     * @param {string} target
+     * @param {!MouseEvent} e
+     */
+    navigateToUrl(url, target, e) {
+      chrome.send(
+          'navigateToUrl',
+          [url, target, e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
+    }
+
+    otherDevicesInitialized() {
+      chrome.send('otherDevicesInitialized');
+    }
+
+    queryHistoryContinuation() {
+      chrome.send('queryHistoryContinuation');
+    }
+
+    /** @param {string} searchTerm */
+    queryHistory(searchTerm) {
+      chrome.send('queryHistory', [searchTerm, RESULTS_PER_PAGE]);
+    }
+
+    startSignInFlow() {
+      chrome.send('startSignInFlow');
     }
   }
 

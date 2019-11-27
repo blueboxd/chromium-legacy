@@ -1,6 +1,19 @@
 <html>
 <head></head>
 <body>
+  <!-- Subpages -->
+  <link rel="import" href="appearance_page/appearance_fonts_page.html">
+  <link rel="import" href="autofill_page/autofill_section.html">
+  <link rel="import" href="autofill_page/passwords_section.html">
+  <link rel="import" href="autofill_page/payments_section.html">
+  <link rel="import" href="search_engines_page/search_engines_page.html">
+
+<if expr="not chromeos">
+  <link rel="import" href="people_page/manage_profile.html">
+  <link rel="import" href="people_page/sync_account_control.html">
+</if>
+
+  <!-- Sections -->
   <link rel="import" href="a11y_page/a11y_page.html">
   <link rel="import" href="downloads_page/downloads_page.html">
   <link rel="import" href="languages_page/languages_page.html">
@@ -8,12 +21,12 @@
   <link rel="import" href="privacy_page/privacy_page.html">
   <link rel="import" href="reset_page/reset_page.html">
 
-  <if expr="chromeos">
+<if expr="chromeos">
   <link rel="import" href="date_time_page/date_time_page.html">
-  </if>
+</if>
 
-  <if expr="not chromeos">
+<if expr="not chromeos">
   <link rel="import" href="system_page/system_page.html">
-  </if>
+</if>
 </body>
 </html>

@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
-#include "services/network/initiator_lock_compatibility.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"

@@ -5755,7 +5755,6 @@ crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointer
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
-crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]
 
 # Sheriff 2019-10-15
 crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout ]
@@ -5860,15 +5859,12 @@ crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-vari
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
 
-# Sheriff 2019-11-20
-crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Timeout ]
-
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
 # Sheriff 2019-11-26
 crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
-crbug.com/1028684 [ Win10 ] inspector-protocol/animation/animation-release.js [ Pass Failure ]
+crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
 crbug.com/1015187 virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 crbug.com/1015187 [ Linux Mac ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 
@@ -5904,3 +5900,14 @@ crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-pro
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
 
+crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Pass Failure ]
+
+# Tests include race-conditions that will be fixed after DevTools fully uses ES modules
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
+
+# Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
+crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]

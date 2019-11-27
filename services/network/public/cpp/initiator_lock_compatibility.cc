@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/initiator_lock_compatibility.h"
 
 #include <string>
 
@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -55,24 +54,6 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   }
 
   return InitiatorLockCompatibility::kIncorrectLock;
-}
-
-InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    uint32_t process_id,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
-    const base::Optional<url::Origin>& request_initiator) {
-  if (process_id == mojom::kBrowserProcessId)
-    return InitiatorLockCompatibility::kBrowserProcess;
-
-  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request_initiator);
-
-  if (result == InitiatorLockCompatibility::kIncorrectLock &&
-      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
-    result = InitiatorLockCompatibility::kExcludedUniversalAccessPlugin;
-  }
-
-  return result;
 }
 
 url::Origin GetTrustworthyInitiator(

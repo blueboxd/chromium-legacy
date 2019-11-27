@@ -428,9 +428,9 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   OverrideManifest(kManifestTemplate, {kInstallableIconList,
                                        "invalid manifest syntax !@#$%^*&()"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
-            ManifestUpdateResult::kAppDataInvalid);
+            ManifestUpdateResult::kAppNotEligible);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppDataInvalid, 1);
+                                      ManifestUpdateResult::kAppNotEligible, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,

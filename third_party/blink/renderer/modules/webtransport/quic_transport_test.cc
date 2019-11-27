@@ -233,11 +233,10 @@ TEST_F(QuicTransportTest, PassCSP) {
   // This doesn't work without the https:// prefix, even thought it should
   // according to
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/connect-src.
-  // TODO(ricea): Make it work with the quic-transport: scheme.
   auto& exception_state = scope.GetExceptionState();
   scope.GetExecutionContext()
       ->GetContentSecurityPolicyForWorld()
-      ->DidReceiveHeader("connect-src https://example.com:443",
+      ->DidReceiveHeader("connect-src quic-transport://example.com",
                          kContentSecurityPolicyHeaderTypeEnforce,
                          kContentSecurityPolicyHeaderSourceHTTP);
   QuicTransport::Create(scope.GetScriptState(),

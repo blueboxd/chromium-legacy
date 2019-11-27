@@ -24,7 +24,7 @@
         </div>
         <div id="file-path">[[filePath]]</div>
         <div class="buttons-group">
-           <cr-button id="open-button" on-click="onOpenInNewButtonTap" hidden$="[[!hasTask]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}">
+           <cr-button id="open-button" on-click="onOpenInNewButtonTap" hidden$="[[!shouldShowOpenButton_(hasTask, isModal)]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}">
              <span>$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}</span>
            </cr-button>
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip>

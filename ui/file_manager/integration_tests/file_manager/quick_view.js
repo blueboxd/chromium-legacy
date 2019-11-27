@@ -36,7 +36,7 @@
    * @param {string} name File name.
    */
   async function openQuickView(appId, name) {
-    let caller = getCaller();
+    const caller = getCaller();
 
     function checkQuickViewElementsDisplayBlock(elements) {
       const haveElements = Array.isArray(elements) && elements.length !== 0;
@@ -117,7 +117,7 @@
      * The <files-metadata-box> element resides in the #quick-view shadow DOM
      * as a child of the #dialog element.
      */
-    let quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
+    const quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
 
     /**
      * The <files-metadata-entry key="name"> element resides in the shadow DOM
@@ -516,7 +516,7 @@
 
     // Get the <webview> embed type attribute.
     function checkPdfEmbedType(type) {
-      let haveElements = Array.isArray(type) && type.length === 1;
+      const haveElements = Array.isArray(type) && type.length === 1;
       if (!haveElements || !type[0].toString().includes('pdf')) {
         return pending(caller, 'Waiting for plugin <embed> type.');
       }
@@ -557,7 +557,7 @@
 
     // Wait for the innerContentPanel to load and display its content.
     function checkInnerContentPanel(elements) {
-      let haveElements = Array.isArray(elements) && elements.length === 1;
+      const haveElements = Array.isArray(elements) && elements.length === 1;
       if (!haveElements || elements[0].styles.display !== 'flex') {
         return pending(caller, 'Waiting for inner content panel to load.');
       }

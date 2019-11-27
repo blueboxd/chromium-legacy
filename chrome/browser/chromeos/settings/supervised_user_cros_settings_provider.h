@@ -25,8 +25,7 @@ class SupervisedUserCrosSettingsProvider : public CrosSettingsProvider {
 
   // CrosSettingsProvider:
   const base::Value* Get(const std::string& path) const override;
-  CrosSettingsProvider::TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) override;
+  TrustedStatus PrepareTrustedValues(base::OnceClosure callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
  private:

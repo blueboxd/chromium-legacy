@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 
 #include <string>
 #include <tuple>
@@ -59,11 +59,11 @@ std::string ResultToString(const BinaryUploadService::Result& result,
 
 }  // namespace
 
-class CheckClientDownloadRequestUMATest
+class DeepScanningUtilsUMATest
     : public testing::TestWithParam<
           std::tuple<DeepScanAccessPoint, BinaryUploadService::Result>> {
  public:
-  CheckClientDownloadRequestUMATest() {}
+  DeepScanningUtilsUMATest() {}
 
   DeepScanAccessPoint access_point() const { return std::get<0>(GetParam()); }
 
@@ -89,12 +89,12 @@ class CheckClientDownloadRequestUMATest
 
 INSTANTIATE_TEST_SUITE_P(
     Tests,
-    CheckClientDownloadRequestUMATest,
+    DeepScanningUtilsUMATest,
     testing::Combine(testing::Values(DeepScanAccessPoint::DOWNLOAD,
                                      DeepScanAccessPoint::UPLOAD),
                      testing::ValuesIn(kAllBinaryUploadServiceResults)));
 
-TEST_P(CheckClientDownloadRequestUMATest, SuccessfulScanVerdicts) {
+TEST_P(DeepScanningUtilsUMATest, SuccessfulScanVerdicts) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         DeepScanningClientResponse());
   // We expect at least 2 histograms (<access-point>.Duration and
@@ -118,7 +118,7 @@ TEST_P(CheckClientDownloadRequestUMATest, SuccessfulScanVerdicts) {
                                      kDuration, 1);
 }
 
-TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulDlpScanVerdict) {
+TEST_P(DeepScanningUtilsUMATest, UnsuccessfulDlpScanVerdict) {
   DlpDeepScanningVerdict dlp_verdict;
   dlp_verdict.set_status(DlpDeepScanningVerdict::FAILURE);
   DeepScanningClientResponse response;
@@ -139,7 +139,7 @@ TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulDlpScanVerdict) {
                                      kDuration, 1);
 }
 
-TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulMalwareScanVerdict) {
+TEST_P(DeepScanningUtilsUMATest, UnsuccessfulMalwareScanVerdict) {
   MalwareDeepScanningVerdict malware_verdict;
   malware_verdict.set_verdict(MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED);
   DeepScanningClientResponse response;
@@ -160,7 +160,7 @@ TEST_P(CheckClientDownloadRequestUMATest, UnsuccessfulMalwareScanVerdict) {
                                      kDuration, 1);
 }
 
-TEST_P(CheckClientDownloadRequestUMATest, BypassScanVerdict) {
+TEST_P(DeepScanningUtilsUMATest, BypassScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes,
                         "BypassedByUser", false);
 
@@ -176,7 +176,7 @@ TEST_P(CheckClientDownloadRequestUMATest, BypassScanVerdict) {
                                      kDuration, 1);
 }
 
-TEST_P(CheckClientDownloadRequestUMATest, CancelledByUser) {
+TEST_P(DeepScanningUtilsUMATest, CancelledByUser) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes,
                         "CancelledByUser", false);
 
@@ -192,7 +192,7 @@ TEST_P(CheckClientDownloadRequestUMATest, CancelledByUser) {
                                      kDuration, 1);
 }
 
-TEST_P(CheckClientDownloadRequestUMATest, InvalidDuration) {
+TEST_P(DeepScanningUtilsUMATest, InvalidDuration) {
   RecordDeepScanMetrics(access_point(), kInvalidDuration, kTotalBytes, result(),
                         DeepScanningClientResponse());
   EXPECT_EQ(

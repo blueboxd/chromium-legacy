@@ -41,6 +41,8 @@ source_set("crashpad_handler_main") {
 
 static_library("app") {
   sources = [
+    "client_upload_info.cc",
+    "client_upload_info.h",
     "crash_export_thunks.h",
     "crash_switches.cc",
     "crash_switches.h",

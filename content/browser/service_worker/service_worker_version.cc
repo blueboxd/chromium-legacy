@@ -375,13 +375,12 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
   for (const auto& controllee : controllee_map_) {
-    ServiceWorkerProviderHost* host = controllee.second;
+    ServiceWorkerContainerHost* container_host = controllee.second;
     info.clients.insert(std::make_pair(
-        host->container_host()->client_uuid(),
-        ServiceWorkerClientInfo(host->container_host()->process_id(),
-                                host->container_host()->frame_id(),
-                                host->container_host()->web_contents_getter(),
-                                host->container_host()->type())));
+        container_host->client_uuid(),
+        ServiceWorkerClientInfo(
+            container_host->process_id(), container_host->frame_id(),
+            container_host->web_contents_getter(), container_host->type())));
   }
 
   info.script_response_time = script_response_time_for_devtools_;
@@ -711,13 +710,13 @@ void ServiceWorkerVersion::RunAfterStartWorker(
 }
 
 void ServiceWorkerVersion::AddControllee(
-    ServiceWorkerProviderHost* provider_host) {
+    ServiceWorkerContainerHost* container_host) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // TODO(crbug.com/1021718): Remove this CHECK once we figure out the cause of
   // crash.
-  CHECK(provider_host);
-  const std::string& uuid = provider_host->container_host()->client_uuid();
-  CHECK(!provider_host->container_host()->client_uuid().empty());
+  CHECK(container_host);
+  const std::string& uuid = container_host->client_uuid();
+  CHECK(!container_host->client_uuid().empty());
   // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
@@ -725,7 +724,7 @@ void ServiceWorkerVersion::AddControllee(
   // invalid controller status.
   CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
 
-  controllee_map_[uuid] = provider_host;
+  controllee_map_[uuid] = container_host;
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
 
@@ -738,13 +737,12 @@ void ServiceWorkerVersion::AddControllee(
   // Notify observers asynchronously for consistency with RemoveControllee.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
-                     weak_factory_.GetWeakPtr(), uuid,
-                     ServiceWorkerClientInfo(
-                         provider_host->container_host()->process_id(),
-                         provider_host->container_host()->frame_id(),
-                         provider_host->container_host()->web_contents_getter(),
-                         provider_host->container_host()->type())));
+      base::BindOnce(
+          &ServiceWorkerVersion::NotifyControlleeAdded,
+          weak_factory_.GetWeakPtr(), uuid,
+          ServiceWorkerClientInfo(
+              container_host->process_id(), container_host->frame_id(),
+              container_host->web_contents_getter(), container_host->type())));
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
@@ -806,14 +804,20 @@ void ServiceWorkerVersion::OnControlleeDestroyed(
   }
 }
 
-void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
+void ServiceWorkerVersion::EvictBackForwardCachedControllees(
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK(IsBackForwardCacheEnabled());
   while (!bfcached_controllee_map_.empty()) {
     auto controllee = bfcached_controllee_map_.begin();
-    controllee->second->EvictFromBackForwardCache();
-    RemoveControlleeFromBackForwardCacheMap(
-        controllee->second->container_host()->client_uuid());
+    EvictBackForwardCachedControllee(controllee->second, reason);
   }
+}
+
+void ServiceWorkerVersion::EvictBackForwardCachedControllee(
+    ServiceWorkerContainerHost* controllee,
+    BackForwardCacheMetrics::NotRestoredReason reason) {
+  controllee->EvictFromBackForwardCache(reason);
+  RemoveControlleeFromBackForwardCacheMap(controllee->client_uuid());
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {
@@ -854,9 +858,9 @@ void ServiceWorkerVersion::Doom() {
   // ServiceWorkerVersion::RemoveControllee(), so be careful with iterators.
   auto iter = controllee_map_.begin();
   while (iter != controllee_map_.end()) {
-    ServiceWorkerProviderHost* host = iter->second;
+    ServiceWorkerContainerHost* container_host = iter->second;
     ++iter;
-    host->NotifyControllerLost();
+    container_host->NotifyControllerLost();
   }
   // Any controllee this version had should have removed itself.
   DCHECK(!HasControllee());
@@ -1279,7 +1283,20 @@ void ServiceWorkerVersion::PostMessageToClient(
     // The client may already have been closed, just ignore.
     return;
   }
+
   ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    // When |PostMessageToClient| is called on a client that is in bfcache,
+    // evict the bfcache entry.
+    if (container_host->IsInBackForwardCache()) {
+      EvictBackForwardCachedControllee(
+          container_host, BackForwardCacheMetrics::NotRestoredReason::
+                              kServiceWorkerPostMessage);
+      return;
+    }
+  }
+
   if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
@@ -1536,7 +1553,7 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   if (!used_features_.insert(feature).second)
     return;
   for (auto provider_host_by_uuid : controllee_map_)
-    provider_host_by_uuid.second->container_host()->CountFeature(feature);
+    provider_host_by_uuid.second->CountFeature(feature);
 }
 
 // static
@@ -2220,8 +2237,8 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
   // service workers.  The impact of foreground service workers is further
   // limited by the automatic shutdown mechanism.
   for (const auto& controllee : controllee_map_) {
-    ServiceWorkerProviderHost* host = controllee.second;
-    if (host->container_host()->process_id() != worker_process_id)
+    ServiceWorkerContainerHost* container_host = controllee.second;
+    if (container_host->process_id() != worker_process_id)
       return true;
   }
   return false;

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/url_list_manager.h"
@@ -210,7 +211,12 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
                 url, GURL(), ContentSettingsType::POPUPS, std::string()));
 }
 
-IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ManageButtonClicked) {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_ManageButtonClicked DISABLED_ManageButtonClicked
+#else
+#define MAYBE_ManageButtonClicked ManageButtonClicked
+#endif
+IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, MAYBE_ManageButtonClicked) {
 #if defined(OS_CHROMEOS)
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()

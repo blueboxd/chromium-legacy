@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -31,6 +32,21 @@ struct SameSizeAsNGPhysicalFragment
 static_assert(sizeof(NGPhysicalFragment) ==
                   sizeof(SameSizeAsNGPhysicalFragment),
               "NGPhysicalFragment should stay small");
+
+const LayoutObject* ListMarkerFromMarkerOrMarkerContent(
+    const LayoutObject* object) {
+  if (object->IsLayoutNGListMarkerIncludingInside())
+    return object;
+
+  // Check if this is a marker content.
+  if (object->IsAnonymous()) {
+    const LayoutObject* parent = object->Parent();
+    if (parent && parent->IsLayoutNGListMarkerIncludingInside())
+      return parent;
+  }
+
+  return nullptr;
+}
 
 bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
                                  base::Optional<PhysicalOffset> fragment_offset,
@@ -486,6 +502,22 @@ bool NGPhysicalFragment::ShouldPaintDragCaret() const {
   if (const auto* block = DynamicTo<LayoutBlock>(GetLayoutObject()))
     return block->ShouldPaintDragCaret();
   return false;
+}
+
+Node* NGPhysicalFragment::NodeForHitTest() const {
+  if (Node* node = layout_object_->NodeForHitTest())
+    return node;
+
+  // When the fragment is a list marker, return the list item.
+  if (const LayoutObject* marker =
+          ListMarkerFromMarkerOrMarkerContent(layout_object_)) {
+    if (const LayoutNGListItem* list_item =
+            LayoutNGListItem::FromMarker(*marker))
+      return list_item->GetNode();
+    return nullptr;
+  }
+
+  return nullptr;
 }
 
 String NGPhysicalFragment::ToString() const {

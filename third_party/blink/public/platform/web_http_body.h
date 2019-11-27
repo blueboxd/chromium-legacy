@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_BODY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_BODY_H_
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -57,7 +59,7 @@ class WebHTTPBody {
     WebString file_path;
     int64_t file_start;
     int64_t file_length;  // -1 means to the end of the file.
-    double modification_time;
+    base::Optional<base::Time> modification_time;
     WebString blob_uuid;
     uint64_t blob_length;
     mojo::ScopedMessagePipeHandle optional_blob_handle;
@@ -94,11 +96,11 @@ class WebHTTPBody {
   BLINK_PLATFORM_EXPORT void AppendData(const WebData&);
   BLINK_PLATFORM_EXPORT void AppendFile(const WebString&);
   // Passing -1 to |file_length| means to the end of the file.
-  // |modification_time| - Seconds from Unix epoch.
-  BLINK_PLATFORM_EXPORT void AppendFileRange(const WebString&,
-                                             int64_t file_start,
-                                             int64_t file_length,
-                                             double modification_time);
+  BLINK_PLATFORM_EXPORT void AppendFileRange(
+      const WebString&,
+      int64_t file_start,
+      int64_t file_length,
+      const base::Optional<base::Time>& modification_time);
   BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
   // TODO(shimazu): Remove this once Network Service is enabled.
   BLINK_PLATFORM_EXPORT void AppendBlob(

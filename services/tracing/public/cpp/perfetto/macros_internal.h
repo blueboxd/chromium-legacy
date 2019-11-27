@@ -45,7 +45,8 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 // These macros should not be called directly. They are intended to be used by
 // macros in //services/tracing/perfetto/macros.h only.
 
-#define TRACING_INTERNAL_CONCAT(a, b) a##b
+#define TRACING_INTERNAL_CONCAT2(a, b) a##b
+#define TRACING_INTERNAL_CONCAT(a, b) TRACING_INTERNAL_CONCAT2(a, b)
 #define TRACING_INTERNAL_UID(prefix) TRACING_INTERNAL_CONCAT(prefix, __LINE__)
 
 #define TRACING_INTERNAL_ADD_TRACE_EVENT(phase, category, name, ...)     \
@@ -61,6 +62,13 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 #define TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ...)          \
   struct {                                                                    \
     struct ScopedTraceEvent {                                                 \
+      /* The int parameter is an implementation detail. It allows the     */  \
+      /* anonymous struct to use aggregate initialization to invoke the   */  \
+      /* lambda to emit the begin event with the proper reference capture */  \
+      /* for any TrackEventArgumentFunction in |__VA_ARGS__|. This is     */  \
+      /* required so that the scoped event is exactly ONE line and can't  */  \
+      /* escape the scope if used in a single line if statement.          */  \
+      ScopedTraceEvent(int) {}                                                \
       ~ScopedTraceEvent() {                                                   \
         /* TODO(nuskos): Remove the empty string passed as the |name|  */     \
         /* field. As described in macros.h we shouldn't need it in our */     \
@@ -68,13 +76,6 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
         TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, "", \
                                          [](perfetto::EventContext) {});      \
       }                                                                       \
-      /* The variable |x| is an implementation detail. It allows the      */  \
-      /* anonymous struct to use aggregate initialization to invoke the   */  \
-      /* lambda to emit the begin event with the proper reference capture */  \
-      /* for any TrackEventArgumentFunction in |__VA_ARGS__|. This is     */  \
-      /* required so that the scoped event is exactly ONE line and can't  */  \
-      /* escape the scope if used in a single line if statement.          */  \
-      int x;                                                                  \
     } event;                                                                  \
   } TRACING_INTERNAL_UID(scoped_event){[&]() {                                \
     TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_BEGIN, category, name, \

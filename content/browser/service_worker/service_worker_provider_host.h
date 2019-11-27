@@ -173,44 +173,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const;
 
-  // For service worker clients. Similar to EnsureControllerServiceWorker, but
-  // this returns a bound Mojo ptr which is supposed to be sent to clients. The
-  // controller ptr passed to the clients will be used to intercept requests
-  // from them.
-  // It is invalid to call this when controller_ is null.
-  //
-  // This method can be called in one of the following cases:
-  //
-  // - During navigation, right after a request handler for the main resource
-  //   has found the matching registration and has started the worker.
-  // - When a controller is updated by UpdateController() (e.g.
-  //   by OnSkippedWaiting() or SetControllerRegistration()).
-  //   In some cases the controller worker may not be started yet.
-  //
-  // This may return nullptr if the controller service worker does not have a
-  // fetch handler, i.e. when the renderer does not need the controller ptr.
-  //
-  // WARNING:
-  // Unlike EnsureControllerServiceWorker, this method doesn't guarantee that
-  // the controller worker is running because this method can be called in some
-  // situations where the worker isn't running yet. When the returned ptr is
-  // stored somewhere and intended to use later, clients need to make sure
-  // that the worker is eventually started to use the ptr.
-  // Currently all the callsites do this, i.e. they start the worker before
-  // or after calling this, but there's no mechanism to prevent future breakage.
-  // TODO(crbug.com/827935): Figure out a way to prevent misuse of this method.
-  // TODO(crbug.com/827935): Make sure the connection error handler fires in
-  // ControllerServiceWorkerConnector (so that it can correctly call
-  // EnsureControllerServiceWorker later) if the worker gets killed before
-  // events are dispatched.
-  //
-  // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
-  // for posting messages.
-  // TODO(hayato): Return PendingRemote, instead of Remote. Binding to Remote
-  // as late as possible is more idiomatic for new Mojo types.
-  mojo::Remote<blink::mojom::ControllerServiceWorker>
-  GetRemoteControllerServiceWorker();
-
   // For service worker clients. Sets |url_|, |site_for_cookies_| and
   // |top_frame_origin_| and updates the client uuid if it's a cross-origin
   // transition.
@@ -227,15 +189,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
 
-  // For service worker window clients. Called when the navigation is ready to
-  // commit. Updates this host with information about the frame committed to.
-  // After this is called, is_response_committed() and is_execution_ready()
-  // return true.
-  void OnBeginNavigationCommit(
-      int render_process_id,
-      int render_frame_id,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
-
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
   // the worker.
@@ -245,14 +198,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
-
-  // For service worker clients that are shared workers or dedicated workers.
-  // Called when the web worker main script resource has finished loading.
-  // Updates this host with information about the worker.
-  // After this is called, is_response_committed() and is_execution_ready()
-  // return true.
-  void CompleteWebWorkerPreparation(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   // For service worker clients. The host keeps track of all the prospective
   // longest-matching registrations, in order to resolve .ready or respond to
@@ -270,11 +215,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // An optimized implementation of [[Match Service Worker Registration]]
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
-
-  // Called when our controller has been terminated and doomed due to an
-  // exceptional condition like it could no longer be read from the script
-  // cache.
-  void NotifyControllerLost();
 
   // For service worker clients. Called when |version| is the active worker upon
   // the main resource request for this client. Remembers |version| as needing
@@ -294,17 +234,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
-
-  // BackForwardCache:
-  // For service worker clients that are windows.
-  bool IsInBackForwardCache() const;
-  void EvictFromBackForwardCache();
-  // Called when this provider host's frame goes into BackForwardCache.
-  void OnEnterBackForwardCache();
-  // Called when a frame gets restored from BackForwardCache. Note that a
-  // BackForwardCached frame can be deleted while in the cache but in this case
-  // OnRestoreFromBackForwardCache will not be called.
-  void OnRestoreFromBackForwardCache();
 
   content::ServiceWorkerContainerHost* container_host() {
     return container_host_.get();
@@ -398,11 +327,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
 
-  // Callback for ServiceWorkerVersion::RunAfterStartWorker()
-  void StartControllerComplete(
-      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
-      blink::ServiceWorkerStatusCode status);
-
   bool IsValidGetRegistrationMessage(const GURL& client_url,
                                      std::string* out_error) const;
   bool IsValidGetRegistrationsMessage(std::string* out_error) const;
@@ -431,9 +355,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts. Sets the process ID of the service
   // worker execution context.
   void SetWorkerProcessId(int process_id);
-
-  void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
-  void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
 
   // Unique among all provider hosts.
   const int provider_id_;
@@ -498,23 +419,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // updated "soon". See AddServiceWorkerToUpdate() documentation.
   class PendingUpdateVersion;
   base::flat_set<PendingUpdateVersion> versions_to_update_;
-
-  // Mojo endpoint which will be be sent to the service worker just before
-  // the response is committed, where |cross_origin_embedder_policy_| is ready.
-  // We need to store this here because navigation code depends on having a
-  // mojo::Remote<ControllerServiceWorker> for making a SubresourceLoaderParams,
-  // which is created before the response header is ready.
-  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
-      pending_controller_receiver_;
-
-  // For service worker clients. The embedder policy of the client. Set on
-  // response commit.
-  base::Optional<network::mojom::CrossOriginEmbedderPolicy>
-      cross_origin_embedder_policy_;
-
-  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerProviderHost
-  // and RenderFrameHost have the same lifetime.
-  bool is_in_back_forward_cache_;
 
   // TODO(https://crbug.com/931087): Make an execution context host (e.g.,
   // RenderFrameHostImpl) own this container host.

@@ -134,7 +134,6 @@ class MediaNotificationService
 
     // content::WebContentsObserver implementation.
     void WebContentsDestroyed() override;
-    void OnWebContentsFocused(content::RenderWidgetHost*) override;
 
     // media_session::mojom::MediaControllerObserver:
     void MediaSessionInfoChanged(
@@ -163,10 +162,10 @@ class MediaNotificationService
     // called if the value has not already been set.
     void set_dismiss_reason(GlobalMediaControlsDismissReason reason);
 
-   private:
     // Called when a session is interacted with (to reset |inactive_timer_|).
     void OnSessionInteractedWith();
 
+   private:
     void StartInactiveTimer();
 
     void OnInactiveTimerFired();

@@ -8,7 +8,7 @@
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 
 // Used as substitute to MDCAppBarViewController to prevent default behavior of
-// managing accessiblity dismiss gesture itself. Usually the view controller or
+// managing accessibility dismiss gesture itself. Usually the view controller or
 // its navigation controller has logic that handles it.
 @interface ChromeAppBarViewController : MDCAppBarViewController
 @end

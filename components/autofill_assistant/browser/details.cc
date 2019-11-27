@@ -194,7 +194,7 @@ base::Value Details::GetDebugContext() const {
   if (!proto_.image_url().empty())
     dict.SetKey("image_url", base::Value(proto_.image_url()));
 
-  if (!proto_.image_accessibility_hint().empty())
+  if (proto_.has_image_accessibility_hint())
     dict.SetKey("image_accessibility_hint",
                 base::Value(proto_.image_accessibility_hint()));
 
@@ -366,8 +366,11 @@ const std::string Details::imageUrl() const {
   return proto_.image_url();
 }
 
-const std::string Details::imageAccessibilityHint() const {
-  return proto_.image_accessibility_hint();
+const base::Optional<std::string> Details::imageAccessibilityHint() const {
+  if (proto_.has_image_accessibility_hint()) {
+    return proto_.image_accessibility_hint();
+  }
+  return base::nullopt;
 }
 
 bool Details::imageAllowClickthrough() const {

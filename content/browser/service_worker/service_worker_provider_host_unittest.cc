@@ -199,7 +199,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
-    container_host->provider_host()->OnBeginNavigationCommit(
+    container_host->OnBeginNavigationCommit(
         helper_->mock_render_process_id(), 1 /* route_id */,
         network::mojom::CrossOriginEmbedderPolicy::kNone);
   }
@@ -976,7 +976,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
             provider_type, std::move(host_receiver), std::move(client_remote));
     host->UpdateUrls(url, url, url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->CompleteWebWorkerPreparation(
+    host->container_host()->CompleteWebWorkerPreparation(
         network::mojom::CrossOriginEmbedderPolicy::kNone);
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
@@ -1065,7 +1065,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
 
   container_host->provider_host()->UpdateUrls(url, url,
                                               url::Origin::Create(url));
-  container_host->provider_host()->CompleteWebWorkerPreparation(
+  container_host->CompleteWebWorkerPreparation(
       network::mojom::CrossOriginEmbedderPolicy::kNone);
 
   EXPECT_TRUE(container_host->is_response_committed());
@@ -1147,9 +1147,9 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
-    host->EnterBackForwardCacheForTesting();
+    host->container_host()->EnterBackForwardCacheForTesting();
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->LeaveBackForwardCacheForTesting();
+    host->container_host()->LeaveBackForwardCacheForTesting();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
 }

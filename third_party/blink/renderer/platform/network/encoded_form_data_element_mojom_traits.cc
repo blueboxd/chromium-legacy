@@ -101,7 +101,7 @@ base::Time StructTraits<blink::mojom::FetchAPIDataElementDataView,
                         blink::FormDataElement>::
     expected_modification_time(const blink::FormDataElement& data) {
   if (data.type_ == blink::FormDataElement::kEncodedFile)
-    return base::Time::FromDoubleT(data.expected_file_modification_time_);
+    return data.expected_file_modification_time_.value_or(base::Time());
   return base::Time();
 }
 
@@ -137,7 +137,10 @@ bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
           !data.ReadExpectedModificationTime(&expected_time)) {
         return false;
       }
-      out->expected_file_modification_time_ = expected_time.ToDoubleT();
+      if (expected_time.is_null())
+        out->expected_file_modification_time_ = base::nullopt;
+      else
+        out->expected_file_modification_time_ = expected_time;
       out->filename_ = blink::FilePathToString(file_path);
       break;
     }

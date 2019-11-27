@@ -108,6 +108,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "session restored";
     case Reason::kUnknown:
       return "unknown";
+    case Reason::kServiceWorkerPostMessage:
+      return "postMessage from service worker";
   }
 }
 

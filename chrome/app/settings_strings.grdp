@@ -3482,11 +3482,17 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SHOW_BLOCKED_NOTIFICATIONS_INDICATOR" desc="The label in notifications site settings -- a setting that enables showing a blocked indicator in the address bar when notifications are blocked for all sites. It can be set by the user or automatically set by Chrome when a user has denied notifications several times.">
     Show an indicator in the address bar when notification are blocked
   </message>
-    <message name="IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS" desc="The label in notifications site settings -- a setting that enables showing a blocked indicator in the address bar instead of the prompt, when a site requests to send notifications. It can be set by the user or automatically set by Chrome when a user has denied notifications several times.">
-    Show prompts quietly
+    <message name="IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS" desc="The label of a checkbox in the Settings page for Web Notifications, controlling how prominent UI should be used to inform the user when a site asks whether it can send notifications to the user. When the checkbox is checked, the user will see a `quieter message` (a blocked indicator in the address bar) instead of the pop-up bubble. The setting can be set by the user or automatically set by Chrome when a user has denied notifications several times.">
+    Block notification prompts from interrupting you, and use a quieter message instead
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS_DESCRIPTION" desc="The label description for 'quiet notifications' option in notifications site settings -- if a site requests to send notifications, the request will be blocked and a blocked indicator icon will appear in the address bar.">
     Sites will be blocked from asking to show you notifications. If a site requests notifications, a blocked indicator will appear in the address bar.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_BLOCK" desc="Label text shown in the Settings page when the default setting for Web Notifications is that new sites are blocked from asking the user if they can send notifications.">
+    New sites you visit can't send you notifications
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ASK" desc="Label text shown in the Settings page when the default setting for Web Notifications is that new sites can prompt the user to ask if they want to receive notifications.">
+    New sites you visit can ask to send you notifications
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DONT_SHOW_IMAGES" desc="Label for the global 'Do not show any images' toggle (category default) in site settings.">
     Do not show any images

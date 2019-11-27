@@ -28,6 +28,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_info.h"
@@ -60,6 +61,7 @@ class HttpResponseInfo;
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerInstalledScriptsSender;
 class ServiceWorkerProviderHost;
@@ -362,7 +364,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Adds and removes the specified host as a controllee of this service worker.
-  void AddControllee(ServiceWorkerProviderHost* provider_host);
+  void AddControllee(ServiceWorkerContainerHost* container_host);
   void RemoveControllee(const std::string& client_uuid);
 
   // Called when a controllee goes into back-forward cache.
@@ -379,7 +381,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Note regarding BackForwardCache:
   // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
-  std::map<std::string, ServiceWorkerProviderHost*> controllee_map() {
+  std::map<std::string, ServiceWorkerContainerHost*> controllee_map() {
     return controllee_map_;
   }
 
@@ -387,7 +389,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Evicts all the controllees from back-forward cache. The controllees in
   // |bfcached_controllee_map_| will be removed asynchronously as a result of
   // eviction.
-  void EvictBackForwardCachedControllees();
+  void EvictBackForwardCachedControllees(
+      BackForwardCacheMetrics::NotRestoredReason reason);
+  void EvictBackForwardCachedControllee(
+      ServiceWorkerContainerHost* controllee,
+      BackForwardCacheMetrics::NotRestoredReason reason);
 
   // The provider host hosting this version. Only valid while the version is
   // running.
@@ -931,8 +937,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
   // controllee.
-  std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
-  std::map<std::string, ServiceWorkerProviderHost*> bfcached_controllee_map_;
+  std::map<std::string, ServiceWorkerContainerHost*> controllee_map_;
+  std::map<std::string, ServiceWorkerContainerHost*> bfcached_controllee_map_;
 
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;

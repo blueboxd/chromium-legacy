@@ -320,46 +320,44 @@ void NavigateClientOnUI(const GURL& url,
 }
 
 void AddWindowClient(
-    ServiceWorkerProviderHost* host,
+    ServiceWorkerContainerHost* container_host,
     std::vector<std::tuple<int, int, base::TimeTicks, std::string>>*
         client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (host->container_host()->client_type() !=
+  if (container_host->client_type() !=
       blink::mojom::ServiceWorkerClientType::kWindow) {
     return;
   }
-  if (!host->container_host()->is_execution_ready())
+  if (!container_host->is_execution_ready())
     return;
   client_info->push_back(std::make_tuple(
-      host->container_host()->process_id(), host->container_host()->frame_id(),
-      host->container_host()->create_time(),
-      host->container_host()->client_uuid()));
+      container_host->process_id(), container_host->frame_id(),
+      container_host->create_time(), container_host->client_uuid()));
 }
 
-void AddNonWindowClient(ServiceWorkerProviderHost* host,
+void AddNonWindowClient(ServiceWorkerContainerHost* container_host,
                         blink::mojom::ServiceWorkerClientType client_type,
                         ServiceWorkerClientPtrs* out_clients) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   blink::mojom::ServiceWorkerClientType host_client_type =
-      host->container_host()->client_type();
+      container_host->client_type();
   if (host_client_type == blink::mojom::ServiceWorkerClientType::kWindow)
     return;
   if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
       client_type != host_client_type)
     return;
-  if (!host->container_host()->is_execution_ready())
+  if (!container_host->is_execution_ready())
     return;
 
   // TODO(dtapuska): Need to get frozen state for dedicated workers from
   // DedicatedWorkerHost. crbug.com/968417
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      host->container_host()->url(),
-      network::mojom::RequestContextFrameType::kNone,
-      host->container_host()->client_uuid(), host_client_type,
+      container_host->url(), network::mojom::RequestContextFrameType::kNone,
+      container_host->client_uuid(), host_client_type,
       /*page_hidden=*/true,
       /*is_focused=*/false,
       blink::mojom::ServiceWorkerClientLifecycleState::kActive,
-      base::TimeTicks(), host->container_host()->create_time());
+      base::TimeTicks(), container_host->create_time());
   out_clients->push_back(std::move(client_info));
 }
 
@@ -444,8 +442,8 @@ void GetNonWindowClients(
     for (auto it = controller->context()->GetClientProviderHostIterator(
              origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      AddNonWindowClient(it->GetProviderHost(), options->client_type,
-                         clients.get());
+      AddNonWindowClient(it->GetProviderHost()->container_host(),
+                         options->client_type, clients.get());
     }
   }
   DidGetClients(std::move(callback), std::move(clients));
@@ -483,7 +481,7 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
     for (auto it = controller->context()->GetClientProviderHostIterator(
              origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      AddWindowClient(it->GetProviderHost(), &clients_info);
+      AddWindowClient(it->GetProviderHost()->container_host(), &clients_info);
     }
   }
 

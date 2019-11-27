@@ -1168,7 +1168,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
   host->UpdateUrls(kScope, kScope, url::Origin::Create(kScope));
-  version->AddControllee(host.get());
+  version->AddControllee(host->container_host());
 
   // Initially set |self_update_delay| to zero.
   registration->set_self_update_delay(base::TimeDelta());

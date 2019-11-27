@@ -1246,7 +1246,7 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SCANNER_TORCH_BUTTON_ACCESSIBILITY_LABEL" desc="Accessibility label for the button to turn torch on and off in the Scanner. The current state of the button is communicated using the accessibility value. [Length: unlimited] [iOS only]"  meaning="The button to turn on and off the torch. [20em] [Read by Text-to-Speech]">
         Torch
       </message>
-      <message name="IDS_IOS_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE" desc="Accessiblity value of the button to turn torch on in the Scanner. The button communicates that the torch is current off. [Length: unlimited] [iOS only]" meaning="The user will put off the torch [20em] [Read by Text-to-Speech]">
+      <message name="IDS_IOS_SCANNER_TORCH_OFF_ACCESSIBILITY_VALUE" desc="Accessibility value of the button to turn torch on in the Scanner. The button communicates that the torch is current off. [Length: unlimited] [iOS only]" meaning="The user will put off the torch [20em] [Read by Text-to-Speech]">
         Off
       </message>
       <message name="IDS_IOS_SCANNER_TORCH_ON_ACCESSIBILITY_VALUE" desc="Accessibility value of the button to turn torch off in the Scanner. The button communicates that the torch is currently on. [Length: unlimited] [iOS only]" meaning="The user will put on the torch [20em] [Read by Text-to-Speech]">

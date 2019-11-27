@@ -20,7 +20,8 @@ class COMPONENT_EXPORT(CHROMEOS_SETTINGS) CrosSettingsProvider {
  public:
   // The callback type that is called to notify the CrosSettings observers
   // about a setting change.
-  typedef base::Callback<void(const std::string&)> NotifyObserversCallback;
+  using NotifyObserversCallback =
+      base::RepeatingCallback<void(const std::string&)>;
 
   // Possible results of a trusted check.
   enum TrustedStatus {
@@ -50,8 +51,7 @@ class COMPONENT_EXPORT(CHROMEOS_SETTINGS) CrosSettingsProvider {
   // TEMPORARILY_UNTRUSTED, and |callback| will be invoked later when trusted
   // values become available, PrepareTrustedValues() should be tried again in
   // that case. Returns PERMANENTLY_UNTRUSTED if a permanent error has occurred.
-  virtual TrustedStatus PrepareTrustedValues(
-      const base::Closure& callback) = 0;
+  virtual TrustedStatus PrepareTrustedValues(base::OnceClosure callback) = 0;
 
   // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;

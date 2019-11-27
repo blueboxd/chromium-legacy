@@ -8,7 +8,6 @@
 #include <sstream>
 
 #include "base/strings/stringprintf.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 
 namespace media {
@@ -62,19 +61,25 @@ std::string ImageProcessor::PortConfig::ToString() const {
       VectorToString(preferred_storage_types).c_str());
 }
 
-ImageProcessor::ImageProcessor(const ImageProcessor::PortConfig& input_config,
-                               const ImageProcessor::PortConfig& output_config,
-                               OutputMode output_mode)
+ImageProcessor::ImageProcessor(
+    const ImageProcessor::PortConfig& input_config,
+    const ImageProcessor::PortConfig& output_config,
+    OutputMode output_mode,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner)
     : input_config_(input_config),
       output_config_(output_config),
-      output_mode_(output_mode) {}
+      output_mode_(output_mode),
+      client_task_runner_(std::move(client_task_runner)) {
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
+}
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                              LegacyFrameReadyCB cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK_EQ(output_mode(), OutputMode::ALLOCATE);
 
-  return ProcessInternal(std::move(frame), BindToCurrentLoop(std::move(cb)));
+  return ProcessInternal(std::move(frame), std::move(cb));
 }
 
 bool ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> frame,
@@ -87,10 +92,11 @@ bool ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> frame,
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
                              scoped_refptr<VideoFrame> output_frame,
                              FrameReadyCB cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK_EQ(output_mode(), OutputMode::IMPORT);
 
   return ProcessInternal(std::move(input_frame), std::move(output_frame),
-                         BindToCurrentLoop(std::move(cb)));
+                         std::move(cb));
 }
 
 }  // namespace media

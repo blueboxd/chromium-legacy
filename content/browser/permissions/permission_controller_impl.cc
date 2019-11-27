@@ -41,9 +41,6 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::VIDEO_CAPTURE:
       return blink::scheduler::WebSchedulerTrackedFeature::
           kRequestedVideoCapturePermission;
-    case PermissionType::SENSORS:
-      return blink::scheduler::WebSchedulerTrackedFeature::
-          kRequestedSensorsPermission;
     case PermissionType::BACKGROUND_SYNC:
     case PermissionType::BACKGROUND_FETCH:
     case PermissionType::PERIODIC_BACKGROUND_SYNC:
@@ -61,6 +58,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::WAKE_LOCK_SYSTEM:
     case PermissionType::NFC:
     case PermissionType::NUM:
+    case PermissionType::SENSORS:
       return base::nullopt;
   }
 }

@@ -314,13 +314,17 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Don't close the bubble if the message center is gaining activation.
+  // Don't close the bubble if the message center is gaining or losing
+  // activation.
   if (features::IsUnifiedMessageCenterRefactorEnabled() &&
       tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==
-        views::Widget::GetWidgetForNativeView(gained_active)) {
+            views::Widget::GetWidgetForNativeView(gained_active) ||
+        (lost_active &&
+         message_center_widget ==
+             views::Widget::GetWidgetForNativeView(lost_active))) {
       return;
     }
   }

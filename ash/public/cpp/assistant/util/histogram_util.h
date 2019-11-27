@@ -40,7 +40,8 @@ enum class ProactiveSuggestionsShowResult {
   kCloseByContextChange = 1,
   kCloseByTimeout = 2,
   kCloseByUser = 3,
-  kMaxValue = kCloseByUser,
+  kTeleport = 4,
+  kMaxValue = kTeleport,
 };
 
 // Records a click on a proactive suggestions card. If provided, the opaque

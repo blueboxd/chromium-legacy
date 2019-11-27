@@ -964,8 +964,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return back_forward_cache_disabled_reasons_;
   }
 
-  void AddServiceWorkerProviderHost(ServiceWorkerProviderHost* host);
-  void RemoveServiceWorkerProviderHost(ServiceWorkerProviderHost* host);
+  void AddServiceWorkerContainerHost(ServiceWorkerContainerHost* host);
+  void RemoveServiceWorkerContainerHost(ServiceWorkerContainerHost* host);
 
   // Called to taint |this| so the pages which have requested MediaStream
   // (audio/video/etc capture stream) access would not enter BackForwardCache.
@@ -2519,13 +2519,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
 
-  // Keep the list of ServiceWorkerProviderHosts so that they can observe when
+  // Keep the list of ServiceWorkerContainerHosts so that they can observe when
   // the frame goes in/out of BackForwardCache.
   // TODO(yuzus): Make this a single pointer. A frame should only have a single
-  // provider host, but probably during a navigation the old provider host is
-  // still alive when the new provider host is created and added to this vector,
-  // and the old provider host is destroyed shortly after navigation.
-  std::vector<ServiceWorkerProviderHost*> service_worker_provider_hosts_;
+  // container host, but probably during a navigation the old container host is
+  // still alive when the new container host is created and added to this
+  // vector, and the old container host is destroyed shortly after navigation.
+  std::vector<ServiceWorkerContainerHost*> service_worker_container_hosts_;
 
   // The reason why the last attempted navigation in the frame didn't use a new
   // BrowsingInstance.

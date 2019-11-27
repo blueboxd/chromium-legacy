@@ -134,7 +134,8 @@
       "extensions": ["*"]
     },
     "open": {
-      "extensions": ["*"]
+      "extensions": ["*"],
+      "include_directories": true
     }
   },
   // Required to import scripts in a web worker. Note, that in Apps v2, it is

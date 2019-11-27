@@ -11,7 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "media/base/video_frame.h"
@@ -32,9 +35,11 @@ enum class VaIPFailure {
   kMaxValue = kVaapiVppError,
 };
 
-void ReportToUMA(base::RepeatingClosure error_cb, VaIPFailure failure) {
+void ReportToUMA(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 base::RepeatingClosure error_cb,
+                 VaIPFailure failure) {
   base::UmaHistogramEnumeration("Media.VAIP.VppFailure", failure);
-  error_cb.Run();
+  task_runner->PostTask(FROM_HERE, error_cb);
 }
 
 bool IsSupported(uint32_t input_va_fourcc,
@@ -66,26 +71,6 @@ bool IsSupported(uint32_t input_va_fourcc,
   return true;
 }
 
-void ProcessTask(scoped_refptr<VideoFrame> input_frame,
-                 scoped_refptr<VideoFrame> output_frame,
-                 ImageProcessor::FrameReadyCB cb,
-                 scoped_refptr<VaapiWrapper> vaapi_wrapper) {
-  DVLOGF(4);
-
-  auto src_va_surface =
-      vaapi_wrapper->CreateVASurfaceForVideoFrame(input_frame.get());
-  auto dst_va_surface =
-      vaapi_wrapper->CreateVASurfaceForVideoFrame(output_frame.get());
-  if (!src_va_surface || !dst_va_surface) {
-    // Failed to create VASurface for frames. |cb| isn't executed in the case.
-    return;
-  }
-  // VA-API performs pixel format conversion and scaling without any filters.
-  vaapi_wrapper->BlitSurface(std::move(src_va_surface),
-                             std::move(dst_va_surface));
-  std::move(cb).Run(std::move(output_frame));
-}
-
 }  // namespace
 
 // static
@@ -93,6 +78,7 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     const base::RepeatingClosure& error_cb) {
 // VaapiImageProcessor supports ChromeOS only.
 #if !defined(OS_CHROMEOS)
@@ -129,7 +115,8 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
 
   auto vaapi_wrapper = VaapiWrapper::Create(
       VaapiWrapper::kVideoProcess, VAProfileNone,
-      base::BindRepeating(&ReportToUMA, error_cb, VaIPFailure::kVaapiVppError));
+      base::BindRepeating(&ReportToUMA, client_task_runner, error_cb,
+                          VaIPFailure::kVaapiVppError));
   if (!vaapi_wrapper) {
     VLOGF(1) << "Failed to create VaapiWrapper";
     return nullptr;
@@ -149,18 +136,26 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
   // GetPlatformVideoFrameLayout() with a proper gfx::BufferUsage.
   // TODO(crbug.com/898423): Adjust layout once ImageProcessor provide the use
   // scenario.
-  return base::WrapUnique(new VaapiImageProcessor(input_config, output_config,
-                                                  std::move(vaapi_wrapper)));
+  return base::WrapUnique(new VaapiImageProcessor(
+      input_config, output_config, std::move(vaapi_wrapper),
+      std::move(client_task_runner)));
 }
 
 VaapiImageProcessor::VaapiImageProcessor(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
-    scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : ImageProcessor(input_config, output_config, OutputMode::IMPORT),
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner)
+    : ImageProcessor(input_config,
+                     output_config,
+                     OutputMode::IMPORT,
+                     std::move(client_task_runner)),
       processor_task_runner_(base::CreateSequencedTaskRunner(
           base::TaskTraits{base::ThreadPool()})),
-      vaapi_wrapper_(std::move(vaapi_wrapper)) {}
+      vaapi_wrapper_(std::move(vaapi_wrapper)) {
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
+  DETACH_FROM_SEQUENCE(processor_sequence_checker_);
+}
 
 VaapiImageProcessor::~VaapiImageProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
@@ -218,16 +213,40 @@ bool VaapiImageProcessor::ProcessInternal(
     return false;
   }
 
+  // TODO(akahuang): Use WeakPtr to replace base::Unretained(this).
   process_task_tracker_.PostTask(
       processor_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ProcessTask, std::move(input_frame),
-                     std::move(output_frame), std::move(cb), vaapi_wrapper_));
+      base::BindOnce(&VaapiImageProcessor::ProcessTask, base::Unretained(this),
+                     std::move(input_frame), std::move(output_frame),
+                     std::move(cb)));
   return true;
+}
+
+void VaapiImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
+                                      scoped_refptr<VideoFrame> output_frame,
+                                      FrameReadyCB cb) {
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(processor_sequence_checker_);
+
+  auto src_va_surface =
+      vaapi_wrapper_->CreateVASurfaceForVideoFrame(input_frame.get());
+  auto dst_va_surface =
+      vaapi_wrapper_->CreateVASurfaceForVideoFrame(output_frame.get());
+  if (!src_va_surface || !dst_va_surface) {
+    // Failed to create VASurface for frames. |cb| isn't executed in the case.
+    return;
+  }
+  // VA-API performs pixel format conversion and scaling without any filters.
+  vaapi_wrapper_->BlitSurface(std::move(src_va_surface),
+                              std::move(dst_va_surface));
+  client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), std::move(output_frame)));
 }
 
 bool VaapiImageProcessor::Reset() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   process_task_tracker_.TryCancelAll();
   return true;
 }

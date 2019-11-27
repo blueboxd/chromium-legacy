@@ -98,6 +98,11 @@ extern const char kCollectionsCardPresentationStyleDescription[];
 extern const char kConfirmInfobarMessagesUIName[];
 extern const char kConfirmInfobarMessagesUIDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// Crash Restore Infobars.
+extern const char kCrashRestoreInfobarMessagesUIName[];
+extern const char kCrashRestoreInfobarMessagesUIDescription[];
+
 // Title and description for the flag to scan a new credit card using the
 // camera.
 extern const char kCreditCardScannerName[];

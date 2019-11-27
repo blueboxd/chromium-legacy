@@ -72,7 +72,7 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
   result.file_path.Reset();
   result.file_start = 0;
   result.file_length = 0;
-  result.modification_time = InvalidFileTime();
+  result.modification_time = base::nullopt;
   result.blob_uuid.Reset();
 
   switch (element.type_) {
@@ -126,10 +126,11 @@ void WebHTTPBody::AppendFile(const WebString& file_path) {
   private_->AppendFile(file_path);
 }
 
-void WebHTTPBody::AppendFileRange(const WebString& file_path,
-                                  int64_t file_start,
-                                  int64_t file_length,
-                                  double modification_time) {
+void WebHTTPBody::AppendFileRange(
+    const WebString& file_path,
+    int64_t file_start,
+    int64_t file_length,
+    const base::Optional<base::Time>& modification_time) {
   EnsureMutable();
   private_->AppendFileRange(file_path, file_start, file_length,
                             modification_time);

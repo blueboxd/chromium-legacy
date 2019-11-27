@@ -36,6 +36,26 @@ testcase.fileDisplayDownloads = () => {
 };
 
 /**
+ * Tests opening the files app navigating to the Downloads folder. Uses
+ * platform_util::OpenItem, a call to an API distinct from the one commonly used
+ * in other tests for the same operation.
+ */
+testcase.fileDisplayLaunchOnDownloads = async () => {
+  // Open Files app on the Downloads directory.
+  await sendTestMessage({name: 'launchAppOnDownloads'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Check: the Downloads folder should be selected.
+  await remoteCall.waitForElement(appId, 'li[file-name="Downloads"][selected]');
+
+  // The API used to launch the Files app does not set the IN_TEST flag to true:
+  // error when attempting to retrieve Web Store access token.
+  return IGNORE_APP_ERRORS;
+};
+
+/**
  * Tests files display in Google Drive.
  */
 testcase.fileDisplayDrive = () => {

@@ -40,10 +40,11 @@ bool FormDataElement::IsSafeToSendToAnotherThread() const {
          blob_uuid_.IsSafeToSendToAnotherThread();
 }
 
-FormDataElement::FormDataElement(const String& filename,
-                                 int64_t file_start,
-                                 int64_t file_length,
-                                 double expected_file_modification_time)
+FormDataElement::FormDataElement(
+    const String& filename,
+    int64_t file_start,
+    int64_t file_length,
+    const base::Optional<base::Time>& expected_file_modification_time)
     : type_(kEncodedFile),
       filename_(filename),
       file_start_(file_start),
@@ -176,13 +177,14 @@ void EncodedFormData::AppendData(const void* data, wtf_size_t size) {
 
 void EncodedFormData::AppendFile(const String& filename) {
   elements_.push_back(
-      FormDataElement(filename, 0, BlobData::kToEndOfFile, InvalidFileTime()));
+      FormDataElement(filename, 0, BlobData::kToEndOfFile, base::nullopt));
 }
 
-void EncodedFormData::AppendFileRange(const String& filename,
-                                      int64_t start,
-                                      int64_t length,
-                                      double expected_modification_time) {
+void EncodedFormData::AppendFileRange(
+    const String& filename,
+    int64_t start,
+    int64_t length,
+    const base::Optional<base::Time>& expected_modification_time) {
   elements_.push_back(
       FormDataElement(filename, start, length, expected_modification_time));
 }

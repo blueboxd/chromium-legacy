@@ -16,13 +16,15 @@
 namespace chromecast {
 namespace media {
 
-// Provides a flat reduction in output volume if the input volume is above a
+// Provides linear reduction in output volume if the input volume is above a
 // given threshold.
 // Used to protect speakers at high output levels while providing dynamic range
 // at low output level.
 // The configuration string for this plugin is:
 //  {"onset_volume": |VOLUME_TO_CLAMP|, "clamp_multiplier": |CLAMP_MULTIPLIER|}
-// Input volumes > |VOLUME_TO_CLAMP| will be attenuated by |CLAMP_MULTIPLIER|.
+// Input volumes > |VOLUME_TO_CLAMP| will be attenuated by linear approximation,
+// changing from 0 (at VOLUME_TO_CLAMP) to |CLAMP_MULTIPLIER| (at 1.0).
+// |CLAMP_MULTIPLIER| must be >= |VOLUME_TO_CLAMP|.
 class Governor : public AudioPostProcessor2 {
  public:
   Governor(const std::string& config, int input_channels);

@@ -4947,9 +4947,10 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="Scheduler tracked feature used"/>
   <int value="20" label="Conflicting BrowsingInstance"/>
   <int value="21" label="Cache flushed"/>
-  <int value="22" label="Service worker version activation"/>
+  <int value="22" label="ServiceWorker version activation"/>
   <int value="23" label="Session restored"/>
   <int value="24" label="Unknown (should not be happening)"/>
+  <int value="25" label="ServiceWorker postMessage"/>
 </enum>
 
 <enum name="BackForwardNavigationType">
@@ -21435,6 +21436,7 @@ Called by update_net_error_codes.py.-->
   <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
   <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
   <int value="1418" label="AUTOTESTPRIVATE_INSTALLPLUGINVM"/>
+  <int value="1419" label="CRASHREPORTPRIVATE_REPORTERROR"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -21988,6 +21990,7 @@ Called by update_net_error_codes.py.-->
   <int value="222" label="kLoginState"/>
   <int value="223" label="kPrintingMetrics"/>
   <int value="224" label="kPrinting"/>
+  <int value="225" label="kCrashReportPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -51262,6 +51265,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="kCloseByContextChange"/>
   <int value="2" label="kCloseByTimeout"/>
   <int value="3" label="kCloseByUser"/>
+  <int value="4" label="kTeleport"/>
 </enum>
 
 <enum name="ProactiveSuggestionsVeId">
@@ -65155,7 +65159,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="App uninstalled during update"/>
   <int value="4" label="App is placeholder"/>
   <int value="5" label="App is up to date"/>
-  <int value="6" label="App manifest invalid"/>
+  <int value="6" label="App not eligible"/>
   <int value="7" label="App update failed"/>
   <int value="8" label="App updated"/>
 </enum>

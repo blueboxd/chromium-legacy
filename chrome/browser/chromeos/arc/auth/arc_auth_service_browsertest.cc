@@ -1032,4 +1032,19 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       RegularUserSecondaryAccountsArePropagated) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(kSecondaryAccountEmail);
+  EXPECT_EQ(2, auth_instance().num_account_upserted_calls());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       ChildUserSecondaryAccountsNotPropagated) {
+  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
+  SeedAccountInfo(kSecondaryAccountEmail);
+  EXPECT_TRUE(profile()->IsChild());
+  EXPECT_EQ(1, auth_instance().num_account_upserted_calls());
+}
+
 }  // namespace arc

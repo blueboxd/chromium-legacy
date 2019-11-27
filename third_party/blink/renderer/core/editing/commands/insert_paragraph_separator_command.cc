@@ -216,7 +216,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       CreateVisiblePosition(insertion_position).DeepEquivalent();
   if (!start_block || !start_block->NonShadowBoundaryParentNode() ||
       IsTableCell(start_block) ||
-      IsHTMLFormElement(*start_block)
+      IsA<HTMLFormElement>(*start_block)
       // FIXME: If the node is hidden, we don't have a canonical position so we
       // will do the wrong thing for tables and <hr>.
       // https://bugs.webkit.org/show_bug.cgi?id=40342
@@ -305,8 +305,8 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       // then don't want the newline within the blockquote or else it will also
       // be quoted.
       if (paste_blockquote_into_unquoted_area_) {
-        if (HTMLQuoteElement* highest_blockquote =
-                ToHTMLQuoteElement(HighestEnclosingNodeOfType(
+        if (auto* highest_blockquote =
+                To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
                     canonical_pos, &IsMailHTMLBlockquoteElement)))
           start_block = highest_blockquote;
       }

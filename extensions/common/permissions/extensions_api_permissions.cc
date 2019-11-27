@@ -44,6 +44,7 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagSupportsContentCapabilities},
     {APIPermission::kClipboardWrite, "clipboardWrite",
      APIPermissionInfo::kFlagSupportsContentCapabilities},
+    {APIPermission::kCrashReportPrivate, "crashReportPrivate"},
     {APIPermission::kDeclarativeWebRequest, "declarativeWebRequest"},
     {APIPermission::kDiagnostics, "diagnostics",
      APIPermissionInfo::kFlagCannotBeOptional},

@@ -4,7 +4,6 @@
 
 #include "extensions/shell/test/shell_apitest.h"
 
-#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/notification_service.h"
@@ -28,6 +27,11 @@ const Extension* ShellApiTest::LoadExtension(const std::string& extension_dir) {
   base::PathService::Get(extensions::DIR_TEST_DATA, &test_data_dir);
   base::FilePath extension_path = test_data_dir.AppendASCII(extension_dir);
 
+  return extension_system_->LoadExtension(extension_path);
+}
+
+const Extension* ShellApiTest::LoadExtension(
+    const base::FilePath& extension_path) {
   return extension_system_->LoadExtension(extension_path);
 }
 

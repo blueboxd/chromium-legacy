@@ -46,6 +46,7 @@ void PaymentHandlerUtils::ReportResponseError(
     case ServiceWorkerResponseError::kDataPipeCreationFailed:
     case ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin:
     case ServiceWorkerResponseError::kResponseBodyBroken:
+    case ServiceWorkerResponseError::kDisallowedByCorp:
       NOTREACHED();
       error_message = error_message + "an unexpected error occurred.";
       break;

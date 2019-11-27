@@ -33,7 +33,7 @@ def PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision):
     content = f.read()
   m = re.search("CLANG_REVISION = '([0-9a-f]+)'", content)
   clang_old_git_revision = m.group(1)
-  m = re.search("CLANG_SVN_REVISION = '([0-9]+)'", content)
+  m = re.search("CLANG_SVN_REVISION = '(n[0-9]+)'", content)
   clang_old_svn_revision = m.group(1)
   m = re.search("CLANG_SUB_REVISION = ([0-9]+)", content)
   clang_old_sub_revision = m.group(1)
@@ -41,7 +41,7 @@ def PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision):
   content = re.sub("CLANG_REVISION = '[0-9a-f]+'",
                    "CLANG_REVISION = '{}'".format(clang_git_revision),
                    content, count=1)
-  content = re.sub("CLANG_SVN_REVISION = '[0-9]+'",
+  content = re.sub("CLANG_SVN_REVISION = 'n[0-9]+'",
                    "CLANG_SVN_REVISION = '{}'".format(clang_svn_revision),
                    content, count=1)
   content = re.sub("CLANG_SUB_REVISION = [0-9]+",

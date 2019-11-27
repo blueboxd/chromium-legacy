@@ -755,6 +755,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline bool IsBeforeContent() const;
   inline bool IsAfterContent() const;
+  inline bool IsMarkerContent() const;
   inline bool IsBeforeOrAfterContent() const;
   static inline bool IsAfterContent(const LayoutObject* obj) {
     return obj && obj->IsAfterContent();
@@ -3266,6 +3267,15 @@ inline bool LayoutObject::IsBeforeContent() const {
 
 inline bool LayoutObject::IsAfterContent() const {
   if (StyleRef().StyleType() != kPseudoIdAfter)
+    return false;
+  // Text nodes don't have their own styles, so ignore the style on a text node.
+  if (IsText() && !IsBR())
+    return false;
+  return true;
+}
+
+inline bool LayoutObject::IsMarkerContent() const {
+  if (StyleRef().StyleType() != kPseudoIdMarker)
     return false;
   // Text nodes don't have their own styles, so ignore the style on a text node.
   if (IsText() && !IsBR())

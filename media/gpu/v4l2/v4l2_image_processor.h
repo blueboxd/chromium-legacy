@@ -38,6 +38,24 @@ namespace media {
 // hardware accelerators (see V4L2VideoDecodeAccelerator) for more details.
 class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
  public:
+  // Factory method to create V4L2ImageProcessor to convert from
+  // input_config to output_config. The number of input buffers and output
+  // buffers will be |num_buffers|. Provided |error_cb| will be posted to the
+  // same thread Create() is called if an error occurs after initialization.
+  // Returns nullptr if V4L2ImageProcessor fails to create.
+  // Note: output_mode will be removed once all its clients use import mode.
+  // TODO(crbug.com/917798): remove |device| parameter once
+  //     V4L2VideoDecodeAccelerator no longer creates and uses
+  //     |image_processor_device_| before V4L2ImageProcessor is created.
+  static std::unique_ptr<V4L2ImageProcessor> Create(
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      scoped_refptr<V4L2Device> device,
+      const ImageProcessor::PortConfig& input_config,
+      const ImageProcessor::PortConfig& output_config,
+      const ImageProcessor::OutputMode output_mode,
+      size_t num_buffers,
+      ErrorCB error_cb);
+
   // ImageProcessor implementation.
   ~V4L2ImageProcessor() override;
   bool Reset() override;
@@ -61,23 +79,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
                               const gfx::Size& input_size,
                               gfx::Size* output_size,
                               size_t* num_planes);
-
-  // Factory method to create V4L2ImageProcessor to convert from
-  // input_config to output_config. The number of input buffers and output
-  // buffers will be |num_buffers|. Provided |error_cb| will be posted to the
-  // same thread Create() is called if an error occurs after initialization.
-  // Returns nullptr if V4L2ImageProcessor fails to create.
-  // Note: output_mode will be removed once all its clients use import mode.
-  // TODO(crbug.com/917798): remove |device| parameter once
-  //     V4L2VideoDecodeAccelerator no longer creates and uses
-  //     |image_processor_device_| before V4L2ImageProcessor is created.
-  static std::unique_ptr<V4L2ImageProcessor> Create(
-      scoped_refptr<V4L2Device> device,
-      const ImageProcessor::PortConfig& input_config,
-      const ImageProcessor::PortConfig& output_config,
-      const ImageProcessor::OutputMode output_mode,
-      size_t num_buffers,
-      ErrorCB error_cb);
 
  private:
   // Job record. Jobs are processed in a FIFO order. |input_frame| will be
@@ -160,8 +161,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
 
-  // Sequence to communicate with the client.
-  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   // Sequence to communicate with the V4L2 device.
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
   // Thread used to poll the V4L2 for events only.
@@ -186,8 +185,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Error callback to the client.
   ErrorCB error_cb_;
 
-  // Checker for the sequence that creates this V4L2ImageProcessor.
-  SEQUENCE_CHECKER(client_sequence_checker_);
   // Checker for the device thread owned by this V4L2ImageProcessor.
   SEQUENCE_CHECKER(device_sequence_checker_);
   // Checker for the device thread owned by this V4L2ImageProcessor.

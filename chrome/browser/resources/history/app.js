@@ -63,10 +63,8 @@ cr.define('history', function() {
         anchor = /** @type {!HTMLAnchorElement} */ (anchor);
         if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
             (e.button == 0 || e.button == 1)) {
-          chrome.send('navigateToUrl', [
-            anchor.href, anchor.target, e.button, e.altKey, e.ctrlKey,
-            e.metaKey, e.shiftKey
-          ]);
+          history.BrowserService.getInstance().navigateToUrl(
+              anchor.href, anchor.target, /** @type {!MouseEvent} */ (e));
           e.preventDefault();
         }
       });
@@ -180,9 +178,8 @@ Polymer({
 
   onFirstRender: function() {
     setTimeout(function() {
-      chrome.send(
-          'metricsHandler:recordTime',
-          ['History.ResultsRenderedTime', window.performance.now()]);
+      history.BrowserService.getInstance().recordTime(
+          'History.ResultsRenderedTime', window.performance.now());
     });
 
     // Focus the search field on load. Done here to ensure the history page

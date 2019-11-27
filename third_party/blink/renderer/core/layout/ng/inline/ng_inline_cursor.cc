@@ -1011,6 +1011,51 @@ void NGInlineCursor::MoveToPreviousSiblingPaintFragment() {
   NOTREACHED();
 }
 
+NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor) {
+  DCHECK(cursor);
+  if (cursor.root_paint_fragment_) {
+    for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
+      sibling_paint_fragments_.push_back(sibling.CurrentPaintFragment());
+    current_index_ = sibling_paint_fragments_.size();
+    if (current_index_)
+      current_paint_fragment_ = sibling_paint_fragments_[--current_index_];
+    return;
+  }
+  if (cursor.IsItemCursor()) {
+    for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
+      sibling_item_iterators_.push_back(sibling.item_iter_);
+    current_index_ = sibling_item_iterators_.size();
+    if (current_index_)
+      current_item_ = sibling_item_iterators_[--current_index_]->get();
+    return;
+  }
+  NOTREACHED();
+}
+
+NGInlineCursor NGInlineBackwardCursor::CursorForDescendants() const {
+  if (const NGPaintFragment* current_paint_fragment = CurrentPaintFragment())
+    return NGInlineCursor(*current_paint_fragment);
+  // TODO(kojii): Implement for items.
+  NOTREACHED();
+  return NGInlineCursor();
+}
+
+void NGInlineBackwardCursor::MoveToPreviousSibling() {
+  if (current_index_) {
+    if (current_paint_fragment_) {
+      current_paint_fragment_ = sibling_paint_fragments_[--current_index_];
+      return;
+    }
+    if (current_item_) {
+      current_item_ = sibling_item_iterators_[--current_index_]->get();
+      return;
+    }
+    NOTREACHED();
+  }
+  current_paint_fragment_ = nullptr;
+  current_item_ = nullptr;
+}
+
 std::ostream& operator<<(std::ostream& ostream, const NGInlineCursor& cursor) {
   if (cursor.IsNull())
     return ostream << "NGInlineCursor()";

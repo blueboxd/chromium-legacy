@@ -407,6 +407,19 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
 
 void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
   DCHECK_EQ(store_, store);
+
+  if (enrollment_step_ < STEP_STORE_POLICY) {
+    // At those steps it is not expected to have any error notifications from
+    // |store_| since they are not initiated by enrollment handler and stored
+    // policies are not in a consistent state (e.g. a late response from
+    // |store_| loaded at boot). So the notification is ignored.
+    // Notifications are only expected starting STEP_STORE_POLICY
+    // when OnDeviceAccountTokenStored() is called.
+    LOG(WARNING) << "Unexpected store error with status: " << store->status()
+                 << " at step: " << enrollment_step_;
+    return;
+  }
+
   LOG(ERROR) << "Error in device policy store.";
   ReportResult(EnrollmentStatus::ForStoreError(store_->status(),
                                                store_->validation_status()));

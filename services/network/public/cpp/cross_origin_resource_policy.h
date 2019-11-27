@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_CROSS_ORIGIN_RESOURCE_POLICY_H_
-#define SERVICES_NETWORK_CROSS_ORIGIN_RESOURCE_POLICY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_CROSS_ORIGIN_RESOURCE_POLICY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_CROSS_ORIGIN_RESOURCE_POLICY_H_
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
@@ -25,10 +25,12 @@ struct ResourceResponseInfo;
 // Implementation of Cross-Origin-Resource-Policy - see:
 // - https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header
 // - https://github.com/whatwg/fetch/issues/687
-class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
+class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
  public:
   // Only static methods.
   CrossOriginResourcePolicy() = delete;
+
+  static const char kHeaderName[];
 
   // For "no-cors" fetches, the Verify method checks whether the response has a
   // Cross-Origin-Resource-Policy header which says the response should not be
@@ -41,6 +43,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
       const ResourceResponseInfo& response,
+      mojom::RequestMode request_mode,
+      base::Optional<url::Origin> request_initiator_site_lock,
+      mojom::CrossOriginEmbedderPolicy embedder_policy);
+
+  // Same with Verify() but this method can take a raw value of
+  // Cross-Origin-Resource-Policy header instead of using ResourceResponseInfo.
+  static VerificationResult VerifyByHeaderValue(
+      const GURL& request_url,
+      const base::Optional<url::Origin>& request_initiator,
+      base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
       mojom::CrossOriginEmbedderPolicy embedder_policy);
@@ -67,4 +79,4 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_CROSS_ORIGIN_RESOURCE_POLICY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_CROSS_ORIGIN_RESOURCE_POLICY_H_

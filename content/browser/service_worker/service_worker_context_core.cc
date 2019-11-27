@@ -131,10 +131,10 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
   // before deletion.
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    if (host->IsInBackForwardCache())
+    if (host->container_host()->IsInBackForwardCache())
       return false;
   }
-  return host->IsProviderForClient() &&
+  return host->container_host()->IsContainerForClient() &&
          host->container_host()->url().GetOrigin() == origin &&
          (allow_reserved_client ||
           host->container_host()->is_execution_ready());
@@ -148,10 +148,10 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
   // before deletion.
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    if (host->IsInBackForwardCache())
+    if (host->container_host()->IsInBackForwardCache())
       return false;
   }
-  return host->provider_type() ==
+  return host->container_host()->type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
          host->container_host()->url().GetOrigin() == origin &&
          host->container_host()->is_execution_ready();

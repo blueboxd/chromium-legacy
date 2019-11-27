@@ -202,6 +202,9 @@ class CORE_EXPORT NGPhysicalFragment
   Node* GeneratingNode() const {
     return IsCSSBox() ? layout_object_->GeneratingNode() : nullptr;
   }
+  // The node to return when hit-testing on this fragment. This can be different
+  // from GetNode() when this fragment is content of a pseudo node.
+  Node* NodeForHitTest() const;
 
   // Whether there is a PaintLayer associated with the fragment.
   bool HasLayer() const { return IsCSSBox() && layout_object_->HasLayer(); }

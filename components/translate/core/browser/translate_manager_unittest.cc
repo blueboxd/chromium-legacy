@@ -133,8 +133,7 @@ class TranslateManagerTest : public ::testing::Test {
                          preferred_languages_prefs),
         manager_(TranslateDownloadManager::GetInstance()),
         mock_translate_client_(&driver_, &prefs_),
-        mock_language_model_({MockLanguageModel::LanguageDetails("en", 1.0)}),
-        field_trial_list_(new base::FieldTrialList(nullptr)) {}
+        mock_language_model_({MockLanguageModel::LanguageDetails("en", 1.0)}) {}
 
   void SetUp() override {
     // Ensure we're not requesting a server-side translate language list.
@@ -193,7 +192,6 @@ class TranslateManagerTest : public ::testing::Test {
       mock_translate_client_;
   MockLanguageModel mock_language_model_;
   std::unique_ptr<TranslateManager> translate_manager_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

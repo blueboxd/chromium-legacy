@@ -58,14 +58,6 @@ class RankingItemUtilTest : public AppListTestBase {
   std::unique_ptr<TestAppListControllerDelegate> app_list_controller_delegate_;
 };
 
-TEST_F(RankingItemUtilTest, OmniboxSubtypeReturnedWithFinchParameterOn) {
-  SetAdaptiveRankerParams({{"expand_omnibox_types", "true"}});
-  std::unique_ptr<OmniboxResult> result =
-      MakeOmniboxResult(AutocompleteMatchType::HISTORY_URL);
-  RankingItemType type = RankingItemTypeFromSearchResult(*result.get());
-  EXPECT_EQ(type, RankingItemType::kOmniboxHistory);
-}
-
 TEST_F(RankingItemUtilTest, SimplifyUrlId) {
   // Test handling different kinds of scheme, domain, and path. These should all
   // be no-ops.

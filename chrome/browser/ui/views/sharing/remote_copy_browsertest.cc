@@ -44,6 +44,7 @@ const char kImageSizeAfterDecodeHistogram[] =
 const char kStatusCodeHistogram[] = "Sharing.RemoteCopyLoadImageStatusCode";
 const char kLoadTimeHistogram[] = "Sharing.RemoteCopyLoadImageTime";
 const char kDecodeTimeHistogram[] = "Sharing.RemoteCopyDecodeImageTime";
+const char kResizeTimeHistogram[] = "Sharing.RemoteCopyResizeImageTime";
 
 class ClipboardObserver : public ui::ClipboardObserver {
  public:
@@ -140,11 +141,7 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
     auto notifications = notification_tester_->GetDisplayedNotificationsForType(
         NotificationHandler::Type::SHARING);
     EXPECT_EQ(notifications.size(), 1u);
-
-    const message_center::Notification& notification = notifications[0];
-    EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
-
-    return notification;
+    return notifications[0];
   }
 
  protected:
@@ -205,10 +202,12 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, Text) {
   ASSERT_EQ(1u, types.size());
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(kText, ReadClipboardText());
+  message_center::Notification notification = GetNotification();
   ASSERT_EQ(l10n_util::GetStringFUTF16(
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT,
                 base::ASCIIToUTF16(kDeviceName)),
-            GetNotification().title());
+            notification.title());
+  ASSERT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
   histograms_.ExpectUniqueSample(
       kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
   histograms_.ExpectUniqueSample(kTextSizeHistogram, std::string(kText).size(),
@@ -230,15 +229,20 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
   ASSERT_FALSE(bitmap.drawsNothing());
   ASSERT_EQ(2560, bitmap.width());
   ASSERT_EQ(1920, bitmap.height());
+  message_center::Notification notification = GetNotification();
   ASSERT_EQ(l10n_util::GetStringFUTF16(
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
                 base::ASCIIToUTF16(kDeviceName)),
-            GetNotification().title());
+            notification.title());
+  ASSERT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
+  ASSERT_EQ(640, notification.rich_notification_data().image.Width());
+  ASSERT_EQ(480, notification.rich_notification_data().image.Height());
   histograms_.ExpectUniqueSample(kStatusCodeHistogram, net::HTTP_OK, 1);
   histograms_.ExpectTotalCount(kLoadTimeHistogram, 1);
   histograms_.ExpectUniqueSample(kImageSizeBeforeDecodeHistogram, 810490, 1);
   histograms_.ExpectTotalCount(kDecodeTimeHistogram, 1);
   histograms_.ExpectUniqueSample(kImageSizeAfterDecodeHistogram, 19660800, 1);
+  histograms_.ExpectTotalCount(kResizeTimeHistogram, 1);
   histograms_.ExpectUniqueSample(
       kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
 }

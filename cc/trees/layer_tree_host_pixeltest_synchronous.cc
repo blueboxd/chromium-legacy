@@ -63,7 +63,7 @@ LayerTreeTest::RendererType const kRendererTypesGpu[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostSynchronousPixelTest,
                          ::testing::ValuesIn(kRendererTypesGpu));
 

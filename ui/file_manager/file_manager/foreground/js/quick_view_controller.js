@@ -96,13 +96,17 @@ class QuickViewController {
    */
   init_(quickView) {
     this.quickView_ = quickView;
+    this.quickView_.isModal = DialogType.isModal(this.dialogType_);
+
     this.metadataBoxController_.init(quickView);
+
     document.body.addEventListener(
         'keydown', this.onQuickViewKeyDown_.bind(this));
-    quickView.addEventListener('close', () => {
+    this.quickView_.addEventListener('close', () => {
       this.listContainer_.focus();
     });
-    quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
+    this.quickView_.onOpenInNewButtonTap =
+        this.onOpenInNewButtonTap_.bind(this);
 
     const toolTip = this.quickView_.$$('files-tooltip');
     const elems =
@@ -319,7 +323,7 @@ class QuickViewController {
       type: type,
       subtype: typeInfo.subtype,
       filePath: label,
-      hasTask: tasks.length > 0 && this.dialogType_ === DialogType.FULL_PAGE,
+      hasTask: tasks.length > 0,
     };
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);

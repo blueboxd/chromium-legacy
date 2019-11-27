@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/video_frame_mapper.h"
@@ -53,8 +52,12 @@ LibYUVImageProcessor::LibYUVImageProcessor(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     std::unique_ptr<VideoFrameMapper> video_frame_mapper,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ErrorCB error_cb)
-    : ImageProcessor(input_config, output_config, OutputMode::IMPORT),
+    : ImageProcessor(input_config,
+                     output_config,
+                     OutputMode::IMPORT,
+                     std::move(client_task_runner)),
       video_frame_mapper_(std::move(video_frame_mapper)),
       error_cb_(error_cb),
       process_thread_("LibYUVImageProcessorThread") {}
@@ -71,6 +74,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
     ImageProcessor::OutputMode output_mode,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ErrorCB error_cb) {
   VLOGF(2);
 
@@ -133,8 +137,8 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
       ImageProcessor::PortConfig(
           output_config.fourcc, output_config.size, output_config.planes,
           output_config.visible_size, {output_storage_type}),
-      std::move(video_frame_mapper),
-      media::BindToCurrentLoop(std::move(error_cb))));
+      std::move(video_frame_mapper), std::move(client_task_runner),
+      std::move(error_cb)));
   if (res == SupportResult::SupportedWithPivot) {
     processor->intermediate_frame_ =
         VideoFrame::CreateFrame(PIXEL_FORMAT_I420, input_config.visible_size,
@@ -206,7 +210,8 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
     return;
   }
   output_frame->set_timestamp(input_frame->timestamp());
-  std::move(cb).Run(std::move(output_frame));
+  client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), std::move(output_frame)));
 }
 
 bool LibYUVImageProcessor::Reset() {
@@ -218,7 +223,8 @@ bool LibYUVImageProcessor::Reset() {
 
 void LibYUVImageProcessor::NotifyError() {
   VLOGF(1);
-  error_cb_.Run();
+
+  client_task_runner_->PostTask(FROM_HERE, error_cb_);
 }
 
 int LibYUVImageProcessor::DoConversion(const VideoFrame* const input,

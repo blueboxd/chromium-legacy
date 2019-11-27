@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -266,7 +267,7 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
 
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
-  host->OnBeginNavigationCommit(
+  host->container_host()->OnBeginNavigationCommit(
       process_id, 1 /* route_id */,
       network::mojom::CrossOriginEmbedderPolicy::kNone);
   return host;

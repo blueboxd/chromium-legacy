@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_type.h"
@@ -81,6 +82,23 @@ void SensorProviderProxyImpl::OnPermissionRequestCompleted(
   if (status != blink::mojom::PermissionStatus::GRANTED || !sensor_provider_) {
     std::move(callback).Run(SensorCreationResult::ERROR_NOT_ALLOWED, nullptr);
     return;
+  }
+
+  // Unblock the orientation sensors as these are tested to play well with
+  // back-forward cache. This is conservative.
+  // TODO(crbug.com/1027985): Test and unblock all of the sensors to work with
+  // back-forward cache.
+  switch (type) {
+    case SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+    case SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
+    case SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
+    case SensorType::RELATIVE_ORIENTATION_QUATERNION:
+      break;
+    default:
+      static_cast<RenderFrameHostImpl*>(render_frame_host_)
+          ->OnSchedulerTrackedFeatureUsed(
+              blink::scheduler::WebSchedulerTrackedFeature::
+                  kRequestedBackForwardCacheBlockedSensors);
   }
   sensor_provider_->GetSensor(type, std::move(callback));
 }

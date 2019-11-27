@@ -65,7 +65,8 @@ class BackForwardCacheMetrics
     kServiceWorkerVersionActivation = 22,
     kSessionRestored = 23,
     kUnknown = 24,
-    kMaxValue = kUnknown,
+    kServiceWorkerPostMessage = 25,
+    kMaxValue = kServiceWorkerPostMessage,
   };
 
   using NotRestoredReasons =

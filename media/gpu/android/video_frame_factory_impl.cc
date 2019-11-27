@@ -147,8 +147,15 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 
   gfx::Size coded_size = output_buffer->size();
   gfx::Rect visible_rect(coded_size);
-  // The pixel format doesn't matter as long as it's valid for texture frames.
-  VideoPixelFormat pixel_format = PIXEL_FORMAT_ARGB;
+
+  // The pixel format doesn't matter here as long as it's valid for texture
+  // frames. But SkiaRenderer wants to ensure that the format of the resource
+  // used here which will eventually create a promise image must match the
+  // format of the resource(SharedImageVideo) used to create fulfill image.
+  // crbug.com/1028746. Since we create all the textures/abstract textures as
+  // well as shared images for video to be of format RGBA, we need to use the
+  // pixel format as ABGR here(which corresponds to 32bpp RGBA).
+  VideoPixelFormat pixel_format = PIXEL_FORMAT_ABGR;
 
   // Check that we can create a VideoFrame for this config before trying to
   // create the textures for it.

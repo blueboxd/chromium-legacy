@@ -124,6 +124,11 @@ const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
 const char kConfirmInfobarMessagesUIDescription[] =
     "When enabled Confirm Infobars use the new Messages UI.";
 
+const char kCrashRestoreInfobarMessagesUIName[] =
+    "Crash Restore Infobars Messages UI";
+const char kCrashRestoreInfobarMessagesUIDescription[] =
+    "When enabled Crash Restore Infobars use the new Messages UI.";
+
 const char kCreditCardScannerName[] = "Enable the 'Use Camera' button";
 const char kCreditCardScannerDescription[] =
     "Allow a user to scan a credit card using the credit card camera scanner."

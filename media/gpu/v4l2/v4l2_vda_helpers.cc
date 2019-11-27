@@ -70,11 +70,12 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
     size_t nb_buffers,
     scoped_refptr<V4L2Device> image_processor_device,
     ImageProcessor::OutputMode image_processor_output_mode,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessor::ErrorCB error_cb) {
   // TODO(crbug.com/917798): Use ImageProcessorFactory::Create() once we remove
   //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
   auto image_processor = V4L2ImageProcessor::Create(
-      image_processor_device,
+      std::move(client_task_runner), image_processor_device,
       ImageProcessor::PortConfig(Fourcc::FromV4L2PixFmt(vda_output_format),
                                  vda_output_coded_size, {}, visible_size,
                                  {VideoFrame::STORAGE_DMABUFS}),

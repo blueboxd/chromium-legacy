@@ -362,7 +362,7 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
       signin_metrics::SourceForRefreshTokenOperation::
           kDiceResponseHandler_Signin);
   about_signin_internals_->OnRefreshTokenReceived(
-      base::StringPrintf("Successful (%s)", account_id.id.c_str()));
+      base::StringPrintf("Successful (%s)", account_id.ToString().c_str()));
   if (should_enable_sync)
     token_fetcher->delegate()->EnableSync(account_id);
 
@@ -377,7 +377,7 @@ void DiceResponseHandler::OnTokenExchangeFailure(
   CoreAccountId account_id =
       identity_manager_->PickAccountIdForAccount(gaia_id, email);
   about_signin_internals_->OnRefreshTokenReceived(
-      base::StringPrintf("Failure (%s)", account_id.id.c_str()));
+      base::StringPrintf("Failure (%s)", account_id.ToString().c_str()));
   token_fetcher->delegate()->HandleTokenExchangeFailure(email, error);
 
   DeleteTokenFetcher(token_fetcher);

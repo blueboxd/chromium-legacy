@@ -34,7 +34,7 @@ std::unique_ptr<sync_pb::UserConsentSpecifics> CreateUserConsentSpecifics(
     base::Clock* clock) {
   std::unique_ptr<sync_pb::UserConsentSpecifics> specifics =
       std::make_unique<sync_pb::UserConsentSpecifics>();
-  specifics->set_account_id(account_id.id);
+  specifics->set_account_id(account_id.ToString());
   specifics->set_client_consent_time_usec(
       clock->Now().since_origin().InMicroseconds());
   specifics->set_locale(locale);

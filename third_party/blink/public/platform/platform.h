@@ -83,10 +83,6 @@ class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace v8 {
 class Context;
 template <class T>
@@ -99,6 +95,7 @@ class ContextProvider;
 
 namespace blink {
 
+class BrowserInterfaceBrokerProxy;
 class ThreadSafeBrowserInterfaceBrokerProxy;
 class InterfaceProvider;
 class Thread;
@@ -625,7 +622,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual std::unique_ptr<WebDedicatedWorkerHostFactoryClient>
   CreateDedicatedWorkerHostFactoryClient(WebDedicatedWorker*,
-                                         service_manager::InterfaceProvider*) {
+                                         const BrowserInterfaceBrokerProxy&) {
     return nullptr;
   }
   virtual void DidStartWorkerThread() {}

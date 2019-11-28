@@ -21,7 +21,7 @@ struct CONTENT_EXPORT CSPSourceList {
                 bool allow_star,
                 bool allow_response_redirects,
                 std::vector<CSPSource> source_list);
-  explicit CSPSourceList(const network::mojom::CSPSourceList& csp_source_list);
+  explicit CSPSourceList(network::mojom::CSPSourceListPtr csp_source_list);
   CSPSourceList(const CSPSourceList&);
   ~CSPSourceList();
 

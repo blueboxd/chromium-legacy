@@ -43,6 +43,9 @@
 // YES if the Card being displayed has been saved.
 @property(nonatomic, assign) BOOL currentCardSaved;
 
+// Set to YES if the Modal should support editing.
+@property(nonatomic, assign) BOOL supportsEditing;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_SAVE_CARD_TABLE_VIEW_CONTROLLER_H_

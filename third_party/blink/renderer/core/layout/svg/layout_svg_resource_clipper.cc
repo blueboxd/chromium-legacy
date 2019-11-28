@@ -71,13 +71,13 @@ ClipStrategy DetermineClipStrategy(const SVGGraphicsElement& element) {
 ClipStrategy DetermineClipStrategy(const SVGElement& element) {
   // <use> within <clipPath> have a restricted content model.
   // (https://drafts.fxtf.org/css-masking/#ClipPathElement)
-  if (IsSVGUseElement(element)) {
+  if (auto* svg_use_element = DynamicTo<SVGUseElement>(element)) {
     const LayoutObject* use_layout_object = element.GetLayoutObject();
     if (!use_layout_object ||
         use_layout_object->StyleRef().Display() == EDisplay::kNone)
       return ClipStrategy::kNone;
     const SVGGraphicsElement* shape_element =
-        ToSVGUseElement(element).VisibleTargetGraphicsElementForClipping();
+        svg_use_element->VisibleTargetGraphicsElementForClipping();
     if (!shape_element)
       return ClipStrategy::kNone;
     ClipStrategy shape_strategy = DetermineClipStrategy(*shape_element);
@@ -100,8 +100,7 @@ Path PathFromElement(const SVGElement& element) {
 
   // Guaranteed by DetermineClipStrategy() above, only <use> element and
   // SVGGraphicsElement that has a LayoutSVGShape can reach here.
-  SECURITY_DCHECK(IsSVGUseElement(element));
-  return ToSVGUseElement(element).ToClipPath();
+  return To<SVGUseElement>(element).ToClipPath();
 }
 
 }  // namespace

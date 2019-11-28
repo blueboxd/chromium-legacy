@@ -543,8 +543,12 @@ Polymer({
     this.screen.closeEnrollment_('done');
   },
 
+  /*
+   * Executed on language change.
+   */
   updateLocalizedContent: function() {
     this.offlineAdUi_.i18nUpdateLocale();
+    this.i18nUpdateLocale();
   },
 
   onErrorButtonPressed_: function () {

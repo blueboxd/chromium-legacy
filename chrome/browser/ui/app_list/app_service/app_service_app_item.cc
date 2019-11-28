@@ -27,6 +27,12 @@ std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
     const std::string& app_id,
     AppListControllerDelegate* controller,
     bool is_platform_app) {
+  // Terminal System App uses CrostiniAppContextMenu.
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+    return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
+                                                    controller);
+  }
+
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
@@ -68,9 +74,9 @@ AppServiceAppItem::AppServiceAppItem(
   } else {
     SetDefaultPositionIfApplicable(model_updater);
 
-    // Crostini hard-codes its own folder. As Crostini apps are created from
-    // scratch, we move them to a default folder.
-    if (app_type_ == apps::mojom::AppType::kCrostini) {
+    // Crostini apps and the Terminal System App start in the crostini folder.
+    if (app_type_ == apps::mojom::AppType::kCrostini ||
+        id() == crostini::kCrostiniTerminalSystemAppId) {
       DCHECK(folder_id().empty());
       SetChromeFolderId(crostini::kCrostiniFolderId);
     }

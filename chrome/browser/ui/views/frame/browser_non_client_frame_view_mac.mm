@@ -34,7 +34,6 @@
 
 namespace {
 
-constexpr int kHostedAppMenuMargin = 7;
 constexpr int kFramePaddingLeft = 75;
 constexpr double kTitlePaddingWidthFraction = 0.1;
 
@@ -74,8 +73,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
           AddChildView(std::make_unique<WebAppFrameToolbarView>(
               frame, browser_view,
               GetCaptionColor(BrowserFrameActiveState::kActive),
-              GetCaptionColor(BrowserFrameActiveState::kInactive),
-              kHostedAppMenuMargin, kHostedAppMenuMargin)));
+              GetCaptionColor(BrowserFrameActiveState::kInactive))));
     }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
@@ -137,7 +135,7 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
     if (ShouldHideTopUIForFullscreen())
       return 0;
     return web_app_frame_toolbar()->GetPreferredSize().height() +
-           kHostedAppMenuMargin * 2;
+           kWebAppMenuMargin * 2;
   }
 
   if (!browser_view()->IsTabStripVisible())

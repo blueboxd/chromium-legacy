@@ -1,1 +1,6 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# https://crbug.com/1029248
+# Need investigation.
+-SmsServiceTest.RecordMetricsForNewPage
+-SmsServiceTest.RecordMetricsForExistingPage

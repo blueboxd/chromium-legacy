@@ -17,6 +17,13 @@ login.createScreen('AppDownloadingScreen', 'app-downloading', function() {
       return $('app-downloading-screen');
     },
 
+    /*
+     * Executed on language change.
+     */
+    updateLocalizedContent: function() {
+      $('app-downloading-screen').i18nUpdateLocale();
+    },
+
     /**
      * Set the number of apps that are selected by the user. It is used in the
      * screen title.

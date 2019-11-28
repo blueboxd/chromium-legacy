@@ -25,9 +25,8 @@ bool ExtractFaviconURL(const base::DictionaryValue* favicon_url_message,
     DLOG(WARNING) << "JS message parameter not found: favicons";
     return false;
   }
-  base::span<const base::Value> favicons = favicons_value->GetList();
   BOOL has_favicon = NO;
-  for (const base::Value& favicon : favicons) {
+  for (const base::Value& favicon : favicons_value->GetList()) {
     if (!favicon.is_dict())
       return false;
 

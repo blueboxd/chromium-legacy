@@ -164,7 +164,7 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
   // case so that a toolip title in the shadow tree works.
   while (containing_shadow_root &&
          (containing_shadow_root->IsUserAgent() ||
-          IsSVGUseElement(containing_shadow_root->host()))) {
+          IsA<SVGUseElement>(containing_shadow_root->host()))) {
     shadow_host = &containing_shadow_root->host();
     containing_shadow_root = shadow_host->ContainingShadowRoot();
     SetInnerNode(node->OwnerShadowHost());

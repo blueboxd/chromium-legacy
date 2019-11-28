@@ -93,6 +93,42 @@ bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers) {
   return false;
 }
 
+class FrameAncestorCSPContext : public CSPContext {
+ public:
+  explicit FrameAncestorCSPContext(
+      RenderFrameHostImpl* navigated_frame,
+      const std::vector<ContentSecurityPolicy>& policies)
+      : navigated_frame_(navigated_frame) {
+    // TODO(arthursonzogni): Refactor CSPContext to its original state, it
+    // shouldn't own any ContentSecurityPolicies on its own. This should be
+    // defined by the implementation instead. Copies could be avoided here.
+    for (const auto& policy : policies)
+      AddContentSecurityPolicy(policy);
+  }
+
+ private:
+  void ReportContentSecurityPolicyViolation(
+      const CSPViolationParams& violation_params) override {
+    return navigated_frame_->ReportContentSecurityPolicyViolation(
+        violation_params);
+  }
+
+  bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
+    return navigated_frame_->SchemeShouldBypassCSP(scheme);
+  }
+
+  void SanitizeDataForUseInCspViolation(
+      bool is_redirect,
+      CSPDirective::Name directive,
+      GURL* blocked_url,
+      SourceLocation* source_location) const override {
+    return navigated_frame_->SanitizeDataForUseInCspViolation(
+        is_redirect, directive, blocked_url, source_location);
+  }
+
+  RenderFrameHostImpl* navigated_frame_;
+};
+
 }  // namespace
 
 // static
@@ -151,57 +187,40 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
           network::features::kOutOfBlinkFrameAncestors)) {
     if (network::mojom::ContentSecurityPolicyPtr policy =
             request->response()->head.content_security_policy) {
-      if (auto& frame_ancestors = policy->frame_ancestors) {
-        // TODO(lfg, arthursonzogni): Move the frame-ancestors check to a common
-        // ContentSecurityPolicy object instead of checking directly against the
-        // CSPSourceList.
-        CSPSourceList frame_ancestors_list(*frame_ancestors);
-        frame_ancestors_list.allow_response_redirects = true;
-        FrameTreeNode* parent = request->frame_tree_node()->parent();
-        bool has_followed_redirect = navigation_handle()->WasServerRedirect();
-        // Since the navigation hasn't committed yet, we need to create a
-        // CSPContext for the navigation handle.
-        CSPContext csp_context;
-        csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
-        while (parent) {
-          if (CSPSourceList::Allow(frame_ancestors_list,
-                                   parent->current_frame_host()
-                                       ->GetLastCommittedOrigin()
-                                       .GetURL(),
-                                   &csp_context, has_followed_redirect,
-                                   is_response_check)) {
-            parent = parent->parent();
-            continue;
-          }
-          auto* frame_to_commit = static_cast<RenderFrameHostImpl*>(
-              navigation_handle()->GetRenderFrameHost());
-          GURL blocked_url = navigation_handle()->GetURL();
-          SourceLocation source_location;
-          frame_to_commit->SanitizeDataForUseInCspViolation(
-              has_followed_redirect, CSPDirective::FrameAncestors, &blocked_url,
-              &source_location);
-          std::vector<std::string> report_endpoints;
-          for (auto& url : policy->report_endpoints)
-            report_endpoints.push_back(url.spec());
+      // TODO(arthursonzogni): Remove content::ContentSecurityPolicy in favor of
+      // network::mojom::ContentSecurityPolicy, this will avoid conversion
+      // between type here.
+      // TODO(lfg): Pass every ContentSecurityPolicy here instead of one.
+      std::vector<ContentSecurityPolicy> policies = {
+          ContentSecurityPolicy(std::move(policy)),
+      };
+      // TODO(lfg): If the initiating document is known and correspond to the
+      // navigating frame's current document, consider using:
+      // navigation_request().common_params().source_location here instead.
+      SourceLocation empty_source_location;
 
-          frame_to_commit->ReportContentSecurityPolicyViolation(
-              // The browser doesn't have the raw CSP text to report in the
-              // message.
-              CSPViolationParams(
-                  "frame-ancestors", "frame-ancestors",
-                  base::StringPrintf(
-                      "Refused to display '%s' in a frame because an ancestor "
-                      "violates the frame-ancestors Content Security Policy.",
-                      blocked_url.spec().c_str()),
-                  blocked_url, report_endpoints, policy->use_reporting_api,
-                  "" /* header */,
-                  network::mojom::ContentSecurityPolicyType::kEnforce,
-                  has_followed_redirect, source_location));
+      // CSP frame-ancestors are checked against the URL of every parent and are
+      // reported to the navigating frame.
+      FrameAncestorCSPContext csp_context(
+          NavigationRequest::From(navigation_handle())->GetRenderFrameHost(),
+          policies);
+      csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
 
+      // Check CSP frame-ancestor against every parent.
+      RenderFrameHostImpl* parent = request->GetParentFrame();
+      while (parent) {
+        if (!csp_context.IsAllowedByCsp(
+                CSPDirective::FrameAncestors,
+                parent->GetLastCommittedOrigin().GetURL(),
+                navigation_handle()->WasServerRedirect(),
+                true /* is_response_check */, empty_source_location,
+                CSPContext::CheckCSPDisposition::CHECK_ALL_CSP,
+                navigation_handle()->IsFormSubmission())) {
           return NavigationThrottle::BLOCK_RESPONSE;
         }
-        return NavigationThrottle::PROCEED;
+        parent = parent->GetParent();
       }
+      return NavigationThrottle::PROCEED;
     }
   }
 

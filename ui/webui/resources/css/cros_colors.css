@@ -20,7 +20,12 @@ html {
   --cros-default-toolbar-bg-color: #fff;
   --cros-default-toolbar-search-bg-color: var(--google-grey-refresh-100);
 
-  --cros-default-button-color: var(--google-blue-600);
+  --cros-default-button-color-rgb: var(--google-blue-600-rgb);
+  --cros-default-button-color: rgb(var(--cros-default-button-color-rgb));
+
+  --cros-menu-button-bg-color-active: var(--google-blue-50);
+  --cros-menu-button-bg-color-hover: var(--google-grey-refresh-100);
+  --cros-menu-button-outline-color-focused: var(--google-blue-600);
 
   /* TODO(crbug.com/1018654): Extract more unified 'inactive' colors */
   --cros-toggle-color: var(--cros-default-button-color);
@@ -28,9 +33,13 @@ html {
   --cros-toggle-button-color-inactive: #fff;
   --cros-toggle-ink-color-inactive: var(--google-grey-600);
 
-  --cros-menu-button-bg-color-active: var(--google-blue-50);
-  --cros-menu-button-bg-color-hover: var(--google-grey-refresh-100);
-  --cros-menu-button-outline-color-focused: var(--google-blue-600);
+  --cros-radio-button-color-rgb: var(--cros-default-button-color-rgb);
+  --cros-radio-button-color: rgb(var(--cros-radio-button-color-rgb));
+  --cros-radio-button-ripple-color:
+      rgba(var(--cros-radio-button-color-rgb), .2);
+  --cros-radio-button-color-unchecked: var(--google-grey-refresh-700);
+  --cros-radio-button-ripple-color-unchecked:
+      rgba(var(--google-grey-600-rgb), .15);
 
   --cros-separator-color: rgba(0, 0, 0, 0.12);
 

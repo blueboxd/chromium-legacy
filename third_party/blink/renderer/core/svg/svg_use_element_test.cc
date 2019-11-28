@@ -39,7 +39,7 @@ TEST_F(SVGUseElementTest, InstanceInvalidatedWhenNonAttachedTargetRemoved) {
 
   // There should be no instance for #target anymore, since that element was
   // removed.
-  auto* use = ToSVGUseElement(GetDocument().getElementById("use"));
+  auto* use = To<SVGUseElement>(GetDocument().getElementById("use"));
   ASSERT_TRUE(use);
   ASSERT_TRUE(use->GetShadowRoot());
   ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));
@@ -69,7 +69,7 @@ TEST_F(SVGUseElementTest,
 
   // There should be no instance for #target anymore, since that element was
   // removed.
-  auto* use = ToSVGUseElement(GetDocument().getElementById("use"));
+  auto* use = To<SVGUseElement>(GetDocument().getElementById("use"));
   ASSERT_TRUE(use);
   ASSERT_TRUE(use->GetShadowRoot());
   ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));

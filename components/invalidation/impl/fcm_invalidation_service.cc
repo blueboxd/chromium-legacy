@@ -107,7 +107,7 @@ base::DictionaryValue FCMInvalidationService::CollectDebugData() const {
       "InvalidationService.Ready-to-start-on-active-account-login",
       diagnostic_info_.was_ready_to_start_on_login);
   status.SetString("InvalidationService.Active-account-id",
-                   diagnostic_info_.active_account_id.id);
+                   diagnostic_info_.active_account_id.ToString());
 
   return status;
 }

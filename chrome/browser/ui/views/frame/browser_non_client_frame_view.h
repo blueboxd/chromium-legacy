@@ -187,6 +187,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // default theme properties.
   SkColor GetThemeOrDefaultColor(int color_id) const;
 
+  // Returns the color of the given |color_id| for an un-themed frame.
+  SkColor GetUnthemedColor(int color_id) const;
+
   // The frame that hosts this view.
   BrowserFrame* frame_;
 

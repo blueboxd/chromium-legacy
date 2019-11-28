@@ -377,7 +377,7 @@ bool EditContext::SetComposition(
   }
   text_ = text_.Substring(0, selection_start_) + update_text +
           text_.Substring(selection_end_);
-  
+
   // Fire textupdate and textformatupdate events to JS
   const uint32_t update_range_start = composition_range_start_;
   const uint32_t update_range_end = composition_range_end_;

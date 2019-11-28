@@ -355,24 +355,33 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
     return true;
   }
 
+  LayoutUnit space_left =
+      space.FragmentainerBlockSize() - fragmentainer_block_offset;
+
+  // If we haven't used any space at all in the fragmentainer yet, we cannot
+  // break before this child, or there'd be no progress. We'd risk creating an
+  // infinite number of fragmentainers without putting any content into them.
+  bool refuse_break = space_left >= space.FragmentainerBlockSize();
+
   if (IsA<NGBlockBreakToken>(physical_fragment.BreakToken())) {
     // The block child broke inside. We now need to decide whether to keep that
     // break, or if it would be better to break before it.
     NGBreakAppeal appeal_inside = CalculateBreakAppealInside(
         space, To<NGBlockNode>(child), layout_result);
     // Allow breaking inside if it has the same appeal or higher than breaking
-    // before or breaking earlier.
-    if (appeal_inside >= appeal_before &&
-        (!builder->HasEarlyBreak() ||
-         appeal_inside >= builder->BreakAppeal())) {
+    // before or breaking earlier. Also, if breaking before is impossible, break
+    // inside regardless of appeal, .
+    if (refuse_break || (appeal_inside >= appeal_before &&
+                         (!builder->HasEarlyBreak() ||
+                          appeal_inside >= builder->BreakAppeal()))) {
       builder->SetBreakAppeal(appeal_inside);
       return true;
     }
   } else {
-    LayoutUnit space_left =
-        space.FragmentainerBlockSize() - fragmentainer_block_offset;
     bool need_break;
-    if (child.IsMonolithic()) {
+    if (refuse_break) {
+      need_break = false;
+    } else if (child.IsMonolithic()) {
       // If the monolithic piece of content (e.g. a line, or block-level
       // replaced content) doesn't fit, we need a break.
       need_break = fragment.BlockSize() > space_left;
@@ -384,14 +393,6 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
       // at a fragmentainer boundary, though.
       need_break = space_left < LayoutUnit() ||
                    (space_left == LayoutUnit() && fragment.BlockSize());
-    }
-    if (need_break) {
-      // If we haven't used any space at all in the fragmentainer yet, though,
-      // we cannot break even if we really want to, or there'd be no progress.
-      // We'd end up creating an infinite number of fragmentainers without
-      // putting any content into them.
-      if (space_left >= space.FragmentainerBlockSize())
-        need_break = false;
     }
 
     if (!need_break) {

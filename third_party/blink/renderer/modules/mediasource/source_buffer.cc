@@ -382,12 +382,12 @@ void SourceBuffer::appendBuffer(NotShared<DOMArrayBufferView> data,
                                 ExceptionState& exception_state) {
   double media_time = GetMediaTime();
   DVLOG(3) << __func__ << " this=" << this << " media_time=" << media_time
-           << " size=" << data.View()->byteLength();
+           << " size=" << data.View()->deprecatedByteLengthAsUnsigned();
   // Section 3.2 appendBuffer()
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
   AppendBufferInternal(
       media_time, static_cast<const unsigned char*>(data.View()->BaseAddress()),
-      data.View()->byteLength(), exception_state);
+      data.View()->deprecatedByteLengthAsUnsigned(), exception_state);
 }
 
 void SourceBuffer::abort(ExceptionState& exception_state) {

@@ -35,7 +35,7 @@ void V8PromiseRejectionEvent::PromiseAttributeGetterCustom(
 
   ScriptPromise promise = event->promise(ScriptState::Current(isolate));
   if (promise.IsEmpty()) {
-    V8SetReturnValue(info, v8::Null(isolate));
+    V8SetReturnValueNull(info);
     return;
   }
 

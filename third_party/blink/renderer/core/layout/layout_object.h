@@ -1379,6 +1379,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetIsInLayoutNGInlineFormattingContext(bool);
   virtual NGPaintFragment* FirstInlineFragment() const { return nullptr; }
   virtual void SetFirstInlineFragment(NGPaintFragment*) {}
+  virtual wtf_size_t FirstInlineFragmentItemIndex() const { return 0u; }
+  virtual void ClearFirstInlineFragmentItemIndex() {}
+  virtual void SetFirstInlineFragmentItemIndex(wtf_size_t) {}
   void SetForceLegacyLayout() { bitfields_.SetForceLegacyLayout(true); }
 
   void SetHasBoxDecorationBackground(bool);

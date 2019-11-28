@@ -451,8 +451,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   for (const auto& it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
-    base::span<const base::Value> vms = it.second.GetList();
-    for (const auto& vm : vms) {
+    for (const auto& vm : it.second.GetList()) {
       // Register all shared paths for all VMs since we want FilePathWatchers
       // to start immediately.
       RegisterSharedPath(vm.GetString(), path);

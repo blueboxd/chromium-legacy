@@ -10,10 +10,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +57,7 @@ class CrostiniRegistryServiceTest : public testing::Test {
   }
 
   CrostiniRegistryService* service() { return service_.get(); }
+  Profile* profile() { return &profile_; }
 
   std::vector<std::string> GetRegisteredAppIds() {
     std::vector<std::string> result;
@@ -541,6 +545,24 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetPackageId) {
       service()->GetRegistration(app_id_no_package_id);
   EXPECT_EQ(result_valid_package_id->PackageId(), package_id);
   EXPECT_EQ(result_no_package_id->PackageId(), "");
+}
+
+TEST_F(CrostiniRegistryServiceTest, MigrateTerminal) {
+  // Add prefs entry for the deleted terminal.
+  base::DictionaryValue registry;
+  registry.SetKey(GetDeletedTerminalId(), base::DictionaryValue());
+  profile()->GetPrefs()->Set(prefs::kCrostiniRegistry, std::move(registry));
+
+  // Only current terminal returned.
+  RecreateService();
+  EXPECT_THAT(GetRegisteredAppIds(),
+              testing::UnorderedElementsAre(GetTerminalId()));
+
+  // Deleted terminal removed from prefs.
+  EXPECT_FALSE(profile()
+                   ->GetPrefs()
+                   ->GetDictionary(prefs::kCrostiniRegistry)
+                   ->HasKey(GetDeletedTerminalId()));
 }
 
 }  // namespace crostini

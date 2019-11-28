@@ -15,6 +15,7 @@
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
+      "fuchsia.sys.Launcher",
       "fuchsia.sysmem.Allocator",
       "fuchsia.web.ContextProvider"
     ]

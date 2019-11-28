@@ -54,7 +54,7 @@ storage::WatcherManager* DriveFsFileSystemBackendDelegate::GetWatcherManager(
 
 void DriveFsFileSystemBackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    storage::URLCallback callback) {
   NOTIMPLEMENTED();
 }
 

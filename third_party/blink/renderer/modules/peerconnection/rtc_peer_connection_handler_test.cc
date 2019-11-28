@@ -84,10 +84,9 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
  public:
   MockRTCStatsResponse() : report_count_(0), statistic_count_(0) {}
 
-  void addStats(const blink::WebRTCLegacyStats& stats) override {
+  void addStats(const RTCLegacyStats& stats) override {
     ++report_count_;
-    for (std::unique_ptr<blink::WebRTCLegacyStatsMemberIterator> member(
-             stats.Iterator());
+    for (std::unique_ptr<RTCLegacyStatsMemberIterator> member(stats.Iterator());
          !member->IsEnd(); member->Next()) {
       ++statistic_count_;
     }

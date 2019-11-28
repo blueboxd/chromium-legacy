@@ -244,7 +244,7 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   std::vector<base::Value> accounts_pref_value;
   for (const auto& account_id : account_ids) {
     if (identity_manager_->HasAccountWithRefreshToken(account_id)) {
-      accounts_pref_value.emplace_back(account_id.id);
+      accounts_pref_value.emplace_back(account_id.ToString());
     } else {
       // The account for |email| was removed since the last application cold
       // start. Insert |kFakeAccountIdForRemovedAccount| to ensure
@@ -264,7 +264,7 @@ void AuthenticationService::StoreKnownAccountsWhileInForeground() {
       identity_manager_->GetAccountsWithRefreshTokens());
   std::vector<base::Value> accounts_pref_value;
   for (const CoreAccountInfo& account_info : accounts)
-    accounts_pref_value.emplace_back(account_info.account_id.id);
+    accounts_pref_value.emplace_back(account_info.account_id.ToString());
   pref_service_->Set(prefs::kSigninLastAccounts,
                      base::Value(std::move(accounts_pref_value)));
 }

@@ -249,7 +249,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayDownloads"),
         TestCase("fileDisplayDownloads").InGuestMode(),
         TestCase("fileDisplayDownloads").TabletMode(),
-        TestCase("fileDisplayLaunchOnDownloads").DontObserveFileTasks(),
+        TestCase("fileDisplayLaunchOnLocalFolder").DontObserveFileTasks(),
+        TestCase("fileDisplayLaunchOnDrive").DontObserveFileTasks(),
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive"),
         TestCase("fileDisplayDriveOffline").Offline(),
@@ -695,7 +696,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
-        TestCase("openFileDialogFileListShowContextMenu").WithBrowser()));
+        TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
+        TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
+        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));
 
 #if defined(NDEBUG)
 #define MAYBE_CopyBetweenWindows CopyBetweenWindows
@@ -829,6 +832,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
+                      TestCase("searchDownloadsClearSearchKeyDown"),
                       TestCase("searchDownloadsClearSearch")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

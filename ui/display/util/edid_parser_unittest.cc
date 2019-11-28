@@ -166,8 +166,8 @@ constexpr unsigned char kHDRMetadata[] =
     "\x02\x03\x4f\xf0\x53\x5f\x10\x1f\x04\x13\x05\x14\x20\x21\x22\x5d"
     "\x5e\x62\x63\x64\x07\x16\x03\x12\x2c\x09\x07\x07\x15\x07\x50\x3d"
     "\x04\xc0\x57\x07\x00\x83\x01\x00\x00\xe2\x00\x0f\xe3\x05\x83\x01"
-    "\x6e\x03\x0c\x00\x30\x00\xb8\x3c\x20\x00\x80\x01\x02\x03\x04\xe3"
-    "\x06\x0d\x01\xe5\x0e\x60\x61\x65\x66\xe5\x01\x8b\x84\x90\x01\x01"
+    "\x6e\x03\x0c\x00\x30\x00\xb8\x3c\x20\x00\x80\x01\x02\x03\x04\xe6"
+    "\x06\x0d\x01\x73\x6d\x07\x61\x65\x66\xe5\x01\x8b\x84\x90\x01\x01"
     "\x1d\x80\xd0\x72\x1c\x16\x20\x10\x2c\x25\x80\x50\x1d\x74\x00\x00"
     "\x9e\x66\x21\x56\xaa\x51\x00\x1e\x30\x46\x8f\x33\x00\x50\x1d\x74"
     "\x00\x00\x1e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xbd";
@@ -244,6 +244,7 @@ struct TestParams {
 
   base::flat_set<gfx::ColorSpace::PrimaryID> supported_color_primary_ids_;
   base::flat_set<gfx::ColorSpace::TransferID> supported_color_transfer_ids_;
+  base::Optional<EdidParser::Luminance> luminance_;
 
   const unsigned char* edid_blob;
   size_t edid_blob_length;
@@ -263,6 +264,7 @@ struct TestParams {
      "286C",
      {},
      {},
+     base::nullopt,
      kNormalDisplay,
      kNormalDisplayLength},
     {0x4ca3u,
@@ -280,6 +282,7 @@ struct TestParams {
      "3142",
      {},
      {},
+     base::nullopt,
      kInternalDisplay,
      kInternalDisplayLength},
     {0x4c2du,
@@ -297,6 +300,7 @@ struct TestParams {
      "08FE",
      {},
      {},
+     base::nullopt,
      kOverscanDisplay,
      kOverscanDisplayLength},
     {0x10ACu,
@@ -314,6 +318,7 @@ struct TestParams {
      "4064",
      {gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::PrimaryID::SMPTE170M},
      {},
+     base::nullopt,
      kMisdetectedDisplay,
      kMisdetectedDisplayLength},
     {0x22f0u,
@@ -331,6 +336,7 @@ struct TestParams {
      "2676",
      {},
      {},
+     base::nullopt,
      kLP2565A,
      kLP2565ALength},
     {0x22f0u,
@@ -348,6 +354,7 @@ struct TestParams {
      "2675",
      {},
      {},
+     base::nullopt,
      kLP2565B,
      kLP2565BLength},
     {0x22f0u,
@@ -365,6 +372,7 @@ struct TestParams {
      "3275",
      {},
      {},
+     base::nullopt,
      kHPz32x,
      kHPz32xLength},
     {0x30E4u,
@@ -382,6 +390,7 @@ struct TestParams {
      "042E",
      {},
      {},
+     base::nullopt,
      kSamus,
      kSamusLength},
     {0x4D10u,
@@ -399,6 +408,7 @@ struct TestParams {
      "148A",
      {},
      {},
+     base::nullopt,
      kEve,
      kEveLength},
     {19501u,
@@ -419,6 +429,7 @@ struct TestParams {
      {gfx::ColorSpace::TransferID::BT709,
       gfx::ColorSpace::TransferID::SMPTEST2084,
       gfx::ColorSpace::TransferID::ARIB_STD_B67},
+     base::Optional<EdidParser::Luminance>({603.666, 530.095, 0.00454}),
      kHDRMetadata,
      kHDRMetadataLength},
 
@@ -438,6 +449,7 @@ struct TestParams {
      "0000",
      {},
      {},
+     base::nullopt,
      nullptr,
      0u},
 };
@@ -482,6 +494,15 @@ TEST_P(EDIDParserTest, ParseEdids) {
             parser_.supported_color_primary_ids());
   EXPECT_EQ(GetParam().supported_color_transfer_ids_,
             parser_.supported_color_transfer_ids());
+
+  const EdidParser::Luminance* luminance = parser_.luminance();
+  EXPECT_EQ(GetParam().luminance_.has_value(), luminance != nullptr);
+  if (GetParam().luminance_.has_value() && luminance) {
+    constexpr double epsilon = 0.001;
+    EXPECT_NEAR(GetParam().luminance_->max, luminance->max, epsilon);
+    EXPECT_NEAR(GetParam().luminance_->max_avg, luminance->max_avg, epsilon);
+    EXPECT_NEAR(GetParam().luminance_->min, luminance->min, epsilon);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All, EDIDParserTest, ValuesIn(kTestCases));

@@ -4,8 +4,6 @@
 
 module network.mojom;
 
-import "url/mojom/url.mojom";
-
 // The HTTP Content-Security-Policy-Report-Only response header allows web
 // developers to experiment with policies by monitoring (but not enforcing)
 // their effects. These violation reports consist of JSON documents sent via an
@@ -42,14 +40,30 @@ struct CSPSourceList {
   bool allow_star = false;
 };
 
+struct CSPDirective {
+  enum Name {
+    DefaultSrc,
+    ChildSrc,
+    FrameSrc,
+    FormAction,
+    UpgradeInsecureRequests,
+    NavigateTo,
+    FrameAncestors,
+
+    Unknown,
+  };
+
+  Name name;
+  CSPSourceList source_list;
+};
+
 struct ContentSecurityPolicy {
-  // List of sources specified in the frame-ancestors directive.
-  CSPSourceList? frame_ancestors;
+  array<CSPDirective> directives;
 
   // Whether this CSP policy uses the new reporting API.
   // https://w3c.github.io/reporting/
   bool use_reporting_api = false;
 
   // Set of reporting endpoints to which violation reports are sent.
-  array<url.mojom.Url> report_endpoints;
+  array<string> report_endpoints;
 };

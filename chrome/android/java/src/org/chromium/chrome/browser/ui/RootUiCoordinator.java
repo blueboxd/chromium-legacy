@@ -73,9 +73,7 @@ public class RootUiCoordinator
     private TabThemeColorProvider mTabThemeColorProvider;
     @Nullable
     private Callback<Boolean> mOnOmniboxFocusChangedListener;
-    private ToolbarManager mToolbarManager;
-    @Nullable
-    private Callback<ToolbarManager> mToolbarManagerCallback;
+    protected ToolbarManager mToolbarManager;
     private ModalDialogManagerObserver mModalDialogManagerObserver;
 
     private VrModeObserver mVrModeObserver;
@@ -84,18 +82,14 @@ public class RootUiCoordinator
      * Create a new {@link RootUiCoordinator} for the given activity.
      * @param activity The containing {@link ChromeActivity}. TODO(https://crbug.com/931496):
      *         Remove this in favor of passing in direct dependencies.
-     * @param toolbarManagerCallback Callback<ToolbarManager> callback to invoke when the
-     *         ToolbarManager is created.
      * @param onOmniboxFocusChangedListener Callback<Boolean> callback to invoke when Omnibox focus
      *         changes.
      */
     public RootUiCoordinator(ChromeActivity activity,
-            @Nullable Callback<ToolbarManager> toolbarManagerCallback,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
-        mToolbarManagerCallback = toolbarManagerCallback;
         mActivity.getLifecycleDispatcher().register(this);
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
@@ -305,10 +299,6 @@ public class RootUiCoordinator
                     mTabThemeColorProvider, mShareDelegateSupplier);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
-            }
-
-            if (mToolbarManagerCallback != null) {
-                mToolbarManagerCallback.onResult(mToolbarManager);
             }
         }
     }

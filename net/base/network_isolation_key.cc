@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/values.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -120,7 +121,7 @@ bool NetworkIsolationKey::FromValue(
   if (value.type() != base::Value::Type::LIST)
     return false;
 
-  base::span<const base::Value> list = value.GetList();
+  base::Value::ConstListView list = value.GetList();
   if (list.empty()) {
     *network_isolation_key = NetworkIsolationKey();
     return true;

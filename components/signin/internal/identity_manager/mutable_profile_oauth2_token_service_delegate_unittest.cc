@@ -529,7 +529,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadAfterDiceMigration) {
   AccountInfo primary_account = CreateTestAccountInfo(
       "primary_account", false /* is_hosted_domain*/, true /* is_valid*/);
   account_tracker_service_.SeedAccountInfo(primary_account);
-  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.ToString(),
                        "refresh_token");
 
   oauth2_service_delegate_->LoadCredentials(CoreAccountId());
@@ -1174,8 +1174,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 
   oauth2_service_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.id, "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.id, "refresh_token");
+  AddAuthTokenManually("AccountId-" + primary_account.ToString(),
+                       "refresh_token");
+  AddAuthTokenManually("AccountId-" + secondary_account.ToString(),
+                       "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account);
   base::RunLoop().RunUntilIdle();
 
@@ -1202,7 +1204,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
     void OnAuthErrorChanged(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& auth_error) override {
       error_changed_ = true;
-      EXPECT_EQ("account_id", account_id.id);
+      EXPECT_EQ("account_id", account_id.ToString());
       EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(), auth_error);
       EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_id));
       EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
@@ -1290,7 +1292,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     }
 
     void CheckTokenState(const CoreAccountId& account_id) {
-      EXPECT_EQ("account_id", account_id.id);
+      EXPECT_EQ("account_id", account_id.ToString());
       EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_id));
       EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                     GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -1327,8 +1329,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ClearTokensOnStartup) {
 
   oauth2_service_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.id, "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.id, "refresh_token");
+  AddAuthTokenManually("AccountId-" + primary_account.ToString(),
+                       "refresh_token");
+  AddAuthTokenManually("AccountId-" + secondary_account.ToString(),
+                       "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account);
   base::RunLoop().RunUntilIdle();
 

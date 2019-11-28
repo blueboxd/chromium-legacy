@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -117,8 +118,9 @@ void ResetScreen::CheckIfPowerwashAllowed(
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->IsEnterpriseManaged()) {
-    // Admin can explicitly allow to powerwash. If the policy is not loaded yet,
-    // we consider by default that the device is not allowed to powerwash.
+    // Powerwash is allowed by default, if the policy is loaded. Admin can
+    // explicitly forbid powerwash. If the policy is not loaded yet, we
+    // consider by default that the device is not allowed to powerwash.
     bool is_powerwash_allowed = false;
     CrosSettings::Get()->GetBoolean(kDevicePowerwashAllowed,
                                     &is_powerwash_allowed);
@@ -432,13 +434,18 @@ void ResetScreen::UpdateStatusChanged(
 // Invoked from call to CanRollbackCheck upon completion of the DBus call.
 void ResetScreen::OnRollbackCheck(bool can_rollback) {
   VLOG(1) << "Callback from CanRollbackCheck, result " << can_rollback;
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  const bool rollback_available =
+      !connector->IsEnterpriseManaged() && can_rollback;
   reset::DialogViewType dialog_type =
-      can_rollback ? reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE
-                   : reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
+      rollback_available ? reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE
+                         : reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
   UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown", dialog_type,
                             reset::DIALOG_VIEW_TYPE_SIZE);
 
-  view_->SetIsRollbackAvailable(can_rollback);
+  view_->SetIsRollbackAvailable(rollback_available);
 }
 
 void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(

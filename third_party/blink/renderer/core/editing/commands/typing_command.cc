@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -200,7 +201,8 @@ void TypingCommand::DeleteSelection(Document& document, Options options) {
     return;
   }
 
-  TypingCommand::Create(document, kDeleteSelection, "", options)->Apply();
+  MakeGarbageCollected<TypingCommand>(document, kDeleteSelection, "", options)
+      ->Apply();
 }
 
 void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
@@ -212,7 +214,7 @@ void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
   // the table structure is deleted as well.
   bool expand_for_special = EndingSelection().IsRange();
   ApplyCommandToComposite(
-      DeleteSelectionCommand::Create(
+      MakeGarbageCollected<DeleteSelectionCommand>(
           selection, DeleteSelectionOptions::Builder()
                          .SetSmartDelete(smart_delete_)
                          .SetMergeBlocksAfterDelete(true)
@@ -243,7 +245,8 @@ void TypingCommand::DeleteKeyPressed(Document& document,
     }
   }
 
-  TypingCommand::Create(document, kDeleteKey, "", options, granularity)
+  MakeGarbageCollected<TypingCommand>(document, kDeleteKey, "", options,
+                                      granularity)
       ->Apply();
 }
 
@@ -265,7 +268,8 @@ void TypingCommand::ForwardDeleteKeyPressed(Document& document,
     }
   }
 
-  TypingCommand::Create(document, kForwardDeleteKey, "", options, granularity)
+  MakeGarbageCollected<TypingCommand>(document, kForwardDeleteKey, "", options,
+                                      granularity)
       ->Apply();
 }
 
@@ -414,8 +418,9 @@ void TypingCommand::InsertText(
     return;
   }
 
-  TypingCommand* command = TypingCommand::Create(
-      document, kInsertText, new_text, options, composition_type);
+  TypingCommand* command = MakeGarbageCollected<TypingCommand>(
+      document, kInsertText, new_text, options, TextGranularity::kCharacter,
+      composition_type);
   bool change_selection = selection_for_insertion != current_selection;
   if (change_selection) {
     const SelectionForUndoStep& selection_for_insertion_as_undo_step =
@@ -451,7 +456,8 @@ bool TypingCommand::InsertLineBreak(Document& document) {
     return !editing_state.IsAborted();
   }
 
-  return TypingCommand::Create(document, kInsertLineBreak, "", 0)->Apply();
+  return MakeGarbageCollected<TypingCommand>(document, kInsertLineBreak, "", 0)
+      ->Apply();
 }
 
 bool TypingCommand::InsertParagraphSeparatorInQuotedContent(
@@ -465,8 +471,8 @@ bool TypingCommand::InsertParagraphSeparatorInQuotedContent(
     return !editing_state.IsAborted();
   }
 
-  return TypingCommand::Create(document,
-                               kInsertParagraphSeparatorInQuotedContent)
+  return MakeGarbageCollected<TypingCommand>(
+             document, kInsertParagraphSeparatorInQuotedContent)
       ->Apply();
 }
 
@@ -479,7 +485,8 @@ bool TypingCommand::InsertParagraphSeparator(Document& document) {
     return !editing_state.IsAborted();
   }
 
-  return TypingCommand::Create(document, kInsertParagraphSeparator, "", 0)
+  return MakeGarbageCollected<TypingCommand>(document,
+                                             kInsertParagraphSeparator, "", 0)
       ->Apply();
 }
 

@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/csp_directive.h"
 #include "content/common/content_security_policy_header.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,6 +29,7 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
                         const std::vector<CSPDirective>& directives,
                         const std::vector<std::string>& report_endpoints,
                         bool use_reporting_api);
+  explicit ContentSecurityPolicy(network::mojom::ContentSecurityPolicyPtr);
   ContentSecurityPolicy(const ContentSecurityPolicy&);
   ~ContentSecurityPolicy();
 

@@ -25,6 +25,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Number of Months in a year.
+const int kNumberOfMonthsInYear = 12;
+}  // namespace
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierContent = kSectionIdentifierEnumZero,
 };
@@ -50,6 +55,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // query the corresponding SaveCardMessageWithLinks from legalMessages when
 // configuring the cell.
 @property(nonatomic, assign) int legalMessagesStartingIndex;
+// Item for displaying and editing the cardholder name.
+@property(nonatomic, strong) TableViewTextEditItem* cardholderNameItem;
+// Item for displaying and editing the expiration month.
+@property(nonatomic, strong) TableViewTextEditItem* expirationMonthItem;
+// Item for displaying and editing the expiration year.
+@property(nonatomic, strong) TableViewTextEditItem* expirationYearItem;
+// Item for displaying the save card button .
+@property(nonatomic, strong) TableViewTextButtonItem* saveCardButtonItem;
 
 @end
 
@@ -123,35 +136,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:cardLastDigitsItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
-  // supported.
-  TableViewTextEditItem* cardholderNameItem =
+  self.cardholderNameItem =
       [self textEditItemWithType:ItemTypeCardExpireYear
                    textFieldName:l10n_util::GetNSString(
                                      IDS_IOS_AUTOFILL_CARDHOLDER_NAME)
                   textFieldValue:self.cardholderName
-                textFieldEnabled:NO];
-  [model addItem:cardholderNameItem
+                textFieldEnabled:self.supportsEditing];
+  [model addItem:self.cardholderNameItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
-  // supported.
-  TableViewTextEditItem* expireMonthItem = [self
+  self.expirationMonthItem = [self
       textEditItemWithType:ItemTypeCardExpireYear
              textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH)
             textFieldValue:self.expirationMonth
-          textFieldEnabled:NO];
-  [model addItem:expireMonthItem
+          textFieldEnabled:self.supportsEditing];
+  [model addItem:self.expirationMonthItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
-  // supported.
-  TableViewTextEditItem* expireYearItem = [self
+  self.expirationYearItem = [self
       textEditItemWithType:ItemTypeCardExpireYear
              textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR)
             textFieldValue:self.expirationYear
-          textFieldEnabled:NO];
-  [model addItem:expireYearItem
+          textFieldEnabled:self.supportsEditing];
+  [model addItem:self.expirationYearItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   // Set legalMessagesStartingIndex right before adding any
@@ -167,14 +174,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:SectionIdentifierContent];
   }
 
-  TableViewTextButtonItem* saveCardButtonItem =
+  self.saveCardButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeCardSave];
-  saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
-  saveCardButtonItem.buttonText =
+  self.saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
+  self.saveCardButtonItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
-  saveCardButtonItem.enabled = self.currentCardSaved;
-  saveCardButtonItem.disableButtonIntrinsicWidth = YES;
-  [model addItem:saveCardButtonItem
+  self.saveCardButtonItem.enabled = self.currentCardSaved;
+  self.saveCardButtonItem.disableButtonIntrinsicWidth = YES;
+  [model addItem:self.saveCardButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
 }
 
@@ -286,22 +293,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private Methods
 
+// Updates |self.saveCardButtonItem| enabled state taking into account the
+// current editable items.
 - (void)updateSaveCardButtonState {
-  // TODO(crbug.com/1014652): Implement
-
-  // TODO(crbug.com/1014652):Ideally the InfobarDelegate should update the
-  // button text. Once we have a consumer protocol we should be able to create a
-  // delegate that asks the InfobarDelegate for the correct text.
+  BOOL newButtonState = [self isCurrentInputValid];
+  if ([self.saveCardButtonItem isEnabled] != newButtonState) {
+    self.saveCardButtonItem.enabled = newButtonState;
+    [self reconfigureCellsForItems:@[ self.saveCardButtonItem ]];
+  }
 }
 
 - (void)saveCardButtonWasPressed:(UIButton*)sender {
   base::RecordAction(
       base::UserMetricsAction("MobileMessagesModalAcceptedTapped"));
   [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Accepted];
-  // TODO(crbug.com/1014652): Use current item values once editing is supported.
-  [self.saveCardModalDelegate saveCardWithCardholderName:self.cardholderName
-                                         expirationMonth:self.expirationMonth
-                                          expirationYear:self.expirationYear];
+  [self.saveCardModalDelegate
+      saveCardWithCardholderName:self.cardholderNameItem.textFieldValue
+                 expirationMonth:self.expirationMonthItem.textFieldValue
+                  expirationYear:self.expirationYearItem.textFieldValue];
 }
 
 - (void)nameEditDidBegin {
@@ -343,6 +352,84 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textEditItem.returnKeyType = UIReturnKeyDone;
 
   return textEditItem;
+}
+
+// YES if the current values of the Card are valid.
+// TODO(crbug.com/1029067):Ideally the InfobarDelegate should validate
+// the correctness of the input.
+- (BOOL)isCurrentInputValid {
+  if (![self isCardholderNameValid:self.cardholderNameItem.textFieldValue])
+    return NO;
+
+  if (![self isExpirationMonthValid:self.expirationMonthItem.textFieldValue
+                            forYear:self.expirationYearItem.textFieldValue])
+    return NO;
+
+  if (![self isExpirationYearValid:self.expirationYearItem.textFieldValue])
+    return NO;
+
+  return YES;
+}
+
+// YES if |cardholderName| is valid.
+- (BOOL)isCardholderNameValid:(NSString*)cardholderName {
+  // Check that the name is not empty or only whitespace.
+  NSCharacterSet* set = [NSCharacterSet whitespaceCharacterSet];
+  if (![[cardholderName stringByTrimmingCharactersInSet:set] length])
+    return NO;
+
+  return YES;
+}
+
+// YES if |expirationMonth| is valid for |expirationYear|.
+- (BOOL)isExpirationMonthValid:(NSString*)expirationMonth
+                       forYear:(NSString*)expirationYear {
+  NSNumber* expirationMonthNumber = [self numberFromString:expirationMonth];
+  if (!expirationMonthNumber)
+    return NO;
+
+  int expirationMonthInteger = [expirationMonthNumber intValue];
+  if (expirationMonthInteger <= 0 ||
+      expirationMonthInteger > kNumberOfMonthsInYear)
+    return NO;
+
+  if ([self currentYearIntValue] ==
+      [[self numberFromString:expirationYear] intValue])
+    return expirationMonthInteger >= [self currentMonthIntValue];
+
+  return YES;
+}
+
+// YES if |expirationYear| is valid for the current date.
+- (BOOL)isExpirationYearValid:(NSString*)expirationYear {
+  NSNumber* expirationYearNumber = [self numberFromString:expirationYear];
+  if (!expirationYearNumber)
+    return NO;
+
+  return [self currentYearIntValue] <= [expirationYearNumber intValue];
+}
+
+// The current month int value.
+- (int)currentMonthIntValue {
+  NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+  [dateFormatter setDateFormat:@"MM"];
+  NSString* monthString = [dateFormatter stringFromDate:[NSDate date]];
+  return [[self numberFromString:monthString] intValue];
+}
+
+// The current year int value.
+- (int)currentYearIntValue {
+  NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+  [dateFormatter setDateFormat:@"yyyy"];
+  NSString* yearString = [dateFormatter stringFromDate:[NSDate date]];
+  return [[self numberFromString:yearString] intValue];
+}
+
+// Converts |string| into an NSNumber. returns nil if |string| is invalid.
+- (NSNumber*)numberFromString:(NSString*)string {
+  NSNumberFormatter* numberFormatter = [[NSNumberFormatter alloc] init];
+  numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
+  return [numberFormatter numberFromString:string];
 }
 
 @end

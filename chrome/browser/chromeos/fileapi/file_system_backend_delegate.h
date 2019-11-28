@@ -60,9 +60,8 @@ class FileSystemBackendDelegate {
   // Called from FileSystemBackend::GetRedirectURLForContents.  Please ensure
   // that the returned URL is secure to be opened in a browser tab, or referred
   // from <img>, <video>, XMLHttpRequest, etc...
-  virtual void GetRedirectURLForContents(
-      const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) = 0;
+  virtual void GetRedirectURLForContents(const storage::FileSystemURL& url,
+                                         storage::URLCallback callback) = 0;
 };
 
 }  // namespace chromeos

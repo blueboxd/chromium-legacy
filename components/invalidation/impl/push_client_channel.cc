@@ -79,7 +79,8 @@ void PushClientChannel::UpdateCredentials(const CoreAccountId& account_id,
     )");
   // TODO(https://crbug.com/1010544): Possibly pass an account id instead of
   // string here.
-  push_client_->UpdateCredentials(account_id.id, token, traffic_annotation);
+  push_client_->UpdateCredentials(account_id.ToString(), token,
+                                  traffic_annotation);
 }
 
 int PushClientChannel::GetInvalidationClientType() {

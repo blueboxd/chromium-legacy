@@ -162,8 +162,9 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
     std::vector<CoreAccountId> accounts = GetAccounts();
     std::vector<CoreAccountId> accounts_id;
     for (auto account_name : accounts) {
+      std::string email = account_name.ToString();
       AccountInfo account_info =
-          account_tracker_service_->FindAccountInfoByEmail(account_name.id);
+          account_tracker_service_->FindAccountInfoByEmail(email);
       DCHECK(!account_info.gaia.empty());
       accounts_id.push_back(CoreAccountId::FromGaiaId(account_info.gaia));
     }
@@ -339,7 +340,7 @@ void OAuth2TokenServiceDelegateAndroid::
 
   ScopedJavaLocalRef<jstring> j_account_id =
       primary_account_id.has_value()
-          ? ConvertUTF8ToJavaString(env, primary_account_id->id)
+          ? ConvertUTF8ToJavaString(env, primary_account_id->ToString())
           : nullptr;
   signin::Java_OAuth2TokenService_seedAndReloadAccountsWithPrimaryAccount(
       env, java_ref_, j_account_id);
@@ -366,8 +367,9 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
     const std::vector<CoreAccountId>& curr_ids) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
            << " sigined_in_account_id="
-           << (signed_in_account_id.has_value() ? signed_in_account_id->id
-                                                : std::string())
+           << (signed_in_account_id.has_value()
+                   ? signed_in_account_id->ToString()
+                   : std::string())
            << " prev_ids=" << prev_ids.size()
            << " curr_ids=" << curr_ids.size();
   // Clear any auth errors so that client can retry to get access tokens.

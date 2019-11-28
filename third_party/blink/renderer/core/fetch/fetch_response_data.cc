@@ -15,11 +15,60 @@
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "url/gurl.h"
 
 using Type = network::mojom::FetchResponseType;
 using ResponseSource = network::mojom::FetchResponseSource;
+
+// TODO(lfg): Stop converting from/to blink type. Instead use mojo to
+// automagically convert this.
+namespace network {
+namespace mojom {
+
+blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
+  return blink::CSPSource::New(
+      String::FromUTF8(source->scheme), String::FromUTF8(source->host),
+      source->port, String::FromUTF8(source->path), source->is_host_wildcard,
+      source->is_port_wildcard);
+}
+
+blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
+  WTF::Vector<blink::CSPSourcePtr> sources;
+  for (auto& it : source_list->sources)
+    sources.push_back(ConvertToBlink(std::move(it)));
+
+  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
+                                   source_list->allow_star);
+}
+
+blink::CSPDirective::Name ConvertToBlink(CSPDirective::Name name) {
+  return static_cast<blink::CSPDirective::Name>(name);
+}
+
+blink::CSPDirectivePtr ConvertToBlink(CSPDirectivePtr csp) {
+  return blink::CSPDirective::New(ConvertToBlink(csp->name),
+                                  ConvertToBlink(std::move(csp->source_list)));
+}
+
+blink::ContentSecurityPolicyPtr ConvertToBlink(ContentSecurityPolicyPtr csp) {
+  WTF::Vector<blink::CSPDirectivePtr> directives;
+  for (auto& directive : csp->directives)
+    directives.push_back(ConvertToBlink(std::move(directive)));
+
+  WTF::Vector<WTF::String> report_endpoints;
+  for (auto& endpoint : csp->report_endpoints)
+    report_endpoints.push_back(String::FromUTF8(endpoint));
+
+  return blink::ContentSecurityPolicy::New(std::move(directives),
+                                           csp->use_reporting_api,
+                                           std::move(report_endpoints));
+}
+
+}  // namespace mojom
+}  // namespace network
 
 namespace blink {
 
@@ -269,6 +318,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
 
   // Check if there's a Content-Security-Policy header and parse it if
   // necessary.
+  // TODO(lfg). What about report only header?
   if (base::FeatureList::IsEnabled(
           network::features::kOutOfBlinkFrameAncestors)) {
     String content_security_policy_header;
@@ -278,40 +328,8 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
       if (policy.Parse(request_url,
                        StringUTF8Adaptor(content_security_policy_header)
                            .AsStringPiece())) {
-        // Convert network::mojom::ContentSecurityPolicy to
-        // network::mojom::blink::ContentSecurityPolicy.
-        auto blink_frame_ancestors =
-            network::mojom::blink::CSPSourceList::New();
-        WTF::Vector<KURL> report_endpoints;
-
-        const network::mojom::CSPSourceListPtr& frame_ancestors_directive =
-            policy.content_security_policy_ptr()->frame_ancestors;
-        if (frame_ancestors_directive) {
-          for (auto& csp_source : frame_ancestors_directive->sources) {
-            blink_frame_ancestors->sources.push_back(
-                network::mojom::blink::CSPSource::New(
-                    String::FromUTF8(csp_source->scheme),
-                    String::FromUTF8(csp_source->host), csp_source->port,
-                    String::FromUTF8(csp_source->path),
-                    csp_source->is_host_wildcard,
-                    csp_source->is_port_wildcard));
-          }
-          blink_frame_ancestors->allow_self =
-              frame_ancestors_directive->allow_self;
-          blink_frame_ancestors->allow_star =
-              frame_ancestors_directive->allow_star;
-        }
-
-        for (auto& endpoints :
-             policy.content_security_policy_ptr()->report_endpoints) {
-          report_endpoints.push_back(endpoints);
-        }
-
         response->content_security_policy =
-            network::mojom::blink::ContentSecurityPolicy::New(
-                std::move(blink_frame_ancestors),
-                policy.content_security_policy_ptr()->use_reporting_api,
-                std::move(report_endpoints));
+            ConvertToBlink(policy.TakeContentSecurityPolicy());
       }
     }
   }

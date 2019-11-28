@@ -501,7 +501,8 @@ FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
                             buffer->DeprecatedByteLengthAsUnsigned()) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
-    : FormDataBytesConsumer(view->BaseAddress(), view->byteLength()) {}
+    : FormDataBytesConsumer(view->BaseAddress(),
+                            view->deprecatedByteLengthAsUnsigned()) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
     : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(

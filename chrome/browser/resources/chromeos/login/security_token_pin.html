@@ -30,7 +30,8 @@
               has-error="[[hasError_(parameters, userEdited_)]]"
               aria-label$="[[getAriaLabel_(locale, parameters, errorLabelId_,
                                            userEdited_)]]"
-              on-pin-change="onPinChange_" on-submit="onSubmit_">
+              on-pin-change="onPinChange_" on-submit="onSubmit_"
+              disabled="[[!canSubmit_]]">
             <div id="errorContainer" problem
                 hidden="[[!hasError_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
@@ -53,7 +54,7 @@
       <div slot="bottom-buttons" class="layout horizontal justified">
         <oobe-back-button on-tap="onBackClicked_"></oobe-back-button>
         <oobe-next-button on-tap="onSubmit_"
-            disabled="[[processingCompletion_]]"></oobe-next-button>
+            disabled="[[!canSubmit_]]"></oobe-next-button>
       </div>
     </oobe-dialog>
 

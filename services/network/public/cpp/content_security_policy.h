@@ -9,6 +9,8 @@
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 
+class GURL;
+
 namespace net {
 class HttpResponseHeaders;
 }  // namespace net

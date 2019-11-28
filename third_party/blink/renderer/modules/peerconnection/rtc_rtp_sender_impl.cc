@@ -240,13 +240,9 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
       // one, we copy the members one by one over the old struct, effectively
       // patching the changes done by the user.
       const auto& encoding = encodings[i];
-      new_parameters.encodings[i].codec_payload_type =
-          encoding.codec_payload_type;
-      new_parameters.encodings[i].dtx = encoding.dtx;
       new_parameters.encodings[i].active = encoding.active;
       new_parameters.encodings[i].bitrate_priority = encoding.bitrate_priority;
       new_parameters.encodings[i].network_priority = encoding.network_priority;
-      new_parameters.encodings[i].ptime = encoding.ptime;
       new_parameters.encodings[i].max_bitrate_bps = encoding.max_bitrate_bps;
       new_parameters.encodings[i].max_framerate = encoding.max_framerate;
       new_parameters.encodings[i].rid = encoding.rid;

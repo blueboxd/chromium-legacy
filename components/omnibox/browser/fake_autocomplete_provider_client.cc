@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_service.h"
@@ -44,12 +45,16 @@ FakeAutocompleteProviderClient::~FakeAutocompleteProviderClient() {
   // its destructor.
   GetInMemoryURLIndex()->Shutdown();
   set_in_memory_url_index(nullptr);
-  // History service can have its own thread. So we need to explicitly shut down
-  // it to prevent memory leaks.
-  GetHistoryService()->Shutdown();
-  // Note that RunUntilIdle() must still be called after this, from
-  // whichever task model is being used, probably TaskEnvironment,
-  // or there will be memory leaks.
+  // Allow its final cache write to complete in the thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+
+  // Explicitly shut down the history service and wait for its backed to be
+  // destroyed to prevent resource leaks.
+  base::RunLoop run_loop;
+  auto* history_service = GetHistoryService();
+  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
+  history_service->Shutdown();
+  run_loop.Run();
 }
 
 const AutocompleteSchemeClassifier&

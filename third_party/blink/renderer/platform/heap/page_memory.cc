@@ -35,14 +35,14 @@ PageMemoryRegion::PageMemoryRegion(Address base,
       is_large_page_(num_pages == 1),
       num_pages_(num_pages),
       region_tree_(region_tree) {
+  DCHECK(region_tree);
   region_tree_->Add(this);
   for (size_t i = 0; i < kBlinkPagesPerRegion; ++i)
     in_use_[i] = false;
 }
 
 PageMemoryRegion::~PageMemoryRegion() {
-  if (region_tree_)
-    region_tree_->Remove(this);
+  region_tree_->Remove(this);
   Release();
 }
 
@@ -73,66 +73,27 @@ PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
 }
 
 PageMemoryRegion* RegionTree::Lookup(Address address) {
-  RegionTreeNode* current = root_;
-  while (current) {
-    Address base = current->region_->Base();
-    if (address < base) {
-      current = current->left_;
-      continue;
-    }
-    if (address >= base + current->region_->size()) {
-      current = current->right_;
-      continue;
-    }
-    DCHECK(current->region_->Contains(address));
-    return current->region_;
-  }
+  auto it = set_.upper_bound(address);
+  // This check also covers set_.size() > 0, since for empty vectors it is
+  // guaranteed that begin() == end().
+  if (it == set_.begin())
+    return nullptr;
+  auto* result = std::next(it, -1)->second;
+  if (address < result->Base() + result->size())
+    return result;
   return nullptr;
 }
 
 void RegionTree::Add(PageMemoryRegion* region) {
   DCHECK(region);
-  RegionTreeNode* new_tree = new RegionTreeNode(region);
-  new_tree->AddTo(&root_);
-}
-
-void RegionTreeNode::AddTo(RegionTreeNode** context) {
-  Address base = region_->Base();
-  for (RegionTreeNode* current = *context; current; current = *context) {
-    DCHECK(!current->region_->Contains(base));
-    context =
-        (base < current->region_->Base()) ? &current->left_ : &current->right_;
-  }
-  *context = this;
+  auto result = set_.emplace(region->Base(), region);
+  DCHECK(result.second);
 }
 
 void RegionTree::Remove(PageMemoryRegion* region) {
   DCHECK(region);
-  DCHECK(root_);
-  Address base = region->Base();
-  RegionTreeNode** context = &root_;
-  RegionTreeNode* current = root_;
-  for (; current; current = *context) {
-    if (region == current->region_)
-      break;
-    context =
-        (base < current->region_->Base()) ? &current->left_ : &current->right_;
-  }
-
-  // Shutdown via detachMainThread might not have populated the region tree.
-  if (!current)
-    return;
-
-  *context = nullptr;
-  if (current->left_) {
-    current->left_->AddTo(context);
-    current->left_ = nullptr;
-  }
-  if (current->right_) {
-    current->right_->AddTo(context);
-    current->right_ = nullptr;
-  }
-  delete current;
+  auto size = set_.erase(region->Base());
+  DCHECK_EQ(1u, size);
 }
 
 PageMemory::PageMemory(PageMemoryRegion* reserved, const MemoryRegion& writable)

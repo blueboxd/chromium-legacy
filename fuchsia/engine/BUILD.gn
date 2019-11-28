@@ -316,6 +316,7 @@ test("web_engine_integration_tests") {
     "//base/test:run_all_unittests",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
     "//third_party/fuchsia-sdk/sdk:fuchsia-web",
   ]
   package_deps = [ [

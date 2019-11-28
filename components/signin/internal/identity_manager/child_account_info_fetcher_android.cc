@@ -43,7 +43,7 @@ ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
   JNIEnv* env = base::android::AttachCurrentThread();
   j_child_account_info_fetcher_.Reset(Java_ChildAccountInfoFetcher_create(
       env, reinterpret_cast<jlong>(service),
-      base::android::ConvertUTF8ToJavaString(env, account_id.id),
+      base::android::ConvertUTF8ToJavaString(env, account_id.ToString()),
       base::android::ConvertUTF8ToJavaString(env, account_name)));
 }
 

@@ -44,7 +44,7 @@ AccountInfo GetValidAccountInfo(std::string email,
                                 std::string full_name) {
   AccountInfo account_info;
   account_info.email = email;
-  account_info.gaia = account_id.id;
+  account_info.gaia = account_id.ToString();
   account_info.account_id = account_id;
   account_info.given_name = given_name;
   account_info.full_name = full_name;

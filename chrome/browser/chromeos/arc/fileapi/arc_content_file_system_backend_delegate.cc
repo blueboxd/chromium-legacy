@@ -57,7 +57,7 @@ storage::WatcherManager* ArcContentFileSystemBackendDelegate::GetWatcherManager(
 
 void ArcContentFileSystemBackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    storage::URLCallback callback) {
   NOTIMPLEMENTED();
 }
 

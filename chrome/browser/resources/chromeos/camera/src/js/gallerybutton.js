@@ -54,7 +54,7 @@ cca.GalleryButton = function(model) {
  */
 cca.GalleryButton.prototype.updateButton_ = function() {
   this.model_.lastPicture().then((picture) => {
-    if (picture != this.lastPicture_) {
+    if (picture !== this.lastPicture_) {
       this.lastPicture_ = picture;
       return true;
     }
@@ -75,29 +75,25 @@ cca.GalleryButton.prototype.updateButton_ = function() {
  * @private
  */
 cca.GalleryButton.prototype.openGallery_ = function(picture) {
-  if (cca.App.useGalleryApp()) {
-    const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
-    const entry = picture.pictureEntry;
-    chrome.fileManagerPrivate.executeTask(id, [entry], (result) => {
-      if (chrome.runtime.lastError) {
-        console.warn(
-            'Unable to open picture: ' + chrome.runtime.lastError.message);
-        return;
-      }
-      if (result != 'opened' && result != 'message_sent') {
-        console.warn('Unable to open picture: ' + result);
-      }
-    });
-  } else {
-    cca.nav.open('browser', picture);
-  }
+  const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+  const entry = picture.pictureEntry;
+  chrome.fileManagerPrivate.executeTask(id, [entry], (result) => {
+    if (chrome.runtime.lastError) {
+      console.warn(
+          'Unable to open picture: ' + chrome.runtime.lastError.message);
+      return;
+    }
+    if (result !== 'opened' && result !== 'message_sent') {
+      console.warn('Unable to open picture: ' + result);
+    }
+  });
 };
 
 /**
  * @override
  */
 cca.GalleryButton.prototype.onPictureDeleted = function(picture) {
-  if (this.lastPicture_ == picture) {
+  if (this.lastPicture_ === picture) {
     this.updateButton_();
   }
 };

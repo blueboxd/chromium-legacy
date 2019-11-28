@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('settings_personalization_options', function() {
+  /**
+   * @param {!Element} element
+   * @param {boolean} displayed
+   */
+  function assertVisible(element, displayed) {
+    assertEquals(
+        displayed, window.getComputedStyle(element)['display'] != 'none');
+  }
+
   suite('PersonalizationOptionsTests_AllBuilds', function() {
     /** @type {settings.TestPrivacyPageBrowserProxy} */
     let testBrowserProxy;
@@ -80,6 +89,14 @@ cr.define('settings_personalization_options', function() {
           testElement.$.passwordsLeakDetectionCheckbox.subLabel);
     });
 
+    test('PrivacySettingsRedesignEnabled_False', function() {
+      // Ensure that elements hidden by the updated privacy settings
+      // flag remain visible when the flag is in the default state
+      assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
+      assertVisible(testElement.$$('#safeBrowsingToggle'), true);
+      assertVisible(testElement.$$('#safeBrowsingReportingToggle'), true);
+    });
+
     if (!cr.isChromeOS) {
       test('leakDetectionToggleSignedInNotSyncingWithFalsePref', function() {
         testElement.set(
@@ -134,6 +151,36 @@ cr.define('settings_personalization_options', function() {
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
       assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
       assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
+    });
+  });
+
+  suite('PrivacySettingsRedesignTests', function() {
+    /** @type {SettingsPrivacyPageElement} */
+    let page;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        privacySettingsRedesignEnabled: true,
+      });
+    });
+
+    setup(function() {
+      syncBrowserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+      PolymerTest.clearBody();
+      page = document.createElement('settings-personalization-options');
+      document.body.appendChild(page);
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      page.remove();
+    });
+
+    test('PrivacySettingsRedesignEnabled_True', function() {
+      Polymer.dom.flush();
+      assertFalse(!!page.$$('#safeBrowsingToggle'));
+      assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
     });
   });
 

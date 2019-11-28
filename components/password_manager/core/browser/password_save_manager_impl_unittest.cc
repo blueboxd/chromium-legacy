@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -189,7 +190,10 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDownloadManager);
 };
 
-class PasswordSaveManagerImplTest : public testing::Test {
+}  // namespace
+
+class PasswordSaveManagerImplTest : public testing::Test,
+                                    public testing::WithParamInterface<bool> {
  public:
   PasswordSaveManagerImplTest()
       : votes_uploader_(&client_, false /* is_possible_change_password_form */),
@@ -294,8 +298,17 @@ class PasswordSaveManagerImplTest : public testing::Test {
         client_.IsMainFrameSecure(), client_.GetUkmSourceId());
     auto mock_form_saver = std::make_unique<NiceMock<MockFormSaver>>();
     mock_form_saver_ = mock_form_saver.get();
-    password_save_manager_impl_ =
-        std::make_unique<PasswordSaveManagerImpl>(std::move(mock_form_saver));
+
+    if (!GetParam()) {
+      password_save_manager_impl_ =
+          std::make_unique<PasswordSaveManagerImpl>(std::move(mock_form_saver));
+    } else {
+      password_save_manager_impl_ = std::make_unique<
+          MultiStorePasswordSaveManager>(
+          /*account_form_saver=*/std::move(mock_form_saver),
+          /*account_form_saver=*/std::make_unique<NiceMock<MockFormSaver>>());
+    }
+
     password_save_manager_impl_->Init(&client_, fetcher_.get(),
                                       metrics_recorder_, &votes_uploader_);
 
@@ -365,14 +378,14 @@ class PasswordSaveManagerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordSaveManagerImplTest);
 };
 
-TEST_F(PasswordSaveManagerImplTest, PermanentlyBlacklist) {
+TEST_P(PasswordSaveManagerImplTest, PermanentlyBlacklist) {
   PasswordStore::FormDigest form_digest(PasswordForm::Scheme::kDigest,
                                         "www.example.com", GURL("www.abc.com"));
   EXPECT_CALL(*mock_form_saver(), PermanentlyBlacklist(form_digest));
   password_save_manager_impl()->PermanentlyBlacklist(form_digest);
 }
 
-TEST_F(PasswordSaveManagerImplTest, Unblacklist) {
+TEST_P(PasswordSaveManagerImplTest, Unblacklist) {
   PasswordStore::FormDigest form_digest(PasswordForm::Scheme::kDigest,
                                         "www.example.com", GURL("www.abc.com"));
   EXPECT_CALL(*mock_form_saver(), Unblacklist(form_digest));
@@ -380,7 +393,7 @@ TEST_F(PasswordSaveManagerImplTest, Unblacklist) {
 }
 
 // Tests creating pending credentials when the password store is empty.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
   fetcher()->NotifyFetchCompleted();
 
   const base::Time kNow = base::Time::Now();
@@ -399,7 +412,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
 
 // Tests creating pending credentials when new credentials are submitted and the
 // store has another credentials saved.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsNewCredentials) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsNewCredentials) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   password_save_manager_impl()->CreatePendingCredentials(
       Parse(submitted_form_), observed_form_, submitted_form_,
@@ -415,7 +428,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsNewCredentials) {
 
 // Tests that when submitted credentials are equal to already saved one then
 // pending credentials equal to saved match.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsAlreadySaved) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsAlreadySaved) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   submitted_form_.fields[kUsernameFieldIndex].value =
@@ -434,7 +447,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsAlreadySaved) {
 
 // Tests that when submitted credentials are equal to already saved PSL
 // credentials.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
   PasswordForm expected = saved_match_;
 
   saved_match_.origin = GURL("https://m.accounts.google.com/auth");
@@ -460,7 +473,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
 
 // Tests creating pending credentials when new credentials are different only in
 // password with already saved one.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsPasswordOverriden) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPasswordOverriden) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   PasswordForm expected = saved_match_;
@@ -482,7 +495,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsPasswordOverriden) {
 
 // Tests that when submitted credentials are equal to already saved one then
 // pending credentials equal to saved match.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsUpdate) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsUpdate) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   FormData submitted_form = observed_form_only_password_fields_;
@@ -504,7 +517,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsUpdate) {
 
 // Tests creating pending credentials when a change password form is submitted
 // and there are multiple saved forms.
-TEST_F(PasswordSaveManagerImplTest,
+TEST_P(PasswordSaveManagerImplTest,
        CreatePendingCredentialsUpdateMultipleSaved) {
   PasswordForm another_saved_match = saved_match_;
   another_saved_match.username_value += ASCIIToUTF16("1");
@@ -526,7 +539,7 @@ TEST_F(PasswordSaveManagerImplTest,
 }
 
 // Tests creating pending credentials when the password field has an empty name.
-TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyName) {
+TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyName) {
   fetcher()->NotifyFetchCompleted();
 
   FormData anonymous_signup = observed_form_;
@@ -547,7 +560,7 @@ TEST_F(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyName) {
 
 // Tests that when credentials with a new username (i.e. not saved yet) is
 // successfully submitted, then they are saved correctly.
-TEST_F(PasswordSaveManagerImplTest, SaveNewCredentials) {
+TEST_P(PasswordSaveManagerImplTest, SaveNewCredentials) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
@@ -598,7 +611,7 @@ TEST_F(PasswordSaveManagerImplTest, SaveNewCredentials) {
 // Check that if there is saved PSL matched credentials with the same
 // username/password as in submitted form, then the saved form is the same
 // already saved only with origin and signon_realm from the submitted form.
-TEST_F(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
+TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
   SetNonFederatedAndNotifyFetchCompleted({&psl_saved_match_});
 
   FormData submitted_form = observed_form_;
@@ -638,7 +651,7 @@ TEST_F(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
 
 // Tests that when credentials with already saved username but with a new
 // password are submitted, then the saved password is updated.
-TEST_F(PasswordSaveManagerImplTest, OverridePassword) {
+TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   FormData submitted_form = observed_form_;
@@ -669,7 +682,7 @@ TEST_F(PasswordSaveManagerImplTest, OverridePassword) {
 
 // Tests that when the user changes password on a change password form then the
 // saved password is updated.
-TEST_F(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
+TEST_P(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
   PasswordForm not_best_saved_match = saved_match_;
   not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
@@ -709,7 +722,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
-TEST_F(PasswordSaveManagerImplTest, UpdateUsernameToAnotherFieldValue) {
+TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAnotherFieldValue) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner());
   fetcher()->NotifyFetchCompleted();
 
@@ -742,7 +755,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdateUsernameToAnotherFieldValue) {
       password_save_manager_impl()->GetPendingCredentials()->username_value);
 }
 
-TEST_F(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
+TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
   password_save_manager_impl()->CreatePendingCredentials(
@@ -769,7 +782,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 }
 
-TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
+TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
@@ -807,7 +820,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
   password_save_manager_impl()->Save(observed_form_, parsed_submitted_form);
 }
 
-TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
+TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   // Emulate submitting form with known username and different password.
@@ -838,7 +851,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
 }
 
-TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
+TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
   FormData submitted_form = observed_form_only_password_fields_;
 
   fetcher()->NotifyFetchCompleted();
@@ -898,7 +911,7 @@ TEST_F(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
   CheckPendingCredentials(expected, saved_form);
 }
 
-TEST_F(PasswordSaveManagerImplTest, PresaveGeneratedPasswordEmptyStore) {
+TEST_P(PasswordSaveManagerImplTest, PresaveGeneratedPasswordEmptyStore) {
   fetcher()->NotifyFetchCompleted();
 
   EXPECT_FALSE(password_save_manager_impl()->HasGeneratedPassword());
@@ -940,7 +953,7 @@ TEST_F(PasswordSaveManagerImplTest, PresaveGeneratedPasswordEmptyStore) {
   Mock::VerifyAndClearExpectations(mock_form_saver());
 }
 
-TEST_F(PasswordSaveManagerImplTest, PresaveGenerated_ModifiedUsername) {
+TEST_P(PasswordSaveManagerImplTest, PresaveGenerated_ModifiedUsername) {
   fetcher()->NotifyFetchCompleted();
 
   // Check that the generated password is presaved.
@@ -971,7 +984,7 @@ TEST_F(PasswordSaveManagerImplTest, PresaveGenerated_ModifiedUsername) {
             form_with_generated_password.password_value);
 }
 
-TEST_F(PasswordSaveManagerImplTest,
+TEST_P(PasswordSaveManagerImplTest,
        PresaveGeneratedPasswordExistingCredential) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -995,7 +1008,7 @@ TEST_F(PasswordSaveManagerImplTest,
             saved_form.password_value);
 }
 
-TEST_F(PasswordSaveManagerImplTest, PasswordNoLongerGenerated) {
+TEST_P(PasswordSaveManagerImplTest, PasswordNoLongerGenerated) {
   fetcher()->NotifyFetchCompleted();
   EXPECT_CALL(*mock_form_saver(), Save(_, _, _));
   PasswordForm submitted_form(parsed_observed_form_);
@@ -1005,7 +1018,7 @@ TEST_F(PasswordSaveManagerImplTest, PasswordNoLongerGenerated) {
   password_save_manager_impl()->PasswordNoLongerGenerated();
 }
 
-TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Accept) {
+TEST_P(PasswordSaveManagerImplTest, UserEventsForGeneration_Accept) {
   using GeneratedPasswordStatus =
       PasswordFormMetricsRecorder::GeneratedPasswordStatus;
 
@@ -1019,7 +1032,7 @@ TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Accept) {
       GeneratedPasswordStatus::kPasswordAccepted, 1);
 }
 
-TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Edit) {
+TEST_P(PasswordSaveManagerImplTest, UserEventsForGeneration_Edit) {
   using GeneratedPasswordStatus =
       PasswordFormMetricsRecorder::GeneratedPasswordStatus;
 
@@ -1039,7 +1052,7 @@ TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Edit) {
                                       1);
 }
 
-TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Clear) {
+TEST_P(PasswordSaveManagerImplTest, UserEventsForGeneration_Clear) {
   using GeneratedPasswordStatus =
       PasswordFormMetricsRecorder::GeneratedPasswordStatus;
 
@@ -1061,7 +1074,7 @@ TEST_F(PasswordSaveManagerImplTest, UserEventsForGeneration_Clear) {
                                       1);
 }
 
-TEST_F(PasswordSaveManagerImplTest, Update) {
+TEST_P(PasswordSaveManagerImplTest, Update) {
   PasswordForm not_best_saved_match = saved_match_;
   not_best_saved_match.preferred = false;
   PasswordForm saved_match_another_username = saved_match_;
@@ -1100,7 +1113,7 @@ TEST_F(PasswordSaveManagerImplTest, Update) {
   EXPECT_GE(updated_form.date_last_used, kNow);
 }
 
-TEST_F(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
+TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
   PasswordForm http_auth_form = parsed_observed_form_;
   http_auth_form.scheme = PasswordForm::Scheme::kBasic;
   fetcher()->set_scheme(PasswordForm::Scheme::kBasic);
@@ -1140,5 +1153,8 @@ TEST_F(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
   EXPECT_EQ(new_password, updated_form.password_value);
 }
 
-}  // namespace
+INSTANTIATE_TEST_SUITE_P(,
+                         PasswordSaveManagerImplTest,
+                         testing::Values(false, true));
+
 }  // namespace password_manager

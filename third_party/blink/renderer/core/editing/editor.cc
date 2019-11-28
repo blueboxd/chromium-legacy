@@ -276,7 +276,7 @@ void Editor::DeleteSelectionWithSmartDelete(
     return;
 
   DCHECK(GetFrame().GetDocument());
-  DeleteSelectionCommand::Create(
+  MakeGarbageCollected<DeleteSelectionCommand>(
       *GetFrame().GetDocument(),
       DeleteSelectionOptions::Builder()
           .SetSmartDelete(delete_mode == DeleteMode::kSmart)

@@ -55,6 +55,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the user can submit a login request.
+     * @private
+     */
+    canSubmit_: {
+      type: Boolean,
+      computed:
+          'computeCanSubmit_(parameters.attemptsLeft, processingCompletion_)',
+    },
   },
 
   /**
@@ -80,6 +90,16 @@ Polymer({
       default:
         assertNotReached(`Unexpected enum value: ${parameters.errorLabel}`);
     }
+  },
+
+  /**
+   * Returns whether the user can make more attempts to log in.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @return {boolean}
+   * @private
+   */
+  computeCanSubmit_: function(attemptsLeft, processingCompletion) {
+    return attemptsLeft != 0 && !processingCompletion;
   },
 
   /**

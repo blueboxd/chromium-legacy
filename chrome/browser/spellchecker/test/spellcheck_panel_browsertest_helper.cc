@@ -47,10 +47,14 @@ void SpellCheckPanelBrowserTestHelper::BindSpellCheckPanelHost(
     mojo::PendingReceiver<spellcheck::mojom::SpellCheckPanelHost> receiver) {
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromID(render_process_id);
-  auto spell_check_panel_host =
-      std::make_unique<SpellCheckMockPanelHost>(render_process_host);
-  spell_check_panel_host->SpellCheckPanelHostRequest(std::move(receiver));
-  hosts_.push_back(std::move(spell_check_panel_host));
+  auto* spell_check_panel_host =
+      GetSpellCheckMockPanelHostForProcess(render_process_host);
+  if (!spell_check_panel_host) {
+    hosts_.push_back(
+        std::make_unique<SpellCheckMockPanelHost>(render_process_host));
+    spell_check_panel_host = hosts_.back().get();
+  }
+  spell_check_panel_host->BindReceiver(std::move(receiver));
   std::move(quit_on_bind_closure_).Run();
 }
 }  // namespace spellcheck

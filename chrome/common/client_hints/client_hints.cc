@@ -51,8 +51,7 @@ void GetAllowedClientHintsFromSource(
     if (list_value == nullptr)
       continue;
     DCHECK(list_value->is_list());
-    base::span<const base::Value> client_hints_list = list_value->GetList();
-    for (const auto& client_hint : client_hints_list) {
+    for (const auto& client_hint : list_value->GetList()) {
       DCHECK(client_hint.is_int());
       blink::mojom::WebClientHintsType client_hint_mojo =
           static_cast<blink::mojom::WebClientHintsType>(client_hint.GetInt());

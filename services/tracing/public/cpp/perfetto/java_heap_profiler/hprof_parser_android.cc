@@ -14,6 +14,7 @@
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_number_conversions.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_data_type_android.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_instances_android.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
@@ -30,6 +31,11 @@ enum class HprofInstanceTypeId : uint32_t {
 
 static DataType GetTypeFromIndex(uint32_t type_index) {
   return static_cast<DataType>(type_index);
+}
+
+static std::string GenerateArrayIndexString(const std::string& type_name,
+                                            uint32_t index) {
+  return type_name + "$" + base::NumberToString(index);
 }
 
 }  // namespace
@@ -125,12 +131,10 @@ HprofParser::ParseResult HprofParser::ParseClassObjectDumpSubtag() {
       object_id = kInvalidObjectId;
       hprof_->SkipBytesByType(type);
     }
-
     static_fields_size += hprof_->SizeOfType(type_index);
 
     class_obj->static_fields.emplace_back(static_field_name, type, object_id);
   }
-
   class_obj->base_instance.size = static_fields_size;
 
   uint32_t num_instance_fields = hprof_->GetTwoBytes();
@@ -164,8 +168,8 @@ HprofParser::ParseResult HprofParser::ParseClassInstanceDumpSubtag() {
   hprof_->Skip(instance_size);
 
   class_instances_.emplace(
-      object_id, std::make_unique<ClassInstance>(
-                     object_id, class_id, temp_data_position, instance_size));
+      object_id,
+      std::make_unique<ClassInstance>(object_id, class_id, temp_data_position));
 
   return ParseResult::PARSE_SUCCESS;
 }
@@ -206,6 +210,87 @@ HprofParser::ParseResult HprofParser::ParsePrimitiveArrayDumpSubtag() {
   hprof_->Skip(size);
 
   return ParseResult::PARSE_SUCCESS;
+}
+
+HprofParser::ParseResult HprofParser::ResolveClassInstanceReferences() {
+  for (auto& it : class_instances_) {
+    ClassInstance* class_instance = it.second.get();
+
+    auto class_objects_it = class_objects_.find(class_instance->class_id);
+    if (class_objects_it == class_objects_.end()) {
+      parse_stats_.result = ParseResult::OBJECT_ID_NOT_FOUND;
+      return parse_stats_.result;
+    }
+    ClassObject* class_obj = class_objects_it->second.get();
+
+    class_instance->base_instance.size = class_obj->instance_size;
+    class_instance->base_instance.type_name =
+        class_obj->base_instance.type_name;
+
+    hprof_->set_position(class_instance->temp_data_position);
+
+    for (Field f : class_obj->instance_fields) {
+      if (f.type != DataType::OBJECT) {
+        hprof_->SkipBytesByType(f.type);
+        continue;
+      }
+
+      ObjectId id = hprof_->GetId();
+      Instance* base_instance = FindInstance(id);
+
+      // If instance is not found, just move on to the next id without adding
+      // any references.
+      if (!base_instance)
+        continue;
+
+      base_instance->AddReference(f.name,
+                                  class_instance->base_instance.object_id);
+    }
+  }
+
+  return ParseResult::PARSE_SUCCESS;
+}
+
+HprofParser::ParseResult HprofParser::ResolveObjectArrayInstanceReferences() {
+  for (auto& it : object_array_instances_) {
+    ObjectArrayInstance* object_array_instance = it.second.get();
+    hprof_->set_position(object_array_instance->temp_data_position);
+
+    auto class_objects_it =
+        class_objects_.find(object_array_instance->class_id);
+    if (class_objects_it == class_objects_.end()) {
+      parse_stats_.result = ParseResult::OBJECT_ID_NOT_FOUND;
+      return parse_stats_.result;
+    }
+    ClassObject* class_obj = class_objects_it->second.get();
+
+    object_array_instance->base_instance.type_name =
+        class_obj->base_instance.type_name;
+
+    for (uint32_t i = 0; i < object_array_instance->temp_data_length; i++) {
+      ObjectId id = hprof_->GetId();
+      Instance* base_instance = FindInstance(id);
+
+      // If instance is not found, just move on to the next id without adding
+      // any references.
+      if (!base_instance)
+        continue;
+
+      base_instance->AddReference(
+          GenerateArrayIndexString(
+              object_array_instance->base_instance.type_name, i),
+          object_array_instance->base_instance.object_id);
+    }
+  }
+  return ParseResult::PARSE_SUCCESS;
+}
+
+void HprofParser::ModifyClassObjectTypeNames() {
+  for (auto& it : class_objects_) {
+    std::string new_type_name =
+        "java.lang.Class:" + it.second.get()->base_instance.type_name;
+    it.second.get()->base_instance.type_name = new_type_name;
+  }
 }
 
 HprofParser::ParseResult HprofParser::ParseHeapDumpTag(
@@ -298,6 +383,7 @@ HprofParser::ParseResult HprofParser::ParseHeapDumpTag(
         NOTREACHED();
     }
   }
+
   return ParseResult::PARSE_SUCCESS;
 }
 
@@ -347,6 +433,28 @@ void HprofParser::ParseFileData(const unsigned char* file_data,
         hprof_->Skip(record_length_);
     }
   }
+
+  // Currently we have all instances defined in the hprof file within four
+  // separate id->instance based off instance type (ClassObject, ClassInstance,
+  // ObjectArrayInstance, PrimitiveArrayInstance). The next step is to take
+  // these instances and resolve references between pairs of instances.
+  // We do this specifically for ClassInstances and ObjectArrayInstances.
+  // For ClassInstances, we set a reference between a given class instance
+  // and any instances that are instance variables of the given class instance.
+  // For ObjectArrayInstances, we set a reference between objects within the
+  // object array and the actual object array.
+  if (ResolveClassInstanceReferences() != ParseResult::PARSE_SUCCESS) {
+    return;
+  }
+
+  ParseResult object_array_instance_result =
+      ResolveObjectArrayInstanceReferences();
+  if (object_array_instance_result != ParseResult::PARSE_SUCCESS) {
+    return;
+  }
+
+  ModifyClassObjectTypeNames();
+
   parse_stats_.result = ParseResult::PARSE_SUCCESS;
 }
 
@@ -378,4 +486,29 @@ HprofParser::ParseResult HprofParser::Parse() {
 
   return parse_stats_.result;
 }
+
+Instance* HprofParser::FindInstance(ObjectId id) {
+  auto class_instance_sub_instance_it = class_instances_.find(id);
+  if (class_instance_sub_instance_it != class_instances_.end()) {
+    return &class_instance_sub_instance_it->second->base_instance;
+  }
+
+  auto object_array_sub_instance_it = object_array_instances_.find(id);
+  if (object_array_sub_instance_it != object_array_instances_.end()) {
+    return &object_array_sub_instance_it->second->base_instance;
+  }
+
+  auto primitive_array_sub_instance_it = primitive_array_instances_.find(id);
+  if (primitive_array_sub_instance_it != primitive_array_instances_.end()) {
+    return &primitive_array_sub_instance_it->second->base_instance;
+  }
+
+  auto class_object_sub_instance_it = class_objects_.find(id);
+  if (class_object_sub_instance_it != class_objects_.end()) {
+    return &class_object_sub_instance_it->second->base_instance;
+  }
+
+  return nullptr;
+}
+
 }  // namespace tracing

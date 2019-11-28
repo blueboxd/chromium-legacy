@@ -348,7 +348,7 @@ Value::ListStorage& Value::GetList() {
   return list_;
 }
 
-span<const Value> Value::GetList() const {
+Value::ConstListView Value::GetList() const {
   CHECK(is_list());
   return list_;
 }

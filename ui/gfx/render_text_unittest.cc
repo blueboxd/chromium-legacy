@@ -733,21 +733,138 @@ TEST_F(RenderTextTest, ApplyStyleGrapheme) {
 
 TEST_F(RenderTextTest, ApplyStyleMultipleGraphemes) {
   RenderText* render_text = GetRenderText();
-  render_text->SetText(WideToUTF16(L"x\u0065\u0301x"));
+  render_text->SetText(WideToUTF16(L"xx\u0065\u0301x"));
   // Apply the style in the middle of a grapheme.
-  gfx::Range range(2, 3);
+  gfx::Range range(1, 3);
   render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, range);
   DrawVisualText();
 
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
-      {{0, false}, {2, true}, {3, false}}));
+      {{0, false}, {1, true}, {3, false}}));
 
   // Ensures that the style of the grapheme is the style at its first character.
   std::vector<TestSkiaTextRenderer::TextLog> text_log;
   renderer()->GetTextLogAndReset(&text_log);
-  ASSERT_EQ(2u, text_log.size());
-  EXPECT_EQ(2U, text_log[0].glyph_count);
-  EXPECT_EQ(1U, text_log[1].glyph_count);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(1U, text_log[0].glyph_count);
+  EXPECT_EQ(2U, text_log[1].glyph_count);
+  EXPECT_EQ(1U, text_log[2].glyph_count);
+}
+
+TEST_F(RenderTextTest, ApplyColorSurrogatePair) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"x\U0001F601x"));
+  render_text->ApplyColor(SK_ColorRED, Range(2, 3));
+  DrawVisualText();
+
+  // Ensures that the color is not applied since it is in the middle of a
+  // surrogate pair.
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  // There is three runs since the codepoints are not in the same script.
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[2].color);
+
+  // Obscure the text.
+  render_text->SetObscured(true);
+  DrawVisualText();
+
+  // Should be the same colors.
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(3U, text_log[0].glyph_count);
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+}
+
+TEST_F(RenderTextTest, ApplyColorLongEmoji) {
+  // A long emoji sequence.
+  static const wchar_t kLongEmoji[] = L"\U0001F468\u200D\u2708\uFE0F";
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(kLongEmoji));
+  render_text->AppendText(WideToUTF16(kLongEmoji));
+  render_text->AppendText(WideToUTF16(kLongEmoji));
+
+  render_text->ApplyColor(SK_ColorRED, Range(0, 2));
+  render_text->ApplyColor(SK_ColorBLUE, Range(8, 13));
+  DrawVisualText();
+
+  // Ensures that the color of the emoji is the color at its first character.
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+
+  // Reset the color.
+  render_text->SetColor(SK_ColorBLACK);
+  DrawVisualText();
+
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+}
+
+TEST_F(RenderTextTest, ApplyColorObscuredEmoji) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\U0001F628\U0001F628\U0001F628"));
+
+  render_text->ApplyColor(SK_ColorRED, Range(0, 2));
+  render_text->ApplyColor(SK_ColorBLUE, Range(4, 5));
+  DrawVisualText();
+
+  // Ensures that colors are applied.
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+
+  // Obscure the text.
+  render_text->SetObscured(true);
+  DrawVisualText();
+
+  // The obscured text (layout text) no longer contains surrogate pairs.
+  EXPECT_EQ(render_text->text().size(), 2 * test_api()->GetLayoutText().size());
+
+  // Should give the same colors.
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(3u, text_log.size());
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+  EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+
+  for (size_t i = 0; i < render_text->text().size(); ++i) {
+    render_text->RenderText::SetObscuredRevealIndex(i);
+    DrawVisualText();
+
+    // Should give the same colors.
+    renderer()->GetTextLogAndReset(&text_log);
+    ASSERT_EQ(3u, text_log.size());
+    EXPECT_EQ(SK_ColorRED, text_log[0].color);
+    EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
+    EXPECT_EQ(SK_ColorBLUE, text_log[2].color);
+  }
+}
+
+TEST_F(RenderTextTest, ApplyColorArabicDiacritics) {
+  // Render an Arabic character with two diacritics. The color should be taken
+  // from the base character.
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\u0628\u0651\u0650"));
+  render_text->ApplyColor(SK_ColorRED, Range(0, 1));
+  render_text->ApplyColor(SK_ColorBLACK, Range(1, 2));
+  render_text->ApplyColor(SK_ColorBLUE, Range(2, 3));
+  DrawVisualText();
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
 }
 
 TEST_F(RenderTextTest, ApplyColorArabicLigature) {

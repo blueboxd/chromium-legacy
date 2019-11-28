@@ -2980,9 +2980,6 @@ source_set("unit_tests") {
     "../ui/webui/settings/chromeos/device_keyboard_handler_unittest.cc",
     "../ui/webui/settings/chromeos/internet_handler_unittest.cc",
     "../ui/webui/settings/chromeos/multidevice_handler_unittest.cc",
-    "//components/drive/drive_notification_manager_unittest.cc",
-    "//components/drive/resource_metadata_storage_unittest.cc",
-    "//components/drive/search_metadata_unittest.cc",
   ]
 
   public_deps = [

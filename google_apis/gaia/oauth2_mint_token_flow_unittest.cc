@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -174,12 +175,12 @@ class OAuth2MintTokenFlowTest : public testing::Test {
                                                   device_id, mode));
   }
 
-  // Helper to parse the given string to DictionaryValue.
-  static base::DictionaryValue* ParseJson(const std::string& str) {
-    std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
-    EXPECT_TRUE(value.get());
-    EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
-    return static_cast<base::DictionaryValue*>(value.release());
+  // Helper to parse the given string to base::Value.
+  static std::unique_ptr<base::Value> ParseJson(const std::string& str) {
+    base::Optional<base::Value> value = base::JSONReader::Read(str);
+    EXPECT_TRUE(value.has_value());
+    EXPECT_TRUE(value->is_dict());
+    return std::make_unique<base::Value>(std::move(*value));
   }
 
   std::unique_ptr<MockMintTokenFlow> flow_;
@@ -249,8 +250,7 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
 
 TEST_F(OAuth2MintTokenFlowTest, ParseMintTokenResponse) {
   {  // Access token missing.
-    std::unique_ptr<base::DictionaryValue> json(
-        ParseJson(kTokenResponseNoAccessToken));
+    std::unique_ptr<base::Value> json = ParseJson(kTokenResponseNoAccessToken);
     std::string at;
     int ttl;
     EXPECT_FALSE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at,
@@ -258,7 +258,7 @@ TEST_F(OAuth2MintTokenFlowTest, ParseMintTokenResponse) {
     EXPECT_TRUE(at.empty());
   }
   {  // All good.
-    std::unique_ptr<base::DictionaryValue> json(ParseJson(kValidTokenResponse));
+    std::unique_ptr<base::Value> json = ParseJson(kValidTokenResponse);
     std::string at;
     int ttl;
     EXPECT_TRUE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at,
@@ -270,24 +270,22 @@ TEST_F(OAuth2MintTokenFlowTest, ParseMintTokenResponse) {
 
 TEST_F(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse) {
   {  // Description missing.
-    std::unique_ptr<base::DictionaryValue> json(
-        ParseJson(kIssueAdviceResponseNoDescription));
+    std::unique_ptr<base::Value> json =
+        ParseJson(kIssueAdviceResponseNoDescription);
     IssueAdviceInfo ia;
     EXPECT_FALSE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
         json.get(), &ia));
     EXPECT_TRUE(ia.empty());
   }
   {  // Detail missing.
-    std::unique_ptr<base::DictionaryValue> json(
-        ParseJson(kIssueAdviceResponseNoDetail));
+    std::unique_ptr<base::Value> json = ParseJson(kIssueAdviceResponseNoDetail);
     IssueAdviceInfo ia;
     EXPECT_FALSE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
         json.get(), &ia));
     EXPECT_TRUE(ia.empty());
   }
   {  // All good.
-    std::unique_ptr<base::DictionaryValue> json(
-        ParseJson(kValidIssueAdviceResponse));
+    std::unique_ptr<base::Value> json = ParseJson(kValidIssueAdviceResponse);
     IssueAdviceInfo ia;
     EXPECT_TRUE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
         json.get(), &ia));

@@ -64,11 +64,11 @@ bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
   }
   base::CheckedNumeric<int64_t> total = byte_offset;
   total += byte_length;
-  if (!total.IsValid() || total.ValueOrDie() > view->byteLength()) {
+  if (!total.IsValid() || total.ValueOrDie() > view->byteLengthAsSizeT()) {
     return false;
   }
   if (!byte_length) {
-    byte_length = view->byteLength() - byte_offset;
+    byte_length = view->byteLengthAsSizeT() - byte_offset;
   }
   uint8_t* data = static_cast<uint8_t*>(view->BaseAddressMaybeShared());
   data += byte_offset;
@@ -2178,14 +2178,16 @@ void WebGL2RenderingContextBase::compressedTexImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
-  if (src_offset > data.View()->byteLength()) {
+  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override = data.View()->byteLength() - src_offset;
-  } else if (src_length_override > data.View()->byteLength() - src_offset) {
+    src_length_override =
+        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
+  } else if (src_length_override >
+             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
     return;
@@ -2258,14 +2260,16 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
-  if (src_offset > data.View()->byteLength()) {
+  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage2D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override = data.View()->byteLength() - src_offset;
-  } else if (src_length_override > data.View()->byteLength() - src_offset) {
+    src_length_override =
+        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
+  } else if (src_length_override >
+             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
     return;
@@ -2320,14 +2324,16 @@ void WebGL2RenderingContextBase::compressedTexImage3D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage3D", internalformat))
     return;
-  if (src_offset > data.View()->byteLength()) {
+  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override = data.View()->byteLength() - src_offset;
-  } else if (src_length_override > data.View()->byteLength() - src_offset) {
+    src_length_override =
+        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
+  } else if (src_length_override >
+             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcLengthOverride is out of range");
     return;
@@ -2384,14 +2390,16 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexSubImage3D", format))
     return;
-  if (src_offset > data.View()->byteLength()) {
+  if (src_offset > data.View()->deprecatedByteLengthAsUnsigned()) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcOffset is out of range");
     return;
   }
   if (src_length_override == 0) {
-    src_length_override = data.View()->byteLength() - src_offset;
-  } else if (src_length_override > data.View()->byteLength() - src_offset) {
+    src_length_override =
+        data.View()->deprecatedByteLengthAsUnsigned() - src_offset;
+  } else if (src_length_override >
+             data.View()->deprecatedByteLengthAsUnsigned() - src_offset) {
     SynthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcLengthOverride is out of range");
     return;

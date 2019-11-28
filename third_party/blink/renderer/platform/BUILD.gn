@@ -1262,6 +1262,7 @@ jumbo_component("platform") {
     "peerconnection/rtc_event_log_output_sink_proxy.h",
     "peerconnection/rtc_ice_candidate_platform.cc",
     "peerconnection/rtc_ice_candidate_platform.h",
+    "peerconnection/rtc_legacy_stats.h",
     "peerconnection/rtc_offer_options_platform.h",
     "peerconnection/rtc_rtp_sender_platform.cc",
     "peerconnection/rtc_rtp_sender_platform.h",

@@ -38,14 +38,10 @@ class ServiceWorkerInstalledScriptReader {
   // Receives the read data.
   class Client {
    public:
-    virtual void OnStarted(std::string encoding,
-                           base::flat_map<std::string, std::string> headers,
-                           mojo::ScopedDataPipeConsumerHandle body_handle,
-                           uint64_t body_size,
-                           mojo::ScopedDataPipeConsumerHandle meta_data_handle,
-                           uint64_t meta_data_size) = 0;
-    virtual void OnHttpInfoRead(
-        scoped_refptr<HttpResponseInfoIOBuffer> http_info) = 0;
+    virtual void OnStarted(
+        scoped_refptr<HttpResponseInfoIOBuffer> http_info,
+        mojo::ScopedDataPipeConsumerHandle body_handle,
+        mojo::ScopedDataPipeConsumerHandle meta_data_handle) = 0;
     // Called after both body and metadata have finished being written to the
     // data pipes, or called immediately if an error occurred.
     virtual void OnFinished(FinishedReason reason) = 0;

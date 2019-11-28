@@ -123,13 +123,13 @@ class BeaconDOMArrayBufferView final : public Beacon {
  public:
   explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data) : data_(data) {}
 
-  uint64_t size() const override { return data_->byteLength(); }
+  uint64_t size() const override { return data_->byteLengthAsSizeT(); }
 
   void Serialize(ResourceRequest& request) const override {
     DCHECK(data_);
 
-    scoped_refptr<EncodedFormData> entity_body =
-        EncodedFormData::Create(data_->BaseAddress(), data_->byteLength());
+    scoped_refptr<EncodedFormData> entity_body = EncodedFormData::Create(
+        data_->BaseAddress(), data_->deprecatedByteLengthAsUnsigned());
     request.SetHttpBody(std::move(entity_body));
 
     // FIXME: a reasonable choice, but not in the spec; should it give a

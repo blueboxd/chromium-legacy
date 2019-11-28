@@ -33,8 +33,8 @@ bool ProfileOAuth2TokenServiceDelegate::ValidateAccountId(
   // Note that some tests don't use email strings as account id, and after
   // the gaia id migration it won't be an email.  So only check for
   // canonicalization if the account_id is suspected to be an email.
-  if (account_id.id.find('@') != std::string::npos &&
-      gaia::CanonicalizeEmail(account_id.id) != account_id.id) {
+  if (account_id.ToString().find('@') != std::string::npos &&
+      gaia::CanonicalizeEmail(account_id.ToString()) != account_id.ToString()) {
     valid = false;
   }
 

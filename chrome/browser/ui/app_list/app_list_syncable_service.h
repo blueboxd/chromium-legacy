@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -154,6 +155,9 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Returns true if this service was initialized.
   bool IsInitialized() const;
+
+  // Signalled when AppListSyncableService is Initialized.
+  const base::OneShotEvent& on_initialized() const { return on_initialized_; }
 
   // Returns true if sync was started.
   bool IsSyncing() const;
@@ -331,6 +335,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // List of observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
+  base::OneShotEvent on_initialized_;
 
   base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_{this};
 

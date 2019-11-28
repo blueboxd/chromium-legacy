@@ -39,7 +39,9 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
       ios::ChromeBrowserState* browser_state,
       web::WebState* web_state,
       const std::vector<BlockedPopupTabHelper::Popup>& popups)
-      : browser_state_(browser_state), web_state_(web_state), popups_(popups) {}
+      : browser_state_(browser_state), web_state_(web_state), popups_(popups) {
+    delegate_creation_time_ = [NSDate timeIntervalSinceReferenceDate];
+  }
 
   ~BlockPopupInfoBarDelegate() override {}
 
@@ -66,6 +68,12 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   bool Accept() override {
+    NSTimeInterval duration =
+        [NSDate timeIntervalSinceReferenceDate] - delegate_creation_time_;
+    [ConfirmInfobarMetricsRecorder
+        recordConfirmAcceptTime:duration
+          forInfobarConfirmType:InfobarConfirmType::
+                                    kInfobarConfirmTypeBlockPopups];
     [ConfirmInfobarMetricsRecorder
         recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Accepted
             forInfobarConfirmType:InfobarConfirmType::
@@ -101,6 +109,8 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   std::vector<BlockedPopupTabHelper::Popup> popups_;
   // The icon to display.
   mutable gfx::Image icon_;
+  // TimeInterval when the delegate was created.
+  NSTimeInterval delegate_creation_time_;
 };
 }  // namespace
 

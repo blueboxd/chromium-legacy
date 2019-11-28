@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
 
+#include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -41,14 +43,32 @@ class WebEngineIntegrationTest : public testing::Test {
   ~WebEngineIntegrationTest() override = default;
 
   void SetUp() override {
-    web_context_provider_ = base::fuchsia::ComponentContextForCurrentProcess()
-                                ->svc()
-                                ->Connect<fuchsia::web::ContextProvider>();
-    web_context_provider_.set_error_handler(
-        [](zx_status_t status) { ADD_FAILURE(); });
-
     net::test_server::RegisterDefaultHandlers(&embedded_test_server_);
     ASSERT_TRUE(embedded_test_server_.Start());
+  }
+
+  void StartWebEngine(const base::CommandLine& command_line =
+                          base::CommandLine(base::CommandLine::NO_PROGRAM)) {
+    fuchsia::sys::LaunchInfo launch_info;
+    launch_info.url = "fuchsia-pkg://fuchsia.com/chromium#meta/chromium.cmx";
+    launch_info.arguments = command_line.argv();
+
+    fidl::InterfaceHandle<fuchsia::io::Directory> web_engine_services_dir;
+    launch_info.directory_request =
+        web_engine_services_dir.NewRequest().TakeChannel();
+
+    fuchsia::sys::LauncherPtr launcher;
+    base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+        launcher.NewRequest());
+    launcher->CreateComponent(std::move(launch_info),
+                              web_engine_controller_.NewRequest());
+
+    sys::ServiceDirectory web_engine_service_dir(
+        std::move(web_engine_services_dir));
+
+    web_engine_service_dir.Connect(web_context_provider_.NewRequest());
+    web_context_provider_.set_error_handler(
+        [](zx_status_t status) { ADD_FAILURE(); });
   }
 
   fuchsia::web::CreateContextParams DefaultContextParams() const {
@@ -127,6 +147,8 @@ class WebEngineIntegrationTest : public testing::Test {
  protected:
   const base::test::TaskEnvironment task_environment_;
 
+  fidl::InterfaceHandle<fuchsia::sys::ComponentController>
+      web_engine_controller_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
 
   net::EmbeddedTestServer embedded_test_server_;
@@ -139,6 +161,8 @@ class WebEngineIntegrationTest : public testing::Test {
 };
 
 TEST_F(WebEngineIntegrationTest, ValidUserAgent) {
+  StartWebEngine();
+
   const std::string kEchoHeaderPath =
       std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
   const GURL kEchoUserAgentUrl(embedded_test_server_.GetURL(kEchoHeaderPath));
@@ -184,6 +208,8 @@ TEST_F(WebEngineIntegrationTest, ValidUserAgent) {
 }
 
 TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
+  StartWebEngine();
+
   const std::string kEchoHeaderPath =
       std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
   const GURL kEchoUserAgentUrl(embedded_test_server_.GetURL(kEchoHeaderPath));
@@ -215,6 +241,8 @@ TEST_F(WebEngineIntegrationTest, InvalidUserAgent) {
 // - DevTools becomes available when the first debuggable Frame is created.
 // - DevTools closes when the last debuggable Frame is closed.
 TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
+  StartWebEngine();
+
   // Create a Context with remote debugging enabled via an ephemeral port.
   fuchsia::web::CreateContextParams create_params;
   auto directory = base::fuchsia::OpenDirectory(
@@ -311,6 +339,8 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
 // Check that remote debugging requests for Frames in non-debuggable Contexts
 // cause an error to be reported.
 TEST_F(WebEngineIntegrationTest, RequestDebuggableFrameInNonDebuggableContext) {
+  StartWebEngine();
+
   fuchsia::web::CreateContextParams create_params = DefaultContextParams();
 
   fuchsia::web::ContextPtr web_context;
@@ -335,6 +365,8 @@ TEST_F(WebEngineIntegrationTest, RequestDebuggableFrameInNonDebuggableContext) {
 
 // Navigates to a resource served under the "testdata" ContentDirectory.
 TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
+  StartWebEngine();
+
   const GURL kUrl("fuchsia-dir://testdata/title1.html");
   constexpr char kTitle[] = "title 1";
 
@@ -356,6 +388,8 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
 }
 
 TEST_F(WebEngineIntegrationTest, PlayAudio) {
+  StartWebEngine();
+
   fuchsia::web::CreateContextParams create_params =
       DefaultContextParamsWithTestData();
   auto features = fuchsia::web::ContextFeatureFlags::AUDIO;

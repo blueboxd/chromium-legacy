@@ -130,21 +130,20 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
   }
 
   // The partition list must have at least one entry.
-  base::span<const base::Value> partition_list_storage =
-      partition_list->GetList();
-  if (partition_list_storage.empty()) {
+  base::Value::ConstListView partition_list_view = partition_list->GetList();
+  if (partition_list_view.empty()) {
     *error = base::ASCIIToUTF16(errors::kInvalidWebviewPartitionsList);
     return false;
   }
 
-  for (size_t i = 0; i < partition_list_storage.size(); ++i) {
-    if (!partition_list_storage[i].is_dict()) {
+  for (size_t i = 0; i < partition_list_view.size(); ++i) {
+    if (!partition_list_view[i].is_dict()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidWebviewPartition, base::NumberToString(i));
       return false;
     }
 
-    const base::Value* webview_name = partition_list_storage[i].FindKeyOfType(
+    const base::Value* webview_name = partition_list_view[i].FindKeyOfType(
         keys::kWebviewName, base::Value::Type::STRING);
     if (webview_name == nullptr) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -153,7 +152,7 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
     }
     const std::string& partition_pattern = webview_name->GetString();
 
-    const base::Value* url_list = partition_list_storage[i].FindKeyOfType(
+    const base::Value* url_list = partition_list_view[i].FindKeyOfType(
         keys::kWebviewAccessibleResources, base::Value::Type::LIST);
     if (url_list == nullptr) {
       *error = base::ASCIIToUTF16(
@@ -162,8 +161,8 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
     }
 
     // The URL list should have at least one entry.
-    base::span<const base::Value> url_list_storage = url_list->GetList();
-    if (url_list_storage.empty()) {
+    base::Value::ConstListView url_list_view = url_list->GetList();
+    if (url_list_view.empty()) {
       *error = base::ASCIIToUTF16(
           errors::kInvalidWebviewAccessibleResourcesList);
       return false;
@@ -171,8 +170,8 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
 
     auto partition_item = std::make_unique<PartitionItem>(partition_pattern);
 
-    for (size_t i = 0; i < url_list_storage.size(); ++i) {
-      if (!url_list_storage[i].is_string()) {
+    for (size_t i = 0; i < url_list_view.size(); ++i) {
+      if (!url_list_view[i].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidWebviewAccessibleResource, base::NumberToString(i));
         return false;
@@ -180,7 +179,7 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
       partition_item->AddPattern(
           URLPattern(URLPattern::SCHEME_EXTENSION,
                      Extension::GetResourceURL(extension->url(),
-                                               url_list_storage[i].GetString())
+                                               url_list_view[i].GetString())
                          .spec()));
     }
     info->AddPartitionItem(std::move(partition_item));

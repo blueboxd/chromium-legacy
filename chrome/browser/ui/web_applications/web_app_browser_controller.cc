@@ -124,7 +124,7 @@ const AppRegistrar& WebAppBrowserController::registrar() const {
   return provider_.registrar();
 }
 
-void WebAppBrowserController::OnReadIcon(SkBitmap bitmap) {
+void WebAppBrowserController::OnReadIcon(const SkBitmap& bitmap) {
   if (bitmap.empty()) {
     DLOG(ERROR) << "Failed to read icon for web app";
     return;

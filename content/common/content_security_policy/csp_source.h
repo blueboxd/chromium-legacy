@@ -32,7 +32,7 @@ struct CONTENT_EXPORT CSPSource {
             int port,
             bool is_port_wildcard,
             const std::string& path);
-  explicit CSPSource(const network::mojom::CSPSource& csp_source);
+  explicit CSPSource(network::mojom::CSPSourcePtr csp_source);
   CSPSource(const CSPSource& source);
   ~CSPSource();
 

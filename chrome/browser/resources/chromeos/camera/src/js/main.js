@@ -52,12 +52,6 @@ cca.App = function() {
   this.galleryButton_ = new cca.GalleryButton(this.gallery_);
 
   /**
-   * @type {cca.views.Browser}
-   * @private
-   */
-  this.browserView_ = new cca.views.Browser(this.gallery_);
-
-  /**
    * @type {cca.views.Camera}
    * @private
    */
@@ -89,18 +83,9 @@ cca.App = function() {
     new cca.views.BaseSettings('#photoresolutionsettings'),
     new cca.views.BaseSettings('#videoresolutionsettings'),
     new cca.views.BaseSettings('#expertsettings'),
-    this.browserView_,
     new cca.views.Warning(),
     new cca.views.Dialog('#message-dialog'),
   ]);
-};
-
-/*
- * Checks if it is applicable to use CrOS gallery app.
- * @return {boolean} Whether applicable or not.
- */
-cca.App.useGalleryApp = function() {
-  return chrome.fileManagerPrivate && cca.state.get('ext-fs');
 };
 
 /**
@@ -168,9 +153,6 @@ cca.App.prototype.start = function() {
       .then((external) => {
         cca.state.set('ext-fs', external);
         this.gallery_.addObserver(this.galleryButton_);
-        if (!cca.App.useGalleryApp()) {
-          this.gallery_.addObserver(this.browserView_);
-        }
         this.gallery_.load();
         cca.nav.open('camera');
       })

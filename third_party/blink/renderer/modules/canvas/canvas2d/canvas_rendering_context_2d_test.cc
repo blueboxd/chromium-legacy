@@ -773,7 +773,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
   ImageDataArray data_array = image_data->dataUnion();
   ASSERT_TRUE(data_array.IsFloat32Array());
   DOMArrayBufferView* buffer_view = data_array.GetAsFloat32Array().View();
-  ASSERT_EQ(16u, buffer_view->byteLength() / buffer_view->TypeSize());
+  ASSERT_EQ(16u, buffer_view->byteLengthAsSizeT() / buffer_view->TypeSize());
   float* actual_pixels = static_cast<float*>(buffer_view->BaseAddress());
 
   sk_sp<SkImage> decoded_image =

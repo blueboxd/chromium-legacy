@@ -9,6 +9,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
+#include "media/gpu/macros.h"
 
 namespace media {
 
@@ -32,6 +34,33 @@ std::string VectorToString(const std::vector<T>& vec) {
   }
   result << "]";
   return result.str();
+}
+
+// Verify if the format of |frame| matches |config|.
+bool CheckVideoFrameFormat(const ImageProcessor::PortConfig& config,
+                           const VideoFrame& frame) {
+  // Because propriatary format fourcc will map to other common VideoPixelFormat
+  // with same layout, we convert to VideoPixelFormat to check.
+  if (frame.format() != config.fourcc.ToVideoPixelFormat()) {
+    VLOGF(1) << "Invalid frame format="
+             << VideoPixelFormatToString(frame.format())
+             << ", expected=" << config.fourcc.ToString();
+    return false;
+  }
+
+  if (frame.layout().coded_size() != config.size) {
+    VLOGF(1) << "Invalid frame size=" << frame.layout().coded_size().ToString()
+             << ", expected=" << config.size.ToString();
+    return false;
+  }
+
+  if (frame.storage_type() != config.storage_type()) {
+    VLOGF(1) << "Invalid frame.storage_type=" << frame.storage_type()
+             << ", input_storage_type=" << config.storage_type();
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -73,6 +102,8 @@ ImageProcessor::ImageProcessor(
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
 }
 
+ImageProcessor::~ImageProcessor() = default;
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                              LegacyFrameReadyCB cb) {
@@ -94,6 +125,12 @@ bool ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
                              FrameReadyCB cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK_EQ(output_mode(), OutputMode::IMPORT);
+  DCHECK(input_frame);
+  DCHECK(output_frame);
+
+  if (!CheckVideoFrameFormat(input_config_, *input_frame) ||
+      !CheckVideoFrameFormat(output_config_, *output_frame))
+    return false;
 
   return ProcessInternal(std::move(input_frame), std::move(output_frame),
                          std::move(cb));

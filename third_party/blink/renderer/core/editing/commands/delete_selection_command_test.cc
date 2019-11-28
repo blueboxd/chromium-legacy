@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <memory>
 
@@ -45,12 +46,13 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
       SetSelectionOptions());
 
   DeleteSelectionCommand* command =
-      DeleteSelectionCommand::Create(GetDocument(),
-                                     DeleteSelectionOptions::Builder()
-                                         .SetMergeBlocksAfterDelete(true)
-                                         .SetSanitizeMarkup(true)
-                                         .Build(),
-                                     InputEvent::InputType::kDeleteByCut);
+      MakeGarbageCollected<DeleteSelectionCommand>(
+          GetDocument(),
+          DeleteSelectionOptions::Builder()
+              .SetMergeBlocksAfterDelete(true)
+              .SetSanitizeMarkup(true)
+              .Build(),
+          InputEvent::InputType::kDeleteByCut);
 
   EXPECT_TRUE(command->Apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<div contenteditable=\"true\"><br></div>",
@@ -68,11 +70,12 @@ TEST_F(DeleteSelectionCommandTest, ForwardDeleteWithFirstLetter) {
       SetSelectionTextToBody("<p contenteditable>a^b|c</p>"),
       SetSelectionOptions());
 
-  DeleteSelectionCommand& command = *DeleteSelectionCommand::Create(
-      GetDocument(), DeleteSelectionOptions::Builder()
-                         .SetMergeBlocksAfterDelete(true)
-                         .SetSanitizeMarkup(true)
-                         .Build());
+  DeleteSelectionCommand& command =
+      *MakeGarbageCollected<DeleteSelectionCommand>(
+          GetDocument(), DeleteSelectionOptions::Builder()
+                             .SetMergeBlocksAfterDelete(true)
+                             .SetSanitizeMarkup(true)
+                             .Build());
   EXPECT_TRUE(command.Apply()) << "the delete command should have succeeded";
   EXPECT_EQ("<p contenteditable>a|c</p>", GetSelectionTextFromBody());
 }

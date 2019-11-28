@@ -99,10 +99,10 @@ bool ParseHostsFromJSON(Extension* extension,
   }
 
   // Add all permissions parsed from the manifest to |hosts|.
-  base::span<const base::Value> list_storage = permissions->GetList();
-  for (size_t i = 0; i < list_storage.size(); ++i) {
-    if (list_storage[i].is_string()) {
-      hosts->push_back(list_storage[i].GetString());
+  base::Value::ConstListView list_view = permissions->GetList();
+  for (size_t i = 0; i < list_view.size(); ++i) {
+    if (list_view[i].is_string()) {
+      hosts->push_back(list_view[i].GetString());
     } else {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidHostPermission, base::NumberToString(i));

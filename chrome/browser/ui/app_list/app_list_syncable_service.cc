@@ -928,6 +928,11 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   HandleUpdateFinished();
 
+  // Check if already signaled since unit tests make multiple calls.
+  if (!on_initialized_.is_signaled()) {
+    on_initialized_.Signal();
+  }
+
   return result;
 }
 

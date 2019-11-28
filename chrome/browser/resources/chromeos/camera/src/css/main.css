@@ -22,51 +22,6 @@ body {
   width: 100%;
 }
 
-.scrollbar-track {
-  padding: 2px;
-  position: fixed;
-}
-
-.scrollbar-track-horizontal {
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.scrollbar-track-vertical {
-  bottom: 0;
-  right: 0;
-  top: 0;
-}
-
-.scrollbar-thumb {
-  background: white;
-  border: 1px solid #555;
-  border-radius: 3px;
-  box-sizing: border-box;
-  opacity: 0.4;
-  position: absolute;
-  transition: opacity 100ms;
-}
-
-.scrollbar-track .scrollbar-thumb:hover {
-  opacity: 0.6;
-}
-
-.scrollbar-track .scrollbar-thumb:active {
-  opacity: 0.8;
-}
-
-.scrollbar-track-horizontal,
-.scrollbar-track-horizontal .scrollbar-thumb {
-  height: 8px;
-}
-
-.scrollbar-track-vertical,
-.scrollbar-track-vertical .scrollbar-thumb {
-  width: 8px;
-}
-
 button,
 input {
   background-color: transparent;
@@ -93,11 +48,6 @@ body.tab-navigation input:focus::after {
   position: absolute;
   right: -3px;
   top: -3px;
-}
-
-#browser .media-wrapper:focus {
-  /* Make elements have the same focus style. */
-  outline: 2px solid rgba(37, 129, 223, 0.7);
 }
 
 .circle button,
@@ -127,22 +77,6 @@ body.tab-navigation .circle input:focus::after {
   flex-shrink: 0;
   height: 40px;
   width: 40px;
-}
-
-#browser-print {
-  background-image: url(../images/browser_button_print.svg);
-}
-
-#browser-export {
-  background-image: url(../images/browser_button_export.svg);
-}
-
-#browser-back {
-  background-image: url(../images/browser_button_back.svg);
-}
-
-#browser-delete {
-  background-image: url(../images/browser_button_delete.svg);
 }
 
 ::-webkit-scrollbar {
@@ -238,7 +172,7 @@ body.tablet-landscape .actions-group {
 
 body:not(.streaming) #modes-group,
 body.taking #modes-group,
-body.taking:not(.video-mode) #shutters-group {
+body.taking:not(.video) #shutters-group {
   opacity: 0.38;
 }
 
@@ -356,11 +290,11 @@ button.shutter {
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
-body.video-mode:not(.taking) #start-recordvideo,
-body.video-mode.taking #stop-recordvideo,
-body:not(.taking):not(.video-mode) #start-takephoto,
-body:not(.timer):not(.video-mode) #start-takephoto,
-body.taking.timer:not(.video-mode) #stop-takephoto {
+body.video:not(.taking) #start-recordvideo,
+body.video.taking #stop-recordvideo,
+body:not(.taking):not(.video) #start-takephoto,
+body:not(.timer):not(.video) #start-takephoto,
+body.taking.timer:not(.video) #stop-takephoto {
   display: inline-block;
 }
 
@@ -400,7 +334,7 @@ body.taking.timer:not(.video-mode) #stop-takephoto {
   background-image: url(../images/camera_shutter_video_stop_hover.svg);
 }
 
-body:not(.video-mode) #toggle-mic,
+body:not(.video) #toggle-mic,
 body:not(.multi-camera) #switch-device {
   visibility: hidden;
 }
@@ -412,15 +346,15 @@ body:not(.multi-camera) #switch-device {
   width: 40px;
 }
 
-body.video-mode #camera-mode {
+body.video #camera-mode {
   background-image: url(../images/camera_mode_video.svg);
 }
 
-body.square-mode #camera-mode {
+body.square #camera-mode {
   background-image: url(../images/camera_mode_square.svg);
 }
 
-body.portrait-mode #camera-mode {
+body.portrait #camera-mode {
   background-image: url(../images/camera_mode_portrait.svg);
 }
 
@@ -537,7 +471,7 @@ body._10sec #toggle-timer:checked {
 }
 
 body:not(.multi-fps) #toggle-fps,
-body:not(.video-mode) #toggle-fps {
+body:not(.video) #toggle-fps {
   display: none;
 }
 
@@ -565,7 +499,6 @@ body.should-handle-intent-result #open-settings {
 #photoresolutionsettings,
 #videoresolutionsettings,
 #expertsettings,
-#browser,
 #message-dialog,
 #warning {
   bottom: 0;
@@ -586,7 +519,6 @@ body.resolutionsettings #resolutionsettings,
 body.photoresolutionsettings #photoresolutionsettings,
 body.videoresolutionsettings #videoresolutionsettings,
 body.expertsettings #expertsettings,
-body.browser #browser,
 body.message-dialog #message-dialog,
 body.warning #warning {
   opacity: 1;
@@ -928,47 +860,6 @@ body:not(.grid):not(.gridsettings) #preview-grid-vertical::before {
   margin-left: 8px;
 }
 
-#browser .buttons {
-  left: 10px;
-  position: fixed;
-  top: 10px;
-}
-
-#browser .buttons button {
-  margin: 0 8px;
-}
-
-#browser .buttons button[disabled],
-body.ext-fs #browser-export {
-  display: none;
-}
-
-#browser {
-  background: black;
-}
-
-#browser .padder {
-  align-items: center;
-  display: flex;
-  height: 100%;
-}
-
-#browser div.media-wrapper {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: center;
-  margin: 4%;
-  pointer-events: auto;
-}
-
-#browser div.bounds-padder {
-  display: flex;
-  flex-shrink: 0;
-  height: 1px;  /* Required to make the element visible. */
-  width: 50%;
-}
-
 @media print {
   html {
     height: 100%;  /* Required for printing. */
@@ -982,49 +873,12 @@ body.ext-fs #browser-export {
   }
 
   /* Reset background colors. */
-  body,
-  #browser {
+  body {
     background: transparent;
   }
 
-  /* Hide the buttons and scroll bars. */
-  .buttons,
-  .scrollbar-track {
-    display: none;
-  }
-
-  /* Hide all root elements, except the printed view. */
-  body.browser > :not(#browser) {
-    display: none;
-  }
-
-  /* Hide everything from the browser view, but the selected one(s). */
-  #browser .padder > :not(.selected) {
-    display: none;
-  }
-
-  #browser .padder {
-    align-items: flex-start;
-  }
-
-  /* Set default styles and max-dimensions for printing the browser view. */
-  #browser div.media-wrapper.selected {
-    border: none;
-    box-shadow: none;
-    display: block;  /* Allows to keep aspect ratio of children. */
-    margin: auto;
-    position: absolute;
-  }
-
-  #browser div.media-wrapper.selected img,
-  #browser div.media-wrapper.selected video {
-    height: auto;
-    max-height: 100%;
-    max-width: 100%;
-    width: auto;
-  }
-
-  #browser video::-webkit-media-controls {
+  /* Hide the buttons. */
+  .buttons {
     display: none;
   }
 }

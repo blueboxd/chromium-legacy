@@ -1133,6 +1133,12 @@ TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
   mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
 });
 
+TEST_F(
+    'CrSettingsPersonalizationOptionsTest', 'PrivacySettingsRedesignTests',
+    function() {
+      mocha.grep('PrivacySettingsRedesignTests').run();
+    });
+
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
   mocha.grep('PersonalizationOptionsTests_OfficialBuild').run();
@@ -1176,6 +1182,11 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
 
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSoundTests', function() {
   settings_privacy_page.registerPrivacyPageSoundTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacySettingsRedesignTests', function() {
+  settings_privacy_page.registerPrivacySettingsRedesignTests();
   mocha.run();
 });
 

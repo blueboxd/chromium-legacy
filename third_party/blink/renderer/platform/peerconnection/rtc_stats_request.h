@@ -54,7 +54,7 @@ class RTCStatsResponseBase;
 // RTCStatsResponseBase* response = request->CreateResponse();
 //
 // For each item on which statistics are going to be reported:
-//   WebRTCLegacyStats stats(...);
+//   RTCLegacyStats stats(...);
 //   (configuration of stats object depends on item type)
 //   response.AddStats(stats);
 // When finished adding information:

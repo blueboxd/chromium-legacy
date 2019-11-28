@@ -17,8 +17,8 @@ class GURL;
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
 
 // TODO(crbug.com/824858): Many of these functions can return a synchronous
@@ -43,9 +43,9 @@ enum class WindowType {
   PAYMENT_HANDLER_WINDOW,
 };
 
-// Focuses the window client associated with |provider_host|. |callback| is
+// Focuses the window client associated with |container_host|. |callback| is
 // called with the client information on completion.
-void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
+void FocusWindowClient(ServiceWorkerContainerHost* container_host,
                        ClientCallback callback);
 
 // Opens a new window and navigates it to |url|. |callback| is called with the
@@ -71,9 +71,9 @@ void NavigateClient(const GURL& url,
                     const base::WeakPtr<ServiceWorkerContextCore>& context,
                     NavigationCallback callback);
 
-// Gets the client specified by |provider_host|. |callback| is called with the
+// Gets the client specified by |container_host|. |callback| is called with the
 // client information on completion.
-void GetClient(ServiceWorkerProviderHost* provider_host,
+void GetClient(ServiceWorkerContainerHost* container_host,
                ClientCallback callback);
 
 // Collects clients matched with |options|. |callback| is called with the client

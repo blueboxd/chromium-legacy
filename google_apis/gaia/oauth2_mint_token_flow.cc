@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -58,9 +59,9 @@ static GoogleServiceAuthError CreateAuthError(
     int net_error,
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
-  if (net_error == net::ERR_ABORTED) {
+  if (net_error == net::ERR_ABORTED)
     return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
-  }
+
   if (net_error != net::OK) {
     DLOG(WARNING) << "Server returned error: errno " << net_error;
     return GoogleServiceAuthError::FromConnectionError(net_error);
@@ -70,10 +71,8 @@ static GoogleServiceAuthError CreateAuthError(
   if (body)
     response_body = std::move(*body);
 
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(response_body);
-  base::DictionaryValue* response;
-  if (!value.get() || !value->GetAsDictionary(&response)) {
+  base::Optional<base::Value> value = base::JSONReader::Read(response_body);
+  if (!value || !value->is_dict()) {
     int http_response_code = -1;
     if (head && head->headers)
       http_response_code = head->headers->response_code();
@@ -83,25 +82,28 @@ static GoogleServiceAuthError CreateAuthError(
                            "HTTP Status of the response is: %d",
                            http_response_code));
   }
-  base::DictionaryValue* error;
-  if (!response->GetDictionary(kError, &error)) {
+  const base::Value* error = value->FindDictKey(kError);
+  if (!error) {
     return GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to find a detailed error in a service response.");
   }
-  std::string message;
-  if (!error->GetString(kMessage, &message)) {
+  const std::string* message = error->FindStringKey(kMessage);
+  if (!message) {
     return GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to find an error message within a service error.");
   }
-  return GoogleServiceAuthError::FromServiceError(message);
+  return GoogleServiceAuthError::FromServiceError(*message);
 }
 
 }  // namespace
 
-IssueAdviceInfoEntry::IssueAdviceInfoEntry() {}
+IssueAdviceInfoEntry::IssueAdviceInfoEntry() = default;
+IssueAdviceInfoEntry::~IssueAdviceInfoEntry() = default;
+
 IssueAdviceInfoEntry::IssueAdviceInfoEntry(const IssueAdviceInfoEntry& other) =
     default;
-IssueAdviceInfoEntry::~IssueAdviceInfoEntry() {}
+IssueAdviceInfoEntry& IssueAdviceInfoEntry::operator=(
+    const IssueAdviceInfoEntry& other) = default;
 
 bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
   return description == rhs.description && details == rhs.details;
@@ -191,24 +193,22 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   std::string response_body;
   if (body)
     response_body = std::move(*body);
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(response_body);
-  base::DictionaryValue* dict = nullptr;
-  if (!value.get() || !value->GetAsDictionary(&dict)) {
+  base::Optional<base::Value> value = base::JSONReader::Read(response_body);
+  if (!value || !value->is_dict()) {
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to parse a JSON object from a service response."));
     return;
   }
 
-  std::string issue_advice_value;
-  if (!dict->GetString(kIssueAdviceKey, &issue_advice_value)) {
+  std::string* issue_advice_value = value->FindStringKey(kIssueAdviceKey);
+  if (!issue_advice_value) {
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to find an issueAdvice in a service response."));
     return;
   }
-  if (issue_advice_value == kIssueAdviceValueConsent) {
+  if (*issue_advice_value == kIssueAdviceValueConsent) {
     IssueAdviceInfo issue_advice;
-    if (ParseIssueAdviceResponse(dict, &issue_advice))
+    if (ParseIssueAdviceResponse(&(*value), &issue_advice))
       ReportIssueAdviceSuccess(issue_advice);
     else
       ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
@@ -217,7 +217,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   } else {
     std::string access_token;
     int time_to_live;
-    if (ParseMintTokenResponse(dict, &access_token, &time_to_live))
+    if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live))
       ReportSuccess(access_token, time_to_live);
     else
       ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
@@ -236,49 +236,64 @@ void OAuth2MintTokenFlow::ProcessApiCallFailure(
 }
 
 // static
-bool OAuth2MintTokenFlow::ParseMintTokenResponse(
-    const base::DictionaryValue* dict, std::string* access_token,
-    int* time_to_live) {
+bool OAuth2MintTokenFlow::ParseMintTokenResponse(const base::Value* dict,
+                                                 std::string* access_token,
+                                                 int* time_to_live) {
   CHECK(dict);
+  CHECK(dict->is_dict());
   CHECK(access_token);
   CHECK(time_to_live);
-  std::string ttl_string;
-  return dict->GetString(kExpiresInKey, &ttl_string) &&
-      base::StringToInt(ttl_string, time_to_live) &&
-      dict->GetString(kAccessTokenKey, access_token);
+
+  const std::string* ttl_string = dict->FindStringKey(kExpiresInKey);
+  if (!ttl_string || !base::StringToInt(*ttl_string, time_to_live))
+    return false;
+
+  const std::string* access_token_ptr = dict->FindStringKey(kAccessTokenKey);
+  if (!access_token_ptr)
+    return false;
+
+  *access_token = *access_token_ptr;
+  return true;
 }
 
 // static
 bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
-    const base::DictionaryValue* dict, IssueAdviceInfo* issue_advice) {
+    const base::Value* dict,
+    IssueAdviceInfo* issue_advice) {
   CHECK(dict);
+  CHECK(dict->is_dict());
   CHECK(issue_advice);
 
-  const base::DictionaryValue* consent_dict = nullptr;
-  if (!dict->GetDictionary(kConsentKey, &consent_dict))
+  const base::Value* consent_dict = dict->FindDictKey(kConsentKey);
+  if (!consent_dict)
     return false;
 
-  const base::ListValue* scopes_list = nullptr;
-  if (!consent_dict->GetList(kScopesKey, &scopes_list))
+  const base::Value* scopes_list = consent_dict->FindListKey(kScopesKey);
+  if (!scopes_list)
     return false;
 
   bool success = true;
-  for (size_t index = 0; index < scopes_list->GetSize(); ++index) {
-    const base::DictionaryValue* scopes_entry = nullptr;
-    IssueAdviceInfoEntry entry;
-    base::string16 detail;
-    if (!scopes_list->GetDictionary(index, &scopes_entry) ||
-        !scopes_entry->GetString(kDescriptionKey, &entry.description) ||
-        !scopes_entry->GetString(kDetailKey, &detail)) {
+  for (const auto& scopes_entry : scopes_list->GetList()) {
+    if (!scopes_entry.is_dict()) {
       success = false;
       break;
     }
 
+    const std::string* description =
+        scopes_entry.FindStringKey(kDescriptionKey);
+    const std::string* detail = scopes_entry.FindStringKey(kDetailKey);
+    if (!description || !detail) {
+      success = false;
+      break;
+    }
+
+    IssueAdviceInfoEntry entry;
+    entry.description = base::UTF8ToUTF16(*description);
     base::TrimWhitespace(entry.description, base::TRIM_ALL, &entry.description);
     entry.details = base::SplitString(
-        detail, base::ASCIIToUTF16(kDetailSeparators),
+        base::UTF8ToUTF16(*detail), base::ASCIIToUTF16(kDetailSeparators),
         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    issue_advice->push_back(entry);
+    issue_advice->push_back(std::move(entry));
   }
 
   if (!success)

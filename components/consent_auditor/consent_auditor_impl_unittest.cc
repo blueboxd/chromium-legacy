@@ -260,7 +260,7 @@ TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
 
   EXPECT_EQ(now.since_origin().InMicroseconds(),
             consent.client_consent_time_usec());
-  EXPECT_EQ(kAccountId.id, consent.account_id());
+  EXPECT_EQ(kAccountId.ToString(), consent.account_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 
   EXPECT_TRUE(consent.has_sync_consent());
@@ -307,7 +307,7 @@ TEST_F(ConsentAuditorImplTest, RecordArcPlayConsentRevocation) {
   ASSERT_EQ(1U, consents.size());
   UserConsentSpecifics consent = consents[0];
 
-  EXPECT_EQ(kAccountId.id, consent.account_id());
+  EXPECT_EQ(kAccountId.ToString(), consent.account_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 
   EXPECT_TRUE(consent.has_arc_play_terms_of_service_consent());
@@ -363,7 +363,7 @@ TEST_F(ConsentAuditorImplTest, RecordArcPlayConsent) {
   ASSERT_EQ(1U, consents.size());
   UserConsentSpecifics consent = consents[0];
 
-  EXPECT_EQ(kAccountId.id, consent.account_id());
+  EXPECT_EQ(kAccountId.ToString(), consent.account_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 
   EXPECT_TRUE(consent.has_arc_play_terms_of_service_consent());
@@ -423,7 +423,7 @@ TEST_F(ConsentAuditorImplTest, RecordAssistantActivityControlConsent) {
   ASSERT_EQ(1U, consents.size());
   UserConsentSpecifics consent = consents[0];
 
-  EXPECT_EQ(kAccountId.id, consent.account_id());
+  EXPECT_EQ(kAccountId.ToString(), consent.account_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 
   EXPECT_EQ(true, consent.has_assistant_activity_control_consent());

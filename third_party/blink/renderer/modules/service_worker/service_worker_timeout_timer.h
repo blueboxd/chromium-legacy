@@ -133,26 +133,18 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
   bool HasInflightEvent() const;
 
   struct EventInfo {
-    EventInfo(int id,
-              base::TimeTicks expiration_time,
+    EventInfo(base::TimeTicks expiration_time,
               base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
                   abort_callback);
     ~EventInfo();
-    // Compares |expiration_time|, or |id| if |expiration_time| is the same.
-    bool operator<(const EventInfo& other) const;
-
-    const int id;
     const base::TimeTicks expiration_time;
-    mutable base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
+    base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
         abort_callback;
   };
 
-  // For long standing event timeouts. Ordered by expiration time.
-  std::set<EventInfo> inflight_events_;
-
-  // For long standing event timeouts. This is used to look up an event in
-  // |inflight_events_| by its id.
-  HashMap<int /* event_id */, std::set<EventInfo>::iterator> id_event_map_;
+  // For long standing event timeouts. This is used to look up an EventInfo
+  // by event id.
+  HashMap<int /* event_id */, std::unique_ptr<EventInfo>> id_event_map_;
 
   // For idle timeouts. The time the service worker started being considered
   // idle. This time is null if there are any inflight events.

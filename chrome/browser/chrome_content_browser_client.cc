@@ -721,7 +721,7 @@ bool HandleNewTabPageLocationOverride(
 #if !defined(OS_ANDROID)
 // Check if the current url is whitelisted based on a list of whitelisted urls.
 bool IsURLWhitelisted(const GURL& current_url,
-                      base::span<const base::Value> whitelisted_urls) {
+                      base::Value::ConstListView whitelisted_urls) {
   // Only check on HTTP and HTTPS pages.
   if (!current_url.SchemeIsHTTPOrHTTPS())
     return false;

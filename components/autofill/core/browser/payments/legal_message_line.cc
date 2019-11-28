@@ -113,12 +113,12 @@ bool LegalMessageLine::ParseLine(const base::Value& line,
   const base::Value* template_parameters =
       line.FindKeyOfType("template_parameter", base::Value::Type::LIST);
   if (template_parameters) {
-    base::span<const base::Value> template_parameters_storage =
+    base::Value::ConstListView template_parameters_view =
         template_parameters->GetList();
-    display_texts.reserve(template_parameters_storage.size());
-    links_.reserve(template_parameters_storage.size());
+    display_texts.reserve(template_parameters_view.size());
+    links_.reserve(template_parameters_view.size());
 
-    for (const base::Value& parameter : template_parameters_storage) {
+    for (const base::Value& parameter : template_parameters_view) {
       if (!parameter.is_dict())
         return false;
 

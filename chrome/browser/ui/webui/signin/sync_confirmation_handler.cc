@@ -116,8 +116,7 @@ void SyncConfirmationHandler::HandleAccountImageRequest(
 
 void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
-  base::span<const base::Value> consent_description =
-      args->GetList()[0].GetList();
+  base::Value::ConstListView consent_description = args->GetList()[0].GetList();
   const std::string& consent_confirmation = args->GetList()[1].GetString();
 
   // The strings returned by the WebUI are not free-form, they must belong into

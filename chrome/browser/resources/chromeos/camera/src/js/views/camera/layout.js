@@ -20,9 +20,9 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
- * import {Resolution} from '../type.js';
+ * import {Mode, Resolution} from '../../type.js';
  */
-var Resolution = Resolution || {};
+var {Mode, Resolution} = {Mode, Resolution};
 
 /**
  * import {assert} from '../chrome_util.js';
@@ -89,7 +89,7 @@ cca.views.camera.Layout = class {
     let contentWidth = 0;
     let contentHeight = 0;
     if (video.videoHeight) {
-      const scale = cca.state.get('square-mode') ?
+      const scale = cca.state.get(Mode.SQUARE) ?
           Math.min(window.innerHeight, window.innerWidth) /
               Math.min(video.videoHeight, video.videoWidth) :
           Math.min(
@@ -102,8 +102,8 @@ cca.views.camera.Layout = class {
     }
     let viewportW = contentWidth;
     let viewportH = contentHeight;
-    cca.state.set('square-preview', cca.state.get('square-mode'));
-    if (cca.state.get('square-mode')) {
+    cca.state.set('square-preview', cca.state.get(Mode.SQUARE));
+    if (cca.state.get(Mode.SQUARE)) {
       viewportW = viewportH = Math.min(contentWidth, contentHeight);
       this.squareVideo_.setProperty(
           'left', `${(viewportW - contentWidth) / 2}px`);

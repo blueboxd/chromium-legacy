@@ -253,6 +253,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
   }
 
   frame_header_->UpdateFrameColors();
+
+  BrowserNonClientFrameView::UpdateFrameColor();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
@@ -387,8 +389,9 @@ void BrowserNonClientFrameViewAsh::Layout() {
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
   if (web_app_frame_toolbar()) {
-    web_app_frame_toolbar()->LayoutInContainer(
-        0, caption_button_container_->x(), 0, painted_height);
+    web_app_frame_toolbar()->LayoutInContainer(GetToolbarLeftInset(),
+                                               caption_button_container_->x(),
+                                               0, painted_height);
   }
 
   BrowserNonClientFrameView::Layout();
@@ -642,7 +645,16 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   return !IsInOverviewMode();
 }
 
+int BrowserNonClientFrameViewAsh::GetToolbarLeftInset() const {
+  // Include padding on left and right of icon.
+  return profile_indicator_icon_
+             ? kProfileIndicatorPadding * 2 + profile_indicator_icon_->width()
+             : 0;
+}
+
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
+  // Include padding on left of icon.
+  // The tab strip has its own 'padding' to the right of the icon.
   return profile_indicator_icon_
              ? kProfileIndicatorPadding + profile_indicator_icon_->width()
              : 0;

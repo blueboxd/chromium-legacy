@@ -59,7 +59,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::CAMERA)) {
     infos.emplace(SystemAppType::CAMERA,
                   SystemAppInfo("Camera", GURL("chrome://camera/pwa.html")));
-    infos.find(SystemAppType::CAMERA)->second.uninstall_and_replace = {
+    infos.at(SystemAppType::CAMERA).uninstall_and_replace = {
         ash::kInternalAppIdCamera};
   }
 
@@ -67,18 +67,18 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.emplace(
         SystemAppType::SETTINGS,
         SystemAppInfo("OSSettings", GURL("chrome://os-settings/pwa.html")));
-    infos.find(SystemAppType::SETTINGS)->second.uninstall_and_replace = {
+    infos.at(SystemAppType::SETTINGS).uninstall_and_replace = {
         chromeos::default_web_apps::kSettingsAppId,
         ash::kInternalAppIdSettings};
   } else {
     infos.emplace(
         SystemAppType::SETTINGS,
         SystemAppInfo("BrowserSettings", GURL("chrome://settings/pwa.html")));
-    infos.find(SystemAppType::SETTINGS)->second.uninstall_and_replace = {
+    infos.at(SystemAppType::SETTINGS).uninstall_and_replace = {
         ash::kInternalAppIdSettings};
   }
   // Large enough to see the heading text "Settings" in the top-left.
-  infos.find(SystemAppType::SETTINGS)->second.minimum_window_size = {300, 100};
+  infos.at(SystemAppType::SETTINGS).minimum_window_size = {300, 100};
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     infos.emplace(

@@ -147,7 +147,7 @@ std::string ParseGServiceSettingKey(const std::string& key) {
 }
 
 std::string MakeAccountKey(const CoreAccountId& account_id) {
-  return kAccountKeyStart + account_id.id;
+  return kAccountKeyStart + account_id.ToString();
 }
 
 CoreAccountId ParseAccountKey(const std::string& key) {

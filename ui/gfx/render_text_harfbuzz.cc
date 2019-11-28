@@ -1771,6 +1771,8 @@ bool RenderTextHarfBuzz::IsValidCursorIndex(size_t index) {
 }
 
 void RenderTextHarfBuzz::OnLayoutTextAttributeChanged(bool text_changed) {
+  RenderText::OnLayoutTextAttributeChanged(text_changed);
+
   update_layout_run_list_ = true;
   OnDisplayTextAttributeChanged();
 }
@@ -1832,7 +1834,13 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
 
   ApplyFadeEffects(renderer);
   ApplyTextShadows(renderer);
-  ApplyCompositionAndSelectionStyles(selection);
+
+  // Apply the selected text color to the [un-reversed] selection range.
+  BreakList<SkColor> colors = layout_colors();
+  if (!selection.is_empty()) {
+    colors.ApplyValue(selection_color(),
+                      Range(selection.GetMin(), selection.GetMax()));
+  }
 
   internal::TextRunList* run_list = GetRunList();
   const base::string16& display_text = GetDisplayText();
@@ -1864,12 +1872,11 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
             SkIntToScalar(origin.x()) + offset_x,
             SkIntToScalar(origin.y() + run.font_params.baseline_offset));
       }
-      for (auto it = colors().GetBreak(segment.char_range.start());
-           it != colors().breaks().end() &&
-           it->first < segment.char_range.end();
+      for (auto it = colors.GetBreak(segment.char_range.start());
+           it != colors.breaks().end() && it->first < segment.char_range.end();
            ++it) {
         const Range intersection =
-            colors().GetRange(it).Intersect(segment.char_range);
+            colors.GetRange(it).Intersect(segment.char_range);
         const Range colored_glyphs = run.CharRangeToGlyphRange(intersection);
         // The range may be empty if a portion of a multi-character grapheme is
         // selected, yielding two colors for a single glyph. For now, this just
@@ -1900,8 +1907,6 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
       preceding_segment_widths += SkFloatToScalar(segment.width());
     }
   }
-
-  UndoCompositionAndSelectionStyles();
 }
 
 size_t RenderTextHarfBuzz::GetRunContainingCaret(
@@ -1972,14 +1977,9 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     return;
   }
 
-  // Temporarily apply composition underlines and selection colors.
-  ApplyCompositionAndSelectionStyles(focused() ? selection() : Range{});
-
-  // Build the run list from the script items and ranged styles and baselines.
-  DCHECK_LE(text.size(), baselines().max());
-  for (const BreakList<bool>& style : styles())
-    DCHECK_LE(text.size(), style.max());
-  internal::StyleIterator style = GetTextStyleIterator();
+  // Iterator to split ranged styles and baselines. The color attributes don't
+  // break text runs to keep ligature between graphemes (e.g. Arabic word).
+  internal::StyleIterator style = GetLayoutTextStyleIterator();
 
   // Split the original text by logical runs, then each logical run by common
   // script and each sequence at special characters and style boundaries. This
@@ -2012,10 +2012,8 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
         // Find the break boundary for style. The style won't break a grapheme
         // since the style of the first character is applied to the whole
         // grapheme.
-        style.IncrementToPosition(
-            GivenTextIndexToTextIndex(text, breaking_run_start));
-        size_t text_style_end =
-            TextIndexToGivenTextIndex(text, style.GetTextBreakingRange().end());
+        style.IncrementToPosition(breaking_run_start);
+        size_t text_style_end = style.GetTextBreakingRange().end();
 
         // Break runs at certain characters that need to be rendered separately
         // to prevent an unusual character from forcing a fallback font on the
@@ -2074,9 +2072,6 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     TRACE_EVENT_INSTANT1("fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs",
                          TRACE_EVENT_SCOPE_THREAD, "runs", logging_str);
   }
-
-  // Undo the temporarily applied composition underlines and selection colors.
-  UndoCompositionAndSelectionStyles();
 }
 
 void RenderTextHarfBuzz::ShapeRuns(

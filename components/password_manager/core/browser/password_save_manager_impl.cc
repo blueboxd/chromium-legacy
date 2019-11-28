@@ -294,7 +294,7 @@ void PasswordSaveManagerImpl::PresaveGeneratedPassword(
 
   generation_manager_->PresaveGeneratedPassword(
       std::move(parsed_form), form_fetcher_->GetAllRelevantMatches(),
-      form_saver_.get());
+      GetFormSaverForGeneration());
 }
 
 void PasswordSaveManagerImpl::GeneratedPasswordAccepted(
@@ -307,7 +307,7 @@ void PasswordSaveManagerImpl::GeneratedPasswordAccepted(
 
 void PasswordSaveManagerImpl::PasswordNoLongerGenerated() {
   DCHECK(generation_manager_);
-  generation_manager_->PasswordNoLongerGenerated(form_saver_.get());
+  generation_manager_->PasswordNoLongerGenerated(GetFormSaverForGeneration());
   generation_manager_.reset();
 
   votes_uploader_->set_has_generated_password(false);
@@ -376,13 +376,13 @@ void PasswordSaveManagerImpl::SavePendingToStore(
   if (HasGeneratedPassword()) {
     generation_manager_->CommitGeneratedPassword(
         pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
-        old_password, form_saver_.get());
+        old_password, GetFormSaverForGeneration());
   } else if (update) {
-    form_saver_->Update(pending_credentials_,
-                        form_fetcher_->GetAllRelevantMatches(), old_password);
+    UpdateInternal(pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
+                   old_password);
   } else {
-    form_saver_->Save(pending_credentials_,
-                      form_fetcher_->GetAllRelevantMatches(), old_password);
+    SaveInternal(pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
+                 old_password);
   }
 }
 
@@ -422,6 +422,25 @@ void PasswordSaveManagerImpl::ProcessUpdate(
                                            pending_credentials_,
                                            parsed_submitted_form);
   }
+}
+
+FormSaver* PasswordSaveManagerImpl::GetFormSaverForGeneration() {
+  DCHECK(form_saver_);
+  return form_saver_.get();
+}
+
+void PasswordSaveManagerImpl::SaveInternal(
+    const PasswordForm& pending,
+    const std::vector<const PasswordForm*>& matches,
+    const base::string16& old_password) {
+  form_saver_->Save(pending, matches, old_password);
+}
+
+void PasswordSaveManagerImpl::UpdateInternal(
+    const PasswordForm& pending,
+    const std::vector<const PasswordForm*>& matches,
+    const base::string16& old_password) {
+  form_saver_->Update(pending, matches, old_password);
 }
 
 }  // namespace password_manager

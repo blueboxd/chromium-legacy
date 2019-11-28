@@ -72,6 +72,14 @@ Polymer({
     /** @private */
     showRestart_: Boolean,
     // </if>
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
   },
 
   /** @override */

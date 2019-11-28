@@ -41,28 +41,33 @@
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}">
     </settings-toggle-button>
-    <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
-        label="$i18n{safeBrowsingEnableProtection}"
-        sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
+    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+      <settings-toggle-button id="safeBrowsingToggle"
+          pref="{{prefs.safebrowsing.enabled}}"
+          label="$i18n{safeBrowsingEnableProtection}"
+          sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
+      </settings-toggle-button>
+    </template>
+    <settings-toggle-button id="passwordsLeakDetectionCheckbox"
+        pref="{{prefs.profile.password_manager_leak_detection}}"
+        checked="[[getCheckedLeakDetection_(
+            userSignedIn_, passwordsLeakDetectionAvailable_)]]"
+        label="$i18n{passwordsLeakDetectionLabel}"
+        sub-label="[[getPasswordsLeakDetectionSubLabel_(
+            userSignedIn_, passwordsLeakDetectionAvailable_)]]"
+        hidden$="[[!passwordsLeakDetectionEnabled_]]"
+        disabled="[[getDisabledLeakDetection_(
+            userSignedIn_, prefs.*)]]">
     </settings-toggle-button>
-   <settings-toggle-button id="passwordsLeakDetectionCheckbox"
-      pref="{{prefs.profile.password_manager_leak_detection}}"
-      checked="[[getCheckedLeakDetection_(
-          userSignedIn_, passwordsLeakDetectionAvailable_)]]"
-      label="$i18n{passwordsLeakDetectionLabel}"
-      sub-label="[[getPasswordsLeakDetectionSubLabel_(
-          userSignedIn_, passwordsLeakDetectionAvailable_)]]"
-      hidden$="[[!passwordsLeakDetectionEnabled_]]"
-      disabled="[[getDisabledLeakDetection_(
-          userSignedIn_, prefs.*)]]">
-    </settings-toggle-button>
-    <settings-toggle-button
-        pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
-        checked="[[getCheckedExtendedSafeBrowsing_(prefs.*)]]"
-        label="$i18n{safeBrowsingEnableExtendedReporting}"
-        sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-        disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]">
-    </settings-toggle-button>
+    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+      <settings-toggle-button id="safeBrowsingReportingToggle"
+          pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
+          checked="[[getCheckedExtendedSafeBrowsing_(prefs.*)]]"
+          label="$i18n{safeBrowsingEnableExtendedReporting}"
+          sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
+          disabled="[[getDisabledExtendedSafeBrowsing_(prefs.*)]]">
+      </settings-toggle-button>
+    </template>
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"

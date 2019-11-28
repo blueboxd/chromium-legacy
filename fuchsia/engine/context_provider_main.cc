@@ -44,12 +44,15 @@ int ContextProviderMain() {
   LOG(INFO) << "Starting WebEngine " << GetVersionString();
 
   ContextProviderImpl context_provider;
+
   base::fuchsia::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
-  directory->ServeFromStartupInfo();
 
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
       directory->debug_dir(), &context_provider);
+
+  // Serve outgoing directory only after publishing all services.
+  directory->ServeFromStartupInfo();
 
   base::RunLoop run_loop;
   cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());

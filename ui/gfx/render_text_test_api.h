@@ -38,6 +38,10 @@ class RenderTextTestApi {
     render_text_->DrawVisualText(renderer, selection);
   }
 
+  const base::string16& GetLayoutText() {
+    return render_text_->GetLayoutText();
+  }
+
   const BreakList<SkColor>& colors() const { return render_text_->colors(); }
 
   const BreakList<BaselineStyle>& baselines() const {

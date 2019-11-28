@@ -8,7 +8,8 @@
 #include "base/callback.h"
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace spellcheck {
 
@@ -20,8 +21,8 @@ class SpellCheckMockPanelHost : public spellcheck::mojom::SpellCheckPanelHost {
   content::RenderProcessHost* process_host() const { return process_host_; }
 
   bool SpellingPanelVisible();
-  void SpellCheckPanelHostRequest(
-      spellcheck::mojom::SpellCheckPanelHostRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<spellcheck::mojom::SpellCheckPanelHost> receiver);
 
  private:
   // spellcheck::mojom::SpellCheckPanelHost:
@@ -29,7 +30,7 @@ class SpellCheckMockPanelHost : public spellcheck::mojom::SpellCheckPanelHost {
   void UpdateSpellingPanelWithMisspelledWord(
       const base::string16& word) override;
 
-  mojo::BindingSet<spellcheck::mojom::SpellCheckPanelHost> bindings_;
+  mojo::ReceiverSet<spellcheck::mojom::SpellCheckPanelHost> receivers_;
   content::RenderProcessHost* process_host_;
   bool show_spelling_panel_called_ = false;
   bool spelling_panel_visible_ = false;

@@ -181,7 +181,7 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
         client_->GetPrefs()->GetBoolean(prefs::kGoogleServicesConsentedToSync);
 
     DCHECK(pref_account_id.empty() || !consented_to_sync ||
-           pref_account_id == account_info.account_id.id)
+           pref_account_id == account_info.account_id.ToString())
         << "account_id=" << account_info.account_id
         << " pref_account_id=" << pref_account_id;
   }
@@ -193,7 +193,7 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   // user is signed in the corresponding preferences should match. Doing it here
   // as opposed to on signin allows us to catch the upgrade scenario.
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastAccountId,
-                                 account_info.account_id.id);
+                                 account_info.account_id.ToString());
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
                                  account_info.email);
 
@@ -208,7 +208,7 @@ void PrimaryAccountManager::SetPrimaryAccountInternal(
   primary_account_info_ = account_info;
 
   PrefService* prefs = client_->GetPrefs();
-  const std::string& account_id = primary_account_info_.account_id.id;
+  const std::string& account_id = primary_account_info_.account_id.ToString();
   if (account_id.empty()) {
     DCHECK(!consented_to_sync);
     prefs->ClearPref(prefs::kGoogleServicesAccountId);

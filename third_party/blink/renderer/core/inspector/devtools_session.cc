@@ -32,8 +32,6 @@ namespace blink {
 namespace {
 const char kV8StateKey[] = "v8";
 bool ShouldInterruptForMethod(const String& method) {
-  // Keep in sync with DevToolsSession::ShouldSendOnIO.
-  // TODO(dgozman): find a way to share this.
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
          method == "Debugger.setBreakpointByUrl" ||
          method == "Debugger.removeBreakpoint" ||
@@ -88,13 +86,24 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
       int call_id,
       const String& method,
       mojom::blink::DevToolsMessagePtr message) override {
-    DCHECK(ShouldInterruptForMethod(method));
+    TRACE_EVENT_WITH_FLOW1("devtools", "IOSession::DispatchProtocolCommand",
+                           call_id,
+                           TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN,
+                           "call_id", call_id);
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);
-    inspector_task_runner_->AppendTask(CrossThreadBindOnce(
-        &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
-        call_id, method, UnwrapMessage(message)));
+    // Post a task to the worker or main renderer thread that will interrupt V8
+    // and be run immediately. Only methods that do not run JS code are safe.
+    if (ShouldInterruptForMethod(method)) {
+      inspector_task_runner_->AppendTask(CrossThreadBindOnce(
+          &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
+          call_id, method, UnwrapMessage(message)));
+    } else {
+      inspector_task_runner_->AppendTaskDontInterrupt(CrossThreadBindOnce(
+          &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
+          call_id, method, UnwrapMessage(message)));
+    }
   }
 
  private:
@@ -189,8 +198,9 @@ void DevToolsSession::DispatchProtocolCommand(
     int call_id,
     const String& method,
     blink::mojom::blink::DevToolsMessagePtr message_ptr) {
-  return DispatchProtocolCommandImpl(call_id, method,
-                                     UnwrapMessage(message_ptr));
+  // TODO(petermarshall): Remove the distinction between DevToolsSession and
+  // IOSession as we always use IOSession now.
+  NOTREACHED();
 }
 
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
@@ -198,6 +208,10 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   Vector<uint8_t> data) {
   DCHECK(crdtp::cbor::IsCBORMessage(
       crdtp::span<uint8_t>(data.data(), data.size())));
+
+  TRACE_EVENT_WITH_FLOW1(
+      "devtools", "DevToolsSession::DispatchProtocolCommandImpl", call_id,
+      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
@@ -267,6 +281,9 @@ void DevToolsSession::sendResponse(
 
 void DevToolsSession::SendProtocolResponse(int call_id,
                                            std::vector<uint8_t> message) {
+  TRACE_EVENT_WITH_FLOW1(
+      "devtools", "DevToolsSession::SendProtocolResponse", call_id,
+      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
   if (IsDetached())
     return;
   flushProtocolNotifications();

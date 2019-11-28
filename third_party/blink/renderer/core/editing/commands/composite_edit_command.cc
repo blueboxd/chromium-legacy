@@ -643,7 +643,8 @@ bool CompositeEditCommand::DeleteSelection(
     return true;
 
   ApplyCommandToComposite(
-      DeleteSelectionCommand::Create(GetDocument(), options), editing_state);
+      MakeGarbageCollected<DeleteSelectionCommand>(GetDocument(), options),
+      editing_state);
   if (editing_state->IsAborted())
     return false;
 

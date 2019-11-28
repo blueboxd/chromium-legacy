@@ -165,6 +165,7 @@ class CORE_EXPORT NGInlineCursor {
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
   const DisplayItemClient* CurrentDisplayItemClient() const;
   const LayoutObject* CurrentLayoutObject() const;
+  LayoutObject* CurrentMutableLayoutObject() const;
   Node* CurrentNode() const;
 
   // Returns bidi level of current position. It is error to call other than
@@ -279,6 +280,14 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToPreviousInlineLeaf();
   void MoveToPreviousInlineLeafIgnoringLineBreak();
 
+  // Move the current position to next/previous inline leaf item on line.
+  // Note: If the current position isn't leaf item, this function moves the
+  // current position to leaf item then moves to next/previous leaf item. This
+  // behavior doesn't match |MoveTo{Next,Previous}InlineLeaf()|, but AX requires
+  // this. See AccessibilityLayoutTest.NextOnLine
+  void MoveToNextInlineLeafOnLine();
+  void MoveToPreviousInlineLeafOnLine();
+
   // Move the cursor position to previous fragment in pre-order DFS.
   void MoveToPrevious();
 
@@ -316,6 +325,9 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the cursor position to the first fragment in tree.
   void MoveToFirst();
+
+  // Move the current position to the last fragment on same layout object.
+  void MoveToLastForSameLayoutObject();
 
   // Same as |MoveTo()| but not support culled inline.
   void InternalMoveTo(const LayoutObject& layout_object);

@@ -72,6 +72,7 @@ js_unittest("files_message_unittest") {
 }
 
 js_library("files_metadata_box") {
+  externs_list = [ "$externs_path/pending_polymer.js" ]
 }
 
 js_library("files_metadata_entry") {

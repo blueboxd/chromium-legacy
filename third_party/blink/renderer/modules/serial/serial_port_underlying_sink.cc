@@ -142,7 +142,7 @@ void SerialPortUnderlyingSink::WriteData() {
   } else {
     DOMArrayBufferView* view = buffer_source_.GetAsArrayBufferView().View();
     data = static_cast<const uint8_t*>(view->BaseAddress());
-    length = view->byteLength();
+    length = view->deprecatedByteLengthAsUnsigned();
   }
 
   DCHECK_LT(offset_, length);

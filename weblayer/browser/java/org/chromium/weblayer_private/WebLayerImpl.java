@@ -44,6 +44,7 @@ import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 import org.chromium.weblayer_private.interfaces.WebLayerVersion;
+import org.chromium.weblayer_private.metrics.UmaUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -131,6 +132,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             return;
         }
         mInited = true;
+
+        UmaUtils.recordMainEntryPointTime();
 
         // Wrap the app context so that it can be used to load WebLayer implementation classes.
         Context appContext = ClassLoaderContextWrapperFactory.get(

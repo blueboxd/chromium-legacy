@@ -38,6 +38,11 @@ enum class MobileMessagesConfirmInfobarEvents {
 + (void)recordConfirmInfobarEvent:(MobileMessagesConfirmInfobarEvents)event
             forInfobarConfirmType:(InfobarConfirmType)infobarConfirmType;
 
+// Records the |duration| since the Infobar delegate was created until it was
+// accepted for ConfirmInfobar of type |infobarConfirmType|.
++ (void)recordConfirmAcceptTime:(NSTimeInterval)duration
+          forInfobarConfirmType:(InfobarConfirmType)infobarConfirmType;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_CONFIRM_INFOBAR_METRICS_RECORDER_H_

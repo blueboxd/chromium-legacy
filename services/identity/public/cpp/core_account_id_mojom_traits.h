@@ -14,7 +14,9 @@ namespace mojo {
 
 template <>
 struct StructTraits<identity::mojom::CoreAccountId::DataView, ::CoreAccountId> {
-  static const std::string& id(const ::CoreAccountId& r) { return r.id; }
+  static const std::string& id(const ::CoreAccountId& r) {
+    return r.ToString();
+  }
 
   static bool Read(identity::mojom::CoreAccountId::DataView data,
                    ::CoreAccountId* out);

@@ -94,6 +94,11 @@ Polymer({
 
     hasError: Boolean,
 
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * The password element the pin keyboard is associated with. If this is not
      * set, then a default input element is shown and used.
@@ -149,15 +154,6 @@ Polymer({
      * Enables letters to be displayed on the pin keyboard buttons.
      */
     enableLetters: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
-     * fixed).
-     */
-    isIncognitoUi: {
       type: Boolean,
       value: false,
     },

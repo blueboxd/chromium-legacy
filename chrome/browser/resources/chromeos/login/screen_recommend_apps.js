@@ -18,6 +18,13 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       return $('recommend-apps-screen');
     },
 
+    /*
+     * Executed on language change.
+     */
+    updateLocalizedContent: function() {
+      $('recommend-apps-screen').i18nUpdateLocale();
+    },
+
     /**
      * Returns requested element from related part of HTML.
      * @param {string} id Id of an element to find.

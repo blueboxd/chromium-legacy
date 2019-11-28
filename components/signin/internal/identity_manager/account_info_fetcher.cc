@@ -23,7 +23,7 @@ AccountInfoFetcher::AccountInfoFetcher(
       service_(service),
       account_id_(account_id) {
   TRACE_EVENT_ASYNC_BEGIN1("AccountFetcherService", "AccountIdFetcher", this,
-                           "account_id", account_id.id);
+                           "account_id", account_id.ToString());
 }
 
 AccountInfoFetcher::~AccountInfoFetcher() {
@@ -66,7 +66,7 @@ void AccountInfoFetcher::OnGetUserInfoResponse(
     std::unique_ptr<base::DictionaryValue> user_info) {
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetUserInfoResponse", "account_id",
-                               account_id_.id);
+                               account_id_.ToString());
   service_->OnUserInfoFetchSuccess(account_id_, std::move(user_info));
 }
 

@@ -2900,7 +2900,7 @@
             ]
         }
     ],
-    "HTTPDangerWarning": [
+    "HTTPReallyBadFinal": [
         {
             "platforms": [
                 "android",
@@ -2914,7 +2914,7 @@
                 {
                     "name": "enabled",
                     "params": {
-                        "treatment": "danger-warning"
+                        "treatment": "dangerous"
                     },
                     "enable_features": [
                         "MarkHttpAs"

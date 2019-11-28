@@ -444,8 +444,8 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_EQ(uuid1, container_host->client_uuid());
 
-  EXPECT_EQ(host,
-            context_->GetProviderHostByClientID(container_host->client_uuid()));
+  EXPECT_EQ(container_host, context_->GetContainerHostByClientID(
+                                container_host->client_uuid()));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
@@ -463,9 +463,9 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_NE(uuid1, container_host->client_uuid());
 
-  EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
-  EXPECT_EQ(host, context_->GetProviderHostByClientID(
-                      host->container_host()->client_uuid()));
+  EXPECT_FALSE(context_->GetContainerHostByClientID(uuid1));
+  EXPECT_EQ(container_host, context_->GetContainerHostByClientID(
+                                container_host->client_uuid()));
 }
 
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {

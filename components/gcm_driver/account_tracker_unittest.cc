@@ -26,7 +26,7 @@ const char kPrimaryAccountEmail[] = "primary_account@example.com";
 enum TrackingEventType { SIGN_IN, SIGN_OUT };
 
 std::string AccountKeyToObfuscatedId(const CoreAccountId& account_id) {
-  return "obfid-" + account_id.id;
+  return "obfid-" + account_id.ToString();
 }
 
 class TrackingEvent {
@@ -57,7 +57,7 @@ class TrackingEvent {
         break;
     }
     return base::StringPrintf("{ type: %s, account_id: %s, gaia: %s }", typestr,
-                              account_id_.id.c_str(), gaia_id_.c_str());
+                              account_id_.ToString().c_str(), gaia_id_.c_str());
   }
 
  private:
@@ -301,7 +301,7 @@ class AccountTrackerTest : public testing::Test {
   // Helpers to fake access token and user info fetching
   void IssueAccessToken(const CoreAccountId& account_id) {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        account_id, "access_token-" + account_id.id, base::Time::Max());
+        account_id, "access_token-" + account_id.ToString(), base::Time::Max());
   }
 
   std::string GetValidTokenInfoResponse(const CoreAccountId& account_id) {

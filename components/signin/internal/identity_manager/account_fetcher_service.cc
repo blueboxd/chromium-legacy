@@ -39,7 +39,7 @@ bool AccountSupportsUserInfo(const CoreAccountId& account_id) {
   // purposes causes the token service to raise spurious auth errors.
   // TODO(treib): this string is also used in supervised_user_constants.cc.
   // Should put in a common place.
-  return account_id.id != "managed_user@localhost";
+  return account_id.ToString() != "managed_user@localhost";
 }
 
 }  // namespace
@@ -334,7 +334,7 @@ void AccountFetcherService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenAvailable", "account_id",
-               account_id.id);
+               account_id.ToString());
   DVLOG(1) << "AVAILABLE " << account_id;
 
   // The SigninClient needs a "final init" in order to perform some actions
@@ -354,7 +354,7 @@ void AccountFetcherService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenRevoked", "account_id",
-               account_id.id);
+               account_id.ToString());
   DVLOG(1) << "REVOKED " << account_id;
 
   // Short-circuit out if network fetches are not enabled.

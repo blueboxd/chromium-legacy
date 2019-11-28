@@ -353,7 +353,7 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
       // BT2020cYCC. Colorimetry based on ITU-R BT.2020 Y’cC’BCC’RC.
       gfx::ColorSpace::PrimaryID::BT2020,
   };
-  // See CEA 861.3-2015, "HDR Static Metadata Extensions" for these.
+  // See CEA 861.G-2018, Sec.7.5.13, "HDR Static Metadata Data Block" for these.
   constexpr uint8_t kHDRStaticMetadataCapabilityTag = 0x6;
   constexpr gfx::ColorSpace::TransferID kTransferIDMap[] = {
       gfx::ColorSpace::TransferID::BT709,
@@ -362,6 +362,7 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
       // STD B67 is also known as Hybrid-log Gamma (HLG).
       gfx::ColorSpace::TransferID::ARIB_STD_B67,
   };
+  constexpr uint8_t kHDRStaticMetadataDataBlockLengthMask = 0x1F;
 
   if (edid.size() < kNumExtensionsOffset + 1) {
     LOG(ERROR) << "Too short EDID data: extensions";
@@ -437,6 +438,30 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
             if (supported_eotfs_bitfield[i])
               supported_color_transfer_ids_.insert(kTransferIDMap[i]);
           }
+
+          // See CEA 861.3-2015, Sec.7.5.13, "HDR Static Metadata Data Block"
+          // for details on the following calculations.
+          const uint8_t length_of_data_block =
+              edid[data_offset] & kHDRStaticMetadataDataBlockLengthMask;
+          if (length_of_data_block <= 3)
+            break;
+          const uint8_t desired_content_max_luminance = edid[data_offset + 4];
+          luminance_ = base::make_optional<Luminance>({});
+          luminance_->max = 50.0 * pow(2, desired_content_max_luminance / 32.0);
+
+          if (length_of_data_block <= 4)
+            break;
+          const uint8_t desired_content_max_frame_average_luminance =
+              edid[data_offset + 5];
+          luminance_->max_avg =
+              50.0 * pow(2, desired_content_max_frame_average_luminance / 32.0);
+
+          if (length_of_data_block <= 5)
+            break;
+          const uint8_t desired_content_min_luminance = edid[data_offset + 6];
+          luminance_->min = luminance_->max *
+                            pow(desired_content_min_luminance / 255.0, 2) /
+                            100.0;
           break;
         }
         default:

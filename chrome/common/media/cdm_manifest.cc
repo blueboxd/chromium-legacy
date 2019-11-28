@@ -237,9 +237,8 @@ bool GetEncryptionSchemes(
     return false;
   }
 
-  base::span<const base::Value> list = value->GetList();
   base::flat_set<media::EncryptionScheme> result;
-  for (const auto& item : list) {
+  for (const auto& item : value->GetList()) {
     if (!item.is_string()) {
       DLOG(ERROR) << "Unrecognized item type in CDM manifest entry "
                   << kCdmSupportedEncryptionSchemesName;
@@ -285,9 +284,8 @@ bool GetCdmProxyProtocols(
     return false;
   }
 
-  base::span<const base::Value> list = value->GetList();
   base::flat_set<media::CdmProxy::Protocol> result;
-  for (const auto& item : list) {
+  for (const auto& item : value->GetList()) {
     if (!item.is_string()) {
       DLOG(ERROR) << "Unrecognized item type in CDM manifest entry "
                   << kCdmSupportedCdmProxyProtocolsName;

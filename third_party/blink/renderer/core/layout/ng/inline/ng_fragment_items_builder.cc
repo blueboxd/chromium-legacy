@@ -193,7 +193,33 @@ void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
                                              const PhysicalSize& outer_size,
                                              void* data) {
   ConvertToPhysical(writing_mode, direction, outer_size);
+  AssociateNextForSameLayoutObject();
   new (data) NGFragmentItems(this);
+}
+
+void NGFragmentItemsBuilder::AssociateNextForSameLayoutObject() {
+  DCHECK(items_.IsEmpty() || items_[0]->Type() == NGFragmentItem::kLine);
+  HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
+  for (wtf_size_t index = 1u; index < items_.size(); ++index) {
+    const NGFragmentItem& item = *items_[index];
+    if (item.Type() == NGFragmentItem::kLine)
+      continue;
+    LayoutObject* const layout_object = item.GetMutableLayoutObject();
+    DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << item;
+    auto insert_result = last_fragment_map.insert(layout_object, index);
+    if (insert_result.is_new_entry) {
+      // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
+      // we should enable below.
+      // layout_object->SetFirstInlineFragmentItemIndex(index);
+      continue;
+    }
+    const wtf_size_t last_index = insert_result.stored_value->value;
+    insert_result.stored_value->value = index;
+    DCHECK_GT(last_index, 0u) << item;
+    DCHECK_LT(last_index, items_.size());
+    DCHECK_LT(last_index, index);
+    items_[last_index]->SetDeltaToNextForSameLayoutObject(index - last_index);
+  }
 }
 
 }  // namespace blink

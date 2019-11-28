@@ -76,6 +76,7 @@ class GLOutputSurface : public OutputSurface {
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
   void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
+                                 bool top_controls_visible_height_changed,
                                  const gfx::Size& pixel_size,
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnPresentation(const gfx::PresentationFeedback& feedback);

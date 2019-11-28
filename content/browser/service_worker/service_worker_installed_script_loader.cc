@@ -55,15 +55,15 @@ ServiceWorkerInstalledScriptLoader::~ServiceWorkerInstalledScriptLoader() =
     default;
 
 void ServiceWorkerInstalledScriptLoader::OnStarted(
-    std::string encoding,
-    base::flat_map<std::string, std::string> headers,
+    scoped_refptr<HttpResponseInfoIOBuffer> http_info,
     mojo::ScopedDataPipeConsumerHandle body_handle,
-    uint64_t body_size,
-    mojo::ScopedDataPipeConsumerHandle metadata_handle,
-    uint64_t metadata_size) {
-  encoding_ = encoding;
+    mojo::ScopedDataPipeConsumerHandle metadata_handle) {
+  DCHECK(http_info);
+  DCHECK(http_info->http_info->headers);
+  DCHECK(encoding_.empty());
+  http_info->http_info->headers->GetCharset(&encoding_);
   body_handle_ = std::move(body_handle);
-  body_size_ = body_size;
+  body_size_ = http_info->response_data_size;
 
   // Just drain the metadata (V8 code cache): this entire class is just to
   // handle a corner case for non-installed service workers and high performance
@@ -71,11 +71,6 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
   metadata_drainer_ =
       std::make_unique<mojo::DataPipeDrainer>(this, std::move(metadata_handle));
 
-  // We continue in OnHttpInfoRead().
-}
-
-void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
-    scoped_refptr<HttpResponseInfoIOBuffer> http_info) {
   net::HttpResponseInfo* info = http_info->http_info.get();
   DCHECK(info);
 

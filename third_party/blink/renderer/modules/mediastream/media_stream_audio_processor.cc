@@ -61,6 +61,11 @@ namespace {
 
 using webrtc::AudioProcessing;
 
+bool UseMultiChannelCaptureProcessing() {
+  return base::FeatureList::IsEnabled(
+      features::kWebRtcEnableCaptureMultiChannelApm);
+}
+
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
 
@@ -234,7 +239,9 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       audio_mirroring_(false),
       typing_detected_(false),
       aec_dump_agent_impl_(AecDumpAgentImpl::Create(this)),
-      stopped_(false) {
+      stopped_(false),
+      use_capture_multi_channel_processing_(
+          UseMultiChannelCaptureProcessing()) {
   DCHECK(main_thread_runner_);
   DETACH_FROM_THREAD(capture_thread_checker_);
   DETACH_FROM_THREAD(render_thread_checker_);
@@ -556,7 +563,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
-  apm_config.pipeline.experimental_multi_channel = true;
+  apm_config.pipeline.multi_channel_render = true;
+  apm_config.pipeline.multi_channel_capture =
+      use_capture_multi_channel_processing_;
 
   base::Optional<double> gain_control_compression_gain_db;
   blink::PopulateApmConfig(&apm_config, properties,
@@ -617,9 +626,7 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
                                      : input_format.sample_rate();
 
   media::ChannelLayout output_channel_layout;
-  if (!audio_processing_ ||
-      base::FeatureList::IsEnabled(
-          features::kWebRtcEnableCaptureMultiChannelApm)) {
+  if (!audio_processing_ || use_capture_multi_channel_processing_) {
     output_channel_layout = input_format.channel_layout();
   } else {
     output_channel_layout =

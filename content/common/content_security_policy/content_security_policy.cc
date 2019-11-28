@@ -53,6 +53,33 @@ std::string ElideURLForReportViolation(const GURL& url) {
   return url.spec();
 }
 
+// Return the error message specific to one CSP |directive|.
+// $1: Blocked URL.
+// $2: Blocking policy.
+const char* ErrorMessage(CSPDirective::Name directive) {
+  switch (directive) {
+    case CSPDirective::FormAction:
+      return "Refused to send form data to '$1' because it violates the "
+             "following Content Security Policy directive: \"$2\".";
+    case CSPDirective::FrameAncestors:
+      return "Refused to frame '$1' because an ancestor violates the following "
+             "Content Security Policy directive: \"$2\".";
+    case CSPDirective::FrameSrc:
+      return "Refused to frame '$1' because it violates the "
+             "following Content Security Policy directive: \"$2\".";
+    case CSPDirective::NavigateTo:
+      return "Refused to navigate to '$1' because it violates the "
+             "following Content Security Policy directive: \"$2\".";
+
+    case CSPDirective::ChildSrc:
+    case CSPDirective::DefaultSrc:
+    case CSPDirective::Unknown:
+    case CSPDirective::UpgradeInsecureRequests:
+      NOTREACHED();
+      return nullptr;
+  };
+}
+
 void ReportViolation(CSPContext* context,
                      const ContentSecurityPolicy& policy,
                      const CSPDirective& directive,
@@ -60,49 +87,39 @@ void ReportViolation(CSPContext* context,
                      const GURL& url,
                      bool has_followed_redirect,
                      const SourceLocation& source_location) {
-  // We should never have a violation against `child-src` or `default-src`
-  // directly; the effective directive should always be one of the explicit
-  // fetch directives.
-  DCHECK_NE(directive_name, CSPDirective::DefaultSrc);
-  DCHECK_NE(directive_name, CSPDirective::ChildSrc);
-
   // For security reasons, some urls must not be disclosed. This includes the
   // blocked url and the source location of the error. Care must be taken to
   // ensure that these are not transmitted between different cross-origin
   // renderers.
-  GURL safe_url = url;
+  GURL blocked_url = (directive_name == CSPDirective::FrameAncestors)
+                         ? GURL(context->self_source()->ToString())
+                         : url;
   SourceLocation safe_source_location = source_location;
-  context->SanitizeDataForUseInCspViolation(
-      has_followed_redirect, directive_name, &safe_url, &safe_source_location);
+  context->SanitizeDataForUseInCspViolation(has_followed_redirect,
+                                            directive_name, &blocked_url,
+                                            &safe_source_location);
 
   std::stringstream message;
 
   if (policy.header.type == network::mojom::ContentSecurityPolicyType::kReport)
     message << "[Report Only] ";
 
-  if (directive_name == CSPDirective::FormAction)
-    message << "Refused to send form data to '";
-  else if (directive_name == CSPDirective::FrameSrc)
-    message << "Refused to frame '";
-  else if (directive_name == CSPDirective::NavigateTo)
-    message << "Refused to navigate to '";
+  message << base::ReplaceStringPlaceholders(
+      ErrorMessage(directive_name),
+      {ElideURLForReportViolation(blocked_url), directive.ToString()}, nullptr);
 
-  message << ElideURLForReportViolation(safe_url)
-          << "' because it violates the following Content Security Policy "
-             "directive: \""
-          << directive.ToString() << "\".";
-
-  if (directive.name != directive_name)
+  if (directive.name != directive_name) {
     message << " Note that '" << CSPDirective::NameToString(directive_name)
             << "' was not explicitly set, so '"
             << CSPDirective::NameToString(directive.name)
             << "' is used as a fallback.";
+  }
 
   message << "\n";
 
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
       CSPDirective::NameToString(directive.name),
-      CSPDirective::NameToString(directive_name), message.str(), safe_url,
+      CSPDirective::NameToString(directive_name), message.str(), blocked_url,
       policy.report_endpoints, policy.use_reporting_api,
       policy.header.header_value, policy.header.type, has_followed_redirect,
       safe_source_location));
@@ -155,6 +172,16 @@ ContentSecurityPolicy::ContentSecurityPolicy(
       directives(directives),
       report_endpoints(report_endpoints),
       use_reporting_api(use_reporting_api) {}
+
+// TODO(arthursonzogni): Add the |header| to the network ContentSecurityPolicy
+// struct.
+ContentSecurityPolicy::ContentSecurityPolicy(
+    network::mojom::ContentSecurityPolicyPtr csp)
+    : report_endpoints(std::move(csp->report_endpoints)),
+      use_reporting_api(csp->use_reporting_api) {
+  for (auto& directive : csp->directives)
+    directives.emplace_back(std::move(directive));
+}
 
 ContentSecurityPolicy::ContentSecurityPolicy(
     const ContentSecurityPolicy& other) = default;

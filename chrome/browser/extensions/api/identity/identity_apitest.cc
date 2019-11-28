@@ -687,7 +687,7 @@ class GetAuthTokenFunctionTest
   GetAuthTokenFunctionTest() = default;
 
   std::string IssueLoginAccessTokenForAccount(const CoreAccountId& account_id) {
-    std::string access_token = "access_token-" + account_id.id;
+    std::string access_token = "access_token-" + account_id.ToString();
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
             account_id, access_token,

@@ -358,7 +358,7 @@ bool AccountTrackerService::IsMigrationDone() const {
     return false;
 
   for (const auto& pair : accounts_) {
-    if (pair.first.id != pair.second.gaia)
+    if (pair.first.ToString() != pair.second.gaia)
       return false;
   }
 
@@ -379,7 +379,7 @@ AccountTrackerService::ComputeNewMigrationState() const {
 
     // Migration is required if at least one account is not keyed to its
     // gaia id.
-    migration_required |= (pair.first.id != pair.second.gaia);
+    migration_required |= (pair.first.ToString() != pair.second.gaia);
   }
 
   return migration_required ? MIGRATION_IN_PROGRESS : MIGRATION_DONE;
@@ -401,7 +401,7 @@ base::FilePath AccountTrackerService::GetImagePathFor(
     const CoreAccountId& account_id) {
   return user_data_dir_.Append(kAccountsFolder)
       .Append(kAvatarImagesFolder)
-      .AppendASCII(account_id.id);
+      .AppendASCII(account_id.ToString());
 }
 
 void AccountTrackerService::OnAccountImageLoaded(
@@ -540,7 +540,7 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
     if (update->GetDictionary(i, &dict)) {
       std::string value;
       if (dict->GetString(kAccountKeyPath, &value) &&
-          value == account_info.account_id.id)
+          value == account_info.account_id.ToString())
         break;
     }
   }
@@ -550,7 +550,7 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
     update->Append(base::WrapUnique(dict));
     // |dict| is invalidated at this point, so it needs to be reset.
     update->GetDictionary(update->GetSize() - 1, &dict);
-    dict->SetString(kAccountKeyPath, account_info.account_id.id);
+    dict->SetString(kAccountKeyPath, account_info.account_id.ToString());
   }
 
   dict->SetString(kAccountEmailPath, account_info.email);
@@ -576,7 +576,7 @@ void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
     if (update->GetDictionary(i, &dict)) {
       std::string value;
       if (dict->GetString(kAccountKeyPath, &value) &&
-          value == account_info.account_id.id) {
+          value == account_info.account_id.ToString()) {
         update->Remove(i, nullptr);
         break;
       }

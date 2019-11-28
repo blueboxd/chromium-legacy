@@ -85,10 +85,10 @@ var Resolution = class {
  * @enum {string}
  */
 var Mode = {
-  PHOTO: 'photo-mode',
-  VIDEO: 'video-mode',
-  SQUARE: 'square-mode',
-  PORTRAIT: 'portrait-mode',
+  PHOTO: 'photo',
+  VIDEO: 'video',
+  SQUARE: 'square',
+  PORTRAIT: 'portrait',
 };
 
 /**

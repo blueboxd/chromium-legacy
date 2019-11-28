@@ -270,7 +270,8 @@ bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
   GridTrackSizingDirection direction = GridDirectionForAxis(axis);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   for (const auto& track_position : span) {
-    GridTrackSize track_size = RawGridTrackSize(direction, track_position);
+    const GridTrackSize& track_size =
+        RawGridTrackSize(direction, track_position);
     // We consider fr units as 'auto' for the min sizing function.
     // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
     //
@@ -401,9 +402,10 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
     const GridSpan& span =
         algorithm_.GetGrid().GridItemSpan(child, Direction());
     LayoutUnit max_breadth;
+    const Vector<GridTrack>& all_tracks = algorithm_.Tracks(Direction());
     for (const auto& track_position : span) {
       const GridTrackSize& track_size =
-          GetCachedGridTrackSize(Direction(), track_position);
+          all_tracks[track_position].CachedTrackSize();
       if (!track_size.HasFixedMaxTrackBreadth())
         return min_size;
       max_breadth += ValueForLength(track_size.MaxTrackBreadth().length(),
@@ -650,8 +652,8 @@ void IndefiniteSizeStrategy::MaximizeTracks(Vector<GridTrack>& tracks,
     track.SetBaseSize(track.GrowthLimit());
 }
 
-static inline double NormalizedFlexFraction(const GridTrack& track,
-                                            double flex_factor) {
+static inline double NormalizedFlexFraction(const GridTrack& track) {
+  double flex_factor = track.CachedTrackSize().MaxTrackBreadth().Flex();
   return track.BaseSize() / std::max<double>(1, flex_factor);
 }
 
@@ -663,15 +665,8 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
 
   double flex_fraction = 0;
   for (const auto& track_index : flexible_sized_tracks_index) {
-    // TODO(svillar): we pass TrackSizing to gridTrackSize() because it does not
-    // really matter as we know the track is a flex sized track. It'd be nice
-    // not to have to do that.
-    flex_fraction = std::max(
-        flex_fraction,
-        NormalizedFlexFraction(all_tracks[track_index],
-                               GetCachedGridTrackSize(direction, track_index)
-                                   .MaxTrackBreadth()
-                                   .Flex()));
+    flex_fraction = std::max(flex_fraction,
+                             NormalizedFlexFraction(all_tracks[track_index]));
   }
 
   const Grid& grid = algorithm_.GetGrid();
@@ -833,7 +828,7 @@ void GridTrackSizingAlgorithm::SetFreeSpace(
     free_space_rows_ = free_space;
 }
 
-GridTrackSize GridTrackSizingAlgorithm::RawGridTrackSize(
+const GridTrackSize& GridTrackSizingAlgorithm::RawGridTrackSize(
     GridTrackSizingDirection direction,
     size_t translated_index) const {
   bool is_row_axis = direction == kForColumns;
@@ -1020,7 +1015,7 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
       auto_sized_tracks_for_stretch_index_.push_back(i);
 
     if (!has_percent_sized_rows_indefinite_height_ && indefinite_height) {
-      GridTrackSize raw_track_size = RawGridTrackSize(direction_, i);
+      const GridTrackSize& raw_track_size = RawGridTrackSize(direction_, i);
       if (raw_track_size.MinTrackBreadth().HasPercentage() ||
           raw_track_size.MaxTrackBreadth().HasPercentage())
         has_percent_sized_rows_indefinite_height_ = true;

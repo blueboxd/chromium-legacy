@@ -180,7 +180,7 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   const base::Value* status_list_value = message_value.FindKey("status");
   if (!status_list_value || !status_list_value->is_list())
     return;
-  base::span<const base::Value> status_list = status_list_value->GetList();
+  base::Value::ConstListView status_list = status_list_value->GetList();
   if (status_list.empty())
     return;
   const base::Value& status_value = status_list[0];

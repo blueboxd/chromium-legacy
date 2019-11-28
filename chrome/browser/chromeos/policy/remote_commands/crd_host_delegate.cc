@@ -200,7 +200,7 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 
   // TODO(msarda): This conversion will not be correct once account id is
   // migrated to be the Gaia ID on ChromeOS. Fix it.
-  std::string username = account_id.id;
+  std::string username = account_id.ToString();
 
   connect_params.SetKey(kCRDConnectUserName, base::Value(username));
   connect_params.SetKey(kCRDConnectAuth, base::Value("oauth2:" + oauth_token));

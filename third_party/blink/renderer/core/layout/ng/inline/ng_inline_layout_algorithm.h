@@ -80,9 +80,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                         const NGLineInfo&,
                         NGInlineItemResult*,
                         NGInlineBoxState*);
-  void PlaceHyphen(const NGInlineItemResult&,
-                   LayoutUnit hyphen_inline_size,
-                   NGInlineBoxState*);
+  void PlaceGeneratedContent(scoped_refptr<const NGPhysicalTextFragment>,
+                             UBiDiLevel,
+                             NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       const NGLineInfo&,
                                       NGInlineItemResult*);

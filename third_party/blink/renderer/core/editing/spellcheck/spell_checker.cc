@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -102,7 +103,8 @@ WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
 SpellChecker::SpellChecker(LocalFrame& frame)
     : frame_(&frame),
       spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(frame)),
-      idle_spell_check_controller_(IdleSpellCheckController::Create(frame)) {}
+      idle_spell_check_controller_(
+          MakeGarbageCollected<IdleSpellCheckController>(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
   if (WebTextCheckClient* client = GetTextCheckerClient())

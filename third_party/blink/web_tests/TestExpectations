@@ -862,6 +862,7 @@ crbug.com/797591 virtual/layout_ng_block_frag/fast/multicol/newmulticol/regular-
 
 ### With LayoutNGBlockFragmentation enabled:
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-001.html [ Failure ]
@@ -2730,15 +2731,12 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/tokens/ms-001.html [ Failure ]

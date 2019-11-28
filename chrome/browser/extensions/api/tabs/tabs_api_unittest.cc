@@ -27,6 +27,11 @@
 #include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
+#include "ash/public/cpp/window_properties.h"
+#endif
+
 namespace extensions {
 
 using display::test::ScopedScreenOverride;
@@ -77,6 +82,7 @@ class TabsApiUnitTest : public ExtensionServiceTestBase {
   ~TabsApiUnitTest() override {}
 
   Browser* browser() { return browser_.get(); }
+  TestBrowserWindow* browser_window() { return browser_window_.get(); }
 
   TabStripModel* GetTabStripModel() { return browser_->tab_strip_model(); }
 
@@ -537,5 +543,26 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
     browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
   base::RunLoop().RunUntilIdle();
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
+
+  browser_window()->SetNativeWindow(new aura::Window(nullptr));
+
+  auto function = base::MakeRefCounted<TabsCreateFunction>();
+
+  function->set_extension(extension_with_tabs_permission.get());
+
+  // In locked fullscreen mode we should not be able to create any tabs.
+  browser_window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
+
+  EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
+            extension_function_test_utils::RunFunctionAndReturnError(
+                function.get(), "[{}]", browser(), api_test_utils::NONE));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

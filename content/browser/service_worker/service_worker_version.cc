@@ -1204,10 +1204,10 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host || provider_host->container_host()->url().GetOrigin() !=
-                            script_url_.GetOrigin()) {
+  ServiceWorkerContainerHost* container_host =
+      context_->GetContainerHostByClientID(client_uuid);
+  if (!container_host ||
+      container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
     // Note that we don't BadMessage here since Clients#get() can be passed an
     // arbitrary UUID. The BadMessages for the origin mismatches below are
@@ -1216,25 +1216,24 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
-  if (!provider_host->container_host()->is_execution_ready()) {
-    provider_host->container_host()->AddExecutionReadyCallback(
+  if (!container_host->is_execution_ready()) {
+    container_host->AddExecutionReadyCallback(
         base::BindOnce(&ServiceWorkerVersion::GetClientInternal, this,
                        client_uuid, std::move(callback)));
     return;
   }
-  service_worker_client_utils::GetClient(provider_host, std::move(callback));
+  service_worker_client_utils::GetClient(container_host, std::move(callback));
 }
 
 void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
                                              GetClientCallback callback) {
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host ||
-      !provider_host->container_host()->is_execution_ready()) {
+  ServiceWorkerContainerHost* container_host =
+      context_->GetContainerHostByClientID(client_uuid);
+  if (!container_host || !container_host->is_execution_ready()) {
     std::move(callback).Run(nullptr);
     return;
   }
-  service_worker_client_utils::GetClient(provider_host, std::move(callback));
+  service_worker_client_utils::GetClient(container_host, std::move(callback));
 }
 
 void ServiceWorkerVersion::OpenNewTab(const GURL& url,
@@ -1277,14 +1276,13 @@ void ServiceWorkerVersion::PostMessageToClient(
     blink::TransferableMessage message) {
   if (!context_)
     return;
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host) {
+  ServiceWorkerContainerHost* container_host =
+      context_->GetContainerHostByClientID(client_uuid);
+  if (!container_host) {
     // The client may already have been closed, just ignore.
     return;
   }
 
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     // When |PostMessageToClient| is called on a client that is in bfcache,
@@ -1340,14 +1338,13 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host) {
+  ServiceWorkerContainerHost* container_host =
+      context_->GetContainerHostByClientID(client_uuid);
+  if (!container_host) {
     // The client may already have been closed, just fail.
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
   if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
@@ -1363,7 +1360,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     return;
   }
 
-  service_worker_client_utils::FocusWindowClient(provider_host,
+  service_worker_client_utils::FocusWindowClient(container_host,
                                                  std::move(callback));
 }
 
@@ -1396,14 +1393,13 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     return;
   }
 
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host) {
+  ServiceWorkerContainerHost* container_host =
+      context_->GetContainerHostByClientID(client_uuid);
+  if (!container_host) {
     std::move(callback).Run(false /* success */, nullptr /* client */,
                             std::string("The client was not found."));
     return;
   }
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
   if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
@@ -1427,8 +1423,8 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   }
 
   service_worker_client_utils::NavigateClient(
-      url, script_url_, provider_host->container_host()->process_id(),
-      provider_host->container_host()->frame_id(), context_,
+      url, script_url_, container_host->process_id(),
+      container_host->frame_id(), context_,
       base::BindOnce(&DidNavigateClient, std::move(callback), url));
 }
 
@@ -1552,8 +1548,8 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
 void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   if (!used_features_.insert(feature).second)
     return;
-  for (auto provider_host_by_uuid : controllee_map_)
-    provider_host_by_uuid.second->CountFeature(feature);
+  for (auto container_host_by_uuid : controllee_map_)
+    container_host_by_uuid.second->CountFeature(feature);
 }
 
 // static

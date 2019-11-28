@@ -2013,7 +2013,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferDataImpl(target, data.View()->byteLength(),
+  BufferDataImpl(target, data.View()->deprecatedByteLengthAsUnsigned(),
                  data.View()->BaseAddressMaybeShared(), usage);
 }
 
@@ -2204,9 +2204,10 @@ void WebGLRenderingContextBase::compressedTexImage2D(
     return;
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
-  ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
-                                    height, border, data.View()->byteLength(),
-                                    data.View()->BaseAddressMaybeShared());
+  ContextGL()->CompressedTexImage2D(
+      target, level, internalformat, width, height, border,
+      data.View()->deprecatedByteLengthAsUnsigned(),
+      data.View()->BaseAddressMaybeShared());
 }
 
 void WebGLRenderingContextBase::compressedTexSubImage2D(
@@ -2226,7 +2227,8 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
     return;
   ContextGL()->CompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format,
-      data.View()->byteLength(), data.View()->BaseAddressMaybeShared());
+      data.View()->deprecatedByteLengthAsUnsigned(),
+      data.View()->BaseAddressMaybeShared());
 }
 
 bool WebGLRenderingContextBase::ValidateSettableTexFormat(
@@ -4435,7 +4437,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
   base::CheckedNumeric<GLuint> offset_in_bytes = offset;
   offset_in_bytes *= pixels->TypeSize();
   if (!offset_in_bytes.IsValid() ||
-      offset_in_bytes.ValueOrDie() > pixels->byteLength()) {
+      offset_in_bytes.ValueOrDie() > pixels->deprecatedByteLengthAsUnsigned()) {
     SynthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "destination offset out of range");
     return;
@@ -4448,7 +4450,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     return;
   }
   base::CheckedNumeric<GLuint> buffer_size =
-      pixels->byteLength() - offset_in_bytes;
+      pixels->deprecatedByteLengthAsUnsigned() - offset_in_bytes;
   if (!buffer_size.IsValid()) {
     SynthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "destination offset out of range");
@@ -7504,7 +7506,8 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
   total *= pixels->TypeSize();
   total += total_bytes_required;
   total += skip_bytes;
-  if (!total.IsValid() || pixels->byteLength() < total.ValueOrDie()) {
+  if (!total.IsValid() ||
+      pixels->deprecatedByteLengthAsUnsigned() < total.ValueOrDie()) {
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       "ArrayBufferView not big enough for request");
     return false;

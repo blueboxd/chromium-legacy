@@ -37,6 +37,8 @@ bool V4L2DevicePoller::StartPolling(EventCallback event_callback,
   if (IsPolling())
     return true;
 
+  DVLOGF(4) << "Starting polling";
+
   client_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   error_callback_ = error_callback;
 
@@ -52,6 +54,8 @@ bool V4L2DevicePoller::StartPolling(EventCallback event_callback,
       FROM_HERE, base::BindOnce(&V4L2DevicePoller::DevicePollTask,
                                 base::Unretained(this)));
 
+  DVLOGF(3) << "Polling thread started";
+
   SchedulePoll();
 
   return true;
@@ -62,6 +66,8 @@ bool V4L2DevicePoller::StopPolling() {
 
   if (!IsPolling())
     return true;
+
+  DVLOGF(4) << "Stopping polling";
 
   stop_polling_.store(true);
 
@@ -80,6 +86,8 @@ bool V4L2DevicePoller::StopPolling() {
     return false;
   }
 
+  DVLOGF(4) << "Polling thread stopped";
+
   return true;
 }
 
@@ -96,6 +104,8 @@ void V4L2DevicePoller::SchedulePoll() {
   if (!IsPolling())
     return;
 
+  DVLOGF(4) << "Scheduling poll";
+
   trigger_poll_.Signal();
 }
 
@@ -103,17 +113,23 @@ void V4L2DevicePoller::DevicePollTask() {
   DCHECK(poll_thread_.task_runner()->RunsTasksInCurrentSequence());
 
   while (true) {
+    DVLOGF(4) << "Waiting for poll to be scheduled.";
     trigger_poll_.Wait();
 
-    if (stop_polling_)
+    if (stop_polling_) {
+      DVLOGF(4) << "Poll stopped, exiting.";
       break;
+    }
 
     bool event_pending = false;
+    DVLOGF(4) << "Polling device.";
     if (!device_->Poll(true, &event_pending)) {
+      VLOGF(1) << "An error occured while polling, calling error callback";
       client_task_runner_->PostTask(FROM_HERE, error_callback_);
       return;
     }
 
+    DVLOGF(4) << "Poll returned, calling event callback.";
     client_task_runner_->PostTask(FROM_HERE,
                                   base::Bind(event_callback_, event_pending));
   }

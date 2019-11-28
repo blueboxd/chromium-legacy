@@ -143,6 +143,13 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
   if (service->signout_required_after_supervision_enabled())
     return;
 
+  // We need to save the flag in the local state because
+  // TokenHandleUtil::CheckToken might fail on the login screen due to lack of
+  // network connectivity.
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(
+      multi_user_util::GetAccountIdFromProfile(profile_),
+      true /* force_online_signin */);
+
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(

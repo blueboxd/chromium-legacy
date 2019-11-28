@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_instances_android.h"
 
@@ -33,6 +34,7 @@ class COMPONENT_EXPORT(TRACING_CPP) HprofParser {
     PARSE_FAILED,
     FAILED_TO_OPEN_FILE,
     STRING_ID_NOT_FOUND,
+    OBJECT_ID_NOT_FOUND,
   };
 
   struct ParseStats {
@@ -100,7 +102,24 @@ class COMPONENT_EXPORT(TRACING_CPP) HprofParser {
   FRIEND_TEST_ALL_PREFIXES(HprofParserTest, ParseClassInstanceDumpSubtag);
   FRIEND_TEST_ALL_PREFIXES(HprofParserTest, ParseObjectArrayDumpSubtag);
   FRIEND_TEST_ALL_PREFIXES(HprofParserTest, ParsePrimitiveArrayDumpSubtag);
+  FRIEND_TEST_ALL_PREFIXES(HprofParserTest, ModifyClassObjectTypeNames);
 
+  FRIEND_TEST_ALL_PREFIXES(HprofParserTest,
+                           BasicResolveClassInstanceReferences);
+  FRIEND_TEST_ALL_PREFIXES(
+      HprofParserTest,
+      MultipleInstanceFieldsResolveClassInstanceReferences);
+  FRIEND_TEST_ALL_PREFIXES(
+      HprofParserTest,
+      MissingObjectReferenceResolveClassInstanceReferences);
+  FRIEND_TEST_ALL_PREFIXES(
+      HprofParserTest,
+      ExistingAndMissingReferencesResolveClassInstanceReferences);
+  FRIEND_TEST_ALL_PREFIXES(HprofParserTest,
+                           BasicResolveObjectArrayInstanceReferences);
+  FRIEND_TEST_ALL_PREFIXES(
+      HprofParserTest,
+      MissingAndExistingReferencesResolveObjectArrayInstanceReferences);
   // Parses hprof data file_data and records metrics in parse_stats_.
   void ParseFileData(const unsigned char* file_data, size_t file_size);
 
@@ -111,6 +130,19 @@ class COMPONENT_EXPORT(TRACING_CPP) HprofParser {
   ParseResult ParseObjectArrayDumpSubtag();
   ParseResult ParsePrimitiveArrayDumpSubtag();
   ParseResult ParseHeapDumpTag(uint32_t record_length_);
+
+  ParseResult ResolveClassInstanceReferences();
+  ParseResult ResolveObjectArrayInstanceReferences();
+
+  // Append java.lang.Class: to ClassObjects to differentiate them from
+  // ClassInstances.
+  void ModifyClassObjectTypeNames();
+
+  // Searches through each of the four instance maps: class_objects_,
+  // class_instances_, object_array_instances_, and primitive_array_instances_
+  // for an instance with given id. If found, return the base instance of the
+  // instance found. If not found, return a null pointer.
+  Instance* FindInstance(ObjectId id);
 
   std::unordered_map<ObjectId, std::unique_ptr<StringReference>> strings_;
 

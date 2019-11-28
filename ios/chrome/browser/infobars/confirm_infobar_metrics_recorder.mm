@@ -12,9 +12,13 @@
 
 const char kInfobarTypeRestoreEventHistogram[] =
     "Mobile.Messages.Confirm.Event.ConfirmInfobarTypeRestore";
+const char kInfobarTypeRestoreAcceptTimeHistogram[] =
+    "Mobile.Messages.Confirm.Accept.Time.ConfirmInfobarTypeRestore";
 
 const char kInfobarTypeBlockPopupsEventHistogram[] =
     "Mobile.Messages.Confirm.Event.ConfirmInfobarTypeBlockPopups";
+const char kInfobarTypeBlockPopupsAcceptTimeHistogram[] =
+    "Mobile.Messages.Confirm.Accept.Time.ConfirmInfobarTypeBlockPopups";
 
 @implementation ConfirmInfobarMetricsRecorder
 
@@ -26,6 +30,21 @@ const char kInfobarTypeBlockPopupsEventHistogram[] =
       break;
     case InfobarConfirmType::kInfobarConfirmTypeBlockPopups:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTypeBlockPopupsEventHistogram, event);
+      break;
+  }
+}
+
++ (void)recordConfirmAcceptTime:(NSTimeInterval)duration
+          forInfobarConfirmType:(InfobarConfirmType)infobarConfirmType {
+  base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
+  switch (infobarConfirmType) {
+    case InfobarConfirmType::kInfobarConfirmTypeRestore:
+      UMA_HISTOGRAM_MEDIUM_TIMES(kInfobarTypeRestoreAcceptTimeHistogram,
+                                 timeDelta);
+      break;
+    case InfobarConfirmType::kInfobarConfirmTypeBlockPopups:
+      UMA_HISTOGRAM_MEDIUM_TIMES(kInfobarTypeBlockPopupsAcceptTimeHistogram,
+                                 timeDelta);
       break;
   }
 }

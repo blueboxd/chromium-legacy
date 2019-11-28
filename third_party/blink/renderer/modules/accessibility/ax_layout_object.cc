@@ -76,13 +76,12 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -1265,17 +1264,18 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG())
+  if (layout_object.IsListMarkerIncludingNG() ||
+      !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
-
-  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-  if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
+  NGInlineCursor cursor;
+  cursor.MoveTo(layout_object);
+  if (!cursor)
     return nullptr;
-  NGPaintFragmentTraversal runner(*fragments.back().ContainerLineBox(),
-                                  fragments.back());
-  for (runner.MoveToNextInlineLeaf(); !runner.IsAtEnd();
-       runner.MoveToNextInlineLeaf()) {
-    LayoutObject* runner_layout_object = runner->GetMutableLayoutObject();
+  for (;;) {
+    cursor.MoveToNextInlineLeafOnLine();
+    if (!cursor)
+      break;
+    LayoutObject* runner_layout_object = cursor.CurrentMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(runner_layout_object))
       return result;
@@ -1345,17 +1345,18 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG())
+  if (layout_object.IsListMarkerIncludingNG() ||
+      !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
-
-  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-  if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
+  NGInlineCursor cursor;
+  cursor.MoveTo(layout_object);
+  if (!cursor)
     return nullptr;
-  NGPaintFragmentTraversal runner(*fragments.front().ContainerLineBox(),
-                                  fragments.front());
-  for (runner.MoveToPreviousInlineLeaf(); !runner.IsAtEnd();
-       runner.MoveToPreviousInlineLeaf()) {
-    LayoutObject* earlier_layout_object = runner->GetMutableLayoutObject();
+  for (;;) {
+    cursor.MoveToPreviousInlineLeafOnLine();
+    if (!cursor)
+      break;
+    LayoutObject* earlier_layout_object = cursor.CurrentMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(earlier_layout_object))
       return result;

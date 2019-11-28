@@ -836,7 +836,7 @@ std::vector<Cookie> FakeSetAccountsInCookie(
   if (parameters.mode ==
       gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
     for (const CoreAccountId& account : parameters.accounts_to_send) {
-      cookies_after_reconcile.push_back({account.id, true});
+      cookies_after_reconcile.push_back({account.ToString(), true});
     }
   } else {
     std::set<CoreAccountId> accounts_set(parameters.accounts_to_send.begin(),
@@ -852,7 +852,7 @@ std::vector<Cookie> FakeSetAccountsInCookie(
       }
     }
     for (const CoreAccountId& account : accounts_set) {
-      cookies_after_reconcile.push_back({account.id, true});
+      cookies_after_reconcile.push_back({account.ToString(), true});
     }
   }
   return cookies_after_reconcile;

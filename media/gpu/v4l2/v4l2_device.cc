@@ -1470,7 +1470,7 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
 }
 
 // static
-std::string V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
+const char* V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
   switch (memory) {
     case V4L2_MEMORY_MMAP:
       return "V4L2_MEMORY_MMAP";

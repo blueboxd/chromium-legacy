@@ -1489,7 +1489,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
     if (fragment.IsInlineBox())
       bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test_location.Intersects(bounds_rect)) {
-      Node* node = paint_fragment_->NodeForHitTest();
+      Node* node = fragment.NodeForHitTest();
       if (!result.InnerNode() && node) {
         PhysicalOffset point = hit_test_location.Point() - physical_offset;
         result.SetNodeAndPosition(node, point);
@@ -1535,7 +1535,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   if (FragmentVisibleToHitTestRequest(text_paint_fragment,
                                       result.GetHitTestRequest()) &&
       hit_test_location.Intersects(rect)) {
-    Node* node = text_paint_fragment.NodeForHitTest();
+    Node* node = text_fragment.NodeForHitTest();
     if (!result.InnerNode() && node) {
       PhysicalOffset point = hit_test_location.Point() - physical_offset +
                              text_paint_fragment.InlineOffsetToContainerBox();
@@ -1601,7 +1601,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     }
   }
 
-  Node* node = fragment.NodeForHitTest();
+  Node* node = line.NodeForHitTest();
   if (!result.InnerNode() && node) {
     const PhysicalOffset point = hit_test_location.Point() - physical_offset +
                                  fragment.InlineOffsetToContainerBox();

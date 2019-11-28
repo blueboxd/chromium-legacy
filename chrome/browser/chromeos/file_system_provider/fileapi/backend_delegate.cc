@@ -86,10 +86,10 @@ storage::WatcherManager* BackendDelegate::GetWatcherManager(
 
 void BackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    storage::URLCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
-  callback.Run(GURL());
+  std::move(callback).Run(GURL());
 }
 
 }  // namespace file_system_provider

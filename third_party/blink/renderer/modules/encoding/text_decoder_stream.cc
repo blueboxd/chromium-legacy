@@ -54,7 +54,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     if (bufferSource.IsArrayBufferView()) {
       const auto* view = bufferSource.GetAsArrayBufferView().View();
       const char* start = static_cast<const char*>(view->BaseAddress());
-      uint32_t length = view->byteLength();
+      uint32_t length = view->deprecatedByteLengthAsUnsigned();
       DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
                        controller, exception_state);
       return ScriptPromise::CastUndefined(script_state_);

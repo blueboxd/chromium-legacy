@@ -4633,10 +4633,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
       base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
-      base::Unretained(this)));
-
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
                           base::Unretained(this)));

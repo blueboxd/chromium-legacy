@@ -166,6 +166,9 @@
       self.saveCardInfoBarDelegate->expiration_date_year());
   self.modalViewController.currentCardSaved = !self.infobarAccepted;
   self.modalViewController.legalMessages = [self legalMessagesForModal];
+  // TODO(crbug.com/1029067):Change NO  to
+  // self.saveCardInfoBarDelegate->upload(). Once we want to enable editing.
+  self.modalViewController.supportsEditing = NO;
 
   return YES;
 }

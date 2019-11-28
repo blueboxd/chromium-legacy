@@ -21,6 +21,13 @@ Polymer({
     });
   },
 
+  /*
+   * Executed on language change.
+   */
+  updateLocalizedContent: function() {
+    this.i18nUpdateLocale();
+  },
+
   /**
    * On-tap event handler for Don't Enroll button.
    *

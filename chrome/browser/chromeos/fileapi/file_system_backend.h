@@ -138,9 +138,8 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
   void RevokeAccessForExtension(const std::string& extension_id) override;
   bool GetVirtualPath(const base::FilePath& filesystem_path,
                       base::FilePath* virtual_path) const override;
-  void GetRedirectURLForContents(
-      const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) const override;
+  void GetRedirectURLForContents(const storage::FileSystemURL& url,
+                                 storage::URLCallback callback) const override;
   storage::FileSystemURL CreateInternalURL(
       storage::FileSystemContext* context,
       const base::FilePath& entry_path) const override;

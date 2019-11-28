@@ -48,34 +48,38 @@ CoreAccountId CoreAccountId::FromEmail(const std::string& email) {
 // static
 CoreAccountId CoreAccountId::FromString(const std::string value) {
   CoreAccountId account_id;
-  account_id.id = value;
+  account_id.id_ = value;
   return account_id;
 }
 
 bool CoreAccountId::empty() const {
-  return id.empty();
+  return id_.empty();
+}
+
+const std::string& CoreAccountId::ToString() const {
+  return id_;
 }
 
 bool operator<(const CoreAccountId& lhs, const CoreAccountId& rhs) {
-  return lhs.id < rhs.id;
+  return lhs.ToString() < rhs.ToString();
 }
 
 bool operator==(const CoreAccountId& lhs, const CoreAccountId& rhs) {
-  return lhs.id == rhs.id;
+  return lhs.ToString() == rhs.ToString();
 }
 
 bool operator!=(const CoreAccountId& lhs, const CoreAccountId& rhs) {
-  return lhs.id != rhs.id;
+  return lhs.ToString() != rhs.ToString();
 }
 
 std::ostream& operator<<(std::ostream& out, const CoreAccountId& a) {
-  return out << a.id;
+  return out << a.ToString();
 }
 
 std::vector<std::string> ToStringList(
     const std::vector<CoreAccountId>& account_ids) {
   std::vector<std::string> account_ids_string;
   for (const auto& account_id : account_ids)
-    account_ids_string.push_back(account_id.id);
+    account_ids_string.push_back(account_id.ToString());
   return account_ids_string;
 }

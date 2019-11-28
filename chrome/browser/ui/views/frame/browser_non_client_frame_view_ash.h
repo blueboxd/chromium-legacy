@@ -157,6 +157,10 @@ class BrowserNonClientFrameViewAsh
   // example, in overview mode and tablet mode.
   bool ShouldShowCaptionButtons() const;
 
+  // Distance between the edge of the NonClientFrameView and the web app frame
+  // toolbar.
+  int GetToolbarLeftInset() const;
+
   // Distance between the edges of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;
   int GetTabStripRightInset() const;

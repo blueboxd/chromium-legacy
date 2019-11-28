@@ -210,7 +210,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromSimpleValue(
       return IDBKey::CreateInvalid();
     }
     const char* start = static_cast<const char*>(view->BaseAddress());
-    size_t length = view->byteLength();
+    size_t length = view->byteLengthAsSizeT();
     return IDBKey::CreateBinary(SharedBuffer::Create(start, length));
   }
 

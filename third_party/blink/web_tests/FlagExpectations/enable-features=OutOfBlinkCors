@@ -2,8 +2,6 @@
 # Entries below are expected to revert relevant entries in NeverFixTests.
 # TODO(cbur.com/1001450): Remove this file after the OOR-CORS launch.
 crbug.com/870173 external/wpt/fetch/sec-metadata/appcache.tentative.https.sub.html [ Pass ]
-crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Pass ]
-crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Pass ]
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Pass ]
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ Pass ]
 crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ Pass ]
@@ -18,8 +16,6 @@ crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.htm
 crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Pass ]
 crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Pass ]
 crbug.com/870173 mhtml/cid_in_html_resource.html [ Pass ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Pass ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Pass ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Pass ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Pass ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Pass ]
@@ -29,6 +25,7 @@ crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.htm
 # OOR-CORS, but with different texts. Just mark them as Failure.
 crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]

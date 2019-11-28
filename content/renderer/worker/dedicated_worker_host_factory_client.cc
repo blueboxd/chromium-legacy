@@ -11,6 +11,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -25,10 +26,9 @@ namespace content {
 
 DedicatedWorkerHostFactoryClient::DedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,
-    service_manager::InterfaceProvider* interface_provider)
+    const blink::BrowserInterfaceBrokerProxy& interface_broker)
     : worker_(worker) {
-  DCHECK(interface_provider);
-  interface_provider->GetInterface(factory_.BindNewPipeAndPassReceiver());
+  interface_broker.GetInterface(factory_.BindNewPipeAndPassReceiver());
 }
 
 DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;

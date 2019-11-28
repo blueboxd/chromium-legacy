@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 
@@ -49,7 +50,7 @@ class SpellCheckPanel : public content::RenderFrameObserver,
   void ToggleSpellPanel(bool visible) override;
   void AdvanceToNextMisspelling() override;
 
-  spellcheck::mojom::SpellCheckPanelHostPtr GetSpellCheckPanelHost();
+  mojo::Remote<spellcheck::mojom::SpellCheckPanelHost> GetSpellCheckPanelHost();
 
   // SpellCheckPanel receivers.
   mojo::ReceiverSet<spellcheck::mojom::SpellCheckPanel> receivers_;

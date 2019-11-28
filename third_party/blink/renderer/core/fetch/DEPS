@@ -1,9 +1,10 @@
 include_rules = [
     "+gin/public",
-    "+mojo/public/cpp/system/data_pipe_utils.h",
     "+mojo/public/cpp/bindings/binding_set.h",
     "+mojo/public/cpp/system/data_pipe.h",
+    "+mojo/public/cpp/system/data_pipe_utils.h",
     "+mojo/public/cpp/system/simple_watcher.h",
     "+net/base/request_priority.h",
     "+services/network/public/cpp/content_security_policy.h",
+    "+url/gurl.h",
 ]

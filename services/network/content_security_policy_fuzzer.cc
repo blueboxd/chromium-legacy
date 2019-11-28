@@ -10,6 +10,7 @@
 #include "base/i18n/icu_util.h"
 #include "net/http/http_response_headers.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
+#include "url/gurl.h"
 
 namespace {
 

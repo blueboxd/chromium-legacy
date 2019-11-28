@@ -846,14 +846,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.device_second_factor_authentication().mode());
   }
 
+  // Default value of the policy in case it's missing.
+  bool is_powerwash_allowed = true;
   if (policy.has_device_powerwash_allowed()) {
     const em::DevicePowerwashAllowedProto& container(
         policy.device_powerwash_allowed());
     if (container.has_device_powerwash_allowed()) {
-      new_values_cache->SetBoolean(kDevicePowerwashAllowed,
-                                   container.device_powerwash_allowed());
+      is_powerwash_allowed = container.device_powerwash_allowed();
     }
   }
+  new_values_cache->SetBoolean(kDevicePowerwashAllowed, is_powerwash_allowed);
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

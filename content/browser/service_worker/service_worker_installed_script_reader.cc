@@ -175,31 +175,8 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
                           AsWeakPtr()));
   body_watcher_.ArmOrNotify();
 
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      http_info->http_info->headers;
-  DCHECK(headers);
-
-  std::string charset;
-  headers->GetCharset(&charset);
-
-  // Create a map of response headers.
-  base::flat_map<std::string, std::string> header_strings;
-  size_t iter = 0;
-  std::string key;
-  std::string value;
-  // This logic is copied from blink::ResourceResponse::AddHttpHeaderField.
-  while (headers->EnumerateHeaderLines(&iter, &key, &value)) {
-    if (header_strings.find(key) == header_strings.end()) {
-      header_strings[key] = value;
-    } else {
-      header_strings[key] += ", " + value;
-    }
-  }
-
-  client_->OnStarted(charset, std::move(header_strings),
-                     std::move(body_consumer_handle), body_size_,
-                     std::move(meta_data_consumer), meta_data_size);
-  client_->OnHttpInfoRead(http_info);
+  client_->OnStarted(http_info, std::move(body_consumer_handle),
+                     std::move(meta_data_consumer));
 }
 
 void ServiceWorkerInstalledScriptReader::OnWritableBody(MojoResult) {

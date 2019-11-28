@@ -26,7 +26,7 @@
 - (void)onPrimaryAccountCleared:
     (const CoreAccountInfo&)previousPrimaryAccountInfo;
 - (void)onRefreshTokenUpdatedForAccount:(const CoreAccountInfo&)accountInfo;
-- (void)onRefreshTokenRemovedForAccount:(const std::string&)accountId;
+- (void)onRefreshTokenRemovedForAccount:(const CoreAccountId&)accountId;
 - (void)onRefreshTokensLoaded;
 - (void)onAccountsInCookieUpdated:
             (const signin::AccountsInCookieJarInfo&)accountsInCookieJarInfo

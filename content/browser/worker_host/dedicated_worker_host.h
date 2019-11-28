@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
@@ -75,6 +74,8 @@ class DedicatedWorkerHost final
 
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+  void CreateNestedDedicatedWorker(
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
   void CreateWebUsbService(
@@ -112,8 +113,6 @@ class DedicatedWorkerHost final
       mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client);
 
  private:
-  void RegisterMojoInterfaces();
-
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
   // worker in the renderer process.
   //
@@ -147,9 +146,6 @@ class DedicatedWorkerHost final
                                       RenderFrameHostImpl* render_frame_host,
                                       bool* bypass_redirect_checks);
 
-  void CreateNestedDedicatedWorker(
-      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
-
   // Updates subresource loader factories. This is supposed to be called when
   // out-of-process Network Service crashes.
   void UpdateSubresourceLoaderFactories();
@@ -181,8 +177,6 @@ class DedicatedWorkerHost final
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client_;
 
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
-
-  service_manager::BinderRegistry registry_;
 
   BrowserInterfaceBrokerImpl<DedicatedWorkerHost, const url::Origin&> broker_{
       this};

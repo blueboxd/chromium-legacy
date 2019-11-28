@@ -49,6 +49,7 @@ android_library("java") {
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]
 
   deps = [
@@ -93,6 +94,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/TabImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]
 }
 

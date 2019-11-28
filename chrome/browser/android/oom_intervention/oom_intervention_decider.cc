@@ -131,20 +131,17 @@ void OomInterventionDecider::OnPrefInitialized(bool success) {
   if (delegate_->WasLastShutdownClean())
     return;
 
-  base::span<const base::Value> declined_list =
+  base::Value::ConstListView declined_list =
       prefs_->GetList(kDeclinedHostList)->GetList();
-  if (declined_list.size() > 0) {
-    const std::string& last_declined =
-        declined_list[declined_list.size() - 1].GetString();
+  if (!declined_list.empty()) {
+    const std::string& last_declined = declined_list.back().GetString();
     if (!IsInList(kBlacklist, last_declined))
       AddToList(kOomDetectedHostList, last_declined);
   }
 }
 
 bool OomInterventionDecider::IsOptedOut(const std::string& host) const {
-  base::span<const base::Value> blacklist =
-      prefs_->GetList(kBlacklist)->GetList();
-  if (blacklist.size() >= kMaxBlacklistSize)
+  if (prefs_->GetList(kBlacklist)->GetList().size() >= kMaxBlacklistSize)
     return true;
 
   return IsInList(kBlacklist, host);

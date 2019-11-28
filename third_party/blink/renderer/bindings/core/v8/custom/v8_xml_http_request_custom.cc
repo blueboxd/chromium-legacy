@@ -79,7 +79,7 @@ void V8XMLHttpRequest::ResponseAttributeGetterCustom(
       v8::Local<v8::String> json_source =
           xml_http_request->ResponseJSONSource();
       if (json_source.IsEmpty()) {
-        V8SetReturnValue(info, v8::Null(isolate));
+        V8SetReturnValueNull(info);
         return;
       }
 
@@ -90,7 +90,7 @@ void V8XMLHttpRequest::ResponseAttributeGetterCustom(
                          ToCoreString(json_source), exception_state);
       if (exception_state.HadException()) {
         exception_state.ClearException();
-        V8SetReturnValue(info, v8::Null(isolate));
+        V8SetReturnValueNull(info);
       } else {
         V8SetReturnValue(info, json);
       }

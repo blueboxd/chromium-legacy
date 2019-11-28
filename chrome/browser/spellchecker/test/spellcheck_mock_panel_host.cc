@@ -25,9 +25,9 @@ bool SpellCheckMockPanelHost::SpellingPanelVisible() {
   return spelling_panel_visible_;
 }
 
-void SpellCheckMockPanelHost::SpellCheckPanelHostRequest(
-    spellcheck::mojom::SpellCheckPanelHostRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SpellCheckMockPanelHost::BindReceiver(
+    mojo::PendingReceiver<spellcheck::mojom::SpellCheckPanelHost> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 // spellcheck::mojom::SpellCheckPanelHost:

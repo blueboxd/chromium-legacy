@@ -47,7 +47,7 @@ class CORE_EXPORT DOMArrayPiece : public ArrayPiece {
   }
 
   bool operator==(const DOMArrayBufferView& other) const {
-    return ByteLengthAsSizeT() == static_cast<size_t>(other.byteLength()) &&
+    return ByteLengthAsSizeT() == other.byteLengthAsSizeT() &&
            memcmp(Data(), other.BaseAddress(), ByteLengthAsSizeT()) == 0;
   }
 };

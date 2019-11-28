@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.metrics = cca.metrics || {};
 
 /**
+ * import {Mode} from './type.js';
+ */
+var Mode = Mode || {};
+
+/**
  * Event builder for basic metrics.
  * @type {?analytics.EventBuilder}
  * @private
@@ -56,19 +61,21 @@ cca.metrics.ga_ = (function() {
   };
   var initBuilder = () => {
     return new Promise((resolve) => {
-      try {
-        chrome.chromeosInfoPrivate.get(['board'],
-            (values) => resolve(values['board']));
-      } catch (e) {
-        resolve('');
-      }
-    }).then((board) => {
-      var boardName = /^(x86-)?(\w*)/.exec(board)[0];
-      var match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
-      var osVer = match ? match[1] : '';
-      cca.metrics.base_ = analytics.EventBuilder.builder()
-          .dimen(1, boardName).dimen(2, osVer);
-    });
+             try {
+               chrome.chromeosInfoPrivate.get(
+                   ['board'], (values) => resolve(values['board']));
+             } catch (e) {
+               resolve('');
+             }
+           })
+        .then((board) => {
+          var boardName = /^(x86-)?(\w*)/.exec(board)[0];
+          var match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
+          var osVer = match ? match[1] : '';
+          cca.metrics.base_ = analytics.EventBuilder.builder()
+                                  .dimen(1, boardName)
+                                  .dimen(2, osVer);
+        });
   };
 
   return Promise.all([getConfig(), checkEnabled(), initBuilder()])
@@ -85,8 +92,8 @@ cca.metrics.ga_ = (function() {
  * @private
  */
 cca.metrics.launchType_ = function(ackMigrate) {
-  return cca.metrics.base_.category('launch').action('start')
-      .label(ackMigrate ? 'ack-migrate' : '');
+  return cca.metrics.base_.category('launch').action('start').label(
+      ackMigrate ? 'ack-migrate' : '');
 };
 
 /**
@@ -122,18 +129,17 @@ cca.metrics.captureType_ = function(
   };
 
   return cca.metrics.base_.category('capture')
-      .action(/^(\w*)/.exec(condState(
-          ['video-mode', 'photo-mode', 'square-mode', 'portrait-mode']))[0])
+      .action(condState(Object.values(Mode)))
       .label(facingMode || '(not set)')
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
       .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
-      .dimen(7, condState(['mic'], 'video-mode', true))
+      .dimen(7, condState(['mic'], Mode.VIDEO, true))
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
       .dimen(10, `${width}x${height}`)
-      .dimen(11, condState(['_30fps', '_60fps'], 'video-mode', true))
+      .dimen(11, condState(['_30fps', '_60fps'], Mode.VIDEO, true))
       .dimen(12, intentResult)
       .value(length || 0);
 };

@@ -14,73 +14,16 @@ class ActivityComplete extends HTMLElement {
   }
 
   /**
-   * Static getter for the custom element template.
+   * Returns the custom element template content.
    * @return {string}
    * @private
    */
   static get template_() {
-    return `<style>
-                    .complete {
-                        height: 36px;
-                        width: 36px;
-                    }
-                </style>
-                <div class='complete'>
-                    <svg xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 36 36'>
-                        <path id='success' display='inherit' fill='#34A853'
-                          d='M14 23.6L8.4 18l-1.9 1.9 7.5 7.4 16-16-1.9-1.8z'/>
-                        <g id='failure' display='none' stroke='#EA4335'
-                           stroke-width='2.6'>
-                          <circle cx='18' cy='18' r='12.1' fill='none'/>
-                          <path d='M18 11v8.5m0 2.6v2.6'/>
-                        </g>
-                    </svg>
-                </div>`;
+    return `<iron-icon style='width: 36px; height: 36px;'></icon-icon>`;
   }
 
   /**
-   * Registers this instance to listen to these attribute changes.
-   * @return {!Array<string>}
-   * @private
-   */
-  static get observedAttributes() {
-    return ['status'];
-  }
-
-  /**
-   * Callback triggered by the browser when our attribute values change.
-   * @param {string} name Attribute that's changed.
-   * @param {?string} oldValue Old value of the attribute.
-   * @param {?string} newValue New value of the attribute.
-   * @private
-   */
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'status') {
-      if (oldValue != newValue) {
-        const success = this.shadowRoot.querySelector('#success');
-        const failure = this.shadowRoot.querySelector('#failure');
-        switch (newValue) {
-          case 'success':
-            success.setAttribute('display', 'inherit');
-            failure.setAttribute('display', 'none');
-            break;
-
-          case 'failure':
-            failure.setAttribute('display', 'inherit');
-            success.setAttribute('display', 'none');
-            break;
-
-          default:
-            assertNotReached();
-            break;
-        }
-      }
-    }
-  }
-
-  /**
-   * Getter for the current state of the progress indication.
+   * Gets the current status of the indication.
    * @return {string}
    * @public
    */
@@ -89,12 +32,13 @@ class ActivityComplete extends HTMLElement {
   }
 
   /**
-   * Setter to set the success/failure indication.
-   * @param {string} status Status value being set.
+   * Sets the current status of the indication.
+   * @param {string} status The status value: "success" || "failure".
    * @public
    */
   set status(status) {
-    // Reflect the status property into the attribute.
+    const ironIcon = this.shadowRoot.querySelector('iron-icon');
+    ironIcon.setAttribute('icon', `files36:${status}`);
     this.setAttribute('status', status);
   }
 }

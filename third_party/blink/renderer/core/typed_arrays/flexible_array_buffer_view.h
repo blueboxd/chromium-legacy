@@ -53,7 +53,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
 
   unsigned ByteLength() const {
     DCHECK(!IsEmpty());
-    return IsFull() ? full_->byteLength() : small_length_;
+    return IsFull() ? full_->deprecatedByteLengthAsUnsigned() : small_length_;
   }
 
   operator bool() const { return !IsEmpty(); }

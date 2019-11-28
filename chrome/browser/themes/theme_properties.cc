@@ -141,10 +141,15 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
-      return gfx::kGoogleGrey900;
+      return color_utils::HSLShift(
+          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME, true));
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
-      return gfx::kGoogleGrey800;
+      return color_utils::HSLShift(
+          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
+                                          true));
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_STATUS_BUBBLE:
     case ThemeProperties::COLOR_INFOBAR:
@@ -259,19 +264,18 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   DCHECK(id != TINT_FRAME_INCOGNITO && id != TINT_FRAME_INCOGNITO_INACTIVE)
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
+
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
 
+  const bool dark_mode =
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors();
+
   // TINT_BUTTONS is used by ThemeService::GetDefaultColor() for both incognito
   // and dark mode, and so must be applied to both.
-  if ((id == TINT_BUTTONS) &&
-      (incognito ||
-       ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()))
+  if ((id == TINT_BUTTONS) && (incognito || dark_mode))
     return {-1, 0.57, 0.9605};  // kChromeIconGrey -> kGoogleGrey100
 
-  // The frame tints are used only when parsing browser themes, and should not
-  // take dark mode into account, lest themes with custom frame images get those
-  // images unexpectedly modified just because the user is in dark mode.
   if ((id == TINT_FRAME) && incognito)
     return {-1, 0.7, 0.075};  // #DEE1E6 -> kGoogleGrey900
   if (id == TINT_FRAME_INACTIVE) {

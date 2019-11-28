@@ -13,7 +13,6 @@
   <release seq="1">
     <structures>
       <structure name="IDR_CAMERA_BACKGROUND_JS" file="src/js/background.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_BROWSER_JS" file="src/js/views/browser.js" type="chrome_html" />
       <structure name="IDR_CAMERA_BUNDLE_JS" file="src/js/google-analytics-bundle.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA3_DEVICE_INFO_JS" file="src/js/device/camera3_device_info.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_JS" file="src/js/views/camera.js" type="chrome_html" />
@@ -27,7 +26,6 @@
       <structure name="IDR_CAMERA_ERROR_JS" file="src/js/device/error.js" type="chrome_html" />
       <structure name="IDR_CAMERA_FILENAMER_JS" file="src/js/models/filenamer.js" type="chrome_html" />
       <structure name="IDR_CAMERA_FILESYSTEM_JS" file="src/js/models/filesystem.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_GALLERY_BASE_JS" file="src/js/views/gallery_base.js" type="chrome_html" />
       <structure name="IDR_CAMERA_GALLERY_JS" file="src/js/models/gallery.js" type="chrome_html" />
       <structure name="IDR_CAMERA_GALLERYBUTTON_JS" file="src/js/gallerybutton.js" type="chrome_html" />
       <structure name="IDR_CAMERA_IMAGECAPTURE_JS" file="src/js/mojo/image_capture.js" type="chrome_html" />
@@ -45,7 +43,6 @@
       <structure name="IDR_CAMERA_RECORDTIME_JS" file="src/js/views/camera/recordtime.js" type="chrome_html" />
       <structure name="IDR_CAMERA_RESULT_SAVER_JS" file="src/js/models/result_saver.js" type="chrome_html" />
       <structure name="IDR_CAMERA_REVIEW_RESULT_JS" file="src/js/views/camera/review_result.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_SCROLLBAR_JS" file="src/js/scrollbar.js" type="chrome_html" />
       <structure name="IDR_CAMERA_SETTINGS_JS" file="src/js/views/settings.js" type="chrome_html" />
       <structure name="IDR_CAMERA_SOUND_JS" file="src/js/sound.js" type="chrome_html" />
       <structure name="IDR_CAMERA_STATE_JS" file="src/js/state.js" type="chrome_html" />
@@ -102,13 +99,11 @@
       <include name="IDR_CAMERA_SPINNER_SVG" file="src/images/spinner.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_GRID_OFF_SVG" file="src/images/camera_button_grid_off.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_MIC_ON_SVG" file="src/images/camera_button_mic_on.svg" type="BINDATA" />
-      <include name="IDR_CAMERA_BROWSER_BUTTON_DELETE_SVG" file="src/images/browser_button_delete.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_MODE_VIDEO_SVG" file="src/images/camera_mode_video.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_STOP_SVG" file="src/images/camera_shutter_photo_stop.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_MIC_OFF_SVG" file="src/images/camera_button_mic_off.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_VIDEO_STOP_HOVER_SVG" file="src/images/camera_shutter_video_stop_hover.svg" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_RESOLUTION_SVG" file="src/images/settings_resolution.svg" type="BINDATA" />
-      <include name="IDR_CAMERA_BROWSER_BUTTON_PRINT_SVG" file="src/images/browser_button_print.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_APP_ICONS_48_PNG" file="src/images/camera_app_icons_48.png" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_TIMER_OFF_SVG" file="src/images/camera_button_timer_off.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_START_ACTIVE_SVG" file="src/images/camera_shutter_photo_start_active.svg" type="BINDATA" />
@@ -122,9 +117,7 @@
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_STOP_HOVER_SVG" file="src/images/camera_shutter_photo_stop_hover.svg" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_GRID_TYPE_SVG" file="src/images/settings_grid_type.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_MIRROR_OFF_SVG" file="src/images/camera_button_mirror_off.svg" type="BINDATA" />
-      <include name="IDR_CAMERA_BROWSER_BUTTON_EXPORT_SVG" file="src/images/browser_button_export.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_START_SVG" file="src/images/camera_shutter_photo_start.svg" type="BINDATA" />
-      <include name="IDR_CAMERA_BROWSER_BUTTON_BACK_SVG" file="src/images/browser_button_back.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_VIDEO_STOP_SVG" file="src/images/camera_shutter_video_stop.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_SWITCH_PHOTO_SVG" file="src/images/camera_button_switch_photo.svg" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_FEEDBACK_SVG" file="src/images/settings_feedback.svg" type="BINDATA" />

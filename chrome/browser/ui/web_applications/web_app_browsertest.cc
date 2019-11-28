@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
@@ -14,6 +15,8 @@
 namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
+
+constexpr char kLaunchWebAppDisplayModeHistogram[] = "Launch.WebAppDisplayMode";
 
 }  // namespace
 
@@ -62,6 +65,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
   int index = 0;
   auto has_buttons = [this, &index](DisplayMode display_mode,
                                     bool open_as_window) -> bool {
+    base::HistogramTester tester;
     const std::string base_url = "https://example.com/path";
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = GURL(base_url + base::NumberToString(index++));
@@ -70,6 +74,9 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
     web_app_info->open_as_window = open_as_window;
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
+    tester.ExpectUniqueSample(kLaunchWebAppDisplayModeHistogram, display_mode,
+                              1);
+
     return app_browser->app_controller()->HasMinimalUiButtons();
   };
 

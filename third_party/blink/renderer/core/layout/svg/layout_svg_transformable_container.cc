@@ -77,11 +77,11 @@ void LayoutSVGTransformableContainer::SetNeedsTransformUpdate() {
 
 bool LayoutSVGTransformableContainer::IsUseElement() const {
   const SVGElement& element = *GetElement();
-  if (IsSVGUseElement(element))
+  if (IsA<SVGUseElement>(element))
     return true;
   // Nested <use> are replaced by <g> during shadow tree expansion.
   if (IsA<SVGGElement>(element) && To<SVGGElement>(element).InUseShadowTree())
-    return IsSVGUseElement(element.CorrespondingElement());
+    return IsA<SVGUseElement>(element.CorrespondingElement());
   return false;
 }
 

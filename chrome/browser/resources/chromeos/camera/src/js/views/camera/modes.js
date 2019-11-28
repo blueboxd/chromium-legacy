@@ -20,7 +20,7 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
- * import {Mode} from '../chrome_util.js';
+ * import {Mode} from '../../type.js';
  */
 var Mode = Mode || {};
 
@@ -235,7 +235,7 @@ cca.views.camera.Modes = class {
         isSupported: async () => true,
         constraintsPreferrer: videoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, true),
-        nextMode: 'photo-mode',
+        nextMode: Mode.PHOTO,
         captureIntent: cros.mojom.CaptureIntent.VIDEO_RECORD,
       },
       [Mode.PHOTO]: {
@@ -245,7 +245,7 @@ cca.views.camera.Modes = class {
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
-        nextMode: 'square-mode',
+        nextMode: Mode.SQUARE,
         captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
       [Mode.SQUARE]: {
@@ -255,7 +255,7 @@ cca.views.camera.Modes = class {
         isSupported: async () => true,
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
-        nextMode: 'portrait-mode',
+        nextMode: Mode.PHOTO,
         captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
       [Mode.PORTRAIT]: {
@@ -274,7 +274,7 @@ cca.views.camera.Modes = class {
         },
         constraintsPreferrer: photoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, false),
-        nextMode: 'photo-mode',
+        nextMode: Mode.PHOTO,
         captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
     };
@@ -319,7 +319,7 @@ cca.views.camera.Modes = class {
         wrapper.offsetHeight / 2;
     // Make photo mode scroll slightly upper so that the third mode item falls
     // in blur area: crbug.com/988869
-    if (mode === 'photo-mode') {
+    if (mode === Mode.PHOTO) {
       scrollTop -= 16;
     }
     this.modesGroup_.scrollTo({

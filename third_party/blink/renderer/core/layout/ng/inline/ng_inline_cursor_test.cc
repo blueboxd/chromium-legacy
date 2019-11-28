@@ -454,6 +454,43 @@ TEST_P(NGInlineCursorTest, NextInlineLeaf) {
   EXPECT_THAT(list, ElementsAre("#linebox", "abc", "DEF", "", "xyz"));
 }
 
+// Note: This is for AccessibilityLayoutTest.NextOnLine.
+TEST_P(NGInlineCursorTest, NextInlineLeafOnLineFromLayoutInline) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b id=start>abc</b> def<br>"
+      "<b>ABC</b> DEF<br>"
+      "</div>");
+  cursor.MoveTo(*GetElementById("start")->GetLayoutObject());
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeafOnLine();
+  }
+  EXPECT_THAT(list, ElementsAre("#start", "def", ""))
+      << "we don't have 'abc' and items in second line.";
+}
+
+TEST_P(NGInlineCursorTest, NextInlineLeafOnLineFromLayoutText) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b id=start>abc</b> def<br>"
+      "<b>ABC</b> DEF<br>"
+      "</div>");
+  cursor.MoveTo(*GetElementById("start")->firstChild()->GetLayoutObject());
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeafOnLine();
+  }
+  EXPECT_THAT(list, ElementsAre("abc", "def", ""))
+      << "We don't have items from second line.";
+}
+
 TEST_P(NGInlineCursorTest, NextInlineLeafWithEllipsis) {
   LoadAhem();
   InsertStyleElement(
@@ -656,6 +693,42 @@ TEST_P(NGInlineCursorTest, PreviousInlineLeafIgnoringLineBreak) {
     cursor.MoveToPreviousInlineLeafIgnoringLineBreak();
   }
   EXPECT_THAT(list, ElementsAre("xyz", "DEF", "abc"));
+}
+
+TEST_P(NGInlineCursorTest, PreviousInlineLeafOnLineFromLayoutInline) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b>abc</b> def<br>"
+      "<b>ABC</b> <b id=start>DEF</b><br>"
+      "</div>");
+  cursor.MoveTo(*GetElementById("start")->GetLayoutObject());
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToPreviousInlineLeafOnLine();
+  }
+  EXPECT_THAT(list, ElementsAre("#start", "ABC"))
+      << "We don't have 'DEF' and items in first line.";
+}
+
+TEST_P(NGInlineCursorTest, PreviousInlineLeafOnLineFromLayoutText) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b>abc</b> def<br>"
+      "<b>ABC</b> <b id=start>DEF</b><br>"
+      "</div>");
+  cursor.MoveTo(*GetElementById("start")->firstChild()->GetLayoutObject());
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToPreviousInlineLeafOnLine();
+  }
+  EXPECT_THAT(list, ElementsAre("DEF", "", "ABC"))
+      << "We don't have items in first line.";
 }
 
 TEST_P(NGInlineCursorTest, PreviousLine) {

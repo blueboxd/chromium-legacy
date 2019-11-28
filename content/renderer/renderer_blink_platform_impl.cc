@@ -875,9 +875,9 @@ void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
 std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
 RendererBlinkPlatformImpl::CreateDedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,
-    service_manager::InterfaceProvider* interface_provider) {
+    const blink::BrowserInterfaceBrokerProxy& interface_broker) {
   return std::make_unique<DedicatedWorkerHostFactoryClient>(worker,
-                                                            interface_provider);
+                                                            interface_broker);
 }
 
 void RendererBlinkPlatformImpl::DidStartWorkerThread() {

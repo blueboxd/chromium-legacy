@@ -195,6 +195,8 @@ jumbo_static_library("weblayer_lib") {
   if (is_android) {
     # TODO(timvolodine): move this to safe_browsing/
     sources += [
+      "browser/android/metrics/uma_utils.cc",
+      "browser/android/metrics/uma_utils.h",
       "browser/devtools_manager_delegate_android.cc",
       "browser/devtools_manager_delegate_android.h",
       "browser/devtools_server_android.cc",
@@ -230,6 +232,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",
+    "//components/startup_metric_utils/browser:lib",
     "//components/user_prefs",
     "//components/version_info",
     "//components/web_cache/browser",
@@ -282,6 +285,7 @@ jumbo_static_library("weblayer_lib") {
       "//android_webview:generate_aw_resources",
       "//android_webview:generate_aw_strings",
       "//components/crash/android:crashpad_main",
+      "//components/metrics",
       "//components/safe_browsing",
       "//components/safe_browsing/android:remote_database_manager",
       "//components/safe_browsing/android:safe_browsing_api_handler",

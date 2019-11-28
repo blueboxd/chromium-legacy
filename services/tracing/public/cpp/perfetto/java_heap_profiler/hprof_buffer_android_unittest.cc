@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
+
 #include <stddef.h>
 #include <cstdint>
-
-#include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

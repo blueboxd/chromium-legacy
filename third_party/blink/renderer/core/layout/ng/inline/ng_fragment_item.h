@@ -95,8 +95,16 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return layout_object_->EffectiveStyle(StyleVariant());
   }
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
+  LayoutObject* GetMutableLayoutObject() const {
+    return const_cast<LayoutObject*>(layout_object_);
+  }
   Node* GetNode() const { return layout_object_->GetNode(); }
   bool HasSameParent(const NGFragmentItem& other) const;
+
+  wtf_size_t DeltaToNextForSameLayoutObject() const {
+    return delta_to_next_for_same_layout_object_;
+  }
+  void SetDeltaToNextForSameLayoutObject(wtf_size_t delta);
 
   const PhysicalRect& Rect() const { return rect_; }
   const PhysicalOffset& Offset() const { return rect_.offset; }
@@ -353,7 +361,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   std::unique_ptr<NGInkOverflow> ink_overflow_;
 
   // Item index delta to the next item for the same |LayoutObject|.
-  // wtf_size_t delta_to_next_for_same_layout_object_ = 0;
+  wtf_size_t delta_to_next_for_same_layout_object_ = 0;
 
   // Note: We should not add |bidi_level_| because it is used only for layout.
   unsigned type_ : 2;           // ItemType

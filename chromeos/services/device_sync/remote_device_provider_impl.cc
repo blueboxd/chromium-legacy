@@ -23,7 +23,7 @@ namespace {
 // creating a remote device loader.
 std::string ToRemoteDeviceUserId(const CoreAccountId& user_account_id) {
   // TODO(msarda): For now simply return the underlying id of |user_account_id|.
-  return user_account_id.id;
+  return user_account_id.ToString();
 }
 
 }  // namespace

@@ -214,7 +214,7 @@ void SysInternalsMessageHandler::HandleGetSysInfo(const base::ListValue* args) {
   DCHECK(args);
 
   AllowJavascript();
-  base::span<const base::Value> list = args->GetList();
+  base::Value::ConstListView list = args->GetList();
   if (list.size() != 1 || !list[0].is_string()) {
     NOTREACHED();
     return;

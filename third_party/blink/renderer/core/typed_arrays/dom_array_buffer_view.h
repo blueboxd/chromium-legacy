@@ -66,7 +66,10 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   unsigned deprecatedByteOffsetAsUnsigned() const {
     return base::checked_cast<unsigned>(View()->ByteOffset());
   }
-  unsigned byteLength() const {
+  size_t byteLengthAsSizeT() const { return View()->ByteLengthAsSizeT(); }
+  // This function is deprecated and should not be used. Use {byteLengthAsSizeT}
+  // instead.
+  unsigned deprecatedByteLengthAsUnsigned() const {
     return base::checked_cast<unsigned>(View()->ByteLengthAsSizeT());
   }
   unsigned TypeSize() const { return View()->TypeSize(); }

@@ -12,14 +12,12 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/command_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessible_pane_view.h"
@@ -39,17 +37,18 @@ class ToolbarButton;
 class WebAppMenuButton;
 class WebAppOriginText;
 
+#if defined(OS_MACOSX)
+constexpr int kWebAppMenuMargin = 7;
+#endif
+
 // A container for web app buttons in the title bar.
 class WebAppFrameToolbarView : public views::AccessiblePaneView,
                                public BrowserActionsContainer::Delegate,
-                               public CommandObserver,
-                               public views::ButtonListener,
                                public ContentSettingImageView::Delegate,
                                public ImmersiveModeController::Observer,
                                public PageActionIconView::Delegate,
                                public ToolbarButtonProvider,
-                               public views::WidgetObserver,
-                               public ui::MaterialDesignControllerObserver {
+                               public views::WidgetObserver {
  public:
   static const char kViewClassName[];
 
@@ -71,9 +70,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   WebAppFrameToolbarView(views::Widget* widget,
                          BrowserView* browser_view,
                          SkColor active_color,
-                         SkColor inactive_color,
-                         base::Optional<int> left_margin = base::nullopt,
-                         base::Optional<int> right_margin = base::nullopt);
+                         SkColor inactive_color);
   ~WebAppFrameToolbarView() override;
 
   void UpdateStatusIconsVisibility();
@@ -103,12 +100,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
       ToolbarActionsBarDelegate* delegate,
       Browser* browser,
       ToolbarActionsBar* main_bar) const override;
-
-  // CommandObserver:
-  void EnabledStateChangedForCommand(int id, bool enabled) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // ContentSettingImageView::Delegate:
   SkColor GetContentSettingInkDropColor() const override;
@@ -143,9 +134,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
-
   static void DisableAnimationForTesting();
   views::View* GetRightContainerForTesting();
   views::View* GetPageActionIconContainerForTesting();
@@ -179,17 +167,11 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   SkColor GetCaptionColor() const;
   void UpdateChildrenColor();
 
-  void GenerateMinimalUIButtonImages();
-
   // Whether we're waiting for the widget to become visible.
   bool pending_widget_visibility_ = true;
 
   ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
       this};
-
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
 
   // Timers for synchronising their respective parts of the titlebar animation.
   base::OneShotTimer animation_start_delay_;
@@ -203,14 +185,13 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   SkColor active_color_;
   SkColor inactive_color_;
 
+  class NavigationButtonContainer;
   class ToolbarButtonContainer;
 
   // All remaining members are owned by the views hierarchy.
 
-  // These three fields are only created when the display mode is minimal-ui.
-  ToolbarButtonContainer* left_container_ = nullptr;
-  ToolbarButton* back_ = nullptr;
-  ReloadButton* reload_ = nullptr;
+  // The navigation container is only created when display mode is minimal-ui.
+  NavigationButtonContainer* left_container_ = nullptr;
 
   // Empty container used by the parent frame to layout additional elements.
   views::View* center_container_ = nullptr;

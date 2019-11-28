@@ -40,6 +40,13 @@ group("perf") {
       "//components/subresource_filter/tools:index_ruleset",
     ]
   }
+
+  # TODO(crbug.com/1028612): Remove this if when trace processor can be built
+  # on Android.
+  if (!is_android) {
+    data_deps +=
+        [ "//third_party/perfetto/src/trace_processor:trace_processor_shell" ]
+  }
 }
 
 if (is_android) {

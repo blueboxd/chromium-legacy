@@ -73,7 +73,7 @@ TEST_F(PushClientChannelTest, UpdateCredentials) {
   EXPECT_TRUE(fake_push_client_->token().empty());
   // PushClient treats account IDs as emails. See https://crbug.com/1010544
   push_client_channel_.UpdateCredentials(kAccountId, kToken);
-  EXPECT_EQ(kAccountId.id, fake_push_client_->email());
+  EXPECT_EQ(kAccountId.ToString(), fake_push_client_->email());
   EXPECT_EQ(kToken, fake_push_client_->token());
 }
 

@@ -36,7 +36,7 @@ struct NativeValueTraitsBase {
 template <typename T>
 struct NativeValueTraitsBase<
     T,
-    typename std::enable_if<std::is_base_of<IDLBase, T>::value>::type> {
+    std::enable_if_t<std::is_base_of<IDLBase, T>::value>> {
   using ImplType = typename T::ImplType;
   STATIC_ONLY(NativeValueTraitsBase);
 };

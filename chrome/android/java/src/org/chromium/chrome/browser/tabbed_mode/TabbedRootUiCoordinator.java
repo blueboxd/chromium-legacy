@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
@@ -54,19 +53,15 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     /**
      * Construct a new TabbedRootUiCoordinator.
      * @param activity The activity whose UI the coordinator is responsible for.
-     * @param toolbarManagerCallback callback to invoke when the
-     *         ToolbarManager is created.
      * @param onOmniboxFocusChangedListener callback to invoke when Omnibox focus
      *         changes.
      * @param intentWithEffect Whether or not {@code activity} was launched with an
      *         intent to open a single tab.
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
-            Callback<ToolbarManager> toolbarManagerCallback,
             Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
-        super(activity, toolbarManagerCallback, onOmniboxFocusChangedListener,
-                shareDelegateSupplier);
+        super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier);
         mIntentWithEffect = intentWithEffect;
     }
 

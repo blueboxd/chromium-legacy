@@ -520,4 +520,13 @@ const std::string& GetTerminalId() {
   return *app_id;
 }
 
+const std::string& GetDeletedTerminalId() {
+  static const base::NoDestructor<std::string> app_id([] {
+    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
+               ? kCrostiniTerminalId
+               : kCrostiniTerminalSystemAppId;
+  }());
+  return *app_id;
+}
+
 }  // namespace crostini

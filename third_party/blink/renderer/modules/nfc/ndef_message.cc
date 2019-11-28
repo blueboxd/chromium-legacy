@@ -59,7 +59,7 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
     payload_data.Append(
         static_cast<uint8_t*>(
             source.GetAsArrayBufferView().View()->BaseAddress()),
-        source.GetAsArrayBufferView().View()->byteLength());
+        source.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
         std::move(payload_data), "application/octet-stream"));

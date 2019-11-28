@@ -180,7 +180,7 @@ CommandUtil.forceDefaultHandler = (node, commandId) => {
     event.cancelBubble = true;
   });
   node.addEventListener('canExecute', event => {
-    if (event.command.id !== commandId) {
+    if (event.command.id !== commandId || event.target !== node) {
       return;
     }
     event.canExecute = document.queryCommandEnabled(event.command.id);
@@ -875,12 +875,15 @@ CommandHandler.COMMANDS_['select-all'] = new class extends Command {
 
   /** @override */
   canExecute(event, fileManager) {
+    // Check we can select multiple items.
+    const multipleSelect =
+        fileManager.directoryModel.getFileListSelection().multiple;
     // Check we are not inside an input element (e.g. the search box).
     const inputElementActive =
         document.activeElement instanceof HTMLInputElement ||
         document.activeElement instanceof HTMLTextAreaElement ||
         document.activeElement.tagName.toLowerCase() === 'cr-input';
-    event.canExecute = !inputElementActive &&
+    event.canExecute = multipleSelect && !inputElementActive &&
         fileManager.directoryModel.getFileList().length > 0;
   }
 };
@@ -1340,7 +1343,7 @@ CommandHandler.COMMANDS_['volume-help'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['send-feedback'] = new class extends Command {
   execute(event, fileManager) {
-    let message = {
+    const message = {
       categoryTag: 'chromeos-files-app',
       requestFeedback: true,
       feedbackInfo: {

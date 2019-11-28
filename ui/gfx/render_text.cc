@@ -898,34 +898,35 @@ void RenderText::SetCompositionRange(const Range& composition_range) {
         Range(0, text_.length()).Contains(composition_range));
   composition_range_.set_end(composition_range.end());
   composition_range_.set_start(composition_range.start());
-  // TODO(oshima|msw): Altering composition underlines shouldn't
-  // require layout changes. It's currently necessary because
-  // RenderTextHarfBuzz paints text decorations by run, and
-  // RenderTextMac applies all styles during layout.
   OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::SetColor(SkColor value) {
   colors_.SetValue(value);
   OnTextColorChanged();
+  OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
   OnTextColorChanged();
+  OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::SetBaselineStyle(BaselineStyle value) {
   baselines_.SetValue(value);
+  OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::ApplyBaselineStyle(BaselineStyle value, const Range& range) {
   baselines_.ApplyValue(value, range);
+  OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::ApplyFontSizeOverride(int font_size_override,
                                        const Range& range) {
   font_size_overrides_.ApplyValue(font_size_override, range);
+  OnLayoutTextAttributeChanged(false);
 }
 
 void RenderText::SetStyle(TextStyle style, bool value) {
@@ -1293,7 +1294,6 @@ RenderText::RenderText()
       font_size_overrides_(0),
       weights_(Font::Weight::NORMAL),
       styles_(TEXT_STYLE_COUNT),
-      composition_and_selection_styles_applied_(false),
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
@@ -1312,6 +1312,13 @@ RenderText::RenderText()
 internal::StyleIterator RenderText::GetTextStyleIterator() const {
   return internal::StyleIterator(&colors_, &baselines_, &font_size_overrides_,
                                  &weights_, &styles_);
+}
+
+internal::StyleIterator RenderText::GetLayoutTextStyleIterator() {
+  EnsuresLayoutTextAttributeUpdated();
+  return internal::StyleIterator(&layout_colors_, &layout_baselines_,
+                                 &layout_font_size_overrides_, &layout_weights_,
+                                 &layout_styles_);
 }
 
 bool RenderText::IsHomogeneous() const {
@@ -1387,6 +1394,10 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
 void RenderText::OnTextColorChanged() {
 }
 
+void RenderText::OnLayoutTextAttributeChanged(bool text_changed) {
+  layout_text_attributes_up_to_date_ = false;
+}
+
 void RenderText::EnsureLayoutTextUpdated() {
   if (layout_text_up_to_date_)
     return;
@@ -1429,6 +1440,75 @@ void RenderText::EnsureLayoutTextUpdated() {
   // function's implementation doesn't indirectly rely on it being up to date
   // anywhere.
   layout_text_up_to_date_ = true;
+}
+
+void RenderText::EnsuresLayoutTextAttributeUpdated() {
+  if (layout_text_attributes_up_to_date_)
+    return;
+
+  // Reset the previous layout text attributes.
+  size_t max_length = layout_text_.length();
+  layout_colors_.SetMax(max_length);
+  layout_baselines_.SetMax(max_length);
+  layout_font_size_overrides_.SetMax(max_length);
+  layout_weights_.SetMax(max_length);
+  layout_styles_.resize(TEXT_STYLE_COUNT);
+  for (auto& layout_style : layout_styles_)
+    layout_style.SetMax(max_length);
+
+  // Create an iterator to ensure layout BreakLists don't break graphemes.
+  base::i18n::BreakIterator grapheme_iter(
+      text_, base::i18n::BreakIterator::BREAK_CHARACTER);
+  bool success = grapheme_iter.Init();
+  DCHECK(success);
+
+  // Iterates through codepoints in both strings. Both string have the same
+  // amount of codepoints but some codepoints may differ (e.g. obscured or
+  // replaced) and may differ in length (e.g. surrogate pair).
+  base::i18n::UTF16CharIterator text_iter(&text_);
+  base::i18n::UTF16CharIterator layout_text_iter(&layout_text_);
+  internal::StyleIterator styles = GetTextStyleIterator();
+  size_t current_grapheme_start_position = 0;
+  while (!text_iter.end() && !layout_text_iter.end()) {
+    size_t current_text_position = text_iter.array_pos();
+    size_t current_layout_text_position = layout_text_iter.array_pos();
+    if (grapheme_iter.IsGraphemeBoundary(current_text_position))
+      current_grapheme_start_position = current_text_position;
+
+    // Move text iterators to their next character.
+    text_iter.Advance();
+    layout_text_iter.Advance();
+
+    // Apply the style at current grapheme position to the layout text.
+    styles.IncrementToPosition(current_grapheme_start_position);
+
+    Range range(current_layout_text_position, layout_text_iter.array_pos());
+    layout_colors_.ApplyValue(styles.color(), range);
+    layout_baselines_.ApplyValue(styles.baseline(), range);
+    layout_font_size_overrides_.ApplyValue(styles.font_size_override(), range);
+    layout_weights_.ApplyValue(styles.weight(), range);
+    for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+      layout_styles_[i].ApplyValue(styles.style(static_cast<TextStyle>(i)),
+                                   range);
+    }
+
+    // Apply an underline to the composition range in |underlines|.
+    if (composition_range_.Contains(
+            gfx::Range(current_grapheme_start_position))) {
+      layout_styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, range);
+    }
+
+    // Apply the selected text color to the selection range.
+    if (!selection().is_empty() &&
+        selection().Contains(gfx::Range(current_grapheme_start_position))) {
+      layout_colors_.ApplyValue(selection_color_, range);
+    }
+  }
+
+  // Wait to reset |layout_text_attributes_up_to_date_| until the end, to ensure
+  // this function's implementation doesn't indirectly rely on it being up to
+  // date anywhere.
+  layout_text_attributes_up_to_date_ = true;
 }
 
 const base::string16& RenderText::GetLayoutText() {
@@ -1514,32 +1594,6 @@ const BreakList<size_t>& RenderText::GetLineBreaks() {
     } while (iter.Advance());
   }
   return line_breaks_;
-}
-
-void RenderText::ApplyCompositionAndSelectionStyles(const Range& selection) {
-  // Save the underline and color breaks to undo the temporary styles later.
-  DCHECK(!composition_and_selection_styles_applied_);
-  saved_colors_ = colors_;
-  saved_underlines_ = styles_[TEXT_STYLE_HEAVY_UNDERLINE];
-
-  // Apply an underline to the composition range in |underlines|.
-  if (composition_range_.IsValid() && !composition_range_.is_empty())
-    styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
-
-  // Apply the selected text color to the [un-reversed] selection range.
-  if (!selection.is_empty()) {
-    const Range range(selection.GetMin(), selection.GetMax());
-    colors_.ApplyValue(selection_color_, range);
-  }
-  composition_and_selection_styles_applied_ = true;
-}
-
-void RenderText::UndoCompositionAndSelectionStyles() {
-  // Restore the underline and color breaks to undo the temporary styles.
-  DCHECK(composition_and_selection_styles_applied_);
-  colors_ = saved_colors_;
-  styles_[TEXT_STYLE_HEAVY_UNDERLINE] = saved_underlines_;
-  composition_and_selection_styles_applied_ = false;
 }
 
 Point RenderText::ToViewPoint(const PointF& point,

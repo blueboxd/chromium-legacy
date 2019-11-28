@@ -35,11 +35,11 @@ namespace blink {
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RTCAnswerOptionsPlatform;
+class RTCLegacyStats;
 class RTCOfferOptionsPlatform;
 class RTCVoidRequest;
 class SetLocalDescriptionRequest;
 class WebLocalFrame;
-class WebRTCLegacyStats;
 class WebRTCPeerConnectionHandlerClient;
 
 // Mockable wrapper for blink::RTCStatsResponseBase
@@ -48,7 +48,7 @@ class MODULES_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
   explicit LocalRTCStatsResponse(RTCStatsResponseBase* impl) : impl_(impl) {}
 
   virtual RTCStatsResponseBase* webKitStatsResponse() const;
-  virtual void addStats(const blink::WebRTCLegacyStats& stats);
+  virtual void addStats(const RTCLegacyStats& stats);
 
  protected:
   ~LocalRTCStatsResponse() override {}

@@ -41,6 +41,13 @@ Polymer({
     }
   },
 
+  /*
+   * Executed on language change.
+   */
+  updateLocalizedContent: function() {
+    this.i18nUpdateLocale();
+  },
+
   onBeforeShow: function(data) {
     this.setScreenState(this.SCREEN_STATE_SETUP);
   },

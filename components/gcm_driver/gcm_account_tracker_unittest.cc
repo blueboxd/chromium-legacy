@@ -31,7 +31,7 @@ const char kEmail1[] = "account_1@me.com";
 const char kEmail2[] = "account_2@me.com";
 
 std::string AccountIdToObfuscatedId(const CoreAccountId& account_id) {
-  return "obfid-" + account_id.id;
+  return "obfid-" + account_id.ToString();
 }
 
 std::string GetValidTokenInfoResponse(const CoreAccountId& account_id) {
@@ -40,7 +40,7 @@ std::string GetValidTokenInfoResponse(const CoreAccountId& account_id) {
 }
 
 std::string MakeAccessToken(const CoreAccountId& account_id) {
-  return "access_token-" + account_id.id;
+  return "access_token-" + account_id.ToString();
 }
 
 GCMClient::AccountTokenInfo MakeAccountToken(const CoreAccountId& account_id) {
@@ -54,7 +54,7 @@ GCMClient::AccountTokenInfo MakeAccountToken(const CoreAccountId& account_id) {
   // production code actually does :). If/when that bug gets fixed, this
   // function should be changed to take in the email address as well as the
   // account ID and populate this field with the email address.
-  token_info.email = account_id.id;
+  token_info.email = account_id.ToString();
   token_info.access_token = MakeAccessToken(account_id);
   return token_info;
 }

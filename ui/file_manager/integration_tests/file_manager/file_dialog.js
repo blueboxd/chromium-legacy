@@ -60,8 +60,8 @@ async function unloadOpenFileDialog(
  *    the Array being the basic file entry set of the |volume|.
  */
 async function setUpFileEntrySet(volume) {
-  let localEntryPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
-  let driveEntryPromise = addEntries(
+  const localEntryPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
+  const driveEntryPromise = addEntries(
       ['drive'], [ENTRIES.hello, ENTRIES.pinned, ENTRIES.testDocument]);
 
   await Promise.all([localEntryPromise, driveEntryPromise]);
@@ -86,7 +86,7 @@ async function openFileDialogClickOkButton(
   const okButton = '.button-panel button.ok:enabled';
   await sendTestMessage(
       {name: 'expectFileTask', fileNames: [name], openType: 'open'});
-  let closer = clickOpenFileDialogButton.bind(null, name, okButton);
+  const closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
   const result = await openAndWaitForClosingDialog(
@@ -114,7 +114,7 @@ async function saveFileDialogClickOkButton(volume, name) {
   await sendTestMessage(
       {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
 
-  let closer = async (appId) => {
+  const closer = async (appId) => {
     const okButton = '.button-panel button.ok:enabled';
 
     await remoteCall.callRemoteTestUtil('selectFile', appId, [name]);
@@ -161,7 +161,7 @@ async function openFileDialogExpectOkButtonDisabled(
   const okButton = '.button-panel button.ok:enabled';
   const disabledOkButton = '.button-panel button.ok:disabled';
   const cancelButton = '.button-panel button.cancel';
-  let closer = async (dialog) => {
+  const closer = async (dialog) => {
     await remoteCall.callRemoteTestUtil('selectFile', dialog, [enabledName]);
     await remoteCall.waitForElement(dialog, okButton);
     await remoteCall.callRemoteTestUtil('selectFile', dialog, [name]);
@@ -187,7 +187,7 @@ async function openFileDialogClickCancelButton(volume, name) {
   const type = {type: 'openFile'};
 
   const cancelButton = '.button-panel button.cancel';
-  let closer = clickOpenFileDialogButton.bind(null, name, cancelButton);
+  const closer = clickOpenFileDialogButton.bind(null, name, cancelButton);
 
   const entrySet = await setUpFileEntrySet(volume);
   chrome.test.assertEq(
@@ -207,7 +207,7 @@ async function openFileDialogSendEscapeKey(volume, name) {
   const type = {type: 'openFile'};
 
   const escapeKey = ['#file-list', 'Escape', false, false, false];
-  let closer = sendOpenFileDialogKey.bind(null, name, escapeKey);
+  const closer = sendOpenFileDialogKey.bind(null, name, escapeKey);
 
   const entrySet = await setUpFileEntrySet(volume);
   chrome.test.assertEq(
@@ -520,4 +520,54 @@ testcase.openFileDialogFileListShowContextMenu = async () => {
   // Check that context menu is NOT displayed because there is no visible menu
   // items.
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
+};
+
+/**
+ * Tests that select all is disabled in the gear menu for an open file dialog.
+ */
+testcase.openFileDialogSelectAllDisabled = async () => {
+  // Open file picker dialog.
+  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Wait for the gear menu button to appear and click it.
+  await remoteCall.waitAndClickElement(appId, '#gear-button');
+
+  // Wait for the gear menu to appear.
+  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
+
+  // Check: #select-all command is shown, but disabled.
+  await remoteCall.waitForElement(
+      appId,
+      '#gear-menu ' +
+          'cr-menu-item[command="#select-all"][disabled]:not([hidden])');
+};
+
+/**
+ * Tests that select all is enabled in the gear menu for an open multiple files
+ * dialog. crbug.com/937251
+ */
+testcase.openMultiFileDialogSelectAllEnabled = async () => {
+  // Open file picker dialog with support for selecting multiple files.
+  chrome.fileSystem.chooseEntry(
+      {type: 'openFile', acceptsMultiple: true}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Wait for the gear menu button to appear and click it.
+  await remoteCall.waitAndClickElement(appId, '#gear-button');
+
+  // Wait for the gear menu to appear.
+  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
+
+  // Check: #select-all command is shown, but enabled.
+  await remoteCall.waitForElement(
+      appId,
+      '#gear-menu ' +
+          'cr-menu-item[command="#select-all"]:not([disabled]):not([hidden])');
 };

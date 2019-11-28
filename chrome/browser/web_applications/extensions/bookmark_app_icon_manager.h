@@ -22,10 +22,14 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
   // AppIconManager:
   bool ReadIcon(const web_app::AppId& app_id,
                 int icon_size_in_px,
-                ReadIconCallback callback) override;
+                ReadIconCallback callback) const override;
   bool ReadSmallestIcon(const web_app::AppId& app_id,
                         int icon_size_in_px,
-                        ReadIconCallback callback) override;
+                        ReadIconCallback callback) const override;
+  bool ReadSmallestCompressedIcon(
+      const web_app::AppId& app_id,
+      int icon_size_in_px,
+      ReadCompressedIconCallback callback) const override;
 
  private:
   Profile* const profile_;

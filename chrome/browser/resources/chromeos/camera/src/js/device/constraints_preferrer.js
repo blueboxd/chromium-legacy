@@ -15,9 +15,9 @@ var cca = cca || {};
 cca.device = cca.device || {};
 
 /**
- * import {Resolution} from '../type.js';
+ * import {Mode, Resolution} from '../type.js';
  */
-var Resolution = Resolution || {};
+var {Mode, Resolution} = {Mode, Resolution};
 
 /* eslint-disable no-unused-vars */
 
@@ -262,7 +262,7 @@ cca.device.VideoConstraintsPreferrer =
   changePreferredResolution(deviceId, resolution) {
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('deviceVideoResolution');
-    if (cca.state.get('video-mode') && deviceId === this.deviceId_) {
+    if (cca.state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
     } else {
       this.preferredResolutionChangeListener_(deviceId, resolution);
@@ -456,7 +456,7 @@ cca.device.PhotoConstraintsPreferrer =
   changePreferredResolution(deviceId, resolution) {
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('devicePhotoResolution');
-    if (!cca.state.get('video-mode') && deviceId === this.deviceId_) {
+    if (!cca.state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
     } else {
       this.preferredResolutionChangeListener_(deviceId, resolution);

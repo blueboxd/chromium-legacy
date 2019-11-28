@@ -487,7 +487,7 @@ void GaiaCookieManagerService::SetAccountsInCookie(
         set_accounts_in_cookies_completed_callback) {
   std::vector<std::string> account_ids;
   for (const auto& id : accounts)
-    account_ids.push_back(id.first.id);
+    account_ids.push_back(id.first.ToString());
   VLOG(1) << "GaiaCookieManagerService::SetAccountsInCookie: "
           << base::JoinString(account_ids, " ");
   requests_.push_back(GaiaCookieRequest::CreateSetAccountsRequest(

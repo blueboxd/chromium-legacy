@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
@@ -55,12 +56,13 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
     return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
   }
 
-  // Create an CrostiniShelfContextMenu if the item is Crostini app.
+  // Use CrostiniShelfContextMenu for crostini apps and Terminal System App.
   crostini::CrostiniRegistryService* crostini_registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           controller->profile());
-  if (crostini_registry_service &&
-      crostini_registry_service->IsCrostiniShelfAppId(item->id.app_id)) {
+  if ((crostini_registry_service &&
+       crostini_registry_service->IsCrostiniShelfAppId(item->id.app_id)) ||
+      item->id.app_id == crostini::kCrostiniTerminalSystemAppId) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);
   }

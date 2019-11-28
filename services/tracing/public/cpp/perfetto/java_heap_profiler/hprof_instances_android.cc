@@ -8,40 +8,43 @@
 
 namespace tracing {
 
+Instance::Instance(uint64_t object_id) : object_id(object_id) {}
 Instance::Instance(uint64_t object_id, std::string type_name)
     : type_name(type_name), object_id(object_id) {}
-
 Instance::Instance(uint64_t object_id, uint32_t size)
     : object_id(object_id), size(size) {}
 
 Instance::Instance(uint64_t object_id, uint32_t size, std::string type_name)
     : type_name(type_name), object_id(object_id), size(size) {}
 
+Instance::Instance(const Instance& other) = default;
+
 Instance::~Instance() {}
 
-Instance::Instance(const Instance& other) = default;
+void Instance::AddReference(const std::string& name, uint64_t object_id) {
+  references.push_back({name, object_id});
+}
 
 ClassInstance::ClassInstance(uint64_t object_id,
                              uint64_t class_id,
-                             uint32_t temp_data_position,
-                             uint32_t size)
-    : base_instance(object_id, size),
+                             uint32_t temp_data_position)
+    : base_instance(object_id),
       class_id(class_id),
       temp_data_position(temp_data_position) {}
 
 Field::Field(std::string name, DataType type, uint64_t object_id)
     : name(name), type(type), object_id(object_id) {}
 
-ClassObject::~ClassObject() {}
-
 ClassObject::ClassObject(uint64_t object_id, std::string type_name)
     : base_instance(object_id, type_name) {}
+
+ClassObject::~ClassObject() {}
 
 ObjectArrayInstance::ObjectArrayInstance(uint64_t object_id,
                                          uint64_t class_id,
                                          uint32_t temp_data_position,
                                          uint32_t temp_data_length,
-                                         uint32_t size)
+                                         uint64_t size)
     : base_instance(object_id, size),
       class_id(class_id),
       temp_data_position(temp_data_position),
@@ -50,7 +53,7 @@ ObjectArrayInstance::ObjectArrayInstance(uint64_t object_id,
 PrimitiveArrayInstance::PrimitiveArrayInstance(uint64_t object_id,
                                                DataType type,
                                                std::string type_name,
-                                               uint32_t size)
+                                               uint64_t size)
     : base_instance(object_id, size, type_name), type(type) {}
 
 }  // namespace tracing

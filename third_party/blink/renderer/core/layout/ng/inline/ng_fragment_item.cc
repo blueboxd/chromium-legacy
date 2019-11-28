@@ -347,17 +347,26 @@ void NGFragmentItem::RecalcInkOverflow(
   }
 }
 
+void NGFragmentItem::SetDeltaToNextForSameLayoutObject(wtf_size_t delta) {
+  DCHECK_NE(delta, 0u);
+  delta_to_next_for_same_layout_object_ = delta;
+}
+
 NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(
     const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   DCHECK(layout_object.IsText() || layout_object.IsLayoutInline() ||
          (layout_object.IsBox() && layout_object.IsInline()));
 
-  // TODO(kojii): This is a hot function needed by paint and several other
-  // operations. Make this fast, by not iterating.
   if (const LayoutBlockFlow* block_flow =
           layout_object.RootInlineFormattingContext()) {
     if (const NGPhysicalBoxFragment* fragment = block_flow->CurrentFragment()) {
+      if (wtf_size_t index = layout_object.FirstInlineFragmentItemIndex()) {
+        const auto& items = fragment->Items()->Items();
+        return ItemsForLayoutObject(items, index, items[index].get());
+      }
+      // TODO(yosin): Once we update all usages of |FirstInlineFragment()|,
+      // we should get rid of below code.
       if (const NGFragmentItems* items = fragment->Items()) {
         for (unsigned i = 0; i < items->Items().size(); ++i) {
           const NGFragmentItem* item = items->Items()[i].get();
@@ -377,13 +386,12 @@ NGFragmentItem::ItemsForLayoutObject::Iterator::operator++() {
   // operations. Make this fast, by not iterating.
   if (!current_)
     return *this;
-  const LayoutObject* current_layout_object = current_->GetLayoutObject();
-  while (++index_ < items_->size()) {
-    current_ = (*items_)[index_].get();
-    if (current_->GetLayoutObject() == current_layout_object)
-      return *this;
+  if (!current_->delta_to_next_for_same_layout_object_) {
+    current_ = nullptr;
+    return *this;
   }
-  current_ = nullptr;
+  index_ += current_->delta_to_next_for_same_layout_object_;
+  current_ = (*items_)[index_].get();
   return *this;
 }
 

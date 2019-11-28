@@ -400,7 +400,7 @@ class MEDIA_GPU_EXPORT V4L2Device
   static int32_t H264LevelIdcToV4L2H264Level(uint8_t level_idc);
 
   // Converts v4l2_memory to a string.
-  static std::string V4L2MemoryToString(const v4l2_memory memory);
+  static const char* V4L2MemoryToString(const v4l2_memory memory);
 
   // Composes human readable string of v4l2_format.
   static std::string V4L2FormatToString(const struct v4l2_format& format);

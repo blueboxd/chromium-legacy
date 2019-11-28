@@ -51,7 +51,7 @@ WTF::Vector<uint8_t> GetBytesOfBufferSource(const ScriptValue& buffer_source) {
     DOMArrayBufferView* array_buffer_view =
         V8ArrayBufferView::ToImpl(buffer_source.V8Value().As<v8::Object>());
     bytes.Append(static_cast<uint8_t*>(array_buffer_view->BaseAddress()),
-                 array_buffer_view->byteLength());
+                 array_buffer_view->deprecatedByteLengthAsUnsigned());
   } else {
     NOTREACHED();
   }

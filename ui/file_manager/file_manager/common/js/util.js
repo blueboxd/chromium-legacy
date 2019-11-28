@@ -1242,21 +1242,6 @@ util.isDropEffectAllowed = (effectAllowed, dropEffect) => {
 };
 
 /**
- * Checks if the specified character is printable ASCII.
- *
- * @param {string} character The input character.
- * @return {boolean} True if |character| is printable ASCII, else false.
- */
-util.isPrintable = character => {
-  if (character.length != 1) {
-    return false;
-  }
-
-  const charCode = character.charCodeAt(0);
-  return charCode >= 32 && charCode <= 126;
-};
-
-/**
  * Verifies the user entered name for file or folder to be created or
  * renamed to. Name restrictions must correspond to File API restrictions
  * (see DOMFilePath::isValidPath). Curernt WebKit implementation is
@@ -1326,20 +1311,15 @@ util.validateExternalDriveName = (name, fileSystem) => {
         strf('ERROR_EXTERNAL_DRIVE_LONG_NAME', lengthLimit[fileSystem]));
   }
 
-  // Checks if name contains only printable ASCII (from ' ' to '~')
+  // Checks if the name contains only alphanumeric characters or allowed special
+  // characters. This needs to stay in sync with cros-disks/filesystem_label.cc
+  // on the ChromeOS side.
+  const validCharRegex = /[a-zA-Z0-9 \!\#\$\%\&\(\)\-\@\^\_\`\{\}\~]/;
   for (let i = 0; i < nameLength; i++) {
-    if (!util.isPrintable(name[i])) {
+    if (!validCharRegex.test(name[i])) {
       return Promise.reject(
           strf('ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER', name[i]));
     }
-  }
-
-  const containsForbiddenCharacters =
-      /[\*\?\.\,\;\:\/\\\|\+\=\<\>\[\]\"\'\t]/.exec(name);
-  if (containsForbiddenCharacters) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER',
-        containsForbiddenCharacters[0]));
   }
 
   return Promise.resolve();

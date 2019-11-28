@@ -6,16 +6,17 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 class RtcDtmfSenderHandler::Observer
-    : public base::RefCountedThreadSafe<Observer>,
+    : public WTF::ThreadSafeRefCounted<Observer>,
       public webrtc::DtmfSenderObserverInterface {
  public:
   explicit Observer(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
@@ -23,7 +24,7 @@ class RtcDtmfSenderHandler::Observer
       : main_thread_(std::move(main_thread)), handler_(handler) {}
 
  private:
-  friend class base::RefCountedThreadSafe<Observer>;
+  friend class WTF::ThreadSafeRefCounted<Observer>;
 
   ~Observer() override {}
 
@@ -50,7 +51,8 @@ RtcDtmfSenderHandler::RtcDtmfSenderHandler(
     webrtc::DtmfSenderInterface* dtmf_sender)
     : dtmf_sender_(dtmf_sender), webkit_client_(nullptr) {
   DVLOG(1) << "::ctor";
-  observer_ = new Observer(std::move(main_thread), weak_factory_.GetWeakPtr());
+  observer_ = base::MakeRefCounted<Observer>(std::move(main_thread),
+                                             weak_factory_.GetWeakPtr());
   dtmf_sender_->RegisterObserver(observer_.get());
 }
 

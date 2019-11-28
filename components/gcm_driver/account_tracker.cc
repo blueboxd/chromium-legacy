@@ -70,7 +70,7 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
 void AccountTracker::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   TRACE_EVENT1("identity", "AccountTracker::OnRefreshTokenUpdatedForAccount",
-               "account_id", account_info.account_id.id);
+               "account_id", account_info.account_id.ToString());
 
   // Ignore refresh tokens if there is no active account ID at all.
   if (!identity_manager_->HasPrimaryAccount())
@@ -83,7 +83,7 @@ void AccountTracker::OnRefreshTokenUpdatedForAccount(
 void AccountTracker::OnRefreshTokenRemovedForAccount(
     const CoreAccountId& account_id) {
   TRACE_EVENT1("identity", "AccountTracker::OnRefreshTokenRemovedForAccount",
-               "account_id", account_id.id);
+               "account_id", account_id.ToString());
 
   DVLOG(1) << "REVOKED " << account_id;
   UpdateSignInState(account_id, /*is_signed_in=*/false);
@@ -136,7 +136,7 @@ void AccountTracker::StartTrackingAccount(const CoreAccountId& account_key) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
     account_state.ids.account_key = account_key;
-    account_state.ids.email = account_key.id;
+    account_state.ids.email = account_key.ToString();
     account_state.is_signed_in = false;
     accounts_.insert(std::make_pair(account_key, account_state));
   }
@@ -212,7 +212,7 @@ AccountIdFetcher::AccountIdFetcher(
       tracker_(tracker),
       account_key_(account_key) {
   TRACE_EVENT_ASYNC_BEGIN1("identity", "AccountIdFetcher", this, "account_key",
-                           account_key.id);
+                           account_key.ToString());
 }
 
 AccountIdFetcher::~AccountIdFetcher() {

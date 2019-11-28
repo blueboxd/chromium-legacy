@@ -233,6 +233,17 @@ cr.define('settings_privacy_page', function() {
             dialog.$$('#clearBrowsingDataDialog'), 'open', '');
       });
 
+      test('defaultPrivacySettings', function() {
+        Polymer.dom.flush();
+
+        assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
+        assertVisible(page.$$('#syncLinkRow'), true);
+
+        // These elements should not even be present in the DOM
+        assertFalse(!!page.$$('#safeBrowsingToggle'));
+        assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
+      });
+
       if (!cr.isChromeOS) {
         test('signinAllowedToggle', function() {
           const toggle = page.$.signinAllowedToggle;
@@ -320,6 +331,39 @@ cr.define('settings_privacy_page', function() {
               });
         });
       }
+    });
+  }
+
+  function registerPrivacySettingsRedesignTests() {
+    suite('PrivacySettingsRedesignTests', function() {
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: true,
+        });
+      });
+
+      setup(function() {
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('redesignedPrivacySettings', function() {
+        Polymer.dom.flush();
+
+        // Unloaded elements will not be present in the DOM
+        assertFalse(!!page.$$('#syncLinkRow'));
+
+        assertVisible(page.$$('#safeBrowsingToggle'), true);
+        assertVisible(page.$$('#safeBrowsingReportingToggle'), true);
+      });
     });
   }
 
@@ -824,6 +868,7 @@ cr.define('settings_privacy_page', function() {
     registerClearBrowsingDataTests,
     registerPrivacyPageTests,
     registerPrivacyPageSoundTests,
+    registerPrivacySettingsRedesignTests,
     registerUMALoggingTests,
   };
 });

@@ -37,29 +37,15 @@ class HTMLTableRowElement;
 
 class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
  public:
-  static DeleteSelectionCommand* Create(
-      Document& document,
-      const DeleteSelectionOptions& options,
+  DeleteSelectionCommand(
+      Document&,
+      const DeleteSelectionOptions&,
       InputEvent::InputType input_type = InputEvent::InputType::kNone,
-      const Position& reference_move_position = Position()) {
-    return MakeGarbageCollected<DeleteSelectionCommand>(
-        document, options, input_type, reference_move_position);
-  }
-  static DeleteSelectionCommand* Create(
-      const VisibleSelection& selection,
-      const DeleteSelectionOptions& options,
-      InputEvent::InputType input_type = InputEvent::InputType::kNone) {
-    return MakeGarbageCollected<DeleteSelectionCommand>(selection, options,
-                                                        input_type);
-  }
-
-  DeleteSelectionCommand(Document&,
-                         const DeleteSelectionOptions&,
-                         InputEvent::InputType,
-                         const Position& reference_move_position);
-  DeleteSelectionCommand(const VisibleSelection&,
-                         const DeleteSelectionOptions&,
-                         InputEvent::InputType);
+      const Position& reference_move_position = Position());
+  DeleteSelectionCommand(
+      const VisibleSelection&,
+      const DeleteSelectionOptions&,
+      InputEvent::InputType input_type = InputEvent::InputType::kNone);
 
   void Trace(Visitor*) override;
 

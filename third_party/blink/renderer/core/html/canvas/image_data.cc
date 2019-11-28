@@ -109,13 +109,13 @@ bool ImageData::ValidateConstructorArguments(
           "The input data type is not supported.");
     }
 
-    if (!data->byteLength()) {
+    if (!data->deprecatedByteLengthAsUnsigned()) {
       return RaiseDOMExceptionAndReturnFalse(
           exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data has zero elements.");
     }
 
-    data_length = data->byteLength() / data->TypeSize();
+    data_length = data->deprecatedByteLengthAsUnsigned() / data->TypeSize();
     if (data_length % 4) {
       return RaiseDOMExceptionAndReturnFalse(
           exception_state, DOMExceptionCode::kInvalidStateError,
@@ -175,8 +175,8 @@ DOMArrayBufferView* ImageData::AllocateAndValidateDataArray(
       NOTREACHED();
   }
 
-  if (!data_array ||
-      length != data_array->byteLength() / data_array->TypeSize()) {
+  if (!data_array || length != data_array->deprecatedByteLengthAsUnsigned() /
+                                   data_array->TypeSize()) {
     if (exception_state)
       exception_state->ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;

@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/content_security_policy.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace network {
@@ -47,7 +48,8 @@ static void TestCSPParser(const std::string& header,
     EXPECT_FALSE(policy.content_security_policy_ptr());
     return;
   }
-  auto& frame_ancestors = policy.content_security_policy_ptr()->frame_ancestors;
+  auto& frame_ancestors =
+      policy.content_security_policy_ptr()->directives[0]->source_list;
   EXPECT_EQ(frame_ancestors->sources.size(),
             expected_result->parsed_sources.size());
   for (size_t i = 0; i < expected_result->parsed_sources.size(); i++) {
@@ -179,7 +181,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -201,7 +203,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
@@ -224,7 +226,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -247,7 +249,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
@@ -271,7 +273,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -300,7 +302,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_TRUE(policy.content_security_policy_ptr()->use_reporting_api);
 
     auto& frame_ancestors =
-        policy.content_security_policy_ptr()->frame_ancestors;
+        policy.content_security_policy_ptr()->directives[0]->source_list;
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");

@@ -126,10 +126,6 @@ class CORE_EXPORT FrameSelection final
   USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 
  public:
-  static FrameSelection* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<FrameSelection>(frame);
-  }
-
   explicit FrameSelection(LocalFrame&);
   ~FrameSelection();
 

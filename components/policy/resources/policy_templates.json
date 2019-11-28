@@ -18042,9 +18042,9 @@
       'caption': '''Allow the device to request powerwash''',
       'tags': [],
       'desc': '''
-      This policy when set to False, does not allow the device to trigger powerwash.
+      This policy when set to False, does not allow the device to trigger powerwash. An exception is if <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_NAME">TPMFirmwareUpdateSettings</ph> policy is set to a value that allows the TPM firmware update and the TPM firmware was not updated yet.
       When set to True, it allows the device to trigger powerwash.
-      If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      If left unset, it defaults to True, meaning it allows the device to powerwash.
       '''
     },
     {

@@ -57,7 +57,7 @@ class WebAppBrowserController : public AppBrowserController {
  private:
   const AppRegistrar& registrar() const;
 
-  void OnReadIcon(SkBitmap bitmap);
+  void OnReadIcon(const SkBitmap& bitmap);
 
   WebAppProvider& provider_;
   mutable base::Optional<gfx::ImageSkia> app_icon_;

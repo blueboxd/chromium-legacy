@@ -70,7 +70,7 @@ ui::ZOrderLevel TestBrowserWindow::GetZOrderLevel() const {
 }
 
 gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
-  return NULL;
+  return native_window_;
 }
 
 bool TestBrowserWindow::IsOnCurrentWorkspace() const {
@@ -249,6 +249,10 @@ std::string TestBrowserWindow::GetWorkspace() const {
 
 bool TestBrowserWindow::IsVisibleOnAllWorkspaces() const {
   return false;
+}
+
+void TestBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
+  native_window_ = window;
 }
 
 // TestBrowserWindowOwner -----------------------------------------------------

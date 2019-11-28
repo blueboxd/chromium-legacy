@@ -11,6 +11,7 @@ include_rules = [
   "+components/user_prefs",
   "+components/safe_browsing",
   "+components/security_interstitials",
+  "+components/startup_metric_utils",
   "+components/version_info",
   "+components/web_cache/browser",
   "+content/public",

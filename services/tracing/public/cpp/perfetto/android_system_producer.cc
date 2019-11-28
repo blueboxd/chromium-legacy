@@ -405,7 +405,7 @@ void AndroidSystemProducer::ActivateTriggers(
 void AndroidSystemProducer::ConnectSocket() {
   state_ = State::kConnecting;
   service_ = perfetto::ProducerIPCClient::Connect(
-      socket_name_, this,
+      socket_name_.c_str(), this,
       base::StrCat(
           {mojom::kPerfettoProducerNamePrefix,
            base::NumberToString(

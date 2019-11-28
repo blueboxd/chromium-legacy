@@ -145,8 +145,8 @@ TEST_F(AutofillPrefsTest, WalletSyncTransportPref_UsesHashAccountId) {
   // Make sure that the dictionary keys don't contain the account id.
   auto* dictionary =
       pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
-  EXPECT_EQ(NULL,
-            dictionary->FindKeyOfType(account1.id, base::Value::Type::INTEGER));
+  EXPECT_EQ(nullptr, dictionary->FindKeyOfType(account1.ToString(),
+                                               base::Value::Type::INTEGER));
 }
 
 // Tests that clearing the AutofillSyncTransportOptIn works as expected.

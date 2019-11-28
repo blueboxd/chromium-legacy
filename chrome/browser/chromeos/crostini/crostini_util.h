@@ -153,7 +153,14 @@ void CloseCrostiniUpdateFilesystemView();
 // applying an Ansible playbook in the container).
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
+// Returns App ID of the terminal app which is either the older crosh-based
+// terminal, or the new Terminal System App if the TerminalSystemApp feature
+// is enabled.
 const std::string& GetTerminalId();
+
+// Returns the alternative terminal ID to |GetTerminalId|.  This is used when
+// migrating terminals when TerminalSystemApp feature changes.
+const std::string& GetDeletedTerminalId();
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").

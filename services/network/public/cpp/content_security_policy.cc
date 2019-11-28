@@ -23,6 +23,18 @@ using DirectivesMap = base::flat_map<base::StringPiece, base::StringPiece>;
 
 namespace {
 
+// Looks by name for a directive in a list of directives.
+// If it is not found, returns nullptr.
+static mojom::CSPDirectivePtr* FindDirective(
+    mojom::CSPDirective::Name name,
+    std::vector<mojom::CSPDirectivePtr>* directives) {
+  for (auto& directive : *directives) {
+    if (directive->name == name)
+      return &directive;
+  }
+  return nullptr;
+}
+
 // Parses a "Content-Security-Policy" header.
 // Returns a map to the directives found.
 DirectivesMap ParseHeaderValue(base::StringPiece header) {
@@ -215,7 +227,7 @@ bool ParseAncestorSource(base::StringPiece expression,
 
 // Parse ancestor-source-list grammar.
 // https://www.w3.org/TR/CSP3/#directive-frame-ancestors
-mojom::CSPSourceListPtr ParseFrameAncestorsDirective(
+mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
     base::StringPiece frame_ancestors_value) {
   base::StringPiece value = base::TrimString(
       frame_ancestors_value, base::kWhitespaceASCII, base::TRIM_ALL);
@@ -260,17 +272,29 @@ mojom::CSPSourceListPtr ParseFrameAncestorsDirective(
 // TODO(lfg): The report-to should be treated as a single token according to the
 // spec, but this implementation accepts multiple endpoints
 // https://crbug.com/916265.
-base::Optional<std::vector<GURL>> ParseReportDirective(
-    const GURL& request_url,
-    base::StringPiece value) {
-  std::vector<GURL> report_endpoints;
+bool ParseReportDirective(const GURL& request_url,
+                          base::StringPiece value,
+                          std::vector<std::string>* report_endpoints) {
   for (const auto& uri : base::SplitStringPiece(
            value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    report_endpoints.push_back(request_url.Resolve(uri));
-    if (!report_endpoints.back().is_valid())
-      return base::nullopt;
+    // There are two types of reporting directive:
+    //
+    // - "report-uri (uri)+"
+    //   |uri| must be resolved relatively to the requested URL.
+    //
+    // - "report-to (endpoint)+"
+    //   |endpoint| is an arbitrary string. It refers to an endpoint declared in
+    //   the "Report-To" header. See https://w3c.github.io/reporting
+    //
+    // TODO(lfg): The |endpoint| for the 'report-to' directive shouldn't be
+    // resolved.
+    GURL url = request_url.Resolve(uri);
+
+    if (!url.is_valid())
+      return false;
+    report_endpoints->push_back(url.spec());
   }
-  return report_endpoints;
+  return true;
 }
 
 }  // namespace
@@ -321,6 +345,9 @@ bool ContentSecurityPolicy::Parse(const GURL& base_url,
   // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
   // be combined with a comma. Walk the header string, and parse each comma
   // separated chunk as a separate header.
+  //
+  // TODO(arthursonzogni, lfg): The ContentSecurityPolicy policy shouldn't be
+  // combined. Several ContentSecurityPolicies should be produced, not one.
   for (const auto& header :
        base::SplitStringPiece(header_value, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
@@ -360,17 +387,23 @@ bool ContentSecurityPolicy::ParseFrameAncestors(
   // A frame-ancestors directive has already been parsed. Skip further
   // frame-ancestors directives per
   // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
-  if (content_security_policy_ptr_->frame_ancestors)
-    return true;
-
-  if (auto directive = ParseFrameAncestorsDirective(frame_ancestors_value)) {
-    content_security_policy_ptr_->frame_ancestors = std::move(directive);
+  if (FindDirective(mojom::CSPDirective::Name::FrameAncestors,
+                    &(content_security_policy_ptr_->directives))) {
+    // TODO(arthursonzogni, lfg): Should a warning be fired to the user here?
     return true;
   }
 
+  auto source_list = ParseFrameAncestorsSourceList(frame_ancestors_value);
+
   // TODO(lfg): Emit a warning to the user when parsing an invalid
   // expression.
-  return false;
+  if (!source_list)
+    return false;
+
+  content_security_policy_ptr_->directives.push_back(mojom::CSPDirective::New(
+      mojom::CSPDirective::Name::FrameAncestors, std::move(source_list)));
+
+  return true;
 }
 
 bool ContentSecurityPolicy::ParseReportEndpoint(
@@ -381,16 +414,15 @@ bool ContentSecurityPolicy::ParseReportEndpoint(
   if (!content_security_policy_ptr_->report_endpoints.empty())
     return true;
 
-  if (auto parsed_report_directive =
-          ParseReportDirective(base_url, header_value)) {
-    content_security_policy_ptr_->report_endpoints =
-        std::move(*parsed_report_directive);
-    return true;
+  if (!ParseReportDirective(
+          base_url, header_value,
+          &(content_security_policy_ptr_->report_endpoints))) {
+    // TODO(lfg): Emit a warning to the user when parsing an invalid
+    // expression.
+    return false;
   }
 
-  // TODO(lfg): Emit a warning to the user when parsing an invalid
-  // expression.
-  return false;
+  return true;
 }
 
 }  // namespace network

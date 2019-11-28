@@ -375,17 +375,21 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
     return;
   }
   if (common_.GetState() == kClosing || common_.GetState() == kClosed) {
-    UpdateBufferedAmountAfterClose(array_buffer_view.View()->byteLength());
+    UpdateBufferedAmountAfterClose(
+        array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
     return;
   }
   RecordSendTypeHistogram(kWebSocketSendTypeArrayBufferView);
-  RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBufferView,
-                                 array_buffer_view.View()->byteLength());
+  RecordSendMessageSizeHistogram(
+      kWebSocketSendTypeArrayBufferView,
+      array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
   DCHECK(channel_);
-  buffered_amount_ += array_buffer_view.View()->byteLength();
+  buffered_amount_ +=
+      array_buffer_view.View()->deprecatedByteLengthAsUnsigned();
   channel_->Send(*array_buffer_view.View()->buffer(),
                  array_buffer_view.View()->deprecatedByteOffsetAsUnsigned(),
-                 array_buffer_view.View()->byteLength(), base::OnceClosure());
+                 array_buffer_view.View()->deprecatedByteLengthAsUnsigned(),
+                 base::OnceClosure());
 }
 
 void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {

@@ -80,7 +80,7 @@ gfx::ImageSkiaRep CrostiniAppIcon::Source::GetImageForScale(float scale) {
 
   // Host loads icon asynchronously, so use default icon so far.
   int resource_id;
-  if (host_ && host_->app_id() == crostini::kCrostiniTerminalId) {
+  if (host_ && host_->app_id() == crostini::GetTerminalId()) {
     // Don't initiate the icon request from the container because we have this
     // one already.
     resource_id = IDR_LOGO_CROSTINI_TERMINAL;

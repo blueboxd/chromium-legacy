@@ -388,12 +388,7 @@ void IntentPickerBubbleView::Initialize() {
   // how many app candidates we got and how many we actually want to show.
   // The added 0.5 on the else block allow us to let the user know there are
   // more than |kMaxAppResults| apps accessible by scrolling the list.
-  size_t rows = scroll_view->contents()->children().size();
-  if (rows <= kMaxAppResults) {
-    scroll_view->ClipHeightTo(kRowHeight, rows * kRowHeight);
-  } else {
-    scroll_view->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
-  }
+  scroll_view->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var FilesMetadataBox = Polymer({
+const FilesMetadataBox = Polymer({
   is: 'files-metadata-box',
 
   properties: {
@@ -53,30 +53,31 @@ var FilesMetadataBox = Polymer({
    * @param {boolean} keepSizeFields do not clear size and isSizeLoading fields.
    */
   clear: function(keepSizeFields) {
-    this.filePath = '';
-    this.metadata = '';
+    const reset = {
+      type: '',
+      filePath: '',
+      modificationTime: '',
+      hasFileSpecificMetadata_: false,
+      mediaMimeType: '',
+      ifd: null,
+      imageWidth: 0,
+      imageHeight: 0,
+      mediaTitle: '',
+      mediaArtist: '',
+      mediaAlbum: '',
+      mediaDuration: 0,
+      mediaGenre: '',
+      mediaTrack: '',
+      mediaYearRecorded: '',
+      metadata: '',
+    };
 
     if (!keepSizeFields) {
-      this.size = '';
-      this.isSizeLoading = false;
+      reset.isSizeLoading = false;
+      reset.size = '';
     }
-    this.modificationTime = '';
-    this.mediaMimeType = '';
 
-    this.type = '';
-    this.hasFileSpecificMetadata_ = false;
-
-    /** @type {?Object} */
-    this.ifd = null;
-    this.imageWidth = 0;
-    this.imageHeight = 0;
-    this.mediaTitle = '';
-    this.mediaArtist = '';
-    this.mediaAlbum = '';
-    this.mediaDuration = 0;
-    this.mediaGenre = '';
-    this.mediaTrack = '';
-    this.mediaYearRecorded = '';
+    this.setProperties(reset);
   },
 
   /**

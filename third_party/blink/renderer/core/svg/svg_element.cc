@@ -590,8 +590,7 @@ SVGElement* SVGElement::CorrespondingElement() const {
 
 SVGUseElement* SVGElement::CorrespondingUseElement() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (IsSVGUseElement(root->host()))
-      return &ToSVGUseElement(root->host());
+    return DynamicTo<SVGUseElement>(root->host());
   }
   return nullptr;
 }

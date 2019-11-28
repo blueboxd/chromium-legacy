@@ -68,6 +68,37 @@ static_library("test_support") {
   ]
 }
 
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "drive_api_util_unittest.cc",
+    "drive_notification_manager_unittest.cc",
+    "drive_uploader_unittest.cc",
+    "event_logger_unittest.cc",
+    "resource_metadata_storage_unittest.cc",
+    "service/drive_api_service_unittest.cc",
+    "service/fake_drive_service_unittest.cc",
+  ]
+
+  deps = [
+    ":drive",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/invalidation/impl:test_support",
+    "//content/test:test_support",
+    "//google_apis/drive:test_support",
+    "//testing/gtest",
+  ]
+
+  if (is_chromeos) {
+    sources += [ "search_metadata_unittest.cc" ]
+
+    deps += [ ":drive_chromeos" ]
+  }
+}
+
 if (is_chromeos) {
   source_set("drive_chromeos") {
     sources = [

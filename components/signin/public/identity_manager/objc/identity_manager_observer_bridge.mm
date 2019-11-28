@@ -47,7 +47,7 @@ void IdentityManagerObserverBridge::OnRefreshTokenRemovedForAccount(
     const CoreAccountId& account_id) {
   if ([delegate_
           respondsToSelector:@selector(onRefreshTokenRemovedForAccount:)]) {
-    [delegate_ onRefreshTokenRemovedForAccount:account_id.id];
+    [delegate_ onRefreshTokenRemovedForAccount:account_id];
   }
 }
 

@@ -588,6 +588,8 @@ class GFX_EXPORT RenderText {
 
   // Returns an iterator over the |text_| attributes.
   internal::StyleIterator GetTextStyleIterator() const;
+  // Returns an iterator over the |layout_text_| attributes.
+  internal::StyleIterator GetLayoutTextStyleIterator();
 
   const BreakList<SkColor>& colors() const { return colors_; }
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
@@ -597,6 +599,8 @@ class GFX_EXPORT RenderText {
   const BreakList<Font::Weight>& weights() const { return weights_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
+
+  const BreakList<SkColor>& layout_colors() const { return layout_colors_; }
 
   // Whether all the BreakLists have only one break.
   bool IsHomogeneous() const;
@@ -678,7 +682,7 @@ class GFX_EXPORT RenderText {
   // Notifies that layout text, or attributes that affect the layout text
   // shape have changed. |text_changed| is true if the content of the
   // |layout_text_| has changed, not just attributes.
-  virtual void OnLayoutTextAttributeChanged(bool text_changed) = 0;
+  virtual void OnLayoutTextAttributeChanged(bool text_changed);
 
   // Notifies that attributes that affect the display text shape have changed.
   virtual void OnDisplayTextAttributeChanged() = 0;
@@ -698,10 +702,6 @@ class GFX_EXPORT RenderText {
 
   // Returns display text positions that are suitable for breaking lines.
   const BreakList<size_t>& GetLineBreaks();
-
-  // Apply (and undo) temporary composition underlines and selection colors.
-  void ApplyCompositionAndSelectionStyles(const Range& selection);
-  void UndoCompositionAndSelectionStyles();
 
   // Convert points from the text space to the view space. Handles the display
   // area, display offset, application LTR/RTL mode and multiline.
@@ -777,6 +777,9 @@ class GFX_EXPORT RenderText {
 
   // Computes the |layout_text_| by rewriting it from |text_|, if needed.
   void EnsureLayoutTextUpdated();
+
+  // Computes the layout break lists, if needed.
+  void EnsuresLayoutTextAttributeUpdated();
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
   // |text_width| is the pre-calculated width of the text shaped by this render
@@ -882,10 +885,11 @@ class GFX_EXPORT RenderText {
   BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 
-  // Breaks saved without temporary composition and selection styling.
-  BreakList<SkColor> saved_colors_;
-  BreakList<bool> saved_underlines_;
-  bool composition_and_selection_styles_applied_;
+  BreakList<SkColor> layout_colors_;
+  BreakList<BaselineStyle> layout_baselines_;
+  BreakList<int> layout_font_size_overrides_;
+  BreakList<Font::Weight> layout_weights_;
+  std::vector<BreakList<bool>> layout_styles_;
 
   // A flag to obscure actual text with asterisks for password fields.
   bool obscured_;
@@ -975,6 +979,9 @@ class GFX_EXPORT RenderText {
 
   // Tell whether or not the |layout_text_| needs an update or is up to date.
   bool layout_text_up_to_date_ = false;
+
+  // Tell whether or not the layout break lists need an update.
+  bool layout_text_attributes_up_to_date_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

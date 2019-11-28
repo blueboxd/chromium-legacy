@@ -164,7 +164,7 @@ public class ShareIntentTest {
         });
         RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return new RootUiCoordinator(
-                    mockActivity, null, null, mockActivity.getShareDelegateSupplier());
+                    mockActivity, null, mockActivity.getShareDelegateSupplier());
         });
         ShareHelper.setLastShareComponentName(
                 new ComponentName("test.package", "test.activity"), null);

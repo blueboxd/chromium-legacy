@@ -230,7 +230,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
     bool is_success = false;
     for (auto it = token_map.begin(); it != token_map.end(); ++it) {
       const std::string account_id = RemoveAccountIdPrefix(it->first);
-      if (identity_manager()->GetPrimaryAccountId().id != account_id) {
+      if (identity_manager()->GetPrimaryAccountId().ToString() != account_id) {
         continue;
       }
 

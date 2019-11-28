@@ -29,6 +29,13 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
       return this.fingerprintSetupModule_;
     },
 
+    /*
+     * Executed on language change.
+     */
+    updateLocalizedContent: function() {
+      this.fingerprintSetupModule_.i18nUpdateLocale();
+    },
+
     /**
      * Called when a fingerprint enroll scan result is received.
      * @param {number} scanResult Result of the enroll scan.

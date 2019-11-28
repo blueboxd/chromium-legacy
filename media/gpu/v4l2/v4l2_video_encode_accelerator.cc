@@ -805,6 +805,7 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
     input_queue_ = nullptr;
     output_queue_ = nullptr;
     image_processor_ = nullptr;
+    device_ = nullptr;
   }
 }
 

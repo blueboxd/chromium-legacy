@@ -543,7 +543,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(0UL, site_groups.size());
   }
 
@@ -565,12 +565,12 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(1UL, site_groups.size());
     for (const base::Value& site_group : site_groups) {
       const std::string& etld_plus1_string =
           site_group.FindKey("etldPlus1")->GetString();
-      base::span<const base::Value> origin_list =
+      base::Value::ConstListView origin_list =
           site_group.FindKey("origins")->GetList();
       EXPECT_EQ("example.com", etld_plus1_string);
       EXPECT_EQ(2UL, origin_list.size());
@@ -594,12 +594,12 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     for (const base::Value& site_group : site_groups) {
       const std::string& etld_plus1_string =
           site_group.FindKey("etldPlus1")->GetString();
-      base::span<const base::Value> origin_list =
+      base::Value::ConstListView origin_list =
           site_group.FindKey("origins")->GetList();
       if (etld_plus1_string == "example2.net") {
         EXPECT_EQ(1UL, origin_list.size());
@@ -633,7 +633,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(3UL, site_groups.size());
   }
 
@@ -647,7 +647,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
@@ -676,7 +676,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
@@ -705,7 +705,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    base::span<const base::Value> site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());

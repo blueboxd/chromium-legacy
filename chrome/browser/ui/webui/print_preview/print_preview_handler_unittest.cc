@@ -447,7 +447,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     const int type = add_data.arg2()->GetInt();
     EXPECT_EQ(expected_type, type);
     ASSERT_TRUE(add_data.arg3());
-    base::span<const base::Value> printer_list = add_data.arg3()->GetList();
+    base::Value::ConstListView printer_list = add_data.arg3()->GetList();
     ASSERT_EQ(printer_list.size(), 1u);
     EXPECT_TRUE(printer_list[0].FindKeyOfType("printer_name",
                                               base::Value::Type::STRING));

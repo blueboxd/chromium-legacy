@@ -70,8 +70,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
   using ProviderByIdMap =
       std::map<int, std::unique_ptr<ServiceWorkerProviderHost>>;
-  using ProviderByClientUUIDMap =
-      std::map<std::string, ServiceWorkerProviderHost*>;
+  using ContainerHostByClientUUIDMap =
+      std::map<std::string, ServiceWorkerContainerHost*>;
 
   // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
@@ -179,14 +179,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 
-  // Maintains a map from Client UUID to ProviderHost.
+  // Maintains a map from Client UUID to ServiceWorkerContainerHost.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use
   // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
   // these as provider_id is deeply wired everywhere)
-  void RegisterProviderHostByClientID(const std::string& client_uuid,
-                                      ServiceWorkerProviderHost* provider_host);
-  void UnregisterProviderHostByClientID(const std::string& client_uuid);
-  ServiceWorkerProviderHost* GetProviderHostByClientID(
+  void RegisterContainerHostByClientID(
+      const std::string& client_uuid,
+      ServiceWorkerContainerHost* container_host);
+  void UnregisterContainerHostByClientID(const std::string& client_uuid);
+  ServiceWorkerContainerHost* GetContainerHostByClientID(
       const std::string& client_uuid);
 
   void RegisterServiceWorker(
@@ -349,8 +350,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // |providers_| owns the provider hosts.
   std::unique_ptr<ProviderByIdMap> providers_;
 
-  // |provider_by_uuid_| contains raw pointers to hosts owned by |providers_|.
-  std::unique_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
+  // |container_host_by_uuid_| contains raw pointers to container hosts.
+  std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
 
   std::unique_ptr<ServiceWorkerStorage> storage_;
   std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;

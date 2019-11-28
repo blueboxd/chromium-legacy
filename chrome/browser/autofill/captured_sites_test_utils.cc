@@ -1392,9 +1392,7 @@ bool TestRecipeReplayer::GetIFramePathFromAction(
     ADD_FAILURE() << "The action's iframe path is not a list!";
     return false;
   }
-  base::span<const base::Value> iframe_xpath_list =
-      iframe_path_container->GetList();
-  for (const auto& xpath : iframe_xpath_list) {
+  for (const auto& xpath : iframe_path_container->GetList()) {
     if (!xpath.is_string()) {
       ADD_FAILURE() << "Failed to extract the iframe xpath from action!";
       return false;
@@ -1794,12 +1792,9 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
     return false;
   }
 
-  base::span<const base::Value> profile_entries_list =
-      saved_autofill_profile_container.GetList();
-  for (auto it_entry = profile_entries_list.begin();
-       it_entry != profile_entries_list.end(); ++it_entry) {
+  for (const auto& list_entry : saved_autofill_profile_container.GetList()) {
     const base::DictionaryValue* entry;
-    if (!it_entry->GetAsDictionary(&entry)) {
+    if (!list_entry.GetAsDictionary(&entry)) {
       ADD_FAILURE() << "Failed to extract an entry!";
       return false;
     }
@@ -1822,7 +1817,7 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
   // profiles. This block prevents these other tests from failing because
   // the test feature action executor does not know how to setup the autofill
   // profile.
-  if (profile_entries_list.size() == 0) {
+  if (saved_autofill_profile_container.GetList().empty()) {
     return true;
   }
 
@@ -1836,12 +1831,9 @@ bool TestRecipeReplayer::SetupSavedPasswords(
     return false;
   }
 
-  base::span<const base::Value> saved_password_list =
-      saved_password_list_container.GetList();
-  for (auto it_password = saved_password_list.begin();
-       it_password != saved_password_list.end(); ++it_password) {
+  for (const auto& entry : saved_password_list_container.GetList()) {
     const base::DictionaryValue* cred;
-    if (!it_password->GetAsDictionary(&cred)) {
+    if (!entry.GetAsDictionary(&cred)) {
       ADD_FAILURE() << "Failed to extract a saved password!";
       return false;
     }

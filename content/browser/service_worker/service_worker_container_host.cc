@@ -66,6 +66,8 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
   } else {
     DCHECK(IsContainerForServiceWorker());
   }
+
+  context_->RegisterContainerHostByClientID(client_uuid_, this);
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
@@ -76,6 +78,9 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
     if (rfh)
       rfh->RemoveServiceWorkerContainerHost(this);
   }
+
+  if (context_)
+    context_->UnregisterContainerHostByClientID(client_uuid_);
 
   if (fetch_request_window_id_)
     FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
@@ -419,10 +424,10 @@ void ServiceWorkerContainerHost::UpdateUrls(
 
     // Set UUID to the new one.
     if (context_)
-      context_->UnregisterProviderHostByClientID(client_uuid_);
+      context_->UnregisterContainerHostByClientID(client_uuid_);
     client_uuid_ = base::GenerateGUID();
     if (context_)
-      context_->RegisterProviderHostByClientID(client_uuid_, provider_host_);
+      context_->RegisterContainerHostByClientID(client_uuid_, this);
   }
 }
 

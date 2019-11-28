@@ -352,7 +352,11 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
 String StylePropertySerializer::CommonShorthandChecks(
     const StylePropertyShorthand& shorthand) const {
   int longhand_count = shorthand.length();
-  DCHECK_LE(longhand_count, 17);
+  if (!longhand_count || longhand_count > 17) {
+    NOTREACHED();
+    return g_empty_string;
+  }
+
   const CSSValue* longhands[17] = {};
 
   bool has_important = false;

@@ -1972,8 +1972,8 @@ TEST_F(IdentityManagerTest,
   const CoreAccountId kTestAccountId("account_id");
   const CoreAccountId kTestAccountId2("account_id2");
   const std::vector<std::pair<CoreAccountId, std::string>> accounts = {
-      {kTestAccountId, kTestAccountId.id},
-      {kTestAccountId2, kTestAccountId2.id}};
+      {kTestAccountId, kTestAccountId.ToString()},
+      {kTestAccountId2, kTestAccountId2.ToString()}};
 
   SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
@@ -2001,8 +2001,8 @@ TEST_F(IdentityManagerTest,
   const CoreAccountId kTestAccountId("account_id");
   const CoreAccountId kTestAccountId2("account_id2");
   const std::vector<std::pair<CoreAccountId, std::string>> accounts = {
-      {kTestAccountId, kTestAccountId.id},
-      {kTestAccountId2, kTestAccountId2.id}};
+      {kTestAccountId, kTestAccountId.ToString()},
+      {kTestAccountId2, kTestAccountId2.ToString()}};
 
   SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
@@ -2245,9 +2245,9 @@ TEST_F(IdentityManagerTest, TestPickAccountIdForAccount) {
       identity_manager()->GetAccountIdMigrationState() ==
       IdentityManager::AccountIdMigrationState::MIGRATION_DONE;
   if (account_id_migration_done) {
-    EXPECT_EQ(kTestGaiaId, account_id.id);
+    EXPECT_EQ(kTestGaiaId, account_id.ToString());
   } else {
-    EXPECT_TRUE(gaia::AreEmailsSame(kTestEmail, account_id.id));
+    EXPECT_TRUE(gaia::AreEmailsSame(kTestEmail, account_id.ToString()));
   }
 }
 

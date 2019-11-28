@@ -167,51 +167,6 @@ bool VaapiImageProcessor::ProcessInternal(
     FrameReadyCB cb) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DCHECK(input_frame);
-  DCHECK(output_frame);
-
-  const Fourcc input_frame_fourcc =
-      Fourcc::FromVideoPixelFormat(input_frame->layout().format());
-  if (input_frame_fourcc != input_config_.fourcc) {
-    VLOGF(1) << "Invalid input_frame format=" << input_frame_fourcc.ToString()
-             << ", expected=" << input_config_.fourcc.ToString();
-    return false;
-  }
-
-  if (input_frame->layout().coded_size() != input_config_.size) {
-    VLOGF(1) << "Invalid input_frame size="
-             << input_frame->layout().coded_size().ToString()
-             << ", expected=" << input_config_.size.ToString();
-    return false;
-  }
-
-  const Fourcc output_frame_fourcc =
-      Fourcc::FromVideoPixelFormat(output_frame->layout().format());
-  if (output_frame_fourcc != output_config_.fourcc) {
-    VLOGF(1) << "Invalid output_frame format=" << output_frame_fourcc.ToString()
-             << ", expected=" << output_config_.fourcc.ToString();
-    return false;
-  }
-
-  if (output_frame->layout().coded_size() != output_config_.size) {
-    VLOGF(1) << "Invalid output_frame size="
-             << output_frame->layout().coded_size().ToString()
-             << ", expected=" << output_config_.size.ToString();
-    return false;
-  }
-
-  if (input_frame->storage_type() != input_config_.storage_type()) {
-    VLOGF(1) << "Invalid input_frame->storage_type="
-             << input_frame->storage_type()
-             << ", input_storage_type=" << input_config_.storage_type();
-    return false;
-  }
-  if (output_frame->storage_type() != output_config_.storage_type()) {
-    VLOGF(1) << "Invalid output_frame->storage_type="
-             << output_frame->storage_type()
-             << ", expected=" << output_config_.storage_type();
-    return false;
-  }
 
   // TODO(akahuang): Use WeakPtr to replace base::Unretained(this).
   process_task_tracker_.PostTask(

@@ -12,6 +12,7 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_config.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/ui/android/infobars/near_oom_reduction_infobar.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -325,6 +326,12 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
 
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   DCHECK(main_frame);
+
+  // Connections to the renderer will not be recreated when coming out of the
+  // cache so prevent us from getting in there in the first place.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      main_frame, "OomInterventionTabHelper");
+
   content::RenderProcessHost* render_process_host = main_frame->GetProcess();
   DCHECK(render_process_host);
   render_process_host->BindReceiver(intervention_.BindNewPipeAndPassReceiver());

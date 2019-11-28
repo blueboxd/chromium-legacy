@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_MEMORY_H_
 
 #include "base/atomic_ref_count.h"
+#include "base/containers/flat_map.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -14,7 +15,6 @@
 namespace blink {
 
 class RegionTree;
-class RegionTreeNode;
 
 class MemoryRegion {
   USING_FAST_MALLOC(MemoryRegion);
@@ -101,7 +101,7 @@ class PageMemoryRegion : public MemoryRegion {
   // bitmap such that thread non-interference comes for free.
   bool in_use_[kBlinkPagesPerRegion];
   base::AtomicRefCount num_pages_;
-  RegionTree* region_tree_;
+  RegionTree* const region_tree_;
 };
 
 // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
@@ -110,36 +110,14 @@ class RegionTree {
   USING_FAST_MALLOC(RegionTree);
 
  public:
-  RegionTree() : root_(nullptr) {}
-
   void Add(PageMemoryRegion*);
   void Remove(PageMemoryRegion*);
   PageMemoryRegion* Lookup(Address);
 
  private:
-  RegionTreeNode* root_;
-};
-
-class RegionTreeNode {
-  USING_FAST_MALLOC(RegionTreeNode);
-
- public:
-  explicit RegionTreeNode(PageMemoryRegion* region)
-      : region_(region), left_(nullptr), right_(nullptr) {}
-
-  ~RegionTreeNode() {
-    delete left_;
-    delete right_;
-  }
-
-  void AddTo(RegionTreeNode** context);
-
- private:
-  PageMemoryRegion* region_;
-  RegionTreeNode* left_;
-  RegionTreeNode* right_;
-
-  friend RegionTree;
+  // Using flat_map allows to improve locality to minimize cache misses and
+  // balance binary lookup.
+  base::flat_map<Address, PageMemoryRegion*> set_;
 };
 
 // Representation of the memory used for a Blink heap page.

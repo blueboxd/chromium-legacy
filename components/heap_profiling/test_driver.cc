@@ -253,7 +253,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  base::span<const base::Value> sizes_list = sizes->GetList();
+  base::Value::ConstListView sizes_list = sizes->GetList();
   if (sizes_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".sizes' is an empty list";
@@ -268,7 +268,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  base::span<const base::Value> counts_list = counts->GetList();
+  base::Value::ConstListView counts_list = counts->GetList();
   if (sizes_list.size() != counts_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -284,7 +284,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  base::span<const base::Value> types_list = types->GetList();
+  base::Value::ConstListView types_list = types->GetList();
   if (types_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".types' is an empty list";
@@ -306,7 +306,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  base::span<const base::Value> nodes_list = nodes->GetList();
+  base::Value::ConstListView nodes_list = nodes->GetList();
   if (sizes_list.size() != nodes_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -419,7 +419,7 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
                           const char* allocator_name,
                           const char* subarray_name,
                           size_t expected_size,
-                          base::span<const base::Value>* output) {
+                          base::Value::ConstListView* output) {
   base::Value* subarray =
       heaps_v2->FindPath({"allocators", allocator_name, subarray_name});
   if (!subarray) {
@@ -428,7 +428,7 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
     return false;
   }
 
-  base::span<const base::Value> subarray_list = subarray->GetList();
+  base::Value::ConstListView subarray_list = subarray->GetList();
   if (expected_size && subarray_list.size() != expected_size) {
     LOG(ERROR) << subarray_name << " has wrong size";
     return false;
@@ -463,7 +463,7 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Find the type with the appropriate id.
-  base::span<const base::Value> types_list;
+  base::Value::ConstListView types_list;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "types", 0,
                             &types_list)) {
     return false;
@@ -485,7 +485,7 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Look up the size.
-  base::span<const base::Value> sizes;
+  base::Value::ConstListView sizes;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "sizes",
                             types_list.size(), &sizes)) {
     return false;
@@ -500,7 +500,7 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Look up the count.
-  base::span<const base::Value> counts;
+  base::Value::ConstListView counts;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
                             types_list.size(), &counts)) {
     return false;

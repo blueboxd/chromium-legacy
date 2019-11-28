@@ -74,7 +74,7 @@ MojoResult MojoHandle::writeMessage(
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     bytes = view->BaseAddress();
-    num_bytes = view->byteLength();
+    num_bytes = view->deprecatedByteLengthAsUnsigned();
   }
 
   auto message = mojo::Message(
@@ -158,7 +158,7 @@ MojoWriteDataResult* MojoHandle::writeData(
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();
-    num_bytes = view->byteLength();
+    num_bytes = view->deprecatedByteLengthAsUnsigned();
   }
 
   ::MojoWriteDataOptions options;
@@ -221,7 +221,7 @@ MojoReadDataResult* MojoHandle::readData(
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();
-    num_bytes = view->byteLength();
+    num_bytes = view->deprecatedByteLengthAsUnsigned();
   }
 
   ::MojoReadDataOptions options;

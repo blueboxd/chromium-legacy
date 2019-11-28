@@ -35,6 +35,13 @@ struct CoreAccountId {
   // Checks if the account is valid or not.
   bool empty() const;
 
+  // Return the string representation of a CoreAccountID.
+  //
+  // As explained above, the string representation of a CoreAccountId is
+  // (for now) unstable and cannot be used to store serialized data to
+  // persistent storage. Only in-memory storage is safe.
+  const std::string& ToString() const;
+
   // -------------------------------------------------------------------------
   // --------------------------- DO NOT USE ----------------------------------
   // TL;DR: To get a CoreAccountId, please use the IdentityManager.
@@ -72,11 +79,8 @@ struct CoreAccountId {
   explicit CoreAccountId(const std::string& id);
   // --------------------------------------------------------------------------
 
-  // --------------------------------------------------------------------------
-  // --------------------------- DO NOT USE -----------------------------------
-  // TL;DR: msarda@ is in the process of making this variable private.
-  std::string id;
-  // --------------------------------------------------------------------------
+ private:
+  std::string id_;
 };
 
 bool operator<(const CoreAccountId& lhs, const CoreAccountId& rhs);
@@ -96,7 +100,7 @@ namespace std {
 template <>
 struct hash<CoreAccountId> {
   size_t operator()(const CoreAccountId& account_id) const {
-    return std::hash<std::string>()(account_id.id);
+    return std::hash<std::string>()(account_id.ToString());
   }
 };
 }  // namespace std

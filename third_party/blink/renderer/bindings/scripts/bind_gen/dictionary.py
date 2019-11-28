@@ -391,6 +391,39 @@ else {{
     return node
 
 
+def make_dict_trace_def(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    dictionary = cg_context.dictionary
+    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+    class_name = blink_class_name(dictionary)
+
+    func_def = FunctionDefinitionNode(
+        name=T(_format("{_1}::Trace", _1=class_name)),
+        arg_decls=[
+            T("Visitor* visitor"),
+        ],
+        return_type=T("void"))
+
+    body = func_def.body
+    body.add_template_vars(cg_context.template_bindings())
+
+    def trace_member_node(member):
+        pattern = "TraceIfNeeded<{_1}>::Trace(visitor, {_2});"
+        _1 = blink_type_info(member.idl_type).member_t
+        _2 = name_style.member_var(member.identifier)
+        return T(_format(pattern, _1=_1, _2=_2))
+
+    body.extend(map(trace_member_node, own_members))
+
+    if dictionary.inherited:
+        body.append(T("BaseClass::Trace(visitor);"))
+
+    return func_def
+
+
 def generate_dictionaries(web_idl_database, output_dirs):
     dictionary = web_idl_database.find("RTCTrackEventInit")
     filename = "example_dictionary.cc"
@@ -410,6 +443,7 @@ def generate_dictionaries(web_idl_database, output_dirs):
         make_fill_dict_members_internal_def(cg_context),
         make_fill_with_dict_members_def(cg_context),
         make_fill_with_own_dict_members_def(cg_context),
+        make_dict_trace_def(cg_context),
     ])
 
     for member in sorted(dictionary.own_members, key=lambda x: x.identifier):

@@ -12,14 +12,17 @@
 
   // Worker Accept Language
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`var w = new Worker('${testRunner.url('resources/worker.js')}')`);
-  let event = await dp.Target.onceAttachedToTarget();
+  const event = await attachedPromise;
   const workerSession = session.createChild(event.params.sessionId);
   await workerSession.protocol.Emulation.setUserAgentOverride({userAgent: '', acceptLanguage: 'ko, en, zh-CN, zh-HK, en-US, en-GB'});
+
+  const detachedPromise = dp.Target.onceDetachedFromTarget()
   testRunner.log('workerNavigator.language == ' + await session.evaluateAsync(`
       w.postMessage('ping!');
       new Promise(resolve => w.onmessage = e => resolve(e.data.language))`));
-  await dp.Target.onceDetachedFromTarget();
+  await detachedPromise;
 
   await printHeader('Accept-Language');
 

@@ -83,6 +83,23 @@ class WebAppIconManagerTest : public WebAppTest {
     return icons;
   }
 
+  std::vector<uint8_t> ReadSmallestCompressedIcon(const AppId& app_id,
+                                                  int icon_size_in_px) {
+    std::vector<uint8_t> result;
+
+    base::RunLoop run_loop;
+    bool icon_requested = icon_manager().ReadSmallestCompressedIcon(
+        app_id, icon_size_in_px,
+        base::BindLambdaForTesting([&](std::vector<uint8_t> data) {
+          result = std::move(data);
+          run_loop.Quit();
+        }));
+
+    EXPECT_TRUE(icon_requested);
+    run_loop.Run();
+    return result;
+  }
+
   std::unique_ptr<WebApp> CreateWebApp() {
     const GURL app_url = GURL("https://example.com/path");
     const AppId app_id = GenerateAppIdFromURL(app_url);
@@ -133,7 +150,8 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, sizes_px[0], base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, sizes_px[0],
+        base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(colors[0], bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -166,7 +184,8 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
   base::RunLoop run_loop;
 
   const bool icon_requested = icon_manager().ReadIcon(
-      app_id, icon_size_px, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+      app_id, icon_size_px,
+      base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
         EXPECT_TRUE(bitmap.empty());
         run_loop.Quit();
       }));
@@ -190,8 +209,9 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 
   {
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, 40,
-        base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
+        app_id, 40, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          NOTREACHED();
+        }));
     EXPECT_FALSE(icon_requested);
   }
 
@@ -199,7 +219,7 @@ TEST_F(WebAppIconManagerTest, FindExact) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -225,8 +245,9 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
 
   {
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 70,
-        base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
+        app_id, 70, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          NOTREACHED();
+        }));
     EXPECT_FALSE(icon_requested);
   }
 
@@ -234,7 +255,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 40, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 40, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -248,7 +269,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -307,6 +328,43 @@ TEST_F(WebAppIconManagerTest, DeleteData_Failure) {
                               run_loop.Quit();
                             }));
   run_loop.Run();
+}
+
+TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Success) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k128};
+  const std::vector<SkColor> colors{SK_ColorGREEN};
+  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  controller().RegisterApp(std::move(web_app));
+
+  std::vector<uint8_t> compressed_data =
+      ReadSmallestCompressedIcon(app_id, sizes_px[0]);
+  EXPECT_FALSE(compressed_data.empty());
+
+  auto* data_ptr = reinterpret_cast<const char*>(compressed_data.data());
+
+  // Check that |compressed_data| starts with the 8-byte PNG magic string.
+  std::string png_magic_string{data_ptr, 8};
+  EXPECT_EQ(png_magic_string, "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a");
+}
+
+TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Failure) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k64};
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  controller().RegisterApp(std::move(web_app));
+
+  std::vector<uint8_t> compressed_data =
+      ReadSmallestCompressedIcon(app_id, sizes_px[0]);
+  EXPECT_TRUE(compressed_data.empty());
 }
 
 }  // namespace web_app

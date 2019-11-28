@@ -68,14 +68,14 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
     *error = base::ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
     return false;
   }
-  base::span<const base::Value> list_storage = list_value->GetList();
-  for (size_t i = 0; i < list_storage.size(); ++i) {
-    if (!list_storage[i].is_string()) {
+  base::Value::ConstListView list_view = list_value->GetList();
+  for (size_t i = 0; i < list_view.size(); ++i) {
+    if (!list_view[i].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidWebAccessibleResource, base::NumberToString(i));
       return false;
     }
-    std::string relative_path = list_storage[i].GetString();
+    std::string relative_path = list_view[i].GetString();
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
     if (pattern.Parse(extension->url().spec()) !=
         URLPattern::ParseResult::kSuccess) {

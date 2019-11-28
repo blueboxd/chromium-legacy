@@ -178,10 +178,10 @@ cca.models.Gallery.prototype.load = function() {
         // TODO(yuli): Remove unused thumbnails.
         return Promise.all(wrapped).then((pictures) => {
           return pictures.sort((a, b) => {
-            if (a.timestamp == null) {
+            if (a.timestamp === null) {
               return -1;
             }
-            if (b.timestamp == null) {
+            if (b.timestamp === null) {
               return 1;
             }
             return a.timestamp - b.timestamp;
@@ -214,9 +214,9 @@ cca.models.Gallery.prototype.checkLastPicture = function() {
     if (dir && picture) {
       var name = picture.pictureEntry.name;
       return cca.models.FileSystem.getFile(dir, name, false).then(
-          (entry) => [picture, (entry != null)]);
+          (entry) => [picture, (entry !== null)]);
     }
-    return [picture, (picture != null)];
+    return [picture, (picture !== null)];
   }).then(([picture, pictureEntryExist]) => {
     if (pictureEntryExist || !picture) {
       return picture;
@@ -243,7 +243,7 @@ cca.models.Gallery.prototype.deletePicture = function(
   });
   return Promise.all([this.loaded_, removed]).then(([pictures, _]) => {
     var removal = pictures.indexOf(picture);
-    if (removal != -1) {
+    if (removal !== -1) {
       pictures.splice(removal, 1);
     }
     this.notifyObservers_('onPictureDeleted', picture);

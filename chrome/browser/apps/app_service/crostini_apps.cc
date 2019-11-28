@@ -217,7 +217,7 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
   // point to installing other Crostini apps.
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kCrostini;
-  app->app_id = crostini::kCrostiniTerminalId;
+  app->app_id = crostini::GetTerminalId();
   app->show_in_launcher = show;
   app->show_in_search = show;
   Publish(std::move(app));
@@ -321,7 +321,7 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // Crostini Terminal icon (the UI for enabling and installing Crostini apps)
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
-  if (app_id == crostini::kCrostiniTerminalId) {
+  if (app_id == crostini::GetTerminalId()) {
     return apps::mojom::IconKey::New(
         apps::mojom::IconKey::kDoesNotChangeOverTime,
         IDR_LOGO_CROSTINI_TERMINAL, apps::IconEffects::kNone);

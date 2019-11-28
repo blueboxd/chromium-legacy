@@ -88,10 +88,6 @@ cca.models.FileSystem.initInternalTempDir_ = function() {
  */
 cca.models.FileSystem.initExternalDir_ = function() {
   return new Promise((resolve) => {
-    if (!cca.util.isChromeOS()) {
-      resolve([null, null]);
-      return;
-    }
     cca.proxy.browserProxy.getVolumeList((volumes) => {
       if (volumes) {
         for (var i = 0; i < volumes.length; i++) {
@@ -110,7 +106,7 @@ cca.models.FileSystem.initExternalDir_ = function() {
     if (volumeId && volumeId.indexOf('downloads:MyFiles') !== -1) {
       return cca.models.FileSystem.readDir_(dir).then((entries) => {
         return entries.find(
-            (entry) => entry.name == 'Downloads' && entry.isDirectory);
+            (entry) => entry.name === 'Downloads' && entry.isDirectory);
       });
     }
     return dir;
@@ -192,7 +188,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
             });
           })
       .then((migrateNeeded) => {  // Migrate pictures if needed.
-        const external = cca.models.FileSystem.externalDir != null;
+        const external = cca.models.FileSystem.externalDir !== null;
         return !migrateNeeded ? external :
                                 cca.models.FileSystem.migratePictures()
                                     .then(doneMigrate)
@@ -212,7 +208,7 @@ cca.models.FileSystem.readDir_ = function(dir) {
     var entries = [];
     var readEntries = () => {
       dirReader.readEntries((inEntries) => {
-        if (inEntries.length == 0) {
+        if (inEntries.length === 0) {
           resolve(entries);
           return;
         }
@@ -238,7 +234,7 @@ cca.models.FileSystem.migratePictures = function() {
         externalDir, name, true).then((entry) => {
       return new Promise((resolve, reject) => {
         pictureEntry.copyTo(externalDir, entry.name, (result) => {
-          if (result.name != pictureEntry.name && thumbnailEntry) {
+          if (result.name !== pictureEntry.name && thumbnailEntry) {
             // Thumbnails can be recreated later if failing to rename them here.
             thumbnailEntry.moveTo(internalDir,
                 cca.models.FileSystem.getThumbnailName(result));
@@ -379,7 +375,7 @@ cca.models.FileSystem.saveVideo = async function(tempfile, filename) {
   // Assuming content of tempfile contains all recorded chunks appended together
   // and is a well-formed video. The work needed here is just to move the file
   // to the correct directory and rename as the specified filename.
-  if (tempfile.name == filename) {
+  if (tempfile.name === filename) {
     return tempfile;
   }
   return new Promise(
@@ -535,11 +531,11 @@ cca.models.FileSystem.getFile = function(dir, name, create) {
     var options = create ? {create: true, exclusive: true} : {create: false};
     dir.getFile(name, options, resolve, reject);
   }).catch((error) => {
-    if (create && error.name == 'InvalidModificationError') {
+    if (create && error.name === 'InvalidModificationError') {
       // Avoid name conflicts for creating files.
       return cca.models.FileSystem.getFile(dir,
           cca.models.FileSystem.incrementFileName_(name), create);
-    } else if (!create && error.name == 'NotFoundError') {
+    } else if (!create && error.name === 'NotFoundError') {
       return null;
     }
     throw error;

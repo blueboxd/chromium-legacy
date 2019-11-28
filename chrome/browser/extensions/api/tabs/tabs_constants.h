@@ -108,6 +108,7 @@ extern const char kCannotDetermineLanguageOfUnloadedTab[];
 extern const char kMissingLockWindowFullscreenPrivatePermission[];
 extern const char kJavaScriptUrlsNotAllowedInTabsUpdate[];
 extern const char kBrowserWindowNotAllowed[];
+extern const char kLockedFullscreenModeNewTabError[];
 
 }  // namespace tabs_constants
 }  // namespace extensions

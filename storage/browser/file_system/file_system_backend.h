@@ -36,7 +36,7 @@ class FileSystemQuotaUtil;
 class WatcherManager;
 
 // Callback to take GURL.
-using URLCallback = base::Callback<void(const GURL& url)>;
+using URLCallback = base::OnceCallback<void(const GURL& url)>;
 
 // Maximum numer of bytes to be read by FileStreamReader classes. Used in
 // FileSystemBackend::CreateFileStreamReader(), when it's not known how many
@@ -181,7 +181,7 @@ class ExternalFileSystemBackend : public FileSystemBackend {
   // documents. Returns empty URL if the entry does not have the redirect URL.
   virtual void GetRedirectURLForContents(
       const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) const = 0;
+      storage::URLCallback callback) const = 0;
   // Creates an internal File System URL for performing internal operations such
   // as confirming if a file or a directory exist before granting the final
   // permission to the entry. The path must be an absolute path.

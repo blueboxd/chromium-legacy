@@ -850,8 +850,9 @@ TEST_F(DeviceSettingsProviderTest,
 }
 
 TEST_F(DeviceSettingsProviderTest, DevicePowerwashAllowed) {
-  // Policy should not be set by default
-  VerifyPolicyValue(kDevicePowerwashAllowed, nullptr);
+  // Policy should be set to true by default
+  base::Value default_value(true);
+  VerifyPolicyValue(kDevicePowerwashAllowed, &default_value);
 
   SetDevicePowerwashAllowed(true);
   EXPECT_EQ(base::Value(true), *provider_->Get(kDevicePowerwashAllowed));

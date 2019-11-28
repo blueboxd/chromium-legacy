@@ -1192,7 +1192,7 @@ TEST(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   base::Value accounts = handler.GetStoredAccountsList();
 
   ASSERT_TRUE(accounts.is_list());
-  base::span<const base::Value> accounts_list = accounts.GetList();
+  base::Value::ConstListView accounts_list = accounts.GetList();
 
   ASSERT_EQ(2u, accounts_list.size());
   ASSERT_TRUE(accounts_list[0].FindKey("email"));

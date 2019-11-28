@@ -170,7 +170,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:dedicated_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.QuotaDispatcherHost"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
@@ -183,7 +182,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.DisplayCutoutHost",
-                  "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.Portal",
                   "blink.mojom.QuotaDispatcherHost",
                   "content.mojom.InputInjector",

@@ -56,16 +56,16 @@ bool LoadGlobsHelper(const base::Value& content_script,
     return false;
   }
 
-  base::span<const base::Value> list_storage = list->GetList();
-  for (size_t i = 0; i < list_storage.size(); ++i) {
-    if (!list_storage[i].is_string()) {
+  base::Value::ConstListView list_view = list->GetList();
+  for (size_t i = 0; i < list_view.size(); ++i) {
+    if (!list_view[i].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidGlob, base::NumberToString(content_script_index),
           globs_property_name, base::NumberToString(i));
       return false;
     }
 
-    (instance->*add_method)(list_storage[i].GetString());
+    (instance->*add_method)(list_view[i].GetString());
   }
 
   return true;
@@ -135,8 +135,8 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     return nullptr;
   }
 
-  base::span<const base::Value> list_storage = matches->GetList();
-  if (list_storage.empty()) {
+  base::Value::ConstListView list_view = matches->GetList();
+  if (list_view.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidMatchCount, base::NumberToString(definition_index));
     return nullptr;
@@ -151,14 +151,14 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   const bool all_urls_includes_chrome_urls =
       PermissionsData::AllUrlsIncludesChromeUrls(extension->id());
 
-  for (size_t j = 0; j < list_storage.size(); ++j) {
-    if (!list_storage[j].is_string()) {
+  for (size_t j = 0; j < list_view.size(); ++j) {
+    if (!list_view[j].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatch, base::NumberToString(definition_index),
           base::NumberToString(j), errors::kExpectString);
       return nullptr;
     }
-    const std::string& match_str = list_storage[j].GetString();
+    const std::string& match_str = list_view[j].GetString();
 
     URLPattern pattern(valid_schemes);
 
@@ -205,17 +205,17 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
           base::NumberToString(definition_index));
       return nullptr;
     }
-    base::span<const base::Value> list_storage = exclude_matches->GetList();
+    base::Value::ConstListView list_view = exclude_matches->GetList();
 
-    for (size_t j = 0; j < list_storage.size(); ++j) {
-      if (!list_storage[j].is_string()) {
+    for (size_t j = 0; j < list_view.size(); ++j) {
+      if (!list_view[j].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidExcludeMatch,
             base::NumberToString(definition_index), base::NumberToString(j),
             errors::kExpectString);
         return nullptr;
       }
-      const std::string& match_str = list_storage[j].GetString();
+      const std::string& match_str = list_view[j].GetString();
       URLPattern pattern(valid_schemes);
 
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
@@ -266,7 +266,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   }
 
   if (js) {
-    base::span<const base::Value> js_list = js->GetList();
+    base::Value::ConstListView js_list = js->GetList();
     result->js_scripts().reserve(js_list.size());
     for (size_t script_index = 0; script_index < js_list.size();
          ++script_index) {
@@ -285,7 +285,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   }
 
   if (css) {
-    base::span<const base::Value> css_list = css->GetList();
+    base::Value::ConstListView css_list = css->GetList();
     result->css_scripts().reserve(css_list.size());
     for (size_t script_index = 0; script_index < css_list.size();
          ++script_index) {
@@ -390,16 +390,16 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  base::span<const base::Value> list_storage = scripts_list->GetList();
-  for (size_t i = 0; i < list_storage.size(); ++i) {
-    if (!list_storage[i].is_dict()) {
+  base::Value::ConstListView list_view = scripts_list->GetList();
+  for (size_t i = 0; i < list_view.size(); ++i) {
+    if (!list_view[i].is_dict()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidContentScript, base::NumberToString(i));
       return false;
     }
 
     std::unique_ptr<UserScript> user_script =
-        LoadUserScriptFromDictionary(list_storage[i], i, extension, error);
+        LoadUserScriptFromDictionary(list_view[i], i, extension, error);
     if (!user_script)
       return false;  // Failed to parse script context definition.
 

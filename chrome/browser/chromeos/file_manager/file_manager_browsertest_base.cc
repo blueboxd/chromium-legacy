@@ -642,6 +642,22 @@ struct GetUserActionCountMessage {
   std::string user_action_name;
 };
 
+struct GetLocalPathMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetLocalPathMessage* message) {
+    base::JSONValueConverter<GetLocalPathMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetLocalPathMessage>* converter) {
+    converter->RegisterStringField("localPath",
+                                   &GetLocalPathMessage::local_path);
+  }
+
+  std::string local_path;
+};
+
 }  // anonymous namespace
 
 class FileManagerBrowserTestBase::MockFileTasksObserver
@@ -1622,12 +1638,30 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "launchAppOnDownloads") {
-    const base::FilePath downloads_path =
-        file_manager::util::GetDownloadsFolderForProfile(profile());
-    platform_util::OpenItem(profile(), downloads_path,
-                            platform_util::OPEN_FOLDER,
+  if (name == "launchAppOnLocalFolder") {
+    GetLocalPathMessage message;
+    ASSERT_TRUE(GetLocalPathMessage::ConvertJSONValue(value, &message));
+
+    base::FilePath folder_path =
+        file_manager::util::GetMyFilesFolderForProfile(profile());
+    folder_path = folder_path.AppendASCII(message.local_path);
+
+    platform_util::OpenItem(profile(), folder_path, platform_util::OPEN_FOLDER,
                             platform_util::OpenOperationCallback());
+
+    return;
+  }
+
+  if (name == "launchAppOnDrive") {
+    auto* integration_service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(profile());
+    ASSERT_TRUE(integration_service && integration_service->is_enabled());
+    base::FilePath mount_path =
+        integration_service->GetMountPointPath().AppendASCII("root");
+
+    platform_util::OpenItem(profile(), mount_path, platform_util::OPEN_FOLDER,
+                            platform_util::OpenOperationCallback());
+
     return;
   }
 

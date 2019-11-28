@@ -212,6 +212,7 @@ void GCMDriverTest::TearDown() {
   PumpIOLoop();
 
   io_thread_.Stop();
+  task_environment_.RunUntilIdle();
 }
 
 void GCMDriverTest::PumpIOLoop() {

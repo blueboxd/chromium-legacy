@@ -34,8 +34,6 @@ class CORE_EXPORT IdleSpellCheckController final
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
  public:
-  static IdleSpellCheckController* Create(LocalFrame&);
-
   explicit IdleSpellCheckController(LocalFrame&);
   ~IdleSpellCheckController();
 

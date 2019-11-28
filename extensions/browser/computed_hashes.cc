@@ -106,15 +106,13 @@ base::Optional<ComputedHashes> ComputedHashes::CreateFromFile(
     if (!block_hashes)
       return base::nullopt;
 
-    base::span<const base::Value> hashes_list = block_hashes->GetList();
-
     base::FilePath relative_path =
         base::FilePath::FromUTF8Unsafe(*relative_path_utf8);
     relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
     std::vector<std::string> hashes;
 
-    for (const base::Value& value : hashes_list) {
+    for (const base::Value& value : block_hashes->GetList()) {
       if (!value.is_string())
         return base::nullopt;
 

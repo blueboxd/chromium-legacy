@@ -543,8 +543,9 @@ void SVGUseElement::AddReferencesToFirstDegreeNestedUseElements(
   // references are handled as the invalidation bubbles up the dependency
   // chain.
   SVGUseElement* use_element =
-      IsSVGUseElement(target) ? ToSVGUseElement(&target)
-                              : Traversal<SVGUseElement>::FirstWithin(target);
+      IsA<SVGUseElement>(target)
+          ? To<SVGUseElement>(&target)
+          : Traversal<SVGUseElement>::FirstWithin(target);
   for (; use_element;
        use_element = Traversal<SVGUseElement>::NextSkippingChildren(
            *use_element, &target))
@@ -593,7 +594,7 @@ void SVGUseElement::ExpandUseElementsInShadowTree() {
   ShadowRoot& shadow_root = UseShadowRoot();
   for (SVGUseElement* use = Traversal<SVGUseElement>::FirstWithin(shadow_root);
        use;) {
-    SVGUseElement& original_use = ToSVGUseElement(*use->CorrespondingElement());
+    auto& original_use = To<SVGUseElement>(*use->CorrespondingElement());
     auto* target = DynamicTo<SVGElement>(
         original_use.ResolveTargetElement(kDontAddObserver));
     if (target) {

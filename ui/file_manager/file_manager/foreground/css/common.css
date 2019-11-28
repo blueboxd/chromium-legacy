@@ -178,15 +178,15 @@ cr-menu.chrome-menu > [checked]::before {
   -webkit-margin-start: 12px;
 }
 
-/* Gray progress bar. */
+/* Gray progress bar. Background color google grey 700 with 30% opacity */
 .progress-bar {
-  background-color: #e6e6e6;
+  background-color: rgba(95, 104, 106, .3);
   border-radius: 3px;
   height: 6px;
 }
 
 .progress-track {
-  background-color: #888;
+  background-color: var(--google-grey-600);
   border-radius: 3px;
   height: 6px;
   min-width: 6px;

@@ -60,7 +60,7 @@ void DeviceInfoPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 // static
 void DeviceInfoPrefs::MigrateRecentLocalCacheGuidsPref(
     PrefService* pref_service) {
-  base::span<const base::Value> obsolete_cache_guids =
+  base::Value::ConstListView obsolete_cache_guids =
       pref_service->GetList(kObsoleteDeviceInfoRecentGUIDs)->GetList();
   DeviceInfoPrefs prefs(pref_service, base::DefaultClock::GetInstance());
 
@@ -86,7 +86,7 @@ DeviceInfoPrefs::~DeviceInfoPrefs() {}
 
 bool DeviceInfoPrefs::IsRecentLocalCacheGuid(
     const std::string& cache_guid) const {
-  base::span<const base::Value> recent_local_cache_guids =
+  base::Value::ConstListView recent_local_cache_guids =
       pref_service_->GetList(kDeviceInfoRecentGUIDsWithTimestamps)->GetList();
 
   for (const auto& v : recent_local_cache_guids) {

@@ -242,7 +242,8 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
       identity_manager->GetTokenService(),
       identity_manager->GetAccountTrackerService(), identity_manager,
       account_id,
-      token_value.empty() ? "refresh_token_for_" + account_id.id : token_value);
+      token_value.empty() ? "refresh_token_for_" + account_id.ToString()
+                          : token_value);
 }
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,

@@ -76,14 +76,9 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
       ServiceWorkerInstalledScriptReader::FinishedReason reason);
 
   // Implements ServiceWorkerInstalledScriptReader::Client.
-  void OnStarted(std::string encoding,
-                 base::flat_map<std::string, std::string> headers,
+  void OnStarted(scoped_refptr<HttpResponseInfoIOBuffer> http_info,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
-                 uint64_t body_size,
-                 mojo::ScopedDataPipeConsumerHandle meta_data_handle,
-                 uint64_t meta_data_size) override;
-  void OnHttpInfoRead(
-      scoped_refptr<HttpResponseInfoIOBuffer> http_info) override;
+                 mojo::ScopedDataPipeConsumerHandle meta_data_handle) override;
   void OnFinished(
       ServiceWorkerInstalledScriptReader::FinishedReason reason) override;
 

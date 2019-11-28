@@ -14,5 +14,12 @@ login.createScreen('MarketingOptInScreen', 'marketing-opt-in', function() {
     get defaultControl() {
       return $('marketing-opt-in-impl');
     },
+
+    /*
+     * Executed on language change.
+     */
+    updateLocalizedContent: function() {
+      $('marketing-opt-in-impl').i18nUpdateLocale();
+    },
   };
 });

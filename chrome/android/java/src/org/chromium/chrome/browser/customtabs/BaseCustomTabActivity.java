@@ -48,12 +48,8 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
-        // TODO(https://crbug.com/1020324): Move this logic into a CustomTabRootUICoordinator that
-        // can synchronously orchestrate the creation of child coordinators.
-        return new RootUiCoordinator(this, (toolbarManager) -> {
-            mToolbarCoordinator.onToolbarInitialized(toolbarManager);
-            mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null, getShareDelegateSupplier());
+        return new BaseCustomTabRootUiCoordinator(
+                this, getShareDelegateSupplier(), mToolbarCoordinator, mNavigationController);
     }
 
     /**

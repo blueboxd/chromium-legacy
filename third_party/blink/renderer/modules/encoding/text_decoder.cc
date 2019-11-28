@@ -85,7 +85,8 @@ String TextDecoder::decode(const BufferSource& input,
   if (input.IsArrayBufferView()) {
     const char* start = static_cast<const char*>(
         input.GetAsArrayBufferView().View()->BaseAddress());
-    uint32_t length = input.GetAsArrayBufferView().View()->byteLength();
+    uint32_t length =
+        input.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned();
     return decode(start, length, options, exception_state);
   }
   DCHECK(input.IsArrayBuffer());

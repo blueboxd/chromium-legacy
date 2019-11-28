@@ -29,7 +29,10 @@ copy("mdc_components_ios_public_headers") {
     "src/components/Typography/src/MaterialTypography.h",
     "src/components/schemes/Color/src/MaterialColorScheme.h",
     "src/components/schemes/Shape/src/MaterialShapeScheme.h",
+    "src/components/schemes/Typography/src/BasicFontScheme/MDCBasicFontScheme.h",
+    "src/components/schemes/Typography/src/BasicFontScheme/MaterialTypographyScheme+BasicFontScheme.h",
     "src/components/schemes/Typography/src/MaterialTypographyScheme.h",
+    "src/components/schemes/Typography/src/Scheming/MaterialTypographyScheme+Scheming.h",
   ]
   outputs = [
     "$root_gen_dir/frameworks/material_components_ios/MaterialComponents/{{source_file_part}}",
@@ -76,6 +79,7 @@ config("config") {
     "src/components/schemes/Container/src/",
     "src/components/schemes/Shape/src",
     "src/components/schemes/Typography/src",
+    "src/components/schemes/Typography/src/Scheming",
   ]
 }
 
@@ -97,8 +101,6 @@ _icon_names = [
 
 source_set("material_components_ios") {
   sources = [
-    "src/components/ActivityIndicator/src/ColorThemer/MDCActivityIndicatorColorThemer.h",
-    "src/components/ActivityIndicator/src/ColorThemer/MDCActivityIndicatorColorThemer.m",
     "src/components/ActivityIndicator/src/MDCActivityIndicator.h",
     "src/components/ActivityIndicator/src/MDCActivityIndicator.m",
     "src/components/ActivityIndicator/src/MaterialActivityIndicator.h",
@@ -449,11 +451,14 @@ source_set("material_components_ios") {
     "src/components/schemes/Shape/src/MDCShapeCategory.m",
     "src/components/schemes/Shape/src/MDCShapeScheme.h",
     "src/components/schemes/Shape/src/MDCShapeScheme.m",
-    "src/components/schemes/Typography/src/MDCLegacyFontScheme.h",
-    "src/components/schemes/Typography/src/MDCLegacyFontScheme.m",
+    "src/components/schemes/Typography/src/BasicFontScheme/MDCBasicFontScheme.h",
+    "src/components/schemes/Typography/src/BasicFontScheme/MDCBasicFontScheme.m",
+    "src/components/schemes/Typography/src/BasicFontScheme/MaterialTypographyScheme+BasicFontScheme.h",
     "src/components/schemes/Typography/src/MDCTypographyScheme.h",
     "src/components/schemes/Typography/src/MDCTypographyScheme.m",
     "src/components/schemes/Typography/src/MaterialTypographyScheme.h",
+    "src/components/schemes/Typography/src/Scheming/MDCTypographyScheming.h",
+    "src/components/schemes/Typography/src/Scheming/MaterialTypographyScheme+Scheming.h",
   ]
   include_dirs = [
     "src/components/ActivityIndicator/src",
@@ -492,6 +497,7 @@ source_set("material_components_ios") {
     "CoreText.framework",
     "QuartzCore.framework",
     "UIKit.framework",
+    "WebKit.framework",
   ]
 
   deps = [

@@ -481,19 +481,21 @@ bool FileSystemBackend::GetVirtualPath(const base::FilePath& filesystem_path,
 
 void FileSystemBackend::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) const {
+    storage::URLCallback callback) const {
   DCHECK(url.is_valid());
 
-  if (!IsAccessAllowed(url))
-    return callback.Run(GURL());
+  if (!IsAccessAllowed(url)) {
+    std::move(callback).Run(GURL());
+    return;
+  }
 
   switch (url.type()) {
     case storage::kFileSystemTypeProvided:
-      file_system_provider_delegate_->GetRedirectURLForContents(url,
-                                                                  callback);
+      file_system_provider_delegate_->GetRedirectURLForContents(
+          url, std::move(callback));
       return;
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
-      mtp_delegate_->GetRedirectURLForContents(url, callback);
+      mtp_delegate_->GetRedirectURLForContents(url, std::move(callback));
       return;
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
@@ -501,12 +503,12 @@ void FileSystemBackend::GetRedirectURLForContents(
     case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeDriveFs:
     case storage::kFileSystemTypeSmbFs:
-      callback.Run(GURL());
+      std::move(callback).Run(GURL());
       return;
     default:
       NOTREACHED();
   }
-  callback.Run(GURL());
+  std::move(callback).Run(GURL());
 }
 
 storage::FileSystemURL FileSystemBackend::CreateInternalURL(

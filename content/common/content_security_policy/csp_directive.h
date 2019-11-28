@@ -40,6 +40,7 @@ struct CONTENT_EXPORT CSPDirective {
   CSPDirective();
   CSPDirective(Name name, const CSPSourceList& source_list);
   CSPDirective(const CSPDirective&);
+  explicit CSPDirective(network::mojom::CSPDirectivePtr directive);
 
   Name name;
   CSPSourceList source_list;

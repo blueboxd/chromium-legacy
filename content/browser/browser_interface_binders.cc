@@ -86,6 +86,7 @@
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 #if !defined(OS_ANDROID)
@@ -451,6 +452,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetContactsManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::DedicatedWorkerHostFactory>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
+      base::Unretained(host)));
+
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
 
@@ -669,6 +674,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   // |DedicatedWorkerHost::broker_|.
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
+  map->Add<blink::mojom::DedicatedWorkerHostFactory>(
+      base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
+                          base::Unretained(host)));
   if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
         &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));

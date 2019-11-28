@@ -13,6 +13,7 @@
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/client_cert_identity_test_util.h"
+#include "net/test/cert_builder.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,18 +114,23 @@ class CertificateManagerModelTest : public testing::Test {
 
 // CertificateManagerModel correctly lists CA certificates from the platform NSS
 // Database.
-// TODO(https://crbug.com/787602): Re-enable this test when it is identified why
-// it was flaky.
-TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
-  net::ScopedCERTCertificateList certs = CreateCERTCertificateListFromFile(
+TEST_F(CertificateManagerModelTest, ListsCertsFromPlatform) {
+  net::CertificateList orig_certs = CreateCertificateListFromFile(
       net::GetTestCertsDirectory(), "websocket_cacert.pem",
       net::X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, certs.size());
-  CERTCertificate* cert = certs[0].get();
+  ASSERT_EQ(1U, orig_certs.size());
+
+  net::CertBuilder cert_builder(orig_certs[0]->cert_buffer(), nullptr);
+  scoped_refptr<net::X509Certificate> x509_cert =
+      cert_builder.GetX509Certificate();
+
+  net::ScopedCERTCertificate cert =
+      net::x509_util::CreateCERTCertificateFromX509Certificate(x509_cert.get());
+  std::string cert_subject_name = x509_cert->subject().GetDisplayName();
 
   ASSERT_EQ(SECSuccess,
-            PK11_ImportCert(test_nssdb_.slot(), cert, CK_INVALID_HANDLE, "cert",
-                            PR_FALSE /* includeTrust (unused) */));
+            PK11_ImportCert(test_nssdb_.slot(), cert.get(), CK_INVALID_HANDLE,
+                            "cert", PR_FALSE /* includeTrust (unused) */));
   RefreshAndWait();
 
   {
@@ -132,11 +138,11 @@ TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
     certificate_manager_model_->FilterAndBuildOrgGroupingMap(
         net::CertType::CA_CERT, &org_grouping_map);
     CertificateManagerModel::CertInfo* cert_info =
-        GetCertInfoFromOrgGroupingMap(org_grouping_map, cert);
+        GetCertInfoFromOrgGroupingMap(org_grouping_map, cert.get());
     ASSERT_TRUE(cert_info);
 
     EXPECT_EQ(net::CertType::CA_CERT, cert_info->type());
-    EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), cert_info->name());
+    EXPECT_EQ(base::UTF8ToUTF16(cert_subject_name), cert_info->name());
     EXPECT_TRUE(cert_info->can_be_deleted());
     // This platform cert is untrusted because it is self-signed and has no
     // trust bits.
@@ -147,7 +153,7 @@ TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
     EXPECT_FALSE(cert_info->hardware_backed());
   }
 
-  certificate_manager_model_->SetCertTrust(cert, net::CertType::CA_CERT,
+  certificate_manager_model_->SetCertTrust(cert.get(), net::CertType::CA_CERT,
                                            net::NSSCertDatabase::TRUSTED_SSL);
   RefreshAndWait();
   {
@@ -155,7 +161,7 @@ TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
     certificate_manager_model_->FilterAndBuildOrgGroupingMap(
         net::CertType::CA_CERT, &org_grouping_map);
     CertificateManagerModel::CertInfo* cert_info =
-        GetCertInfoFromOrgGroupingMap(org_grouping_map, cert);
+        GetCertInfoFromOrgGroupingMap(org_grouping_map, cert.get());
     ASSERT_TRUE(cert_info);
 
     EXPECT_FALSE(cert_info->untrusted());

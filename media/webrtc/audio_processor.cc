@@ -29,6 +29,11 @@ namespace media {
 
 namespace {
 
+bool UseMultiChannelCaptureProcessing() {
+  return base::FeatureList::IsEnabled(
+      features::kWebRtcEnableCaptureMultiChannelApm);
+}
+
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
 
 }  // namespace
@@ -46,7 +51,9 @@ AudioProcessor::AudioProcessor(const AudioParameters& audio_parameters,
     : audio_parameters_(audio_parameters),
       settings_(settings),
       output_bus_(AudioBus::Create(audio_parameters_)),
-      audio_delay_stats_reporter_(kBuffersPerSecond) {
+      audio_delay_stats_reporter_(kBuffersPerSecond),
+      use_capture_multi_channel_processing_(
+          UseMultiChannelCaptureProcessing()) {
   DCHECK(audio_parameters.IsValid());
   DCHECK_EQ(audio_parameters_.GetBufferDuration(),
             base::TimeDelta::FromMilliseconds(10));
@@ -232,7 +239,9 @@ void AudioProcessor::InitializeAPM() {
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
 
   // APM audio pipeline setup.
-  apm_config.pipeline.experimental_multi_channel = true;
+  apm_config.pipeline.multi_channel_render = true;
+  apm_config.pipeline.multi_channel_capture =
+      use_capture_multi_channel_processing_;
 
   // Typing detection setup.
   if (settings_.typing_detection) {

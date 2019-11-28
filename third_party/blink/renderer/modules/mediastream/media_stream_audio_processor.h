@@ -213,6 +213,9 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   size_t apm_playout_error_code_log_count_ = 0;
   size_t large_delay_log_count_ = 0;
 
+  // Flag indicating whether capture multi channel processing should be active.
+  const bool use_capture_multi_channel_processing_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);
 };
 

@@ -20,7 +20,6 @@
     <script src="../js/tooltip.js"></script>
     <script src="../js/state.js"></script>
     <script src="../js/sound.js"></script>
-    <script src="../js/scrollbar.js"></script>
     <script src="../js/gallerybutton.js"></script>
     <script src="../js/device/error.js"></script>
     <script src="../js/device/camera3_device_info.js"></script>
@@ -47,7 +46,6 @@
     <script src="../js/mojo/device_operator.js"></script>
     <script src="../js/mojo/image_capture.js"></script>
     <script src="../js/views/view.js"></script>
-    <script src="../js/views/gallery_base.js"></script>
     <script src="../js/views/camera.js"></script>
     <script src="../js/views/camera_intent.js"></script>
     <script src="../js/views/camera/layout.js"></script>
@@ -58,7 +56,6 @@
     <script src="../js/views/camera/timertick.js"></script>
     <script src="../js/views/camera/modes.js"></script>
     <script src="../js/views/dialog.js"></script>
-    <script src="../js/views/browser.js"></script>
     <script src="../js/views/settings.js"></script>
     <script src="../js/views/warning.js"></script>
     <script src="../js/nav.js"></script>
@@ -124,28 +121,28 @@
       <div id="modes-group" class="buttons right-stripe hide">
         <div class="mode-item">
           <input type="radio" name="mode"
-               data-mode="video-mode" tabindex="0"
+               data-mode="video" tabindex="0"
                i18n-aria="switch_record_video_button">
           <span i18n-content="label_switch_record_video_button"
                 aria-hidden="true"></span>
         </div>
         <div class="mode-item">
           <input type="radio" name="mode"
-               data-mode="photo-mode" tabindex="0"
+               data-mode="photo" tabindex="0"
                i18n-aria="switch_take_photo_button">
           <span i18n-content="label_switch_take_photo_button"
                 aria-hidden="true"></span>
         </div>
         <div class="mode-item">
           <input type="radio" name="mode"
-               data-mode="square-mode" tabindex="0"
+               data-mode="square" tabindex="0"
                i18n-aria="switch_take_square_photo_button">
           <span i18n-content="label_switch_take_square_photo_button"
                 aria-hidden="true"></span>
         </div>
         <div class="mode-item hide">
           <input type="radio" name="mode"
-               data-mode="portrait-mode" tabindex="0"
+               data-mode="portrait" tabindex="0"
                i18n-aria="switch_take_portrait_photo_button">
           <span i18n-content="label_switch_take_portrait_photo_button"
                 aria-hidden="true"></span>
@@ -385,22 +382,6 @@
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="browser" role="listbox" i18n-aria="gallery_images">
-      <div class="padder">
-        <div class="bounds-padder"></div>
-        <div class="bounds-padder"></div>
-      </div>
-      <div class="buttons">
-        <button id="browser-back" tabindex="0"
-                i18n-label="back_button"></button>
-        <button id="browser-print" disabled tabindex="0"
-                i18n-label="print_button"></button>
-        <button id="browser-export" disabled tabindex="0"
-                i18n-label="export_button"></button>
-        <button id="browser-delete" disabled tabindex="0"
-                i18n-label="delete_button"></button>
-      </div>
-    </div>
     <div id="warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>

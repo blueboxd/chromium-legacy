@@ -67,7 +67,7 @@ void VerifyWifiStatus(const base::Value& raw_value,
   EXPECT_TRUE(found && found->is_dict());
   auto* wifi_status = found->FindKey("receiverWifiStatus");
   EXPECT_TRUE(wifi_status && wifi_status->is_list());
-  base::span<const base::Value> status_list = wifi_status->GetList();
+  base::Value::ConstListView status_list = wifi_status->GetList();
   EXPECT_EQ(num_of_status, static_cast<int>(status_list.size()));
   for (int i = 0; i < num_of_status; ++i) {
     double snr = -1;
@@ -237,7 +237,7 @@ TEST_F(SessionMonitorTest, ProvidesExpectedTags) {
       AssembleBundleAndVerify(bundle_sizes);
 
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   ASSERT_EQ(1u, stats_list.size());
   // Verify tags.
   EXPECT_TRUE(stats_list[0].is_dict());
@@ -272,7 +272,7 @@ TEST_F(SessionMonitorTest, MultipleSessions) {
   std::vector<SessionMonitor::EventsAndStats> bundles =
       AssembleBundleAndVerify(bundle_sizes);
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   // There should be two sessions in the recorded stats.
   EXPECT_EQ(2u, stats_list.size());
 }
@@ -291,7 +291,7 @@ TEST_F(SessionMonitorTest, ConfigureMaxRetentionBytes) {
   std::vector<SessionMonitor::EventsAndStats> bundles =
       AssembleBundleAndVerify(bundle_sizes);
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   // Expect to only record the second session.
   ASSERT_EQ(1u, stats_list.size());
   VerifyWifiStatus(stats_list[0], 54, 3000, 5);
@@ -311,14 +311,14 @@ TEST_F(SessionMonitorTest, AssembleBundlesWithVaryingSizes) {
 
   // Expect the first bundle has only one session.
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   // Expect to only record the second session.
   ASSERT_EQ(1u, stats_list.size());
   VerifyWifiStatus(stats_list[0], 54, 3000, 5);
 
   // Expect the second bundle has both sessions.
   stats = ReadStats(bundles[1].second);
-  base::span<const base::Value> stats_list2 = stats.GetList();
+  base::Value::ConstListView stats_list2 = stats.GetList();
   ASSERT_EQ(2u, stats_list2.size());
   VerifyWifiStatus(stats_list2[0], 34, 2000, 5);
   VerifyWifiStatus(stats_list2[1], 54, 3000, 5);
@@ -337,7 +337,7 @@ TEST_F(SessionMonitorTest, ErrorTags) {
   std::vector<SessionMonitor::EventsAndStats> bundles =
       AssembleBundleAndVerify(bundle_sizes);
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   // There should be three snapshots in the bundle.
   ASSERT_EQ(3u, stats_list.size());
 
@@ -381,7 +381,7 @@ TEST_F(SessionMonitorTest, ReceiverSetupInfo) {
   std::vector<SessionMonitor::EventsAndStats> bundles =
       AssembleBundleAndVerify(bundle_sizes);
   base::Value stats = ReadStats(bundles[0].second);
-  base::span<const base::Value> stats_list = stats.GetList();
+  base::Value::ConstListView stats_list = stats.GetList();
   // There should be two snapshots in the bundle.
   EXPECT_EQ(2u, stats_list.size());
 

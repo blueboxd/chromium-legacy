@@ -1,7 +1,7 @@
 # This is a comma separated file, specifying the safe list for network traffic
 # annotation auditor. Please refer to README.md for more details.
 # Please remove content_browser_client_impl.cc after annotation is updated.
-all,tools/*,*test*,*fuzzer*,*mock*,*fake*,weblayer/browser/content_browser_client_impl.cc
+all,tools/*,*test*,*fuzzer*,*mock*,*fake*,weblayer/*
 missing,remoting/host/token_validator_factory_impl.cc
 missing,components/cronet/cronet_url_request.cc
 missing,net/tools/quic/quic_http_proxy_backend_stream.cc

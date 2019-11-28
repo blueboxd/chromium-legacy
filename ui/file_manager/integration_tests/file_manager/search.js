@@ -26,15 +26,15 @@
 
     // Focus the search box.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeEvent', appId, ['#search-box cr-input', 'focus']));
+        'fakeEvent', appId, ['#search-box [type="search"]', 'focus']));
 
     // Input a text.
     await remoteCall.callRemoteTestUtil(
-        'inputText', appId, ['#search-box cr-input', 'hello']);
+        'inputText', appId, ['#search-box [type="search"]', 'hello']);
 
     // Notify the element of the input.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeEvent', appId, ['#search-box cr-input', 'input']));
+        'fakeEvent', appId, ['#search-box [type="search"]', 'input']));
 
     // Wait file list to display the search result.
     await remoteCall.waitForFiles(
@@ -58,15 +58,15 @@
 
     // Focus the search box.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeEvent', appId, ['#search-box cr-input', 'focus']));
+        'fakeEvent', appId, ['#search-box [type="search"]', 'focus']));
 
     // Input a text.
     await remoteCall.callRemoteTestUtil(
-        'inputText', appId, ['#search-box cr-input', 'INVALID TERM']);
+        'inputText', appId, ['#search-box [type="search"]', 'INVALID TERM']);
 
     // Notify the element of the input.
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeEvent', appId, ['#search-box cr-input', 'input']));
+        'fakeEvent', appId, ['#search-box [type="search"]', 'input']));
 
     // Wait file list to display no results.
     await remoteCall.waitForFiles(appId, []);
@@ -87,7 +87,7 @@
     const appId = await testcase.searchDownloadsWithResults();
 
     // Click on the clear search button.
-    await remoteCall.waitAndClickElement(appId, '#search-box cr-input .clear');
+    await remoteCall.waitAndClickElement(appId, '#search-box .clear');
 
     // Wait for fil list to display all files.
     await remoteCall.waitForFiles(
@@ -99,5 +99,26 @@
     chrome.test.assertEq(2, a11yMessages.length, 'Missing a11y message');
     chrome.test.assertEq(
         'Search text cleared, showing all files and folders.', a11yMessages[1]);
+  };
+
+  /**
+   * Tests that clearing the search box with keydown crbug.com/910068.
+   */
+  testcase.searchDownloadsClearSearchKeyDown = async () => {
+    // Perform a normal search, to be able to clear the search box.
+    const appId = await testcase.searchDownloadsWithResults();
+
+    const clearButton = '#search-box .clear';
+    // Wait for clear button.
+    await remoteCall.waitForElement(appId, clearButton);
+
+    // Send a enter key to the clear button.
+    const enterKey = [clearButton, 'Enter', false, false, false];
+    await remoteCall.fakeKeyDown(appId, ...enterKey);
+
+    // Check: Search input field is empty.
+    const searchInput =
+        await remoteCall.waitForElement(appId, '#search-box [type="search"]');
+    chrome.test.assertEq('', searchInput.value);
   };
 })();

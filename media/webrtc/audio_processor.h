@@ -110,6 +110,9 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor final
   // thread.
   std::unique_ptr<rtc::TaskQueue> worker_queue_;
 
+  // Flag indicating whether capture multi channel processing should be active.
+  const bool use_capture_multi_channel_processing_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioProcessor);
 };
 

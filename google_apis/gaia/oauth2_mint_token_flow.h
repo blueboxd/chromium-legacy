@@ -20,7 +20,7 @@ class GoogleServiceAuthError;
 class OAuth2MintTokenFlowTest;
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 // IssueAdvice: messages to show to the user to get a user's approval.
@@ -37,8 +37,10 @@ class DictionaryValue;
 struct IssueAdviceInfoEntry {
  public:
   IssueAdviceInfoEntry();
-  IssueAdviceInfoEntry(const IssueAdviceInfoEntry& other);
   ~IssueAdviceInfoEntry();
+
+  IssueAdviceInfoEntry(const IssueAdviceInfoEntry& other);
+  IssueAdviceInfoEntry& operator=(const IssueAdviceInfoEntry& other);
 
   base::string16 description;
   std::vector<base::string16> details;
@@ -124,11 +126,11 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   void ReportIssueAdviceSuccess(const IssueAdviceInfo& issue_advice);
   void ReportFailure(const GoogleServiceAuthError& error);
 
-  static bool ParseIssueAdviceResponse(
-      const base::DictionaryValue* dict, IssueAdviceInfo* issue_advice);
-  static bool ParseMintTokenResponse(
-      const base::DictionaryValue* dict, std::string* access_token,
-      int* time_to_live);
+  static bool ParseIssueAdviceResponse(const base::Value* dict,
+                                       IssueAdviceInfo* issue_advice);
+  static bool ParseMintTokenResponse(const base::Value* dict,
+                                     std::string* access_token,
+                                     int* time_to_live);
 
   Delegate* delegate_;
   Parameters parameters_;

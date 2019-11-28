@@ -21,18 +21,6 @@
 
 namespace content {
 namespace {
-bool ShouldSendOnIO(const std::string& method) {
-  // Keep in sync with WebDevToolsAgent::ShouldInterruptForMethod.
-  // TODO(einbinder): find a way to share this.
-  return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
-         method == "Debugger.setBreakpointByUrl" ||
-         method == "Debugger.removeBreakpoint" ||
-         method == "Debugger.setBreakpointsActive" ||
-         method == "Debugger.getStackTrace" ||
-         method == "Performance.getMetrics" || method == "Page.crash" ||
-         method == "Runtime.terminateExecution" ||
-         method == "Emulation.setScriptExecutionDisabled";
-}
 
 // Async control commands (such as CSS.enable) are idempotant and can
 // be safely replayed in the new render frame host. We will always forward
@@ -255,6 +243,10 @@ void DevToolsSession::HandleCommand(
   if (!dispatcher_->parseCommand(value.get(), &call_id, &method))
     return;
   if (browser_only_ || dispatcher_->canDispatch(method)) {
+    TRACE_EVENT_WITH_FLOW2("devtools",
+                           "DevToolsSession::HandleCommand in Browser", call_id,
+                           TRACE_EVENT_FLAG_FLOW_OUT, "method", method.c_str(),
+                           "call_id", call_id);
     dispatcher_->dispatch(call_id, method, std::move(value), message);
   } else {
     fallThrough(call_id, method, message);
@@ -284,14 +276,13 @@ void DevToolsSession::DispatchProtocolMessageToAgent(
   auto message_ptr = blink::mojom::DevToolsMessage::New();
   message_ptr->data = mojo_base::BigBuffer(base::make_span(
       reinterpret_cast<const uint8_t*>(message.data()), message.length()));
-  if (ShouldSendOnIO(method)) {
-    if (io_session_)
-      io_session_->DispatchProtocolCommand(call_id, method,
-                                           std::move(message_ptr));
-  } else {
-    if (session_)
-      session_->DispatchProtocolCommand(call_id, method,
-                                        std::move(message_ptr));
+  if (io_session_) {
+    TRACE_EVENT_WITH_FLOW2("devtools",
+                           "DevToolsSession::DispatchProtocolMessageToAgent",
+                           call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method",
+                           method.c_str(), "call_id", call_id);
+    io_session_->DispatchProtocolCommand(call_id, method,
+                                         std::move(message_ptr));
   }
 }
 
@@ -366,6 +357,9 @@ void DevToolsSession::DispatchProtocolResponse(
     blink::mojom::DevToolsMessagePtr message,
     int call_id,
     blink::mojom::DevToolsSessionStatePtr updates) {
+  TRACE_EVENT_WITH_FLOW1("devtools",
+                         "DevToolsSession::DispatchProtocolResponse", call_id,
+                         TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
   ApplySessionStateUpdates(std::move(updates));
   auto it = waiting_for_response_.find(call_id);
   // TODO(johannes): Consider shutting down renderer instead of just

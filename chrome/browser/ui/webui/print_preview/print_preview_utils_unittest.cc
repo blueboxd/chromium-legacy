@@ -162,7 +162,7 @@ void ValidateVendorCaps(const base::Value* printer_out,
 
   ASSERT_TRUE(vendor_capability_out);
   size_t index = 0;
-  base::span<const base::Value> output_list = vendor_capability_out->GetList();
+  base::Value::ConstListView output_list = vendor_capability_out->GetList();
   for (const auto& input_entry : input_vendor_caps->GetList()) {
     if (!HasValidEntry(
             input_entry

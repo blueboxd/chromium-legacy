@@ -27,7 +27,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_legacy_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
@@ -302,28 +302,6 @@ class CreateSessionDescriptionRequest
   PeerConnectionTracker::Action action_;
 };
 
-blink::WebRTCLegacyStatsMemberType
-WebRTCLegacyStatsMemberTypeFromStatsValueType(
-    webrtc::StatsReport::Value::Type type) {
-  switch (type) {
-    case StatsReport::Value::kInt:
-      return blink::kWebRTCLegacyStatsMemberTypeInt;
-    case StatsReport::Value::kInt64:
-      return blink::kWebRTCLegacyStatsMemberTypeInt64;
-    case StatsReport::Value::kFloat:
-      return blink::kWebRTCLegacyStatsMemberTypeFloat;
-    case StatsReport::Value::kString:
-    case StatsReport::Value::kStaticString:
-      return blink::kWebRTCLegacyStatsMemberTypeString;
-    case StatsReport::Value::kBool:
-      return blink::kWebRTCLegacyStatsMemberTypeBool;
-    case StatsReport::Value::kId:
-      return blink::kWebRTCLegacyStatsMemberTypeId;
-  }
-  NOTREACHED();
-  return blink::kWebRTCLegacyStatsMemberTypeInt;
-}
-
 // Class mapping responses from calls to libjingle
 // GetStats into a blink::WebRTCStatsCallback.
 class StatsResponse : public webrtc::StatsObserver {
@@ -356,42 +334,41 @@ class StatsResponse : public webrtc::StatsObserver {
   }
 
  private:
-  class Report : public blink::WebRTCLegacyStats {
+  class Report : public RTCLegacyStats {
    public:
-    class MemberIterator : public blink::WebRTCLegacyStatsMemberIterator {
+    class MemberIterator : public RTCLegacyStatsMemberIterator {
      public:
       MemberIterator(const StatsReport::Values::const_iterator& it,
                      const StatsReport::Values::const_iterator& end)
           : it_(it), end_(end) {}
 
-      // blink::WebRTCLegacyStatsMemberIterator
+      // RTCLegacyStatsMemberIterator
       bool IsEnd() const override { return it_ == end_; }
       void Next() override { ++it_; }
-      blink::WebString GetName() const override {
-        return blink::WebString::FromUTF8(it_->second->display_name());
+      String GetName() const override {
+        return String::FromUTF8(it_->second->display_name());
       }
-      blink::WebRTCLegacyStatsMemberType GetType() const override {
-        return WebRTCLegacyStatsMemberTypeFromStatsValueType(
-            it_->second->type());
+      webrtc::StatsReport::Value::Type GetType() const override {
+        return it_->second->type();
       }
       int ValueInt() const override { return it_->second->int_val(); }
       int64_t ValueInt64() const override { return it_->second->int64_val(); }
       float ValueFloat() const override { return it_->second->float_val(); }
-      blink::WebString ValueString() const override {
+      String ValueString() const override {
         const StatsReport::ValuePtr& value = it_->second;
         if (value->type() == StatsReport::Value::kString)
-          return blink::WebString::FromUTF8(value->string_val());
+          return String::FromUTF8(value->string_val());
         DCHECK_EQ(value->type(), StatsReport::Value::kStaticString);
-        return blink::WebString::FromUTF8(value->static_string_val());
+        return String::FromUTF8(value->static_string_val());
       }
       bool ValueBool() const override { return it_->second->bool_val(); }
-      blink::WebString ValueToString() const override {
+      String ValueToString() const override {
         const StatsReport::ValuePtr& value = it_->second;
         if (value->type() == StatsReport::Value::kString)
-          return blink::WebString::FromUTF8(value->string_val());
+          return String::FromUTF8(value->string_val());
         if (value->type() == StatsReport::Value::kStaticString)
-          return blink::WebString::FromUTF8(value->static_string_val());
-        return blink::WebString::FromUTF8(value->ToString());
+          return String::FromUTF8(value->static_string_val());
+        return String::FromUTF8(value->ToString());
       }
 
      private:
@@ -412,15 +389,11 @@ class StatsResponse : public webrtc::StatsObserver {
       DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     }
 
-    // blink::WebRTCLegacyStats
-    blink::WebString Id() const override {
-      return blink::WebString::FromUTF8(id_);
-    }
-    blink::WebString GetType() const override {
-      return blink::WebString::FromUTF8(type_name_);
-    }
+    // RTCLegacyStats
+    String Id() const override { return String::FromUTF8(id_); }
+    String GetType() const override { return String::FromUTF8(type_name_); }
     double Timestamp() const override { return timestamp_; }
-    blink::WebRTCLegacyStatsMemberIterator* Iterator() const override {
+    RTCLegacyStatsMemberIterator* Iterator() const override {
       return new MemberIterator(values_.cbegin(), values_.cend());
     }
 
@@ -652,7 +625,7 @@ RTCStatsResponseBase* LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
-void LocalRTCStatsResponse::addStats(const blink::WebRTCLegacyStats& stats) {
+void LocalRTCStatsResponse::addStats(const RTCLegacyStats& stats) {
   impl_->AddStats(stats);
 }
 

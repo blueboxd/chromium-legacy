@@ -72,9 +72,10 @@ void SpellCheckPanel::ToggleSpellPanel(bool visible) {
       blink::WebString::FromUTF8("ToggleSpellPanel"));
 }
 
-spellcheck::mojom::SpellCheckPanelHostPtr
+mojo::Remote<spellcheck::mojom::SpellCheckPanelHost>
 SpellCheckPanel::GetSpellCheckPanelHost() {
-  spellcheck::mojom::SpellCheckPanelHostPtr spell_check_panel_host;
-  embedder_provider_->GetInterface(&spell_check_panel_host);
+  mojo::Remote<spellcheck::mojom::SpellCheckPanelHost> spell_check_panel_host;
+  embedder_provider_->GetInterface(
+      spell_check_panel_host.BindNewPipeAndPassReceiver());
   return spell_check_panel_host;
 }

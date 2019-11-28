@@ -1305,8 +1305,7 @@ class PageRangeTraits : public ItemsTraits<kOptionPageRange> {
         dict.FindKeyOfType(kPageRangeInterval, base::Value::Type::LIST);
     if (!list_value)
       return false;
-    base::span<const base::Value> list = list_value->GetList();
-    for (const base::Value& interval : list) {
+    for (const base::Value& interval : list_value->GetList()) {
       int page_range_start = interval.FindIntKey(kPageRangeStart).value_or(1);
       int page_range_end =
           interval.FindIntKey(kPageRangeEnd).value_or(kMaxPageNumber);

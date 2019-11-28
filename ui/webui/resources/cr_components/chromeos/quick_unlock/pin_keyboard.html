@@ -177,7 +177,6 @@
       }
 
       #pinInput[make-contrast] {
-        --cr-disabled-opacity: var(--dark-primary-opacity);
         opacity: var(--dark-primary-opacity);
       }
 
@@ -200,28 +199,28 @@
             placeholder="[[getInputPlaceholder_(enablePassword,
                 enablePlaceholder)]]"
             on-keydown="onInputKeyDown_" force-underline="true"
-            disabled="[[isIncognitoUi]]">
+            disabled="[[disabled]]">
         </cr-input>
       </div>
       <slot select="[problem]"></slot>
       <div id="rowsContainer">
         <div class="row">
           <cr-button class="digit-button" on-tap="onNumberTap_" value="1"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">&nbsp;</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="2"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">ABC</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="3"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">DEF</inner-text>
@@ -230,21 +229,21 @@
         </div>
         <div class="row">
           <cr-button class="digit-button" on-tap="onNumberTap_" value="4"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">GHI</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="5"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">JKL</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="6"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">MNO</inner-text>
@@ -253,21 +252,21 @@
         </div>
         <div class="row">
           <cr-button class="digit-button" on-tap="onNumberTap_" value="7"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">PQRS</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="8"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">TUV</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="9"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">WXYZ</inner-text>
@@ -277,7 +276,7 @@
         <div class="row bottom-row">
           <div class="digit-button"></div>
           <cr-button class="digit-button" on-tap="onNumberTap_" value="0"
-              noink>
+              noink disabled="[[disabled]]">
             <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">+</inner-text>

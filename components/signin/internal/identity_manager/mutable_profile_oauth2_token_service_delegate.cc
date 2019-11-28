@@ -430,9 +430,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   // If |account_id| is an email address, then canonicalize it. This is needed
   // to support legacy account IDs, and will not be needed after switching to
   // gaia IDs.
-  if (primary_account_id.id.find('@') != std::string::npos) {
+  if (primary_account_id.ToString().find('@') != std::string::npos) {
     loading_primary_account_id_ = CoreAccountId::FromEmail(
-        gaia::CanonicalizeEmail(primary_account_id.id));
+        gaia::CanonicalizeEmail(primary_account_id.ToString()));
   } else {
     loading_primary_account_id_ = primary_account_id;
   }
@@ -528,7 +528,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           case AccountTrackerService::MIGRATION_IN_PROGRESS: {
             // Migrate to gaia-ids.
             AccountInfo account_info =
-                account_tracker_service_->FindAccountInfoByEmail(account_id.id);
+                account_tracker_service_->FindAccountInfoByEmail(
+                    account_id.ToString());
             // |account_info| can be empty if |account_id| was already migrated.
             // This could happen if the chrome was closed in the middle of the
             // account id migration.
@@ -548,24 +549,24 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             // If the account_id is an email address, then canonicalize it. This
             // is to support legacy account_ids, and will not be needed after
             // switching to gaia-ids.
-            if (account_id.id.find('@') != std::string::npos) {
+            if (account_id.ToString().find('@') != std::string::npos) {
               // If the canonical account id is not the same as the loaded
               // account id, make sure not to overwrite a refresh token from
               // a canonical version.  If no canonical version was loaded, then
               // re-persist this refresh token with the canonical account id.
               CoreAccountId canon_account_id = CoreAccountId::FromEmail(
-                  gaia::CanonicalizeEmail(account_id.id));
+                  gaia::CanonicalizeEmail(account_id.ToString()));
               if (canon_account_id != account_id) {
                 ClearPersistedCredentials(account_id);
                 if (db_tokens.count(
-                        ApplyAccountIdPrefix(canon_account_id.id)) == 0)
+                        ApplyAccountIdPrefix(canon_account_id.ToString())) == 0)
                   PersistCredentials(canon_account_id, refresh_token);
               }
               account_id = canon_account_id;
             }
             break;
           case AccountTrackerService::MIGRATION_DONE:
-            DCHECK_EQ(std::string::npos, account_id.id.find('@'));
+            DCHECK_EQ(std::string::npos, account_id.ToString().find('@'));
             break;
           case AccountTrackerService::NUM_MIGRATION_STATES:
             NOTREACHED();
@@ -709,8 +710,8 @@ void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
   DCHECK(!refresh_token.empty());
   if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::PersistCredentials for account_id=" << account_id;
-    token_web_data_->SetTokenForService(ApplyAccountIdPrefix(account_id.id),
-                                        refresh_token);
+    token_web_data_->SetTokenForService(
+        ApplyAccountIdPrefix(account_id.ToString()), refresh_token);
   }
 }
 
@@ -757,7 +758,8 @@ void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
   if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::ClearPersistedCredentials for account_id="
             << account_id;
-    token_web_data_->RemoveTokenForService(ApplyAccountIdPrefix(account_id.id));
+    token_web_data_->RemoveTokenForService(
+        ApplyAccountIdPrefix(account_id.ToString()));
   }
 }
 

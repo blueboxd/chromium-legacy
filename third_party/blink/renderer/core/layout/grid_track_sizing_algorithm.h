@@ -155,8 +155,8 @@ class GridTrackSizingAlgorithm final {
                                   GridTrackSizingDirection) const;
   GridTrackSize CalculateGridTrackSize(GridTrackSizingDirection,
                                        size_t translated_index) const;
-  GridTrackSize RawGridTrackSize(GridTrackSizingDirection,
-                                 size_t translated_index) const;
+  const GridTrackSize& RawGridTrackSize(GridTrackSizingDirection,
+                                        size_t translated_index) const;
 
   // Helper methods for step 1. initializeTrackSizes().
   LayoutUnit InitialBaseSize(const GridTrackSize&) const;
@@ -338,12 +338,6 @@ class GridTrackSizingAlgorithmStrategy {
   const LayoutGrid* GetLayoutGrid() const { return algorithm_.layout_grid_; }
   base::Optional<LayoutUnit> AvailableSpace() const {
     return algorithm_.AvailableSpace();
-  }
-
-  const GridTrackSize& GetCachedGridTrackSize(
-      GridTrackSizingDirection direction,
-      size_t translated_index) const {
-    return algorithm_.Tracks(direction)[translated_index].CachedTrackSize();
   }
 
   // Helper functions

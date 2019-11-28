@@ -34,7 +34,7 @@ AccountMapping MakeAccountMapping(const CoreAccountId& account_id,
                                   const std::string& last_message_id) {
   AccountMapping account_mapping;
   account_mapping.account_id = account_id;
-  account_mapping.email = account_id.id + "@gmail.com";
+  account_mapping.email = account_id.ToString() + "@gmail.com";
   // account_mapping.access_token intentionally left empty.
   account_mapping.status = status;
   account_mapping.status_change_timestamp = status_change_timestamp;
@@ -46,8 +46,8 @@ GCMClient::AccountTokenInfo MakeAccountTokenInfo(
     const CoreAccountId& account_id) {
   GCMClient::AccountTokenInfo account_token;
   account_token.account_id = account_id;
-  account_token.email = account_id.id + "@gmail.com";
-  account_token.access_token = account_id.id + "_token";
+  account_token.email = account_id.ToString() + "@gmail.com";
+  account_token.access_token = account_id.ToString() + "_token";
   return account_token;
 }
 

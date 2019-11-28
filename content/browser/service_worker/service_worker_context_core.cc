@@ -279,7 +279,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(std::make_unique<ProviderByIdMap>()),
-      provider_by_uuid_(std::make_unique<ProviderByClientUUIDMap>()),
+      container_host_by_uuid_(std::make_unique<ContainerHostByClientUUIDMap>()),
       storage_(ServiceWorkerStorage::Create(user_data_directory,
                                             this,
                                             std::move(database_task_runner),
@@ -303,7 +303,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(old_context->providers_.release()),
-      provider_by_uuid_(old_context->provider_by_uuid_.release()),
+      container_host_by_uuid_(old_context->container_host_by_uuid_.release()),
       storage_(ServiceWorkerStorage::Create(this, old_context->storage())),
       job_coordinator_(std::make_unique<ServiceWorkerJobCoordinator>(this)),
       loader_factory_getter_(old_context->loader_factory_getter()),
@@ -392,23 +392,24 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
   }
 }
 
-void ServiceWorkerContextCore::RegisterProviderHostByClientID(
+void ServiceWorkerContextCore::RegisterContainerHostByClientID(
     const std::string& client_uuid,
-    ServiceWorkerProviderHost* provider_host) {
-  DCHECK(!base::Contains(*provider_by_uuid_, client_uuid));
-  (*provider_by_uuid_)[client_uuid] = provider_host;
+    ServiceWorkerContainerHost* container_host) {
+  DCHECK(!base::Contains(*container_host_by_uuid_, client_uuid));
+  (*container_host_by_uuid_)[client_uuid] = container_host;
 }
 
-void ServiceWorkerContextCore::UnregisterProviderHostByClientID(
+void ServiceWorkerContextCore::UnregisterContainerHostByClientID(
     const std::string& client_uuid) {
-  DCHECK(base::Contains(*provider_by_uuid_, client_uuid));
-  provider_by_uuid_->erase(client_uuid);
+  DCHECK(base::Contains(*container_host_by_uuid_, client_uuid));
+  container_host_by_uuid_->erase(client_uuid);
 }
 
-ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHostByClientID(
+ServiceWorkerContainerHost*
+ServiceWorkerContextCore::GetContainerHostByClientID(
     const std::string& client_uuid) {
-  auto found = provider_by_uuid_->find(client_uuid);
-  if (found == provider_by_uuid_->end())
+  auto found = container_host_by_uuid_->find(client_uuid);
+  if (found == container_host_by_uuid_->end())
     return nullptr;
   return found->second;
 }

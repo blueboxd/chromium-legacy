@@ -10,22 +10,9 @@
 
 namespace blink {
 
-InspectorTaskRunner::IgnoreInterruptsScope::IgnoreInterruptsScope(
-    scoped_refptr<InspectorTaskRunner> task_runner)
-    : was_ignoring_(task_runner->ignore_interrupts_),
-      task_runner_(task_runner) {
-  // There may be nested scopes e.g. when tasks are being executed on XHR
-  // breakpoint.
-  task_runner_->ignore_interrupts_ = true;
-}
-
-InspectorTaskRunner::IgnoreInterruptsScope::~IgnoreInterruptsScope() {
-  task_runner_->ignore_interrupts_ = was_ignoring_;
-}
-
 InspectorTaskRunner::InspectorTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> isolate_task_runner)
-    : isolate_task_runner_(isolate_task_runner), condition_(mutex_) {}
+    : isolate_task_runner_(isolate_task_runner) {}
 
 InspectorTaskRunner::~InspectorTaskRunner() = default;
 
@@ -39,97 +26,53 @@ void InspectorTaskRunner::Dispose() {
   disposed_ = true;
   isolate_ = nullptr;
   isolate_task_runner_ = nullptr;
-  condition_.Broadcast();
 }
 
 void InspectorTaskRunner::AppendTask(Task task) {
   MutexLocker lock(mutex_);
   if (disposed_)
     return;
-  queue_.push_back(std::move(task));
-  condition_.Signal();
+  interrupting_task_queue_.push_back(std::move(task));
   PostCrossThreadTask(
       *isolate_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&InspectorTaskRunner::PerformSingleTaskDontWait,
-                          WrapRefCounted(this)));
+      CrossThreadBindOnce(
+          &InspectorTaskRunner::PerformSingleInterruptingTaskDontWait,
+          WrapRefCounted(this)));
   if (isolate_)
     isolate_->RequestInterrupt(&V8InterruptCallback, this);
 }
 
-bool InspectorTaskRunner::WaitForAndRunSingleTask() {
-  // |isolate_task_runner_| might be null in unit tests.
-  DCHECK(!isolate_task_runner_ ||
-         isolate_task_runner_->BelongsToCurrentThread());
-  {
-    MutexLocker lock(mutex_);
-    if (isolate_)
-      ThreadDebugger::IdleStarted(isolate_);
-  }
-  Task task = TakeNextTask(kWaitForTask);
-  {
-    MutexLocker lock(mutex_);
-    if (isolate_)
-      ThreadDebugger::IdleFinished(isolate_);
-  }
-  if (!task)
-    return false;
-  PerformSingleTask(std::move(task));
-  return true;
+void InspectorTaskRunner::AppendTaskDontInterrupt(Task task) {
+  MutexLocker lock(mutex_);
+  if (disposed_)
+    return;
+  PostCrossThreadTask(*isolate_task_runner_, FROM_HERE, std::move(task));
 }
 
-bool InspectorTaskRunner::IsRunningTask() {
-  MutexLocker lock(mutex_);
-  return running_task_;
-}
-
-InspectorTaskRunner::Task InspectorTaskRunner::TakeNextTask(
-    InspectorTaskRunner::WaitMode wait_mode) {
+InspectorTaskRunner::Task InspectorTaskRunner::TakeNextInterruptingTask() {
   MutexLocker lock(mutex_);
 
-  if (wait_mode == kWaitForTask) {
-    while (!disposed_ && queue_.IsEmpty())
-      condition_.Wait();
-  }
-
-  if (disposed_ || queue_.IsEmpty())
+  if (disposed_ || interrupting_task_queue_.IsEmpty())
     return Task();
 
-  return queue_.TakeFirst();
+  return interrupting_task_queue_.TakeFirst();
 }
 
-void InspectorTaskRunner::PerformSingleTask(Task task) {
-  DCHECK(isolate_task_runner_->BelongsToCurrentThread());
-  IgnoreInterruptsScope scope(this);
-  {
-    MutexLocker lock(mutex_);
-    DCHECK(!running_task_);
-    running_task_ = true;
-  }
-  std::move(task).Run();
-  {
-    MutexLocker lock(mutex_);
-    running_task_ = false;
-  }
-}
-
-void InspectorTaskRunner::PerformSingleTaskDontWait() {
-  Task task = TakeNextTask(kDontWaitForTask);
+void InspectorTaskRunner::PerformSingleInterruptingTaskDontWait() {
+  Task task = TakeNextInterruptingTask();
   if (task) {
     DCHECK(isolate_task_runner_->BelongsToCurrentThread());
-    PerformSingleTask(std::move(task));
+    std::move(task).Run();
   }
 }
 
 void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
   InspectorTaskRunner* runner = static_cast<InspectorTaskRunner*>(data);
-  if (runner->ignore_interrupts_)
+  Task task = runner->TakeNextInterruptingTask();
+  if (!task) {
     return;
-  while (true) {
-    Task task = runner->TakeNextTask(kDontWaitForTask);
-    if (!task)
-      return;
-    runner->PerformSingleTask(std::move(task));
   }
+  std::move(task).Run();
 }
 
 }  // namespace blink

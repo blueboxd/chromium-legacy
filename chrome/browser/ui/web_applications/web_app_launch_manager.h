@@ -44,6 +44,8 @@ class WebAppLaunchManager : public apps::LaunchManager {
   DISALLOW_COPY_AND_ASSIGN(WebAppLaunchManager);
 };
 
+void RecordAppWindowLaunch(Profile* profile, const std::string& app_id);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_LAUNCH_MANAGER_H_

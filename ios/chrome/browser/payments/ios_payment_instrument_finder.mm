@@ -182,7 +182,7 @@ bool IOSPaymentInstrumentFinder::GetWebAppManifestURLsFromPaymentManifest(
     return false;
   }
 
-  base::span<const base::Value> apps = list->GetList();
+  base::Value::ConstListView apps = list->GetList();
   if (apps.size() > kMaximumNumberOfWebAppManifests) {
     LOG(ERROR) << "\"" << kDefaultApplications << "\" must contain at most "
                << kMaximumNumberOfWebAppManifests << " entries.";

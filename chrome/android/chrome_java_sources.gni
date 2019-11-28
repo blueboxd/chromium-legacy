@@ -363,6 +363,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/crash/PureJavaExceptionHandler.java",
   "java/src/org/chromium/chrome/browser/crash/PureJavaExceptionReporter.java",
   "java/src/org/chromium/chrome/browser/customtabs/BaseCustomTabActivity.java",
+  "java/src/org/chromium/chrome/browser/customtabs/BaseCustomTabRootUiCoordinator.java",
   "java/src/org/chromium/chrome/browser/customtabs/ClientManager.java",
   "java/src/org/chromium/chrome/browser/customtabs/CloseButtonNavigator.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomButtonParams.java",

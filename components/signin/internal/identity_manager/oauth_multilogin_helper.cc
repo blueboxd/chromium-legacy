@@ -133,11 +133,13 @@ void OAuthMultiloginHelper::StartFetchingMultiLogin() {
 void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
     const OAuthMultiloginResult& result) {
   if (result.status() == OAuthMultiloginResponseStatus::kOk) {
-    std::vector<std::string> account_ids;
-    for (const auto& account : accounts_)
-      account_ids.push_back(account.first.id);
-    VLOG(1) << "Multilogin successful accounts="
-            << base::JoinString(account_ids, " ");
+    if (VLOG_IS_ON(1)) {
+      std::vector<std::string> account_ids;
+      for (const auto& account : accounts_)
+        account_ids.push_back(account.first.ToString());
+      VLOG(1) << "Multilogin successful accounts="
+              << base::JoinString(account_ids, " ");
+    }
     StartSettingCookies(result);
     return;
   }

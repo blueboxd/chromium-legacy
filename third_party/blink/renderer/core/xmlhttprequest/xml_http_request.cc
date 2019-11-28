@@ -931,7 +931,8 @@ void XMLHttpRequest::send(DOMArrayBufferView* body,
                           ExceptionState& exception_state) {
   NETWORK_DVLOG(1) << this << " send() ArrayBufferView " << body;
 
-  SendBytesData(body->BaseAddress(), body->byteLength(), exception_state);
+  SendBytesData(body->BaseAddress(), body->byteLengthAsSizeT(),
+                exception_state);
 }
 
 void XMLHttpRequest::SendBytesData(const void* data,

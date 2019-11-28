@@ -191,7 +191,7 @@ std::vector<const std::string*> ExtractResultList(
   if (!values)
     return {};
 
-  base::span<const base::Value> list = values->GetList();
+  base::Value::ConstListView list = values->GetList();
   std::vector<const std::string*> extracted(list.size());
   std::transform(list.begin(), list.end(), extracted.begin(),
                  [field_path](const auto& value) {

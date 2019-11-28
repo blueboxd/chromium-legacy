@@ -140,7 +140,7 @@ TEST(VariableExpanderTest, ExpandValueSucceeds) {
   VariableExpander expander({{"machine_name", "chromebook"}});
   EXPECT_TRUE(expander.ExpandValue(&root));
 
-  base::span<const base::Value> expanded_list = root.FindKey("list")->GetList();
+  base::Value::ConstListView expanded_list = root.FindKey("list")->GetList();
   EXPECT_EQ(expanded_list[0].GetInt(), 123);
   EXPECT_EQ(expanded_list[1].GetString(), "chromebook");
   EXPECT_EQ(expanded_list[2].GetBool(), true);

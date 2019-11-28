@@ -3213,8 +3213,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcLocalIpsAllowedUrlsTest, RunTest) {
       user_prefs::UserPrefs::Get(browser()->profile())
           ->FindPreference(prefs::kWebRtcLocalIpsAllowedUrls);
   EXPECT_TRUE(pref->IsManaged());
-  const base::span<const base::Value> allowed_urls =
-      pref->GetValue()->GetList();
+  base::Value::ConstListView allowed_urls = pref->GetValue()->GetList();
   const auto& expected_urls = GenerateUrlList();
   EXPECT_EQ(expected_urls.size(), allowed_urls.size());
   for (const auto& allowed_url : allowed_urls) {

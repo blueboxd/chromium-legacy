@@ -94,7 +94,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // be executed on |client_task_runner_|.
   using ErrorCB = base::RepeatingClosure;
 
-  virtual ~ImageProcessor() = default;
+  virtual ~ImageProcessor();
 
   const PortConfig& input_config() const { return input_config_; }
   const PortConfig& output_config() const { return output_config_; }

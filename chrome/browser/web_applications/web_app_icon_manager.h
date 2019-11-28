@@ -38,15 +38,23 @@ class WebAppIconManager : public AppIconManager {
   // AppIconManager:
   bool ReadIcon(const AppId& app_id,
                 int icon_size_in_px,
-                ReadIconCallback callback) override;
+                ReadIconCallback callback) const override;
   bool ReadSmallestIcon(const AppId& app_id,
                         int icon_size_in_px,
-                        ReadIconCallback callback) override;
+                        ReadIconCallback callback) const override;
+  bool ReadSmallestCompressedIcon(
+      const AppId& app_id,
+      int icon_size_in_px,
+      ReadCompressedIconCallback callback) const override;
 
  private:
+  bool FindBestSizeInPx(const AppId& app_id,
+                        int icon_size_in_px,
+                        int* best_size_in_px) const;
+
   void ReadIconInternal(const AppId& app_id,
                         int icon_size_in_px,
-                        ReadIconCallback callback);
+                        ReadIconCallback callback) const;
 
   const WebAppRegistrar& registrar_;
   base::FilePath web_apps_directory_;

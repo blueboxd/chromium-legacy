@@ -427,9 +427,8 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
-  // TODO(https://crbug.com/959157): Use CoreAccountId instead of std::string.
   model_type_state_.set_authenticated_account_id(
-      activation_request_.authenticated_account_id.id);
+      activation_request_.authenticated_account_id.ToString());
 
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = model_type_state_;

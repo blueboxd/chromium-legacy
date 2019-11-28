@@ -66,7 +66,7 @@ ScriptPromise DeflateTransformer::Transform(
   if (buffer_source.IsArrayBufferView()) {
     const auto* view = buffer_source.GetAsArrayBufferView().View();
     const uint8_t* start = static_cast<const uint8_t*>(view->BaseAddress());
-    wtf_size_t length = view->byteLength();
+    wtf_size_t length = view->deprecatedByteLengthAsUnsigned();
     Deflate(start, length, IsFinished(false), controller, exception_state);
     return ScriptPromise::CastUndefined(script_state_);
   }

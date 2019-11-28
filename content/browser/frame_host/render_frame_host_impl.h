@@ -1141,6 +1141,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
 
+  void CreateDedicatedWorkerHostFactory(
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
+
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
 
@@ -1676,9 +1679,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindMediaInterfaceFactoryRequest(
       mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
-
-  void CreateDedicatedWorkerHostFactory(
-      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();

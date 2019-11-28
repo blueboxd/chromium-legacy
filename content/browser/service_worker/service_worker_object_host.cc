@@ -291,7 +291,7 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
   switch (container_host_->provider_host()->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       service_worker_client_utils::GetClient(
-          container_host_->provider_host(),
+          container_host_,
           base::BindOnce(&DispatchExtendableMessageEventFromClient, context_,
                          version_, std::move(message), container_origin_,
                          std::move(callback)));

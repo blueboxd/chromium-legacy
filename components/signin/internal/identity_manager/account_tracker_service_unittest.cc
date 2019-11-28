@@ -142,7 +142,7 @@ class TrackingEvent {
     }
     return base::StringPrintf(
         "{ type: %s, account_id: %s, gaia: %s, email: %s }", typestr,
-        account_id_.id.c_str(), gaia_id_.c_str(), email_.c_str());
+        account_id_.ToString().c_str(), gaia_id_.c_str(), email_.c_str());
   }
 
   TrackingEventType type_;

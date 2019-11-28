@@ -90,6 +90,9 @@ class CrostiniApps : public KeyedService,
   void OnAppIconUpdated(const std::string& app_id,
                         ui::ScaleFactor scale_factor) override;
 
+  // Registers and unregisters terminal with AppService.
+  // TODO(crbug.com/1028898): Move this code into System Apps
+  // once it can support hiding apps.
   void OnCrostiniEnabledChanged();
 
   void LoadIconFromVM(const std::string app_id,

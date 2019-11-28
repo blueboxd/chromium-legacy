@@ -704,14 +704,20 @@ body.check-select #search-box {
       url(../images/files/ui/search_clear.png) 1x,
       url(../images/files/ui/2x/search_clear.png) 2x)
       no-repeat center;
+  border: 0;
   cursor: pointer;
   display: none;
   height: 16px;
   margin: 0;
+  min-width: 0;
   position: absolute;
   right: 0;
   visibility: hidden;
   width: 16px;
+}
+
+#search-box .clear:focus {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 html[dir='rtl'] #search-box .clear {

@@ -67,6 +67,28 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   FormSaver* GetFormSaver() { return form_saver_.get(); }
 #endif
 
+ protected:
+  // Returns the form_saver to be used for generated passwords. Subclasses will
+  // override this method to provide different logic for get the form saver.
+  virtual FormSaver* GetFormSaverForGeneration();
+
+  virtual void SaveInternal(
+      const autofill::PasswordForm& pending,
+      const std::vector<const autofill::PasswordForm*>& matches,
+      const base::string16& old_password);
+
+  virtual void UpdateInternal(
+      const autofill::PasswordForm& pending,
+      const std::vector<const autofill::PasswordForm*>& matches,
+      const base::string16& old_password);
+
+  // FormSaver instance used by |this| to all tasks related to storing
+  // credentials.
+  const std::unique_ptr<FormSaver> form_saver_;
+
+  // The client which implements embedder-specific PasswordManager operations.
+  PasswordManagerClient* client_;
+
  private:
   // Create pending credentials from provisionally saved form when this form
   // represents credentials that were not previously saved.
@@ -87,18 +109,11 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   void ProcessUpdate(const autofill::FormData& observed_form,
                      const autofill::PasswordForm& parsed_submitted_form);
 
-  // The client which implements embedder-specific PasswordManager operations.
-  PasswordManagerClient* client_;
-
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
 
   // FormFetcher instance which owns the login data from PasswordStore.
   const FormFetcher* form_fetcher_;
-
-  // FormSaver instance used by |this| to all tasks related to storing
-  // credentials.
-  const std::unique_ptr<FormSaver> form_saver_;
 
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written

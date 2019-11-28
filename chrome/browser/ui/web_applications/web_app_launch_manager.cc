@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
@@ -95,6 +96,9 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     const apps::AppLaunchParams& params) {
   if (!provider_->registrar().IsInstalled(params.app_id))
     return nullptr;
+
+  if (params.container == apps::mojom::LaunchContainer::kLaunchContainerWindow)
+    RecordAppWindowLaunch(profile(), params.app_id);
 
   const GURL url = params.override_url.is_empty()
                        ? provider_->registrar().GetAppLaunchURL(params.app_id)
@@ -185,6 +189,20 @@ bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
 void WebAppLaunchManager::OpenWebApplication(
     const apps::AppLaunchParams& params) {
   OpenApplication(params);
+}
+
+void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
+  WebAppProvider* provider = WebAppProvider::Get(profile);
+  if (!provider)
+    return;
+
+  DisplayMode display = provider->registrar().GetAppDisplayMode(app_id);
+  if (display == DisplayMode::kUndefined)
+    return;
+
+  DCHECK_LT(DisplayMode::kUndefined, display);
+  DCHECK_LE(display, DisplayMode::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("Launch.WebAppDisplayMode", display);
 }
 
 }  // namespace web_app

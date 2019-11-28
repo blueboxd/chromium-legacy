@@ -9,7 +9,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
@@ -39,7 +40,7 @@ class DedicatedWorkerHostFactoryClient final
  public:
   DedicatedWorkerHostFactoryClient(
       blink::WebDedicatedWorker* worker,
-      service_manager::InterfaceProvider* interface_provider);
+      const blink::BrowserInterfaceBrokerProxy& interface_broker);
   ~DedicatedWorkerHostFactoryClient() override;
 
   // Implements blink::WebDedicatedWorkerHostFactoryClient.

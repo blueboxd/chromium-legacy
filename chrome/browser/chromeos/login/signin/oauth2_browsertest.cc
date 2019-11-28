@@ -319,7 +319,7 @@ class OAuth2Test : public OobeBaseTest {
                    kTestAccountPassword));
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
     CoreAccountId account_id = PickAccountId(profile, kTestGaiaId, kTestEmail);
-    ASSERT_EQ(email, account_id.id);
+    ASSERT_EQ(email, account_id.ToString());
 
     // Wait for the session merge to finish.
     WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
@@ -329,7 +329,7 @@ class OAuth2Test : public OobeBaseTest {
         IdentityManagerFactory::GetForProfile(profile);
     EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
-    EXPECT_EQ(GetOAuthStatusFromLocalState(account_id.id),
+    EXPECT_EQ(GetOAuthStatusFromLocalState(account_id.ToString()),
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   }
 
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
       IdentityManagerFactory::GetForProfile(GetProfile());
   EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
-  EXPECT_EQ(GetOAuthStatusFromLocalState(account_id.id),
+  EXPECT_EQ(GetOAuthStatusFromLocalState(account_id.ToString()),
             user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   CookieReader cookie_reader;
   cookie_reader.ReadCookies(GetProfile());
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, MergeSession) {
                  kTestAccountPassword));
 
   ASSERT_EQ(account_id,
-            PickAccountId(GetProfile(), kTestGaiaId, kTestEmail).id);
+            PickAccountId(GetProfile(), kTestGaiaId, kTestEmail).ToString());
 
   // Wait for the session merge to finish.
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);

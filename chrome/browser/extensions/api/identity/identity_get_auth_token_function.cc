@@ -677,7 +677,7 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
   if (access_token) {
     TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
                                  this, "OnGetAccessTokenComplete", "account",
-                                 token_key_.account_id.id);
+                                 token_key_.account_id.ToString());
 
     StartGaiaRequest(access_token.value());
   } else {

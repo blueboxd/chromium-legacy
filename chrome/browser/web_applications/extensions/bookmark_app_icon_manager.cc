@@ -53,7 +53,7 @@ BookmarkAppIconManager::~BookmarkAppIconManager() = default;
 
 bool BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
                                       int icon_size_in_px,
-                                      ReadIconCallback callback) {
+                                      ReadIconCallback callback) const {
   return ReadExtensionIcon(profile_, app_id, icon_size_in_px,
                            ExtensionIconSet::MATCH_EXACTLY,
                            std::move(callback));
@@ -61,9 +61,17 @@ bool BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
 
 bool BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
                                               int icon_size_in_px,
-                                              ReadIconCallback callback) {
+                                              ReadIconCallback callback) const {
   return ReadExtensionIcon(profile_, app_id, icon_size_in_px,
                            ExtensionIconSet::MATCH_BIGGER, std::move(callback));
+}
+
+bool BookmarkAppIconManager::ReadSmallestCompressedIcon(
+    const web_app::AppId& app_id,
+    int icon_size_in_px,
+    ReadCompressedIconCallback callback) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace extensions

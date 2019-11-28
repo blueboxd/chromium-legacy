@@ -197,9 +197,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
-  // TODO(https://crbug.com/959157): Use CoreAccountId instead of std::string.
   model_type_state_.set_authenticated_account_id(
-      activation_request_.authenticated_account_id.id);
+      activation_request_.authenticated_account_id.ToString());
 
   // For commit-only types, no updates are expected and hence we can consider
   // initial_sync_done(), reflecting that sync is enabled.

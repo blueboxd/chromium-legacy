@@ -662,8 +662,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
 template <typename T>
 struct NativeValueTraits<
     T,
-    typename std::enable_if<
-        std::is_base_of<CallbackFunctionBase, T>::value>::type>
+    std::enable_if_t<std::is_base_of<CallbackFunctionBase, T>::value>>
     : public NativeValueTraitsBase<T> {
   static T* NativeValue(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,

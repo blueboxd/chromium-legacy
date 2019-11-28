@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -147,7 +146,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
       factory_client_(
           Platform::Current()->CreateDedicatedWorkerHostFactoryClient(
               this,
-              GetExecutionContext()->GetInterfaceProvider())) {
+              GetExecutionContext()->GetBrowserInterfaceBroker())) {
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);

@@ -243,7 +243,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   // account.
   CoreAccountId account_id =
       identity_test_env()->SetPrimaryAccount("me@gmail.com").account_id;
-  identity_test_env()->MakeAccountAvailable(account_id.id + "2");
+  identity_test_env()->MakeAccountAvailable(account_id.ToString() + "2");
 
   // The fetcher should wait for the correct refresh token.
   auto fetcher = CreateFetcher(
@@ -251,7 +251,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // A refresh token for yet another account shouldn't matter either.
-  identity_test_env()->MakeAccountAvailable(account_id.id + "3");
+  identity_test_env()->MakeAccountAvailable(account_id.ToString() + "3");
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,

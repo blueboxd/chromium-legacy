@@ -141,7 +141,7 @@ base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountId(
     const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   return signin::Java_CoreAccountId_Constructor(
-      env, base::android::ConvertUTF8ToJavaString(env, account_id.id));
+      env, base::android::ConvertUTF8ToJavaString(env, account_id.ToString()));
 }
 
 CoreAccountInfo ConvertFromJavaCoreAccountInfo(
@@ -160,9 +160,9 @@ CoreAccountInfo ConvertFromJavaCoreAccountInfo(
 CoreAccountId ConvertFromJavaCoreAccountId(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_core_account_id) {
-  CoreAccountId id;
-  id.id = base::android::ConvertJavaStringToUTF8(
-      signin::Java_CoreAccountId_getId(env, j_core_account_id));
+  CoreAccountId id =
+      CoreAccountId::FromString(base::android::ConvertJavaStringToUTF8(
+          signin::Java_CoreAccountId_getId(env, j_core_account_id)));
   return id;
 }
 #endif

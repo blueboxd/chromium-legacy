@@ -39,9 +39,10 @@ Vector<uint8_t> ConvertBufferSource(
     vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
                   buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned());
   } else {
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  buffer.GetAsArrayBufferView().View()->byteLength());
+    vector.Append(
+        static_cast<uint8_t*>(
+            buffer.GetAsArrayBufferView().View()->BaseAddress()),
+        buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
   }
   return vector;
 }

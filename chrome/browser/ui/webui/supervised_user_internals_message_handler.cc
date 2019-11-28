@@ -222,7 +222,8 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
              ->GetExtendedAccountInfoForAccountsWithRefreshToken()) {
       base::ListValue* section_user = AddSection(section_list.get(),
           "User Information for " + account.full_name);
-      AddSectionEntry(section_user, "Account id", account.account_id.id);
+      AddSectionEntry(section_user, "Account id",
+                      account.account_id.ToString());
       AddSectionEntry(section_user, "Gaia", account.gaia);
       AddSectionEntry(section_user, "Email", account.email);
       AddSectionEntry(section_user, "Given name", account.given_name);

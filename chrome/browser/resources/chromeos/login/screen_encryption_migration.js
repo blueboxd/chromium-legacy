@@ -27,6 +27,13 @@ login.createScreen(
           return $('encryption-migration-element');
         },
 
+        /*
+         * Executed on language change.
+         */
+        updateLocalizedContent: function() {
+          $('encryption-migration-element').i18nUpdateLocale();
+        },
+
         /** @override */
         decorate: function() {
           var encryptionMigration = $('encryption-migration-element');

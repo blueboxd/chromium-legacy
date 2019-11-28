@@ -248,18 +248,12 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   // For service worker clients, ServiceWorkerProviderHost::UpdateUrls() will
   // be called later.
 
-  context_->RegisterProviderHostByClientID(container_host_->client_uuid(),
-                                           this);
-
   DCHECK(host_receiver.is_valid());
   receiver_.Bind(std::move(host_receiver));
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  if (context_)
-    context_->UnregisterProviderHostByClientID(container_host_->client_uuid());
 
   // Explicitly destroy the ServiceWorkerContainerHost to release
   // ServiceWorkerObjectHosts and ServiceWorkerRegistrationObjectHosts owned by

@@ -173,13 +173,13 @@ CSPSource::CSPSource(const std::string& scheme,
   DCHECK(!is_port_wildcard || port == url::PORT_UNSPECIFIED);
 }
 
-CSPSource::CSPSource(const network::mojom::CSPSource& csp_source)
-    : CSPSource(csp_source.scheme,
-                csp_source.host,
-                csp_source.is_host_wildcard,
-                csp_source.port,
-                csp_source.is_port_wildcard,
-                csp_source.path) {}
+CSPSource::CSPSource(network::mojom::CSPSourcePtr csp_source)
+    : CSPSource(csp_source->scheme,
+                csp_source->host,
+                csp_source->is_host_wildcard,
+                csp_source->port,
+                csp_source->is_port_wildcard,
+                csp_source->path) {}
 
 CSPSource::CSPSource(const CSPSource& source) = default;
 CSPSource::~CSPSource() = default;

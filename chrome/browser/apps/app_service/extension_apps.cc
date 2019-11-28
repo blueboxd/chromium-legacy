@@ -19,6 +19,7 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -324,6 +325,12 @@ bool ExtensionApps::Accepts(const extensions::Extension* extension) {
     case apps::mojom::AppType::kExtension:
       return !extension->from_bookmark();
     case apps::mojom::AppType::kWeb:
+      // Crostini Terminal System App is handled by Crostini Apps.
+      // TODO(crbug.com/1028898): Register Terminal as a System App rather than
+      // a crostini app.
+      if (extension->id() == crostini::kCrostiniTerminalSystemAppId) {
+        return false;
+      }
       return extension->from_bookmark();
     default:
       NOTREACHED();
@@ -616,12 +623,11 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
 
   } else if (extension->ShouldDisplayInExtensionSettings()) {
     Browser* browser = chrome::FindTabbedBrowser(profile_, false);
-    if (browser) {
-      chrome::ShowExtensions(browser, extension->id());
+    if (!browser) {
+      browser = new Browser(Browser::CreateParams(profile_, true));
     }
-    // TODO(crbug.com/826982): Either create new browser if one isn't found, or
-    // make a version of chrome::ShowExtensions which accepts a Profile
-    // instead of a Browser, similar to chrome::ShowSiteSettings.
+
+    chrome::ShowExtensions(browser, extension->id());
   }
 }
 

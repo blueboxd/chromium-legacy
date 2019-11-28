@@ -66,10 +66,6 @@ void IdleSpellCheckController::Trace(Visitor* visitor) {
   DocumentShutdownObserver::Trace(visitor);
 }
 
-IdleSpellCheckController* IdleSpellCheckController::Create(LocalFrame& frame) {
-  return MakeGarbageCollected<IdleSpellCheckController>(frame);
-}
-
 IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)
     : state_(State::kInactive),
       idle_callback_handle_(kInvalidHandle),

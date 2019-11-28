@@ -57,10 +57,6 @@ copy("chrome_camera_app_css") {
 
 copy("chrome_camera_app_images") {
   sources = [
-    "src/images/browser_button_back.svg",
-    "src/images/browser_button_delete.svg",
-    "src/images/browser_button_export.svg",
-    "src/images/browser_button_print.svg",
     "src/images/camera_app_icons_128.png",
     "src/images/camera_app_icons_48.png",
     "src/images/camera_button_fps_30.svg",
@@ -120,7 +116,6 @@ copy("chrome_camera_app_js") {
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
-    "src/js/scrollbar.js",
     "src/js/sound.js",
     "src/js/state.js",
     "src/js/toast.js",
@@ -187,11 +182,9 @@ copy("chrome_camera_app_js_mojo") {
 
 copy("chrome_camera_app_js_views") {
   sources = [
-    "src/js/views/browser.js",
     "src/js/views/camera.js",
     "src/js/views/camera_intent.js",
     "src/js/views/dialog.js",
-    "src/js/views/gallery_base.js",
     "src/js/views/settings.js",
     "src/js/views/view.js",
     "src/js/views/warning.js",

@@ -36,19 +36,45 @@ testcase.fileDisplayDownloads = () => {
 };
 
 /**
- * Tests opening the files app navigating to the Downloads folder. Uses
+ * Tests opening the files app navigating to a local folder. Uses
  * platform_util::OpenItem, a call to an API distinct from the one commonly used
  * in other tests for the same operation.
  */
-testcase.fileDisplayLaunchOnDownloads = async () => {
+testcase.fileDisplayLaunchOnLocalFolder = async () => {
+  // Add a file to Downloads.
+  await addEntries(['local'], [ENTRIES.photos]);
+
   // Open Files app on the Downloads directory.
-  await sendTestMessage({name: 'launchAppOnDownloads'});
+  await sendTestMessage(
+      {name: 'launchAppOnLocalFolder', localPath: 'Downloads/photos'});
 
   // Wait for app window to open.
   const appId = await remoteCall.waitForWindow('files#');
 
-  // Check: the Downloads folder should be selected.
-  await remoteCall.waitForElement(appId, 'li[file-name="Downloads"][selected]');
+  // Check: the Downloads/photos folder should be selected.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="photos"][selected]');
+
+  // The API used to launch the Files app does not set the IN_TEST flag to true:
+  // error when attempting to retrieve Web Store access token.
+  return IGNORE_APP_ERRORS;
+};
+
+/**
+ * Tests opening the files app navigating to the My Drive folder. Uses
+ * platform_util::OpenItem, a call to an API distinct from the one commonly used
+ * in other tests for the same operation.
+ */
+testcase.fileDisplayLaunchOnDrive = async () => {
+  // Open Files app on the Drive directory.
+  await sendTestMessage({name: 'launchAppOnDrive'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Check: the app should be open on My Drive.
+  await remoteCall.waitForElement(
+      appId, '#directory-tree .tree-item[selected] [volume-type-icon="drive"]');
 
   // The API used to launch the Files app does not set the IN_TEST flag to true:
   // error when attempting to retrieve Web Store access token.

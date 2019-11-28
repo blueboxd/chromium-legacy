@@ -137,7 +137,7 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   // later.
   void DelayedReconnect();
 
-  const char* socket_name_;
+  std::string socket_name_;
   uint32_t connection_backoff_ms_;
   uint64_t data_sources_tracing_ = 0;
   bool disallow_pre_android_pie = true;

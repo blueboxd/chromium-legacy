@@ -82,10 +82,25 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <cr-link-row label="$i18n{syncAndNonPersonalizedServices}"
-            sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
-            on-click="onSyncAndGoogleServicesClick_">
-        </cr-link-row>
+        <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+          <cr-link-row id="syncLinkRow"
+              label="$i18n{syncAndNonPersonalizedServices}"
+              sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
+              on-click="onSyncAndGoogleServicesClick_">
+          </cr-link-row>
+        </template>
+        <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
+          <settings-toggle-button id="safeBrowsingToggle"
+              pref="{{prefs.safebrowsing.enabled}}"
+              label="$i18n{safeBrowsingEnableProtection}"
+              sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
+          </settings-toggle-button>
+          <settings-toggle-button id="safeBrowsingReportingToggle"
+              pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
+              label="$i18n{safeBrowsingEnableExtendedReporting}"
+              sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}">
+          </settings-toggle-button>
+        </template>
 <if expr="not chromeos">
         <settings-toggle-button id="signinAllowedToggle"
             pref="{{prefs.signin.allowed_on_next_startup}}"

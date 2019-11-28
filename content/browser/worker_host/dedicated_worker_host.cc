@@ -48,7 +48,6 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       origin_(origin),
       host_receiver_(this, std::move(host)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RegisterMojoInterfaces();
 }
 
 DedicatedWorkerHost::~DedicatedWorkerHost() = default;
@@ -59,11 +58,6 @@ void DedicatedWorkerHost::GetInterface(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
   if (!worker_process_host)
-    return;
-
-  // See if the registry that is specific to this worker host wants to handle
-  // the interface request.
-  if (registry_.TryBindInterface(interface_name, &interface_pipe))
     return;
 
   BindWorkerInterface(interface_name, std::move(interface_pipe),
@@ -223,15 +217,6 @@ void DedicatedWorkerHost::StartScriptLoad(
       storage_domain,
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                      weak_factory_.GetWeakPtr()));
-}
-
-void DedicatedWorkerHost::RegisterMojoInterfaces() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  registry_.AddInterface(base::BindRepeating(
-      &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
-  registry_.AddInterface(
-      base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
-                          base::Unretained(this)));
 }
 
 void DedicatedWorkerHost::DidStartScriptLoad(

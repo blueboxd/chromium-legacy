@@ -215,10 +215,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // in DOM tree.
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
 
-  // The node to return when hit-testing on this fragment. This can be different
-  // from GetNode() when this fragment is content of a pseudo node.
-  Node* NodeForHitTest() const { return PhysicalFragment().NodeForHitTest(); }
-
   // Returns true when associated fragment of |layout_object| has line box.
   static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
   static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);

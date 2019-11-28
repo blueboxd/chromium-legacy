@@ -23,13 +23,16 @@ struct COMPONENT_EXPORT(TRACING_CPP) Instance {
     uint64_t referred_from_object_id;
   };
 
+  explicit Instance(uint64_t object_id);
   Instance(uint64_t object_id, std::string type_name);
   Instance(uint64_t object_id, uint32_t size);
   Instance(uint64_t object_id, uint32_t size, std::string type_name);
   Instance(const Instance& other);
   ~Instance();
 
-  // Only set in first pass for ClassObject and PrimitiveArrayInstances.
+  void AddReference(const std::string& name, uint64_t object_id);
+
+  //  Only set in first pass for ClassObject and PrimitiveArrayInstances.
   std::string type_name;
   const uint64_t object_id;  // Always set in first pass.
   uint32_t size;             // Set in first pass except for ClassObject
@@ -41,8 +44,7 @@ struct COMPONENT_EXPORT(TRACING_CPP) Instance {
 struct COMPONENT_EXPORT(TRACING_CPP) ClassInstance {
   ClassInstance(uint64_t object_id,
                 uint64_t class_id,
-                uint32_t temp_data_position,
-                uint32_t size);
+                uint32_t temp_data_position);
 
   Instance base_instance;
   const uint64_t class_id;
@@ -83,7 +85,7 @@ struct COMPONENT_EXPORT(TRACING_CPP) ObjectArrayInstance {
                       uint64_t class_id,
                       uint32_t temp_data_position,
                       uint32_t temp_data_length,
-                      uint32_t size);
+                      uint64_t size);
 
   Instance base_instance;
   const uint64_t class_id;
@@ -104,7 +106,7 @@ struct COMPONENT_EXPORT(TRACING_CPP) PrimitiveArrayInstance {
   PrimitiveArrayInstance(uint64_t object_id,
                          DataType type,
                          std::string type_name,
-                         uint32_t size);
+                         uint64_t size);
   Instance base_instance;
   const DataType type;
 };

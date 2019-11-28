@@ -351,7 +351,7 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
   // validation and the rule was triggered just before validation. If validation
   // kicked in after this point, we still check before uploading.
   if (active_scenario_) {
-    active_scenario_->OnRuleTriggered(triggered_rule, callback);
+    active_scenario_->OnRuleTriggered(triggered_rule, std::move(callback));
   }
 }
 

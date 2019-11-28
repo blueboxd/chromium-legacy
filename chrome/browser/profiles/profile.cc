@@ -274,6 +274,17 @@ bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
+bool Profile::CanUseDiskWhenOffTheRecord() {
+#if defined(OS_CHROMEOS)
+  // Guest mode on ChromeOS uses an in-memory file system to store the profile
+  // in, so despite this being an off the record profile, it is still okay to
+  // store data on disk.
+  return IsGuestSession();
+#else
+  return false;
+#endif
+}
+
 bool Profile::ShouldRestoreOldSessionCookies() {
   return false;
 }

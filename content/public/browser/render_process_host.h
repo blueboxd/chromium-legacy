@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -525,6 +526,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void CreateNotificationService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver) = 0;
+  virtual void CreateWebSocketConnector(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) = 0;
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.

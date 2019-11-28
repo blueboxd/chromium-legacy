@@ -11,9 +11,9 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast_channel {
 

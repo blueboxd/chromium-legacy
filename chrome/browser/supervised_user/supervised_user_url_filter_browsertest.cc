@@ -130,7 +130,7 @@ class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+    logged_in_user_mixin_.LogInUser();
 
     supervised_user_service_ =
         SupervisedUserServiceFactory::GetForProfile(browser()->profile());
@@ -158,7 +158,7 @@ class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
 
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server()};
+      embedded_test_server(), this};
 };
 
 // Tests the filter mode in which all sites are blocked by default.

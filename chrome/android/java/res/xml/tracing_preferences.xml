@@ -7,20 +7,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orderingFromXml="true">
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.developer.TracingCategoriesPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesPreferences"
         android:key="default_categories"
         android:title="Default categories"/><!-- developer strings are not translated -->
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.developer.TracingCategoriesPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesPreferences"
         android:key="non_default_categories"
         android:title="Disabled-by-default categories"/>
     <ListPreference
         android:key="mode"
         android:title="Tracing mode"
         android:persistent="false"/>
-    <org.chromium.chrome.browser.preferences.ButtonPreference
+    <org.chromium.chrome.browser.settings.ButtonPreference
         android:key="start_recording"/>
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:key="tracing_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

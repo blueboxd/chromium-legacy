@@ -413,7 +413,6 @@ Axtarış terminini nizamlamaq üçün basıb saxlamaqla seçim edin. Axtarış�
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> ünvanından – <ph name="BEGIN_DEEMPHASIZED" />Google tərəfindən çatdırıldı<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Tətbiq datası silinsin?</translation>
 <translation id="4099578267706723511">İstifadə statistikası və qəza raportlarını Google'a göndərməklə Chrome'un gəlişməsini sağlayın.</translation>
-<translation id="410351446219883937">Avtomatik oxutma</translation>
 <translation id="4116038641877404294">Oflayn istifadə etmək üçün səhifələri endirin</translation>
 <translation id="4135200667068010335">Tabı paylaşa biləcəyiniz cihazların siyahısı bağlıdır.</translation>
 <translation id="4149994727733219643">İnternet səhifələr üçün sadələşdirilmiş görünüş</translation>
@@ -870,7 +869,6 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="7437998757836447326">Chrome'dan çıxın</translation>
 <translation id="7438641746574390233">Layt rejimi aktiv olduqda Chrome səhifələrin daha sürətlə yüklənməsi üçün Google serverlərindən istifadə edir. Layt rejimi yalnız əsas kontenti yükləmək üçün sürəti çox zəif olan səhifələri yenidən yazır. Layt rejimi Gizli tablara tətbiq edilmir.</translation>
 <translation id="7444811645081526538">Daha çox kateqoriya</translation>
-<translation id="7445411102860286510">Saytlara səssiz videonu avtomatik oxutmağa icazə verin (tövsiyə olunur)</translation>
 <translation id="7453467225369441013">Bununla əksər saytlardan çıxacaqsınız. Google Hesabından çıxmayacaqsınız.</translation>
 <translation id="7454641608352164238">Yetərincə yer yoxdur</translation>
 <translation id="7475192538862203634">Bunu tez-tez görürsünüzsə, bu <ph name="BEGIN_LINK" />təklifləri<ph name="END_LINK" /> nəzərdən keçirin.</translation>
@@ -925,7 +923,6 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
-<translation id="7837721118676387834">Xüsusi sayt üçün səssiz videoların avtomatik oxunmasına icazə verin.</translation>
 <translation id="7846076177841592234">Seçimi ləğv edin</translation>
 <translation id="784934925303690534">Vaxt aralığı</translation>
 <translation id="7851858861565204677">Digər cihazlar</translation>

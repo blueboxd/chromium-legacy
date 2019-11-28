@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "extensions/browser/deferred_start_render_host_observer.h"
+#include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension_id.h"
@@ -21,11 +22,8 @@ class BrowserContext;
 // first DidStopLoading().
 namespace extensions {
 
-class ExtensionHost;
-
-class TestBackgroundPageFirstLoadObserver
-    : public ProcessManagerObserver,
-      public DeferredStartRenderHostObserver {
+class TestBackgroundPageFirstLoadObserver : public ProcessManagerObserver,
+                                            public ExtensionHostObserver {
  public:
   TestBackgroundPageFirstLoadObserver(content::BrowserContext* browser_context,
                                       const ExtensionId& extension_id);
@@ -37,9 +35,8 @@ class TestBackgroundPageFirstLoadObserver
   // ProcessManagerObserver:
   void OnBackgroundHostCreated(ExtensionHost* host) override;
 
-  // DeferredStartRenderHostObserver:
-  void OnDeferredStartRenderHostDidStopFirstLoad(
-      const DeferredStartRenderHost* host) override;
+  // ExtensionHostObserver:
+  void OnExtensionHostDidStopFirstLoad(const ExtensionHost* host) override;
 
   void OnObtainedExtensionHost();
 
@@ -49,6 +46,8 @@ class TestBackgroundPageFirstLoadObserver
   base::RunLoop run_loop_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
       process_manager_observer_{this};
+  ScopedObserver<ExtensionHost, ExtensionHostObserver> extension_host_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundPageFirstLoadObserver);
 };

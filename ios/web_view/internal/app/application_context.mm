@@ -57,8 +57,6 @@ ApplicationContext* ApplicationContext::GetInstance() {
 }
 
 ApplicationContext::ApplicationContext() {
-  net_log_ = std::make_unique<net::NetLog>();
-
   SetApplicationLocale(l10n_util::GetLocaleOverride());
 }
 
@@ -189,7 +187,7 @@ const std::string& ApplicationContext::GetApplicationLocale() {
 
 net::NetLog* ApplicationContext::GetNetLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return net_log_.get();
+  return net::NetLog::Get();
 }
 
 WebViewIOThread* ApplicationContext::GetWebViewIOThread() {

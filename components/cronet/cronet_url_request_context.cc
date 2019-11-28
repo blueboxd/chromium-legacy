@@ -68,9 +68,9 @@ namespace {
 // This class wraps a NetLog that also contains network change events.
 class NetLogWithNetworkChangeEvents {
  public:
-  NetLogWithNetworkChangeEvents() {}
+  NetLogWithNetworkChangeEvents() : net_log_(net::NetLog::Get()) {}
 
-  net::NetLog* net_log() { return &net_log_; }
+  net::NetLog* net_log() { return net_log_; }
   // This function registers with the NetworkChangeNotifier and so must be
   // called *after* the NetworkChangeNotifier is created. Should only be
   // called on the init thread as it is not thread-safe and the init thread is
@@ -85,11 +85,11 @@ class NetLogWithNetworkChangeEvents {
     DCHECK(cronet::OnInitThread());
     if (net_change_logger_)
       return;
-    net_change_logger_.reset(new net::LoggingNetworkChangeObserver(&net_log_));
+    net_change_logger_.reset(new net::LoggingNetworkChangeObserver(net_log_));
   }
 
  private:
-  net::NetLog net_log_;
+  net::NetLog* net_log_;
   // LoggingNetworkChangeObserver logs network change events to a NetLog.
   // This class bundles one LoggingNetworkChangeObserver with one NetLog,
   // so network change event are logged just once in the NetLog.
@@ -288,8 +288,7 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
       cronet::CreateProxyResolutionService(std::move(proxy_config_service),
                                            g_net_log.Get().net_log()));
 
-  config->ConfigureURLRequestContextBuilder(&context_builder,
-                                            g_net_log.Get().net_log());
+  config->ConfigureURLRequestContextBuilder(&context_builder);
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
 

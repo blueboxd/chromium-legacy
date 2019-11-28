@@ -26,7 +26,8 @@ class CustomClassLoaderClassWriter extends ClassWriter {
      */
     @Override
     protected final String getCommonSuperClass(final String type1, final String type2) {
-        Class<?> c, d;
+        Class<?> c;
+        Class<?> d;
         try {
             c = Class.forName(type1.replace('/', '.'), false, mClassLoader);
             d = Class.forName(type2.replace('/', '.'), false, mClassLoader);

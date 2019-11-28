@@ -179,6 +179,48 @@ bool InSameTreePosition(FrameTreeNode* frame_tree_node,
   return true;
 }
 
+void InitRestoredTreeNode(BrowserContext* browser_context,
+                          NavigationEntryImpl::TreeNode* node) {
+  DCHECK(browser_context);
+  DCHECK(node);
+
+  // Check that this is a freshly restored entry.
+  FrameNavigationEntry* frame_entry = node->frame_entry.get();
+  DCHECK(!frame_entry->site_instance());
+
+  // Check that the entry has been already populated with required information.
+  DCHECK(frame_entry->page_state().IsValid());
+
+  // For about:blank and data: URLs create a SiteInstance based on the initiator
+  // origin.  See also https://crbug.com/1026474.
+  if (frame_entry->url().IsAboutBlank() ||
+      frame_entry->url().SchemeIs(url::kDataScheme)) {
+    // TODO(lukasza): We should consider also creating a SiteInstance if there
+    // is no initiator origin.  Doing this would allow us to
+    // 1) remove special-casing of data URLs in
+    //    SiteInstanceImpl::GetSiteForURLInternal where sometimes we use the
+    //    whole data URL as a site URL to avoid session restore trouble.
+    // 2) start asserting that an initialized FrameNavigationEntry should always
+    //    have a non-null SiteInstance.
+    if (frame_entry->initiator_origin().has_value()) {
+      url::SchemeHostPort initiator_tuple =
+          frame_entry->initiator_origin()->GetTupleOrPrecursorTupleIfOpaque();
+      frame_entry->set_site_instance(SiteInstanceImpl::CreateForURL(
+          browser_context, initiator_tuple.GetURL()));
+    }
+  }
+}
+
+void RecursivelyInitRestoredTreeNode(BrowserContext* browser_context,
+                                     NavigationEntryImpl::TreeNode* node) {
+  DCHECK(browser_context);
+  DCHECK(node);
+
+  InitRestoredTreeNode(browser_context, node);
+  for (const auto& child : node->children)
+    RecursivelyInitRestoredTreeNode(browser_context, child.get());
+}
+
 }  // namespace
 
 NavigationEntryImpl::TreeNode::TreeNode(
@@ -618,6 +660,11 @@ void NavigationEntryImpl::AddExtraHeaders(
 
 int64_t NavigationEntryImpl::GetMainFrameDocumentSequenceNumber() {
   return frame_tree_->frame_entry->document_sequence_number();
+}
+
+void NavigationEntryImpl::InitRestoredEntry(BrowserContext* browser_context) {
+  DCHECK(browser_context);
+  RecursivelyInitRestoredTreeNode(browser_context, root_node());
 }
 
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {

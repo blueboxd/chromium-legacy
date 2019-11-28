@@ -9017,16 +9017,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Shelf strings -->
       <if expr="chromeos">
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_CLOSE" desc="Title text for the 'close' context menu item of the launcher">
+        <message name="IDS_SHELF_CONTEXT_MENU_CLOSE" desc="Title text for the 'close' context menu item of the shelf">
           Close
         </message>
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of the launcher">
+        <message name="IDS_SHELF_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of the shelf">
           Pin
         </message>
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of the launcher">
+        <message name="IDS_SHELF_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of the shelf">
           Unpin
         </message>
-        <message name="IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of a shelf item">
+        <message name="IDS_SHELF_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of a shelf item">
           Pinned by administrator
         </message>
       </if>

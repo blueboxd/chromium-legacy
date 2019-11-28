@@ -216,7 +216,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // For testing only, register a function to be called when focus changes
   // in any BrowserAccessibilityManager.
-  static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
+  static void SetFocusChangeCallbackForTesting(base::RepeatingClosure callback);
 
   // For testing only, register a function to be called when
   // a generated event is fired from this BrowserAccessibilityManager.

@@ -413,7 +413,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4084712963632273211">Di <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />pubblicata da Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Eliminare i dati delle app?</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
-<translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4116038641877404294">Scarica le pagine per usarle offline</translation>
 <translation id="4135200667068010335">L'elenco di dispositivi con cui condividere una scheda è chiuso.</translation>
 <translation id="4149994727733219643">Visualizzazione semplificata delle pagine web</translation>
@@ -872,7 +871,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="7438641746574390233">Quando la modalità Lite è attiva, Chrome utilizza i server di Google per caricare più velocemente le pagine. La modalità Lite riscrive le pagine molto lente in modo che carichino solo i contenuti essenziali. La modalità Lite non si applica alle schede di navigazione in incognito.</translation>
 <translation id="7444811645081526538">Altre categorie</translation>
-<translation id="7445411102860286510">Consenti ai siti di riprodurre automaticamente i video con audio disattivato (opzione consigliata)</translation>
 <translation id="7453467225369441013">Verrai disconnesso dalla maggior parte dei siti, ma non dal tuo Account Google.</translation>
 <translation id="7454641608352164238">Spazio insufficiente</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7810647596859435254">Apri con…</translation>
 <translation id="7821588508402923572">La quantità di dati risparmiata sarà visualizzata qui</translation>
-<translation id="7837721118676387834">Consenti la riproduzione automatica dei video con audio disattivato in un sito specifico.</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="784934925303690534">Intervallo di tempo</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>

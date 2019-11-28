@@ -30,6 +30,13 @@ const base::Feature kAssistantProactiveSuggestions{
 const base::FeatureParam<int> kAssistantProactiveSuggestionsMaxWidth{
     &kAssistantProactiveSuggestions, "max-width", 280};
 
+// The desired corner radius (in dip) for the rich proactive suggestions entry
+// point. As the rich UI has yet to be defined, corner radius may need to be
+// dynamically modified later.
+const base::FeatureParam<int>
+    kAssistantProactiveSuggestionsRichEntryPointCornerRadius{
+        &kAssistantProactiveSuggestions, "rich-entry-point-corner-radius", 16};
+
 const base::FeatureParam<std::string>
     kAssistantProactiveSuggestionsServerExperimentIds{
         &kAssistantProactiveSuggestions, "server-experiment-ids", ""};
@@ -90,6 +97,10 @@ const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
 
 int GetProactiveSuggestionsMaxWidth() {
   return kAssistantProactiveSuggestionsMaxWidth.Get();
+}
+
+int GetProactiveSuggestionsRichEntryPointCornerRadius() {
+  return kAssistantProactiveSuggestionsRichEntryPointCornerRadius.Get();
 }
 
 std::string GetProactiveSuggestionsServerExperimentIds() {

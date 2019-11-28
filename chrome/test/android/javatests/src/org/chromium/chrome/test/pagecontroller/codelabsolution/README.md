@@ -150,7 +150,7 @@ import java.util.List;
 
 /**
  * Search Engine Selection Page Controller for the Code Lab, corresponds to
- * {@link org.chromium.chrome.browser.preferences.SearchEnginePreference}.
+ * {@link org.chromium.chrome.browser.settings.SearchEnginePreference}.
  */
 public class SearchEngineSelectionControllerForCodelab extends PageController {
     // TODO: Put locators here.

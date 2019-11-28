@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/common/thread_profiler.h"
+#include "chrome/common/profiler/thread_profiler.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 

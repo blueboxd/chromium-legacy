@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">‏من <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />تعرضه Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
 <translation id="4099578267706723511">‏يمكنك المساعدة في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
-<translation id="410351446219883937">التشغيل التلقائي</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
 <translation id="4135200667068010335">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها مغلقة.</translation>
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">‏تسجيل الخروج من Chrome</translation>
 <translation id="7438641746574390233">‏عند تفعيل الوضع البسيط، يستخدم Chrome خدمات Google لتحميل الصفحات بشكلٍ أسرع. يعيد الوضع البسيط كتابة الصفحات البطيئة للغاية من أجل تحميل المحتوى الأساسي فقط. لا ينطبق الوضع البسيط على علامات تبويب التصفُّح المتخفي.</translation>
 <translation id="7444811645081526538">مزيد من الفئات</translation>
-<translation id="7445411102860286510">السماح لمواقع الويب بتشغيل الفيديوهات المكتومة الصوت تلقائيًا (مُستحسن)</translation>
 <translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب، لكن لن يتم تسجيل الخروج من حسابك على Google.</translation>
 <translation id="7454641608352164238">مساحة التخزين غير كافية</translation>
 <translation id="7475192538862203634">إذا تكرّر هذا الخطأ، ننصحك بالاطّلاع على هذه <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
-<translation id="7837721118676387834">السماح لموقع ويب معيّن بالتشغيل التلقائي للفيديوهات المكتومة الصوت</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>

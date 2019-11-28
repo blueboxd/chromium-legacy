@@ -194,7 +194,7 @@ TEST_F(CastActivityRecordTest, SendAppMessageToReceiver) {
 
   EXPECT_CALL(message_handler_, SendAppMessage(kChannelId, _))
       .WillOnce(Return(cast_channel::Result::kFailed))
-      .WillOnce(WithArg<1>([](const cast_channel::CastMessage& cast_message) {
+      .WillOnce(WithArg<1>([](const cast::channel::CastMessage& cast_message) {
         EXPECT_EQ("theClientId", cast_message.source_id());
         EXPECT_EQ("theTransportId", cast_message.destination_id());
         EXPECT_EQ("urn:x-cast:com.google.foo", cast_message.namespace_());

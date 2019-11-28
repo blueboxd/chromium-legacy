@@ -72,11 +72,14 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     SwapFrameData();
     ~SwapFrameData();
 
+    SwapFrameData& operator=(SwapFrameData&&);
+    SwapFrameData(SwapFrameData&&);
+
     SwapFrameData(const SwapFrameData&) = delete;
     SwapFrameData& operator=(const SwapFrameData&) = delete;
 
-    SwapFrameData(SwapFrameData&&);
     std::vector<ui::LatencyInfo> latency_info;
+    bool top_controls_visible_height_changed = false;
   };
   virtual void SwapBuffers(SwapFrameData swap_frame_data) = 0;
   virtual void SwapBuffersSkipped() {}

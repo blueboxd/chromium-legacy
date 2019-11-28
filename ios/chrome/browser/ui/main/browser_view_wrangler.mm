@@ -58,7 +58,7 @@
 }
 
 - (TabModel*)tabModel {
-  return self.coordinator.tabModel;
+  return self.coordinator.browser->GetTabModel();
 }
 
 - (Browser*)browser {

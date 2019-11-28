@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,8 +53,8 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   test_delegate_.set_requests(raw_requests);
 }
 
-Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
-  auto* extension =
+content::WebContents* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
+  const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app_with_panel_container/"));
   CHECK(extension);
 
@@ -65,15 +64,10 @@ Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceTest);
 
-  content::WebContents* app_window =
+  content::WebContents* app_contents =
       apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
-  CHECK(app_window);
-
-  Browser* app_browser = chrome::FindBrowserWithWebContents(app_window);
-  CHECK(app_browser);
-  CHECK(app_browser->is_type_app());
-
-  return app_browser;
+  CHECK(app_contents);
+  return app_contents;
 }
 
 PermissionBubbleKioskBrowserTest::PermissionBubbleKioskBrowserTest() {

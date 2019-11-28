@@ -635,7 +635,6 @@
 <translation id="4082393374666368382">Einstellungen – Verwaltung</translation>
 <translation id="4098354747657067197">Bei der aufgerufenen Website besteht Phishing-Verdacht!</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
-<translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
 <translation id="4108231218301530806">Diese Karte das nächste Mal per Fingerabdruck bestätigen.</translation>
 <translation id="4110652170750985508">Zahlung überprüfen</translation>
@@ -946,7 +945,7 @@
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
 <translation id="5545756402275714221">Artikel für mich</translation>
-<translation id="5552137475244467770">Chrome prüft gelegentlich, ob Ihre Passwörter auf Listen erscheinen, die online veröffentlicht wurden. Dabei werden Ihre Passwörter und Nutzernamen verschlüsselt, damit sie von niemandem gelesen werden können, auch nicht von Google.</translation>
+<translation id="5552137475244467770">Chrome prüft in regelmäßigen Abständen, ob Ihre Passwörter auf Listen erscheinen, die online veröffentlicht wurden. Dabei werden Ihre Passwörter und Nutzernamen verschlüsselt, damit sie von niemandem gelesen werden können, auch nicht von Google.</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5560088892362098740">Ablaufdatum</translation>
 <translation id="5565735124758917034">Aktiv</translation>

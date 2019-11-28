@@ -489,6 +489,7 @@ void ArcAppReinstallSearchProvider::OnVisibilityChanged(
                      &impression_count)) {
     impression_count = 0;
   }
+  UMA_HISTOGRAM_COUNTS_100("Arc.AppListRecommendedImp.AllImpression", 1);
   // Get impression count and time. If neither is set, set them.
   // If they're set, update if appropriate.
   if (!GetStateTime(profile_, package_name, kImpressionTime,
@@ -499,6 +500,7 @@ void ArcAppReinstallSearchProvider::OnVisibilityChanged(
     UpdateStateTime(profile_, package_name, kImpressionTime);
     SetStateInt64(profile_, package_name, kImpressionCount,
                   impression_count + 1);
+    UMA_HISTOGRAM_COUNTS_100("Arc.AppListRecommendedImp.CountedImpression", 1);
     UpdateResults();
   }
 }

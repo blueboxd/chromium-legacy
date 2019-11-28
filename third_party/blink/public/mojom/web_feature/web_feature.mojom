@@ -2485,6 +2485,7 @@ enum WebFeature {
   kMessageEventSharedArrayBufferSameOrigin = 3104,
   kMessageEventSharedArrayBufferSameAgentCluster = 3105,
   kMessageEventSharedArrayBufferDifferentAgentCluster = 3106,
+  kCacheStorageCodeCacheHint = 3107,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

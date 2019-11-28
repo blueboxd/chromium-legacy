@@ -443,7 +443,7 @@ TEST(CastInternalMessageUtilTest, CreateAppMessage) {
   std::string client_id = "clientId";
   base::Value message_body(base::Value::Type::DICTIONARY);
   message_body.SetKey("foo", base::Value("bar"));
-  cast_channel::CastMessage cast_message = cast_channel::CreateCastMessage(
+  cast::channel::CastMessage cast_message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", message_body, "sourceId", "destinationId");
 
   auto message = CreateAppMessage(session_id, client_id, cast_message);

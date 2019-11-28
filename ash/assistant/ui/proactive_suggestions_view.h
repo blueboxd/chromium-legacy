@@ -56,6 +56,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
   void OnKeyboardOccludedBoundsChanged(
       const gfx::Rect& new_bounds_in_screen) override;
 
+  // Shows/hides/closes the view.
+  // Note that ShowWhenReady() may show the widget for the view asynchronously
+  // if it is unsafe to show immediately without possibly causing UI jank.
+  virtual void ShowWhenReady();
+  virtual void Hide();
+  virtual void Close();
+
   const ProactiveSuggestions* proactive_suggestions() const {
     return proactive_suggestions_.get();
   }

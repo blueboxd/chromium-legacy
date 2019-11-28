@@ -30,13 +30,13 @@ class SupervisedUserServiceTestSupervised
  protected:
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+    logged_in_user_mixin_.LogInUser();
   }
 
  private:
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server()};
+      embedded_test_server(), this};
 };
 
 // unsupervised tests

@@ -628,6 +628,13 @@ bool Display::DrawAndSwap() {
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     DirectRenderer::SwapFrameData swap_frame_data;
     swap_frame_data.latency_info = std::move(frame.metadata.latency_info);
+    if (frame.metadata.top_controls_visible_height.has_value()) {
+      swap_frame_data.top_controls_visible_height_changed =
+          last_top_controls_visible_height_ !=
+          *frame.metadata.top_controls_visible_height;
+      last_top_controls_visible_height_ =
+          *frame.metadata.top_controls_visible_height;
+    }
     renderer_->SwapBuffers(std::move(swap_frame_data));
     if (scheduler_)
       scheduler_->DidSwapBuffers();

@@ -50,3 +50,22 @@ TEST(DeviceSyncMojomTraitsTest, FeatureStatusChange) {
     EXPECT_EQ(status_in, status_out);
   }
 }
+
+TEST(DeviceSyncMojomTraitsTest, TargetService) {
+  static constexpr cryptauthv2::TargetService kTestTargetServices[] = {
+      cryptauthv2::TargetService::ENROLLMENT,
+      cryptauthv2::TargetService::DEVICE_SYNC};
+
+  for (auto status_in : kTestTargetServices) {
+    cryptauthv2::TargetService status_out;
+
+    chromeos::device_sync::mojom::CryptAuthService serialized_status =
+        mojo::EnumTraits<chromeos::device_sync::mojom::CryptAuthService,
+                         cryptauthv2::TargetService>::ToMojom(status_in);
+    ASSERT_TRUE((mojo::EnumTraits<
+                 chromeos::device_sync::mojom::CryptAuthService,
+                 cryptauthv2::TargetService>::FromMojom(serialized_status,
+                                                        &status_out)));
+    EXPECT_EQ(status_in, status_out);
+  }
+}

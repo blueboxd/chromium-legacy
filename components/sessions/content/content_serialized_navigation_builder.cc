@@ -90,6 +90,9 @@ std::unique_ptr<content::NavigationEntry>
 ContentSerializedNavigationBuilder::ToNavigationEntry(
     const SerializedNavigationEntry* navigation,
     content::BrowserContext* browser_context) {
+  DCHECK(navigation);
+  DCHECK(browser_context);
+
   // The initial values of the NavigationEntry are only temporary - they
   // will get cloberred by one of the SetPageState calls below.
   //
@@ -176,6 +179,8 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
     extended_info_handler->RestoreExtendedInfo(extended_info_entry.second,
                                                entry.get());
   }
+
+  entry->InitRestoredEntry(browser_context);
 
   // These fields should have default values.
   DCHECK_EQ(SerializedNavigationEntry::STATE_INVALID,

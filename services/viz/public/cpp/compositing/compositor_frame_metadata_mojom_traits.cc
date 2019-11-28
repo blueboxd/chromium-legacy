@@ -38,8 +38,10 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
   out->root_background_color = data.root_background_color();
   out->min_page_scale_factor = data.min_page_scale_factor();
-  out->top_controls_height = data.top_controls_height();
-  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
+  if (data.top_controls_visible_height_set()) {
+    out->top_controls_visible_height.emplace(
+        data.top_controls_visible_height());
+  }
 
   return data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&

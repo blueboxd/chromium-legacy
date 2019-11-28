@@ -40,7 +40,7 @@ namespace {
 
 bool ShouldSyncURLImpl(const GURL& url) {
   if (url == kChromeUIHistoryURL) {
-    // Whitelist the chrome history page, home for "Tabs from other devices",
+    // Allow the chrome history page, home for "Tabs from other devices",
     // so it can trigger starting up the sync engine.
     return true;
   }

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_REPORT_BODY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_REPORT_BODY_H_
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/location_report_body.h"
@@ -16,9 +18,9 @@ class CORE_EXPORT DeprecationReportBody : public LocationReportBody {
 
  public:
   DeprecationReportBody(const String& id,
-                        double anticipatedRemoval,
+                        base::Optional<base::Time> anticipated_removal,
                         const String& message)
-      : id_(id), message_(message), anticipatedRemoval_(anticipatedRemoval) {}
+      : id_(id), message_(message), anticipated_removal_(anticipated_removal) {}
 
   ~DeprecationReportBody() override = default;
 
@@ -32,7 +34,7 @@ class CORE_EXPORT DeprecationReportBody : public LocationReportBody {
  private:
   const String id_;
   const String message_;
-  const double anticipatedRemoval_;
+  const base::Optional<base::Time> anticipated_removal_;
 };
 
 }  // namespace blink

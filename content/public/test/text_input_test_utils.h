@@ -105,19 +105,19 @@ class TextInputManagerTester {
 
   // Sets a callback which is invoked when a RWHV calls UpdateTextInputState
   // on the TextInputManager which is being observed.
-  void SetUpdateTextInputStateCalledCallback(const base::Closure& callback);
+  void SetUpdateTextInputStateCalledCallback(base::RepeatingClosure callback);
 
   // Sets a callback which is invoked when a RWHV calls SelectionBoundsChanged
   // on the TextInputManager which is being observed.
-  void SetOnSelectionBoundsChangedCallback(const base::Closure& callback);
+  void SetOnSelectionBoundsChangedCallback(base::RepeatingClosure callback);
 
   // Sets a callback which is invoked when a RWHV calls
   // ImeCompositionRangeChanged on the TextInputManager that is being observed.
-  void SetOnImeCompositionRangeChangedCallback(const base::Closure& callback);
+  void SetOnImeCompositionRangeChangedCallback(base::RepeatingClosure callback);
 
   // Sets a callback which is invoked when a RWHV calls SelectionChanged on the
   // TextInputManager which is being observed.
-  void SetOnTextSelectionChangedCallback(const base::Closure& callback);
+  void SetOnTextSelectionChangedCallback(base::RepeatingClosure callback);
 
   // Returns true if there is a focused <input> and populates |type| with
   // |TextInputState.type| of the TextInputManager.
@@ -249,7 +249,7 @@ class TestTextInputClientMessageFilter : public BrowserMessageFilter {
   // Sets a callback for the string for range IPC arriving from the renderer.
   // The callback is invoked before that of TextInputClientMac and is handled on
   // UI thread.
-  void SetStringForRangeCallback(const base::Closure& callback);
+  void SetStringForRangeCallback(base::RepeatingClosure callback);
 
   RenderProcessHost* process() const { return host_; }
   std::string string_from_range() { return string_from_range_; }
@@ -259,7 +259,7 @@ class TestTextInputClientMessageFilter : public BrowserMessageFilter {
   RenderProcessHost* const host_;
   std::string string_from_range_;
   bool received_string_from_range_;
-  base::Closure string_for_range_callback_;
+  base::RepeatingClosure string_for_range_callback_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClientMessageFilter);

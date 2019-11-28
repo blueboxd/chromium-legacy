@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_TEST_API_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "base/macros.h"
@@ -43,6 +44,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   views::View* voice_input_toggle() override;
   views::View* keyboard_input_toggle() override;
   aura::Window* window() override;
+  views::View* app_list_view() override;
 
  private:
   void EnableAnimations();

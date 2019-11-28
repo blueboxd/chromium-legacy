@@ -53,7 +53,6 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
       network_task_runner_(network_task_runner),
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
-      net_log_(new net::NetLog()),
       system_cookie_store_(web::CreateSystemCookieStore(browser_state)) {}
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {}
@@ -63,7 +62,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
   if (!url_request_context_) {
     url_request_context_.reset(new net::URLRequestContext());
-    url_request_context_->set_net_log(net_log_.get());
+    url_request_context_->set_net_log(net::NetLog::Get());
     DCHECK(!network_delegate_.get());
     network_delegate_ = std::make_unique<net::NetworkDelegateImpl>();
     url_request_context_->set_network_delegate(network_delegate_.get());
@@ -73,7 +72,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     // Using std::move on a |system_cookie_store_| resets it to null as it's a
     // unique_ptr, so |system_cookie_store_| will not be a dangling pointer.
     storage_->set_cookie_store(std::make_unique<net::CookieStoreIOS>(
-        std::move(system_cookie_store_), net_log_.get()));
+        std::move(system_cookie_store_), url_request_context_->net_log()));
 
     std::string user_agent =
         web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);

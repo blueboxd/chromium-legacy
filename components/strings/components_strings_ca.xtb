@@ -631,7 +631,6 @@
 <translation id="4082393374666368382">Configuració - Gestió</translation>
 <translation id="4098354747657067197">Aquest lloc web és enganyós</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
-<translation id="410351446219883937">Reproducció automàtica</translation>
 <translation id="4103763322291513355">Ves a &lt;strong&gt;chrome://policy&lt;/strong&gt; per veure la llista d'URL inclosos a la llista negra i altres polítiques aplicades per l'administrador del sistema.</translation>
 <translation id="4108231218301530806">Fes servir l'empremta digital per verificar aquesta targeta la propera vegada.</translation>
 <translation id="4110652170750985508">Revisa el pagament</translation>
@@ -941,7 +940,7 @@
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
 <translation id="5541546772353173584">Afegeix un correu electrònic</translation>
 <translation id="5545756402275714221">Articles que et poden interessar</translation>
-<translation id="5552137475244467770">Chrome contrasta periòdicament les teves contrasenyes amb les d'una sèrie de llistes publicades en línia. D'aquesta manera, les teves contrasenyes i els teus noms d'usuari queden encriptats i, per tant, ningú no els pot llegir (ni tan sols Google).</translation>
+<translation id="5552137475244467770">Chrome contrasta periòdicament les teves contrasenyes amb les d'una sèrie de llistes publicades en línia. Quan ho fa, les teves contrasenyes i els teus noms d'usuari s'encripten i, per tant, ningú no els pot llegir (ni tan sols Google).</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5560088892362098740">Data de caducitat</translation>
 <translation id="5565735124758917034">Actiu</translation>

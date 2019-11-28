@@ -89,6 +89,10 @@ aura::Window* AssistantTestApiImpl::window() {
   return main_view()->GetWidget()->GetNativeWindow();
 }
 
+views::View* AssistantTestApiImpl::app_list_view() {
+  return static_cast<views::View*>(contents_view()->app_list_view());
+}
+
 void AssistantTestApiImpl::EnableAssistant() {
   Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
       chromeos::assistant::prefs::kAssistantEnabled, true);

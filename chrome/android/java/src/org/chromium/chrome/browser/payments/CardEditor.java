@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;

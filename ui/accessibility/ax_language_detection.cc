@@ -149,7 +149,7 @@ void AXLanguageDetectionManager::DetectLanguageForSubtreeInternal(
         lang_info->detected_languages.push_back(res.language);
       }
     }
-    lang_info_stats.Add(lang_info->detected_languages);
+    lang_info_stats_.Add(lang_info->detected_languages);
   }
 
   // TODO(chrishall): refactor this as textnodes only ever have inline text
@@ -185,7 +185,7 @@ void AXLanguageDetectionManager::LabelLanguageForSubtreeInternal(AXNode* node) {
   // for this node.
   if (lang_info && lang_info->language.empty()) {
     for (const auto& lang : lang_info->detected_languages) {
-      if (lang_info_stats.CheckLanguageWithinTop(lang)) {
+      if (lang_info_stats_.CheckLanguageWithinTop(lang)) {
         lang_info->language = lang;
         break;
       }

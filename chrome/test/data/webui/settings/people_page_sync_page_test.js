@@ -16,6 +16,13 @@ cr.define('settings_people_page_sync_page', function() {
       PolymerTest.clearBody();
       syncPage = document.createElement('settings-sync-page');
       settings.navigateTo(settings.routes.SYNC);
+      // Preferences should exist for embedded 'personalization_options.html'.
+      // We don't perform tests on them.
+      syncPage.prefs = {
+        profile: {password_manager_leak_detection: {value: true}},
+        safebrowsing:
+            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      };
 
       document.body.appendChild(syncPage);
 

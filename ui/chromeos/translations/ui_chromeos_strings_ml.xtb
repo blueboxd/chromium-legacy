@@ -188,7 +188,7 @@
 <translation id="3241720467332021590">ഐറിഷ്</translation>
 <translation id="3245321423178950146">അറിയപ്പെടാത്ത കലാകാരൻ</translation>
 <translation id="3252266817569339921">ഫ്രഞ്ച്</translation>
-<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ഫയലുകൾക്കായി സ്ഥിരസ്ഥിതി ആപ്പ് തിരഞ്ഞെടുക്കുക:</translation>
+<translation id="3254434849914415189"><ph name="FILE_TYPE" /> ഫയലുകൾക്കായി ഡിഫോൾട്ട് ആപ്പ് തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="3264582393905923483">സന്ദർഭം</translation>
 <translation id="3280431534455935878">തയ്യാറെടുക്കുന്നു</translation>
 <translation id="3280987981688031357">വിനൈൽ റെക്കോർഡ്</translation>
@@ -222,7 +222,7 @@
 <translation id="3644896802912593514">വീതി</translation>
 <translation id="3645531960514756307">ഫോൾഡർ അൺപിൻ ചെയ്യുക</translation>
 <translation id="3678559383040232393">മാൾട്ടീസ് കീബോർഡ്</translation>
-<translation id="3685122418104378273">മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കുമ്പോൾ, സാധാരണയായി Google ഡ്രൈവ് സമന്വയം പ്രവർത്തനരഹിതമാകുന്നു.</translation>
+<translation id="3685122418104378273">മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കുമ്പോൾ, ഡിഫോൾട്ടായി Google ഡ്രൈവ് സമന്വയം പ്രവർത്തനരഹിതമാകുന്നു.</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> റദ്ദാക്കുക.</translation>
 <translation id="3726463242007121105">ഈ ഉപകരണത്തിന്റെ ഫയൽസിസ്റ്റം പിന്തുണയ്ക്കാത്തതിനാൽ ഇത് തുറക്കാനായില്ല.</translation>
 <translation id="3741243925913727067">Google ഡ്രൈവിലേക്ക് നിങ്ങളുടെ മീഡിയാ ഉപകരണത്തിന്റെ ഫോട്ടോകളും വീഡിയോകളും ബാക്കപ്പെടുക്കുക.</translation>
@@ -519,7 +519,7 @@
 <translation id="6970230597523682626">ബള്‍ഗേറിയന്‍</translation>
 <translation id="6978611942794658017">ഈ ഫയൽ, Windows സോഫ്‌റ്റ്‌വെയർ ഉപയോഗിക്കുന്ന PC-‌യ്ക്കായി രൂപകൽപ്പന ചെയ്‌തിരിക്കുന്നു. ഇത് Chrome OS പ്രവർത്തിക്കുന്ന നിങ്ങളുടെ ഉപകരണത്തിന് അനുയോജ്യമായതല്ല. അനുയോജ്യമായ മറ്റൊരു അപ്ലിക്കേഷനായി Chrome വെബ് സ്‌റ്റോറിൽ തിരയുക.</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
-<translation id="6990081529015358884">നിങ്ങൾക്ക് മാതിയായ ഇടമില്ല</translation>
+<translation id="6990081529015358884">നിങ്ങൾക്ക് മതിയായ ഇടമില്ല</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ഫോൾഡറുകൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു.</translation>

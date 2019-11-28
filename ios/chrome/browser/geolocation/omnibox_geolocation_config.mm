@@ -23,7 +23,7 @@ NSString* const kEligibleDomainsKey = @"EligibleDomains";
 }  // namespace
 
 @interface OmniboxGeolocationConfig () {
-  // Whitelist of domains eligible for Omnibox geolocation.
+  // List of domains eligible for Omnibox geolocation.
   std::set<std::string> _eligibleDomains;
 }
 

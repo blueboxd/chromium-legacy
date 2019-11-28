@@ -449,8 +449,8 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeFidoHidManager::AddReceiver,
-                   base::Unretained(fake_hid_manager_.get())));
+        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
+                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
@@ -1733,7 +1733,7 @@ class TestAuthenticatorRequestDelegate
 
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
-      base::Closure start_over_callback,
+      base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
@@ -2623,8 +2623,8 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeFidoHidManager::AddReceiver,
-                   base::Unretained(fake_hid_manager_.get())));
+        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
+                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =

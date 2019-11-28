@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 // A function to call when focus changes, for testing only.
-base::LazyInstance<base::Closure>::DestructorAtExit
+base::LazyInstance<base::RepeatingClosure>::DestructorAtExit
     g_focus_change_callback_for_testing = LAZY_INSTANCE_INITIALIZER;
 
 // If 2 or more tree updates can all be merged into others,
@@ -668,8 +668,8 @@ void BrowserAccessibilityManager::SetFocusLocallyForTesting(
 
 // static
 void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
-    const base::Closure& callback) {
-  g_focus_change_callback_for_testing.Get() = callback;
+    base::RepeatingClosure callback) {
+  g_focus_change_callback_for_testing.Get() = std::move(callback);
 }
 
 void BrowserAccessibilityManager::SetGeneratedEventCallbackForTesting(

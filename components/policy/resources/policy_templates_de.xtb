@@ -159,6 +159,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
 <translation id="1160479894929412407">QUIC-Protokoll zulassen</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
+<translation id="1163080558183062209">Drucker auf der "Nicht zugelassen"-Liste deaktivieren</translation>
 <translation id="117059611145966538">Externe Druckserver</translation>
 <translation id="1189817621108632689">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern nicht gestattet ist.
 
@@ -871,6 +872,13 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Inkorrekt formatierte Vorlagen werden ignoriert.</translation>
 <translation id="2345547870894930157">DoH-Modus ohne unsicheres Fallback-Verhalten aktivieren</translation>
+<translation id="2347264058558503729">Ermöglicht es <ph name="PRODUCT_NAME" />, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME" /> zu senden.  HINWEIS: Diese Einstellung wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME" />-Unterstützung in <ph name="PRODUCT_NAME" /> aus.  Sie verhindert nicht, dass Nutzer Druckaufträge an Websites senden können.
+
+      Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> drucken.
+
+      Ist sie deaktiviert, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> nicht drucken.
+
+      Damit <ph name="CLOUD_PRINT_NAME" />-Ziele sichtbar sind, muss diese Richtlinie auf "true" gesetzt sein und "cloud" darf nicht in der "PrinterTypeDenyList"-Richtlinie stehen.</translation>
 <translation id="237494535617297575">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Benachrichtigungen gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
 <translation id="2398554235599593694"> Mit dieser Richtlinie kann festgelegt werden, ob das Kästchen für "Immer öffnen" auf Bestätigungsaufforderungen beim Start externer Protokolle angezeigt werden soll.
@@ -979,6 +987,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilen-Flags gestartet wird.
 
           Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
+<translation id="247658312644322296">Das Ziel "Als PDF speichern"</translation>
 <translation id="2480971699591919564">Hiermit wird die Funktion "Zum Anrufen klicken" aktiviert. Mit ihr können Telefonnummern von Chrome-Computern an Android-Geräte gesendet werden, wenn der Nutzer angemeldet ist. Weitere Informationen finden Sie in diesem Hilfeartikel: https://support.google.com/chrome/answer/9430554?.
 
       Wenn diese Richtlinie aktiviert ist, können Chrome-Nutzer Telefonnummern an Android-Geräte senden.
@@ -2206,15 +2215,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
 <translation id="4363057787588706121">Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen erlauben</translation>
 <translation id="4363101430102811068">Datenleck-Erkennung für eingegebene Anmeldedaten aktivieren</translation>
-<translation id="4363136876356691536">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
-
-          Wenn sie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann sie jedoch auf der Seite "Einstellungen" aktivieren.
-
-          Werden Bedienungshilfen anderweitig aktiviert, z. B. über eine Tastenkombination, erscheinen die Optionen für Bedienungshilfen immer im Taskleistenmenü.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -2350,7 +2350,19 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
       Anfragen zur Installation von Erweiterungen werden erstellt, wenn Nutzer versuchen, eine Erweiterung zu installieren, die weder von <ph name="EXTENSION_INSTALL_WHITELIST" /> noch von <ph name="EXTENSION_SETTINGS" /> auf die weiße Liste gesetzt wurde.
 
       Die Richtlinie wird nur angewendet, wenn das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist und <ph name="CLOUD_REPORTING_ENABLED" /> aktiviert ist.</translation>
+<translation id="4638162097046412832">Druckertypen auf der "Nicht zugelassen"-Liste und die entsprechenden Funktionen können nicht gefunden werden.
+
+      Wenn alle Druckertypen auf die "Nicht zugelassen"-Liste gesetzt werden, sind keine Druckziele mehr verfügbar und es kann daher nicht mehr gedruckt werden.
+
+      Wird "cloud" auf die Liste gesetzt, hat dies denselben Effekt, wie wenn die Richtlinie "CloudPrintSubmitEnabled" auf "false" festgelegt wird. Damit <ph name="CLOUD_PRINT_NAME" />-Ziele sichtbar sind, muss die Richtlinie "CloudPrintSubmitEnabled" auf "true" gesetzt sein und "cloud" darf nicht auf der "Nicht zugelassen"-Liste stehen.
+
+      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, sind alle Druckertypen sichtbar.
+
+      Erweiterungsdrucker werden auch als Druckserviceziele bezeichnet – hierzu zählen alle Druckziele, die zu einer <ph name="PRODUCT_NAME" />-Erweiterung gehören.
+
+      Lokale Drucker werden auch native Druckziele genannt – hierzu zählen Druckziele, die für lokale Geräte verfügbar sind, sowie freigegebene Netzwerkdrucker.</translation>
 <translation id="4639407427807680016">Namen der Hosts für natives Messaging, die von der schwarzen Liste ausgenommen werden sollen</translation>
+<translation id="4649395978608361979">Lokale Druckziele</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
 <translation id="465099050592230505">Unternehmens-Web-Store-URL (veraltet)</translation>
 <translation id="4661889655253181651">Unter "Inhaltseinstellungen" können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
@@ -2377,6 +2389,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
       Wenn diese Richtlinie aktiviert ist, dürfen Websites gleichzeitig mit der Navigation neue Fenster oder Tabs öffnen.
       Wenn diese Richtlinie deaktiviert oder nicht festgelegt ist, dürfen Websites neue Fenster oder Tabs nicht gleichzeitig mit der Navigation öffnen.</translation>
 <translation id="4680961954980851756">AutoFill aktivieren</translation>
+<translation id="4693779768620889402">Erweiterungsbasierte Ziele</translation>
 <translation id="4703402283970867140">Intelligentem Dimmmodell erlauben, den Zeitraum bis zum Dimmen des Bildschirms zu verlängern</translation>
 <translation id="4722122254122249791">Website-Isolierung für angegebene Ursprünge aktivieren</translation>
 <translation id="4722399051042571387">Wenn "false" eingestellt ist, können Nutzer keine schwache PIN festlegen, die leicht zu erraten ist.
@@ -3005,6 +3018,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
 <translation id="5656177735561364047">Mit dieser Richtlinie wird die Funktion "Geteilte Zwischenablage" aktiviert.</translation>
 <translation id="5666457529647159548">Nutzern erlauben, installierte Clientzertifikate zu verwalten.</translation>
+<translation id="5676740747107495269">Optionen für Bedienungshilfen im Taskleistenmenü auf dem Anmeldebildschirm anzeigen</translation>
 <translation id="5689430183304951538">Standardmäßige Druckseitengröße</translation>
 <translation id="5693469654327063861">Datenmigration zulassen</translation>
 <translation id="5694594914843889579">Wenn diese Einstellung auf "true" gesetzt ist, ist im Datei-Browser kein externer Speicher verfügbar.
@@ -3223,7 +3237,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Standortdienste von Google bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Standortdienste aktivieren oder deaktivieren.
 
       Beachten Sie, dass die Richtlinie ignoriert wird und die Standortdienste von Google immer deaktiviert sind, wenn die Richtlinie "<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />" auf "<ph name="BLOCK_GEOLOCATION_SETTING" />" festgelegt ist.</translation>
-<translation id="6141402445226505817">Immer die grobe Erkennung der Zeitzone verwenden</translation>
+<translation id="6141402445226505817">Immer die ungefähre Erkennung der Zeitzone verwenden</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="614616930188030377">Muster in dieser Liste werden mit der Sicherheitsherkunft der anfragenden URL abgeglichen.
       Wenn Übereinstimmungen gefunden werden oder chrome://flags/#enable-webrtc-hide-local-ips-with-mdns deaktiviert ist, werden die lokalen IP-Adressen in WebRTC ICE-Kandidaten angezeigt.
@@ -3537,6 +3551,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
 <translation id="6813263547126514821">Betrieb und Herunterfahren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>
+<translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />- und "In Google Drive speichern"-Ziele</translation>
 <translation id="6833988859168635883">Start, Startseite und Seite "Neuer Tab"</translation>
 <translation id="6835883744948188639">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart empfohlen wird</translation>
 <translation id="683688607121170501">Mit dieser Einstellung können Nutzer nach der Anmeldung auf ihrem <ph name="PRODUCT_OS_NAME" />-Gerät im Inhaltsbereich des Browserfensters und in Android-Apps zwischen Google-Konten wechseln.
@@ -3961,6 +3976,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
 <translation id="747275827471712187">Auf diesen Websites das alte "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Verhalten für Cookies wiederherstellen</translation>
 <translation id="7477231245051133709">Bedienungshilfe "Mono-Audio" aktivieren</translation>
+<translation id="7477239290070847560">Zeroconf-basierte (mDNS + DNS-SD) Protokollziele</translation>
 <translation id="7485481791539008776">Regeln zur Auswahl des Standarddruckers</translation>
 <translation id="7485730741952775732">Ist diese Richtlinie konfiguriert, verwendet der Host für den Remotezugriff diese URL zur Validierung von Authentifizierungstokens von Clients für den Remotezugriff, um Verbindungen zu akzeptieren. Die Richtlinie muss in Verbindung mit "RemoteAccessHostTokenUrl" verwendet werden.
 

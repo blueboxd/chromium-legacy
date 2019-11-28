@@ -463,6 +463,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
                            bool discard_duplicates) final;
   void Collapse(bool collapsed) final;
 
+  void EnableViewSourceMode() final;
+
  private:
   friend class FrameNavigationDisabler;
 

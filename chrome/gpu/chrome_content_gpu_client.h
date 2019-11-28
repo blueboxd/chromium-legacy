@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/common/thread_profiler.h"
+#include "chrome/common/profiler/thread_profiler.h"
 #include "content/public/gpu/content_gpu_client.h"
 
 #if defined(OS_CHROMEOS)

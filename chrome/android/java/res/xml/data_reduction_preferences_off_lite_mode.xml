@@ -6,15 +6,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto" >
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:title="@string/data_reduction_benefits_description_lite_mode"
         app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:title="@string/data_reduction_description_lite_mode"
         app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.preferences.LearnMorePreference
+    <org.chromium.chrome.browser.settings.LearnMorePreference
         android:key="data_reduction_learn_more"
         app:helpContext="@string/help_context_data_reduction"
         app:allowDividerBelow="false" />

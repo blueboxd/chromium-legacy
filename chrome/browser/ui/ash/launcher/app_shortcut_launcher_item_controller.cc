@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -210,7 +210,7 @@ void AppShortcutLauncherItemController::GetContextMenu(
     GetContextMenuCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  context_menu_ = LauncherContextMenu::Create(controller, item, display_id);
+  context_menu_ = ShelfContextMenu::Create(controller, item, display_id);
   context_menu_->GetMenuModel(std::move(callback));
 }
 

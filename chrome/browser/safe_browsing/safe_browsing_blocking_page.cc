@@ -56,8 +56,8 @@ class SafeBrowsingBlockingPageFactoryImpl
       BaseUIManager* ui_manager,
       WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) override {
     // Create appropriate display options for this blocking page.
     PrefService* prefs =
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
@@ -82,9 +82,9 @@ class SafeBrowsingBlockingPageFactoryImpl
         true,  // always_show_back_to_safety
         kHelpCenterLink);
 
-    return new SafeBrowsingBlockingPage(ui_manager, web_contents,
-                                        main_frame_url, unsafe_resources,
-                                        display_options);
+    return new SafeBrowsingBlockingPage(
+        ui_manager, web_contents, main_frame_url, unsafe_resources,
+        display_options, should_trigger_reporting);
   }
 
  private:
@@ -110,6 +110,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources,
     const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+    bool should_trigger_reporting,
     network::SharedURLLoaderFactory* url_loader_for_testing)
     : BaseBlockingPage(
           ui_manager,
@@ -138,15 +139,17 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
             ? url_loader_for_testing
             : content::BrowserContext::GetDefaultStoragePartition(profile)
                   ->GetURLLoaderFactoryForBrowserProcess();
-    threat_details_in_progress_ =
-        g_browser_process->safe_browsing_service()
-            ->trigger_manager()
-            ->StartCollectingThreatDetails(
-                TriggerType::SECURITY_INTERSTITIAL, web_contents,
-                unsafe_resources[0], url_loader_factory,
-                HistoryServiceFactory::GetForProfile(
-                    profile, ServiceAccessType::EXPLICIT_ACCESS),
-                sb_error_ui()->get_error_display_options());
+    if (should_trigger_reporting) {
+      threat_details_in_progress_ =
+          g_browser_process->safe_browsing_service()
+              ->trigger_manager()
+              ->StartCollectingThreatDetails(
+                  TriggerType::SECURITY_INTERSTITIAL, web_contents,
+                  unsafe_resources[0], url_loader_factory,
+                  HistoryServiceFactory::GetForProfile(
+                      profile, ServiceAccessType::EXPLICIT_ACCESS),
+                  sb_error_ui()->get_error_display_options());
+    }
   }
 }
 
@@ -175,7 +178,7 @@ void SafeBrowsingBlockingPage::HandleSubresourcesAfterProceed() {
     // already showing would cause DontProceed() to be invoked.
     SafeBrowsingBlockingPage* blocking_page = factory_->CreateSafeBrowsingPage(
         ui_manager(), web_contents(), entry ? entry->GetURL() : GURL(),
-        unsafe_resources);
+        unsafe_resources, /*should_trigger_reporting=*/true);
     unsafe_resource_map->erase(iter);
 
     // Now that this interstitial is gone, we can show the new one.
@@ -238,14 +241,16 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
     BaseUIManager* ui_manager,
     WebContents* web_contents,
     const GURL& main_frame_url,
-    const UnsafeResource& unsafe_resource) {
+    const UnsafeResource& unsafe_resource,
+    bool should_trigger_reporting) {
   const UnsafeResourceList resources{unsafe_resource};
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
     factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
   return factory_->CreateSafeBrowsingPage(ui_manager, web_contents,
-                                          main_frame_url, resources);
+                                          main_frame_url, resources,
+                                          should_trigger_reporting);
 }
 
 // static
@@ -268,7 +273,8 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
         unsafe_resource.GetNavigationEntryForResource();
     GURL main_fram_url = entry ? entry->GetURL() : GURL();
     SafeBrowsingBlockingPage* blocking_page = CreateBlockingPage(
-        ui_manager, web_contents, main_fram_url, unsafe_resource);
+        ui_manager, web_contents, main_fram_url, unsafe_resource,
+        /*should_trigger_reporting=*/true);
     blocking_page->Show();
     MaybeTriggerSecurityInterstitialShownEvent(
         web_contents, main_fram_url,

@@ -150,6 +150,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
 <translation id="1160479894929412407">Izinkan protokol QUIC</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari halaman peringatan Safe Browsing</translation>
+<translation id="1163080558183062209">Menonaktifkan jenis printer di daftar tolak</translation>
 <translation id="117059611145966538">Server cetak eksternal</translation>
 <translation id="1189817621108632689">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang tidak diizinkan untuk menampilkan gambar.
 
@@ -856,6 +857,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Template dengan format yang salah akan diabaikan.</translation>
 <translation id="2345547870894930157">Aktifkan DNS-over-HTTPS tanpa fallback yang tidak aman</translation>
+<translation id="2347264058558503729">Memungkinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk dicetak.  CATATAN: Ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> di <ph name="PRODUCT_NAME" />.  Kebijakan ini tidak mencegah pengguna dalam mengirimkan pekerjaan cetak di situs.
+
+      Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />.
+
+      Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />.
+
+      Agar tujuan <ph name="CLOUD_PRINT_NAME" /> tetap dapat ditemukan, kebijakan ini harus ditetapkan ke true dan 'cloud' tidak boleh dimasukkan ke kebijakan 'PrinterTypeDenyList'.</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
 <translation id="2398554235599593694"> Kebijakan ini mengontrol apakah kotak centang "Always open" ditampilkan atau tidak pada perintah konfirmasi peluncuran protokol eksternal.
@@ -964,6 +972,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika diaktifkan atau tidak ditetapkan, peringatan keamanan akan ditampilkan saat beberapa tanda command line digunakan untuk meluncurkan Chrome.
 
           Di Windows, kebijakan ini hanya tersedia pada instance yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
+<translation id="247658312644322296">Tujuan 'Simpan sebagai PDF'</translation>
 <translation id="2480971699591919564">Aktifkan fitur Click to Call yang memungkinkan pengguna mengirim nomor ponsel dari Desktop Chrome ke perangkat Android saat pengguna Login. Untuk informasi lebih lanjut, lihat artikel pusat bantuan: https://support.google.com/chrome/answer/9430554?hl=id.
 
       Jika kebijakan ini ditetapkan ke aktif, kemampuan untuk mengirim nomor ponsel ke perangkat Android akan diaktifkan bagi pengguna Chrome.
@@ -2205,15 +2214,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
 <translation id="4363057787588706121">Mengizinkan penggabungan kebijakan yang ada dalam daftar dari sumber berbeda</translation>
 <translation id="4363101430102811068">Aktifkan deteksi kebocoran untuk kredensial yang dimasukkan</translation>
-<translation id="4363136876356691536">Jika kebijakan ini ditetapkan ke true, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan ke false, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat menyebabkan munculnya opsi Aksesibilitas melalui halaman Setelan.
-
-          Jika fitur aksesibilitas diaktifkan dengan cara lain (misalnya dengan kombinasi tombol), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
 <translation id="436581050240847513">Melaporkan antarmuka jaringan perangkat</translation>
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
@@ -2349,7 +2349,19 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Permintaan penginstalan ekstensi akan dibuat saat pengguna mencoba menginstal ekstensi yang tidak diizinkan oleh <ph name="EXTENSION_INSTALL_WHITELIST" /> atau <ph name="EXTENSION_SETTINGS" />.
 
       Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> dan <ph name="CLOUD_REPORTING_ENABLED" /> diaktifkan.</translation>
+<translation id="4638162097046412832">Printer dengan jenis yang tercantum dalam daftar tolak akan dinonaktifkan agar tidak dapat ditemukan atau digunakan.
+
+      Mencantumkan semua jenis printer di daftar tolak akan menonaktifkan pencetakan secara efektif, ini disebabkan tidak tersedianya tujuan untuk mengirim dokumen yang akan dicetak.
+
+      Memasukkan 'cloud' ke daftar tolak memiliki efek yang sama dengan menetapkan kebijakan 'CloudPrintSubmitEnabled' ke false. Agar tujuan <ph name="CLOUD_PRINT_NAME" /> tetap dapat ditemukan, kebijakan 'CloudPrintSubmitEnabled' harus ditetapkan ke true dan 'cloud' tidak boleh berada dalam daftar tolak.
+
+      Jika kebijakan tersebut tidak ditetapkan, atau ditetapkan ke daftar kosong, semua jenis printer akan dapat ditemukan.
+
+      Printer ekstensi juga disebut sebagai tujuan penyedia cetak, dan menyertakan semua tujuan yang termasuk dalam ekstensi <ph name="PRODUCT_NAME" />.
+
+      Printer lokal juga disebut sebagai tujuan cetak asli, dan menyertakan tujuan yang tersedia untuk mesin lokal dan printer jaringan bersama.</translation>
 <translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
+<translation id="4649395978608361979">Tujuan printer lokal</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>
 <translation id="465099050592230505">URL toko web perusahaan (tidak digunakan)</translation>
 <translation id="4661889655253181651">Setelan konten memungkinkan Anda menentukan bagaimana konten jenis tertentu (misalnya, Cookie, Gambar, atau JavaScript) ditangani.</translation>
@@ -2376,6 +2388,7 @@ Untuk penjelasan selengkapnya, lihat https://www.chromestatus.com/features/56757
 Jika kebijakan ini diaktifkan, situs akan diizinkan untuk menavigasi dan membuka jendela/tab baru secara bersamaan.
 Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat menavigasi dan membuka jendela/tab baru secara bersamaan.</translation>
 <translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
+<translation id="4693779768620889402">Tujuan berbasis ekstensi</translation>
 <translation id="4703402283970867140">Aktifkan model redup smart untuk memperpanjang waktu hingga layar diredupkan</translation>
 <translation id="4722122254122249791">Aktifkan Isolasi Situs untuk asal yang ditetapkan</translation>
 <translation id="4722399051042571387">Jika "false", pengguna tidak dapat menyetel PIN yang lemah dan mudah ditebak.
@@ -3002,6 +3015,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5645779841392247734">Izinkan cookie di situs ini</translation>
 <translation id="5656177735561364047">Mengaktifkan Fitur Papan Klip Bersama</translation>
 <translation id="5666457529647159548">Mengizinkan pengguna mengelola sertifikat klien yang terinstal.</translation>
+<translation id="5676740747107495269">Menampilkan opsi aksesibilitas di menu baki sistem pada layar login</translation>
 <translation id="5689430183304951538">Ukuran halaman pencetakan default</translation>
 <translation id="5693469654327063861">Izinkan migrasi data</translation>
 <translation id="5694594914843889579">Jika kebijakan ini disetel ke true, penyimpanan eksternal tidak akan tersedia di browser file.
@@ -3530,6 +3544,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="6813263547126514821">Daya dan penonaktifan</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
+<translation id="6821268164692776674">Tujuan <ph name="CLOUD_PRINT_NAME" /> dan 'Simpan ke Google Drive'</translation>
 <translation id="6833988859168635883">Halaman Awal, Halaman Beranda, dan halaman Tab Baru</translation>
 <translation id="6835883744948188639">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang direkomendasikan</translation>
 <translation id="683688607121170501">Setelan ini memungkinkan pengguna beralih ke Akun Google lain di dalam area konten jendela browser dan aplikasi Android setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
@@ -3954,6 +3969,7 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7469554574977894907">Aktifkan saran penelusuran</translation>
 <translation id="747275827471712187">Mengembalikan cookie di situs ini ke perilaku <ph name="ATTRIBUTE_SAMESITE_NAME" /> lama</translation>
 <translation id="7477231245051133709">Mengaktifkan fitur aksesibilitas audio mono</translation>
+<translation id="7477239290070847560">Tujuan protokol berbasis Zeroconf (mDNS + DNS-SD)</translation>
 <translation id="7485481791539008776">Aturan pemilihan printer default</translation>
 <translation id="7485730741952775732">Jika kebijakan ini ditetapkan, host akses jarak jauh akan menggunakan URL ini untuk memvalidasi token autentikasi dari klien akses jarak jauh, agar dapat menerima sambungan. Harus digunakan bersama RemoteAccessHostTokenUrl.
 

@@ -8,8 +8,8 @@ import org.chromium.base.Promise;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
-import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
+import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
 
 /**
  * A class to wipe the user's bookmarks and all types of sync data.

@@ -34,12 +34,12 @@ CookieSettings::CookieSettings(
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kBlockThirdPartyCookies,
-      base::Bind(&CookieSettings::OnCookiePreferencesChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
+                          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
-      base::Bind(&CookieSettings::OnCookiePreferencesChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&CookieSettings::OnCookiePreferencesChanged,
+                          base::Unretained(this)));
   OnCookiePreferencesChanged();
 }
 

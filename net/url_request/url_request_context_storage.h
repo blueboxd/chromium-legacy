@@ -26,7 +26,6 @@ class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
-class NetLog;
 class NetworkDelegate;
 class ProxyDelegate;
 class ProxyResolutionService;
@@ -56,7 +55,6 @@ class NET_EXPORT URLRequestContextStorage {
   // These setters will set both the member variables and call the setter on the
   // URLRequestContext object. In all cases, ownership is passed to |this|.
 
-  void set_net_log(std::unique_ptr<NetLog> net_log);
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
   void set_cert_verifier(std::unique_ptr<CertVerifier> cert_verifier);
   void set_http_auth_handler_factory(
@@ -112,7 +110,6 @@ class NET_EXPORT URLRequestContextStorage {
   URLRequestContext* const context_;
 
   // Owned members.
-  std::unique_ptr<NetLog> net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;

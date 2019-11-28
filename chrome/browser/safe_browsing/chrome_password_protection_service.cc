@@ -1063,24 +1063,48 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
 base::string16
 ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
     std::vector<size_t>* placeholder_offsets) const {
-  const std::vector<std::string>& domains = saved_passwords_matching_domains();
+  const std::vector<std::string>& matching_domains =
+      saved_passwords_matching_domains();
+  const std::list<std::string>& spoofed_domains = common_spoofed_domains();
 
+  // Show most commonly spoofed domains first.
   std::vector<base::string16> placeholders;
-  for (size_t idx = 0; idx < domains.size() && idx < 3; idx++) {
-    placeholders.push_back(base::UTF8ToUTF16(domains[idx]));
+  for (auto priority_domain_iter = spoofed_domains.begin();
+       priority_domain_iter != spoofed_domains.end(); ++priority_domain_iter) {
+    if (std::find(matching_domains.begin(), matching_domains.end(),
+                  *priority_domain_iter) != matching_domains.end()) {
+      placeholders.push_back(base::UTF8ToUTF16(*priority_domain_iter));
+    }
   }
+
+  // If there are less than 3 saved default domains, check the saved
+  //  password domains to see if there are more that can be added to the warning
+  //  text.
+  int domains_idx = placeholders.size();
+  for (size_t idx = 0; idx < matching_domains.size() && domains_idx < 3;
+       idx++) {
+    // Do not add duplicate domains if it was already in the default domains.
+    if (std::find(placeholders.begin(), placeholders.end(),
+                  base::UTF8ToUTF16(matching_domains[idx])) !=
+        placeholders.end()) {
+      continue;
+    }
+    placeholders.push_back(base::UTF8ToUTF16(matching_domains[idx]));
+    domains_idx++;
+  }
+
   // If showing the saved passwords domain experiment is not on or if there is
   // are no saved domains, default to original saved passwords reuse warning.
   if (!base::FeatureList::IsEnabled(
           safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords) ||
-      domains.size() == 0) {
+      placeholders.size() == 0) {
     return l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
-  } else if (domains.size() == 1) {
+  } else if (placeholders.size() == 1) {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN, placeholders,
         placeholder_offsets);
-  } else if (domains.size() == 2) {
+  } else if (placeholders.size() == 2) {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS, placeholders,
         placeholder_offsets);

@@ -413,7 +413,6 @@ Bilaketa-hitzak doitzeko, sakatu luze haiek hautatzeko. Bilaketa mugatzeko, lerr
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> da argitaratzailea <ph name="BEGIN_DEEMPHASIZED" />eta Google-k eskaintzen du<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Aplikazioko datuak ezabatu nahi dituzu?</translation>
 <translation id="4099578267706723511">Hobetu Chrome Google-ri erabilera-estatistikak eta hutsegite-txostenak bidalita.</translation>
-<translation id="410351446219883937">Erreprodukzio automatikoa</translation>
 <translation id="4116038641877404294">Deskargatu orriak konexiorik gabe erabiltzeko</translation>
 <translation id="4135200667068010335">Fitxa partekatzeko hautatutako gailuen zerrenda itxita dago.</translation>
 <translation id="4149994727733219643">Web-orrien ikuspegi sinplifikatua</translation>
@@ -872,7 +871,6 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="7437998757836447326">Amaitu Chrome-ko saioa</translation>
 <translation id="7438641746574390233">Oinarrizko modua aktibatuta dagonean, Chrome-k Google-ren zerbitzariak erabiltzen ditu orriak bizkorrago karga daitezen. Oinarrizko modua eginbideak oso motel kargatzen diren orriak berriro idazten ditu, oinarrizko edukia soilik karga dadin. Oinarrizko modua ez da aplikatzen ezkutuko moduko fitxetan.</translation>
 <translation id="7444811645081526538">Kategoria gehiago</translation>
-<translation id="7445411102860286510">Baimendu webguneei audioa desaktibatuta duten bideoak automatikoki erreproduzitzea (gomendatua)</translation>
 <translation id="7453467225369441013">Webgune gehienetako saioak amaitzen ditu. Ez da amaituko Google-ko kontuko saioa.</translation>
 <translation id="7454641608352164238">Ez dago behar adina tokirik</translation>
 <translation id="7475192538862203634">Maiz agertzen bazaizu, saiatu <ph name="BEGIN_LINK" />iradokizun<ph name="END_LINK" /> hauekin.</translation>
@@ -927,7 +925,6 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="780301667611848630">Ez, eskerrik asko</translation>
 <translation id="7810647596859435254">Ireki honekin…</translation>
 <translation id="7821588508402923572">Hemen agertuko da zenbat datu aurreztu dituzun</translation>
-<translation id="7837721118676387834">Baimendu webgune zehatz bati bideoak automatikoki erreproduzitzea audiorik gabe.</translation>
 <translation id="7846076177841592234">Utzi hautapena bertan behera</translation>
 <translation id="784934925303690534">Denbora tartea</translation>
 <translation id="7851858861565204677">Beste gailu batzuk</translation>

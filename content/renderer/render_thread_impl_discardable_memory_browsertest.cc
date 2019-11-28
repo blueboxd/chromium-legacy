@@ -97,14 +97,14 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
   const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
 
-  DiscardableMemoryBacking impl = GetDiscardableMemoryBacking();
+  base::DiscardableMemoryBacking impl = base::GetDiscardableMemoryBacking();
 
   // TODO(gordonguan): When MADV_FREE DiscardableMemory is discarded, the
   // backing memory is freed, but remains mapped in memory. It is only
   // unmapped when the object is destroyed, or on the next Lock() after
   // discard. Therefore, an abundance of discarded but mapped discardable
   // memory instances may cause an out-of-memory condition.
-  if (impl != DiscardableMemoryBacking::kSharedMemory)
+  if (impl != base::DiscardableMemoryBacking::kSharedMemory)
     return;
 
   std::vector<std::unique_ptr<base::DiscardableMemory>> instances;
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
                        ReleaseFreeDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
-  DiscardableMemoryBacking impl = GetDiscardableMemoryBacking();
+  base::DiscardableMemoryBacking impl = base::GetDiscardableMemoryBacking();
 
   std::unique_ptr<base::DiscardableMemory> memory =
       discardable_memory_allocator()->AllocateLockedDiscardableMemory(kSize);
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   memory.reset();
 
   EXPECT_EQ(discardable_memory_allocator()->GetBytesAllocated(), 0U);
-  if (impl != DiscardableMemoryBacking::kSharedMemory)
+  if (impl != base::DiscardableMemoryBacking::kSharedMemory)
     return;
 
   EXPECT_GE(discardable_memory::DiscardableSharedMemoryManager::Get()

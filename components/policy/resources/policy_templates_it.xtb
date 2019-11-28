@@ -151,6 +151,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
+<translation id="1163080558183062209">Disattiva tipi di stampanti nell'elenco di tipi non consentiti</translation>
 <translation id="117059611145966538">Server di stampa esterni</translation>
 <translation id="1189817621108632689">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita la visualizzazione di immagini.
 
@@ -841,6 +842,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       I modelli con formato errato verranno ignorati.</translation>
 <translation id="2345547870894930157">Attiva DNS over HTTPS senza fallback non sicuro</translation>
+<translation id="2347264058558503729">Permette di consentire a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />.  NOTA: questa impostazione incide soltanto sul supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />.  Non impedisce agli utenti di inviare processi di stampa su siti web.
+
+      Se questa impostazione viene attivata o non viene configurata, gli utenti possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
+
+      Se questa impostazione viene disattivata, gli utenti non possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
+
+      Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, questo criterio deve essere impostato su true e il valore "cloud" non deve essere incluso nel criterio "PrinterTypeDenyList".</translation>
 <translation id="237494535617297575">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2398554235599593694"> Questo criterio consente di stabilire se mostrare o meno la casella di controllo "Apri sempre" nei messaggi di conferma di avvio di protocolli esterni.
@@ -949,6 +957,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se attivato o non impostato, gli avvisi sulla sicurezza vengono visualizzati quando vengono utilizzati determinati flag della linea di comando per avviare Chrome.
 
           Su Windows, questo criterio è disponibile solo per le istanze che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
+<translation id="247658312644322296">La destinazione "Salva come PDF"</translation>
 <translation id="2480971699591919564">Consente di attivare la funzionalità Click-to-call che permette agli utenti di inviare numeri di telefono dai computer desktop Chrome ai dispositivi Android se eseguono l'accesso. Per ulteriori informazioni, leggi l'articolo del Centro assistenza all'indirizzo https://support.google.com/chrome/answer/9430554?hl=it.
 
       Se questo criterio viene attivato, la funzionalità di invio di numeri di telefono ai dispositivi Android verrà attivata per gli utenti di Chrome.
@@ -2177,15 +2186,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Questa funzione è attualmente disattivata lato server.</translation>
 <translation id="4363057787588706121">Consenti l'unione dei criteri nell'elenco provenienti da origini diverse</translation>
 <translation id="4363101430102811068">Attiva il rilevamento della divulgazione delle credenziali inserite</translation>
-<translation id="4363136876356691536">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
-
-          Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
-
-          Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
-
-          Se questo criterio non viene impostato, le opzioni di accessibilità non vengono visualizzate nel menu della barra delle applicazioni, ma l'utente può attivarne la visualizzazione tramite la pagina Impostazioni.
-
-          Quando le funzioni di accessibilità vengono attivate in altri modi (ad esempio con una combinazione di tasti), le opzioni di accessibilità vengono sempre mostrate nel menu della barra delle applicazioni.</translation>
 <translation id="436581050240847513">Riporta interfacce di rete del dispositivo</translation>
 <translation id="4372704773119750918">Non permettere all'utente aziendale di far parte del profilo multiplo (principale o secondario)</translation>
 <translation id="4377599627073874279">Consenti la visualizzazione di tutte le immagini in tutti i siti</translation>
@@ -2315,7 +2315,19 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
 
       Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e <ph name="CLOUD_REPORTING_ENABLED" /> è attivato.</translation>
+<translation id="4638162097046412832">Per le stampanti dei tipi inseriti nell'elenco di tipi non consentiti verranno disattivati il rilevamento o il recupero delle relative funzionalità.
+
+      L'inserimento di tutti i tipi di stampanti nell'elenco di tipi non consentiti comporta essenzialmente la disattivazione della stampa, perché non ci sarebbero destinazioni disponibili a cui inviare un documento da stampare.
+
+      L'inserimento del valore "cloud" nell'elenco di tipi non consentiti equivale all'impostazione del valore false per il criterio "CloudPrintSubmitEnabled". Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, il criterio "CloudPrintSubmitEnabled" deve essere impostato su true e il valore "cloud" non deve essere nell'elenco di tipi non consentiti.
+
+      Se il criterio non viene impostato o se l'elenco viene lasciato vuoto, potranno essere rilevati tutti i tipi di stampanti.
+
+      Le stampanti estensione sono note anche come destinazioni del provider di stampa e includono le eventuali destinazioni appartenenti a un'estensione <ph name="PRODUCT_NAME" />.
+
+      Le stampanti locali sono note anche come destinazioni di stampa native e includono le destinazioni disponibili per le stampanti di computer locali e le stampanti di rete condivise.</translation>
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
+<translation id="4649395978608361979">Destinazioni stampanti locali</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
 <translation id="4661889655253181651">Le impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
@@ -2342,6 +2354,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Se questa norma viene attivata, ai siti sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.
       Se questa norma viene disattivata o non viene impostata, ai siti non sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
+<translation id="4693779768620889402">Destinazioni basate su estensioni</translation>
 <translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
@@ -2967,6 +2980,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="5656177735561364047">Attiva la funzione Appunti condivisi</translation>
 <translation id="5666457529647159548">Consenti agli utenti di gestire i certificati client installati.</translation>
+<translation id="5676740747107495269">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni nella schermata di accesso</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
 <translation id="5694594914843889579">Quando questa norma è impostata su true, la memoria esterna non sarà disponibile nei file che è possibile sfogliare.
@@ -3511,6 +3525,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
+<translation id="6821268164692776674">Destinazioni <ph name="CLOUD_PRINT_NAME" /> e "Salva su Google Drive"</translation>
 <translation id="6833988859168635883">Avvio, pagina iniziale e pagina Nuova scheda</translation>
 <translation id="6835883744948188639">Mostra un messaggio ricorrente all'utente in cui indica che è consigliato eseguire un riavvio</translation>
 <translation id="683688607121170501">Questa impostazione consente agli utenti di passare da un Account Google a un altro all'interno dell'area dei contenuti della finestra del browser e nelle applicazioni Android, dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
@@ -3938,6 +3953,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7469554574977894907">Attiva suggerimenti di ricerca</translation>
 <translation id="747275827471712187">Ripristina il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente per i cookie su questi siti</translation>
 <translation id="7477231245051133709">Attiva la funzione di accessibilità di audio in formato mono</translation>
+<translation id="7477239290070847560">Destinazioni protocolli (mDNS + DNS-SD) basate su Zeroconf</translation>
 <translation id="7485481791539008776">Regole di selezione della stampante predefinita</translation>
 <translation id="7485730741952775732">Se questa norma è impostata, l'host di accesso remoto utilizzerà questo URL per convalidare i token di autenticazione dai client di accesso remoto per accettare connessioni. Deve essere usata insieme a RemoteAccessHostTokenUrl.
 

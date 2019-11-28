@@ -96,7 +96,6 @@ class WebAppShortcutCreator {
 
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
                        ShortcutLocations creation_locations);
-  void DeleteShortcuts();
 
   // Recreate the shortcuts where they are found on disk and in the profile
   // path. If |create_if_needed| is true, then create the shortcuts if no
@@ -121,14 +120,6 @@ class WebAppShortcutCreator {
 
   // Return true if the bundle for this app should be profile-agnostic.
   bool IsMultiProfile() const;
-
-  // Returns the bundle identifier to use for this app bundle.
-  std::string GetBundleIdentifier() const;
-
-  // Returns the profile-scoped app bundle identifier. For multi-profile apps,
-  // this will give the bundle identifier for shims that were created before
-  // multi-profile support was added.
-  std::string GetProfileScopedBundleIdentifier() const;
 
   // Copies the app loader template into a temporary directory and fills in all
   // relevant information. This works around a Finder bug where the app's icon

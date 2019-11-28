@@ -91,8 +91,8 @@ NetworkErrorsListingUI::NetworkErrorsListingUI(WebUI* web_ui)
   html_source->SetDefaultResource(IDR_NETWORK_ERROR_LISTING_HTML);
   html_source->SetRequestFilter(
       base::BindRepeating(&ShouldHandleWebUIRequestCallback),
-      base::Bind(&HandleWebUIRequestCallback,
-                 web_ui->GetWebContents()->GetBrowserContext()));
+      base::BindRepeating(&HandleWebUIRequestCallback,
+                          web_ui->GetWebContents()->GetBrowserContext()));
 
   BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">Từ <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Do Google phân phối<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
-<translation id="410351446219883937">Tự động phát</translation>
 <translation id="4116038641877404294">Tải trang xuống để sử dụng ngoại tuyến</translation>
 <translation id="4135200667068010335">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã đóng.</translation>
 <translation id="4149994727733219643">Chế độ xem đơn giản cho trang web</translation>
@@ -872,7 +871,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7438641746574390233">Khi bạn bật Chế độ thu gọn, Chrome sẽ sử dụng máy chủ của Google để tải trang nhanh hơn. Chế độ thu gọn sẽ ghi lại các trang tốc độ rất chậm để chỉ tải nội dung cần thiết. Chế độ thu gọn không áp dụng cho Tab ẩn danh.</translation>
 <translation id="7444811645081526538">Danh mục khác</translation>
-<translation id="7445411102860286510">Cho phép trang web tự động phát video tắt tiếng (được đề xuất)</translation>
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7454641608352164238">Không đủ dung lượng</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
@@ -927,7 +925,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7810647596859435254">Mở bằng…</translation>
 <translation id="7821588508402923572">Mức tiết kiệm dữ liệu sẽ hiển thị tại đây</translation>
-<translation id="7837721118676387834">Cho phép tự động phát video bị tắt tiếng cho trang web cụ thể.</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>

@@ -39,9 +39,10 @@ public final class DownloadCallbackProxy {
     }
 
     @CalledByNative
-    private void downloadRequested(String url, String userAgent, String contentDisposition,
+    private boolean interceptDownload(String url, String userAgent, String contentDisposition,
             String mimetype, long contentLength) throws RemoteException {
-        mClient.downloadRequested(url, userAgent, contentDisposition, mimetype, contentLength);
+        return mClient.interceptDownload(
+                url, userAgent, contentDisposition, mimetype, contentLength);
     }
 
     @NativeMethods

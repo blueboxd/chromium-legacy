@@ -12,7 +12,7 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 
-class Browser;
+class Profile;
 
 namespace content {
 class RenderViewHost;
@@ -35,11 +35,8 @@ class ExtensionViewViews : public views::WebView,
     virtual void OnExtensionSizeChanged(ExtensionViewViews* view) {}
   };
 
-  ExtensionViewViews(extensions::ExtensionHost* host, Browser* browser);
+  ExtensionViewViews(extensions::ExtensionHost* host, Profile* profile);
   ~ExtensionViewViews() override;
-
-  // extensions::ExtensionView:
-  Browser* GetBrowser() override;
 
   // views::WebView:
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -70,9 +67,6 @@ class ExtensionViewViews : public views::WebView,
 
   // Note that host_ owns view
   extensions::ExtensionHost* host_;
-
-  // The browser window that this view is in.
-  Browser* const browser_;
 
   // What we should set the preferred width to once the ExtensionViewViews has
   // loaded.

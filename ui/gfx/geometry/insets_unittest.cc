@@ -161,3 +161,122 @@ TEST(InsetsTest, Offset) {
   EXPECT_EQ(inset_first, offset_first);
   EXPECT_EQ(inset_by_offset, inset_first);
 }
+
+TEST(InsetsTest, Scale) {
+  gfx::Insets test(10, 5);
+  test = test.Scale(2.f, 3.f);
+  EXPECT_EQ(gfx::Insets(30, 10), test);
+
+  test = gfx::Insets(7, 3);
+  test = test.Scale(-2.f, -3.f);
+  EXPECT_EQ(gfx::Insets(-21, -6), test);
+}
+
+TEST(InsetsTest, IntegerOverflow) {
+  constexpr int int_min = std::numeric_limits<int>::min();
+  constexpr int int_max = std::numeric_limits<int>::max();
+
+  gfx::Insets width_height_test(int_max);
+  EXPECT_EQ(int_max, width_height_test.width());
+  EXPECT_EQ(int_max, width_height_test.height());
+
+  gfx::Insets plus_test(int_max);
+  plus_test += gfx::Insets(int_max);
+  EXPECT_EQ(gfx::Insets(int_max), plus_test);
+
+  gfx::Insets negation_test = -gfx::Insets(int_min);
+  EXPECT_EQ(gfx::Insets(int_max), negation_test);
+
+  gfx::Insets scale_test(int_max);
+  scale_test = scale_test.Scale(2.f, 2.f);
+  EXPECT_EQ(gfx::Insets(int_max), scale_test);
+}
+
+TEST(InsetsTest, IntegerUnderflow) {
+  constexpr int int_min = std::numeric_limits<int>::min();
+  constexpr int int_max = std::numeric_limits<int>::max();
+
+  gfx::Insets width_height_test = gfx::Insets(int_min);
+  EXPECT_EQ(int_min, width_height_test.width());
+  EXPECT_EQ(int_min, width_height_test.height());
+
+  gfx::Insets minus_test(int_min);
+  minus_test -= gfx::Insets(int_max);
+  EXPECT_EQ(gfx::Insets(int_min), minus_test);
+
+  gfx::Insets scale_test = gfx::Insets(int_min);
+  scale_test = scale_test.Scale(2.f, 2.f);
+  EXPECT_EQ(gfx::Insets(int_min), scale_test);
+}
+
+TEST(InsetsTest, IntegerOverflowSetVariants) {
+  constexpr int int_max = std::numeric_limits<int>::max();
+
+  gfx::Insets set_test(20);
+  set_test.set_top(int_max);
+  EXPECT_EQ(int_max, set_test.top());
+  EXPECT_EQ(0, set_test.bottom());
+
+  set_test.set_left(int_max);
+  EXPECT_EQ(int_max, set_test.left());
+  EXPECT_EQ(0, set_test.right());
+
+  set_test = gfx::Insets(30);
+  set_test.set_bottom(int_max);
+  EXPECT_EQ(int_max - 30, set_test.bottom());
+  EXPECT_EQ(30, set_test.top());
+
+  set_test.set_right(int_max);
+  EXPECT_EQ(int_max - 30, set_test.right());
+  EXPECT_EQ(30, set_test.left());
+}
+
+TEST(InsetsTest, IntegerUnderflowSetVariants) {
+  constexpr int int_min = std::numeric_limits<int>::min();
+
+  gfx::Insets set_test(-20);
+  set_test.set_top(int_min);
+  EXPECT_EQ(int_min, set_test.top());
+  EXPECT_EQ(0, set_test.bottom());
+
+  set_test.set_left(int_min);
+  EXPECT_EQ(int_min, set_test.left());
+  EXPECT_EQ(0, set_test.right());
+
+  set_test = gfx::Insets(-30);
+  set_test.set_bottom(int_min);
+  EXPECT_EQ(int_min + 30, set_test.bottom());
+  EXPECT_EQ(-30, set_test.top());
+
+  set_test.set_right(int_min);
+  EXPECT_EQ(int_min + 30, set_test.right());
+  EXPECT_EQ(-30, set_test.left());
+}
+
+TEST(InsetsTest, IntegerOverflowSet) {
+  constexpr int int_max = std::numeric_limits<int>::max();
+
+  gfx::Insets set_all_test;
+  set_all_test.Set(10, 20, int_max, int_max);
+  EXPECT_EQ(gfx::Insets(10, 20, int_max - 10, int_max - 20), set_all_test);
+}
+
+TEST(InsetsTest, IntegerOverflowOffset) {
+  constexpr int int_max = std::numeric_limits<int>::max();
+
+  const gfx::Vector2d max_vector(int_max, int_max);
+  gfx::Insets insets(1, 2, 3, 4);
+  gfx::Insets offset_test = insets.Offset(max_vector);
+  EXPECT_EQ(gfx::Insets(int_max, int_max, 3 - int_max, 4 - int_max),
+            offset_test);
+}
+
+TEST(InsetsTest, IntegerUnderflowOffset) {
+  constexpr int int_min = std::numeric_limits<int>::min();
+
+  const gfx::Vector2d min_vector(int_min, int_min);
+  gfx::Insets insets(-10);
+  gfx::Insets offset_test = insets.Offset(min_vector);
+  EXPECT_EQ(gfx::Insets(int_min, int_min, -10 - int_min, -10 - int_min),
+            offset_test);
+}

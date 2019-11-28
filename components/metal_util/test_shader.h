@@ -23,24 +23,35 @@ enum class METAL_UTIL_EXPORT TestShaderResult {
   kTimedOut,
 };
 
-using TestShaderCallback = base::OnceCallback<void(TestShaderResult result)>;
+using TestShaderCallback =
+    base::OnceCallback<void(TestShaderResult result,
+                            const base::TimeDelta& method_time,
+                            const base::TimeDelta& compile_time)>;
 
-// Attempt to asynchronously compile a trivial Metal shader. Call |callback|
-// with the result when the shader succeeds or after |timeout| has elapsed.
+// A default timeout value for compiling the test shader.
+constexpr base::TimeDelta kTestShaderTimeout = base::TimeDelta::FromMinutes(1);
+
+// Return the value kTestShaderTimeoutTime for |method_time| and |compile_time|
+// if they time out.
+constexpr base::TimeDelta kTestShaderTimeForever =
+    base::TimeDelta::FromMinutes(3);
+
+// A default delay before attempting to compile the test shader.
+constexpr base::TimeDelta kTestShaderDelay = base::TimeDelta::FromSeconds(90);
+
+// Attempt to asynchronously compile a trivial Metal shader. If |delay| is zero,
+// then compile synchronously, otherwise, post a delayed task to do the compile.
+// |callback| with the result when the shader succeeds or after |timeout| has
+// elapsed.
+//
 // This is used to determine of the Metal shader compiler is resposive. Note
 // that |callback| will be called either on another thread or inside the
-// TestShader function call. The |seed| parameter is incorporated into the
-// source of the shader (to defeat caching).
+// TestShader function call.
 // https://crbug.com/974219
-void METAL_UTIL_EXPORT TestShader(float seed,
-                                  TestShaderCallback callback,
-                                  const base::TimeDelta& timeout);
-
-// Values for |seed| for the three uses of the TestSahder function. The exact
-// values don't matter, only that they are distinct.
-constexpr float kTestShaderSeedBrowserTimer = 0.9f;
-constexpr float kTestShaderSeedGpuTimer = 1.1f;
-constexpr float kTestShaderSeedContextProvider = 2.1f;
+void METAL_UTIL_EXPORT
+TestShader(TestShaderCallback callback,
+           const base::TimeDelta& delay = kTestShaderDelay,
+           const base::TimeDelta& timeout = kTestShaderTimeout);
 
 }  // namespace metal
 

@@ -443,7 +443,7 @@ const char kNTPHelpURL[] =
 
 - (void)removeMostVisited:(ContentSuggestionsMostVisitedItem*)item {
   base::RecordAction(base::UserMetricsAction("MostVisited_UrlBlacklisted"));
-  [self.suggestionsMediator blacklistMostVisitedURL:item.URL];
+  [self.suggestionsMediator blockMostVisitedURL:item.URL];
   [self showMostVisitedUndoForURL:item.URL];
 }
 
@@ -549,7 +549,7 @@ const char kNTPHelpURL[] =
     NTPHomeMediator* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    [strongSelf.suggestionsMediator whitelistMostVisitedURL:copiedURL];
+    [strongSelf.suggestionsMediator allowMostVisitedURL:copiedURL];
   };
   action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
   action.accessibilityIdentifier = @"Undo";

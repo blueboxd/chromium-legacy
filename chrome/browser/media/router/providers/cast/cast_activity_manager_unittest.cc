@@ -433,7 +433,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
   LaunchSession();
 
   // Destination ID matches client ID.
-  cast_channel::CastMessage message = cast_channel::CreateCastMessage(
+  cast::channel::CastMessage message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "theClientId");
 

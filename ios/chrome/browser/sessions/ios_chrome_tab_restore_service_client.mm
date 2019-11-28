@@ -109,9 +109,9 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
 bool IOSChromeTabRestoreServiceClient::ShouldTrackURLForRestore(
     const GURL& url) {
   // NOTE: In the //chrome client, chrome://quit and chrome://restart are
-  // blacklisted from being tracked to avoid entering infinite loops. However,
+  // blocked from being tracked to avoid entering infinite loops. However,
   // iOS intentionally does not support those URLs, so there is no need to
-  // blacklist them here.
+  // block them here.
   return url.is_valid();
 }
 

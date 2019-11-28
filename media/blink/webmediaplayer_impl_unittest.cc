@@ -326,13 +326,11 @@ class WebMediaPlayerImplTest : public testing::Test {
         std::make_unique<NiceMock<MockSurfaceLayerBridge>>();
     surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
 
-    if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-      EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-      ON_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-          .WillByDefault(ReturnRef(surface_id_));
-      ON_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-          .WillByDefault(Return(base::TimeTicks()));
-    }
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    ON_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+        .WillByDefault(ReturnRef(surface_id_));
+    ON_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillByDefault(Return(base::TimeTicks()));
   }
 
   void InitializeWebMediaPlayerImpl() {
@@ -389,9 +387,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),
-        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)
-            ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-            : blink::WebMediaPlayer::SurfaceLayerMode::kNever,
+        blink::WebMediaPlayer::SurfaceLayerMode::kAlways,
         is_background_suspend_enabled_, is_background_video_playback_enabled_,
         true);
 
@@ -1648,12 +1644,9 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   PipelineMetadata metadata;
 
   EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _)).Times(0);
-  }
+  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _)).Times(0);
 
   // Nothing should happen.  In particular, no assertions should fail.
   OnMetadata(metadata);
@@ -1904,9 +1897,6 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
 }
 
 TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
-
   InitializeWebMediaPlayerImpl();
 
   PipelineMetadata metadata;
@@ -1957,9 +1947,6 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 
 // Tests that updating the surface id calls OnPictureInPictureStateChange.
 TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
-
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());

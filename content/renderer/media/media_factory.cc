@@ -45,6 +45,7 @@
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
@@ -154,10 +155,7 @@ MediaFactory::GetVideoSurfaceLayerMode() {
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
 #endif  // OS_ANDROID
 
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
-
-  return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
+  return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
 }
 
 MediaFactory::MediaFactory(
@@ -611,8 +609,7 @@ media::DecoderFactory* MediaFactory::GetDecoderFactory() {
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
   if (!remoter_factory_) {
-    DCHECK(remote_interfaces_);
-    remote_interfaces_->GetInterface(
+    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
         remoter_factory_.BindNewPipeAndPassReceiver());
   }
   return remoter_factory_.get();

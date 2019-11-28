@@ -598,6 +598,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override;
 
+  // Used for shared workers and service workers to create a websocket.
+  // In other cases, RenderFrameHostImpl for documents or DedicatedWorkerHost
+  // for dedicated workers handles interface requests in order to associate
+  // websockets with a frame. Shared workers and service workers don't have to
+  // do it because they don't have a frame.
+  void CreateWebSocketConnector(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
+      override;
+
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is
   // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).

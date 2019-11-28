@@ -204,6 +204,11 @@ class MockRenderProcessHost : public RenderProcessHost {
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override {}
+  void CreateWebSocketConnector(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
+      override {}
+
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   // IPC::Sender via RenderProcessHost.

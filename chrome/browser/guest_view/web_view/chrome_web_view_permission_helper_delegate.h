@@ -33,7 +33,7 @@ class ChromeWebViewPermissionHelperDelegate
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void RequestGeolocationPermission(
       int bridge_id,
       const GURL& requesting_frame,
@@ -81,10 +81,9 @@ class ChromeWebViewPermissionHelperDelegate
                                     bool allow,
                                     const std::string& user_input);
 
-  void OnPointerLockPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
+  void OnPointerLockPermissionResponse(base::OnceCallback<void(bool)> callback,
+                                       bool allow,
+                                       const std::string& user_input);
 
   // Bridge IDs correspond to a geolocation request. This method will remove
   // the bookkeeping for a particular geolocation request associated with the

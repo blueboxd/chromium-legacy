@@ -1,196 +1,196 @@
 {
   "win": {
-    "balls_css_transition_2_properties": {
-      "avg": 88.519,
-      "ci_095": 26.992
-    },
-    "many_planets_deep": {
-      "avg": 16.679,
-      "ci_095": 0.169
-    },
-    "web_animation_value_type_transform_complex": {
-      "avg": 47.464,
-      "ci_095": 1.228
-    },
-    "nvidia_vertex_buffer_object": {
-      "avg": 17.918,
-      "ci_095": 3.238
-    },
-    "runway_2019": {
-      "avg": 28.237,
-      "ci_095": 28.279
-    },
-    "css_animations_simultaneous_inline_style": {
-      "avg": 25.100,
-      "ci_095": 0.711
-    },
-    "aquarium_20k": {
-      "avg": 123.389,
-      "ci_095": 4.392
-    },
     "canvas_to_blob": {
-      "avg": 30.395,
-      "ci_095": 12.237
-    },
-    "cc_poster_circle": {
-      "avg": 16.678,
-      "ci_095": 0.067
-    },
-    "js_poster_circle": {
-      "avg": 16.679,
-      "ci_095": 0.113
-    },
-    "web_animations_staggered_triggering_page": {
-      "avg": 16.862,
-      "ci_095": 0.245
-    },
-    "aquarium": {
-      "avg": 16.699,
-      "ci_095": 0.304
-    },
-    "css_value_type_shadow": {
-      "avg": 47.344,
-      "ci_095": 1.018
+      "ci_095": 10.93,
+      "avg": 30.145
     },
     "filter_terrain_svg": {
-      "avg": 30.466,
-      "ci_095": 0.212
+      "ci_095": 0.307,
+      "avg": 30.065
+    },
+    "web_animation_value_type_transform_complex": {
+      "ci_095": 1.574,
+      "avg": 48.422
+    },
+    "runway_2019": {
+      "ci_095": 14.407,
+      "avg": 22.487
     },
     "css_transitions_inline_style": {
-      "avg": 19.283,
-      "ci_095": 3.280
+      "ci_095": 3.976,
+      "avg": 19.575
+    },
+    "css_animations_simultaneous_inline_style": {
+      "ci_095": 0.774,
+      "avg": 21.192
+    },
+    "aquarium_20k": {
+      "ci_095": 3.731,
+      "avg": 129.946
+    },
+    "balls_css_transition_2_properties": {
+      "ci_095": 18.826,
+      "avg": 83.677
+    },
+    "cc_poster_circle": {
+      "ci_095": 0.064,
+      "avg": 16.678
+    },
+    "js_poster_circle": {
+      "ci_095": 0.108,
+      "avg": 16.678
+    },
+    "web_animations_staggered_triggering_page": {
+      "ci_095": 0.457,
+      "avg": 16.832
+    },
+    "aquarium": {
+      "ci_095": 0.231,
+      "avg": 16.689
+    },
+    "css_value_type_shadow": {
+      "ci_095": 0.964,
+      "avg": 48.34
+    },
+    "nvidia_vertex_buffer_object": {
+      "ci_095": 3.354,
+      "avg": 17.637
+    },
+    "many_planets_deep": {
+      "ci_095": 0.127,
+      "avg": 16.678
     }
   },
   "mac": {
     "mix_blend_mode_animation_screen": {
-      "avg": 96.183,
-      "ci_095": 2.947
+      "ci_095": 2.861,
+      "avg": 102.359
     },
     "twitch_2018": {
-      "avg": 33.002,
-      "ci_095": 18.294
+      "ci_095": 13.965,
+      "avg": 28.108
     },
     "balls_javascript_canvas": {
-      "avg": 40.793,
-      "ci_095": 1.419
+      "ci_095": 1.283,
+      "avg": 43.473
     },
     "transform_transitions_js_block": {
-      "avg": 16.758,
-      "ci_095": 0.442
+      "ci_095": 0.402,
+      "avg": 16.758
     },
     "web_animations_staggered_infinite_iterations": {
-      "avg": 16.692,
-      "ci_095": 0.291
+      "ci_095": 0.285,
+      "avg": 16.691
     },
     "fill_shapes": {
-      "avg": 36.591,
-      "ci_095": 1.719
+      "ci_095": 1.427,
+      "avg": 36.335
     },
     "css_value_type_shadow": {
-      "avg": 65.745,
-      "ci_095": 16.053
+      "ci_095": 15.473,
+      "avg": 66.584
     },
     "animometer_webgl_attrib_arrays": {
-      "avg": 16.862,
-      "ci_095": 0.636
+      "ci_095": 0.544,
+      "avg": 16.936
     },
     "web_animation_value_type_transform_simple": {
-      "avg": 48.286,
-      "ci_095": 2.421
+      "ci_095": 2.185,
+      "avg": 50.459
     },
     "canvas_05000_pixels_per_second": {
-      "avg": 16.685,
-      "ci_095": 0.333
+      "ci_095": 0.324,
+      "avg": 16.684
     },
     "bouncing_clipped_rectangles": {
-      "avg": 537.025,
-      "ci_095": 168.527
+      "ci_095": 128.12,
+      "avg": 596.153
     },
     "ie_chalkboard": {
-      "avg": 66.825,
-      "ci_095": 39.904
+      "ci_095": 41.361,
+      "avg": 66.231
     },
     "new_tilings": {
-      "avg": 23.163,
-      "ci_095": 1.13
+      "ci_095": 0.776,
+      "avg": 19.943
     },
     "chip_tune": {
-      "avg": 16.737,
-      "ci_095": 0.453
+      "ci_095": 0.42,
+      "avg": 16.732
     },
     "extra_large_texture_uploads": {
-      "avg": 58.721,
-      "ci_095": 2.462
+      "ci_095": 2.274,
+      "avg": 60.959
     },
     "css_value_type_filter": {
-      "avg": 86.254,
-      "ci_095": 1.79
+      "ci_095": 1.667,
+      "avg": 89.362
     }
   },
   "android": {
     "mix_blend_mode_animation_screen": {
-      "avg": 511.313,
-      "ci_095": 233.908
-    },
-    "twitch_2018": {
-      "avg": 19.843,
-      "ci_095": 6.112
-    },
-    "balls_javascript_canvas": {
-      "avg": 191.168,
-      "ci_095": 18.935
-    },
-    "transform_transitions_js_block": {
-      "avg": 16.652,
-      "ci_095": 0.065
-    },
-    "web_animations_staggered_infinite_iterations": {
-      "avg": 47.653,
-      "ci_095": 4.68
+      "ci_095": 226.118,
+      "avg": 629.962
     },
     "text_10000_pixels_per_second": {
-      "avg": 16.813,
-      "ci_095": 0.543
+      "ci_095": 0.653,
+      "avg": 16.812
+    },
+    "balls_javascript_canvas": {
+      "ci_095": 22.183,
+      "avg": 219.386
+    },
+    "transform_transitions_js_block": {
+      "ci_095": 0.059,
+      "avg": 16.647
+    },
+    "web_animations_staggered_infinite_iterations": {
+      "ci_095": 8.037,
+      "avg": 67.986
+    },
+    "twitch_2018": {
+      "ci_095": 10.816,
+      "avg": 21.09
     },
     "motion_mark_canvas_fill_shapes": {
-      "avg": 143.318,
-      "ci_095": 31.915
+      "ci_095": 74.393,
+      "avg": 240.943
     },
     "css_value_type_shadow": {
-      "avg": 229.602,
-      "ci_095": 32.759
+      "ci_095": 33.919,
+      "avg": 382.617
     },
     "animometer_webgl_attrib_arrays": {
-      "avg": 412.827,
-      "ci_095": 110.526
+      "ci_095": 122.988,
+      "avg": 412.67
     },
     "canvas_05000_pixels_per_second": {
-      "avg": 16.857,
-      "ci_095": 0.609
+      "ci_095": 0.4,
+      "avg": 16.77
     },
     "bouncing_clipped_rectangles": {
-      "avg": 396.708,
-      "ci_095": 106.785
+      "ci_095": 85.547,
+      "avg": 394.492
     },
     "ie_chalkboard": {
-      "avg": 1429.4,
-      "ci_095": 1327.254
+      "ci_095": 1283.402,
+      "avg": 1382.753
     },
     "new_tilings": {
-      "avg": 16.793,
-      "ci_095": 0.388
+      "ci_095": 1.657,
+      "avg": 22.073
     },
     "extra_large_texture_uploads": {
-      "avg": 191.029,
-      "ci_095": 22.701
+      "ci_095": 48.798,
+      "avg": 352.437
     },
     "web_animation_value_type_transform_simple": {
-      "avg": 308.001,
-      "ci_095": 54.104
+      "ci_095": 51.563,
+      "avg": 484.022
     },
     "css_value_type_filter": {
-      "avg": 581.157,
-      "ci_095": 145.986
+      "ci_095": 167.231,
+      "avg": 575.907
     }
   }
 }

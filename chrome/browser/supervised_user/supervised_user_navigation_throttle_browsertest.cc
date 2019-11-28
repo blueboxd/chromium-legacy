@@ -187,7 +187,7 @@ bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
 void SupervisedUserNavigationThrottleTest::SetUp() {
   // Polymorphically initiate logged_in_user_mixin_.
   logged_in_user_mixin_ = std::make_unique<chromeos::LoggedInUserMixin>(
-      &mixin_host_, GetLogInType(), embedded_test_server());
+      &mixin_host_, GetLogInType(), embedded_test_server(), this);
   MixinBasedInProcessBrowserTest::SetUp();
 }
 
@@ -198,7 +198,7 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 
   ASSERT_TRUE(embedded_test_server()->Started());
 
-  logged_in_user_mixin_->SetUpOnMainThreadHelper(host_resolver(), this);
+  logged_in_user_mixin_->LogInUser();
 }
 
 // Tests that navigating to a blocked page simply fails if there is no

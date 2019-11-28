@@ -142,7 +142,10 @@ public class EmulatedVrController {
      *        numbers resulting in a faster scroll.
      */
     public void scroll(@ScrollDirection int direction, int steps, int speed) {
-        float startX, startY, endX, endY;
+        float startX;
+        float startY;
+        float endX;
+        float endY;
         startX = startY = endX = endY = 0.5f;
         switch (direction) {
             case ScrollDirection.UP:

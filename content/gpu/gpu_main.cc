@@ -193,13 +193,9 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 };
 
 #if defined(OS_MACOSX)
-// Allow up to 1 minute for shader compilation.
-constexpr base::TimeDelta kTestShaderCompileTimeout =
-    base::TimeDelta::FromMinutes(1);
-
-void TestShaderCallback(const base::TimeTicks& start_time,
-                        metal::TestShaderResult result) {
-  base::TimeDelta delta;
+void TestShaderCallback(metal::TestShaderResult result,
+                        const base::TimeDelta& method_time,
+                        const base::TimeDelta& compile_time) {
   switch (result) {
     case metal::TestShaderResult::kNotAttempted:
     case metal::TestShaderResult::kFailed:
@@ -207,16 +203,12 @@ void TestShaderCallback(const base::TimeTicks& start_time,
       // or macOS version reasons).
       return;
     case metal::TestShaderResult::kTimedOut:
-      // Use a single histogram for both "how long did compile take" and "did
-      // compile complete in 1 minute" by pushing timeouts into the maximum
-      // bucket of UMA_HISTOGRAM_MEDIUM_TIMES.
-      delta = base::TimeDelta::FromMinutes(3);
       break;
     case metal::TestShaderResult::kSucceeded:
-      delta = base::TimeTicks::Now() - start_time;
       break;
   }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime", delta);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderMethodTime", method_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime", compile_time);
 }
 #endif
 
@@ -396,9 +388,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Launch a test metal shader compile to see how long it takes to complete (if
   // it ever completes).
   // https://crbug.com/974219
-  metal::TestShader(metal::kTestShaderSeedGpuTimer,
-                    base::BindOnce(TestShaderCallback, base::TimeTicks::Now()),
-                    kTestShaderCompileTimeout);
+  metal::TestShader(base::BindOnce(TestShaderCallback));
 #endif
 
 #if defined(OS_ANDROID)

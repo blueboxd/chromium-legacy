@@ -68,7 +68,7 @@ class ControllableHttpResponse {
   void OnRequest(scoped_refptr<base::SingleThreadTaskRunner>
                      embedded_test_server_task_runner,
                  const SendBytesCallback& send,
-                 const SendCompleteCallback& done,
+                 SendCompleteCallback done,
                  std::unique_ptr<HttpRequest> http_request);
 
   static std::unique_ptr<HttpResponse> RequestHandler(

@@ -7,8 +7,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
-
 namespace content {
 struct NativeWebKeyboardEvent;
 class RenderViewHost;
@@ -25,9 +23,6 @@ namespace extensions {
 class ExtensionView {
  public:
   virtual ~ExtensionView() {}
-
-  // If attached to a Browser (e.g. popups), the Browser it is attached to.
-  virtual Browser* GetBrowser() = 0;
 
   // Returns the extension's native view.
   virtual gfx::NativeView GetNativeView() = 0;

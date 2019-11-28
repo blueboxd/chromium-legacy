@@ -375,8 +375,8 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
 }
 
 void FrameTree::SetFrameRemoveListener(
-    const base::Callback<void(RenderFrameHost*)>& on_frame_removed) {
-  on_frame_removed_ = on_frame_removed;
+    base::RepeatingCallback<void(RenderFrameHost*)> on_frame_removed) {
+  on_frame_removed_ = std::move(on_frame_removed);
 }
 
 scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(

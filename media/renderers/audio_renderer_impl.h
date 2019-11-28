@@ -85,7 +85,7 @@ class MEDIA_EXPORT AudioRendererImpl
                   RendererClient* client,
                   const PipelineStatusCB& init_cb) override;
   TimeSource* GetTimeSource() override;
-  void Flush(const base::Closure& callback) override;
+  void Flush(base::OnceClosure callback) override;
   void StartPlaying() override;
   void SetVolume(float volume) override;
 
@@ -250,7 +250,7 @@ class MEDIA_EXPORT AudioRendererImpl
   PipelineStatusCB init_cb_;
 
   // Callback provided to Flush().
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   // Overridable tick clock for testing.
   const base::TickClock* tick_clock_;

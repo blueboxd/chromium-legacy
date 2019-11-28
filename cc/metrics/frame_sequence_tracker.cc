@@ -249,7 +249,7 @@ FrameSequenceTracker::FrameSequenceTracker(
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
   TRACE_EVENT_ASYNC_BEGIN1(
       "cc,benchmark", "FrameSequenceTracker", this, "name",
-      TRACE_STR_COPY(GetFrameSequenceTrackerTypeName(static_cast<int>(type_))));
+      GetFrameSequenceTrackerTypeName(static_cast<int>(type_)));
 }
 
 FrameSequenceTracker::~FrameSequenceTracker() {

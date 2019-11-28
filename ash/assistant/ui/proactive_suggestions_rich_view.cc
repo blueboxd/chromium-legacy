@@ -6,8 +6,10 @@
 
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "base/base64.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -124,6 +126,29 @@ void ProactiveSuggestionsRichView::InitLayout() {
   contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
 }
 
+void ProactiveSuggestionsRichView::ShowWhenReady() {
+  // If no children have yet been added to the layout, the embedded web contents
+  // has not yet finished loading. In this case, we'll set a flag and delay
+  // showing until loading stops to avoid UI jank.
+  if (children().empty()) {
+    show_when_ready_ = true;
+    return;
+  }
+  // Otherwise it's fine to go ahead w/ showing the widget immediately.
+  GetWidget()->ShowInactive();
+  show_when_ready_ = false;
+}
+
+void ProactiveSuggestionsRichView::Hide() {
+  show_when_ready_ = false;
+  ProactiveSuggestionsView::Hide();
+}
+
+void ProactiveSuggestionsRichView::Close() {
+  show_when_ready_ = false;
+  ProactiveSuggestionsView::Close();
+}
+
 void ProactiveSuggestionsRichView::DidAutoResizeView(
     const gfx::Size& new_size) {
   contents_->GetView()->view()->SetPreferredSize(new_size);
@@ -134,10 +159,17 @@ void ProactiveSuggestionsRichView::DidStopLoading() {
   AddChildView(contents_->GetView()->view());
   PreferredSizeChanged();
 
-  // TODO(dmblack): Parameterize corner radius.
-  constexpr int kCornerRadiusDip = 16;
+  // Once the view for the embedded web contents has been fully initialized,
+  // it's safe to set our desired corner radius.
   contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
-      gfx::RoundedCornersF(kCornerRadiusDip));
+      gfx::RoundedCornersF(
+          chromeos::assistant::features::
+              GetProactiveSuggestionsRichEntryPointCornerRadius()));
+
+  // This view should now be fully initialized, so it's safe to show without
+  // risk of introducing UI jank if we so desire.
+  if (show_when_ready_)
+    ShowWhenReady();
 }
 
 void ProactiveSuggestionsRichView::DidSuppressNavigation(

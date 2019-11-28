@@ -8,8 +8,6 @@ source_set("cells") {
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cell.h",
     "table_view_cell.mm",
-    "table_view_cells_constants.h",
-    "table_view_cells_constants.mm",
     "table_view_detail_icon_item.h",
     "table_view_detail_icon_item.mm",
     "table_view_detail_text_item.h",
@@ -44,6 +42,7 @@ source_set("cells") {
   ]
 
   deps = [
+    ":cells_constants",
     "resources:table_view_cell_chevron",
     "resources:table_view_cell_edit_icon",
     "resources:table_view_cell_error_icon",
@@ -70,6 +69,17 @@ source_set("cells") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("cells_constants") {
+  sources = [
+    "table_view_cells_constants.h",
+    "table_view_cells_constants.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -88,6 +98,7 @@ source_set("unit_tests") {
 
   deps = [
     ":cells",
+    ":cells_constants",
     "//base",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/common/colors",

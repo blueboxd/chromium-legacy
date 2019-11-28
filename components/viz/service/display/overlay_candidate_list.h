@@ -57,7 +57,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateList
       const DisplayResourceProvider* resource_provider,
       const DrawQuad* quad);
 
-  std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>
+  std::vector<
+      std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
   ConvertLocalPromotionToMailboxKeyed(
       DisplayResourceProvider* resource_provider,
       base::flat_set<gpu::Mailbox>* promotion_denied,

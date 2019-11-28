@@ -126,12 +126,20 @@ void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
 }
 
+bool AssistantAshTestBase::IsVisible() {
+  return test_api_->IsVisible();
+}
+
 views::View* AssistantAshTestBase::main_view() {
   return test_api_->main_view();
 }
 
 views::View* AssistantAshTestBase::page_view() {
   return test_api_->page_view();
+}
+
+views::View* AssistantAshTestBase::app_list_view() {
+  return test_api_->app_list_view();
 }
 
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(

@@ -16,11 +16,14 @@
 #include "net/socket/stream_socket.h"
 
 #if BUILDFLAG(USE_UNIX_SOCKETS)
+#include "net/socket/unix_domain_client_socket_posix.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #else
+#include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log_source.h"
+#include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #endif
 
@@ -32,6 +35,20 @@ namespace {
 constexpr int kListenBacklog = 10;
 
 }  // namespace
+
+// static
+std::unique_ptr<net::StreamSocket> AudioSocketService::Connect(
+    const std::string& endpoint,
+    int port) {
+#if BUILDFLAG(USE_UNIX_SOCKETS)
+  return std::make_unique<net::UnixDomainClientSocket>(
+      endpoint, true /* use_abstract_namespace */);
+#else   // BUILDFLAG(USE_UNIX_SOCKETS)
+  net::IPEndPoint ip_endpoint(net::IPAddress::IPv4Localhost(), port);
+  return std::make_unique<net::TCPClientSocket>(
+      net::AddressList(ip_endpoint), nullptr, nullptr, net::NetLogSource());
+#endif  // BUILDFLAG(USE_UNIX_SOCKETS)
+}
 
 AudioSocketService::AudioSocketService(const std::string& endpoint,
                                        int port,

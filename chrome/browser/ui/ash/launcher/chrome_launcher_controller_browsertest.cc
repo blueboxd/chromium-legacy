@@ -53,7 +53,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -134,7 +134,7 @@ void CloseAppBrowserWindow(Browser* app_browser) {
 
 // Close browsers from context menu
 void CloseBrowserWindow(Browser* browser,
-                        LauncherContextMenu* menu,
+                        ShelfContextMenu* menu,
                         int close_command) {
   // Note that event_flag is never used inside function ExecuteCommand.
   menu->ExecuteCommand(close_command, ui::EventFlags::EF_NONE);
@@ -276,19 +276,19 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   // Creates a context menu for the existing browser shortcut item.
-  std::unique_ptr<LauncherContextMenu> CreateBrowserItemContextMenu() {
+  std::unique_ptr<ShelfContextMenu> CreateBrowserItemContextMenu() {
     int index = shelf_model()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     DCHECK_GE(index, 0);
     ash::ShelfItem item = shelf_model()->items()[index];
     int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-    return LauncherContextMenu::Create(controller_, &item, display_id);
+    return ShelfContextMenu::Create(controller_, &item, display_id);
   }
 
-  bool IsItemPresentInMenu(LauncherContextMenu* launcher_context_menu,
+  bool IsItemPresentInMenu(ShelfContextMenu* shelf_context_menu,
                            int command_id) {
     base::RunLoop run_loop;
     std::unique_ptr<ui::SimpleMenuModel> menu;
-    launcher_context_menu->GetMenuModel(base::BindLambdaForTesting(
+    shelf_context_menu->GetMenuModel(base::BindLambdaForTesting(
         [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
           menu = std::move(created_menu);
           run_loop.Quit();
@@ -2169,9 +2169,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
 // Test that "Close" is shown in the context menu when there are opened browsers
 // windows.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
-                       LauncherContextMenuVerifyCloseItemAppearance) {
+                       ShelfContextMenuVerifyCloseItemAppearance) {
   // Open a context menu for the existing browser window.
-  std::unique_ptr<LauncherContextMenu> menu1 = CreateBrowserItemContextMenu();
+  std::unique_ptr<ShelfContextMenu> menu1 = CreateBrowserItemContextMenu();
   // Check if "Close" is added to in the context menu.
   ASSERT_TRUE(IsItemPresentInMenu(menu1.get(), ash::MENU_CLOSE));
 
@@ -2180,7 +2180,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   // Check if "Close" is removed from the context menu.
-  std::unique_ptr<LauncherContextMenu> menu2 = CreateBrowserItemContextMenu();
+  std::unique_ptr<ShelfContextMenu> menu2 = CreateBrowserItemContextMenu();
   ASSERT_FALSE(IsItemPresentInMenu(menu2.get(), ash::MENU_CLOSE));
 }
 

@@ -112,4 +112,60 @@ TEST_F(AppShimRegistryTest, Lifetime) {
   EXPECT_EQ(0u, registry_->GetLastActiveProfilesForApp(app_id_a).size());
 }
 
+TEST_F(AppShimRegistryTest, InstalledAppsForProfile) {
+  const std::string app_id_a("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const std::string app_id_b("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  const base::FilePath profile_path_a("/x/y/z/Profile A");
+  const base::FilePath profile_path_b("/x/y/z/Profile B");
+  const base::FilePath profile_path_c("/x/y/z/Profile C");
+  std::set<std::string> apps;
+
+  // App A is installed for profiles B and C.
+  registry_->OnAppInstalledForProfile(app_id_a, profile_path_b);
+  registry_->OnAppInstalledForProfile(app_id_a, profile_path_c);
+  EXPECT_EQ(2u, registry_->GetInstalledProfilesForApp(app_id_a).size());
+  apps = registry_->GetInstalledAppsForProfile(profile_path_a);
+  EXPECT_TRUE(apps.empty());
+  apps = registry_->GetInstalledAppsForProfile(profile_path_b);
+  EXPECT_EQ(1u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_a));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_c);
+  EXPECT_EQ(1u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_a));
+
+  // App B is installed for profiles A and C.
+  registry_->OnAppInstalledForProfile(app_id_b, profile_path_a);
+  registry_->OnAppInstalledForProfile(app_id_b, profile_path_c);
+  apps = registry_->GetInstalledAppsForProfile(profile_path_a);
+  EXPECT_EQ(1u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_b));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_b);
+  EXPECT_EQ(1u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_a));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_c);
+  EXPECT_EQ(2u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_a));
+  EXPECT_EQ(1u, apps.count(app_id_b));
+
+  // Uninstall app A for profile B.
+  EXPECT_FALSE(registry_->OnAppUninstalledForProfile(app_id_a, profile_path_b));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_b);
+  EXPECT_TRUE(apps.empty());
+  apps = registry_->GetInstalledAppsForProfile(profile_path_c);
+  EXPECT_EQ(2u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_a));
+  EXPECT_EQ(1u, apps.count(app_id_b));
+
+  // Uninstall app A for profile C.
+  EXPECT_TRUE(registry_->OnAppUninstalledForProfile(app_id_a, profile_path_c));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_c);
+  EXPECT_EQ(1u, apps.size());
+  EXPECT_EQ(1u, apps.count(app_id_b));
+
+  // Uninstall app B for profile C.
+  EXPECT_FALSE(registry_->OnAppUninstalledForProfile(app_id_b, profile_path_c));
+  apps = registry_->GetInstalledAppsForProfile(profile_path_c);
+  EXPECT_TRUE(apps.empty());
+}
+
 }  // namespace

@@ -147,7 +147,7 @@ VideoRendererImpl::~VideoRendererImpl() {
     StopSink();
 }
 
-void VideoRendererImpl::Flush(const base::Closure& callback) {
+void VideoRendererImpl::Flush(base::OnceClosure callback) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -157,7 +157,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   base::AutoLock auto_lock(lock_);
 
   DCHECK_EQ(state_, kPlaying);
-  flush_cb_ = callback;
+  flush_cb_ = std::move(callback);
   state_ = kFlushing;
 
   if (buffering_state_ != BUFFERING_HAVE_NOTHING) {

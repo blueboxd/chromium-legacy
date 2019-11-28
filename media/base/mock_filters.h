@@ -298,7 +298,7 @@ class MockVideoRenderer : public VideoRenderer {
                     RendererClient* client,
                     const TimeSource::WallClockTimeCB& wall_clock_time_cb,
                     const PipelineStatusCB& init_cb));
-  MOCK_METHOD1(Flush, void(const base::Closure& callback));
+  MOCK_METHOD1(Flush, void(base::OnceClosure flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
   MOCK_METHOD0(OnTimeProgressing, void());
   MOCK_METHOD0(OnTimeStopped, void());
@@ -319,7 +319,7 @@ class MockAudioRenderer : public AudioRenderer {
                     RendererClient* client,
                     const PipelineStatusCB& init_cb));
   MOCK_METHOD0(GetTimeSource, TimeSource*());
-  MOCK_METHOD1(Flush, void(const base::Closure& callback));
+  MOCK_METHOD1(Flush, void(base::OnceClosure flush_cb));
   MOCK_METHOD0(StartPlaying, void());
   MOCK_METHOD1(SetVolume, void(float volume));
 

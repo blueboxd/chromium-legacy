@@ -318,6 +318,14 @@ js_library("metadata_proxy") {
   ]
 }
 
+js_unittest("metadata_proxy_unittest") {
+  deps = [
+    ":metadata_proxy",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+  ]
+}
+
 js_library("import_history") {
   deps = [
     ":metadata_proxy",
@@ -572,6 +580,7 @@ js_test_gen_html("js_test_gen_html") {
     ":import_history_unittest",
     ":media_import_handler_unittest",
     ":media_scanner_unittest",
+    ":metadata_proxy_unittest",
     ":mount_metrics_unittest",
     ":task_queue_unittest",
     ":volume_manager_unittest",

@@ -2981,6 +2981,8 @@ void GLRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
 
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(swap_frame_data.latency_info);
+  output_frame.top_controls_visible_height_changed =
+      swap_frame_data.top_controls_visible_height_changed;
   output_frame.size = surface_size;
   if (use_swap_with_bounds_) {
     output_frame.content_bounds = std::move(swap_content_bounds_);

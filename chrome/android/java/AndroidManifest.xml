@@ -612,13 +612,13 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:exported="false">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.preferences.Preferences"
+        <activity android:name="org.chromium.chrome.browser.settings.Preferences"
             android:theme="@style/Theme.Chromium.Preferences"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/preferences"
             android:exported="false">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.preferences.website.ManageSpaceActivity"
+        <activity android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
             android:theme="@style/Theme.Chromium.Preferences.ManageSpace"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/storage_management_activity_label"

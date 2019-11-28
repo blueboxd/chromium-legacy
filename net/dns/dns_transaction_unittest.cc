@@ -39,6 +39,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_with_source.h"
+#include "net/log/test_net_log.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
@@ -388,7 +389,7 @@ class TransactionHelper {
   TestURLRequestContext request_context_;
   std::unique_ptr<base::RunLoop> transaction_complete_run_loop_;
   bool completed_;
-  NetLog net_log_;
+  TestNetLog net_log_;
 };
 
 // Callback that allows a test to modify HttpResponseinfo

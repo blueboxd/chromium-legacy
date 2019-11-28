@@ -647,7 +647,6 @@
 <translation id="4082393374666368382">Tetapan - Pengurusan</translation>
 <translation id="4098354747657067197">Tapak menipu di hadapan</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
-<translation id="410351446219883937">Automain</translation>
 <translation id="4103763322291513355">Lawati &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat senarai URL yang disenarai hitam dan dasar lain yang dikuatkuasakan oleh pentadbir sistem anda.</translation>
 <translation id="4108231218301530806">Gunakan cap jari untuk mengesahkan kad ini pada masa akan datang.</translation>
 <translation id="4110652170750985508">Semak pembayaran anda</translation>
@@ -1621,7 +1620,7 @@ Butiran tambahan:
 <translation id="8957210676456822347">Keizinan Portal Tawanan</translation>
 <translation id="8962950042226115166">Tapak mencurigakan</translation>
 <translation id="8968766641738584599">Simpan kad</translation>
-<translation id="8969267497192857913">Apa sahaja yang anda taip, sebarang halaman yang anda lihat atau sebarang aktiviti lain di web sedang diperhatikan dan kandungan pada tapak boleh diubah tanpa pengetahuan anda.
+<translation id="8969267497192857913">Apa sahaja yang anda taip, sebarang halaman yang anda lihat atau sebarang aktiviti lain menerusi web sedang diperhatikan dan kandungan pada tapak boleh diubah tanpa pengetahuan anda.
     <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Sijil pelayan telah tamat tempoh.</translation>
 <translation id="8975012916872825179">Merangkumi maklumat seperti nombor telefon, alamat e-mel dan alamat penghantaran</translation>

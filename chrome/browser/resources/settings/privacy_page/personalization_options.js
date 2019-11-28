@@ -13,6 +13,7 @@ Polymer({
   is: 'settings-personalization-options',
 
   behaviors: [
+    I18nBehavior,
     PrefsBehavior,
     WebUIListenerBehavior,
   ],
@@ -31,6 +32,29 @@ Polymer({
 
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
+
+    // <if expr="not chromeos">
+    /** @private {Array<!settings.StoredAccount>} */
+    storedAccounts_: Object,
+    // </if>
+
+    /** @private */
+    userSignedIn_: {
+      type: Boolean,
+      computed: 'computeUserSignedIn_(syncStatus, storedAccounts_)',
+    },
+
+    /** @private */
+    passwordsLeakDetectionAvailable_: {
+      type: Boolean,
+      computed: 'computePasswordsLeakDetectionAvailable_(prefs.*)',
+    },
+
+    /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('passwordsLeakDetectionEnabled'),
+    },
 
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
@@ -59,6 +83,76 @@ Polymer({
     this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
     this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
     // </if>
+    // <if expr="not chromeos">
+    const storedAccountsChanged = storedAccounts => this.storedAccounts_ =
+        storedAccounts;
+    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
+    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
+    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
+    // </if>
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeUserSignedIn_: function() {
+    return (!!this.syncStatus && !!this.syncStatus.signedIn) ?
+        !this.syncStatus.hasError :
+        (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computePasswordsLeakDetectionAvailable_: function() {
+    return !!this.getPref('profile.password_manager_leak_detection').value &&
+        !!this.getPref('safebrowsing.enabled').value;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getCheckedLeakDetection_: function() {
+    return this.userSignedIn_ && this.passwordsLeakDetectionAvailable_;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getPasswordsLeakDetectionSubLabel_: function() {
+    if (!this.userSignedIn_ && this.passwordsLeakDetectionAvailable_) {
+      return this.i18n('passwordsLeakDetectionSignedOutEnabledDescription');
+    }
+    return '';
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getDisabledLeakDetection_: function() {
+    return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getCheckedExtendedSafeBrowsing_: function() {
+    return !!this.getPref('safebrowsing.enabled').value &&
+        !!this.getPref('safebrowsing.scout_reporting_enabled').value;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getDisabledExtendedSafeBrowsing_: function() {
+    return !this.getPref('safebrowsing.enabled').value;
   },
 
   // <if expr="_google_chrome and not chromeos">

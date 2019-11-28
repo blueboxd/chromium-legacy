@@ -673,7 +673,7 @@
     "args": [
       "--product=chrome_android",
       "--apk=apks/ChromePublic.apk",
-      "--verbose",
+      "-vvvv",
     ],
   },
   "chrome_sandbox": {
@@ -2656,7 +2656,7 @@
       "--product=android_webview",
       "--apk=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
-      "--verbose",
+      "-vvvv",
     ],
   },
   "telemetry_gpu_integration_test": {

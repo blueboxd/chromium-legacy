@@ -1376,6 +1376,10 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               metadata.local_surface_id_allocation);
+  if (delegated_frame_host_) {
+    delegated_frame_host_->SetTopControlsVisibleHeight(
+        metadata.top_controls_height * metadata.top_controls_shown_ratio);
+  }
   // We've just processed new RenderFrameMetadata and potentially embedded a
   // new surface for that data. Check if we need to evict it.
   EvictFrameIfNecessary();

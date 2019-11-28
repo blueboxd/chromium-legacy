@@ -309,7 +309,7 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   // OnInternalMessage methods).
   if (IsCastInternalNamespace(message.namespace_())) {
     if (message.payload_type() ==
-        cast_channel::CastMessage_PayloadType_STRING) {
+        cast::channel::CastMessage_PayloadType_STRING) {
       parse_json_.Run(
           message.payload_utf8(),
           base::BindOnce(&CastMessageHandler::HandleCastInternalMessage,

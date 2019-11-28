@@ -232,8 +232,9 @@ class BuildConfigGenerator extends DefaultTask {
 
     public static boolean isPlayServicesTarget(String dependencyId) {
         // Firebase has historically been treated as a part of play services, so it counts here for
-        // backwards compatibility.
-        return Pattern.matches(".*google.*(play_services|firebase).*", dependencyId)
+        // backwards compatibility. Datatransport is new as of 2019 and is used by many play
+        // services libraries.
+        return Pattern.matches(".*google.*(play_services|firebase|datatransport).*", dependencyId)
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {

@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -1078,6 +1079,23 @@ class AutotestPrivateMouseMoveFunction : public ExtensionFunction {
   void OnDone();
 
   std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateSetMetricsEnabledFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetMetricsEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMetricsEnabled",
+                             AUTOTESTPRIVATE_SETMETRICSENABLED)
+
+ private:
+  ~AutotestPrivateSetMetricsEnabledFunction() override;
+  ResponseAction Run() override;
+
+  void OnStatsReportingStateChanged();
+
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
+      stats_reporting_observer_subscription_;
+  bool target_value_ = false;
 };
 
 template <>

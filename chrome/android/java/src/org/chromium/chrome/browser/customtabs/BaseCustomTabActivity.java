@@ -13,10 +13,13 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
@@ -28,6 +31,7 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
         extends ChromeActivity<C> {
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
+    protected CustomTabActivityTabProvider mTabProvider;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
 
     // This is to give the right package name while using the client's resources during an
@@ -50,6 +54,19 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
             mToolbarCoordinator.onToolbarInitialized(toolbarManager);
             mNavigationController.onToolbarInitialized(toolbarManager);
         }, null, getShareDelegateSupplier());
+    }
+
+    /**
+     * Called when the {@link BaseCustomTabActivityComponent} was created.
+     */
+    protected void onComponentCreated(BaseCustomTabActivityComponent component) {
+        mToolbarCoordinator = component.resolveToolbarCoordinator();
+        mNavigationController = component.resolveNavigationController();
+        mTabProvider = component.resolveTabProvider();
+        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+
+        component.resolveCompositorContentInitializer();
+        component.resolveTaskDescriptionHelper();
     }
 
     @Override
@@ -82,6 +99,11 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     @Override
     public int getActivityThemeColor() {
         if (getIntentDataProvider().isOpenedByChrome()) {
+            return TabState.UNSPECIFIED_THEME_COLOR;
+        }
+
+        WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
+        if (webappExtras != null && !webappExtras.hasCustomToolbarColor) {
             return TabState.UNSPECIFIED_THEME_COLOR;
         }
 

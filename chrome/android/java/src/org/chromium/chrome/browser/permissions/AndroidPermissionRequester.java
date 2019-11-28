@@ -15,7 +15,7 @@ import androidx.annotation.StringRes;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.PermissionCallback;

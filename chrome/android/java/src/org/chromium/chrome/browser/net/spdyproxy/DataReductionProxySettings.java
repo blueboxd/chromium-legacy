@@ -14,9 +14,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxySavingsClearedReason;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
+import org.chromium.chrome.browser.settings.datareduction.DataReductionDataUseItem;
+import org.chromium.chrome.browser.settings.datareduction.DataReductionProxySavingsClearedReason;
+import org.chromium.chrome.browser.settings.datareduction.DataReductionStatsPreference;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 

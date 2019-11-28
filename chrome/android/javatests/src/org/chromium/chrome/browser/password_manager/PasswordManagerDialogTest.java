@@ -70,7 +70,7 @@ public class PasswordManagerDialogTest {
         mCoordinator = new PasswordManagerDialogCoordinator(
                 activity.getWindowAndroid().getContext().get(), activity.getModalDialogManager(),
                 activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
-                activity.getControlContainerHeightResource());
+                activity.getControlContainerHeightResource(), false);
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

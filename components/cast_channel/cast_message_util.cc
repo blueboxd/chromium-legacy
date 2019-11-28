@@ -13,14 +13,15 @@
 #include "build/build_config.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/enum_table.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using base::Value;
 using cast_util::EnumToString;
 using cast_util::StringToEnum;
-
 namespace cast_util {
 
+using ::cast::channel::AuthChallenge;
+using ::cast::channel::CastMessage;
 using cast_channel::CastMessageType;
 using cast_channel::GetAppAvailabilityResult;
 
@@ -186,9 +187,11 @@ bool IsCastMessageValid(const CastMessage& message_proto) {
       message_proto.destination_id().empty()) {
     return false;
   }
-  return (message_proto.payload_type() == CastMessage_PayloadType_STRING &&
+  return (message_proto.payload_type() ==
+              cast::channel::CastMessage_PayloadType_STRING &&
           message_proto.has_payload_utf8()) ||
-         (message_proto.payload_type() == CastMessage_PayloadType_BINARY &&
+         (message_proto.payload_type() ==
+              cast::channel::CastMessage_PayloadType_BINARY &&
           message_proto.has_payload_binary());
 }
 
@@ -255,17 +258,18 @@ void CreateAuthChallengeMessage(CastMessage* message_proto,
   CHECK(message_proto);
   DeviceAuthMessage auth_message;
 
-  AuthChallenge* challenge = auth_message.mutable_challenge();
+  cast::channel::AuthChallenge* challenge = auth_message.mutable_challenge();
   DCHECK(challenge);
   challenge->set_sender_nonce(auth_context.nonce());
-  challenge->set_hash_algorithm(SHA256);
+  challenge->set_hash_algorithm(cast::channel::SHA256);
 
   std::string auth_message_string;
   auth_message.SerializeToString(&auth_message_string);
 
   FillCommonCastMessageFields(message_proto, kPlatformSenderId,
                               kPlatformReceiverId, kAuthNamespace);
-  message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
+  message_proto->set_payload_type(
+      cast::channel::CastMessage_PayloadType_BINARY);
   message_proto->set_payload_binary(auth_message_string);
 }
 

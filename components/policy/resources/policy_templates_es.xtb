@@ -162,6 +162,7 @@
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre Navegación Segura</translation>
+<translation id="1163080558183062209">Inhabilitar los tipos de impresora en la lista de denegación</translation>
 <translation id="117059611145966538">Servidores de impresión externos</translation>
 <translation id="1189817621108632689">Permite establecer una lista de patrones de URL para especificar los sitios web que no pueden mostrar imágenes.
 
@@ -880,6 +881,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Las plantillas con formato incorrecto se ignorarán.</translation>
 <translation id="2345547870894930157">Habilitar DNS-over-HTTPS sin alternativa insegura</translation>
+<translation id="2347264058558503729">Permite a <ph name="PRODUCT_NAME" /> enviar documentos a <ph name="CLOUD_PRINT_NAME" /> para imprimirlos.  Nota: Esto solo afecta a la disponibilidad de <ph name="CLOUD_PRINT_NAME" /> en <ph name="PRODUCT_NAME" />.  No impide que los usuarios envíen trabajos de impresión desde sitios web.
+
+      Si se habilita este ajuste o no se configura, los usuarios podrán imprimir con <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />.
+
+      Si se inhabilita este ajuste, los usuarios no podrán imprimir con <ph name="CLOUD_PRINT_NAME" /> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME" />.
+
+      Para que los destinos de <ph name="CLOUD_PRINT_NAME" /> sean visibles, se debe asignar el valor "true" a esta política y no se debe incluir "cloud" en la política "PrinterTypeDenyList".</translation>
 <translation id="237494535617297575">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -990,6 +998,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si se habilita o no se define, se mostrarán advertencias de seguridad cuando se usen algunas instrucciones de línea de comandos para iniciar Chrome.
 
           En Windows, esta política solo está disponible en instancias que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado en la gestión de dispositivos.</translation>
+<translation id="247658312644322296">La opción "Guardar como PDF"</translation>
 <translation id="2480971699591919564">Habilita la función Clic de llamada, que permite a los usuarios enviar números de teléfono desde Chrome para ordenador a un dispositivo Android si el usuario ha iniciado sesión. Puedes consultar más información en este artículo del Centro de Ayuda: https://support.google.com/chrome/answer/9430554?hl=es
 
       Si se habilita esta política, el usuario de Chrome podrá enviar números de teléfono a dispositivos Android.
@@ -2257,15 +2266,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Actualmente, esta función está inhabilitada en el servidor.</translation>
 <translation id="4363057787588706121">Permite combinar listas de políticas de fuentes distintas</translation>
 <translation id="4363101430102811068">Habilita la detección de filtraciones de datos para las credenciales introducidas</translation>
-<translation id="4363136876356691536">Si se asigna el valor "True" a esta política, las opciones de accesibilidad siempre aparecerán en el menú de la bandeja del sistema.
-
-          Si se le asigna el valor "False", las opciones de accesibilidad nunca aparecerán en el menú de la bandeja del sistema.
-
-          Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
-
-          Si no asignas ningún valor a esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero los usuarios podrán hacer que aparezcan a través de la página de configuración.
-
-          Si las funciones de accesibilidad se han habilitado de otra forma (por ejemplo, mediante una combinación de teclas), las opciones de accesibilidad siempre se mostrarán en el menú de la bandeja del sistema.</translation>
 <translation id="436581050240847513">Permite informar de interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir que todos los sitios muestren todas las imágenes</translation>
@@ -2409,7 +2409,19 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Las solicitudes de instalación de extensiones se crean cuando los usuarios intenta instalar una extensión que no está incluida en la lista blanca de <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
 
       Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> y <ph name="CLOUD_REPORTING_ENABLED" /> está habilitado.</translation>
+<translation id="4638162097046412832">Las impresoras de los tipos incluidos en la lista de denegación no serán visibles, y sus funciones no se podrán utilizar.
+
+      Si se incluyen todos los tipos de impresora en la lista de denegación, en la práctica, se inhabilitará la impresión, ya que no habrá ninguna impresora disponible a la que enviar los documentos para imprimirlos.
+
+      Incluir "cloud" en la lista de denegación dará el mismo resultado que asignarle el valor "false" a la política "CloudPrintSubmitEnabled". Para que los destinos de <ph name="CLOUD_PRINT_NAME" /> sean visibles, se debe asignar el valor "true" a la política "CloudPrintSubmitEnabled" y no se debe incluir "cloud" en la lista de denegados.
+
+      Si no se establece esta política o se le asigna una lista vacía, serán visibles todos los tipos de impresora.
+
+      Las impresoras de extensión, también llamadas "destinos de proveedor de impresión", incluyen cualquier destino que pertenezca a una extensión de <ph name="PRODUCT_NAME" />.
+
+      Las impresoras locales, que también se denominan "destinos de impresión nativos", incluyen los destinos que están disponibles para los equipos locales y las impresoras compartidas de la red.</translation>
 <translation id="4639407427807680016">Nombres de hosts de mensajes nativos que se deben excluir de la lista negra</translation>
+<translation id="4649395978608361979">Impresoras locales</translation>
 <translation id="4650759511838826572">Inhabilitar esquemas de protocolo de URL</translation>
 <translation id="465099050592230505">URL de la tienda online de la empresa (política obsoleta)</translation>
 <translation id="4661889655253181651">La configuración de contenido permite especificar la gestión de un tipo específico de contenido (por ejemplo, cookies, imágenes o JavaScript).</translation>
@@ -2436,6 +2448,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se habilita esta política, los sitios web podrán abrir nuevas ventanas y pestañas y navegar de forma simultánea.
       Si se inhabilita esta política o no se configura, los sitios web no podrán abrir ventanas ni pestañas nuevas ni navegar de forma simultánea.</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
+<translation id="4693779768620889402">Destinos basados en la extensión</translation>
 <translation id="4703402283970867140">Habilitar el modelo de atenuación inteligente para alargar el tiempo que pasa hasta que la pantalla se atenúe.</translation>
 <translation id="4722122254122249791">Habilitar el aislamiento de sitios web específicos</translation>
 <translation id="4722399051042571387">Si se le asigna el valor false, los usuarios no podrán definir ningún PIN que no se considere seguro y que sea fácil de adivinar.
@@ -3089,6 +3102,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5656177735561364047">Habilita la función de portapapeles compartido</translation>
 <translation id="5666457529647159548">Permite que los usuarios gestionen los certificados de cliente instalados.</translation>
+<translation id="5676740747107495269">Mostrar las opciones de accesibilidad en el menú de la bandeja del sistema de la pantalla de inicio de sesión</translation>
 <translation id="5689430183304951538">Tamaño predeterminado de impresión de página</translation>
 <translation id="5693469654327063861">Permitir la migración de datos</translation>
 <translation id="5694594914843889579">Si se asigna el valor True a esta política, el almacenamiento externo no estará disponible en el explorador de archivos.
@@ -3642,6 +3656,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
+<translation id="6821268164692776674">El destino <ph name="CLOUD_PRINT_NAME" /> y la opción "Guardar en Google Drive"</translation>
 <translation id="6833988859168635883">Inicio, Página principal y página Nueva pestaña</translation>
 <translation id="6835883744948188639">Mostrar un mensaje periódico al usuario indicando que se recomienda reiniciar el navegador</translation>
 <translation id="683688607121170501">Esta opción permite que los usuarios cambien de una cuenta de Google a otra en el área de contenido de la ventana de su navegador y en las aplicaciones de Android después de haber iniciado sesión en su dispositivo <ph name="PRODUCT_OS_NAME" />.
@@ -4079,6 +4094,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
 <translation id="747275827471712187">Volver a la configuración antigua de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" /> en estos sitios web</translation>
 <translation id="7477231245051133709">Habilita la función de accesibilidad de audio en mono</translation>
+<translation id="7477239290070847560">Destinos de protocolo zeroconf (mDNS y DNS‑SD)</translation>
 <translation id="7485481791539008776">Reglas para la selección de la impresora predeterminada</translation>
 <translation id="7485730741952775732">Si se asigna un valor a esta política, el host de acceso remoto utilizará esta URL para validar los tokens de autenticación de los clientes de acceso remoto y para aceptar las conexiones. Se debe utilizar junto con RemoteAccessHostTokenUrl.
 

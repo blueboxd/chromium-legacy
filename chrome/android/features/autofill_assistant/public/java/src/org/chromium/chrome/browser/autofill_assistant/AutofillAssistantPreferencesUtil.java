@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
+import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantPreferences;
 
 /** Autofill Assistant related preferences util class. */
 class AutofillAssistantPreferencesUtil {

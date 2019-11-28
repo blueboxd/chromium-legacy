@@ -164,7 +164,9 @@ class TabListElement extends CustomElement {
 
     this.tabsApi_.getTabs().then(tabs => {
       tabs.forEach(tab => this.onTabCreated_(tab));
-      this.scrollToActiveTab_();
+      this.animationPromises.then(() => {
+        this.scrollToActiveTab_();
+      });
 
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
@@ -459,24 +461,21 @@ class TabListElement extends CustomElement {
    * @private
    */
   scrollToTab_(tabElement) {
-    this.animationPromises.then(() => {
-      const screenLeft = this.scrollingParent_.scrollLeft;
-      const screenRight = screenLeft + this.scrollingParent_.offsetWidth;
+    const screenLeft = this.scrollingParent_.scrollLeft;
+    const screenRight = screenLeft + this.scrollingParent_.offsetWidth;
 
-      if (screenLeft > tabElement.offsetLeft) {
-        // If the element's left is to the left of the visible screen, scroll
-        // such that the element's left edge is aligned with the screen's edge
-        this.scrollingParent_.scrollLeft =
-            tabElement.offsetLeft - SCROLL_PADDING;
-      } else if (screenRight < tabElement.offsetLeft + tabElement.offsetWidth) {
-        // If the element's right is to the right of the visible screen, scroll
-        // such that the element's right edge is aligned with the screen's right
-        // edge.
-        this.scrollingParent_.scrollLeft = tabElement.offsetLeft +
-            tabElement.offsetWidth - this.scrollingParent_.offsetWidth +
-            SCROLL_PADDING;
-      }
-    });
+    if (screenLeft > tabElement.offsetLeft) {
+      // If the element's left is to the left of the visible screen, scroll
+      // such that the element's left edge is aligned with the screen's edge
+      this.scrollingParent_.scrollLeft = tabElement.offsetLeft - SCROLL_PADDING;
+    } else if (screenRight < tabElement.offsetLeft + tabElement.offsetWidth) {
+      // If the element's right is to the right of the visible screen, scroll
+      // such that the element's right edge is aligned with the screen's right
+      // edge.
+      this.scrollingParent_.scrollLeft = tabElement.offsetLeft +
+          tabElement.offsetWidth - this.scrollingParent_.offsetWidth +
+          SCROLL_PADDING;
+    }
   }
 
   /**

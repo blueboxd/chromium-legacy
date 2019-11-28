@@ -320,19 +320,19 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
   EXPECT_FALSE(base::PathExists(other_shim_path.Append("Contents")));
 }
 
-TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
-  base::ScopedTempDir other_folder_temp_dir;
-  EXPECT_TRUE(other_folder_temp_dir.CreateUniqueTempDir());
-  base::FilePath other_folder = other_folder_temp_dir.GetPath();
-  base::FilePath other_shim_path = other_folder.Append(shim_base_name_);
+TEST_F(WebAppShortcutCreatorTest, DeleteShortcutsSingleProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kAppShimMultiProfile});
 
+  base::FilePath other_shim_path =
+      shim_path_.DirName().Append("Copy of Shim.app");
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());
 
   // Create an extra shim in another folder. It should be deleted since its
   // bundle id matches.
-  std::string expected_bundle_id = kFakeChromeBundleId;
-  expected_bundle_id += ".app.Profile-1-" + info_->extension_id;
   std::vector<base::FilePath> bundle_by_id_paths;
   bundle_by_id_paths.push_back(shim_path_);
   bundle_by_id_paths.push_back(other_shim_path);
@@ -344,7 +344,37 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   // Ensure the paths were created, and that they are destroyed.
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path));
-  shortcut_creator.DeleteShortcuts();
+  internals::DeleteMultiProfileShortcutsForApp(info_->extension_id);
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_TRUE(base::PathExists(other_shim_path));
+  internals::DeletePlatformShortcuts(app_data_dir_, *info_);
+  EXPECT_FALSE(base::PathExists(shim_path_));
+  EXPECT_FALSE(base::PathExists(other_shim_path));
+}
+
+TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
+  base::FilePath other_shim_path =
+      shim_path_.DirName().Append("Copy of Shim.app");
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
+                                                       info_.get());
+
+  // Create an extra shim in another folder. It should be deleted since its
+  // bundle id matches.
+  std::vector<base::FilePath> bundle_by_id_paths;
+  bundle_by_id_paths.push_back(shim_path_);
+  bundle_by_id_paths.push_back(other_shim_path);
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillRepeatedly(Return(bundle_by_id_paths));
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               ShortcutLocations()));
+
+  // Ensure the paths were created, and that they are destroyed.
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_TRUE(base::PathExists(other_shim_path));
+  internals::DeletePlatformShortcuts(app_data_dir_, *info_);
+  EXPECT_TRUE(base::PathExists(shim_path_));
+  EXPECT_TRUE(base::PathExists(other_shim_path));
+  internals::DeleteMultiProfileShortcutsForApp(info_->extension_id);
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_FALSE(base::PathExists(other_shim_path));
 }

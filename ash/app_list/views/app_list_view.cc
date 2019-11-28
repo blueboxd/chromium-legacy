@@ -761,7 +761,10 @@ bool AppListView::HandleCloseOpenSearchBox() {
 }
 
 bool AppListView::Back() {
-  return app_list_main_view_->contents_view()->Back();
+  if (app_list_main_view_)
+    return app_list_main_view_->contents_view()->Back();
+
+  return false;
 }
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
@@ -919,8 +922,8 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     if (!is_tablet_mode())
       return;
 
-    // Home launcher is shown on top of wallpaper with trasparent background. So
-    // trigger the wallpaper context menu for the same events.
+    // Home launcher is shown on top of wallpaper with transparent background.
+    // So trigger the wallpaper context menu for the same events.
     gfx::Point onscreen_location(event->location());
     ConvertPointToScreen(this, &onscreen_location);
     delegate_->ShowWallpaperContextMenu(

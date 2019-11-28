@@ -681,8 +681,6 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(
   if (!initial_preview_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("PrintPreview.InitialDisplayTime",
                         base::TimeTicks::Now() - initial_preview_start_time_);
-    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.Initial",
-                            expected_pages_count);
     UMA_HISTOGRAM_COUNTS_1M(
         "PrintPreview.RegeneratePreviewRequest.BeforeFirstData",
         handler_->regenerate_preview_request_count());

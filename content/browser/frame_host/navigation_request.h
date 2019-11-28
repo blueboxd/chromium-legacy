@@ -327,8 +327,8 @@ class CONTENT_EXPORT NavigationRequest
   void StartNavigation(bool is_for_commit);
 
   void set_on_start_checks_complete_closure_for_testing(
-      const base::Closure& closure) {
-    on_start_checks_complete_closure_ = closure;
+      base::OnceClosure closure) {
+    on_start_checks_complete_closure_ = std::move(closure);
   }
 
   // Sets ID of the RenderProcessHost we expect the navigation to commit in.
@@ -923,7 +923,7 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
 
-  base::Closure on_start_checks_complete_closure_;
+  base::OnceClosure on_start_checks_complete_closure_;
 
   // Used in the network service world to pass the subressource loader params
   // to the renderer. Used by AppCache and ServiceWorker, and

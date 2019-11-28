@@ -50,6 +50,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_widget_input_handler.h"
@@ -761,6 +762,33 @@ TEST_F(RenderFrameHostManagerTest,
   contents()->NavigateAndCommit(kUrl2);
 }
 
+// Stub out local frame mojo binding. Intercepts calls to EnableViewSourceMode
+// and marks the message as received. This class attaches to the first
+// RenderFrameHostImpl created.
+class EnableViewSourceLocalFrame : public content::FakeLocalFrame,
+                                   public WebContentsObserver {
+ public:
+  explicit EnableViewSourceLocalFrame(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    if (!initialized_) {
+      initialized_ = true;
+      Init(render_frame_host->GetRemoteAssociatedInterfaces());
+    }
+  }
+
+  void EnableViewSourceMode() final { enabled_view_source_ = true; }
+
+  bool IsViewSourceModeEnabled() const { return enabled_view_source_; }
+
+  void ResetState() { enabled_view_source_ = false; }
+
+ private:
+  bool enabled_view_source_ = false;
+  bool initialized_ = false;
+};
+
 // When there is an error with the specified page, renderer exits view-source
 // mode. See WebFrameImpl::DidFail(). We check by this test that
 // EnableViewSourceMode message is sent on every navigation regardless
@@ -777,6 +805,8 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // the second navigation. We have to avoid this in order to exercise the
   // target code path.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
+
+  EnableViewSourceLocalFrame local_frame(contents());
 
   // Navigate. Note that "view source" URLs are implemented by putting the RFH
   // into a view-source mode and then navigating to the inner URL, so that's why
@@ -799,16 +829,16 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_EQ(kUrl, last_committed->GetURL());
   EXPECT_EQ(kViewSourceUrl, last_committed->GetVirtualURL());
   EXPECT_FALSE(controller().GetPendingEntry());
-  // Because we're using TestWebContents and TestRenderViewHost in this
-  // unittest, no one calls WebContentsImpl::RenderViewCreated(). So, we see no
-  // EnableViewSourceMode message, here.
 
-  // Clear queued messages before load.
-  process()->sink().ClearMessages();
+  // The RFH should have been put in view-source mode.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(local_frame.IsViewSourceModeEnabled());
+  local_frame.ResetState();
 
   // Navigate, again.
   navigation = NavigationSimulatorImpl::CreateBrowserInitiated(kViewSourceUrl,
                                                                contents());
+
   navigation->set_did_create_new_entry(false);
   navigation->Start();
   request = main_test_rfh()->frame_tree_node()->navigation_request();
@@ -824,8 +854,8 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_FALSE(controller().GetPendingEntry());
 
   // New message should be sent out to make sure to enter view-source mode.
-  EXPECT_TRUE(process()->sink().GetUniqueMessageMatching(
-      FrameMsg_EnableViewSourceMode::ID));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(local_frame.IsViewSourceModeEnabled());
 }
 
 // Tests the Init function by checking the initial RenderViewHost.

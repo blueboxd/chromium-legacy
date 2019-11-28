@@ -7,17 +7,20 @@
 #include <algorithm>
 #include <utility>
 
+using openscreen::osp::ServiceInfo;
+
 namespace media_router {
 namespace {
+
 const char kOpenScreenServiceType[] = "openscreen_.udp_";
 
-openscreen::ServiceInfo ServiceInfoFromServiceDescription(
+ServiceInfo ServiceInfoFromServiceDescription(
     const local_discovery::ServiceDescription& desc) {
   openscreen::ErrorOr<openscreen::IPAddress> address =
       openscreen::IPAddress::Parse(desc.address.host());
   DCHECK(address);
 
-  openscreen::ServiceInfo service_info;
+  ServiceInfo service_info;
   service_info.service_id = desc.service_name;
   service_info.friendly_name = desc.instance_name();
 
@@ -93,8 +96,7 @@ bool OpenScreenListener::SearchNow() {
   return true;
 }
 
-const std::vector<openscreen::ServiceInfo>& OpenScreenListener::GetReceivers()
-    const {
+const std::vector<ServiceInfo>& OpenScreenListener::GetReceivers() const {
   return receivers_;
 }
 
@@ -118,21 +120,20 @@ void OpenScreenListener::OnDeviceChanged(
     return;
   }
 
-  openscreen::ServiceInfo service_info =
+  ServiceInfo service_info =
       ServiceInfoFromServiceDescription(service_description);
   if (added) {
     receivers_.push_back(std::move(service_info));
 
-    const openscreen::ServiceInfo& ref = receivers_.back();
+    const ServiceInfo& ref = receivers_.back();
     for (auto* observer : observers_) {
       observer->OnReceiverAdded(ref);
     }
   } else {
-    auto it =
-        std::find_if(receivers_.begin(), receivers_.end(),
-                     [&service_info](const openscreen::ServiceInfo& info) {
-                       return info.service_id == service_info.service_id;
-                     });
+    auto it = std::find_if(receivers_.begin(), receivers_.end(),
+                           [&service_info](const ServiceInfo& info) {
+                             return info.service_id == service_info.service_id;
+                           });
 
     *it = std::move(service_info);
 
@@ -149,15 +150,14 @@ void OpenScreenListener::OnDeviceRemoved(const std::string& service_type,
     return;
   }
 
-  const auto& removed_it =
-      std::find_if(receivers_.begin(), receivers_.end(),
-                   [&service_name](openscreen::ServiceInfo& info) {
-                     return info.service_id == service_name;
-                   });
+  const auto& removed_it = std::find_if(
+      receivers_.begin(), receivers_.end(), [&service_name](ServiceInfo& info) {
+        return info.service_id == service_name;
+      });
 
   // Move the receiver we want to remove to the end, so we don't have to shift.
   DCHECK(removed_it != receivers_.end());
-  const openscreen::ServiceInfo removed_info = std::move(*removed_it);
+  const ServiceInfo removed_info = std::move(*removed_it);
   if (removed_it != receivers_.end() - 1) {
     *removed_it = std::move(receivers_.back());
   }

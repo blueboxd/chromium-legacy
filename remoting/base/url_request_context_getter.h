@@ -15,7 +15,6 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
-class NetLog;
 class ProxyConfigService;
 }  // namespace net
 
@@ -37,7 +36,6 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);

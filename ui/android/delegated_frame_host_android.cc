@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/swap_promise.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -25,6 +27,28 @@
 namespace ui {
 
 namespace {
+
+class TopControlsSwapPromise : public cc::SwapPromise {
+ public:
+  explicit TopControlsSwapPromise(float height) : height_(height) {}
+  ~TopControlsSwapPromise() override = default;
+
+  // cc::SwapPromise:
+  void DidActivate() override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
+    DCHECK_GT(metadata->frame_token, 0u);
+    metadata->top_controls_visible_height.emplace(height_);
+  }
+  void DidSwap() override {}
+  cc::SwapPromise::DidNotSwapAction DidNotSwap(
+      DidNotSwapReason reason) override {
+    return DidNotSwapAction::KEEP_ACTIVE;
+  }
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  const float height_;
+};
 
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const viz::SurfaceId& primary_surface_id,
@@ -302,6 +326,16 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
 
 void DelegatedFrameHostAndroid::DidNavigate() {
   first_local_surface_id_after_navigation_ = local_surface_id_;
+}
+
+void DelegatedFrameHostAndroid::SetTopControlsVisibleHeight(float height) {
+  if (top_controls_visible_height_ == height)
+    return;
+  if (!content_layer_ || !content_layer_->layer_tree_host())
+    return;
+  top_controls_visible_height_ = height;
+  auto swap_promise = std::make_unique<TopControlsSwapPromise>(height);
+  content_layer_->layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
 }
 
 }  // namespace ui

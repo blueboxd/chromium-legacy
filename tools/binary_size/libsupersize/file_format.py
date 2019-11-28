@@ -51,14 +51,20 @@ Sizes
 ~~~~~
 The number of bytes this symbol takes up.
 
-Path indicies
-~~~~~~~~~~~~~
-Indicies that reference paths in the prior Path list section. Delta-encoded.
+Padding
+~~~~~~~
+The number of padding bytes this symbol has.
+This section is only present if 'has_padding' is True in the metadata.
 
-Component indicies
+Path indices
+~~~~~~~~~~~~~
+Indices that reference paths in the prior Path list section. Delta-encoded.
+
+Component indices
 ~~~~~~~~~~~~~~~~~~
-Indicies that reference components in the prior Component list section.
+Indices that reference components in the prior Component list section.
 Delta-encoded.
+This section is only present if 'has_components' is True in the metadata.
 
 Symbols
 -------
@@ -85,6 +91,44 @@ import models
 _SERIALIZATION_VERSION = 'Size File Format v1'
 
 
+def CalculatePadding(raw_symbols):
+  """Populates the |padding| field based on symbol addresses. """
+  logging.info('Calculating padding')
+
+  # Padding not really required, but it is useful to check for large padding and
+  # log a warning.
+  seen_sections = set()
+  for i, symbol in enumerate(raw_symbols[1:]):
+    prev_symbol = raw_symbols[i]
+    if symbol.IsOverhead():
+      # Overhead symbols are not actionable so should be padding-only.
+      symbol.padding = symbol.size
+    if prev_symbol.section_name != symbol.section_name:
+      assert symbol.section_name not in seen_sections, (
+          'Input symbols must be sorted by section, then address.')
+      seen_sections.add(symbol.section_name)
+      continue
+    if (symbol.address <= 0 or prev_symbol.address <= 0
+        or not symbol.IsNative() or not prev_symbol.IsNative()):
+      continue
+
+    if symbol.address == prev_symbol.address:
+      if symbol.aliases and symbol.aliases is prev_symbol.aliases:
+        symbol.padding = prev_symbol.padding
+        symbol.size = prev_symbol.size
+        continue
+      # Padding-only symbols happen for ** symbol gaps.
+      assert prev_symbol.size_without_padding == 0, (
+          'Found duplicate symbols:\n%r\n%r' % (prev_symbol, symbol))
+
+    padding = symbol.address - prev_symbol.end_address
+    symbol.padding = padding
+    symbol.size += padding
+    assert symbol.size >= 0, (
+        'Symbol has negative size (likely not sorted propertly): '
+        '%r\nprev symbol: %r' % (symbol, prev_symbol))
+
+
 def _LogSize(file_obj, desc):
   if not hasattr(file_obj, 'fileno'):
     return
@@ -93,7 +137,7 @@ def _LogSize(file_obj, desc):
   logging.debug('File size with %s: %d' % (desc, size))
 
 
-def _SaveSizeInfoToFile(size_info, file_obj):
+def _SaveSizeInfoToFile(size_info, file_obj, include_padding=False):
   """Saves size info to a .size file.
 
   Args:
@@ -108,6 +152,7 @@ def _SaveSizeInfoToFile(size_info, file_obj):
       'metadata': size_info.metadata,
       'section_sizes': size_info.section_sizes,
       'has_components': True,
+      'has_padding': include_padding,
   }
   metadata_str = json.dumps(headers, file_obj, indent=2, sort_keys=True)
   file_obj.write('%d\n' % len(metadata_str))
@@ -135,7 +180,7 @@ def _SaveSizeInfoToFile(size_info, file_obj):
   file_obj.write('%s\n' % '\t'.join(g.name for g in by_section))
   file_obj.write('%s\n' % '\t'.join(str(len(g)) for g in by_section))
 
-  # Addresses, sizes, path indicies, component indicies
+  # Addresses, sizes, path indices, component indices
   def write_numeric(func, delta=False):
     """Write the result of func(symbol) for each symbol in each symbol group.
 
@@ -159,10 +204,13 @@ def _SaveSizeInfoToFile(size_info, file_obj):
 
   write_numeric(lambda s: s.address, delta=True)
   _LogSize(file_obj, 'addresses')  # For libchrome, adds 300kb.
-  # Do not write padding except for overhead symbols, it will be recalculated
-  # from addresses on load.
   write_numeric(lambda s: s.size if s.IsOverhead() else s.size_without_padding)
   _LogSize(file_obj, 'sizes')  # For libchrome, adds 300kb
+  # Padding for non-padding-only symbols is recalculated from addresses on
+  # load, so we only need to write it if we're writing a subset of symbols.
+  if include_padding:
+    write_numeric(lambda s: s.padding)
+    _LogSize(file_obj, 'paddings')  # For libchrome, adds 300kb
   write_numeric(lambda s: path_tuples[(s.object_path, s.source_path)],
                 delta=True)
   _LogSize(file_obj, 'path indices')  # For libchrome: adds 125kb.
@@ -229,6 +277,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   section_sizes = headers['section_sizes']
   metadata = headers.get('metadata')
   has_components = headers.get('has_components', False)
+  has_padding = headers.get('has_padding', False)
   lines = iter(file_obj)
   _ReadLine(lines)
 
@@ -247,7 +296,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   section_names = _ReadValuesFromLine(lines, split='\t')
   section_counts = [int(c) for c in _ReadValuesFromLine(lines, split='\t')]
 
-  # Addresses, sizes, path indicies, component indicies
+  # Addresses, sizes, paddings, path indices, component indices
   def read_numeric(delta=False):
     """Read numeric values, where each line corresponds to a symbol group.
 
@@ -268,6 +317,10 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
 
   addresses = read_numeric(delta=True)
   sizes = read_numeric(delta=False)
+  if has_padding:
+    paddings = read_numeric(delta=False)
+  else:
+    paddings = [None] * len(section_names)
   path_indices = read_numeric(delta=True)
   if has_components:
     component_indices = read_numeric(delta=True)
@@ -277,9 +330,9 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   raw_symbols = [None] * sum(section_counts)
   symbol_idx = 0
   for (cur_section_name, cur_section_count, cur_addresses, cur_sizes,
-       cur_path_indicies, cur_component_indices) in itertools.izip(
-       section_names, section_counts, addresses, sizes, path_indices,
-       component_indices):
+       cur_paddings, cur_path_indices, cur_component_indices) in itertools.izip(
+           section_names, section_counts, addresses, sizes, paddings,
+           path_indices, component_indices):
     alias_counter = 0
     for i in xrange(cur_section_count):
       parts = _ReadValuesFromLine(lines, split='\t')
@@ -312,13 +365,18 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
       new_sym.full_name = full_name
       new_sym.address = cur_addresses[i]
       new_sym.size = cur_sizes[i]
-      paths = path_tuples[cur_path_indicies[i]]
+      paths = path_tuples[cur_path_indices[i]]
       new_sym.object_path, new_sym.source_path = paths
       component = components[cur_component_indices[i]] if has_components else ''
       new_sym.component = component
       new_sym.flags = flags
       # Derived
-      new_sym.padding = 0
+      if cur_paddings:
+        new_sym.padding = cur_paddings[i]
+        new_sym.size += new_sym.padding
+      else:
+        # This will be computed during CreateSizeInfo()
+        new_sym.padding = 0
       new_sym.template_name = ''
       new_sym.name = ''
 
@@ -336,6 +394,9 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
       raw_symbols[symbol_idx] = new_sym
       symbol_idx += 1
 
+  if not has_padding:
+    CalculatePadding(raw_symbols)
+
   return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata,
                          size_path=size_path)
 
@@ -352,15 +413,15 @@ def _OpenGzipForWrite(path, file_obj=None):
         yield fz
 
 
-def SaveSizeInfo(size_info, path, file_obj=None):
+def SaveSizeInfo(size_info, path, file_obj=None, include_padding=False):
   """Saves |size_info| to |path}."""
   if os.environ.get('SUPERSIZE_MEASURE_GZIP') == '1':
     with _OpenGzipForWrite(path, file_obj=file_obj) as f:
-      _SaveSizeInfoToFile(size_info, f)
+      _SaveSizeInfoToFile(size_info, f, include_padding=include_padding)
   else:
     # It is seconds faster to do gzip in a separate step. 6s -> 3.5s.
     stringio = cStringIO.StringIO()
-    _SaveSizeInfoToFile(size_info, stringio)
+    _SaveSizeInfoToFile(size_info, stringio, include_padding=include_padding)
 
     logging.debug('Serialization complete. Gzipping...')
     stringio.seek(0)

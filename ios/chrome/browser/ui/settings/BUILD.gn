@@ -15,6 +15,7 @@ source_set("settings_root") {
     "settings_root_view_controlling.h",
   ]
   deps = [
+    ":settings_root_constants",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:feature_flags",
@@ -34,6 +35,17 @@ source_set("settings_root") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/third_party/material_components_ios",
     "//ui/base",
+  ]
+}
+
+source_set("settings_root_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "settings_root_table_constants.h",
+    "settings_root_table_constants.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -170,6 +182,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/table_view/cells/resources:table_view_cell_check_mark",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web:web",

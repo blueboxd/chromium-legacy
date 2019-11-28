@@ -18844,6 +18844,7 @@ Called by update_net_error_codes.py.-->
   <int value="646"
       label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
   <int value="647" label="PrinterTypeDenyList"/>
+  <int value="648" label="ForceLegacyDefaultReferrerPolicy"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21437,6 +21438,7 @@ Called by update_net_error_codes.py.-->
   <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
   <int value="1418" label="AUTOTESTPRIVATE_INSTALLPLUGINVM"/>
   <int value="1419" label="CRASHREPORTPRIVATE_REPORTERROR"/>
+  <int value="1420" label="AUTOTESTPRIVATE_SETMETRICSENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25599,6 +25601,7 @@ Called by update_net_error_codes.py.-->
   <int value="3104" label="MessageEventSharedArrayBufferSameOrigin"/>
   <int value="3105" label="MessageEventSharedArrayBufferSameAgentCluster"/>
   <int value="3106" label="MessageEventSharedArrayBufferDifferentAgentCluster"/>
+  <int value="3107" label="CacheStorageCodeCacheHint"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46560,7 +46563,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OmniboxInputType">
-  <int value="0" label="invalid"/>
+  <int value="0" label="empty"/>
   <int value="1" label="unknown"/>
   <int value="2" label="deprecated: requested url"/>
   <int value="3" label="url"/>
@@ -54677,6 +54680,22 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Invalidate token for primary account"/>
   <int value="2" label="Revoke token for secondary accounts"/>
   <int value="3" label="Revoke tokens for primary and secondary accounts"/>
+</enum>
+
+<enum name="RoamingUserDataDirectoryDeletionResult">
+  <int value="0" label="Error">
+    An unexpected error occurred during processing.
+  </int>
+  <int value="1" label="Does not exist">
+    Roaming User Data dir does not exist.
+  </int>
+  <int value="2" label="Succeeded">Roaming User Data dir was deleted.</int>
+  <int value="3" label="Failed">
+    Roaming User Data dir could not be deleted.
+  </int>
+  <int value="4" label="Not in AppData">
+    Roaming User Data dir is not within the AppData dir.
+  </int>
 </enum>
 
 <enum name="Rollback_OobeRestoreResult">

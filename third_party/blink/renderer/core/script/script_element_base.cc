@@ -13,7 +13,7 @@ ScriptLoader* ScriptLoaderFromElement(Element* element) {
   ScriptLoader* script_loader = nullptr;
   if (auto* html_script = DynamicTo<HTMLScriptElement>(*element))
     script_loader = html_script->Loader();
-  else if (auto* svg_script = ToSVGScriptElementOrNull(*element))
+  else if (auto* svg_script = DynamicTo<SVGScriptElement>(*element))
     script_loader = svg_script->Loader();
   DCHECK(script_loader);
   return script_loader;

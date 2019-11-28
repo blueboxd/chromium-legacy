@@ -127,6 +127,9 @@ def bind_callback_local_vars(code_node, cg_context):
                               "\"${class_like.identifier}\";")),
         S("current_context", ("v8::Local<v8::Context> ${current_context} = "
                               "${isolate}->GetCurrentContext();")),
+        S("current_execution_context",
+          ("ExecutionContext* ${current_execution_context} = "
+           "ExecutionContext::From(${current_script_state});")),
         S("current_script_state", ("ScriptState* ${current_script_state} = "
                                    "ScriptState::From(${current_context});")),
         S("execution_context", ("ExecutionContext* ${execution_context} = "
@@ -283,6 +286,36 @@ def make_check_receiver(cg_context):
         ])
 
     return None
+
+
+def make_check_security_of_return_value(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    check_security = cg_context.member_like.extended_attributes.value_of(
+        "CheckSecurity")
+    if check_security != "ReturnValue":
+        return None
+
+    web_feature = _format(
+        "WebFeature::{}",
+        name_style.constant("CrossOrigin", cg_context.class_like.identifier,
+                            cg_context.member_like.identifier))
+    use_counter = _format(
+        "UseCounter::Count(${current_execution_context}, {});", web_feature)
+    cond = T("!BindingSecurity::ShouldAllowAccessTo("
+             "ToLocalDOMWindow(${current_context}), ${return_value}, "
+             "BindingSecurity::ErrorReportOption::kDoNotReport)")
+    body = SymbolScopeNode([
+        T(use_counter),
+        T("V8SetReturnValueNull(${info});\n"
+          "return;"),
+    ])
+    return SymbolScopeNode([
+        T("// [CheckSecurity=ReturnValue]"),
+        UnlikelyExitNode(cond=cond, body=body),
+    ])
 
 
 def make_log_activity(cg_context):
@@ -677,6 +710,56 @@ def make_report_measure_as(cg_context):
     return node
 
 
+def make_return_value_cache_return_early(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    pred = cg_context.member_like.extended_attributes.value_of(
+        "CachedAttribute")
+    if pred:
+        return TextNode("""\
+// [CachedAttribute]
+static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedAttribute;
+auto v8_private_cached_attribute =
+    V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertyCachedAttribute);
+if (!impl->""" + pred + """()) {
+  v8::Local<v8::Value> v8_value;
+  if (v8_private_cached_attribute.GetOrUndefined(${receiver}).ToLocal(&v8_value)
+          && !v8_value->IsUndefined()) {
+    V8SetReturnValue(${info}, v8_value);
+    return;
+  }
+}""")
+
+    if "SaveSameObject" in cg_context.member_like.extended_attributes:
+        return TextNode("""\
+// [SaveSameObject]
+static const V8PrivateProperty::SymbolKey kPrivatePropertySaveSameObject;
+auto v8_private_save_same_object =
+    V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertySaveSameObject);
+{
+  v8::Local<v8::Value> v8_value;
+  if (v8_private_save_same_object.GetOrUndefined(${receiver}).ToLocal(&v8_value)
+          && !v8_value->IsUndefined()) {
+    V8SetReturnValue(${info}, v8_value);
+    return;
+  }
+}""")
+
+
+def make_return_value_cache_update_value(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    if "CachedAttribute" in cg_context.member_like.extended_attributes:
+        return TextNode("// [CachedAttribute]\n"
+                        "v8_private_cached_attribute.Set"
+                        "(${receiver}, ${info}.GetReturnValue().Get());")
+
+    if "SaveSameObject" in cg_context.member_like.extended_attributes:
+        return TextNode("// [SaveSameObject]\n"
+                        "v8_private_save_same_object.Set"
+                        "(${receiver}, ${info}.GetReturnValue().Get());")
+
+
 def make_runtime_call_timer_scope(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -730,8 +813,11 @@ def make_attribute_get_callback_def(cg_context, function_name):
         make_log_activity(cg_context),
         T(""),
         make_check_receiver(cg_context),
+        make_return_value_cache_return_early(cg_context),
         T(""),
+        make_check_security_of_return_value(cg_context),
         T("${v8_set_return_value}"),
+        make_return_value_cache_update_value(cg_context),
     ])
 
     return func_def
@@ -901,7 +987,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("TestInterfaceConstructor")
+    interface = web_idl_database.find("TestNamespace")
 
     cg_context = CodeGenContext(interface=interface)
 

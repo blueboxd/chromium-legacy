@@ -152,6 +152,7 @@
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>
 <translation id="1160479894929412407">QUIC protokolüne izin verin</translation>
 <translation id="1160939557934457296">Güvenli Tarama uyarı sayfasından ilerlemeyi devre dışı bırak</translation>
+<translation id="1163080558183062209">Reddetme listesinde yazıcı türlerini devre dışı bırakma</translation>
 <translation id="117059611145966538">Harici yazdırma sunucuları</translation>
 <translation id="1189817621108632689">Bildirim görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
@@ -877,6 +878,13 @@
 
       Yanlış biçimlendirilmiş şablonlar yok sayılır.</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS'i güvenli olmayan geçiş olmadan etkinleştir</translation>
+<translation id="2347264058558503729"><ph name="CLOUD_PRINT_NAME" /> bulutuna yazdırmak üzere doküman göndermesi için <ph name="PRODUCT_NAME" /> ürününü etkinleştirir.  NOT: Bu sadece <ph name="PRODUCT_NAME" /> ürününde <ph name="CLOUD_PRINT_NAME" /> desteğini etkiler.  Kullanıcıların web sitelerinde yazdırma işi göndermelerini engellemez.
+
+      Bu ayar etkinleştirilmez veya yapılandırılmazsa kullanıcılar, <ph name="PRODUCT_NAME" /> ürününün yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> bulutuna yazdırabilir.
+
+      Bu ayar devre dışı bırakılırsa kullanıcılar, <ph name="PRODUCT_NAME" /> ürününün yazdırma iletişim kutusundan <ph name="CLOUD_PRINT_NAME" /> bulutuna yazdıramazlar.
+
+      <ph name="CLOUD_PRINT_NAME" /> hedeflerini bulunabilir tutmak için bu politikanın true (doğru) değerine ayarlanması ve "bulut"un "PrinterTypeDenyList" politikasına eklenmemesi gerekir.</translation>
 <translation id="237494535617297575">Bildirim görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -987,6 +995,7 @@
           Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome'u başlatmak için komut satırı işaretleri kullanıldığında güvenlik uyarıları gösterilir.
 
           Windows'da bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış örneklerde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
+<translation id="247658312644322296">"PDF olarak kaydet" hedefi</translation>
 <translation id="2480971699591919564">Kullanıcı Oturum açmışken, kullanıcıların Chrome Masaüstü cihazlardan bir Android cihaza telefon numaraları göndermesine olanak tanıyan Tıkla ve Ara özelliğini etkinleştirin. Daha fazla bilgi edinmek için https://support.google.com/chrome/answer/9430554?hl=tr adresindeki yardım merkezi makalesine bakın.
 
       Bu politika etkin olarak ayarlanırsa Chrome kullanıcısı için Android cihazlara telefon numaraları gönderme özelliği etkinleştirilir.
@@ -2243,15 +2252,6 @@ politikayı geçersiz kılamaz.
           Bu özellik şu anda sunucu tarafında devre dışıdır.</translation>
 <translation id="4363057787588706121">Farklı kaynaklara ait liste politikalarını birleştirmeye izin ver</translation>
 <translation id="4363101430102811068">Girilen kimlik bilgileri için sızıntı algılamayı etkinleştir</translation>
-<translation id="4363136876356691536">Bu politika true (doğru) değerine ayarlanırsa, Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görüntülenir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa, Erişilebilirlik seçenekleri hiçbir zaman sistem tepsisi menüsünde görüntülenmez.
-
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa, Erişilebilirlik seçenekleri sistem tepsisi menüsünde görüntülenmez, ancak kullanıcı, Ayarlar sayfasını kullanarak Erişilebilirlik seçeneklerinin görüntülenmesini sağlayabilir.
-
-          Erişilebilirlik özellikleri etkinleştirildiğinde (ör. bir tuş kombinasyonu ile), Erişilebilirlik seçenekleri sistem tepsisi menüsünde her zaman görünür.</translation>
 <translation id="436581050240847513">Cihaz ağ arayüzlerini rapor etme</translation>
 <translation id="4372704773119750918">Kurumsal kullanıcının çok profilli oturumun parçası olmasına izin verme (birincil veya ikincil)</translation>
 <translation id="4377599627073874279">Tüm sitelerin tüm resimleri görüntülemesine izin ver</translation>
@@ -2395,7 +2395,19 @@ politikayı geçersiz kılamaz.
       Uzantı yükleme istekleri, kullanıcılar <ph name="EXTENSION_INSTALL_WHITELIST" /> veya <ph name="EXTENSION_SETTINGS" /> tarafından beyaz listeye alınmamış bir uzantıyı yüklemeye çalıştıklarında oluşturulur.
 
       Bu politika yalnızca makinenin <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> kaydı yapıldığında ve <ph name="CLOUD_REPORTING_ENABLED" /> etkinleştirildiğinde geçerli olur.</translation>
+<translation id="4638162097046412832">Reddetme listesine yerleştirilen yazıcı türlerinin bulunması veya işlevlerinin getirilmesi devre dışı bırakılır.
+
+      Tüm yazıcı türlerini reddetme listesine yerleştirmek, bir dokümanı yazdırmak için gönderilecek kullanılabilir hedef olmayacağından yazdırma işlevini etkin bir şekilde devre dışı bırakır.
+
+      "Bulut"u reddetme listesine eklemek, "CloudPrintSubmitEnabled" politikasını false (yanlış) değerine ayarlamakla aynı etkiye sahiptir. <ph name="CLOUD_PRINT_NAME" /> hedeflerini bulunabilir tutmak için "CloudPrintSubmitEnabled" politikası true (doğru) değerine ayarlanmalı ve "bulut" reddetme listesinde olmamalıdır.
+
+      Bu politika ayarlanmaz veya boş bir listeye ayarlanırsa tüm yazıcı türleri bulunmak için kullanılabilir.
+
+      Uzantı yazıcıları ayrıca yazdırma sağlayıcı hedefleri olarak da bilinir ve <ph name="PRODUCT_NAME" /> uzantısına ait olan herhangi bir hedefi içerir.
+
+      Yerel yazıcılar ayrıca yerel yazdırma hedefleri olarak da bilinir ve yerel makineler ile paylaşılan ağ yazıcılarının kullanabildiği hedefleri içerir.</translation>
 <translation id="4639407427807680016">Kara listeden muaf tutulacak yerel mesajlaşma ana makinelerinin adları</translation>
+<translation id="4649395978608361979">Yerel yazıcı hedefleri</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
 <translation id="465099050592230505">Kurumsal web mağazası URL'si (kullanımdan kaldırıldı)</translation>
 <translation id="4661889655253181651">İçerik ayarları belirli türdeki içeriklerin (ör. Çerezler, Resimler veya JavaScript) nasıl işleneceğini belirlemenize izin verir.</translation>
@@ -2422,6 +2434,7 @@ politikayı geçersiz kılamaz.
       Bu politika etkinleştirilirse sitelerin eşzamanlı olarak gezinmesine ve yeni pencereler/sekmeler açmasına izin verilir.
       Bu politika devre dışı bırakılır veya ayarlanmazsa sitelerin eşzamanlı olarak gezinmesine ve yeni bir pencere/sekme açmasına izin verilmez.</translation>
 <translation id="4680961954980851756">Otomatik Doldurmayı etkinleştir</translation>
+<translation id="4693779768620889402">Uzantı tabanlı hedefler</translation>
 <translation id="4703402283970867140">Ekranın karartma süresini uzatmak için akıllı karartma modelini etkinleştir</translation>
 <translation id="4722122254122249791">Site İzolasyonu'nu belirtilen kaynaklar için etkinleştirme</translation>
 <translation id="4722399051042571387">False (yanlış) değerinde, kullanıcılar zayıf ve kolayca tahmin edilebilecek PIN'ler ayarlayamaz.
@@ -3073,6 +3086,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5645779841392247734">Bu sitelerde çerezlere izin ver</translation>
 <translation id="5656177735561364047">Paylaşılan Pano Özelliğini Etkinleştir</translation>
 <translation id="5666457529647159548">Kullanıcıların yüklü sertifikaları yönetmelerine izin ver.</translation>
+<translation id="5676740747107495269">Erişilebilirlik seçeneklerini giriş ekranında sistem tepsisi menüsünde gösterme</translation>
 <translation id="5689430183304951538">Varsayılan yazdırma sayfası boyutu</translation>
 <translation id="5693469654327063861">Veri taşımaya izin ver</translation>
 <translation id="5694594914843889579">Bu politika true (doğru) değerine ayarlandığında harici depolama birimi dosya tarayıcısında kullanılamaz.
@@ -3612,6 +3626,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="6813263547126514821">Açma ve kapatma</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
+<translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" /> ve "Google Drive'a kaydet" hedefleri</translation>
 <translation id="6833988859168635883">Başlangıç, Ana sayfa ve Yeni Sekme sayfası</translation>
 <translation id="6835883744948188639">Kullanıcıya yeniden başlatmanın önerildiğini belirten yinelenen bir istem gösterme</translation>
 <translation id="683688607121170501">Bu ayar, kullanıcıların <ph name="PRODUCT_OS_NAME" /> cihazlarında oturum açtıktan sonra tarayıcı pencerelerinin içerik alanındaki Google Hesapları arasında geçiş yapmalarına olanak tanır.
@@ -4050,6 +4065,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7469554574977894907">Arama önerilerini etkinleştir</translation>
 <translation id="747275827471712187">Bu sitelerde çerezler için eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışına geri dön</translation>
 <translation id="7477231245051133709">Mono ses erişilebilirlik özelliklerini etkinleştir</translation>
+<translation id="7477239290070847560">Zeroconf tabanlı (mDNS + DNS-SD) protokol hedefleri</translation>
 <translation id="7485481791539008776">Varsayılan yazıcı seçimi için kurallar</translation>
 <translation id="7485730741952775732">Bu politika ayarlanırsa uzaktan erişim ana makinesi, bağlantıları kabul etmek için uzaktan erişim istemcilerinin kimlik doğrulama jetonlarını doğrulamak üzere bu URL'yi kullanır. RemoteAccessHostTokenUrl ile birlikte kullanılmalıdır.
 

@@ -70,8 +70,8 @@ bool TestTextInputClientMessageFilter::OnMessageReceived(
 }
 
 void TestTextInputClientMessageFilter::SetStringForRangeCallback(
-    const base::Closure& callback) {
-  string_for_range_callback_ = callback;
+    base::RepeatingClosure callback) {
+  string_for_range_callback_ = std::move(callback);
 }
 
 void AskForLookUpDictionaryForRange(RenderWidgetHostView* tab_view,

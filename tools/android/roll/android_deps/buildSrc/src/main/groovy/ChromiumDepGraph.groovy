@@ -140,11 +140,14 @@ class ChromiumDepGraph {
             dep.isShipped = true
         }
 
-        // Has a side-effect of ensuring we don't have any stale fallbackProperties.
         FALLBACK_PROPERTIES.each { id, fallbackProperties ->
             if (fallbackProperties?.isShipped != null) {
-              def dep = dependencies.get(id)
-              dep.isShipped = fallbackProperties.isShipped
+                def dep = dependencies.get(id)
+                if (dep != null) {
+                    dep.isShipped = fallbackProperties.isShipped
+                } else {
+                    project.logger.warn("FALLBACK_PROPERTIES has stale dep: " + id)
+                }
             }
         }
     }

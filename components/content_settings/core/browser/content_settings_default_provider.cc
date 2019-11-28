@@ -197,7 +197,7 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
                             CONTENT_SETTING_NUM_SETTINGS);
 #endif
   pref_change_registrar_.Init(prefs_);
-  PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
+  PrefChangeRegistrar::NamedChangeCallback callback = base::BindRepeating(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();

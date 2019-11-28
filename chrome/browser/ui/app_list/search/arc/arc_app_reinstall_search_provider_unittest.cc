@@ -11,6 +11,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -297,19 +298,31 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
   app_provider_->OnIconLoaded("http://icon.com/icon1");
   EXPECT_EQ(1u, app_provider_->results().size());
 
+  base::HistogramTester histogram_tester;
   // Check that impression counts are read and written appropriately.
   const std::string fake_package2 = "com.package.fakepackage2";
 
   // should update to 1.
   app_provider_->OnVisibilityChanged(fake_package2, true);
+
   int64_t loaded_impression_count = 0;
   EXPECT_TRUE(
       GetStateInt64(profile_.get(), fake_package2,
                     app_list::ArcAppReinstallSearchProvider::kImpressionCount,
                     &loaded_impression_count));
   EXPECT_EQ(1, loaded_impression_count);
-  // An immediate re-show does nothing.
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.AllImpression", 1));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.CountedImpression", 1));
+
+  // An immediate re-show does nothing, but the "all impression count" is
+  // increased.
   app_provider_->OnVisibilityChanged(fake_package2, true);
+  EXPECT_EQ(2, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.AllImpression", 1));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.CountedImpression", 1));
   loaded_impression_count = 0;
   EXPECT_TRUE(
       GetStateInt64(profile_.get(), fake_package2,
@@ -329,6 +342,10 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
                     app_list::ArcAppReinstallSearchProvider::kImpressionCount,
                     &loaded_impression_count));
   EXPECT_EQ(5, loaded_impression_count);
+  EXPECT_EQ(6, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.AllImpression", 1));
+  EXPECT_EQ(5, histogram_tester.GetBucketCount(
+                   "Arc.AppListRecommendedImp.CountedImpression", 1));
 
   SetStateInt64(profile_.get(), fake_package2,
                 app_list::ArcAppReinstallSearchProvider::kImpressionCount, 50);

@@ -71,7 +71,7 @@ class WebViewPermissionHelper
                    base::OnceCallback<void(bool)> callback);
   void RequestPointerLockPermission(bool user_gesture,
                                     bool last_unlocked_by_target,
-                                    const base::Callback<void(bool)>& callback);
+                                    base::OnceCallback<void(bool)> callback);
 
   // Requests Geolocation Permission from the embedder.
   void RequestGeolocationPermission(int bridge_id,

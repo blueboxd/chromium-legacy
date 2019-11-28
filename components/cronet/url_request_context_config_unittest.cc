@@ -21,7 +21,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_network_session.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -182,8 +181,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       base::Optional<double>(42.0));
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   EXPECT_FALSE(config.effective_experimental_options->HasKey("UnknownOption"));
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
@@ -339,8 +337,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -392,8 +389,7 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -445,8 +441,7 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -506,8 +501,7 @@ TEST(URLRequestContextConfigTest,
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -568,8 +562,7 @@ TEST(URLRequestContextConfigTest,
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -630,8 +623,7 @@ TEST(URLRequestContextConfigTest,
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -693,8 +685,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -759,8 +750,7 @@ TEST(URLRequestContextConfigTest, SetQuicStaleDNSracing) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -810,8 +800,7 @@ TEST(URLRequestContextConfigTest, SetQuicGoawayOnPathDegrading) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -861,8 +850,7 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -914,8 +902,7 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -970,8 +957,7 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
@@ -1031,8 +1017,7 @@ TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {
       base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
-  net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(

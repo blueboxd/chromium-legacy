@@ -256,9 +256,9 @@ void WebViewPermissionHelper::CanDownload(
 void WebViewPermissionHelper::RequestPointerLockPermission(
     bool user_gesture,
     bool last_unlocked_by_target,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_delegate_->RequestPointerLockPermission(
-      user_gesture, last_unlocked_by_target, callback);
+      user_gesture, last_unlocked_by_target, std::move(callback));
 }
 
 void WebViewPermissionHelper::RequestGeolocationPermission(

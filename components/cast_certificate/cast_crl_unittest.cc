@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/cast_certificate/cast_crl.h"
 #include "base/time/time.h"
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
-#include "components/cast_certificate/cast_crl.h"
-#include "components/cast_certificate/proto/test_suite.pb.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/common/certificate/proto/test_suite.pb.h"
+
+using cast::certificate::DeviceCertTest;
+using cast::certificate::DeviceCertTestSuite;
 
 namespace cast_certificate {
 namespace {
@@ -119,14 +122,14 @@ bool RunTest(const DeviceCertTest& test_case) {
 
   std::string crl_bundle = test_case.crl_bundle();
   switch (test_case.expected_result()) {
-    case PATH_VERIFICATION_FAILED:
+    case cast::certificate::PATH_VERIFICATION_FAILED:
       return TestVerifyCertificate(RESULT_FAIL, certificate_chain,
                                    cert_verification_time,
                                    cast_trust_store.get());
-    case CRL_VERIFICATION_FAILED:
+    case cast::certificate::CRL_VERIFICATION_FAILED:
       return TestVerifyCRL(RESULT_FAIL, crl_bundle, crl_verification_time,
                            crl_trust_store.get());
-    case REVOCATION_CHECK_FAILED_WITHOUT_CRL:
+    case cast::certificate::REVOCATION_CHECK_FAILED_WITHOUT_CRL:
       return TestVerifyCertificate(RESULT_SUCCESS, certificate_chain,
                                    cert_verification_time,
                                    cast_trust_store.get()) &&
@@ -136,9 +139,9 @@ bool RunTest(const DeviceCertTest& test_case) {
                  CastCertError::ERR_CRL_INVALID, certificate_chain, crl_bundle,
                  crl_verification_time, cert_verification_time, true,
                  cast_trust_store.get(), crl_trust_store.get());
-    case CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:
+    case cast::certificate::CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:
     // Fall-through intended.
-    case REVOCATION_CHECK_FAILED:
+    case cast::certificate::REVOCATION_CHECK_FAILED:
       return TestVerifyCertificate(RESULT_SUCCESS, certificate_chain,
                                    cert_verification_time,
                                    cast_trust_store.get()) &&
@@ -148,7 +151,7 @@ bool RunTest(const DeviceCertTest& test_case) {
                  CastCertError::ERR_CERTS_REVOKED, certificate_chain,
                  crl_bundle, crl_verification_time, cert_verification_time,
                  false, cast_trust_store.get(), crl_trust_store.get());
-    case SUCCESS:
+    case cast::certificate::SUCCESS:
       return (crl_bundle.empty() ||
               TestVerifyCRL(RESULT_SUCCESS, crl_bundle, crl_verification_time,
                             crl_trust_store.get())) &&
@@ -160,7 +163,7 @@ bool RunTest(const DeviceCertTest& test_case) {
                                   cert_verification_time, !crl_bundle.empty(),
                                   cast_trust_store.get(),
                                   crl_trust_store.get());
-    case UNSPECIFIED:
+    case cast::certificate::UNSPECIFIED:
       return false;
   }
   return false;

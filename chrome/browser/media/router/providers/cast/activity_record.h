@@ -130,7 +130,7 @@ class ActivityRecord {
                                         base::Optional<int> request_id) = 0;
 
   // Handles a message forwarded by CastActivityManager.
-  virtual void OnAppMessage(const cast_channel::CastMessage& message) = 0;
+  virtual void OnAppMessage(const cast::channel::CastMessage& message) = 0;
   virtual void OnInternalMessage(
       const cast_channel::InternalMessage& message) = 0;
 

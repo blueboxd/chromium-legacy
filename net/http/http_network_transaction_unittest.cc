@@ -4854,8 +4854,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
 
   // Add NetLog just so can verify load timing information gets a NetLog ID.
-  NetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Since we have proxy, should try to establish tunnel.
@@ -4971,8 +4970,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
 
   // Add NetLog just so can verify load timing information gets a NetLog ID.
-  NetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.
@@ -5093,8 +5091,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
 
   // Add NetLog just so can verify load timing information gets a NetLog ID.
-  NetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.
@@ -5209,8 +5206,7 @@ TEST_F(HttpNetworkTransactionTest,
                                        HttpAuth::AUTH_PROXY);
   session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
 
-  NetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Data for both sockets.
@@ -5319,8 +5315,7 @@ TEST_F(HttpNetworkTransactionTest,
   session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
 
   // Add NetLog just so can verify load timing information gets a NetLog ID.
-  NetLog net_log;
-  session_deps_.net_log = &net_log;
+  session_deps_.net_log = NetLog::Get();
   std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
 
   // Should try to establish tunnel.

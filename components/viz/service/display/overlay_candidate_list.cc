@@ -48,27 +48,31 @@ void OverlayCandidateList::AddToPromotionHintRequestorSetIfNeeded(
   promotion_hint_requestor_set_.insert(id);
 }
 
-std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>
+std::vector<std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
 OverlayCandidateList::ConvertLocalPromotionToMailboxKeyed(
     DisplayResourceProvider* resource_provider,
     base::flat_set<gpu::Mailbox>* promotion_denied,
     base::flat_map<gpu::Mailbox, gfx::Rect>* possible_promotions) {
   DCHECK(empty() || size() == 1u);
-  std::vector<DisplayResourceProvider::ScopedReadLockSharedImage> locks;
+  std::vector<
+      std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
+      locks;
   for (auto& request : promotion_hint_requestor_set_) {
     // If we successfully promote one candidate, then that promotion hint should
     // be sent later when we schedule the overlay.
     if (!empty() && front().resource_id == request)
       continue;
 
-    locks.emplace_back(resource_provider, request);
+    locks.emplace_back(
+        std::make_unique<DisplayResourceProvider::ScopedReadLockSharedImage>(
+            resource_provider, request));
     auto iter = promotion_hint_info_map_.find(request);
     if (iter != promotion_hint_info_map_.end()) {
       // This is a possible promotion.
-      possible_promotions->emplace(locks.back().mailbox(),
+      possible_promotions->emplace(locks.back()->mailbox(),
                                    gfx::ToEnclosedRect(iter->second));
     } else {
-      promotion_denied->insert(locks.back().mailbox());
+      promotion_denied->insert(locks.back()->mailbox());
     }
   }
   return locks;

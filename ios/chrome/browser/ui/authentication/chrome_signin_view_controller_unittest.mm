@@ -123,7 +123,7 @@ static std::unique_ptr<KeyedService> CreateFakeUnifiedConsentService(
 // If one of those tests fails, one of the following methods should be updated
 // with the added or removed strings:
 //   - ExpectedConsentStringIds()
-//   - WhiteListLocalizedStrings()
+//   - LocalizedStringExceptions()
 class ChromeSigninViewControllerTest
     : public PlatformTest,
       public ::testing::WithParamInterface<bool> {
@@ -243,7 +243,7 @@ class ChromeSigninViewControllerTest
     for (auto it = string_ids.begin(); it != string_ids.end(); ++it) {
       [set addObject:LocalizedStringFromID(*it)];
     }
-    [set unionSet:WhiteListLocalizedStrings()];
+    [set unionSet:LocalizedStringExceptions()];
     return set;
   }
 
@@ -259,9 +259,9 @@ class ChromeSigninViewControllerTest
     };
   }
 
-  // Returns the white list of strings that can be displayed on screen but
+  // Returns the list of strings that can be displayed on screen but
   // should not be part of ExpectedConsentStringIds().
-  NSSet<NSString*>* WhiteListLocalizedStrings() const {
+  NSSet<NSString*>* LocalizedStringExceptions() const {
     return [NSSet setWithObjects:@"Fake Foo 1", @"foo1@gmail.com", @"CANCEL",
                                  @"YES, I'M IN", nil];
   }
@@ -359,7 +359,7 @@ class ChromeSigninViewControllerTest
 // Tests that all strings on the screen are either part of the consent string
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part
 // of the white list strings defined in
-// FakeConsentAuditor::WhiteListLocalizedStrings().
+// FakeConsentAuditor::LocalizedStringExceptions().
 TEST_F(ChromeSigninViewControllerTest, TestAllStrings) {
   WaitAndExpectAllStringsOnScreen();
 }

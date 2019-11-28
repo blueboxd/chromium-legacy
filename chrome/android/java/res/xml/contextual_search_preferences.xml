@@ -7,12 +7,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+    <org.chromium.chrome.browser.settings.ChromeSwitchPreference
         android:key="contextual_search_switch"
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:title="@string/contextual_search_description"
         app:allowDividerBelow="false" />
 

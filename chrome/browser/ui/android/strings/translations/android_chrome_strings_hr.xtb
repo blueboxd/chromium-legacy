@@ -413,7 +413,6 @@ Da biste prilagodili pojam za pretraživanje, odaberite ga tako što ćete ga du
 <translation id="4084712963632273211">Objavio <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />omogućio Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Želite li izbrisati podatke aplikacije?</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
-<translation id="410351446219883937">Automatska reprodukcija</translation>
 <translation id="4116038641877404294">Preuzmite stranice za izvanmrežnu upotrebu</translation>
 <translation id="4135200667068010335">Popis za odabir uređaja s kojim će se dijeliti kartica zatvoren je.</translation>
 <translation id="4149994727733219643">Pojednostavljeni prikaz za web-stranice</translation>
@@ -872,7 +871,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="7437998757836447326">Odjava s Chromea</translation>
 <translation id="7438641746574390233">Kad je omogućen Jednostavni način, Chrome upotrebljava Googleove poslužitelje kako bi se stranice brže učitale. Jednostavni način ponovo ispisuje vrlo spore stranice kako bi se učitao samo neophodan sadržaj. Jednostavni se način ne primjenjuje na anonimne stranice.</translation>
 <translation id="7444811645081526538">Više kategorija</translation>
-<translation id="7445411102860286510">Web-lokacije mogu automatski reproducirati zanemarene videozapise (preporučeno)</translation>
 <translation id="7453467225369441013">Odjavit ćete se s većine web-lokacija, ali se nećete odjaviti s Google računa.</translation>
 <translation id="7454641608352164238">Nema dovoljno prostora</translation>
 <translation id="7475192538862203634">Ako se to često događa, isprobajte ove <ph name="BEGIN_LINK" />prijedloge<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori aplikacijom…</translation>
 <translation id="7821588508402923572">Ovdje će se prikazati vaša ušteda podataka</translation>
-<translation id="7837721118676387834">Dopustite automatsku reprodukciju videozapisa s isključenim tonom za određenu web-lokaciju.</translation>
 <translation id="7846076177841592234">Poništi odabir</translation>
 <translation id="784934925303690534">Vremenski raspon</translation>
 <translation id="7851858861565204677">Ostali uređaji</translation>

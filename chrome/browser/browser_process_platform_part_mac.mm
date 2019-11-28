@@ -13,14 +13,9 @@
 
 namespace {
 
-// Allow up to 1 minute for shader compilation. This is much longer than the
-// GPU process limit of 6 seconds.
-constexpr base::TimeDelta kTestShaderCompileTimeout =
-    base::TimeDelta::FromMinutes(1);
-
-void TestShaderCallback(const base::TimeTicks& start_time,
-                        metal::TestShaderResult result) {
-  base::TimeDelta delta;
+void TestShaderCallback(metal::TestShaderResult result,
+                        const base::TimeDelta& method_time,
+                        const base::TimeDelta& compile_time) {
   switch (result) {
     case metal::TestShaderResult::kNotAttempted:
     case metal::TestShaderResult::kFailed:
@@ -28,25 +23,14 @@ void TestShaderCallback(const base::TimeTicks& start_time,
       // or macOS version reasons).
       return;
     case metal::TestShaderResult::kTimedOut:
-      // Use a single histogram for both "how long did compile take" and "did
-      // compile complete in 1 minute" by pushing timeouts into the maximum
-      // bucket of UMA_HISTOGRAM_MEDIUM_TIMES.
-      delta = base::TimeDelta::FromMinutes(3);
+      DCHECK_EQ(compile_time, metal::kTestShaderTimeForever);
       break;
     case metal::TestShaderResult::kSucceeded:
-      delta = base::TimeTicks::Now() - start_time;
       break;
   }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Browser.Metal.TestShaderCompileTime", delta);
-}
-
-// Launch a test metal shader compile to see how long it takes to complete (if
-// it ever completes).
-// https://crbug.com/974219
-void TestShaderLaunch() {
-  metal::TestShader(metal::kTestShaderSeedBrowserTimer,
-                    base::BindOnce(TestShaderCallback, base::TimeTicks::Now()),
-                    kTestShaderCompileTimeout);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Browser.Metal.TestShaderMethodTime", method_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Browser.Metal.TestShaderCompileTime",
+                             compile_time);
 }
 
 }  // namespace
@@ -91,8 +75,7 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   app_shim_listener_ = new AppShimListener;
 
   // Launch a test Metal shader compile once the run loop starts.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(TestShaderLaunch));
+  metal::TestShader(base::BindOnce(&TestShaderCallback));
 }
 
 AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {

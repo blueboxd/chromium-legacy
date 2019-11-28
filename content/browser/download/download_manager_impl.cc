@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -291,7 +292,11 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       is_history_download_id_retrieved_(false),
       should_persist_new_download_(false),
       cancelled_download_cleared_from_history_(0),
-      interrupted_download_cleared_from_history_(0) {
+      interrupted_download_cleared_from_history_(0),
+      disk_access_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   DCHECK(browser_context);
 
   download::SetIOTaskRunner(
@@ -658,13 +663,16 @@ void DownloadManagerImpl::OnHistoryQueryComplete(
 void DownloadManagerImpl::CheckForFileRemoval(
     download::DownloadItemImpl* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if ((download_item->GetState() == download::DownloadItem::COMPLETE) &&
-      !download_item->GetFileExternallyRemoved() && delegate_) {
-    delegate_->CheckForFileExistence(
-        download_item,
-        base::BindOnce(&DownloadManagerImpl::OnFileExistenceChecked,
-                       weak_factory_.GetWeakPtr(), download_item->GetId()));
+  if ((download_item->GetState() != download::DownloadItem::COMPLETE) ||
+      download_item->GetFileExternallyRemoved()) {
+    return;
   }
+
+  base::PostTaskAndReplyWithResult(
+      disk_access_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&base::PathExists, download_item->GetTargetFilePath()),
+      base::BindOnce(&DownloadManagerImpl::OnFileExistenceChecked,
+                     weak_factory_.GetWeakPtr(), download_item->GetId()));
 }
 
 void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
@@ -1134,12 +1142,6 @@ void DownloadManagerImpl::OpenDownload(download::DownloadItemImpl* download) {
 
   if (delegate_)
     delegate_->OpenDownload(download);
-}
-
-bool DownloadManagerImpl::IsMostRecentDownloadItemAtFilePath(
-    download::DownloadItemImpl* download) {
-  return delegate_ ? delegate_->IsMostRecentDownloadItemAtFilePath(download)
-                   : false;
 }
 
 void DownloadManagerImpl::ShowDownloadInShell(

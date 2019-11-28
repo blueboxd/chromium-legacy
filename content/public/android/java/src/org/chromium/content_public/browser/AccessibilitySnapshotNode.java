@@ -13,7 +13,10 @@ import java.util.ArrayList;
  * accessibility tree that can be queried synchronously by the Android framework.
  */
 public class AccessibilitySnapshotNode {
-    public int x, y, width, height;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
     public boolean isRootNode;
     public float textSize;
     public String text;
@@ -21,8 +24,12 @@ public class AccessibilitySnapshotNode {
     // True if the style information exists, false if not.
     public boolean hasStyle;
     // Style parameters, valid only if hasStyle is true.
-    public int color, bgcolor;
-    public boolean bold, italic, underline, lineThrough;
+    public int color;
+    public int bgcolor;
+    public boolean bold;
+    public boolean italic;
+    public boolean underline;
+    public boolean lineThrough;
 
     public boolean hasSelection;
     public int startSelection;

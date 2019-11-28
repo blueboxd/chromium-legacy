@@ -14,23 +14,13 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/capture_service/constants.h"
 #include "chromecast/media/audio/capture_service/message_parsing_util.h"
+#include "chromecast/media/audio/mixer_service/audio_socket_service.h"
 #include "chromecast/net/small_message_socket.h"
 #include "media/base/limits.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
-
-#if BUILDFLAG(USE_UNIX_SOCKETS)
-#include "net/socket/unix_domain_client_socket_posix.h"
-#else
-#include "net/base/address_list.h"
-#include "net/base/ip_address.h"
-#include "net/base/ip_endpoint.h"
-#include "net/log/net_log_source.h"
-#include "net/socket/tcp_client_socket.h"
-#endif  // BUILDFLAG(USE_UNIX_SOCKETS)
 
 // Helper macro to post tasks to the io thread. It is safe to use unretained
 // |this|, since |this| owns the thread.
@@ -162,20 +152,10 @@ void CaptureServiceReceiver::Start(
     ::media::AudioInputStream::AudioInputCallback* input_callback) {
   ENSURE_ON_IO_THREAD(Start, input_callback);
 
-#if BUILDFLAG(USE_UNIX_SOCKETS)
   std::string path = capture_service::kDefaultUnixDomainSocketPath;
-  std::unique_ptr<net::StreamSocket> connecting_socket =
-      std::make_unique<net::UnixDomainClientSocket>(
-          path, true /* use_abstract_namespace */);
-#else   // BUILDFLAG(USE_UNIX_SOCKETS)
   int port = capture_service::kDefaultTcpPort;
-  net::IPEndPoint endpoint(net::IPAddress::IPv4Localhost(), port);
-  std::unique_ptr<net::StreamSocket> connecting_socket =
-      std::make_unique<net::TCPClientSocket>(
-          net::AddressList(endpoint), nullptr, nullptr, net::NetLogSource());
-#endif  // BUILDFLAG(USE_UNIX_SOCKETS)
 
-  StartWithSocket(input_callback, std::move(connecting_socket));
+  StartWithSocket(input_callback, AudioSocketService::Connect(path, port));
 }
 
 void CaptureServiceReceiver::StartWithSocket(

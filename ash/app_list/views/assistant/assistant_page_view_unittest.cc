@@ -7,6 +7,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/run_loop.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
+#include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 
@@ -67,6 +68,21 @@ class FocusChangeListenerStub : public views::FocusChangeListener {
   views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusChangeListenerStub);
+};
+
+// Simply constructs a GestureEvent for test.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(const gfx::Point& location,
+                      ui::GestureEventDetails details)
+      : GestureEvent(location.x(),
+                     location.y(),
+                     /*flags=*/ui::EF_NONE,
+                     base::TimeTicks(),
+                     details) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
 class AssistantPageViewTest : public AssistantAshTestBase {
@@ -337,6 +353,53 @@ TEST_F(AssistantPageViewTabletModeTest,
   TapOnAndWait(input_text_field());
 
   EXPECT_TRUE(IsKeyboardShowing());
+}
+
+TEST_F(AssistantPageViewTabletModeTest,
+       ShouldDismissWhenTappingOutsideWithinAppListView) {
+  ShowAssistantUi();
+  EXPECT_TRUE(IsVisible());
+
+  // Tapping position should be outside the Assistant UI but still inside the
+  // bounds of |AppList| window.
+  gfx::Point origin = page_view()->origin();
+  gfx::Point point_outside = gfx::Point(origin.x() - 10, origin.y());
+  EXPECT_TRUE(window()->bounds().Contains(point_outside));
+  EXPECT_FALSE(page_view()->bounds().Contains(point_outside));
+
+  // Tapping outside on the empty region of |AppListView| should dismiss the
+  // Assistant UI.
+  GestureEventForTest tap_outside(point_outside,
+                                  ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  app_list_view()->OnGestureEvent(&tap_outside);
+  EXPECT_FALSE(IsVisible());
+}
+
+TEST_F(AssistantPageViewTabletModeTest,
+       ShouldDismissIfLostFocusWhenOtherAppWindowOpens) {
+  ShowAssistantUi();
+  EXPECT_TRUE(IsVisible());
+
+  // Creates a new window to steal the focus should dismiss the Assistant UI.
+  SwitchToNewAppWindow();
+  EXPECT_FALSE(IsVisible());
+}
+
+TEST_F(AssistantPageViewTabletModeTest, ShouldNotDismissWhenTappingInside) {
+  ShowAssistantUi();
+  EXPECT_TRUE(IsVisible());
+
+  // Tapping position should be inside the Assistant UI.
+  gfx::Point origin = page_view()->origin();
+  gfx::Point point_inside = gfx::Point(origin.x() + 10, origin.y() + 10);
+  EXPECT_TRUE(page_view()->bounds().Contains(point_inside));
+
+  // Tapping inside should not dismiss the Assistant UI.
+  GestureEventForTest tap_inside(point_inside,
+                                 ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  page_view()->OnGestureEvent(&tap_inside);
+
+  EXPECT_TRUE(IsVisible());
 }
 
 }  // namespace ash

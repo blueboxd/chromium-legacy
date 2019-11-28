@@ -100,7 +100,7 @@
 <translation id="4382340674111381977">முந்தைய பக்கத்திற்குச் செல்லும்</translation>
 <translation id="4458670250301149821">ஆப்ஸ் கட்டத்தில் உள்ள கோப்புறைக்கு உள்ளே/வெளியே ஆப்ஸ் ஐகானை நகர்த்தும்</translation>
 <translation id="4472417192667361414">கம்ப்யூட்டர் &amp; காட்சி அமைப்புகள்</translation>
-<translation id="449214506787633354"><ph name="CTRL" />, பிறகு <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" />, <ph name="DOWN" /></translation>
+<translation id="449214506787633354"><ph name="CTRL" />, பிறகு <ph name="LEFT" /> அல்லது <ph name="RIGHT" /> அல்லது <ph name="UP" /> அல்லது <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">கீபோர்ட் ஷார்ட்கட் உதவியைக் காட்டும்</translation>
 <translation id="4628718545549558538">உங்கள் கணக்கின் படம் தோன்றக்கூடிய நிலைப் பகுதியைத் திறக்கும்</translation>
 <translation id="4642092649622328492">பகுதியளவு ஸ்கிரீன்ஷாட்டை எடுக்கும்</translation>
@@ -207,7 +207,7 @@
 <translation id="9041599225465145264">கிளிப்போர்டிலிருந்து உள்ளடக்கத்தை ஒட்டும்</translation>
 <translation id="9052808072970550123">அடுத்த பயனருக்குச் செல்லும்</translation>
 <translation id="906458777597946297">சாளரத்தை பெரிதாக்கு</translation>
-<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, பிறகு <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" />, <ph name="DOWN" /></translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, பிறகு <ph name="LEFT" /> அல்லது <ph name="RIGHT" /> அல்லது <ph name="UP" /> அல்லது <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">வரியின் தொடக்கத்திற்குச் செல்லும்</translation>
 <translation id="9106898733795143799">பக்கம் &amp; இணைய உலாவி</translation>
 <translation id="9162942292291287644"><ph name="QUERY" />க்குத் தேடல் முடிவு எதுவுமில்லை</translation>

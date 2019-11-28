@@ -1615,6 +1615,29 @@
       If this policy is set to False, users will not be able to play the dinosaur easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.''',
     },
     {
+      'name': 'ForceLegacyDefaultReferrerPolicy',
+      'owners': ['davidvc@chromium.org', 'chrome-network-stack@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'deprecated': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 648,
+      'caption': '''Use a default referrer policy of no-referrer-when-downgrade.''',
+      'tags': [],
+      'desc': '''This enterprise policy is for short-term adaptation and will be removed in M82.
+
+      Chrome's default referrer policy is being strengthened from its current value of no-referrer-when-downgrade to the more secure strict-origin-when-cross-origin through a gradual rollout targeting M80 stable.
+
+      Before the rollout, this enterprise policy will have no effect. After the rollout, when this enterprise policy is enabled, Chrome's default referrer policy will be set to its pre-M80 value of no-referrer-when-downgrade.
+
+      This enterprise policy is disabled by default.''',
+    },
+    {
       'name': 'RemoteAccessClientFirewallTraversal',
       'owners': ['jamiewalch@chromium.org', 'rkjnsn@chromium.org'],
       'type': 'main',
@@ -2701,9 +2724,9 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
-        'chrome.*:78-',
-        'chrome_os:78-',
-        'android:78-',
+        'chrome.*:79-',
+        'chrome_os:79-',
+        'android:79-',
       ],
       'features': {
         'can_be_recommended': True,
@@ -2714,9 +2737,11 @@
       'id': 580,
       'caption': '''Enable leak detection for entered credentials''',
       'tags': ['google-sharing'],
-      'desc': '''If this setting is enabled, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> check whether the entered credentials were part of a leak.
+      'desc': '''This policy can be used to force enable or force disable credential leak checking in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-              If this policy is enabled or disabled, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If this policy is unset, leak checking is allowed (but can be turned off by the user).''',
+          Note that even if this policy is set to True, the behavior will not trigger if Safe Browsing is disabled (either by policy or by the user). In order to force Safe Browsing on, use the <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> policy.
+
+          If this policy is enabled or disabled, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If this policy is unset, credential leak checking is allowed (but can be turned off by the user).''',
     },
     {
       'name': 'AutoFillEnabled',
@@ -19940,6 +19965,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 647,
+  'highest_id_currently_used': 648,
   'highest_atomic_group_id_currently_used': 38
 }

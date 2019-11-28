@@ -9,45 +9,50 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_entry.h"
 
 namespace remoting {
 
-class VlogNetLog::Observer : public net::NetLog::ThreadSafeObserver {
+namespace {
+
+class VlogNetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
-  Observer();
-  ~Observer() override;
+  VlogNetLogObserver();
+  ~VlogNetLogObserver() override;
 
   // NetLog::ThreadSafeObserver overrides:
   void OnAddEntry(const net::NetLogEntry& entry) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Observer);
+  DISALLOW_COPY_AND_ASSIGN(VlogNetLogObserver);
 };
 
-VlogNetLog::Observer::Observer() = default;
-
-VlogNetLog::Observer::~Observer() = default;
-
-void VlogNetLog::Observer::OnAddEntry(const net::NetLogEntry& entry) {
+VlogNetLogObserver::VlogNetLogObserver() {
+  // Only add the observer if verbosity is at least level 4. This is more
+  // efficient than unconditionally adding the observer and checking the vlog
+  // level in OnAddEntry.
   if (VLOG_IS_ON(4)) {
-    base::Value value = entry.ToValue();
-    std::string json;
-    base::JSONWriter::Write(value, &json);
-    VLOG(4) << json;
+    net::NetLog::Get()->AddObserver(this,
+                                    net::NetLogCaptureMode::kIncludeSensitive);
   }
 }
 
-VlogNetLog::VlogNetLog()
-    : observer_(new Observer()) {
-  AddObserver(observer_.get(), net::NetLogCaptureMode::kIncludeSensitive);
+VlogNetLogObserver::~VlogNetLogObserver() = default;
+
+void VlogNetLogObserver::OnAddEntry(const net::NetLogEntry& entry) {
+  base::Value value = entry.ToValue();
+  std::string json;
+  base::JSONWriter::Write(value, &json);
+  VLOG(4) << json;
 }
 
-VlogNetLog::~VlogNetLog() {
-  RemoveObserver(observer_.get());
+}  // namespace
+
+void CreateVlogNetLogObserver() {
+  static base::NoDestructor<VlogNetLogObserver> observer;
 }
 
 }  // namespace remoting

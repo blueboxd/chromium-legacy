@@ -13,6 +13,10 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * Data properties for the password manager illustration modal dialog.
  */
 class PasswordManagerDialogProperties {
+    // Callback handling clicks on the help button. If present, the button will be shown.
+    static final WritableObjectPropertyKey<Runnable> HELP_BUTTON_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
     // Illustration drawable resource id for the password manager.
     static final WritableIntPropertyKey ILLUSTRATION = new WritableIntPropertyKey();
 
@@ -29,6 +33,7 @@ class PasswordManagerDialogProperties {
     private PasswordManagerDialogProperties() {}
 
     static PropertyModel.Builder defaultModelBuilder() {
-        return new PropertyModel.Builder(ILLUSTRATION, ILLUSTRATION_VISIBLE, TITLE, DETAILS);
+        return new PropertyModel.Builder(
+                HELP_BUTTON_CALLBACK, ILLUSTRATION, ILLUSTRATION_VISIBLE, TITLE, DETAILS);
     }
 }

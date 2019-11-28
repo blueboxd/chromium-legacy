@@ -159,9 +159,11 @@ crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 # during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
 # When it fails, it's all 3 retires, thus "Failure" expectation
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ Failure ]
 
 # Windows only.

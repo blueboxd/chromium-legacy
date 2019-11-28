@@ -413,7 +413,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />leveret af Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
 <translation id="4099578267706723511">Vær med til at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
-<translation id="410351446219883937">Autoplay</translation>
 <translation id="4116038641877404294">Download sider for at bruge dem, når du er offline</translation>
 <translation id="4135200667068010335">Lukket liste over enheder, der skal deles en fane med.</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
@@ -815,7 +814,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6989267951144302301">Der kan ikke downloades</translation>
 <translation id="6990079615885386641">Hent appen i Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spørg, før websites bruger din mikrofon (anbefales)</translation>
-<translation id="6995899638241819463">Få en underretning, hvis adgangskoder offentliggøres i forbindelse med et brud på datasikkerheden</translation>
+<translation id="6995899638241819463">Få en underretning, hvis adgangskoder afsløres i forbindelse med et brud på datasikkerheden</translation>
 <translation id="7015203776128479407">Den indledende konfiguration af synkronisering blev ikke afsluttet. Synkronisering er deaktiveret.</translation>
 <translation id="7016516562562142042">Tilladt for den nuværende søgemaskine</translation>
 <translation id="7022756207310403729">Åbn i browser</translation>
@@ -872,7 +871,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7437998757836447326">Log ud af Chrome</translation>
 <translation id="7438641746574390233">Når Lite-tilstand er aktiveret, bruger Chrome Googles servere til at gøre sideindlæsningen hurtigere. Lite-tilstanden omskriver meget langsomme sider til kun at indlæse væsentligt indhold. Lite-tilstand kan ikke bruges i inkognitotilstand.</translation>
 <translation id="7444811645081526538">Flere kategorier</translation>
-<translation id="7445411102860286510">Tillad, at websites automatisk afspiller videoer med lyden slået fra (anbefales)</translation>
 <translation id="7453467225369441013">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="7454641608352164238">Der er ikke nok plads</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
 <translation id="7821588508402923572">Din databesparelse vises her</translation>
-<translation id="7837721118676387834">Tillad automatisk afspilning af videoer, hvor lyden er slået fra, for et bestemt website.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>

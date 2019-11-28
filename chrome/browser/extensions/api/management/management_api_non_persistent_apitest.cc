@@ -121,9 +121,8 @@ INSTANTIATE_TEST_SUITE_P(EventPage,
                          ManagementApiNonPersistentApiTest,
                          ::testing::Values(ContextType::kEventPage));
 
-// Flaky: crbug.com/1003597
-// INSTANTIATE_TEST_SUITE_P(ServiceWorker,
-//                          ManagementApiNonPersistentApiTest,
-//                          ::testing::Values(ContextType::kServiceWorker));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ManagementApiNonPersistentApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 }  // namespace extensions

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -25,16 +26,16 @@ HttpConnection::~HttpConnection() {
 }
 
 void HttpConnection::SendResponseBytes(const std::string& response_string,
-                                       const SendCompleteCallback& callback) {
+                                       SendCompleteCallback callback) {
   if (response_string.length() > 0) {
     scoped_refptr<DrainableIOBuffer> write_buf =
         base::MakeRefCounted<DrainableIOBuffer>(
             base::MakeRefCounted<StringIOBuffer>(response_string),
             response_string.length());
 
-    SendInternal(callback, write_buf);
+    SendInternal(std::move(callback), write_buf);
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
@@ -51,14 +52,16 @@ bool HttpConnection::ConsumeData(int size) {
   return false;
 }
 
-void HttpConnection::SendInternal(const base::Closure& callback,
+void HttpConnection::SendInternal(base::OnceClosure callback,
                                   scoped_refptr<DrainableIOBuffer> buf) {
+  base::RepeatingClosure repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   while (buf->BytesRemaining() > 0) {
-    int rv =
-        socket_->Write(buf.get(), buf->BytesRemaining(),
-                       base::BindOnce(&HttpConnection::OnSendInternalDone,
-                                      base::Unretained(this), callback, buf),
-                       TRAFFIC_ANNOTATION_FOR_TESTS);
+    int rv = socket_->Write(
+        buf.get(), buf->BytesRemaining(),
+        base::BindOnce(&HttpConnection::OnSendInternalDone,
+                       base::Unretained(this), repeating_callback, buf),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     if (rv == ERR_IO_PENDING)
       return;
 
@@ -69,18 +72,18 @@ void HttpConnection::SendInternal(const base::Closure& callback,
 
   // The HttpConnection will be deleted by the callback since we only need to
   // serve a single request.
-  callback.Run();
+  repeating_callback.Run();
 }
 
-void HttpConnection::OnSendInternalDone(const base::Closure& callback,
+void HttpConnection::OnSendInternalDone(base::OnceClosure callback,
                                         scoped_refptr<DrainableIOBuffer> buf,
                                         int rv) {
   if (rv < 0) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
   buf->DidConsume(rv);
-  SendInternal(callback, buf);
+  SendInternal(std::move(callback), buf);
 }
 
 base::WeakPtr<HttpConnection> HttpConnection::GetWeakPtr() {

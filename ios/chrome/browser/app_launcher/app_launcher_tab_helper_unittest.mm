@@ -325,8 +325,8 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
 
 // Tests that URLs with U2F schemes are handled correctly.
 // This test is using https://chromeiostesting-dot-u2fdemo.appspot.com URL which
-// is a whitelisted URL for the purpose of testing, but the test doesn't send
-// any request to the server.
+// is a URL allowed for the purpose of testing, but the test doesn't send any
+// requests to the server.
 TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   // Add required tab helpers for the U2F check.
   TabIdTabHelper::CreateForWebState(&web_state_);

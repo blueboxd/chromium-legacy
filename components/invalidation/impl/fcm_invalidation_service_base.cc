@@ -267,8 +267,9 @@ void FCMInvalidationServiceBase::OnInstanceIdReceived(const std::string& id) {
 }
 
 void FCMInvalidationServiceBase::OnDeleteIDCompleted(
-    instance_id::InstanceID::Result) {
-  // TODO(melandory): report metric in case of unsuccessful deletion.
+    instance_id::InstanceID::Result result) {
+  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.ResetClientIDStatus", result,
+                            instance_id::InstanceID::Result::LAST_RESULT + 1);
 }
 
 void FCMInvalidationServiceBase::DoUpdateRegisteredIdsIfNeeded() {

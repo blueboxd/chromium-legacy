@@ -26,8 +26,8 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.preferences.NotificationsPreferences;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.NotificationsPreferences;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 

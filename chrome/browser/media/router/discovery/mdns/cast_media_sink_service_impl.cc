@@ -359,7 +359,7 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
 
 void CastMediaSinkServiceImpl::OnMessage(
     const cast_channel::CastSocket& socket,
-    const cast_channel::CastMessage& message) {}
+    const cast::channel::CastMessage& message) {}
 
 void CastMediaSinkServiceImpl::OnNetworksChanged(
     const std::string& network_id) {

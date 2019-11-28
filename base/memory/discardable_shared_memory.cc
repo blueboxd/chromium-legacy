@@ -10,7 +10,10 @@
 
 #include "base/atomicops.h"
 #include "base/bits.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_internal.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
@@ -113,6 +116,21 @@ SharedState* SharedStateFromSharedMemory(
 size_t AlignToPageSize(size_t size) {
   return bits::Align(size, base::GetPageSize());
 }
+
+#if defined(OS_ANDROID)
+bool UseAshmemUnpinningForDiscardableMemory() {
+  if (!ashmem_device_is_supported())
+    return false;
+
+  // If we are participating in the discardable memory backing trial, only
+  // enable ashmem unpinning when we are in the corresponding trial group.
+  if (base::DiscardableMemoryBackingFieldTrialIsEnabled()) {
+    return base::GetDiscardableMemoryBackingFieldTrialGroup() ==
+           base::DiscardableMemoryTrialGroup::kAshmem;
+  }
+  return true;
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -503,7 +521,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::LockPages(
     size_t length) {
 #if defined(OS_ANDROID)
   if (region.IsValid()) {
-    if (ashmem_device_is_supported()) {
+    if (UseAshmemUnpinningForDiscardableMemory()) {
       int pin_result =
           ashmem_pin_region(region.GetPlatformHandle(), offset, length);
       if (pin_result == ASHMEM_WAS_PURGED)
@@ -523,7 +541,7 @@ void DiscardableSharedMemory::UnlockPages(
     size_t length) {
 #if defined(OS_ANDROID)
   if (region.IsValid()) {
-    if (ashmem_device_is_supported()) {
+    if (UseAshmemUnpinningForDiscardableMemory()) {
       int unpin_result =
           ashmem_unpin_region(region.GetPlatformHandle(), offset, length);
       DCHECK_EQ(0, unpin_result);
@@ -539,7 +557,7 @@ Time DiscardableSharedMemory::Now() const {
 #if defined(OS_ANDROID)
 // static
 bool DiscardableSharedMemory::IsAshmemDeviceSupportedForTesting() {
-  return ashmem_device_is_supported();
+  return UseAshmemUnpinningForDiscardableMemory();
 }
 #endif
 

@@ -214,12 +214,6 @@ class MockSuggestionsService : public SuggestionsService {
   MOCK_METHOD1(AddCallback,
                std::unique_ptr<ResponseCallbackList::Subscription>(
                    const ResponseCallback& callback));
-  MOCK_METHOD2(GetPageThumbnail,
-               void(const GURL& url, const BitmapCallback& callback));
-  MOCK_METHOD3(GetPageThumbnailWithURL,
-               void(const GURL& url,
-                    const GURL& thumbnail_url,
-                    const BitmapCallback& callback));
   MOCK_METHOD1(BlacklistURL, bool(const GURL& candidate_url));
   MOCK_METHOD1(UndoBlacklistURL, bool(const GURL& url));
   MOCK_METHOD0(ClearBlacklist, void());

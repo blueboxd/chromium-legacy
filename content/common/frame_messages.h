@@ -864,10 +864,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
                     double /* volume */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-// Used to instruct the RenderFrame to go into "view source" mode. This should
-// only be sent to the main frame.
-IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
-
 // Tells the frame to suppress any further modal dialogs. This ensures that no
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)

@@ -237,9 +237,6 @@
     "META": {"align": 100},
     "includes": [12200],
   },
-  "chrome/android/features/stack_unwinder/internal/resources/resources.grd": {
-    "includes": [12205],
-  },
   "chrome/common/common_resources.grd": {
     "includes": [12210],
   },

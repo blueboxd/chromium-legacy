@@ -396,7 +396,11 @@ public class OverlappingStack extends Stack {
             }
 
             // The beginning, size, and clipped size of the current tab.
-            float tabOffset, tabSize, tabClippedSize, borderAdjustmentSize, insetBorderPadding;
+            float tabOffset;
+            float tabSize;
+            float tabClippedSize;
+            float borderAdjustmentSize;
+            float insetBorderPadding;
             if (portrait) {
                 // portrait LTR & RTL
                 tabOffset = layoutTab.getY();

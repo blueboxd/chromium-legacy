@@ -63,6 +63,18 @@ PasswordProtectionService::PasswordProtectionService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
     history_service_observer_.Add(history_service);
+
+  common_spoofed_domains_ = {
+      "login.live.com"
+      "facebook.com",
+      "box.com",
+      "paypal.com",
+      "apple.com",
+      "yahoo.com",
+      "adobe.com",
+      "amazon.com",
+      "linkedin.com",
+      "att.com"};
 }
 
 PasswordProtectionService::~PasswordProtectionService() {

@@ -44,7 +44,7 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
 HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
     SSPILibrary* sspi_library,
     const HttpAuthPreferences* http_auth_preferences)
-    : auth_sspi_(sspi_library, HttpAuth::AUTH_SCHEME_NTLM),
+    : mechanism_(sspi_library, HttpAuth::AUTH_SCHEME_NTLM),
       http_auth_preferences_(http_auth_preferences) {}
 
 int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
@@ -52,7 +52,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
     const HttpRequestInfo* request,
     CompletionOnceCallback callback,
     std::string* auth_token) {
-  return auth_sspi_.GenerateAuthToken(credentials, CreateSPN(origin_),
+  return mechanism_.GenerateAuthToken(credentials, CreateSPN(origin_),
                                       channel_bindings_, auth_token, net_log(),
                                       std::move(callback));
 }
@@ -62,7 +62,7 @@ HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
 
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNTLM::NeedsIdentity() {
-  return auth_sspi_.NeedsIdentity();
+  return mechanism_.NeedsIdentity();
 }
 
 bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
@@ -76,8 +76,8 @@ bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
     HttpAuthChallengeTokenizer* tok,
     bool initial_challenge) {
-  // auth_sspi_ contains state for whether or not this is the initial challenge.
-  return auth_sspi_.ParseChallenge(tok);
+  // mechanism_ contains state for whether or not this is the initial challenge.
+  return mechanism_.ParseChallenge(tok);
 }
 
 }  // namespace net

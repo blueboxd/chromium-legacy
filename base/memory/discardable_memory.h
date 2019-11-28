@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -76,6 +77,9 @@ class BASE_EXPORT DiscardableMemory {
       const char* name,
       trace_event::ProcessMemoryDump* pmd) const = 0;
 };
+
+enum class DiscardableMemoryBacking { kSharedMemory, kMadvFree };
+BASE_EXPORT DiscardableMemoryBacking GetDiscardableMemoryBacking();
 
 }  // namespace base
 

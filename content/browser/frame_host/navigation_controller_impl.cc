@@ -2277,8 +2277,10 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149
-  if (should_replace_current_entry && GetEntryCount() > 0)
-    entry->set_should_replace_entry(true);
+  if (GetEntryCount() == 0)
+    should_replace_current_entry = false;
+
+  entry->set_should_replace_entry(should_replace_current_entry);
 
   bool override_user_agent = false;
   if (GetLastCommittedEntry() &&
@@ -2318,7 +2320,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   /* params.data_url_as_string: skip */
   params.post_data = post_body;
   params.can_load_local_resources = false;
-  params.should_replace_current_entry = false;
+  /* params.should_replace_current_entry: skip */
   /* params.frame_name: skip */
   // TODO(clamy): See if user gesture should be propagated to this function.
   params.has_user_gesture = false;

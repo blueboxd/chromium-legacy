@@ -25,10 +25,10 @@ void BackgroundSyncNetworkObserver::SetIgnoreNetworkChangesForTests(
 }
 
 BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
-    const base::RepeatingClosure& connection_changed_callback)
+    base::RepeatingClosure connection_changed_callback)
     : network_connection_tracker_(nullptr),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-      connection_changed_callback_(connection_changed_callback) {
+      connection_changed_callback_(std::move(connection_changed_callback)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(connection_changed_callback_);
 

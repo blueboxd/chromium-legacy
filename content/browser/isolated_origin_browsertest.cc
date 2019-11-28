@@ -33,6 +33,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
@@ -1181,14 +1182,14 @@ class StoragePartitonInterceptor
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
     // Bind the real StoragePartitionService implementation.
-    mojo::BindingId binding_id =
+    mojo::ReceiverId receiver_id =
         storage_partition->Bind(rph->GetID(), std::move(receiver));
 
     // Now replace it with this object and keep a pointer to the real
     // implementation.
     storage_partition_service_ =
         storage_partition->receivers_for_testing().SwapImplForTesting(
-            binding_id, this);
+            receiver_id, this);
 
     // Register the |this| as a RenderProcessHostObserver, so it can be
     // correctly cleaned up when the process exits.
@@ -2514,7 +2515,7 @@ class BroadcastChannelProviderInterceptor
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
     // Bind the real BroadcastChannelProvider implementation.
-    mojo::BindingId binding_id =
+    mojo::ReceiverId receiver_id =
         storage_partition->GetBroadcastChannelProvider()->Connect(
             rph->GetID(), std::move(receiver));
 
@@ -2523,7 +2524,7 @@ class BroadcastChannelProviderInterceptor
     original_broadcast_channel_provider_ =
         storage_partition->GetBroadcastChannelProvider()
             ->receivers_for_testing()
-            .SwapImplForTesting(binding_id, this);
+            .SwapImplForTesting(receiver_id, this);
 
     // Register the |this| as a RenderProcessHostObserver, so it can be
     // correctly cleaned up when the process exits.

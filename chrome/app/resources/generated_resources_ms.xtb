@@ -1156,7 +1156,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2636625531157955190">Chrome tidak dapat mengakses imej.</translation>
 <translation id="2637400434494156704">PIN salah. Anda mempunyai satu percubaan lagi.</translation>
 <translation id="2638087589890736295">Ungkapan laluan diperlukan untuk memulakan penyegerakan</translation>
-<translation id="264083724974021997">Sambungkan ke telefon anda - Dialog</translation>
+<translation id="264083724974021997">Sambungkan kepada telefon anda - Dialog</translation>
 <translation id="2642111877055905627">Bola sepak</translation>
 <translation id="2643698698624765890">Uruskan sambungan anda dengan mengklik Extensions dalam menu Window.</translation>
 <translation id="264810637653812429">Tiada peranti yang serasi ditemui.</translation>
@@ -2615,7 +2615,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4798236378408895261">Lampirkan <ph name="BEGIN_LINK" />Log Bluetooth<ph name="END_LINK" /> (dalaman Google)</translation>
 <translation id="4801448226354548035">Sembunyikan akaun</translation>
 <translation id="4801512016965057443">Membenarkan perayauan data mudah alih</translation>
-<translation id="4804756772600045300">Meneruskan persediaan akan mendayakan penyahpepijatan ADB yang membuat dan menguji apl Android. Harap maklum bahawa penyahpepijatan ADB akan membenarkan pemasangan apl ujian yang belum disahkan oleh Google.</translation>
+<translation id="4804756772600045300">Tindakan meneruskan persediaan akan mendayakan penyahpepijatan ADB yang membuat dan menguji apl Android. Harap maklum bahawa penyahpepijatan ADB akan membenarkan pemasangan apl ujian yang belum disahkan oleh Google.</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4807098396393229769">Nama pada kad</translation>
@@ -3568,7 +3568,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6169040057125497443">Sila periksa mikrofon anda.</translation>
 <translation id="6169666352732958425">Tidak dapat menghantar desktop.</translation>
 <translation id="6170470584681422115">Sandwic</translation>
-<translation id="6170498031581934115">Tidak dapat mendayakan penyahpepijatan ADB. Pergi ke Tetapan dan cuba lagi.</translation>
+<translation id="6170498031581934115">Tidak dapat mendayakan penyahpepijatan ADB. Buka Tetapan dan cuba lagi.</translation>
 <translation id="6173623053897475761">Taipkan PIN anda sekali lagi</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6176043333338857209">Bluetooth akan dihidupkan buat sementara waktu untuk berkomunikasi dengan kunci keselamatan anda</translation>
@@ -4979,7 +4979,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8214489666383623925">Buka Fail...</translation>
 <translation id="8214962590150211830">Alih Keluar Orang Ini</translation>
 <translation id="8217399928341212914">Teruskan menyekat muat turun automatik berbilang fail</translation>
-<translation id="8221491193165283816">Anda biasanya menyekat pemberitahuan. Untuk membenarkan tapak ini memaklumkan anda, klik di sini.</translation>
+<translation id="8221491193165283816">Anda biasanya menyekat pemberitahuan. Untuk membenarkan tapak ini memberitahu anda, klik di sini.</translation>
 <translation id="8225265270453771718">Kongsi tetingkap aplikasi</translation>
 <translation id="8225753906568652947">Tebus tawaran anda</translation>
 <translation id="8226222018808695353">Dilarang</translation>

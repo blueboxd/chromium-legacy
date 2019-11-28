@@ -197,9 +197,8 @@ class TestMdnsListenClient : public mojom::MdnsListenClient {
 TEST_F(HostResolverTest, Sync) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->set_synchronous_mode(true);
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -228,9 +227,8 @@ TEST_F(HostResolverTest, Sync) {
 TEST_F(HostResolverTest, Async) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->set_synchronous_mode(false);
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -262,11 +260,10 @@ TEST_F(HostResolverTest, Async) {
 }
 
 TEST_F(HostResolverTest, DnsQueryType) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
@@ -288,9 +285,8 @@ TEST_F(HostResolverTest, DnsQueryType) {
 
 TEST_F(HostResolverTest, InitialPriority) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
@@ -329,8 +325,7 @@ TEST_F(HostResolverTest, Source) {
   inner_resolver->rules_map()[net::HostResolverSource::MULTICAST_DNS]->AddRule(
       kDomain, kMdnsResult);
 
-  net::NetLog net_log;
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop any_run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_any_client;
@@ -408,8 +403,7 @@ TEST_F(HostResolverTest, SeparateCacheBySource) {
   base::SimpleTestTickClock test_clock;
   inner_resolver->set_tick_clock(&test_clock);
 
-  net::NetLog net_log;
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   // Load SYSTEM result into cache.
   base::RunLoop system_run_loop;
@@ -481,8 +475,7 @@ TEST_F(HostResolverTest, CacheDisabled) {
   base::SimpleTestTickClock test_clock;
   inner_resolver->set_tick_clock(&test_clock);
 
-  net::NetLog net_log;
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   // Load result into cache.
   base::RunLoop run_loop;
@@ -545,8 +538,7 @@ TEST_F(HostResolverTest, CacheDisabled_ErrorResults) {
   base::SimpleTestTickClock test_clock;
   inner_resolver->set_tick_clock(&test_clock);
 
-  net::NetLog net_log;
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   // Load initial result into cache.
   base::RunLoop run_loop;
@@ -594,9 +586,8 @@ TEST_F(HostResolverTest, IncludeCanonicalName) {
   inner_resolver->rules()->AddRuleWithFlags("example.com", "123.0.12.24",
                                             net::HOST_RESOLVER_CANONNAME,
                                             "canonicalexample.com");
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
@@ -622,9 +613,8 @@ TEST_F(HostResolverTest, LoopbackOnly) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddRuleWithFlags("example.com", "127.0.12.24",
                                             net::HOST_RESOLVER_LOOPBACK_ONLY);
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
@@ -646,9 +636,8 @@ TEST_F(HostResolverTest, LoopbackOnly) {
 
 TEST_F(HostResolverTest, SecureDnsModeOverride) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
@@ -675,9 +664,8 @@ TEST_F(HostResolverTest, Failure_Sync) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddSimulatedFailure("example.com");
   inner_resolver->set_synchronous_mode(true);
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -704,9 +692,8 @@ TEST_F(HostResolverTest, Failure_Async) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddSimulatedFailure("example.com");
   inner_resolver->set_synchronous_mode(false);
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -734,11 +721,10 @@ TEST_F(HostResolverTest, Failure_Async) {
 }
 
 TEST_F(HostResolverTest, NoOptionalParameters) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
@@ -759,11 +745,10 @@ TEST_F(HostResolverTest, NoOptionalParameters) {
 }
 
 TEST_F(HostResolverTest, NoControlHandle) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojom::ResolveHostParametersPtr optional_parameters =
@@ -787,11 +772,10 @@ TEST_F(HostResolverTest, NoControlHandle) {
 }
 
 TEST_F(HostResolverTest, CloseControlHandle) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -822,9 +806,8 @@ TEST_F(HostResolverTest, Cancellation) {
   // Use a HangingHostResolver, so the test can ensure the request won't be
   // completed before the cancellation arrives.
   auto inner_resolver = std::make_unique<net::HangingHostResolver>();
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
@@ -858,11 +841,10 @@ TEST_F(HostResolverTest, Cancellation) {
 }
 
 TEST_F(HostResolverTest, Cancellation_SubsequentRequest) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -906,10 +888,9 @@ TEST_F(HostResolverTest, DestroyResolver) {
   // Use a HangingHostResolver, so the test can ensure the request won't be
   // completed before the cancellation arrives.
   auto inner_resolver = std::make_unique<net::HangingHostResolver>();
-  net::NetLog net_log;
 
   auto resolver =
-      std::make_unique<HostResolver>(inner_resolver.get(), &net_log);
+      std::make_unique<HostResolver>(inner_resolver.get(), net::NetLog::Get());
 
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
@@ -945,9 +926,8 @@ TEST_F(HostResolverTest, CloseClient) {
   // Use a HangingHostResolver, so the test can ensure the request won't be
   // completed before the cancellation arrives.
   auto inner_resolver = std::make_unique<net::HangingHostResolver>();
-  net::NetLog net_log;
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
@@ -980,11 +960,10 @@ TEST_F(HostResolverTest, CloseClient) {
 }
 
 TEST_F(HostResolverTest, CloseClient_SubsequentRequest) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
@@ -1025,13 +1004,12 @@ TEST_F(HostResolverTest, Binding) {
       base::BindLambdaForTesting(
           [&](HostResolver* resolver) { shutdown_resolver = resolver; });
 
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
   HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
-                        &net_log);
+                        net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::Remote<mojom::ResolveHostHandle> control_handle;
@@ -1068,11 +1046,10 @@ TEST_F(HostResolverTest, CloseBinding) {
   // Use a HangingHostResolver, so the test can ensure the request won't be
   // completed before the cancellation arrives.
   auto inner_resolver = std::make_unique<net::HangingHostResolver>();
-  net::NetLog net_log;
 
   HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
-                        &net_log);
+                        net::NetLog::Get());
 
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
@@ -1113,13 +1090,12 @@ TEST_F(HostResolverTest, CloseBinding_SubsequentRequest) {
       base::BindLambdaForTesting(
           [&](HostResolver* resolver) { shutdown_resolver = resolver; });
 
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
   HostResolver resolver(resolver_remote.BindNewPipeAndPassReceiver(),
                         std::move(shutdown_callback), inner_resolver.get(),
-                        &net_log);
+                        net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
@@ -1156,11 +1132,10 @@ TEST_F(HostResolverTest, CloseBinding_SubsequentRequest) {
 }
 
 TEST_F(HostResolverTest, IsSpeculative) {
-  net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log);
+      net::HostResolver::CreateStandaloneResolver(net::NetLog::Get());
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
@@ -1203,14 +1178,13 @@ TEST_F(HostResolverTest, TextResults) {
                                                          std::move(rules));
   dns_client->set_ignore_system_config_changes(true);
 
-  net::NetLog net_log;
   std::unique_ptr<net::ContextHostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneContextResolver(&net_log);
+      net::HostResolver::CreateStandaloneContextResolver(net::NetLog::Get());
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
   inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojom::ResolveHostParametersPtr optional_parameters =
@@ -1243,14 +1217,13 @@ TEST_F(HostResolverTest, HostResults) {
                                                          std::move(rules));
   dns_client->set_ignore_system_config_changes(true);
 
-  net::NetLog net_log;
   std::unique_ptr<net::ContextHostResolver> inner_resolver =
-      net::HostResolver::CreateStandaloneContextResolver(&net_log);
+      net::HostResolver::CreateStandaloneContextResolver(net::NetLog::Get());
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
   inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
 
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   base::RunLoop run_loop;
   mojom::ResolveHostParametersPtr optional_parameters =
@@ -1276,9 +1249,8 @@ TEST_F(HostResolverTest, HostResults) {
 
 #if BUILDFLAG(ENABLE_MDNS)
 TEST_F(HostResolverTest, MdnsListener_AddressResult) {
-  net::NetLog net_log;
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
@@ -1314,9 +1286,8 @@ TEST_F(HostResolverTest, MdnsListener_AddressResult) {
 }
 
 TEST_F(HostResolverTest, MdnsListener_TextResult) {
-  net::NetLog net_log;
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
@@ -1356,9 +1327,8 @@ TEST_F(HostResolverTest, MdnsListener_TextResult) {
 }
 
 TEST_F(HostResolverTest, MdnsListener_HostnameResult) {
-  net::NetLog net_log;
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);
@@ -1394,9 +1364,8 @@ TEST_F(HostResolverTest, MdnsListener_HostnameResult) {
 }
 
 TEST_F(HostResolverTest, MdnsListener_UnhandledResult) {
-  net::NetLog net_log;
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
-  HostResolver resolver(inner_resolver.get(), &net_log);
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
   mojo::PendingRemote<mojom::MdnsListenClient> pending_response_client;
   TestMdnsListenClient response_client(&pending_response_client);

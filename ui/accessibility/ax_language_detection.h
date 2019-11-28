@@ -124,13 +124,16 @@ class AX_EXPORT AXLanguageInfoStats {
   // Cache of last calculated top language results.
   // A vector of pairs of (score, language) sorted by descending score.
   std::vector<std::pair<unsigned int, std::string>> top_results_;
+
   // Boolean recording that we have not mutated the statistics since last
   // calculating top results, setting this to false will cause recalculation
   // when the results are next fetched.
   bool top_results_valid_;
 
+  // Invalidate the top results cache.
   void InvalidateTopResults();
 
+  // Compute the top results and store them in cache.
   void GenerateTopResults();
 
   DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
@@ -164,8 +167,7 @@ class AX_EXPORT AXLanguageDetectionManager {
       ax::mojom::StringAttribute attr);
 
  private:
-  // TODO(chrishall): should this be stored by pointer or value?
-  AXLanguageInfoStats lang_info_stats;
+  AXLanguageInfoStats lang_info_stats_;
 
   void DetectLanguageForSubtreeInternal(AXNode* subtree_root);
   void LabelLanguageForSubtreeInternal(AXNode* subtree_root);

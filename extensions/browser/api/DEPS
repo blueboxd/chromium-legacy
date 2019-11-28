@@ -3,6 +3,8 @@ include_rules = [
   "+services/device/public",
   "+storage/browser/file_system",
   "+storage/common/file_system",
+  "+third_party/openscreen/src/cast/common/certificate/proto",
+  "+third_party/openscreen/src/cast/common/channel/proto",
   "+ui/accessibility",
   "+ui/aura",
 ]

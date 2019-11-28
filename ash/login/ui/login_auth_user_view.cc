@@ -554,7 +554,8 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     label_ = AddChildView(std::make_unique<views::Label>(
         GetTextForLabel(), views::style::CONTEXT_LABEL,
         views::style::STYLE_PRIMARY));
-    label_->SetEnabledColor(SK_ColorWHITE);
+    label_->SetAutoColorReadabilityEnabled(false);
+    label_->SetEnabledColor(login_constants::kAuthMethodsTextColor);
     label_->SetSubpixelRenderingEnabled(false);
     label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         /*size_delta=*/1, gfx::Font::FontStyle::ITALIC,

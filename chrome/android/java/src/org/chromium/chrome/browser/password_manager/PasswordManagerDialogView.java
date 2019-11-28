@@ -13,12 +13,15 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The dialog content view for illustration dialogs used by the password manager (e.g. onboarding,
  * leak warning).
  */
 public class PasswordManagerDialogView extends ScrollView {
+    private @Nullable ChromeImageButton mHelpButtonView;
+    private @Nullable ChromeImageButton mInlineHelpButtonView;
     private ImageView mIllustrationView;
     private TextView mTitleView;
     private TextView mDetailsView;
@@ -30,10 +33,18 @@ public class PasswordManagerDialogView extends ScrollView {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
+        mHelpButtonView = findViewById(R.id.password_dialog_help_button);
+        mInlineHelpButtonView = findViewById(R.id.password_dialog_inline_help_button);
         mIllustrationView = findViewById(R.id.password_manager_dialog_illustration);
         mTitleView = findViewById(R.id.password_manager_dialog_title);
         mDetailsView = findViewById(R.id.password_manager_dialog_details);
+    }
+
+    void addHelpButton(Runnable callback) {
+        if (mHelpButtonView == null) return;
+        mHelpButtonView.setOnClickListener(view -> callback.run());
+        mInlineHelpButtonView.setOnClickListener(view -> callback.run());
+        mHelpButtonView.setVisibility(VISIBLE);
     }
 
     void setIllustration(int illustration) {
@@ -46,6 +57,14 @@ public class PasswordManagerDialogView extends ScrollView {
         } else {
             mIllustrationView.setVisibility(GONE);
         }
+    }
+
+    public void updateHelpIcon(boolean usesInlineIcon) {
+        // There is no help button to update.
+        if (mHelpButtonView == null) return;
+
+        mHelpButtonView.setVisibility(usesInlineIcon ? GONE : VISIBLE);
+        mInlineHelpButtonView.setVisibility(usesInlineIcon ? VISIBLE : GONE);
     }
 
     void setTitle(String title) {

@@ -22,7 +22,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.languages.LanguageItem;
+import org.chromium.chrome.browser.settings.languages.LanguageItem;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.language.AndroidLanguageMetricsBridge;
 import org.chromium.components.language.GeoLanguageProviderBridge;

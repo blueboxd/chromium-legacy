@@ -64,13 +64,11 @@ class ExtensionViewHost::AssociatedWebContentsObserver
   DISALLOW_COPY_AND_ASSIGN(AssociatedWebContentsObserver);
 };
 
-ExtensionViewHost::ExtensionViewHost(
-    const Extension* extension,
-    content::SiteInstance* site_instance,
-    const GURL& url,
-    ViewType host_type)
-    : ExtensionHost(extension, site_instance, url, host_type),
-      associated_web_contents_(NULL) {
+ExtensionViewHost::ExtensionViewHost(const Extension* extension,
+                                     content::SiteInstance* site_instance,
+                                     const GURL& url,
+                                     ViewType host_type)
+    : ExtensionHost(extension, site_instance, url, host_type) {
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_DIALOG ||
          host_type == VIEW_TYPE_EXTENSION_POPUP);
@@ -112,7 +110,13 @@ ExtensionViewHost::~ExtensionViewHost() {
 }
 
 void ExtensionViewHost::CreateView(Browser* browser) {
-  view_ = CreateExtensionView(this, browser);
+  // TODO(devlin): Add the following sanity check:
+  // if (browser) {
+  //   DCHECK_EQ(Profile::FromBrowserContext(browser_context()),
+  //             browser->profile());
+  // }
+  browser_ = browser;
+  view_ = CreateExtensionView(this, browser ? browser->profile() : nullptr);
 }
 
 void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
@@ -179,8 +183,7 @@ WebContents* ExtensionViewHost::OpenURLFromTab(
     case WindowOpenDisposition::OFF_THE_RECORD: {
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
-      Browser* browser = view_->GetBrowser();
-      return browser ? browser->OpenURL(params) : nullptr;
+      return browser_ ? browser_->OpenURL(params) : nullptr;
     }
     default:
       return nullptr;
@@ -205,9 +208,8 @@ ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
   }
 
   // Handle higher priority browser shortcuts such as Ctrl-w.
-  Browser* browser = view_->GetBrowser();
-  if (browser)
-    return browser->PreHandleKeyboardEvent(source, event);
+  if (browser_)
+    return browser_->PreHandleKeyboardEvent(source, event);
 
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
@@ -304,8 +306,7 @@ void ExtensionViewHost::RemoveObserver(
 }
 
 WindowController* ExtensionViewHost::GetExtensionWindowController() const {
-  Browser* browser = view_->GetBrowser();
-  return browser ? browser->extension_window_controller() : NULL;
+  return browser_ ? browser_->extension_window_controller() : nullptr;
 }
 
 WebContents* ExtensionViewHost::GetAssociatedWebContents() const {

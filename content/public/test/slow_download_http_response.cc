@@ -4,6 +4,8 @@
 
 #include "content/public/test/slow_download_http_response.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -15,33 +17,36 @@ namespace {
 static bool g_should_finish_download = false;
 
 void SendResponseBodyDone(const net::test_server::SendBytesCallback& send,
-                          const net::test_server::SendCompleteCallback& done);
+                          net::test_server::SendCompleteCallback done);
 
 // Sends the response body with the given size.
 void SendResponseBody(const net::test_server::SendBytesCallback& send,
-                      const net::test_server::SendCompleteCallback& done,
+                      net::test_server::SendCompleteCallback done,
                       bool finish_download) {
   int data_size = finish_download
                       ? SlowDownloadHttpResponse::kSecondDownloadSize
                       : SlowDownloadHttpResponse::kFirstDownloadSize;
   std::string response(data_size, '*');
 
-  if (finish_download)
-    send.Run(response, done);
-  else
-    send.Run(response, base::Bind(&SendResponseBodyDone, send, done));
+  if (finish_download) {
+    send.Run(response, std::move(done));
+  } else {
+    send.Run(response,
+             base::BindOnce(&SendResponseBodyDone, send, std::move(done)));
+  }
 }
 
 // Called when the response body was sucessfully sent.
 void SendResponseBodyDone(const net::test_server::SendBytesCallback& send,
-                          const net::test_server::SendCompleteCallback& done) {
+                          net::test_server::SendCompleteCallback done) {
   if (g_should_finish_download) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&SendResponseBody, send, done, true),
+        FROM_HERE,
+        base::BindOnce(&SendResponseBody, send, std::move(done), true),
         base::TimeDelta::FromMilliseconds(100));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&SendResponseBodyDone, send, done),
+        FROM_HERE, base::BindOnce(&SendResponseBodyDone, send, std::move(done)),
         base::TimeDelta::FromMilliseconds(100));
   }
 }
@@ -80,7 +85,7 @@ SlowDownloadHttpResponse::~SlowDownloadHttpResponse() = default;
 
 void SlowDownloadHttpResponse::SendResponse(
     const net::test_server::SendBytesCallback& send,
-    const net::test_server::SendCompleteCallback& done) {
+    net::test_server::SendCompleteCallback done) {
   std::string response;
   response.append("HTTP/1.1 200 OK\r\n");
   if (base::LowerCaseEqualsASCII(kFinishDownloadUrl, url_)) {
@@ -88,7 +93,7 @@ void SlowDownloadHttpResponse::SendResponse(
     response.append("\r\n");
 
     g_should_finish_download = true;
-    send.Run(response, done);
+    send.Run(response, std::move(done));
   } else {
     response.append("Content-type: application/octet-stream\r\n");
     response.append("Cache-Control: max-age=0\r\n");
@@ -98,7 +103,8 @@ void SlowDownloadHttpResponse::SendResponse(
           "Content-Length: %d\r\n", kFirstDownloadSize + kSecondDownloadSize));
     }
     response.append("\r\n");
-    send.Run(response, base::Bind(&SendResponseBody, send, done, false));
+    send.Run(response,
+             base::BindOnce(&SendResponseBody, send, std::move(done), false));
   }
 }
 

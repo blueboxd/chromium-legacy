@@ -43,8 +43,6 @@ class RoundedOmniboxResultsFrame : public views::View {
 #endif  // !USE_AURA
 
  private:
-  std::unique_ptr<ui::LayerOwner> contents_mask_;
-
   views::View* top_background_ = nullptr;
   views::View* contents_host_ = nullptr;
   views::View* contents_;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_socket.h"
@@ -67,13 +68,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
       mojom::NetworkContext::CreateTCPBoundSocketCallback callback);
 
   // Destroys the specified BoundSocket object.
-  void DestroyBoundSocket(mojo::BindingId bound_socket_id);
+  void DestroyBoundSocket(mojo::ReceiverId bound_socket_id);
 
   // Invoked when a BoundSocket successfully starts listening. Destroys the
   // BoundSocket object, adding a binding for the provided TCPServerSocket in
   // its place.
   void OnBoundSocketListening(
-      mojo::BindingId bound_socket_id,
+      mojo::ReceiverId bound_socket_id,
       std::unique_ptr<TCPServerSocket> server_socket,
       mojo::PendingReceiver<mojom::TCPServerSocket> server_socket_receiver);
 
@@ -81,7 +82,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   // the BoundSocket object, adding a binding for the provided
   // TCPConnectedSocket in its place.
   void OnBoundSocketConnected(
-      mojo::BindingId bound_socket_id,
+      mojo::ReceiverId bound_socket_id,
       std::unique_ptr<TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<mojom::TCPConnectedSocket>
           connected_socket_receiver);

@@ -428,6 +428,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HttpAuthManager::DetachObserver";
     case SavePasswordProgressLogger::STRING_SHOW_ONBOARDING:
       return "Show onboarding experience and offer to save password";
+    case STRING_LEAK_DETECTION_DISABLED_FEATURE:
+      return "Leak detection disabled in settings";
+    case STRING_LEAK_DETECTION_DISABLED_SAFE_BROWSING:
+      return "Leak detection is off as the safe browsing is disabled";
     case STRING_LEAK_DETECTION_FINISHED:
       return "Leak detection finished with result";
     case STRING_LEAK_DETECTION_HASH_ERROR:

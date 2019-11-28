@@ -60,7 +60,7 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
             nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
-            &net_log_,
+            NetLog::Get(),
             nullptr /* websocket_endpoint_lock_manager */) {}
 
   ~SOCKSConnectJobTest() override {}
@@ -80,7 +80,6 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
   }
 
  protected:
-  NetLog net_log_;
   MockHostResolver host_resolver_;
   MockTaggingClientSocketFactory client_socket_factory_;
   const CommonConnectJobParams common_connect_job_params_;

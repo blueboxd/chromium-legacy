@@ -104,8 +104,6 @@ ApplicationContextImpl::ApplicationContextImpl(
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 
-  net_log_ = std::make_unique<net::NetLog>();
-
   SetApplicationLocale(locale);
 
   update_client::UpdateQueryParams::SetDelegate(
@@ -296,7 +294,7 @@ rappor::RapporServiceImpl* ApplicationContextImpl::GetRapporServiceImpl() {
 
 net::NetLog* ApplicationContextImpl::GetNetLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return net_log_.get();
+  return net::NetLog::Get();
 }
 
 net_log::NetExportFileWriter* ApplicationContextImpl::GetNetExportFileWriter() {

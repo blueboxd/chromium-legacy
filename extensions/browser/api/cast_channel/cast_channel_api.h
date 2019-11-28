@@ -18,6 +18,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/cast_channel.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 class CastChannelAPITest;
 
@@ -92,7 +93,7 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
     void OnError(const cast_channel::CastSocket& socket,
                  cast_channel::ChannelError error_state) override;
     void OnMessage(const cast_channel::CastSocket& socket,
-                   const cast_channel::CastMessage& message) override;
+                   const cast::channel::CastMessage& message) override;
 
    private:
     // Callback for sending events to the extension.

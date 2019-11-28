@@ -43,8 +43,8 @@ public class PickerBitmapViewHolder
     // DecoderServiceHost.ImageDecodedCallback
 
     @Override
-    public void imagesDecodedCallback(
-            String filePath, boolean isVideo, List<Bitmap> bitmaps, String videoDuration) {
+    public void imagesDecodedCallback(String filePath, boolean isVideo, boolean fullWidth,
+            List<Bitmap> bitmaps, String videoDuration, float ratio) {
         if (bitmaps == null || bitmaps.size() == 0) return;
 
         if (!isVideo) {
@@ -52,20 +52,27 @@ public class PickerBitmapViewHolder
             if (bitmap == null || bitmap.getWidth() == 0 || bitmap.getHeight() == 0) return;
         }
 
-        PickerCategoryView.Thumbnail cachedThumbnail =
-                mCategoryView.getHighResThumbnails().get(filePath);
+        PickerCategoryView.Thumbnail cachedThumbnail = fullWidth
+                ? mCategoryView.getFullScreenBitmaps().get(filePath)
+                : mCategoryView.getHighResThumbnails().get(filePath);
         if (cachedThumbnail == null
                 || (cachedThumbnail.bitmaps != null
                         && cachedThumbnail.bitmaps.size() < bitmaps.size())) {
-            mCategoryView.getHighResThumbnails().put(
-                    filePath, new PickerCategoryView.Thumbnail(bitmaps, videoDuration));
+            if (fullWidth) {
+                mCategoryView.getFullScreenBitmaps().put(filePath,
+                        new PickerCategoryView.Thumbnail(bitmaps, videoDuration, fullWidth, ratio));
+            } else {
+                mCategoryView.getHighResThumbnails().put(filePath,
+                        new PickerCategoryView.Thumbnail(bitmaps, videoDuration, fullWidth, ratio));
+            }
         }
 
         if (mCategoryView.getLowResThumbnails().get(filePath) == null) {
             Resources resources = mItemView.getContext().getResources();
             new BitmapScalerTask(mCategoryView.getLowResThumbnails(), bitmaps.get(0), filePath,
                     videoDuration,
-                    resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size))
+                    resources.getDimensionPixelSize(R.dimen.photo_picker_grainy_thumbnail_size),
+                    ratio)
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
@@ -73,7 +80,7 @@ public class PickerBitmapViewHolder
             return;
         }
 
-        if (mItemView.setThumbnailBitmap(bitmaps, videoDuration)) {
+        if (mItemView.setThumbnailBitmap(bitmaps, videoDuration, ratio)) {
             mItemView.fadeInThumbnail();
         }
     }
@@ -93,37 +100,48 @@ public class PickerBitmapViewHolder
 
         if (mBitmapDetails.type() == PickerBitmap.TileTypes.CAMERA
                 || mBitmapDetails.type() == PickerBitmap.TileTypes.GALLERY) {
-            mItemView.initialize(mBitmapDetails, null, null, false);
+            mItemView.initialize(mBitmapDetails, null, null, false, -1);
             return PickerAdapter.DecodeActions.NO_ACTION;
         }
 
         String filePath = mBitmapDetails.getUri().getPath();
-        PickerCategoryView.Thumbnail original = mCategoryView.getHighResThumbnails().get(filePath);
+        PickerCategoryView.Thumbnail original = mCategoryView.isInMagnifyingMode()
+                ? mCategoryView.getFullScreenBitmaps().get(filePath)
+                : mCategoryView.getHighResThumbnails().get(filePath);
         if (original != null) {
-            mItemView.initialize(mBitmapDetails, original.bitmaps, original.videoDuration, false);
+            mItemView.initialize(mBitmapDetails, original.bitmaps, original.videoDuration, false,
+                    original.ratio);
             return PickerAdapter.DecodeActions.FROM_CACHE;
         }
 
-        int size = mCategoryView.getImageSize();
-        PickerCategoryView.Thumbnail payload = mCategoryView.getLowResThumbnails().get(filePath);
+        int width = mCategoryView.getImageWidth();
+        PickerCategoryView.Thumbnail payload = null;
+        if (mCategoryView.isInMagnifyingMode()) {
+            payload = mCategoryView.getHighResThumbnails().get(filePath);
+        }
+        if (payload == null) {
+            payload = mCategoryView.getLowResThumbnails().get(filePath);
+        }
+
         if (payload != null) {
             Bitmap placeholder = payload.bitmaps.get(0);
             // For performance stats see http://crbug.com/719919.
             long begin = SystemClock.elapsedRealtime();
-            placeholder = BitmapUtils.scale(placeholder, size, false);
+            placeholder = BitmapUtils.scale(placeholder, width, false);
             long scaleTime = SystemClock.elapsedRealtime() - begin;
             RecordHistogram.recordTimesHistogram(
                     "Android.PhotoPicker.UpscaleLowResBitmap", scaleTime);
             List<Bitmap> bitmaps = new ArrayList<>(1);
             bitmaps.add(placeholder);
 
-            mItemView.initialize(mBitmapDetails, bitmaps, payload.videoDuration, true);
+            mItemView.initialize(
+                    mBitmapDetails, bitmaps, payload.videoDuration, true, payload.ratio);
         } else {
-            mItemView.initialize(mBitmapDetails, null, null, true);
+            mItemView.initialize(mBitmapDetails, null, null, true, -1);
         }
 
-        mCategoryView.getDecoderServiceHost().decodeImage(
-                mBitmapDetails.getUri(), mBitmapDetails.type(), size, this);
+        mCategoryView.getDecoderServiceHost().decodeImage(mBitmapDetails.getUri(),
+                mBitmapDetails.type(), width, mCategoryView.isInMagnifyingMode(), this);
         return PickerAdapter.DecodeActions.DECODE;
     }
 
@@ -134,8 +152,9 @@ public class PickerBitmapViewHolder
     public String getFilePath() {
         if (mBitmapDetails == null
                 || (mBitmapDetails.type() != PickerBitmap.TileTypes.PICTURE
-                        && mBitmapDetails.type() != PickerBitmap.TileTypes.VIDEO))
+                        && mBitmapDetails.type() != PickerBitmap.TileTypes.VIDEO)) {
             return null;
+        }
         return mBitmapDetails.getUri().getPath();
     }
 }

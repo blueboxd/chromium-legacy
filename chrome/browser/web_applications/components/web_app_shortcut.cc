@@ -155,6 +155,13 @@ base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
                                 shortcut_info.extension_id, shortcut_info.url);
 }
 
+#if !defined(OS_MACOSX)
+void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
+  // Multi-profile shortcuts exist only on macOS.
+  NOTREACHED();
+}
+#endif
+
 }  // namespace internals
 
 }  // namespace web_app

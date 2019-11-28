@@ -1630,6 +1630,13 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   bool ToggleDuringParsing() { return toggle_during_parsing_; }
 
+  // We setup a dummy document to sanitize clipboard markup before pasting.
+  // Sets and indicates whether this is the dummy document.
+  void SetIsForMarkupSanitization(bool is_for_sanitization) {
+    is_for_markup_sanitization_ = is_for_sanitization;
+  }
+  bool IsForMarkupSanitization() const { return is_for_markup_sanitization_; }
+
   bool HasPendingJavaScriptUrlsForTest() {
     return !pending_javascript_urls_.IsEmpty();
   }
@@ -2172,6 +2179,8 @@ class CORE_EXPORT Document : public ContainerNode,
   std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
 
   bool toggle_during_parsing_ = false;
+
+  bool is_for_markup_sanitization_ = false;
 
   String fragment_directive_;
 

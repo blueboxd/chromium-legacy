@@ -2257,6 +2257,7 @@ source_set("net_deps") {
     ":net_resources",
     ":preload_decoder",
     "//base",
+    "//base/util/type_safety:type_safety",
     "//net/base/registry_controlled_domains",
     "//third_party/protobuf:protobuf_lite",
     "//url:buildflags",

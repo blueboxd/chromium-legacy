@@ -351,16 +351,15 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
     WriteNameValuePair(ts, "height",
                        length_context.ValueForLength(style.Height(), style,
                                                      SVGLengthMode::kHeight));
-  } else if (IsSVGLineElement(*svg_element)) {
-    SVGLineElement& element = ToSVGLineElement(*svg_element);
+  } else if (auto* element = DynamicTo<SVGLineElement>(*svg_element)) {
     WriteNameValuePair(ts, "x1",
-                       element.x1()->CurrentValue()->Value(length_context));
+                       element->x1()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y1",
-                       element.y1()->CurrentValue()->Value(length_context));
+                       element->y1()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "x2",
-                       element.x2()->CurrentValue()->Value(length_context));
+                       element->x2()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y2",
-                       element.y2()->CurrentValue()->Value(length_context));
+                       element->y2()->CurrentValue()->Value(length_context));
   } else if (IsSVGEllipseElement(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
@@ -614,7 +613,7 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     LinearGradientAttributes attributes;
-    ToSVGLinearGradientElement(gradient->GetElement())
+    To<SVGLinearGradientElement>(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
     WriteCommonGradientProperties(ts, attributes);
 

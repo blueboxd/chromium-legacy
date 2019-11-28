@@ -102,12 +102,12 @@ void SocketFactory::CreateTCPBoundSocket(
   std::move(callback).Run(result, local_addr_out);
 }
 
-void SocketFactory::DestroyBoundSocket(mojo::BindingId bound_socket_id) {
+void SocketFactory::DestroyBoundSocket(mojo::ReceiverId bound_socket_id) {
   tcp_bound_socket_receivers_.Remove(bound_socket_id);
 }
 
 void SocketFactory::OnBoundSocketListening(
-    mojo::BindingId bound_socket_id,
+    mojo::ReceiverId bound_socket_id,
     std::unique_ptr<TCPServerSocket> server_socket,
     mojo::PendingReceiver<mojom::TCPServerSocket> server_socket_receiver) {
   tcp_server_socket_receivers_.Add(std::move(server_socket),
@@ -116,7 +116,7 @@ void SocketFactory::OnBoundSocketListening(
 }
 
 void SocketFactory::OnBoundSocketConnected(
-    mojo::BindingId bound_socket_id,
+    mojo::ReceiverId bound_socket_id,
     std::unique_ptr<TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<mojom::TCPConnectedSocket>
         connected_socket_receiver) {

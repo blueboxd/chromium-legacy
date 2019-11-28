@@ -2031,7 +2031,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3888550877729210209">Robienie notatek w aplikacji <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Dodaj OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Odczytywanie i zmiana ustawień ułatwień dostępu</translation>
-<translation id="3893630138897523026">ChromeVox (potwierdzenia głosowe)</translation>
+<translation id="3893630138897523026">ChromeVox (komunikaty głosowe)</translation>
 <translation id="3893764153531140319"><ph name="DOWNLOADED_SIZE" />/<ph name="DOWNLOAD_SIZE" /></translation>
 <translation id="3894123633473837029">Uwzględnij ostatnią historię Asystenta w Sherlog. Może ona obejmować informacje na temat Twojej tożsamości i lokalizacji oraz dane debugowania. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -2052,7 +2052,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3918972485393593704">Przesyłaj do Google szczegółowe informacje</translation>
 <translation id="3919145445993746351">Aby korzystać z rozszerzeń na wszystkich swoich komputerach, włącz synchronizację</translation>
 <translation id="3920504717067627103">Zasady certyfikatu</translation>
-<translation id="392089482157167418">Włącz ChromeVox (potwierdzenia głosowe)</translation>
+<translation id="392089482157167418">Włącz ChromeVox (komunikaty głosowe)</translation>
 <translation id="3923676227229836009">Ta strona ma zezwolenie na przeglądanie plików</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
@@ -5717,7 +5717,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="988978206646512040">Puste hasło jest niedozwolone</translation>
 <translation id="992032470292211616">Rozszerzenia, aplikacje i motywy mogą wyrządzić szkody na urządzeniu. Na pewno chcesz kontynuować?</translation>
 <translation id="992256792861109788">Różowy</translation>
-<translation id="992592832486024913">Wyłącz ChromeVox (potwierdzenia głosowe)</translation>
+<translation id="992592832486024913">Wyłącz ChromeVox (komunikaty głosowe)</translation>
 <translation id="992778845837390402">Trwa tworzenie kopii zapasowej Linuksa</translation>
 <translation id="993540765962421562">Instaluję</translation>
 <translation id="994289308992179865">&amp;Powtarzaj</translation>

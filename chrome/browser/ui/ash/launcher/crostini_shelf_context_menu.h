@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CROSTINI_SHELF_CONTEXT_MENU_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 
 // Class for context menu which is shown for Crostini app in the shelf.
-class CrostiniShelfContextMenu : public LauncherContextMenu {
+class CrostiniShelfContextMenu : public ShelfContextMenu {
  public:
   CrostiniShelfContextMenu(ChromeLauncherController* controller,
                            const ash::ShelfItem* item,
                            int64_t display_id);
   ~CrostiniShelfContextMenu() override;
 
-  // LauncherContextMenu:
+  // ShelfContextMenu:
   void GetMenuModel(GetMenuModelCallback callback) override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;

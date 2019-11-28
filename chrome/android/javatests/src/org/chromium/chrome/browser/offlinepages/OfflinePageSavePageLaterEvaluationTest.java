@@ -82,7 +82,8 @@ public class OfflinePageSavePageLaterEvaluationTest {
             return mEndTime - mStartTime;
         }
 
-        private Long mStartTime, mEndTime;
+        private Long mStartTime;
+        private Long mEndTime;
     }
 
     static class RequestMetadata {

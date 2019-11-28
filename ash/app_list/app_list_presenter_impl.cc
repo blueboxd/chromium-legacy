@@ -172,10 +172,6 @@ bool AppListPresenterImpl::HandleCloseOpenFolder() {
   return is_target_visibility_show_ && view_ && view_->HandleCloseOpenFolder();
 }
 
-bool AppListPresenterImpl::HandleCloseOpenSearchBox() {
-  return view_ && view_->HandleCloseOpenSearchBox();
-}
-
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
     int64_t display_id,
     AppListShowSource show_source,
@@ -423,50 +419,55 @@ void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
 
 void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
-  if (view_ && is_target_visibility_show_) {
-    int gained_focus_container_id = kShellWindowId_Invalid;
-    if (gained_focus) {
-      gained_focus_container_id = gained_focus->id();
-      const aura::Window* container =
-          delegate_->GetContainerForWindow(gained_focus);
-      if (container)
-        gained_focus_container_id = container->id();
-    }
-    aura::Window* applist_window = view_->GetWidget()->GetNativeView();
-    const aura::Window* applist_container = applist_window->parent();
+  if (!view_ || !is_target_visibility_show_)
+    return;
 
-    // An AppList dialog window, or a child window of the system tray, may
-    // take focus from the AppList window. Don't consider this a visibility
-    // change since the app list is still visible for the most part.
-    const bool gained_focus_hides_app_list =
-        gained_focus_container_id != kShellWindowId_Invalid &&
-        !base::Contains(kIdsOfContainersThatWontHideAppList,
-                        gained_focus_container_id);
+  int gained_focus_container_id = kShellWindowId_Invalid;
+  if (gained_focus) {
+    gained_focus_container_id = gained_focus->id();
+    const aura::Window* container =
+        delegate_->GetContainerForWindow(gained_focus);
+    if (container)
+      gained_focus_container_id = container->id();
+  }
+  aura::Window* applist_window = view_->GetWidget()->GetNativeView();
+  const aura::Window* applist_container = applist_window->parent();
 
-    const bool app_list_lost_focus =
-        gained_focus ? gained_focus_hides_app_list
-                     : (lost_focus && applist_container->Contains(lost_focus));
+  // An AppList dialog window, or a child window of the system tray, may
+  // take focus from the AppList window. Don't consider this a visibility
+  // change since the app list is still visible for the most part.
+  const bool gained_focus_hides_app_list =
+      gained_focus_container_id != kShellWindowId_Invalid &&
+      !base::Contains(kIdsOfContainersThatWontHideAppList,
+                      gained_focus_container_id);
 
-    if (delegate_->IsTabletMode()) {
-      const bool is_shown = !app_list_lost_focus;
-      if (is_shown != delegate_->IsVisible()) {
-        if (is_shown)
-          view_->OnHomeLauncherGainingFocusWithoutAnimation();
-        else
-          HandleCloseOpenSearchBox();
+  const bool app_list_lost_focus =
+      gained_focus ? gained_focus_hides_app_list
+                   : (lost_focus && applist_container->Contains(lost_focus));
 
-        OnVisibilityWillChange(is_shown, GetDisplayId());
-        OnVisibilityChanged(is_shown, GetDisplayId());
+  if (delegate_->IsTabletMode()) {
+    const bool is_shown = !app_list_lost_focus;
+    if (is_shown != delegate_->IsVisible()) {
+      if (is_shown) {
+        view_->OnHomeLauncherGainingFocusWithoutAnimation();
+      } else {
+        // In tablet mode, when |AppList| lost focus after other new App window
+        // opened, we should perform "back" action on the active page, e.g.
+        // close the search box or the embedded Assistant UI if it's opened.
+        view_->Back();
       }
-    }
 
-    if (applist_window->Contains(gained_focus))
-      base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
-
-    if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&
-        !delegate_->IsTabletMode()) {
-      Dismiss(base::TimeTicks());
+      OnVisibilityWillChange(is_shown, GetDisplayId());
+      OnVisibilityChanged(is_shown, GetDisplayId());
     }
+  }
+
+  if (applist_window->Contains(gained_focus))
+    base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
+
+  if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&
+      !delegate_->IsTabletMode()) {
+    Dismiss(base::TimeTicks());
   }
 }
 

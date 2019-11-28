@@ -131,10 +131,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   bool AllowsDefaultCredentials() override;
 
  protected:
-  // This function acquires a credentials handle in the SSPI implementation.
-  // It does nothing in the portable implementation.
-  int InitializeBeforeFirstChallenge();
-
   // HttpAuthHandler
   bool Init(HttpAuthChallengeTokenizer* tok, const SSLInfo& ssl_info) override;
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
@@ -167,7 +163,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   static std::string CreateSPN(const GURL& origin);
 
 #if defined(NTLM_SSPI)
-  HttpAuthSSPI auth_sspi_;
+  HttpAuthSSPI mechanism_;
 #elif defined(NTLM_PORTABLE)
   ntlm::NtlmClient ntlm_client_;
 #endif

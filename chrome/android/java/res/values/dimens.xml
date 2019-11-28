@@ -312,7 +312,6 @@
     <dimen name="sei_location_bar_icon_end_padding_focused">16dp</dimen>
     <dimen name="sei_location_bar_verbose_start_padding_verbose_text">4dp</dimen>
     <dimen name="sei_location_bar_status_extra_padding_width">4dp</dimen>
-    <dimen name="sei_google_g_size">20dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
@@ -511,7 +510,6 @@
     <dimen name="contact_picker_icon_size">36dp</dimen>
 
     <!-- Photo Picker dimensions -->
-    <dimen name="photo_picker_selected_padding">12dp</dimen>
     <dimen name="photo_picker_label_gap">10dp</dimen>
     <dimen name="photo_picker_tile_min_size">100dp</dimen>
     <dimen name="photo_picker_tile_gap">4dp</dimen>

@@ -81,9 +81,8 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate {
     if (!delegate)
       return true;
 
-    delegate->DownloadRequested(url, user_agent, content_disposition, mime_type,
-                                content_length);
-    return true;
+    return delegate->InterceptDownload(url, user_agent, content_disposition,
+                                       mime_type, content_length);
   }
 
  private:

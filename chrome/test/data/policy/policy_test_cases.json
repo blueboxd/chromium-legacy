@@ -275,6 +275,9 @@
 
   "RemoteAccessClientFirewallTraversal": {},
 
+  "RemoteAccessClientFirewallTraversal": {
+  },
+
   "RemoteAccessHostClientDomain": {},
 
   "RemoteAccessHostClientDomainList": {},
@@ -614,6 +617,8 @@
       }
     ]
   },
+
+  "ForceLegacyDefaultReferrerPolicy": {},
 
   "ForceYouTubeSafetyMode": {
     "os": ["win", "linux", "mac", "chromeos", "android"],

@@ -84,6 +84,7 @@ js_library("files_quick_view") {
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
+    "$externs_path/pending_polymer.js",
   ]
 }
 

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -38,10 +39,12 @@ LoggedInUserMixin::LoggedInUserMixin(
     InProcessBrowserTestMixinHost* mixin_host,
     LogInType type,
     net::EmbeddedTestServer* embedded_test_server,
+    InProcessBrowserTest* test_base,
     bool should_launch_browser,
     base::Optional<AccountId> account_id,
     bool include_initial_user)
-    : user_(account_id.value_or(
+    : InProcessBrowserTestMixin(mixin_host),
+      user_(account_id.value_or(
                 AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                                FakeGaiaMixin::kFakeUserGaiaId)),
             ConvertUserType(type)),
@@ -51,7 +54,8 @@ LoggedInUserMixin::LoggedInUserMixin(
       user_policy_helper_(user_.account_id.GetUserEmail(),
                           &local_policy_server_),
       embedded_test_server_setup_(mixin_host, embedded_test_server),
-      fake_gaia_(mixin_host, embedded_test_server) {
+      fake_gaia_(mixin_host, embedded_test_server),
+      test_base_(test_base) {
   // By default, LoginManagerMixin will set up user session manager not to
   // launch browser as part of user session setup - use this to override that
   // behavior.
@@ -60,30 +64,16 @@ LoggedInUserMixin::LoggedInUserMixin(
 
 LoggedInUserMixin::~LoggedInUserMixin() = default;
 
-void LoggedInUserMixin::SetUpOnMainThreadHelper(
-    net::RuleBasedHostResolverProc* host_resolver,
-    InProcessBrowserTest* test_base,
-    bool issue_any_scope_token,
-    bool wait_for_active_session) {
+void LoggedInUserMixin::SetUpOnMainThread() {
   // By default, browser tests block anything that doesn't go to localhost, so
   // account.google.com requests would never reach fake GAIA server without
   // this.
-  host_resolver->AddRule("*", "127.0.0.1");
-  // Call RequestPolicyUpdate() to set up policy, which prevents the call to
-  // LogInUser() below from hanging indefinitely when there's no initial user
-  // and wait_for_active_session is true.
-  GetUserPolicyMixin()->RequestPolicyUpdate();
-  LogInUser(issue_any_scope_token, wait_for_active_session);
-  // Set the private |browser_| member in InProcessBrowserTest.
-  // Otherwise calls to InProcessBrowserTest::browser() returns null and leads
-  // to segmentation faults.
-  // Note: |browser_| is only non-null if should_launch_browser was set to true
-  // in the constructor.
-  test_base->SelectFirstBrowser();
+  test_base_->host_resolver()->AddRule("*", "127.0.0.1");
 }
 
 void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
-                                  bool wait_for_active_session) {
+                                  bool wait_for_active_session,
+                                  bool request_policy_update) {
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
   user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   if (user_.user_type == user_manager::USER_TYPE_CHILD) {
@@ -95,8 +85,19 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
                                      user_.account_id.GetGaiaId(),
                                      FakeGaiaMixin::kFakeRefreshToken);
   }
+  if (request_policy_update) {
+    // Set up policy, which prevents the call to LoginAndWaitForActiveSession()
+    // below from hanging indefinitely in some test scenarios.
+    GetUserPolicyMixin()->RequestPolicyUpdate();
+  }
   if (wait_for_active_session) {
     login_manager_.LoginAndWaitForActiveSession(user_context);
+    // Set the private |browser_| member in InProcessBrowserTest.
+    // Otherwise calls to InProcessBrowserTest::browser() returns null and leads
+    // to segmentation faults.
+    // Note: |browser_| is only non-null if should_launch_browser was set to
+    // true in the constructor.
+    test_base_->SelectFirstBrowser();
   } else {
     login_manager_.AttemptLoginUsingAuthenticator(
         user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));

@@ -544,12 +544,11 @@ void CastContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        callback) {
+    base::OnceCallback<void(content::CertificateRequestResultType)> callback) {
   // Allow developers to override certificate errors.
   // Otherwise, any fatal certificate errors will cause an abort.
-  if (!callback.is_null()) {
-    callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  if (callback) {
+    std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
   }
   return;
 }

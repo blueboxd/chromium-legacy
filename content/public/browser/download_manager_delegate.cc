@@ -49,11 +49,6 @@ bool DownloadManagerDelegate::InterceptDownloadIfApplicable(
   return false;
 }
 
-bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
-    download::DownloadItem* download) {
-  return true;
-}
-
 std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {
   return std::string();
 }

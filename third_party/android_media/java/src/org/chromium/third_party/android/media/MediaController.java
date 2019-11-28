@@ -87,12 +87,15 @@ public class MediaController extends FrameLayout {
     private Context mContext;
     private ViewGroup mProgressGroup;
     private SeekBar mProgressBar;
-    private TextView mEndTime, mCurrentTime;
+    private TextView mEndTime;
+    private TextView mCurrentTime;
     private boolean mDragging;
     private boolean mUseFastForward;
     private boolean mListenersSet;
-    private boolean mShowNext, mShowPrev;
-    private View.OnClickListener mNextListener, mPrevListener;
+    private boolean mShowNext;
+    private boolean mShowPrev;
+    private View.OnClickListener mNextListener;
+    private View.OnClickListener mPrevListener;
     private StringBuilder mFormatBuilder;
     private Formatter mFormatter;
     private ImageButton mPauseButton;

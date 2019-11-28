@@ -169,8 +169,10 @@ class MetaBuildWrapper(object):
                             description='Generate a new set of build files.')
     AddCommonOptions(subp)
     subp.add_argument('--swarming-targets-file',
-                      help='save runtime dependencies for targets listed '
-                           'in file.')
+                      help='generates runtime dependencies for targets listed '
+                           'in file as .isolate and .isolated.gen.json files. '
+                           'Targets should be listed by name, separated by '
+                           'newline.')
     subp.add_argument('--json-output',
                       help='Write errors to json.output')
     subp.add_argument('path',

@@ -62,7 +62,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) {}
+      const base::OnceCallback<void(bool)> callback) {}
 
   // Provides the delegate with an interface with which to communicate with the
   // content module.

@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/model_impl/blocking_model_type_store_impl.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
 #include "components/sync/model_impl/model_type_store_impl.h"
@@ -29,11 +31,21 @@ constexpr base::FilePath::CharType kLevelDBFolderName[] =
 
 // Initialized ModelTypeStoreBackend, on the backend sequence.
 void InitOnBackendSequence(const base::FilePath& level_db_path,
+                           bool do_not_sync_favicon_data_types,
                            scoped_refptr<ModelTypeStoreBackend> store_backend) {
   base::Optional<ModelError> error = store_backend->Init(level_db_path);
   if (error) {
     LOG(ERROR) << "Failed to initialize ModelTypeStore backend: "
                << error->ToString();
+    return;
+  }
+
+  // Clean up local data from deprecated datatypes.
+  if (do_not_sync_favicon_data_types) {
+    for (ModelType type : {FAVICON_IMAGES, FAVICON_TRACKING}) {
+      BlockingModelTypeStoreImpl(type, store_backend)
+          .DeleteAllDataAndMetadata();
+    }
   }
 }
 
@@ -99,9 +111,15 @@ ModelTypeStoreServiceImpl::ModelTypeStoreServiceImpl(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       store_backend_(ModelTypeStoreBackend::CreateUninitialized()) {
   DCHECK(backend_task_runner_);
+  // switches::kDoNotSyncFaviconDataTypes is evaluated here to avoid TSAN issues
+  // in tests.
+  // TODO(crbug.com/978775): Remove the feature as well as the cleanup logic
+  // after a few milestones, e.g. after M83.
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InitOnBackendSequence, leveldb_path_, store_backend_));
+      FROM_HERE, base::BindOnce(&InitOnBackendSequence, leveldb_path_,
+                                base::FeatureList::IsEnabled(
+                                    switches::kDoNotSyncFaviconDataTypes),
+                                store_backend_));
 }
 
 ModelTypeStoreServiceImpl::~ModelTypeStoreServiceImpl() {

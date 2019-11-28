@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_DEVICE_SYNC_IMPL_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_DEVICE_SYNC_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +19,7 @@
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -44,6 +48,7 @@ namespace device_sync {
 class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
+class CryptAuthDeviceNotifier;
 class CryptAuthDeviceRegistry;
 class CryptAuthFeatureStatusSetter;
 class CryptAuthKeyRegistry;
@@ -108,6 +113,10 @@ class DeviceSyncImpl : public DeviceSyncBase,
                         SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void NotifyDevices(const std::vector<std::string>& device_instance_ids,
+                     cryptauthv2::TargetService target_service,
+                     multidevice::SoftwareFeature feature,
+                     NotifyDevicesCallback callback) override;
   void GetDevicesActivityStatus(
       GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
@@ -218,7 +227,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
           void(mojom::NetworkRequestResult,
                mojom::FindEligibleDevicesResponsePtr)>& callback,
       NetworkRequestError error);
-
+  void OnNotifyDevicesSuccess(const base::UnguessableToken& request_id);
+  void OnNotifyDevicesError(const base::UnguessableToken& request_id,
+                            NetworkRequestError error);
   void OnGetDevicesActivityStatusFinished(
       const base::UnguessableToken& request_id,
       CryptAuthDeviceActivityGetter::DeviceActivityStatusResult
@@ -249,6 +260,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetFeatureStatusRequest>>
       id_to_pending_set_feature_status_request_map_;
+  base::flat_map<base::UnguessableToken, NotifyDevicesCallback>
+      pending_notify_devices_callbacks_;
   base::flat_map<base::UnguessableToken, GetDevicesActivityStatusCallback>
       get_devices_activity_status_callbacks_;
 
@@ -268,6 +281,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
   std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
+  std::unique_ptr<CryptAuthDeviceNotifier> device_notifier_;
   std::unique_ptr<CryptAuthDeviceActivityGetter>
       cryptauth_device_activity_getter_;
 

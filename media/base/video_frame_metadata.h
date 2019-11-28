@@ -158,8 +158,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
     PAGE_SCALE_FACTOR,
     ROOT_SCROLL_OFFSET_X,
     ROOT_SCROLL_OFFSET_Y,
-    TOP_CONTROLS_HEIGHT,
-    TOP_CONTROLS_SHOWN_RATIO,
+    TOP_CONTROLS_VISIBLE_HEIGHT,
 
     // If present, this field represents the local time at which the VideoFrame
     // was decoded from whichever format it was encoded in. Sometimes only

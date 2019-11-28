@@ -45,9 +45,9 @@ import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksProviderIter
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.password_manager.GooglePasswordManagerUIProvider;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
+import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;

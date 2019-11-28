@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">Видавець: <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />доставлено Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Видалити дані додатка?</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
-<translation id="410351446219883937">Автовідтворення</translation>
 <translation id="4116038641877404294">Завантажуйте сторінки, щоб переглядати їх офлайн</translation>
 <translation id="4135200667068010335">Список пристроїв, на які можна надіслати вкладку, закрито.</translation>
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">Вихід із Chrome</translation>
 <translation id="7438641746574390233">Коли ввімкнено спрощений режим, Chrome використовує сервери Google, щоб швидше завантажувати сторінки. Спрощений режим переписує дуже повільні сторінки, щоб завантажувати лише основний вміст. Це не стосується анонімних вкладок.</translation>
 <translation id="7444811645081526538">Інші категорії</translation>
-<translation id="7445411102860286510">Дозволити сайтам автоматично відтворювати відео з вимкненим звуком (рекомендується)</translation>
 <translation id="7453467225369441013">Ви вийдете з більшості сайтів, але не вийдете з облікового запису Google.</translation>
 <translation id="7454641608352164238">Замало місця</translation>
 <translation id="7475192538862203634">Якщо ви часто бачите таку сторінку, скористайтеся цими <ph name="BEGIN_LINK" />пропозиціями<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
-<translation id="7837721118676387834">Дозволити автоматичне відтворення відео з вимкненим звуком для певних сайтів.</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="784934925303690534">Період часу</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>

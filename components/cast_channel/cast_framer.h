@@ -15,8 +15,10 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "net/base/io_buffer.h"
 
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
+
 namespace cast_channel {
-class CastMessage;
+using ::cast::channel::CastMessage;
 
 // Class for constructing and parsing CastMessage packet data.
 class MessageFramer {

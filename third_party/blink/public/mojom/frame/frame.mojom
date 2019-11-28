@@ -143,6 +143,10 @@ interface LocalFrame {
   // collapsed, it will be removed from the layout tree of its parent
   // frame's document.
   Collapse(bool collapsed);
+
+  // Used to instruct the frame to go into "view source" mode. This should
+  // only be sent to the main frame.
+  EnableViewSourceMode();
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that will

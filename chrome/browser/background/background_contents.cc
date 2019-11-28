@@ -19,7 +19,6 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/deferred_start_render_host_observer.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -81,9 +80,6 @@ BackgroundContents::~BackgroundContents() {
   if (!web_contents_.get())   // Will be null for unit tests.
     return;
 
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDestroyed(this);
-
   extensions::ExtensionHostQueue::GetInstance().Remove(this);
 }
 
@@ -139,32 +135,8 @@ void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
   // |this| is deleted.
 }
 
-void BackgroundContents::DidStartLoading() {
-  // BackgroundContents only loads once, so this can only be the first time it
-  // has started loading.
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDidStartFirstLoad(this);
-}
-
-void BackgroundContents::DidStopLoading() {
-  // BackgroundContents only loads once, so this can only be the first time
-  // it has stopped loading.
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDidStopFirstLoad(this);
-}
-
 void BackgroundContents::CreateRenderViewNow() {
   web_contents()->GetController().LoadURL(initial_url_, content::Referrer(),
                                           ui::PAGE_TRANSITION_LINK,
                                           std::string());
-}
-
-void BackgroundContents::AddDeferredStartRenderHostObserver(
-    extensions::DeferredStartRenderHostObserver* observer) {
-  deferred_start_render_host_observer_list_.AddObserver(observer);
-}
-
-void BackgroundContents::RemoveDeferredStartRenderHostObserver(
-    extensions::DeferredStartRenderHostObserver* observer) {
-  deferred_start_render_host_observer_list_.RemoveObserver(observer);
 }

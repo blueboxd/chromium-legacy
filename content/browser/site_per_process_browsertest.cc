@@ -9339,10 +9339,11 @@ class RequestDelayingSitePerProcessBrowserTest
  private:
   // Called on the test server's thread.
   void AddDelayedResponse(const net::test_server::SendBytesCallback& send,
-                          const net::test_server::SendCompleteCallback& done) {
+                          net::test_server::SendCompleteCallback done) {
     // Just create a closure that closes the socket without sending a response.
     // This will propagate an error to the underlying request.
-    send_response_closures_.push_back(base::Bind(send, "", done));
+    send_response_closures_.push_back(
+        base::BindOnce(send, "", std::move(done)));
   }
 
   // Custom embedded test server handler. Looks for requests matching
@@ -9376,8 +9377,8 @@ class RequestDelayingSitePerProcessBrowserTest
       if (it.second > 0)
         return;
     }
-    for (const auto it : send_response_closures_) {
-      it.Run();
+    for (auto& it : send_response_closures_) {
+      std::move(it).Run();
     }
   }
 
@@ -9388,10 +9389,9 @@ class RequestDelayingSitePerProcessBrowserTest
     explicit DelayedResponse(
         RequestDelayingSitePerProcessBrowserTest* test_harness)
         : test_harness_(test_harness) {}
-    void SendResponse(
-        const net::test_server::SendBytesCallback& send,
-        const net::test_server::SendCompleteCallback& done) override {
-      test_harness_->AddDelayedResponse(send, done);
+    void SendResponse(const net::test_server::SendBytesCallback& send,
+                      net::test_server::SendCompleteCallback done) override {
+      test_harness_->AddDelayedResponse(send, std::move(done));
     }
 
    private:
@@ -9402,7 +9402,7 @@ class RequestDelayingSitePerProcessBrowserTest
 
   // Set of closures to call which will complete delayed requests. May only be
   // modified on the test_server_'s thread.
-  std::vector<base::Closure> send_response_closures_;
+  std::vector<base::OnceClosure> send_response_closures_;
 
   // Map from URL paths to the number of requests to delay for that particular
   // path. Initialized on the UI thread but modified and read on the test

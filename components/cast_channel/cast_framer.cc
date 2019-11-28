@@ -12,7 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast_channel {
 MessageFramer::MessageFramer(scoped_refptr<net::GrowableIOBuffer> input_buffer)

@@ -131,9 +131,6 @@ class WebMediaPlayer {
     // Always use VideoLayer
     kNever,
 
-    // Use SurfaceLayer only when we switch to Picture-in-Picture.
-    kOnDemand,
-
     // Always use SurfaceLayer for video.
     kAlways,
   };

@@ -36,7 +36,7 @@ LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient() = default;
 bool LayoutSVGResourceLinearGradient::CollectGradientAttributes() {
   DCHECK(GetElement());
   attributes_wrapper_->Set(LinearGradientAttributes());
-  return ToSVGLinearGradientElement(GetElement())
+  return To<SVGLinearGradientElement>(GetElement())
       ->CollectGradientAttributes(MutableAttributes());
 }
 

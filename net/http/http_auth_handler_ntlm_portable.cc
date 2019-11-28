@@ -89,10 +89,6 @@ bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
   return false;
 }
 
-int HttpAuthHandlerNTLM::InitializeBeforeFirstChallenge() {
-  return OK;
-}
-
 int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
     const AuthCredentials* credentials,
     const HttpRequestInfo* request,
@@ -119,14 +115,6 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
   }
   domain_ = domain;
   credentials_.Set(user, credentials->password());
-
-  if (challenge_token_.empty()) {
-    // There is no |challenge_token_| because the client sends the first
-    // message.
-    int rv = InitializeBeforeFirstChallenge();
-    if (rv != OK)
-      return rv;
-  }
 
   std::vector<uint8_t> next_token =
       GetNextToken(base::as_bytes(base::make_span(challenge_token_)));

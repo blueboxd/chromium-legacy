@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;

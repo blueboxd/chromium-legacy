@@ -308,10 +308,6 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       next_download_id_(download::DownloadItem::kInvalidId),
       next_id_retrieved_(false),
       download_prefs_(new DownloadPrefs(profile)),
-      disk_access_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
   location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
@@ -763,20 +759,6 @@ void ChromeDownloadManagerDelegate::ShowDownloadInShell(
       GetPlatformDownloadPath(profile_, download, PLATFORM_CURRENT_PATH));
   DCHECK(!platform_path.empty());
   platform_util::ShowItemInFolder(profile_, platform_path);
-}
-
-void ContinueCheckingForFileExistence(
-    content::CheckForFileExistenceCallback callback) {
-  std::move(callback).Run(false);
-}
-
-void ChromeDownloadManagerDelegate::CheckForFileExistence(
-    DownloadItem* download,
-    content::CheckForFileExistenceCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      disk_access_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&base::PathExists, download->GetTargetFilePath()),
-      std::move(callback));
 }
 
 std::string

@@ -26,7 +26,7 @@ import java.util.Locale;
 /**
  * A worker task to decode video and extract information from it off of the UI thread.
  */
-class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
+class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
     /**
      * The possible error states while decoding.
      */
@@ -49,10 +49,11 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
          * @param uri The uri of the video decoded.
          * @param bitmaps An array of thumbnails extracted from the video.
          * @param duration The duration of the video.
+         * @param fullWidth Whether the image is using the full width of the screen.
          * @param decodingStatus Whether the decoding was successful.
          */
-        void videoDecodedCallback(
-                Uri uri, List<Bitmap> bitmaps, String duration, @DecodingResult int decodingStatus);
+        void videoDecodedCallback(Uri uri, List<Bitmap> bitmaps, String duration, boolean fullWidth,
+                @DecodingResult int decodingStatus, float ratio);
     }
 
     // The callback to use to communicate the results.
@@ -64,6 +65,9 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
     // The desired width and height (in pixels) of the returned thumbnail from the video.
     int mSize;
 
+    // Whether the image is taking up the full width of the screen.
+    boolean mFullWidth;
+
     // The number of frames to extract.
     int mFrames;
 
@@ -73,11 +77,14 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
     // The ContentResolver to use to retrieve image metadata from disk.
     private ContentResolver mContentResolver;
 
-    // A metadata retriever, used to decode the video, and extract a thumbnail frame.
-    private MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
-
     // Keeps track of errors during decoding.
     private @DecodingResult int mDecodingResult;
+
+    // The duration of the video.
+    private String mDuration;
+
+    // The ratio of the first frame of the video.
+    private float mRatio;
 
     /**
      * A DecodeVideoTask constructor.
@@ -86,15 +93,17 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
      * @param uri The URI of the video to decode.
      * @param size The desired width and height (in pixels) of the returned thumbnail from the
      *             video.
+     * @param fullWidth Whether this is a video thumbnail that takes up the full screen width.
      * @param frames The number of frames to extract.
      * @param intervalMs The interval between frames (in milliseconds).
      */
     public DecodeVideoTask(VideoDecodingCallback callback, ContentResolver contentResolver, Uri uri,
-            int size, int frames, long intervalMs) {
+            int size, boolean fullWidth, int frames, long intervalMs) {
         mCallback = callback;
         mContentResolver = contentResolver;
         mUri = uri;
         mSize = size;
+        mFullWidth = fullWidth;
         mFrames = frames;
         mIntervalMs = intervalMs;
     }
@@ -122,10 +131,10 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
 
     /**
      * Decodes a video and extracts metadata and a thumbnail. Called on a non-UI thread
-     * @return A pair of bitmap (video thumbnail) and the duration of the video.
+     * @return A list of bitmaps (video thumbnails).
      */
     @Override
-    protected Pair<List<Bitmap>, String> doInBackground() {
+    protected List<Bitmap> doInBackground() {
         assert !ThreadUtils.runningOnUiThread();
 
         if (isCancelled()) return null;
@@ -133,9 +142,10 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
         AssetFileDescriptor afd = null;
         try {
             afd = mContentResolver.openAssetFileDescriptor(mUri, "r");
-            mRetriever.setDataSource(afd.getFileDescriptor());
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(afd.getFileDescriptor());
             String duration =
-                    mRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             if (duration != null) {
                 // Adjust to a shorter video, if the frame requests exceed the length of the video.
                 long durationMs = Long.parseLong(duration);
@@ -144,10 +154,11 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
                 }
                 duration = formatDuration(duration);
             }
-            List<Bitmap> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
-                    mRetriever, afd.getFileDescriptor(), mSize, mFrames, mIntervalMs);
-
-            return new Pair<List<Bitmap>, String>(bitmaps, duration);
+            Pair<List<Bitmap>, Float> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
+                    retriever, afd.getFileDescriptor(), mSize, mFrames, mFullWidth, mIntervalMs);
+            mDuration = duration;
+            mRatio = bitmaps.second;
+            return bitmaps.first;
         } catch (FileNotFoundException exception) {
             mDecodingResult = DecodingResult.FILE_ERROR;
             return null;
@@ -170,16 +181,17 @@ class DecodeVideoTask extends AsyncTask<Pair<List<Bitmap>, String>> {
      * @param results A pair of bitmap (video thumbnail) and the duration of the video.
      */
     @Override
-    protected void onPostExecute(Pair<List<Bitmap>, String> results) {
+    protected void onPostExecute(List<Bitmap> results) {
         if (isCancelled()) {
             return;
         }
 
         if (results == null) {
-            mCallback.videoDecodedCallback(mUri, null, "", mDecodingResult);
+            mCallback.videoDecodedCallback(mUri, null, "", mFullWidth, mDecodingResult, 1.0f);
             return;
         }
 
-        mCallback.videoDecodedCallback(mUri, results.first, results.second, mDecodingResult);
+        mCallback.videoDecodedCallback(
+                mUri, results, mDuration, mFullWidth, mDecodingResult, mRatio);
     }
 }

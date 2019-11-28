@@ -679,7 +679,7 @@ class HungHttpResponse : public HttpResponse {
   HungHttpResponse() = default;
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override {}
+                    SendCompleteCallback done) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HungHttpResponse);
@@ -697,7 +697,7 @@ class HungAfterHeadersHttpResponse : public HttpResponse {
   HungAfterHeadersHttpResponse() = default;
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override {
+                    SendCompleteCallback done) override {
     send.Run("HTTP/1.1 OK\r\n\r\n", base::DoNothing());
   }
 
@@ -714,28 +714,27 @@ std::unique_ptr<HttpResponse> HandleHungAfterHeadersResponse(
 
 // /exabyte_response
 // A HttpResponse that is almost never ending (with an Exabyte content-length).
-class ExabyteResponse : public net::test_server::BasicHttpResponse {
+class ExabyteResponse : public BasicHttpResponse {
  public:
   ExabyteResponse() {}
 
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const SendBytesCallback& send,
+                    SendCompleteCallback done) override {
     // Use 10^18 bytes (exabyte) as the content length so that the client will
     // be expecting data.
     send.Run("HTTP/1.1 200 OK\r\nContent-Length:1000000000000000000\r\n\r\n",
-             base::BindRepeating(&ExabyteResponse::SendExabyte, send));
+             base::BindOnce(&ExabyteResponse::SendExabyte, send));
   }
 
  private:
   // Keeps sending the word "echo" over and over again. It can go further to
   // limit the response to exactly an exabyte, but it shouldn't be necessary
   // for the purpose of testing.
-  static void SendExabyte(const net::test_server::SendBytesCallback& send) {
+  static void SendExabyte(const SendBytesCallback& send) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(send, "echo",
-                                  base::BindRepeating(
-                                      &ExabyteResponse::SendExabyte, send)));
+        FROM_HERE,
+        base::BindOnce(send, "echo",
+                       base::BindOnce(&ExabyteResponse::SendExabyte, send)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ExabyteResponse);
@@ -743,8 +742,8 @@ class ExabyteResponse : public net::test_server::BasicHttpResponse {
 
 // /exabyte_response
 // Almost never ending response.
-std::unique_ptr<net::test_server::HttpResponse> HandleExabyteResponse(
-    const net::test_server::HttpRequest& request) {
+std::unique_ptr<HttpResponse> HandleExabyteResponse(
+    const HttpRequest& request) {
   return std::make_unique<ExabyteResponse>();
 }
 

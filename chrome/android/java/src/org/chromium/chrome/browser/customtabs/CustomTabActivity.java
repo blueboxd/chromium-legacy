@@ -73,7 +73,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
-    private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
     private CustomTabIntentHandler mCustomTabIntentHandler;
 
@@ -482,24 +481,20 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);
 
-        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+        onComponentCreated(component);
+
         mTabController = component.resolveTabController();
-        mTabProvider = component.resolveTabProvider();
         mTabFactory = component.resolveTabFactory();
-        mToolbarCoordinator = component.resolveToolbarCoordinator();
         component.resolveUmaTracker();
         CustomTabActivityClientConnectionKeeper connectionKeeper =
                 component.resolveConnectionKeeper();
-        mNavigationController = component.resolveNavigationController();
         mNavigationController.setFinishHandler((reason) -> {
             if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
             handleFinishAndClose();
         });
         mCustomTabIntentHandler = component.resolveIntentHandler();
-        component.resolveCompositorContentInitializer();
         component.resolveSessionHandler();
         component.resolveToolbarColorController();
-        component.resolveTaskDescriptionHelper();
         component.resolveCustomTabIncognitoManager();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {

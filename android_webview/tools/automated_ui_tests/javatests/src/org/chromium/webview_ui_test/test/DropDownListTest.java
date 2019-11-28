@@ -133,9 +133,8 @@ public class DropDownListTest {
      * Get the scroll position of the view
      */
     private Point getScroll(View v) {
-        int x, y;
-        x = v.getScrollX();
-        y = v.getScrollY();
+        int x = v.getScrollX();
+        int y = v.getScrollY();
         return new Point(x, y);
     }
 

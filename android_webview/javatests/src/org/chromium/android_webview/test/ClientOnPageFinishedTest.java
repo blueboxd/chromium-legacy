@@ -207,6 +207,8 @@ public class ClientOnPageFinishedTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testNotCalledForHistoryApi() throws Throwable {
+        TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =
+                mContentsClient.getOnPageStartedHelper();
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
         AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
@@ -222,6 +224,7 @@ public class ClientOnPageFinishedTest {
             final String historyUrl = webServer.getResponseUrl(historyPath);
             final String syncUrl = webServer.setResponse(syncPath, testHtml, null);
 
+            Assert.assertEquals(0, onPageStartedHelper.getCallCount());
             Assert.assertEquals(0, onPageFinishedHelper.getCallCount());
             mActivityTestRule.loadUrlSync(mAwContents, onPageFinishedHelper, testUrl);
 
@@ -232,10 +235,14 @@ public class ClientOnPageFinishedTest {
             // we load another valid page. Since callbacks arrive sequentially if the next callback
             // we get is for the synchronizationUrl we know that the previous load did not schedule
             // a callback for the iframe.
-            final int synchronizationPageCallCount = onPageFinishedHelper.getCallCount();
+            final int synchronizationPageStartedCallCount = onPageStartedHelper.getCallCount();
+            final int synchronizationPageFinishedCallCount = onPageFinishedHelper.getCallCount();
             mActivityTestRule.loadUrlAsync(mAwContents, syncUrl);
 
-            onPageFinishedHelper.waitForCallback(synchronizationPageCallCount);
+            onPageStartedHelper.waitForCallback(synchronizationPageStartedCallCount);
+            onPageFinishedHelper.waitForCallback(synchronizationPageFinishedCallCount);
+            Assert.assertEquals(syncUrl, onPageStartedHelper.getUrl());
+            Assert.assertEquals(2, onPageStartedHelper.getCallCount());
             Assert.assertEquals(syncUrl, onPageFinishedHelper.getUrl());
             Assert.assertEquals(2, onPageFinishedHelper.getCallCount());
         } finally {

@@ -416,7 +416,7 @@ class InfiniteResponse : public BasicHttpResponse {
   InfiniteResponse() {}
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override {
+                    SendCompleteCallback done) override {
     send.Run(ToResponseString(),
              base::Bind(&InfiniteResponse::SendInfinite,
                         weak_ptr_factory_.GetWeakPtr(), send));

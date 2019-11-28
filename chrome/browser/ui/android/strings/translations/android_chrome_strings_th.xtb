@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">จาก <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />แสดงโดย Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">ลบข้อมูลแอปไหม</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
-<translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="4116038641877404294">ดาวน์โหลดหน้าเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="4135200667068010335">รายการอุปกรณ์ที่จะแชร์แท็บด้วยปิดอยู่</translation>
 <translation id="4149994727733219643">มุมมองอย่างง่ายสำหรับหน้าเว็บ</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7438641746574390233">เมื่อเปิดโหมด Lite ไว้ Chrome จะใช้เซิร์ฟเวอร์ของ Google เพื่อช่วยให้โหลดหน้าเว็บได้เร็วขึ้น โหมด Lite จะเขียนหน้าเว็บที่ช้ามากขึ้นใหม่เพื่อโหลดเฉพาะเนื้อหาที่จำเป็นเท่านั้น โหมด Lite ไม่มีผลกับแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="7444811645081526538">หมวดหมู่อื่นๆ</translation>
-<translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
 <translation id="7453467225369441013">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="7454641608352164238">พื้นที่ว่างไม่พอ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
-<translation id="7837721118676387834">อนุญาตให้เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติสำหรับบางเว็บไซต์</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>

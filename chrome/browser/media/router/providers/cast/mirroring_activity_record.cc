@@ -25,11 +25,11 @@
 #include "chrome/common/media_router/route_request_result.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using blink::mojom::PresentationConnectionMessagePtr;
 using cast_channel::Result;
@@ -152,7 +152,7 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
 
             // TODO(jrw): Can some of this logic be shared with
             // CastActivityRecord::SendAppMessageToReceiver?
-            cast_channel::CastMessage cast_message =
+            cast::channel::CastMessage cast_message =
                 cast_channel::CreateCastMessage(
                     mirroring::mojom::kWebRtcNamespace,
                     std::move(*result.value),
@@ -240,16 +240,16 @@ void MirroringActivityRecord::ClosePresentationConnections(
 void MirroringActivityRecord::TerminatePresentationConnections() {}
 
 void MirroringActivityRecord::OnAppMessage(
-    const cast_channel::CastMessage& message) {
+    const cast::channel::CastMessage& message) {
   if (message.namespace_() != mirroring::mojom::kWebRtcNamespace &&
       message.namespace_() == mirroring::mojom::kRemotingNamespace) {
     // Ignore message with wrong namespace.
     return;
   }
-  DVLOG(2) << "Relaying app message from receiver: " << message;
+  DVLOG(2) << "Relaying app message from receiver: " << message.DebugString();
   DCHECK(message.has_payload_utf8());
   DCHECK_EQ(message.protocol_version(),
-            cast_channel::CastMessage_ProtocolVersion_CASTV2_1_0);
+            cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0);
   mirroring::mojom::CastMessagePtr ptr = mirroring::mojom::CastMessage::New();
   ptr->message_namespace = message.namespace_();
   ptr->json_format_data = message.payload_utf8();

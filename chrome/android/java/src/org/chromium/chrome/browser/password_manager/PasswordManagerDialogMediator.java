@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.DETAILS;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.HELP_BUTTON_CALLBACK;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION_VISIBLE;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
@@ -98,6 +99,10 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText)
                 .with(ModalDialogProperties.PRIMARY_BUTTON_FILLED, primaryButtonFilled);
+    }
+
+    void setHelpButtonCallback(Runnable callback) {
+        mModel.set(HELP_BUTTON_CALLBACK, callback);
     }
 
     private boolean hasSufficientSpaceForIllustration(int heightPx) {

@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <string>
 
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast_channel {
 

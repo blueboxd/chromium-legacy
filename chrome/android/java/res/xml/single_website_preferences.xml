@@ -7,14 +7,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+    <org.chromium.chrome.browser.settings.ChromeBasePreference
         android:key="os_permissions_warning" />
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+    <org.chromium.chrome.browser.settings.ChromeBasePreference
         android:key="os_permissions_warning_extra" />
     <Preference
         android:key="os_permissions_warning_divider"
         android:layout="@layout/divider_preference" />
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:key="intrusive_ads_info"
         android:title="@string/intrusive_ads_information"
         android:icon="@drawable/btn_info"
@@ -25,12 +25,12 @@
     <PreferenceCategory
         android:key="site_heading"
         android:title="@string/website_settings_site_category" />
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.settings.TextMessagePreference
         android:key="site_title" />
     <PreferenceCategory
         android:key="site_usage"
         android:title="@string/website_settings_usage_category" />
-    <org.chromium.chrome.browser.preferences.website.ClearWebsiteStorage
+    <org.chromium.chrome.browser.settings.website.ClearWebsiteStorage
         android:key="clear_data"
         android:title="@string/webstorage_clear_data_dialog_title"
         android:dialogMessage="@string/webstorage_clear_data_dialog_message"
@@ -75,7 +75,7 @@
     <ListPreference
         android:key="bluetooth_scanning_permission_list" />
 
-    <org.chromium.chrome.browser.preferences.ButtonPreference
+    <org.chromium.chrome.browser.settings.ButtonPreference
         android:key="reset_site_button"
         android:title="@string/website_reset" />
 </PreferenceScreen>

@@ -200,7 +200,7 @@ class CronetEnvironment {
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   std::string user_agent_;
   bool user_agent_partial_;
-  std::unique_ptr<net::NetLog> net_log_;
+  net::NetLog* net_log_;
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   bool enable_pkp_bypass_for_local_trust_anchors_;
   double network_thread_priority_;

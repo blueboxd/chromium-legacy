@@ -253,7 +253,6 @@ cr.define('gpu', function() {
         'video_decode': 'Video Decode',
         'rasterization': 'Rasterization',
         'oop_rasterization': 'Out-of-process Rasterization',
-        'opengl': 'OpenGL',
         'metal': 'Metal',
         'vulkan': 'Vulkan',
         'multiple_raster_threads': 'Multiple Raster Threads',

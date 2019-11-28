@@ -413,7 +413,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4084712963632273211">No izdevēja <ph name="PUBLISHER_ORIGIN" /> — <ph name="BEGIN_DEEMPHASIZED" />nodrošina Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vai dzēst lietotnes datus?</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
-<translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="4116038641877404294">Lejupielādējiet lapas, lai izmantotu tās bezsaistē</translation>
 <translation id="4135200667068010335">Ierīču saraksts, ar ko kopīgot cilni, ir aizvērts.</translation>
 <translation id="4149994727733219643">Vienkāršots tīmekļa lapu skatījums</translation>
@@ -872,7 +871,6 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
 <translation id="7438641746574390233">Ja ir ieslēgts vienkāršotais režīms, pārlūkā Chrome tiek izmantoti Google serveri, lai ielādētu lapas ātrāk. Vienkāršotajā režīmā ļoti lēnas lapas tiek pārrakstītas, lai tās ielādētu tikai nepieciešamo saturu. Vienkāršotais režīms netiek piemērots inkognito režīma cilnēm.</translation>
 <translation id="7444811645081526538">Vairāk kategoriju</translation>
-<translation id="7445411102860286510">Atļaut vietnēm automātiski atskaņot videoklipus ar izslēgtu skaņu (ieteicams)</translation>
 <translation id="7453467225369441013">Jūs tiksiet izrakstīts no lielākās daļas vietņu. Jūs netiksiet izrakstīts no Google konta.</translation>
 <translation id="7454641608352164238">Nepietiek vietas</translation>
 <translation id="7475192538862203634">Ja šis ziņojums tiek rādīts bieži, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="7810647596859435254">Atvērt ar…</translation>
 <translation id="7821588508402923572">Šeit tiks parādīts ietaupīto datu apjoms.</translation>
-<translation id="7837721118676387834">Atļaut automātisku atskaņošanu videoklipiem ar izslēgtu skaņu konkrētā vietnē.</translation>
 <translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="784934925303690534">Laika periods</translation>
 <translation id="7851858861565204677">Citas ierīces</translation>

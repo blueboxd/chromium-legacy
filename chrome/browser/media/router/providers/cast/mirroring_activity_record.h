@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace media_router {
 
@@ -78,7 +79,7 @@ class MirroringActivityRecord : public ActivityRecord,
   void ClosePresentationConnections(
       blink::mojom::PresentationConnectionCloseReason close_reason) override;
   void TerminatePresentationConnections() override;
-  void OnAppMessage(const cast_channel::CastMessage& message) override;
+  void OnAppMessage(const cast::channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
  protected:

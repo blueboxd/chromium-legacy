@@ -46,6 +46,8 @@ class FakeDeviceSync : public DeviceSyncBase {
   void InvokePendingFindEligibleDevicesCallback(
       mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr find_eligible_devices_response_ptr);
+  void InvokePendingNotifyDevicesCallback(
+      mojom::NetworkRequestResult result_code);
   void InvokePendingGetDevicesActivityStatusCallback(
       mojom::NetworkRequestResult result_code,
       base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
@@ -70,6 +72,10 @@ class FakeDeviceSync : public DeviceSyncBase {
                         SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void NotifyDevices(const std::vector<std::string>& device_instance_ids,
+                     cryptauthv2::TargetService target_service,
+                     multidevice::SoftwareFeature feature,
+                     NotifyDevicesCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
   void GetDevicesActivityStatus(
       GetDevicesActivityStatusCallback callback) override;
@@ -85,6 +91,7 @@ class FakeDeviceSync : public DeviceSyncBase {
       set_software_feature_state_callback_queue_;
   std::queue<SetFeatureStatusCallback> set_feature_status_callback_queue_;
   std::queue<FindEligibleDevicesCallback> find_eligible_devices_callback_queue_;
+  std::queue<NotifyDevicesCallback> notify_devices_callback_queue_;
   std::queue<GetDevicesActivityStatusCallback>
       get_devices_activity_status_callback_queue_;
   std::queue<GetDebugInfoCallback> get_debug_info_callback_queue_;

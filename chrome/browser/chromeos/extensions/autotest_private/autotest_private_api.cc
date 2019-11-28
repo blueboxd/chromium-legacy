@@ -71,6 +71,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -108,6 +109,7 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/policy/core/common/policy_service.h"
@@ -3723,6 +3725,51 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   }
   event_generator_->Run();
   return RespondLater();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetMetricsEnabledFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetMetricsEnabledFunction::
+    AutotestPrivateSetMetricsEnabledFunction() = default;
+AutotestPrivateSetMetricsEnabledFunction::
+    ~AutotestPrivateSetMetricsEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetMetricsEnabledFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetMetricsEnabled::Params> params(
+      api::autotest_private::SetMetricsEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetMetricsEnabledFunction " << params->enabled;
+
+  target_value_ = params->enabled;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+
+  chromeos::StatsReportingController* stats_reporting_controller =
+      chromeos::StatsReportingController::Get();
+
+  // Set the preference to indicate metrics are enabled/disabled.
+  stats_reporting_controller->SetEnabled(profile, target_value_);
+  if (stats_reporting_controller->IsEnabled() == target_value_) {
+    return RespondNow(NoArguments());
+  }
+  stats_reporting_observer_subscription_ =
+      chromeos::StatsReportingController::Get()->AddObserver(
+          base::BindRepeating(&AutotestPrivateSetMetricsEnabledFunction::
+                                  OnStatsReportingStateChanged,
+                              this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetMetricsEnabledFunction::OnStatsReportingStateChanged() {
+  if (chromeos::StatsReportingController::Get()->IsEnabled() == target_value_) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error("Failed to set metrics consent"));
+  }
+  stats_reporting_observer_subscription_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

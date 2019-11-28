@@ -82,12 +82,10 @@ KnownInterceptionDisclosureCooldown::~KnownInterceptionDisclosureCooldown() =
 
 void MaybeShowKnownInterceptionDisclosureDialog(
     content::WebContents* web_contents,
-    const GURL& url) {
-  // TODO(cthomp): Replace this with triggering on the new CertStatus flag.
+    net::CertStatus cert_status) {
   KnownInterceptionDisclosureCooldown* disclosure_tracker =
       KnownInterceptionDisclosureCooldown::GetInstance();
-  constexpr char kTestUrl[] = "https://badssl.com/test/monitoring-disclosure/";
-  if (!url.EqualsIgnoringRef(GURL(kTestUrl)) &&
+  if (!(cert_status & net::CERT_STATUS_KNOWN_INTERCEPTION_DETECTED) &&
       !disclosure_tracker->get_has_seen_known_interception()) {
     return;
   }

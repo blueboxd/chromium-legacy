@@ -69,7 +69,7 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
   // All dates except for kUnknown are at 04:00:00 GMT.
   switch (milestone) {
     case kUnknown:
-      return {1970, 1, 0, 1, 0};
+      break;
     case kM61:
       return {2017, 9, 0, 5, 4};
     case kM62:
@@ -800,12 +800,16 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   Document* document = frame->GetDocument();
 
   // Construct the deprecation report.
-  base::Time removal_date;
-  bool result = base::Time::FromUTCExploded(
-      MilestoneDate(info.anticipated_removal), &removal_date);
-  DCHECK(result);
+  base::Optional<base::Time> optional_removal_date;
+  if (info.anticipated_removal != kUnknown) {
+    base::Time removal_date;
+    bool result = base::Time::FromUTCExploded(
+        MilestoneDate(info.anticipated_removal), &removal_date);
+    DCHECK(result);
+    optional_removal_date = removal_date;
+  }
   DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
-      info.id, removal_date.ToJsTime(), info.message);
+      info.id, optional_removal_date, info.message);
   Report* report = MakeGarbageCollected<Report>(
       ReportType::kDeprecation, document->Url().GetString(), body);
 

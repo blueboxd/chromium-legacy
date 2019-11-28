@@ -55,6 +55,10 @@ void CastAppRpcInstance::CreateCastAppWindowLink(int platform_view_id,
 
   content::WebContents* web_contents =
       web_contents_provider_->GetWebContents(app_window_id);
+  if (!web_contents) {
+    OnError("web_contents is null");
+    return;
+  }
   Observe(web_contents);
   controller_ = std::make_unique<CastAppController>(this, web_contents);
   window_manager_->AddObserver(this);

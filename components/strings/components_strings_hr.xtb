@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Usluga raspakiravanja</translation>
 <translation id="1915697529809968049">Želite li koristiti Touch ID umjesto CVC-a?</translation>
 <translation id="1916770123977586577">Ponovo učitajte stranicu da bi se ažurirane postavke primijenile na ovu web-lokaciju</translation>
-<translation id="1917876262703816781">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah promijenite zaporku za <ph name="ORIGIN" />.</translation>
+<translation id="1917876262703816781">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah promijenite zaporku za <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Oglasi</translation>
 <translation id="1919367280705858090">Pomoć za konkretne poruke pogreške</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nijedna}=1{1 web-lokacija}one{# web-lokacija}few{# web-lokacije}other{# web-lokacija}}</translation>
@@ -645,7 +645,6 @@
 <translation id="4082393374666368382">Postavke – upravljanje</translation>
 <translation id="4098354747657067197">Pred vama je obmanjujuća web-lokacija</translation>
 <translation id="4103249731201008433">Serijski broj uređaja nije važeći</translation>
-<translation id="410351446219883937">Automatska reprodukcija</translation>
 <translation id="4103763322291513355">Posjetite &lt;strong&gt;chrome://policy&lt;/strong&gt; da biste vidjeli popis nedopuštenih URL-ova i druga pravila koja je nametnuo vaš administrator sustava.</translation>
 <translation id="4108231218301530806">Sljedeći put ovu karticu potvrdite otiskom prsta.</translation>
 <translation id="4110652170750985508">Pregledajte uplatu</translation>
@@ -905,7 +904,7 @@
 <translation id="5287240709317226393">Pokaži kolačiće</translation>
 <translation id="5287456746628258573">Ta web-lokacija upotrebljava zastarjelu sigurnosnu konfiguraciju, pa bi vaši podaci (na primjer zaporke ili brojevi kreditnih kartica) mogli biti otkriveni kad se šalju na nju.</translation>
 <translation id="5288108484102287882">Potvrđivanje vrijednosti pravila rezultiralo je upozorenjima</translation>
-<translation id="5295292838686006428">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
+<translation id="5295292838686006428">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5308380583665731573">Povežite se</translation>
@@ -1338,7 +1337,7 @@ Dodatne pojedinosti:
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="748406663033922918">Koristite zaključavanje zaslona za potvrđivanje spremljenih načina plaćanja.</translation>
 <translation id="7485870689360869515">Nema pronađenih podataka.</translation>
-<translation id="7495290002932347110">Vaša je zaporka otkrivena u povredi podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da provjerite svoje spremljene zaporke i promijenite ih na <ph name="ORIGIN" />.</translation>
+<translation id="7495290002932347110">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da provjerite svoje spremljene zaporke i promijenite ih na <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Nastavi uređivati</translation>
 <translation id="7508255263130623398">Vraćeni ID uređaja pravila prazan je ili ne odgovara trenutačnom ID-u uređaja</translation>
 <translation id="7508870219247277067">Zelenožuta</translation>

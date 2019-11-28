@@ -70,6 +70,22 @@ TEST(WindowCommandsTest, ExecuteResume) {
   ASSERT_EQ(kOk, status.code());
 }
 
+TEST(WindowCommandsTest, ExecuteSendCommandAndGetResult_NoCmd) {
+  base::DictionaryValue params;
+  params.SetDictionary("params", std::make_unique<base::DictionaryValue>());
+  Status status = CallWindowCommand(ExecuteSendCommandAndGetResult, params);
+  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_NE(status.message().find("command not passed"), std::string::npos);
+}
+
+TEST(WindowCommandsTest, ExecuteSendCommandAndGetResult_NoParams) {
+  base::DictionaryValue params;
+  params.SetString("cmd", "CSS.enable");
+  Status status = CallWindowCommand(ExecuteSendCommandAndGetResult, params);
+  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_NE(status.message().find("params not passed"), std::string::npos);
+}
+
 TEST(WindowCommandsTest, ProcessInputActionSequencePointerMouse) {
   Session session("1");
   std::vector<std::unique_ptr<base::DictionaryValue>> action_list;

@@ -11,7 +11,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
+import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 
 import java.util.Arrays;

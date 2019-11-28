@@ -49,7 +49,7 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // Clients should expect |buffering_state_cb| to be called with
   // BUFFERING_HAVE_NOTHING while flushing is in progress.
-  virtual void Flush(const base::Closure& callback) = 0;
+  virtual void Flush(base::OnceClosure callback) = 0;
 
   // Starts playback at |timestamp| by reading from |stream| and decoding and
   // rendering video.

@@ -379,13 +379,14 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   // Collect all needed info for gpu hang detection.
   bool disarmed = arm_disarm_counter % 2 == 0;  // even number
   bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
-  last_arm_disarm_counter_ = arm_disarm_counter;
   bool watched_thread_needs_more_time =
       WatchedThreadNeedsMoreTime(disarmed || gpu_makes_progress);
 
   // No gpu hang is detected. Continue with another OnWatchdogTimeout task
   if (disarmed || gpu_makes_progress || watched_thread_needs_more_time) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_arm_disarm_counter_ =
+        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 
     task_runner()->PostDelayedTask(
         FROM_HERE,
@@ -399,6 +400,8 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeoutWait);
   if (GpuRespondsAfterWaiting()) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_arm_disarm_counter_ =
+        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 
     task_runner()->PostDelayedTask(
         FROM_HERE,

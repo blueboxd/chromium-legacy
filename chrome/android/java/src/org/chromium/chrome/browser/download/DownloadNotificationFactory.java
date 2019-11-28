@@ -99,8 +99,11 @@ public final class DownloadNotificationFactory {
         String contentText;
         int iconId;
         @NotificationUmaTracker.ActionType
-        int cancelActionType,
-                pauseActionType, resumeActionType;
+        int cancelActionType;
+        @NotificationUmaTracker.ActionType
+        int pauseActionType;
+        @NotificationUmaTracker.ActionType
+        int resumeActionType;
         if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())) {
             cancelActionType = NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL;
             pauseActionType = NotificationUmaTracker.ActionType.DOWNLOAD_PAUSE;

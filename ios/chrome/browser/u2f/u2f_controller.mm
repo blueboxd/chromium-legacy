@@ -41,7 +41,7 @@ const char kRequestIDKey[] = "requestId";
 // requests' results from the U2F callback URL.
 - (base::string16)JSStringFromReponseURL:(const GURL&)URL;
 
-// Checks if the source URL has Google domain or whitelisted test domain.
+// Checks if the source URL has Google domain or allow-listed test domain.
 - (BOOL)shouldAllowSourceURL:(const GURL&)sourceURL;
 
 @end
@@ -70,7 +70,7 @@ const char kRequestIDKey[] = "requestId";
     return GURL();
   }
 
-  // Check if the webpage has Google or whitelisted test domain.
+  // Check if the webpage has Google or allowed test domain.
   if (![self shouldAllowSourceURL:originURL]) {
     return GURL();
   }
@@ -204,11 +204,12 @@ const char kRequestIDKey[] = "requestId";
     return YES;
   }
 
-  NSSet* whitelistedDomains =
-      [NSSet setWithObjects:@"u2fdemo.appspot.com",
-                            @"chromeiostesting-dot-u2fdemo.appspot.com", nil];
   NSString* sourceDomain = base::SysUTF8ToNSString(sourceURL.host());
-  return [whitelistedDomains containsObject:sourceDomain];
+  // Convert this condition to checking membership in a set if any new cases
+  // need to be added.
+  return [sourceDomain isEqualToString:@"u2fdemo.appspot.com"] ||
+         [sourceDomain
+             isEqualToString:@"chromeiostesting-dot-u2fdemo.appspot.com"];
 }
 
 @end

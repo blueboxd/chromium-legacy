@@ -33,7 +33,9 @@ public class ArticleCardController extends ElementController {
      * to perform actions.
      */
     public static class Info {
-        private final String mHeadline, mPublisher, mAge;
+        private final String mHeadline;
+        private final String mPublisher;
+        private final String mAge;
         private final ImplementationType mImplType;
 
         public Info(String headline, String publisher, String age,
@@ -169,7 +171,8 @@ public class ArticleCardController extends ElementController {
     }
 
     private static ArticleCardController sInstance = new ArticleCardController();
-    private ArticleImpl mFeedImpl, mZineImpl;
+    private ArticleImpl mFeedImpl;
+    private ArticleImpl mZineImpl;
     private ArticleCardController() {
         mFeedImpl = new FeedArticleImpl();
         mZineImpl = new ZineArticleImpl();

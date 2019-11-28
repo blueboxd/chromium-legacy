@@ -53,6 +53,9 @@ class AssistantAshTestBase : public AshTestBase {
   // keyboard.
   void SetPreferVoice(bool value);
 
+  // Return true if the Assistant UI is visible.
+  bool IsVisible();
+
   // Return the actual displayed Assistant main view.
   // Can only be used after |ShowAssistantUi| has been called.
   views::View* main_view();
@@ -60,6 +63,10 @@ class AssistantAshTestBase : public AshTestBase {
   // This is the top-level Assistant specific view.
   // Can only be used after |ShowAssistantUi| has been called.
   views::View* page_view();
+
+  // Return the app list view hosting the Assistant page view.
+  // Can only be used after |ShowAssistantUi| has been called.
+  views::View* app_list_view();
 
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.

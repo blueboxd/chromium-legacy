@@ -165,9 +165,18 @@ IN_PROC_BROWSER_TEST_F(
                           ui::PageTransition::PAGE_TRANSITION_TYPED));
 }
 
+// Timeouts on ChromeOS. http://crbug.com/1029034
+#if defined(OS_CHROMEOS)
+#define MAYBE_PasswordsWithGPMAndSyncUserClickedLink \
+  DISABLED_PasswordsWithGPMAndSyncUserClickedLink
+#else
+#define MAYBE_PasswordsWithGPMAndSyncUserClickedLink \
+  PasswordsWithGPMAndSyncUserClickedLink
+#endif
+
 IN_PROC_BROWSER_TEST_F(
     GooglePasswordManagerNavigationThrottleTestWithPasswordManager,
-    PasswordsWithGPMAndSyncUserClickedLink) {
+    MAYBE_PasswordsWithGPMAndSyncUserClickedLink) {
   base::HistogramTester tester;
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSync(browser()->profile());

@@ -676,7 +676,7 @@ class AccessibilityManagerUserTypeTest
     } else if (GetParam() == user_manager::USER_TYPE_CHILD) {
       logged_in_user_mixin_ = std::make_unique<LoggedInUserMixin>(
           &mixin_host_, LoggedInUserMixin::LogInType::kChild,
-          embedded_test_server());
+          embedded_test_server(), this);
     }
   }
   ~AccessibilityManagerUserTypeTest() override = default;

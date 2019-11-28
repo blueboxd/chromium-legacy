@@ -107,7 +107,6 @@ class ExtensionHost : public DeferredStartRenderHost,
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DocumentAvailableInMainFrame() override;
-  void DidStartLoading() override;
   void DidStopLoading() override;
 
   // content::WebContentsDelegate:
@@ -155,10 +154,6 @@ class ExtensionHost : public DeferredStartRenderHost,
  private:
   // DeferredStartRenderHost:
   void CreateRenderViewNow() override;
-  void AddDeferredStartRenderHostObserver(
-      DeferredStartRenderHostObserver* observer) override;
-  void RemoveDeferredStartRenderHostObserver(
-      DeferredStartRenderHostObserver* observer) override;
 
   // Message handlers.
   void OnEventAck(int event_id);
@@ -221,8 +216,6 @@ class ExtensionHost : public DeferredStartRenderHost,
   std::unique_ptr<base::ElapsedTimer> load_start_;
 
   base::ObserverList<ExtensionHostObserver>::Unchecked observer_list_;
-  base::ObserverList<DeferredStartRenderHostObserver>::Unchecked
-      deferred_start_render_host_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

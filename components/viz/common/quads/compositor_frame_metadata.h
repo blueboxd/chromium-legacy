@@ -133,10 +133,10 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // determine if scrolling/scaling in a particular direction is possible.
   float min_page_scale_factor = 0.f;
 
-  // Used to position the location top bar and page content, whose precise
-  // position is computed by the renderer compositor.
-  float top_controls_height = 0.f;
-  float top_controls_shown_ratio = 0.f;
+  // The visible height of the top-controls. If the value is not set, then the
+  // visible height should be the same as in the latest submitted frame with a
+  // value set.
+  base::Optional<float> top_controls_visible_height;
 
   // The time at which the LocalSurfaceId used to submit this CompositorFrame
   // was allocated.

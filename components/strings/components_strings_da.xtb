@@ -646,7 +646,6 @@
 <translation id="4082393374666368382">Indstillinger – administration</translation>
 <translation id="4098354747657067197">Vildledende website forude</translation>
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
-<translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
 <translation id="4108231218301530806">Brug fingeraftryk til at bekræfte dette kort næste gang.</translation>
 <translation id="4110652170750985508">Gennemgå din betaling</translation>
@@ -957,7 +956,7 @@
 <translation id="5540224163453853">Den anmodede artikel blev ikke fundet.</translation>
 <translation id="5541546772353173584">Tilføj mail</translation>
 <translation id="5545756402275714221">Artikler til dig</translation>
-<translation id="5552137475244467770">Chrome tjekker regelmæssigt, om dine adgangskoder er på nogen lister over adgangskoder, der er blevet offentliggjort online. Dine adgangskoder og brugernavne krypteres under disse tjek, så de kan ikke læses af nogen, heller ikke Google.</translation>
+<translation id="5552137475244467770">Chrome tjekker regelmæssigt, om dine adgangskoder er på nogen lister over adgangskoder, der er blevet afsløret online. Dine adgangskoder og brugernavne krypteres under disse tjek, så de kan ikke læses af nogen, heller ikke Google.</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5560088892362098740">Udløbsdato</translation>
 <translation id="5565735124758917034">Aktiv</translation>
@@ -1339,7 +1338,7 @@ Yderligere oplysninger:
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748406663033922918">Brug skærmlåsen til at bekræfte dine gemte betalingsmetoder.</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
-<translation id="7495290002932347110">Som følge af et brud på datasikkerheden på et website eller i en app er din adgangskode blevet afsløret. Chrome anbefaler, at du tjekker dine gemte adgangskoder og ændrer din adgangskode til <ph name="ORIGIN" /> med det samme.</translation>
+<translation id="7495290002932347110">Som følge af et brud på datasikkerheden på et website eller i en app er din adgangskode blevet afsløret. Chrome anbefaler, at du tjekker dine gemte adgangskoder og ændrer din adgangskode på <ph name="ORIGIN" /> med det samme.</translation>
 <translation id="7498234416455752244">Fortsæt redigering</translation>
 <translation id="7508255263130623398">Det returnerede enheds-id for politikken er tomt eller stemmer ikke overens med det nuværende enheds-id</translation>
 <translation id="7508870219247277067">Avocadogrøn</translation>

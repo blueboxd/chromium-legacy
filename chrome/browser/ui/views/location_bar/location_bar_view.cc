@@ -126,12 +126,6 @@
 
 namespace {
 
-// This feature shows the full URL when the user focuses the omnibox via
-// keyboard shortcut. This feature flag only exists so we have a remote
-// killswitch for this behavior.
-base::Feature kOmniboxShowFullUrlOnKeyboardShortcut{
-    "OmniboxShowFullUrlOnKeyboardShortcut", base::FEATURE_ENABLED_BY_DEFAULT};
-
 int IncrementalMinimumWidth(const views::View* view) {
   return (view && view->GetVisible()) ? view->GetMinimumSize().width() : 0;
 }
@@ -369,24 +363,7 @@ void LocationBarView::SelectAll() {
 // LocationBarView, public LocationBar implementation:
 
 void LocationBarView::FocusLocation(bool is_user_initiated) {
-  const bool omnibox_already_focused = omnibox_view_->HasFocus();
-
   omnibox_view_->SetFocus(is_user_initiated);
-
-  if (omnibox_already_focused)
-    omnibox_view()->model()->ClearKeyword();
-
-  // TODO(tommycli): Since we are now passing the |is_user_initiated| parameter
-  // onto OmniboxView, we can likely move the below code into SetFocus().
-  if (!is_user_initiated)
-    return;
-
-  omnibox_view_->SelectAll(true);
-
-  // Only exit Query in Omnibox mode on focus command if the location bar was
-  // already focused to begin with, i.e. user presses Ctrl+L twice.
-  if (base::FeatureList::IsEnabled(kOmniboxShowFullUrlOnKeyboardShortcut))
-    omnibox_view()->model()->Unelide(omnibox_already_focused);
 }
 
 void LocationBarView::Revert() {

@@ -413,7 +413,6 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4084712963632273211">Mula sa <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />ihinatid ng Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">I-delete ang data ng app?</translation>
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
-<translation id="410351446219883937">I-autoplay</translation>
 <translation id="4116038641877404294">I-download ang mga page para magamit ang mga ito offline</translation>
 <translation id="4135200667068010335">Nakasara ang listahan ng mga device kung saan magbabahagi ng tab.</translation>
 <translation id="4149994727733219643">Pinasimpleng view para sa mga web page</translation>
@@ -872,7 +871,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7437998757836447326">Mag-sign out sa Chrome</translation>
 <translation id="7438641746574390233">Kapag naka-on ang Lite mode, ginagamit ng Chrome ang mga server ng Google para mapabilis ang pag-load ng mga page. Muling isinusulat ng Lite mode ang mga napakabagal na page para ma-load lang ang mahalagang content. Hindi nalalapat sa mga tab na Incognito ang Lite mode.</translation>
 <translation id="7444811645081526538">Higit pang kategorya</translation>
-<translation id="7445411102860286510">Payagan ang mga site na awtomatikong mag-play ng mga naka-mute na video (inirerekomenda)</translation>
 <translation id="7453467225369441013">Isa-sign out ka sa karamihan ng mga site. Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="7454641608352164238">Walang sapat na espasyo</translation>
 <translation id="7475192538862203634">Kung madalas mo itong makita, subukan ang <ph name="BEGIN_LINK" />mga suhestyon<ph name="END_LINK" /> na ito.</translation>
@@ -927,7 +925,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7810647596859435254">Buksan gamit ang…</translation>
 <translation id="7821588508402923572">Lalabas dito ang mga natipid sa iyong data</translation>
-<translation id="7837721118676387834">Payagan ang pag-autoplay ng mga naka-mute na video para sa isang partikular na site.</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="784934925303690534">Sakop na oras</translation>
 <translation id="7851858861565204677">Iba pang device</translation>

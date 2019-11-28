@@ -644,7 +644,6 @@
 <translation id="4082393374666368382">설정 - 관리</translation>
 <translation id="4098354747657067197">사기성 사이트 주의</translation>
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
-<translation id="410351446219883937">자동재생</translation>
 <translation id="4103763322291513355">차단된 URL 및 시스템 관리자가 설정한 기타 정책 목록을 확인하려면 &lt;strong&gt;chrome://policy&lt;/strong&gt;를 방문하세요.</translation>
 <translation id="4108231218301530806">다음번에 지문을 사용해 이 카드를 인증합니다.</translation>
 <translation id="4110652170750985508">결제 검토</translation>
@@ -955,6 +954,7 @@
 <translation id="5540224163453853">요청한 글을 찾지 못했습니다.</translation>
 <translation id="5541546772353173584">이메일 추가</translation>
 <translation id="5545756402275714221">추천 기사</translation>
+<translation id="5552137475244467770">Chrome에서는 온라인에 게시된 비밀번호 목록에 사용자의 비밀번호가 포함되어 있는지를 주기적으로 확인합니다. 이렇게 하면 비밀번호 및 사용자 이름이 암호화되어 Google을 포함해 누구도 읽을 수 없습니다.</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5560088892362098740">만료일</translation>
 <translation id="5565735124758917034">활성</translation>

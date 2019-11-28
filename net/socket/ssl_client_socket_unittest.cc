@@ -808,37 +808,32 @@ class ManySmallRecordsHttpResponse : public test_server::HttpResponse {
       : chunk_size_(chunk_size), chunk_count_(chunk_count) {}
 
   void SendResponse(const test_server::SendBytesCallback& send,
-                    const test_server::SendCompleteCallback& done) override {
+                    test_server::SendCompleteCallback done) override {
     std::string headers = base::StringPrintf(
         "HTTP/1.1 200 OK\r\n"
         "Connection: close\r\n"
         "Content-Length: %zu\r\n"
         "Content-Type: text/plain\r\n\r\n",
         chunk_size_ * chunk_count_);
-    // TODO(davidben): SendCompleteCallback should be a OnceClosure and this
-    // call a BindOnce.
-    send.Run(headers, base::BindRepeating(&SendChunks, chunk_size_,
-                                          chunk_count_, send, done));
+    send.Run(headers, base::BindOnce(&SendChunks, chunk_size_, chunk_count_,
+                                     send, std::move(done)));
   }
 
  private:
   static void SendChunks(size_t chunk_size,
                          size_t chunk_count,
                          const test_server::SendBytesCallback& send,
-                         const test_server::SendCompleteCallback& done) {
+                         test_server::SendCompleteCallback done) {
     if (chunk_count == 0) {
-      done.Run();
+      std::move(done).Run();
       return;
     }
 
     std::string chunk(chunk_size, '*');
     // This assumes that splitting output into separate |send| calls will
     // produce separate TLS records.
-    //
-    // TODO(davidben): SendCompleteCallback should be a OnceClosure and this
-    // call a BindOnce.
-    send.Run(chunk, base::BindRepeating(&SendChunks, chunk_size,
-                                        chunk_count - 1, send, done));
+    send.Run(chunk, base::BindOnce(&SendChunks, chunk_size, chunk_count - 1,
+                                   send, std::move(done)));
   }
 
   size_t chunk_size_;
@@ -1390,7 +1385,7 @@ class ZeroRTTResponse : public test_server::HttpResponse {
   ~ZeroRTTResponse() override {}
 
   void SendResponse(const test_server::SendBytesCallback& send,
-                    const test_server::SendCompleteCallback& done) override {
+                    test_server::SendCompleteCallback done) override {
     std::string response;
     if (zero_rtt_) {
       response = "1";
@@ -1401,7 +1396,7 @@ class ZeroRTTResponse : public test_server::HttpResponse {
     // Since the EmbeddedTestServer doesn't keep the socket open by default, it
     // is explicitly kept alive to allow the remaining leg of the 0RTT handshake
     // to be received after the early data.
-    send.Run(response, base::BindRepeating([]() {}));
+    send.Run(response, base::BindOnce([]() {}));
   }
 
  private:

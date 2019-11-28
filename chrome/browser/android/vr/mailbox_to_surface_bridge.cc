@@ -234,42 +234,42 @@ void MailboxToSurfaceBridge::CreateAndBindContextProvider(
   // until the context becomes available. So pass it on to the callback, so that
   // it stays alive, and is destroyed on the same thread once done.
   auto callback =
-      base::BindRepeating(&MailboxToSurfaceBridge::OnContextAvailableOnUiThread,
-                          weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&MailboxToSurfaceBridge::OnContextAvailableOnUiThread,
+                     weak_ptr_factory_.GetWeakPtr());
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(
-          [](int surface_handle,
-             const content::Compositor::ContextProviderCallback& callback) {
-            // Our attributes must be compatible with the shared
-            // offscreen surface used by virtualized contexts,
-            // otherwise mailbox synchronization doesn't work
-            // properly - it assumes a shared underlying GL context.
-            // See GetCompositorContextAttributes in
-            // content/browser/renderer_host/compositor_impl_android.cc
-            // and https://crbug.com/699330.
-            gpu::ContextCreationAttribs attributes;
-            attributes.alpha_size = -1;
-            attributes.red_size = 8;
-            attributes.green_size = 8;
-            attributes.blue_size = 8;
-            attributes.stencil_size = 0;
-            attributes.depth_size = 0;
-            attributes.samples = 0;
-            attributes.sample_buffers = 0;
-            attributes.bind_generates_resource = false;
-            if (base::SysInfo::IsLowEndDevice()) {
-              attributes.alpha_size = 0;
-              attributes.red_size = 5;
-              attributes.green_size = 6;
-              attributes.blue_size = 5;
-            }
-            content::Compositor::CreateContextProvider(
-                surface_handle, attributes,
-                gpu::SharedMemoryLimits::ForMailboxContext(), callback);
-          },
-          surface_handle_, callback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(
+                     [](int surface_handle,
+                        content::Compositor::ContextProviderCallback callback) {
+                       // Our attributes must be compatible with the shared
+                       // offscreen surface used by virtualized contexts,
+                       // otherwise mailbox synchronization doesn't work
+                       // properly - it assumes a shared underlying GL context.
+                       // See GetCompositorContextAttributes in
+                       // content/browser/renderer_host/compositor_impl_android.cc
+                       // and https://crbug.com/699330.
+                       gpu::ContextCreationAttribs attributes;
+                       attributes.alpha_size = -1;
+                       attributes.red_size = 8;
+                       attributes.green_size = 8;
+                       attributes.blue_size = 8;
+                       attributes.stencil_size = 0;
+                       attributes.depth_size = 0;
+                       attributes.samples = 0;
+                       attributes.sample_buffers = 0;
+                       attributes.bind_generates_resource = false;
+                       if (base::SysInfo::IsLowEndDevice()) {
+                         attributes.alpha_size = 0;
+                         attributes.red_size = 5;
+                         attributes.green_size = 6;
+                         attributes.blue_size = 5;
+                       }
+                       content::Compositor::CreateContextProvider(
+                           surface_handle, attributes,
+                           gpu::SharedMemoryLimits::ForMailboxContext(),
+                           std::move(callback));
+                     },
+                     surface_handle_, std::move(callback)));
 }
 
 void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {

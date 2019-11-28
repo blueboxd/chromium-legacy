@@ -39,6 +39,7 @@ suite('Tab', function() {
 
     // Set CSS variable for animations
     document.body.style.setProperty('--tabstrip-tab-width', '280px');
+    document.body.style.setProperty('--tabstrip-tab-spacing', '20px');
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
     TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
@@ -51,7 +52,28 @@ suite('Tab', function() {
     document.body.appendChild(tabElement);
   });
 
-  test('slideIn animates in the element', async () => {
+  test('slideIn animates scale for the last tab', async () => {
+    document.documentElement.dir = 'ltr';
+    tabElement.style.paddingRight = '100px';
+    const tabElementStyle = window.getComputedStyle(tabElement);
+
+    const animationPromise = tabElement.slideIn();
+    // Before animation completes.
+    assertEquals('20px', tabElementStyle.paddingRight);
+    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('matrix(0, 0, 0, 0, 0, 0)', tabElementStyle.transform);
+    await animationPromise;
+    // After animation completes.
+    assertEquals('100px', tabElementStyle.paddingRight);
+    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+  });
+
+  test('slideIn animations for not the last tab', async () => {
+    // Add another element to make sure the element being tested is not the
+    // last.
+    document.body.appendChild(document.createElement('div'));
+
     document.documentElement.dir = 'ltr';
     tabElement.style.paddingRight = '100px';
     const tabElementStyle = window.getComputedStyle(tabElement);
@@ -69,6 +91,10 @@ suite('Tab', function() {
   });
 
   test('slideIn animations right to left for RTL languages', async () => {
+    // Add another element to make sure the element being tested is not the
+    // last.
+    document.body.appendChild(document.createElement('div'));
+
     document.documentElement.dir = 'rtl';
     tabElement.style.paddingLeft = '100px';
     const tabElementStyle = window.getComputedStyle(tabElement);

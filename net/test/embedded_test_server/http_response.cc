@@ -4,6 +4,8 @@
 
 #include "net/test/embedded_test_server/http_response.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -24,7 +26,7 @@ RawHttpResponse::RawHttpResponse(const std::string& headers,
 RawHttpResponse::~RawHttpResponse() = default;
 
 void RawHttpResponse::SendResponse(const SendBytesCallback& send,
-                                   const SendCompleteCallback& done) {
+                                   SendCompleteCallback done) {
   std::string response;
   if (!headers_.empty()) {
     response = headers_;
@@ -38,7 +40,7 @@ void RawHttpResponse::SendResponse(const SendBytesCallback& send,
   } else {
     response = contents_;
   }
-  send.Run(response, done);
+  send.Run(response, std::move(done));
 }
 
 void RawHttpResponse::AddHeader(const std::string& key_value_pair) {
@@ -83,8 +85,8 @@ std::string BasicHttpResponse::ToResponseString() const {
 }
 
 void BasicHttpResponse::SendResponse(const SendBytesCallback& send,
-                                     const SendCompleteCallback& done) {
-  send.Run(ToResponseString(), done);
+                                     SendCompleteCallback done) {
+  send.Run(ToResponseString(), std::move(done));
 }
 
 DelayedHttpResponse::DelayedHttpResponse(const base::TimeDelta delay)
@@ -93,13 +95,14 @@ DelayedHttpResponse::DelayedHttpResponse(const base::TimeDelta delay)
 DelayedHttpResponse::~DelayedHttpResponse() = default;
 
 void DelayedHttpResponse::SendResponse(const SendBytesCallback& send,
-                                       const SendCompleteCallback& done) {
+                                       SendCompleteCallback done) {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(send, ToResponseString(), done), delay_);
+      FROM_HERE, base::BindOnce(send, ToResponseString(), std::move(done)),
+      delay_);
 }
 
 void HungResponse::SendResponse(const SendBytesCallback& send,
-                                const SendCompleteCallback& done) {}
+                                SendCompleteCallback done) {}
 
 }  // namespace test_server
 }  // namespace net

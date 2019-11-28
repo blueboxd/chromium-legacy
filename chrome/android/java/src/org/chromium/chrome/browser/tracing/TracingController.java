@@ -20,7 +20,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.preferences.developer.TracingPreferences;
+import org.chromium.chrome.browser.settings.developer.TracingPreferences;
 import org.chromium.content_public.browser.TracingControllerAndroid;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;

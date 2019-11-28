@@ -228,7 +228,7 @@
                    animated:YES
                  completion:^{
                    // Completely remove the Infobar along with its badge after
-                   // blacklisting the Website.
+                   // blocking the Website.
                    [self detachView];
                  }];
 }

@@ -12,10 +12,6 @@ namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-// The accessibility identifier of the password details table view.
-extern NSString* _Nonnull const kPasswordDetailsTableViewId;
-extern NSString* _Nonnull const kPasswordDetailsDeletionAlertViewId;
-
 @protocol ReauthenticationProtocol;
 
 // Displays details of a password item, including URL of the site, username and

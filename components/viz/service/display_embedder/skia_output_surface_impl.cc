@@ -54,40 +54,6 @@ sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
 
 void DoNothing(void* texture_context) {}
 
-template <typename... Args>
-void PostAsyncTaskRepeatedly(
-    SkiaOutputSurfaceDependency* dependency,
-    const base::RepeatingCallback<void(Args...)>& callback,
-    Args... args) {
-  dependency->PostTaskToClientThread(base::BindOnce(callback, args...));
-}
-
-template <typename... Args>
-base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
-    SkiaOutputSurfaceDependency* dependency,
-    const base::RepeatingCallback<void(Args...)>& callback) {
-  DCHECK(dependency);
-  return base::BindRepeating(&PostAsyncTaskRepeatedly<Args...>, dependency,
-                             callback);
-}
-
-template <typename... Args>
-void PostAsyncTaskOnce(SkiaOutputSurfaceDependency* dependency,
-                       base::OnceCallback<void(Args...)> callback,
-                       Args... args) {
-  dependency->PostTaskToClientThread(
-      base::BindOnce(std::move(callback), args...));
-}
-
-template <typename... Args>
-base::OnceCallback<void(Args...)> CreateSafeOnceCallback(
-    SkiaOutputSurfaceDependency* dependency,
-    base::OnceCallback<void(Args...)> callback) {
-  DCHECK(dependency);
-  return base::BindOnce(&PostAsyncTaskOnce<Args...>, dependency,
-                        std::move(callback));
-}
-
 gpu::ContextUrl& GetActiveUrl() {
   static base::NoDestructor<gpu::ContextUrl> active_url(
       GURL("chrome://gpu/SkiaRenderer"));
@@ -693,19 +659,32 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  auto did_swap_buffer_complete_callback = CreateSafeRepeatingCallback(
-      dependency_.get(),
-      base::BindRepeating(&SkiaOutputSurfaceImpl::DidSwapBuffersComplete,
-                          weak_ptr_));
-  auto buffer_presented_callback = CreateSafeRepeatingCallback(
-      dependency_.get(),
-      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_));
-  auto context_lost_callback = CreateSafeOnceCallback(
-      dependency_.get(),
-      base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_));
-  auto gpu_vsync_callback = CreateSafeRepeatingCallback(
-      dependency_.get(),
-      base::BindRepeating(&SkiaOutputSurfaceImpl::OnGpuVSync, weak_ptr_));
+  auto did_swap_buffer_complete_callback = base::BindRepeating(
+      &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
+  auto buffer_presented_callback =
+      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+  auto context_lost_callback =
+      base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
+
+  // This callback could be called from vsync or GPU thread after |this| is
+  // destroyed. We post directly to display compositor thread to check
+  // |weak_ptr_| as |dependency_| may have been destroyed.
+  GpuVSyncCallback gpu_vsync_callback =
+#if defined(OS_ANDROID)
+      // Callback is never used on Android. Doesn't work with WebView because
+      // calling it bypasses SkiaOutputSurfaceDependency.
+      base::DoNothing();
+#else
+      base::BindRepeating(
+          [](scoped_refptr<base::SingleThreadTaskRunner> runner,
+             base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr,
+             base::TimeTicks timebase, base::TimeDelta interval) {
+            runner->PostTask(FROM_HERE,
+                             base::BindOnce(&SkiaOutputSurfaceImpl::OnGpuVSync,
+                                            weak_ptr, timebase, interval));
+          },
+          base::ThreadTaskRunnerHandle::Get(), weak_ptr_);
+#endif
 
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
       dependency_.get(), renderer_settings_, task_sequence_->GetSequenceId(),

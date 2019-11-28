@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestRule;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;

@@ -7,6 +7,7 @@
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -74,11 +75,15 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
-  Browser* app_browser = OpenExtensionAppWindow();
+  content::WebContents* app_contents = OpenExtensionAppWindow();
+
+  Browser* app_browser = chrome::FindBrowserWithWebContents(app_contents);
+  ASSERT_TRUE(app_browser->is_type_app());
+
   // ShowBubble(app_browser) doesn't actually show a bubble for extension app
   // windows, so create one directly.
-  auto prompt =
-      std::make_unique<PermissionPromptImpl>(app_browser, test_delegate());
+  auto prompt = std::make_unique<PermissionPromptImpl>(
+      app_browser, app_contents, test_delegate());
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(app_browser));
 }
 

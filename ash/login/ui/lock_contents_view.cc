@@ -931,13 +931,8 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
     label->SetMaximumWidth(
         big_view->auth_user()->password_view()->GetPreferredSize().width());
 
-    auto* container = new NonAccessibleView();
-    container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical));
-    container->AddChildView(label);
-
     auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
-    auth_error_bubble_->SetContent(container);
+    auth_error_bubble_->SetContent(label);
     auth_error_bubble_->SetPersistent(true);
     auth_error_bubble_->Show();
   }
@@ -1975,6 +1970,7 @@ void LockContentsView::ShowAuthErrorMessage() {
 
   auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
   auth_error_bubble_->SetContent(container);
+  auth_error_bubble_->SetAccessibleName(error_text);
   auth_error_bubble_->SetPersistent(false);
   auth_error_bubble_->Show();
 }

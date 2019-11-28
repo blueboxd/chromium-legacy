@@ -7,6 +7,7 @@ include_rules = [
   "+cc/test/stub_layer_tree_host_client.h",
   "+cc/test/test_task_graph_runner.h",
   "+cc/trees/layer_tree_host.h",
+  "+cc/trees/swap_promise.h",
   "+components/viz/client",
   "+components/viz/common",
   "+components/viz/host",

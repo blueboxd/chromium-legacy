@@ -631,7 +631,6 @@
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
-<translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
 <translation id="4108231218301530806">Utiliser votre empreinte digitale pour valider cette carte la prochaine fois.</translation>
 <translation id="4110652170750985508">Vérifier votre paiement</translation>
@@ -941,6 +940,7 @@
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
 <translation id="5541546772353173584">Ajouter une adresse e-mail</translation>
 <translation id="5545756402275714221">Articles pour vous</translation>
+<translation id="5552137475244467770">Chrome vérifie régulièrement que vos mots de passe ne figurent pas dans les listes qui ont été publiées en ligne. Lors de cette opération, vos mots de passe et vos noms d'utilisateur sont chiffrés afin que personne ne puisse les consulter, y compris Google.</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5560088892362098740">Date d'expiration</translation>
 <translation id="5565735124758917034">Actif</translation>

@@ -57,3 +57,17 @@ Polymer.DomIf = function() {};
  * while still using legacy Polymer1 syntax.
  */
 Polymer.DomIf._contentForTemplate = function(template) {};
+
+/**
+ * From:
+ * https://github.com/Polymer/polymer/blob/2.x/lib/mixins/property-effects.html
+ *
+ * @param {Object} props Bag of one or more key-value pairs whose key is
+ *   a property and value is the new value to set for that property.
+ * @param {boolean=} setReadOnly When true, any private values set in
+ *   `props` will be set. By default, `setProperties` will not set
+ *   `readOnly: true` root properties.
+ * @return {void}
+ * @public
+ */
+PolymerElement.prototype.setProperties = function(props, setReadOnly) {};

@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">प्रकाशक: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google की ओर से डिलीवर किया गया<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">ऐप्लिकेशन डेटा मिटाएं?</translation>
 <translation id="4099578267706723511">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट भेजकर Chrome को बेहतर बनाने में मदद करें.</translation>
-<translation id="410351446219883937">अपने आप चलाएं</translation>
 <translation id="4116038641877404294">पेजों को ऑफ़लाइन इस्तेमाल करने के लिए उन्हें डाउनलोड करें</translation>
 <translation id="4135200667068010335">टैब शेयर करने के लिए चुने गए डिवाइस की सूची बंद है.</translation>
 <translation id="4149994727733219643">वेब पेजों के लिए सरल बनाया गया व्यू</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">Chrome से साइन आउट करें</translation>
 <translation id="7438641746574390233">लाइट मोड चालू होने पर, Chrome तेज़ी से पेज लोड करने के लिए Google के सर्वरों का इस्तेमाल करता है. लाइट मोड धीमे पेजों को फिर से लिखता है, ताकि सिर्फ़ ज़रूरी सामग्री लोड हो. लाइट मोड 'गुप्त' टैब पर लागू नहीं होता.</translation>
 <translation id="7444811645081526538">ज़्यादा श्रेणियां</translation>
-<translation id="7445411102860286510">साइटों को म्यूट किए गए वीडियो अपने आप चलाने की अनुमति दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे.</translation>
 <translation id="7454641608352164238">जगह काफ़ी नहीं है</translation>
 <translation id="7475192538862203634">अगर आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="BEGIN_LINK" />सुझावों<ph name="END_LINK" /> को आज़माएं.</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">नहीं, रहने दें</translation>
 <translation id="7810647596859435254">इसमें खोलें…</translation>
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
-<translation id="7837721118676387834">किसी खास साइट पर म्यूट किए गए वीडियो को अपने आप चलाने की अनुमति दें.</translation>
 <translation id="7846076177841592234">चुना गया हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>

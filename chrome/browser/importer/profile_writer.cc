@@ -303,6 +303,12 @@ void ProfileWriter::AddKeywords(
     if (model->GetTemplateURLForKeyword(turl->keyword()) != nullptr)
       continue;
 
+    // The omnibox doesn't properly handle search keywords with whitespace,
+    // so skip importing them.
+    if (turl->keyword().find_first_of(base::kWhitespaceUTF16) !=
+        base::string16::npos)
+      continue;
+
     // For search engines if there is already a keyword with the same
     // host+path, we don't import it. This is done to avoid both duplicate
     // search providers (such as two Googles, or two Yahoos) as well as making

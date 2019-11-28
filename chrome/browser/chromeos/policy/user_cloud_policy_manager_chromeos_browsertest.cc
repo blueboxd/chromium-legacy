@@ -30,7 +30,6 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "net/dns/mock_host_resolver.h"
 
 namespace policy {
 
@@ -54,15 +53,6 @@ class UserCloudPolicyManagerTest
 
   ~UserCloudPolicyManagerTest() override = default;
 
-  // MixinBasedInProcessBrowserTest:
-  void SetUpOnMainThread() override {
-    // By default, browser tests block anything that doesn't go to localhost, so
-    // account.google.com requests would never reach fake GAIA server without
-    // this.
-    host_resolver()->AddRule("*", "127.0.0.1");
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-  }
-
   void TearDown() override {
     policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(nullptr);
     MixinBasedInProcessBrowserTest::TearDown();
@@ -83,7 +73,7 @@ class UserCloudPolicyManagerTest
  protected:
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, std::get<1>(GetParam()) /*type*/, embedded_test_server(),
-      true /*should_launch_browser*/,
+      this, true /*should_launch_browser*/,
       AccountId::FromUserEmailGaiaId(
           chromeos::FakeGaiaMixin::kEnterpriseUser1,
           chromeos::FakeGaiaMixin::kEnterpriseUser1GaiaId),
@@ -155,9 +145,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
 }
 
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
-  logged_in_user_mixin_.GetLocalPolicyTestServerMixin()
-      ->SetExpectedPolicyFetchError(500);
-
   StartUserLogIn(false /*wait_for_active_session*/);
   RunUntilBrowserProcessQuits();
 
@@ -177,9 +164,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
   user_manager::known_user::SetProfileRequiresPolicy(
       logged_in_user_mixin_.GetAccountId(),
       user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
-
-  logged_in_user_mixin_.GetLocalPolicyTestServerMixin()
-      ->SetExpectedPolicyFetchError(500);
 
   StartUserLogIn(true /*wait_for_active_session*/);
 

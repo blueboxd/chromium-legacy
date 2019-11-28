@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/discardable_memory.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/content_switches.h"
@@ -24,44 +25,15 @@
 
 namespace content {
 
-static const base::Feature kMadvFreeDiscardableMemoryFeature{
-    "MadvFreeDiscardableMemory", base::FEATURE_DISABLED_BY_DEFAULT};
-
-namespace {
-DiscardableMemoryBacking GetPlatformDiscardableMemoryBacking() {
-#if defined(OS_ANDROID)
-  if (ashmem_device_is_supported())
-    return DiscardableMemoryBacking::kSharedMemory;
-#endif
-
-  bool madv_free_supported = false;
-#if defined(OS_POSIX)
-  madv_free_supported =
-      base::GetMadvFreeSupport() == base::MadvFreeSupport::kSupported;
-#endif
-
-  if (base::FeatureList::IsEnabled(kMadvFreeDiscardableMemoryFeature) &&
-      madv_free_supported) {
-    return DiscardableMemoryBacking::kMadvFree;
-  }
-  return DiscardableMemoryBacking::kSharedMemory;
-}
-}  // namespace
-
-DiscardableMemoryBacking GetDiscardableMemoryBacking() {
-  static DiscardableMemoryBacking backing =
-      GetPlatformDiscardableMemoryBacking();
-  return backing;
-}
-
 std::unique_ptr<base::DiscardableMemoryAllocator>
 CreateDiscardableMemoryAllocator() {
-  if (GetDiscardableMemoryBacking() == DiscardableMemoryBacking::kMadvFree) {
 #if defined(OS_POSIX)
+  if (base::GetDiscardableMemoryBacking() ==
+      base::DiscardableMemoryBacking::kMadvFree) {
     DVLOG(1) << "Using MADV_FREE for discardable memory";
     return std::make_unique<base::MadvFreeDiscardableMemoryAllocatorPosix>();
-#endif
   }
+#endif  // defined(OS_POSIX)
   DVLOG(1) << "Using shared memory for discardable memory";
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>

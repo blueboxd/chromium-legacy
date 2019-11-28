@@ -116,12 +116,11 @@ class BlockedHttpResponse : public net::test_server::BasicHttpResponse {
       base::OnceCallback<void(base::OnceClosure)> callback)
       : callback_(std::move(callback)) {}
 
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     // Called on the IO thread to unblock the response.
     base::OnceClosure unblock_io_thread =
-        base::BindOnce(send, ToResponseString(), done);
+        base::BindOnce(send, ToResponseString(), std::move(done));
     // Unblock the response from any thread by posting a task to the IO thread.
     base::OnceClosure unblock_any_thread =
         base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),

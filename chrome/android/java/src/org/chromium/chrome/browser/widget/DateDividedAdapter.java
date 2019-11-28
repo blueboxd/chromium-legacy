@@ -805,7 +805,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      */
     protected static int compareDate(Date date1, Date date2) {
         Pair<Calendar, Calendar> pair = getCachedCalendars();
-        Calendar cal1 = pair.first, cal2 = pair.second;
+        Calendar cal1 = pair.first;
+        Calendar cal2 = pair.second;
         cal1.setTime(date1);
         cal2.setTime(date2);
         return compareCalendar(cal1, cal2);
@@ -830,7 +831,8 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * Convenient getter for {@link #sCal1} and {@link #sCal2}.
      */
     private static Pair<Calendar, Calendar> getCachedCalendars() {
-        Calendar cal1, cal2;
+        Calendar cal1;
+        Calendar cal2;
         try {
             cal1 = sCal1.get();
             cal2 = sCal2.get();

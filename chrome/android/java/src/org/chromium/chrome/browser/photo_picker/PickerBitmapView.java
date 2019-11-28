@@ -18,7 +18,6 @@ import android.support.v4.widget.ImageViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -67,6 +66,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The image view containing the bitmap.
     private ImageView mIconView;
 
+    // The aspect ratio of the image (>1.0=portrait, <1.0=landscape).
+    private float mRatio = -1;
+
     // For video tiles, this lists the duration of the video. Blank for other types.
     private TextView mVideoDuration;
 
@@ -95,8 +97,8 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // Whether the image has been loaded already.
     private boolean mImageLoaded;
 
-    // The amount to use for the border.
-    private int mBorder;
+    // The selected state of a given picture tile.
+    private boolean mSelectedState;
 
     /**
      * Constructor for inflating from XML.
@@ -109,16 +111,16 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mIconView = (ImageView) findViewById(R.id.bitmap_view);
-        mScrim = (ImageView) findViewById(R.id.scrim);
-        mSelectedView = (ImageView) findViewById(R.id.selected);
-        mUnselectedView = (ImageView) findViewById(R.id.unselected);
+        mIconView = findViewById(R.id.bitmap_view);
+        mScrim = findViewById(R.id.scrim);
+        mSelectedView = findViewById(R.id.selected);
+        mUnselectedView = findViewById(R.id.unselected);
         mSpecialTile = findViewById(R.id.special_tile);
-        mSpecialTileIcon = (ImageView) findViewById(R.id.special_tile_icon);
-        mSpecialTileLabel = (TextView) findViewById(R.id.special_tile_label);
+        mSpecialTileIcon = findViewById(R.id.special_tile_icon);
+        mSpecialTileLabel = findViewById(R.id.special_tile_label);
 
         // Specific UI controls for video support.
-        mVideoDuration = (TextView) findViewById(R.id.video_duration);
+        mVideoDuration = findViewById(R.id.video_duration);
         mPlayButton = findViewById(R.id.play_video);
         mPlayButton.setOnClickListener(this);
     }
@@ -129,9 +131,21 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         if (mCategoryView == null) return;
 
-        int width = mCategoryView.getImageSize();
-        int height = mCategoryView.getImageSize();
-        setMeasuredDimension(width, height);
+        if (mCategoryView.isInMagnifyingMode()) {
+            int height;
+            if (isPictureTile()) {
+                // Use ratio to determine how tall the image wants to be.
+                height = (int) (mRatio * mCategoryView.getImageWidth());
+            } else {
+                // Special tiles have a fixed height in magnifying mode.
+                height = mCategoryView.getSpecialTileHeight();
+            }
+
+            setMeasuredDimension(mCategoryView.getImageWidth(), height);
+        } else {
+            // Use small thumbnails that are square in size.
+            setMeasuredDimension(mCategoryView.getImageWidth(), mCategoryView.getImageWidth());
+        }
     }
 
     @Override
@@ -163,6 +177,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     }
 
     @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // When views get detached, they become unselected. By reflecting that here, we can make
+        // sure they get re-selected when they scroll out of view and avoid unnecessary updates to
+        // views that are in the correct state already.
+        mSelectedState = false;
+    }
+
+    @Override
     protected boolean toggleSelectionForItem(PickerBitmap item) {
         if (isGalleryTile() || isCameraTile()) return false;
         return super.toggleSelectionForItem(item);
@@ -175,7 +198,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         }
 
         super.setChecked(checked);
-        updateSelectionState();
+        updateSelectionState(/*animateBorderChanges=*/false);
     }
 
     @Override
@@ -187,60 +210,89 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         // being initialized.
         if (mBitmapDetails == null) return;
 
-        boolean selected = selectedItems.contains(mBitmapDetails);
-        boolean checked = super.isChecked();
+        boolean animateBorderChanges = selectedItems.contains(mBitmapDetails) != super.isChecked();
+        updateSelectionState(animateBorderChanges);
 
         super.onSelectionStateChange(selectedItems);
+    }
 
-        updateSelectionState();
-
-        if (!isPictureTile()) return;
-
-        boolean needsResize = selected != checked;
-        int size = selected && !checked ? mCategoryView.getImageSize() - 2 * mBorder
-                                        : mCategoryView.getImageSize();
-        if (needsResize) {
-            float start;
-            float end;
-            float videoDurationOffsetX;
-            float videoDurationOffsetY;
-            if (size != mCategoryView.getImageSize()) {
-                start = 1f;
-                end = 0.8f;
-
-                float pixels = getResources().getDimensionPixelSize(
-                        R.dimen.photo_picker_video_duration_offset);
-                videoDurationOffsetX = -pixels;
-                videoDurationOffsetY = pixels;
-            } else {
-                start = 0.8f;
-                end = 1f;
-
-                videoDurationOffsetX = 0;
-                videoDurationOffsetY = 0;
-            }
-
-            Animation animation = new ScaleAnimation(
-                    start, end, // Values for x axis.
-                    start, end, // Values for y axis.
-                    Animation.RELATIVE_TO_SELF, 0.5f, // Pivot X-axis type and value.
-                    Animation.RELATIVE_TO_SELF, 0.5f); // Pivot Y-axis type and value.
-            animation.setDuration(ANIMATION_DURATION);
-            animation.setFillAfter(true); // Keep the results of the animation.
-            if (sAnimationListenerForTest != null) {
-                animation.setAnimationListener(sAnimationListenerForTest);
-            }
-            mIconView.startAnimation(animation);
-
-            ObjectAnimator videoDurationX = ObjectAnimator.ofFloat(
-                    mVideoDuration, View.TRANSLATION_X, videoDurationOffsetX);
-            ObjectAnimator videoDurationY = ObjectAnimator.ofFloat(
-                    mVideoDuration, View.TRANSLATION_Y, videoDurationOffsetY);
-            AnimatorSet animatorSet = new AnimatorSet();
-            animatorSet.playTogether(videoDurationX, videoDurationY);
-            animatorSet.setDuration(ANIMATION_DURATION);
-            animatorSet.start();
+    private void updateSelectionBorder(boolean animate) {
+        if (!isAttachedToWindow()) {
+            // No need to update something that's not attached to a window. As soon as the view is
+            // re-attached, it will be updated.
+            return;
         }
+
+        // TODO(finnur): Look into whether using #updateView can simplify this logic.
+        boolean selected = mSelectionDelegate.isItemSelected(mBitmapDetails);
+        if (selected == mSelectedState) {
+            // No need to change to a state that is already set.
+            return;
+        }
+
+        mSelectedState = selected;
+
+        float startX;
+        float endX;
+        float startY;
+        float endY;
+        float videoDurationOffsetX;
+        float videoDurationOffsetY;
+
+        float endStateWhenSelectedX = 0.8f; // 20% border around small thumbnails.
+        float endStateWhenSelectedY = 0.8f;
+        if (mCategoryView.isInMagnifyingMode()) {
+            // Ratio above 1.0 is portrait, and less than 1.0 is landscape. With full screen
+            // images, the sides are uneven in length, so the percentage used for the border
+            // should adjust to a difference in length. Left and right border use up 8% of total
+            // width available. Top and bottom border are then calculated to be the same size.
+            float width = mCategoryView.getImageWidth();
+            float percentage = 0.92f;
+            float borderSizePixels = width * (1.0f - percentage);
+            endStateWhenSelectedX = percentage;
+            endStateWhenSelectedY = 1.0f - (borderSizePixels / (width * mRatio));
+        }
+
+        if (selected) {
+            startX = 1f;
+            startY = 1f;
+            endX = endStateWhenSelectedX;
+            endY = endStateWhenSelectedY;
+
+            float pixels = getResources().getDimensionPixelSize(
+                    R.dimen.photo_picker_video_duration_offset);
+            videoDurationOffsetX = -pixels;
+            videoDurationOffsetY = pixels;
+        } else {
+            startX = endStateWhenSelectedX;
+            startY = endStateWhenSelectedY;
+            endX = 1f;
+            endY = 1f;
+
+            videoDurationOffsetX = 0;
+            videoDurationOffsetY = 0;
+        }
+
+        Animation animation = new ScaleAnimation(
+                startX, endX, // Values for x axis.
+                startY, endY, // Values for y axis.
+                Animation.RELATIVE_TO_SELF, 0.5f, // Pivot X-axis type and value.
+                Animation.RELATIVE_TO_SELF, 0.5f); // Pivot Y-axis type and value.
+        animation.setDuration(animate ? ANIMATION_DURATION : 0);
+        animation.setFillAfter(true); // Keep the results of the animation.
+        if (sAnimationListenerForTest != null) {
+            animation.setAnimationListener(sAnimationListenerForTest);
+        }
+        mIconView.startAnimation(animation);
+
+        ObjectAnimator videoDurationX =
+                ObjectAnimator.ofFloat(mVideoDuration, View.TRANSLATION_X, videoDurationOffsetX);
+        ObjectAnimator videoDurationY =
+                ObjectAnimator.ofFloat(mVideoDuration, View.TRANSLATION_Y, videoDurationOffsetY);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(videoDurationX, videoDurationY);
+        animatorSet.setDuration(animate ? ANIMATION_DURATION : 0);
+        animatorSet.start();
     }
 
     @Override
@@ -265,8 +317,6 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mCategoryView = categoryView;
         mSelectionDelegate = mCategoryView.getSelectionDelegate();
         setSelectionDelegate(mSelectionDelegate);
-
-        mBorder = (int) getResources().getDimension(R.dimen.photo_picker_selected_padding);
     }
 
     /**
@@ -276,29 +326,29 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * @param thumbnails The Bitmaps to use for the thumbnail (or null).
      * @param videoDuration The time-length of the video (human-friendly string).
      * @param placeholder Whether the image given is a placeholder or the actual image.
+     * @ratio The aspect ratio of the image, if it were shown full-width.
      */
     public void initialize(PickerBitmap bitmapDetails, @Nullable List<Bitmap> thumbnails,
-            String videoDuration, boolean placeholder) {
+            String videoDuration, boolean placeholder, float ratio) {
         resetTile();
 
         mBitmapDetails = bitmapDetails;
         setItem(bitmapDetails);
         if (isCameraTile() || isGalleryTile()) {
-            initializeSpecialTile(mBitmapDetails);
+            initializeSpecialTile();
             mImageLoaded = true;
         } else {
-            setThumbnailBitmap(thumbnails, videoDuration);
+            setThumbnailBitmap(thumbnails, videoDuration, ratio);
             mImageLoaded = !placeholder;
         }
 
-        updateSelectionState();
+        updateSelectionState(/*animateBorderChanges=*/false);
     }
 
     /**
      * Initialization for the special tiles (camera/gallery icon).
-     * @param bitmapDetails The details about the bitmap represented by this PickerBitmapView.
      */
-    public void initializeSpecialTile(PickerBitmap bitmapDetails) {
+    public void initializeSpecialTile() {
         int labelStringId = 0;
         Drawable image = null;
         Resources resources = mContext.getResources();
@@ -333,9 +383,10 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * the image has already been selected.
      * @param thumbnails The Bitmaps to use for the icon ImageView.
      * @param videoDuration The time-length of the video (human-friendly string).
+     * @param ratio The aspect ratio of the image, if it were shown using the full screen width.
      * @return True if no image was loaded before (e.g. not even a low-res image).
      */
-    public boolean setThumbnailBitmap(List<Bitmap> thumbnails, String videoDuration) {
+    public boolean setThumbnailBitmap(List<Bitmap> thumbnails, String videoDuration, float ratio) {
         assert thumbnails == null || thumbnails.size() > 0;
         if (videoDuration == null) {
             mIconView.setImageBitmap(thumbnails == null ? null : thumbnails.get(0));
@@ -351,27 +402,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             animationDrawable.start();
         }
 
-        // If the tile has been selected before the bitmap has loaded, make sure it shows up with
-        // a selection border on load.
-        if (super.isChecked()) {
-            mIconView.getLayoutParams().height = imageSizeWithBorders();
-            mIconView.getLayoutParams().width = imageSizeWithBorders();
-            addPaddingToParent(mIconView, mBorder);
-        } else {
-            mIconView.getLayoutParams().height = mCategoryView.getImageSize();
-            mIconView.getLayoutParams().width = mCategoryView.getImageSize();
+        if (thumbnails != null && thumbnails.size() > 0) {
+            mRatio = ratio;
         }
 
         boolean noImageWasLoaded = !mImageLoaded;
         mImageLoaded = true;
-        updateSelectionState();
+        updateSelectionState(/*animateBorderChanges=*/false);
 
         return noImageWasLoaded;
-    }
-
-    /** Returns the size of the image plus the pre-determined border on each side. */
-    private int imageSizeWithBorders() {
-        return mCategoryView.getImageSize() - 2 * mBorder;
     }
 
     /**
@@ -388,6 +427,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * re-used.
      */
     private void resetTile() {
+        mBitmapDetails = null;
         mIconView.setImageBitmap(null);
         mVideoDuration.setText("");
         mUnselectedView.setVisibility(View.GONE);
@@ -396,25 +436,15 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSpecialTile.setVisibility(View.GONE);
         mSpecialTileIcon.setVisibility(View.GONE);
         mSpecialTileLabel.setVisibility(View.GONE);
-    }
-
-    /**
-     * Adds padding to the parent of the |view|.
-     * @param view The child view of the view to receive the padding.
-     * @param padding The amount of padding to use (in pixels).
-     */
-    private static void addPaddingToParent(View view, int padding) {
-        ViewGroup layout = (ViewGroup) view.getParent();
-        layout.setPadding(padding, padding, padding, padding);
-        layout.requestLayout();
+        mSelectedState = false;
+        setEnabled(true);
     }
 
     /**
      * Updates the selection controls for this view.
      */
-    private void updateSelectionState() {
+    private void updateSelectionState(boolean animateBorderChanges) {
         boolean special = !isPictureTile();
-        boolean checked = super.isChecked();
         boolean anySelection =
                 mSelectionDelegate != null && mSelectionDelegate.isSelectionEnabled();
         Resources resources = mContext.getResources();
@@ -432,14 +462,18 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         // The visibility of the unselected toggle for multi-selection mode is a little more complex
         // because we don't want to show it when nothing is selected and also not on a blank canvas.
-        mSelectedView.setVisibility(!special && checked ? View.VISIBLE : View.GONE);
-        boolean showUnselectedToggle = !special && !checked && anySelection && mImageLoaded
+        boolean isSelected = mSelectionDelegate.isItemSelected(mBitmapDetails);
+        mSelectedView.setVisibility(!special && isSelected ? View.VISIBLE : View.GONE);
+        boolean showUnselectedToggle = !special && !isSelected && anySelection && mImageLoaded
                 && mCategoryView.isMultiSelectAllowed();
         mUnselectedView.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mScrim.setVisibility(showUnselectedToggle ? View.VISIBLE : View.GONE);
         mPlayButton.setVisibility(
                 mImageLoaded && mBitmapDetails.type() == PickerBitmap.TileTypes.VIDEO ? View.VISIBLE
                                                                                       : View.GONE);
+        if (!special) {
+            updateSelectionBorder(animateBorderChanges);
+        }
     }
 
     private boolean isGalleryTile() {

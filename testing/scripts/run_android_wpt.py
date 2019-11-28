@@ -74,12 +74,17 @@ class PassThroughArgs(argparse.Action):
   def __call__(self, parser, namespace, values, option_string=None):
     if option_string:
       if self.nargs == 0:
-        self.pass_through_args.append(option_string)
+        self.add_unique_pass_through_arg(option_string)
       elif self.nargs is None:
-        self.pass_through_args.append('{}={}'.format(option_string, values))
+        self.add_unique_pass_through_arg('{}={}'.format(option_string, values))
       else:
         raise ValueError("nargs {} not supported: {} {}".format(
             self.nargs, option_string, values))
+
+  @classmethod
+  def add_unique_pass_through_arg(cls, arg):
+    if arg not in cls.pass_through_args:
+      cls.pass_through_args.append(arg)
 
 
 class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
@@ -133,6 +138,14 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     else:
       rest_args.extend(['--package-name', self.options.package_name])
 
+    if self.options.verbose >= 3:
+      rest_args.extend(["--log-mach=-", "--log-mach-level=debug",
+                        "--log-mach-verbose"])
+
+    if self.options.verbose >= 4:
+      rest_args.extend(['--webdriver-arg=--verbose',
+                        '--webdriver-arg="--log-path=-"'])
+
     rest_args.extend(self.pass_through_wpt_args)
 
     return rest_args
@@ -171,6 +184,8 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     parser.add_argument('--list-tests', action=WPTPassThroughArgs, nargs=0,
                         help="Don't run any tests, just print out a list of"
                         ' tests that would be run.')
+    parser.add_argument('--webdriver-arg', action=WPTPassThroughArgs,
+                        help='WebDriver args.')
     parser.add_argument('--log-wptreport', metavar='WPT_REPORT_FILE',
                         action=WPTPassThroughArgs,
                         help="Log wptreport with subtest details.")

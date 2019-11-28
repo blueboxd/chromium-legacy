@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">‏מאת <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />מוגש על-ידי Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">למחוק נתוני יישומים?</translation>
 <translation id="4099578267706723511">‏אם שולחים אלינו נתוני שימוש ודוחות קריסה, עוזרים לשפר את Chrome.</translation>
-<translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="4116038641877404294">הורד דפים כדי להשתמש בהם במצב לא מקוון</translation>
 <translation id="4135200667068010335">רשימת המכשירים שאפשר לשתף איתם כרטיסייה נסגרה.</translation>
 <translation id="4149994727733219643">תצוגה פשוטה של דפי אינטרנט</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="7438641746574390233">‏כשמצב הטעינה המהירה מופעל, Chrome משתמש בשרתים של Google כדי להאיץ את טעינת הדפים. אם מדובר בדפים איטיים מאוד, במצב הטעינה המהירה הם עוברים שכתוב כך שרק התוכן החיוני שלהם נטען. מצב הטעינה המהירה לא חל על כרטיסיות גלישה בסתר.</translation>
 <translation id="7444811645081526538">קטגוריות נוספות</translation>
-<translation id="7445411102860286510">אתרים יוכלו להפעיל באופן אוטומטי סרטונים מושתקים (מומלץ)</translation>
 <translation id="7453467225369441013">‏הפעולה תוציא אותך מרוב האתרים אבל לא מחשבון Google שלך.</translation>
 <translation id="7454641608352164238">אין מספיק מקום</translation>
 <translation id="7475192538862203634">אם נתקלת בזה לעתים קרובות, כדאי לנסות את <ph name="BEGIN_LINK" />ההצעות<ph name="END_LINK" /> האלה.</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
-<translation id="7837721118676387834">אפשר הפעלה אוטומטית של סרטונים מושתקים באתר ספציפי.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>

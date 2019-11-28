@@ -563,9 +563,21 @@ TtsBackground.prototype.preprocess = function(text, properties) {
   }
   text = text.replace(pE.regexp, this.createPunctuationReplace_(pE.clear));
 
-  //  Remove all whitespace from the beginning and end, and collapse all
+  // Remove all whitespace from the beginning and end, and collapse all
   // inner strings of whitespace to a single space.
   text = text.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+
+  // Look for the pattern [number + lowercase letter], such as in "5g network".
+  // We want to capitalize the letter to prevent it from being substituted with
+  // a unit in the TTS engine; in the above case, the string would get spoken as
+  // "5 grams network", which we want to avoid.
+  // We do not match against the letter "a" in the regular expression because
+  // it is a word and we do not want to capitalize it just because it comes
+  // after a number.
+  text = text.replace(
+      /(\d)(\s*)([b-z])\b/g,
+      (unused, num, whitespace, letter) =>
+          num + whitespace + letter.toUpperCase());
 
   return text;
 };

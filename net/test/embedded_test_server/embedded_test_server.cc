@@ -250,9 +250,10 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
   }
 
   response->SendResponse(
-      base::Bind(&HttpConnection::SendResponseBytes, connection->GetWeakPtr()),
-      base::Bind(&EmbeddedTestServer::DidClose, weak_factory_.GetWeakPtr(),
-                 connection));
+      base::BindRepeating(&HttpConnection::SendResponseBytes,
+                          connection->GetWeakPtr()),
+      base::BindOnce(&EmbeddedTestServer::DidClose, weak_factory_.GetWeakPtr(),
+                     connection));
 }
 
 GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {

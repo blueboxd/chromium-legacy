@@ -156,4 +156,20 @@ inline void* operator new(size_t, NotNullTag, void* location) {
   return location;
 }
 
+#if defined(__clang__) && __has_attribute(uninitialized)
+// Attribute "uninitialized" disables -ftrivial-auto-var-init=pattern for
+// the specified variable.
+//
+// -ftrivial-auto-var-init is security risk mitigation feature, so attribute
+// should not be used "just in case", but only to fix real performance
+// bottlenecks when other approaches do not work. In general the compiler is
+// quite effective at eliminating unneeded initializations introduced by the
+// flag, e.g. when they are followed by actual initialization by a program.
+// However if compiler optimization fails and code refactoring is hard, the
+// attribute can be used as a workaround.
+#define STACK_UNINITIALIZED __attribute__((uninitialized))
+#else
+#define STACK_UNINITIALIZED
+#endif
+
 #endif /* WTF_Allocator_h */

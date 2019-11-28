@@ -243,7 +243,7 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent,
       http_cache_(URLRequestContextConfig::HttpCacheType::DISK),
       user_agent_(user_agent),
       user_agent_partial_(user_agent_partial),
-      net_log_(new net::NetLog),
+      net_log_(net::NetLog::Get()),
       enable_pkp_bypass_for_local_trust_anchors_(true),
       network_thread_priority_(kKeepDefaultThreadPriority) {}
 
@@ -354,7 +354,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   // future.
   context_builder.set_transport_security_persister_path(base::FilePath());
 
-  config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get());
+  config->ConfigureURLRequestContextBuilder(&context_builder);
 
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
@@ -369,7 +369,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     cronet_prefs_manager_ = std::make_unique<CronetPrefsManager>(
         config->storage_path, GetNetworkThreadTaskRunner(),
         file_thread_->task_runner(), false /* nqe */, false /* host_cache */,
-        net_log_.get(), &context_builder);
+        net_log_, &context_builder);
   }
 
   context_builder.set_host_resolver(std::move(mapped_host_resolver));

@@ -47,6 +47,12 @@ class AudioSocketService {
   // Starts accepting incoming connections.
   void Accept();
 
+  // Creates a connection to an AudioSocketService instance. The |endpoint| is
+  // used on systems that support Unix domain sockets; otherwise, the |port| is
+  // used to make a TCP connection.
+  static std::unique_ptr<net::StreamSocket> Connect(const std::string& endpoint,
+                                                    int port);
+
  private:
   void OnAccept(int result);
   bool HandleAcceptResult(int result);

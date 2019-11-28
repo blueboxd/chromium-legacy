@@ -413,7 +413,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4084712963632273211">Lähde: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Googlen toimittama<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Poistetaanko sovellustiedot?</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
-<translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4116038641877404294">Lataa sivuja offline-käyttöä varten</translation>
 <translation id="4135200667068010335">Välilehden jakamisen laiteluettelo on suljettu.</translation>
 <translation id="4149994727733219643">Yksinkertaisempi sivunäkymä</translation>
@@ -872,7 +871,6 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
 <translation id="7438641746574390233">Kun yksinkertaistettu tila on käytössä, Chrome saa Googlen palvelimien avulla sivut latautumaan nopeammin. Yksinkertaistettu tila kirjoittaa hyvin hitaat sivut uudelleen niin, että vain tärkein sisältö latautuu. Yksinkertaistettu tila ei koske incognito-välilehtiä.</translation>
 <translation id="7444811645081526538">Lisää luokkia</translation>
-<translation id="7445411102860286510">Salli sivustoille mykistettyjen videoiden automaattinen toisto (suositus)</translation>
 <translation id="7453467225369441013">Tämä kirjaa sinut ulos useimmilta sivustoilta. Sinua ei kirjata ulos Google-tililtäsi.</translation>
 <translation id="7454641608352164238">Tallennustila ei riitä</translation>
 <translation id="7475192538862203634">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK" />ehdotuksia<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7810647596859435254">Avaa sovelluksessa…</translation>
 <translation id="7821588508402923572">Datasäästösi näkyvät täällä</translation>
-<translation id="7837721118676387834">Sallii tietylle sivustolle mykistettyjen videoiden automaattisen toiston.</translation>
 <translation id="7846076177841592234">Peruuta valinta</translation>
 <translation id="784934925303690534">Aikaväli</translation>
 <translation id="7851858861565204677">Muut laitteet</translation>

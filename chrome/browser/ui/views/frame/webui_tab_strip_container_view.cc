@@ -303,6 +303,7 @@ void WebUITabStripContainerView::ShowContextMenuAtPoint(
 }
 
 TabStripUILayout WebUITabStripContainerView::GetLayout() {
+  DCHECK(tab_contents_container_);
   return TabStripUILayout::CalculateForWebViewportSize(
       tab_contents_container_->size());
 }
@@ -363,10 +364,16 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
 }
 
 void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
+  view_observer_.Remove(observed_view);
+
   if (observed_view == new_tab_button_)
     new_tab_button_ = nullptr;
   else if (observed_view == tab_counter_)
     tab_counter_ = nullptr;
+  else if (observed_view == tab_contents_container_)
+    tab_contents_container_ = nullptr;
+  else
+    NOTREACHED();
 }
 
 bool WebUITabStripContainerView::SetPaneFocusAndFocusDefault() {

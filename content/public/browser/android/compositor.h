@@ -47,7 +47,7 @@ class CONTENT_EXPORT Compositor {
   // Creates a GL context for the provided |handle|. If a null handle is passed,
   // an offscreen context is created. This must be called on the UI thread.
   using ContextProviderCallback =
-      base::Callback<void(scoped_refptr<viz::ContextProvider>)>;
+      base::OnceCallback<void(scoped_refptr<viz::ContextProvider>)>;
   static void CreateContextProvider(
       gpu::SurfaceHandle handle,
       gpu::ContextCreationAttribs attributes,

@@ -16,6 +16,8 @@
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -222,9 +224,15 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-    case SHELF_BACKGROUND_OVERVIEW:
     case SHELF_BACKGROUND_IN_APP:
       shelf_target_color = ShelfConfig::Get()->GetMaximizedShelfColor();
+      break;
+    case SHELF_BACKGROUND_OVERVIEW:
+      shelf_target_color =
+          (chromeos::switches::ShouldShowShelfHotseat() &&
+           Shell::Get()->tablet_mode_controller()->InTabletMode())
+              ? ShelfConfig::Get()->GetMaximizedShelfColor()
+              : ShelfConfig::Get()->GetDefaultShelfColor();
       break;
     case SHELF_BACKGROUND_OOBE:
       shelf_target_color = SK_ColorTRANSPARENT;

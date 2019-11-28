@@ -56,8 +56,6 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
     datatypes.push_back(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
-    datatypes.push_back(syncer::FAVICON_TRACKING);
-    datatypes.push_back(syncer::FAVICON_IMAGES);
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
     if (!base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
       // Password store factory is null for testing. For directory

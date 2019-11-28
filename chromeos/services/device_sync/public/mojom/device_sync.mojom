@@ -7,6 +7,9 @@ module chromeos.device_sync.mojom;
 import "chromeos/components/multidevice/mojom/multidevice_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
+// Denotes the outcome of an HTTP request, where results like kBadRequest map
+// onto HTTP error codes while others like kRequestServiceNotYetInitialized
+// reflect issues adjacent to the actual HTTP request.
 enum NetworkRequestResult {
   // Successful network request.
   kSuccess,
@@ -42,6 +45,7 @@ enum NetworkRequestResult {
   kUnknown
 };
 
+// Describes the desired state of a device's software feature.
 enum FeatureStatusChange {
   // Enables a feature on a device and disables the feature on all other
   // devices associated with the account.
@@ -56,15 +60,22 @@ enum FeatureStatusChange {
   kDisable
 };
 
-struct FindEligibleDevicesResponse {
-  array<chromeos.multidevice.mojom.RemoteDevice> eligible_devices;
-  array<chromeos.multidevice.mojom.RemoteDevice> ineligible_devices;
+// Denotes the relevant CryptAuth service.
+enum CryptAuthService {
+  kEnrollment,
+  kDeviceSync
 };
 
+// Describes a device's network reachability.
 enum ConnectivityStatus {
   kOnline,
   kOffline,
   kUnknownConnectivity
+};
+
+struct FindEligibleDevicesResponse {
+  array<chromeos.multidevice.mojom.RemoteDevice> eligible_devices;
+  array<chromeos.multidevice.mojom.RemoteDevice> ineligible_devices;
 };
 
 struct DeviceActivityStatus {
@@ -183,6 +194,18 @@ interface DeviceSync {
       chromeos.multidevice.mojom.SoftwareFeature software_feature) =>
           (NetworkRequestResult result_code,
            FindEligibleDevicesResponse? response);
+
+  // Sends a GCM message--via CryptAuth--to devices with Instance IDs
+  // |device_instance_ids|. The message includes the CryptAuth
+  // service--Enrollment or DeviceSync--and the feature
+  // type--kBetterTogetherHost, for example--indicating the reason for the
+  // notification; these are specified by |cryptauth_service| and |feature|,
+  // respectively.
+  NotifyDevices(
+      array<string> device_instance_ids,
+      CryptAuthService cryptauth_service,
+      chromeos.multidevice.mojom.SoftwareFeature feature) =>
+    (NetworkRequestResult result_code);
 
   // Retrieves the activity status of the user's devices. When this function
   // is invoked, a network request will be sent to the CryptAuth server to

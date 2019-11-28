@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/drop_data.h"
@@ -65,5 +66,6 @@ void HandleOnPerformDrop(
 
   safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
       web_contents, std::move(data),
-      base::BindOnce(&DeepScanCompletionCallback, std::move(callback)));
+      base::BindOnce(&DeepScanCompletionCallback, std::move(callback)),
+      safe_browsing::DeepScanAccessPoint::DRAG_AND_DROP);
 }

@@ -8,10 +8,6 @@ import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHA
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -77,8 +73,6 @@ public class StatusView extends LinearLayout {
     private @StringRes int mAccessibilityToast;
 
     private Bitmap mIconBitmap;
-    private Bitmap mCachedGoogleG;
-    private Paint mPaint;
 
     private TouchDelegate mTouchDelegate;
     private CompositeTouchDelegate mCompositeTouchDelegate;
@@ -119,8 +113,6 @@ public class StatusView extends LinearLayout {
         if (mToolbarCommonPropertiesModel != null
                 && mDelegate.shouldShowSearchEngineLogo(
                         mToolbarCommonPropertiesModel.isIncognito())) {
-            if (isSearchEngineGoogle) mPaint = new Paint();
-
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(mIconView.getLayoutParams());
             layoutParams.setMarginEnd(0);
@@ -325,36 +317,6 @@ public class StatusView extends LinearLayout {
         // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
         // should be unset.
         mIconBitmap = null;
-
-        // Temporary workaround for M79 which makes the google g 20dp instead of 24dp.
-        // TODO(wylieb): Remove this code for M80 and replace it with the larger solution.
-        if (mDelegate != null && mToolbarCommonPropertiesModel != null
-                && mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())
-                && mIconRes == R.drawable.ic_logo_googleg_24dp) {
-            if (mCachedGoogleG == null) {
-                // Note: we use these constants more than once.
-                int outlineSize = getResources().getDimensionPixelSize(
-                        R.dimen.location_bar_status_icon_width);
-                int googleGSize = getResources().getDimensionPixelSize(R.dimen.sei_google_g_size);
-
-                // Note: this bitmap will be sized to location_bar_status_icon_width in
-                // {@link StatusView#animateStatusIcon} when passed into LayerDrawable.LayerState.
-                // To avoid this, we must compose the 20dp icon inside the 24dp icon.
-                assert mPaint
-                        != null : "Paint should be initialized when the search engine is Google.";
-                mCachedGoogleG =
-                        Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(),
-                                                          R.drawable.ic_logo_googleg_24dp),
-                                googleGSize, googleGSize, false);
-                Bitmap bitmap = Bitmap.createBitmap(outlineSize, outlineSize, Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                canvas.drawBitmap(mCachedGoogleG, (outlineSize - googleGSize) / 2f,
-                        (outlineSize - googleGSize) / 2f, mPaint);
-                mCachedGoogleG = bitmap;
-            }
-            mIconBitmap = mCachedGoogleG;
-            mIconRes = 0;
-        }
         animateStatusIcon();
     }
 

@@ -20,7 +20,7 @@ InternalAppShelfContextMenu::InternalAppShelfContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {}
+    : ShelfContextMenu(controller, item, display_id) {}
 
 void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
@@ -37,7 +37,7 @@ void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
   if (app_is_open) {
     AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
-                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+                         IDS_SHELF_CONTEXT_MENU_CLOSE);
 
     if (internal_app->internal_app_name == apps::BuiltInAppName::kPluginVm &&
         plugin_vm::IsPluginVmRunning(controller()->profile())) {

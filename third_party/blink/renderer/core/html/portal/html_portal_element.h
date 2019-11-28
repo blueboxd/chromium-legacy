@@ -73,6 +73,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // due to recent adoption.
   void ExpireAdoptionLifetime();
 
+  // Called by PortalContents when it is about to be destroyed.
+  void PortalContentsWillBeDestroyed(PortalContents*);
+
  private:
   enum class GuestContentsEligibility {
     // Can have a guest contents.

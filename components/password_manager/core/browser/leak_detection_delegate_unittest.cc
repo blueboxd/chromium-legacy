@@ -4,13 +4,13 @@
 
 #include <utility>
 
-#include "components/password_manager/core/browser/leak_detection_delegate.h"
-
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -18,6 +18,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,6 +79,10 @@ class LeakDetectionDelegateTest : public testing::Test {
     delegate_.set_leak_factory(std::move(mock_factory));
     pref_service_->registry()->RegisterBooleanPref(
         password_manager::prefs::kPasswordLeakDetectionEnabled, true);
+#if !defined(OS_IOS)
+    pref_service_->registry()->RegisterBooleanPref(
+        ::prefs::kSafeBrowsingEnabled, true);
+#endif
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(pref_service()));
   }
 
@@ -122,6 +127,17 @@ TEST_F(LeakDetectionDelegateTest, PrefIsFalse) {
 
   EXPECT_FALSE(delegate().leak_check());
 }
+
+#if !defined(OS_IOS)
+TEST_F(LeakDetectionDelegateTest, SafeBrowsingOff) {
+  pref_service()->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
+
+  EXPECT_CALL(factory(), TryCreateLeakCheck).Times(0);
+  delegate().StartLeakCheck(CreateTestForm());
+
+  EXPECT_FALSE(delegate().leak_check());
+}
+#endif
 
 TEST_F(LeakDetectionDelegateTest, UsernameIsEmpty) {
   autofill::PasswordForm form = CreateTestForm();

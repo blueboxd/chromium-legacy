@@ -85,4 +85,39 @@ bool EnumTraits<chromeos::device_sync::mojom::FeatureStatusChange,
   return false;
 }
 
+chromeos::device_sync::mojom::CryptAuthService EnumTraits<
+    chromeos::device_sync::mojom::CryptAuthService,
+    cryptauthv2::TargetService>::ToMojom(cryptauthv2::TargetService input) {
+  switch (input) {
+    case cryptauthv2::TargetService::ENROLLMENT:
+      return chromeos::device_sync::mojom::CryptAuthService::kEnrollment;
+    case cryptauthv2::TargetService::DEVICE_SYNC:
+      return chromeos::device_sync::mojom::CryptAuthService::kDeviceSync;
+    case cryptauthv2::TargetService::TARGET_SERVICE_UNSPECIFIED:
+      FALLTHROUGH;
+    case cryptauthv2::TargetService::TargetService_INT_MIN_SENTINEL_DO_NOT_USE_:
+      FALLTHROUGH;
+    case cryptauthv2::TargetService::TargetService_INT_MAX_SENTINEL_DO_NOT_USE_:
+      NOTREACHED();
+      return chromeos::device_sync::mojom::CryptAuthService::kDeviceSync;
+  }
+}
+
+bool EnumTraits<chromeos::device_sync::mojom::CryptAuthService,
+                cryptauthv2::TargetService>::
+    FromMojom(chromeos::device_sync::mojom::CryptAuthService input,
+              cryptauthv2::TargetService* out) {
+  switch (input) {
+    case chromeos::device_sync::mojom::CryptAuthService::kEnrollment:
+      *out = cryptauthv2::TargetService::ENROLLMENT;
+      return true;
+    case chromeos::device_sync::mojom::CryptAuthService::kDeviceSync:
+      *out = cryptauthv2::TargetService::DEVICE_SYNC;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace mojo

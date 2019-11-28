@@ -413,7 +413,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />publicado por Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">¿Borrar datos de app?</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
-<translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
 <translation id="4135200667068010335">La lista de dispositivos con los que se puede compartir una pestaña está cerrada.</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
@@ -872,7 +871,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="7438641746574390233">Cuando el modo lite está activado, Chrome usa los servidores de Google para cargar las páginas más rápido. El modo lite reescribe las páginas muy lentas para cargar solo el contenido esencial. El modo lite no se aplica a las pestañas del modo incógnito.</translation>
 <translation id="7444811645081526538">Más categorías</translation>
-<translation id="7445411102860286510">Permitir que los sitios reproduzcan videos silenciados de forma automática (recomendado)</translation>
 <translation id="7453467225369441013">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google.</translation>
 <translation id="7454641608352164238">No hay suficiente espacio</translation>
 <translation id="7475192538862203634">Si el mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">Aquí aparecerá tu ahorro de datos</translation>
-<translation id="7837721118676387834">Permite la reproducción automática de videos silenciados para un sitio específico.</translation>
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>

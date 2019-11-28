@@ -51,7 +51,7 @@ function renderTemplate(experimentalFeaturesData) {
 
   // Add handlers to dynamically created HTML elements.
   let elements = document.getElementsByClassName('experiment-select');
-  for (let element of elements) {
+  for (const element of elements) {
     element.onchange = function() {
       const selectElement = /** @type {!HTMLSelectElement} */ (element);
       handleSelectExperimentalFeatureChoice(
@@ -63,7 +63,7 @@ function renderTemplate(experimentalFeaturesData) {
   }
 
   elements = document.getElementsByClassName('experiment-enable-disable');
-  for (let element of elements) {
+  for (const element of elements) {
     element.onchange = function() {
       const selectElement = /** @type {!HTMLSelectElement} */ (element);
       handleEnableExperimentalFeature(
@@ -77,7 +77,7 @@ function renderTemplate(experimentalFeaturesData) {
   }
 
   elements = document.getElementsByClassName('experiment-origin-list-value');
-  for (let element of elements) {
+  for (const element of elements) {
     element.onchange = function() {
       handleSetOriginListFlag(element, element.value);
       return false;
@@ -106,7 +106,7 @@ function renderTemplate(experimentalFeaturesData) {
   // Toggling of experiment description overflow content on smaller screens.
   if(smallScreenCheck.matches){
     elements = document.querySelectorAll('.experiment .flex:first-child');
-    for (let element of elements) {
+    for (const element of elements) {
       element.onclick = () => element.classList.toggle('expand');
     }
   }
@@ -225,7 +225,7 @@ function showRestartToast(show) {
  * boolean}>, supported_platforms: !Array<string>
  * }}
  */
-var Feature;
+let Feature;
 
 /**
  * @typedef {{
@@ -237,7 +237,7 @@ var Feature;
  *  showOwnerWarning: boolean
  * }}
  */
-var ExperimentalFeaturesData;
+let ExperimentalFeaturesData;
 
 /**
  * Called by the WebUI to re-populate the page with data representing the
@@ -352,6 +352,13 @@ function handleSelectExperimentalFeatureChoice(node, index) {
   experimentChangesUiUpdates(node, index);
 }
 
+/** @type {!FlagSearch.SearchContent} */
+const emptySearchContent = Object.freeze({
+  link: null,
+  title: null,
+  description: null,
+});
+
 /**
  * Handles in page searching. Matches against the experiment flag name.
  * @constructor
@@ -388,13 +395,6 @@ FlagSearch.SEARCH_DEBOUNCE_TIME_MS = 150;
  * }}
  */
 FlagSearch.SearchContent;
-
-/** @type {!FlagSearch.SearchContent} */
-var emptySearchContent = Object.freeze({
-  link: null,
-  title: null,
-  description: null,
-});
 
 /**
  * Get the singleton instance of FlagSearch.

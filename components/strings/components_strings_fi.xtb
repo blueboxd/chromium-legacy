@@ -647,7 +647,6 @@
 <translation id="4082393374666368382">Asetukset – Ylläpito</translation>
 <translation id="4098354747657067197">Seuraava sivusto on petollinen</translation>
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
-<translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
 <translation id="4108231218301530806">Vahvista kortti seuraavan kerran sormenjäljellä.</translation>
 <translation id="4110652170750985508">Tarkasta maksu</translation>
@@ -1461,7 +1460,7 @@ Lisätietoja:
 <translation id="8042918947222776840">Valitse noutotapa</translation>
 <translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> on määritetty virheellisesti. Ongelma korjaantuu yleensä, jos <ph name="SOFTWARE_NAME" /> poistetaan. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8062224330780487419">Kortin turvakoodin lisääminen ei ole jatkossa enää tarpeen</translation>
-<translation id="8066955247577885446">Jokin meni pieleen.</translation>
+<translation id="8066955247577885446">Jotain meni pieleen.</translation>
 <translation id="8074253406171541171">10x13 (kirjekuori)</translation>
 <translation id="8078141288243656252">Kierrettyyn asiakirjaan ei voi tehdä merkintöjä</translation>
 <translation id="8079031581361219619">Ladataanko sivusto uudelleen?</translation>

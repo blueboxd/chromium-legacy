@@ -23,9 +23,8 @@ URLRequestContextGetter::URLRequestContextGetter(
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_.get()) {
+    CreateVlogNetLogObserver();
     net::URLRequestContextBuilder builder;
-    net_log_.reset(new VlogNetLog());
-    builder.set_net_log(net_log_.get());
     builder.DisableHttpCache();
     builder.set_proxy_config_service(std::move(proxy_config_service_));
     url_request_context_ = builder.Build();

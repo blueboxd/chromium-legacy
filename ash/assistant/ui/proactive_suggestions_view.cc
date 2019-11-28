@@ -40,6 +40,12 @@ ProactiveSuggestionsView::~ProactiveSuggestionsView() {
 }
 
 void ProactiveSuggestionsView::Init() {
+  // By default, a Button will add a FocusRing to its view hierarchy to indicate
+  // focus. The widget for this view is not activatable, and this view cannot be
+  // focused, but the presence of the FocusRing leads to unexpected behavior
+  // when checking against children(), so it's better that we don't install it.
+  SetInstallFocusRingOnFocus(false);
+
   InitLayout();
   InitWidget();
   InitWindow();
@@ -148,6 +154,18 @@ void ProactiveSuggestionsView::OnKeyboardOccludedBoundsChanged(
 
   keyboard_workspace_occluded_bounds_ = new_bounds_in_screen;
   UpdateBounds();
+}
+
+void ProactiveSuggestionsView::ShowWhenReady() {
+  GetWidget()->ShowInactive();
+}
+
+void ProactiveSuggestionsView::Hide() {
+  GetWidget()->Hide();
+}
+
+void ProactiveSuggestionsView::Close() {
+  GetWidget()->Close();
 }
 
 void ProactiveSuggestionsView::InitWidget() {

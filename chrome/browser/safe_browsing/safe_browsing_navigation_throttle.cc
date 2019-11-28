@@ -36,8 +36,8 @@ SafeBrowsingNavigationThrottle::WillFailRequest() {
   if (manager->PopUnsafeResourceForURL(handle->GetURL(), &resource)) {
     SafeBrowsingBlockingPage* blocking_page =
         SafeBrowsingBlockingPage::CreateBlockingPage(
-            manager.get(), handle->GetWebContents(), handle->GetURL(),
-            resource);
+            manager.get(), handle->GetWebContents(), handle->GetURL(), resource,
+            true);
     std::string error_page_content = blocking_page->GetHTMLContents();
     security_interstitials::SecurityInterstitialTabHelper::
         AssociateBlockingPage(handle->GetWebContents(),

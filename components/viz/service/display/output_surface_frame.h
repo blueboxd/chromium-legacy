@@ -34,6 +34,7 @@ class VIZ_SERVICE_EXPORT OutputSurfaceFrame {
   // Optional content area for SwapWithBounds. Rectangles may overlap.
   std::vector<gfx::Rect> content_bounds;
   std::vector<ui::LatencyInfo> latency_info;
+  bool top_controls_visible_height_changed = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceFrame);

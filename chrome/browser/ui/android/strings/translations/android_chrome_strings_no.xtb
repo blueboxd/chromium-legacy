@@ -413,7 +413,6 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />levert av Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Slette appdataene?</translation>
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
-<translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4116038641877404294">Last ned sidene for å bruke dem uten nett</translation>
 <translation id="4135200667068010335">Listen over enheter du kan dele faner med, er lukket.</translation>
 <translation id="4149994727733219643">Forenklet visning av nettsider</translation>
@@ -815,7 +814,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
-<translation id="6995899638241819463">Advar deg hvis passord blir avdekket i databrudd</translation>
+<translation id="6995899638241819463">Få en advarsel hvis passord blir avdekket i databrudd</translation>
 <translation id="7015203776128479407">Innledende synkroniseringsoppsett ble ikke fullført. Synkronisering er slått av.</translation>
 <translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
@@ -872,7 +871,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="7438641746574390233">Når forenklet modus er på, bruker Chrome Google-tjenere slik at sidene lastes inn raskere. Forenklet modus omskriver svært trege sider, slik at kun vesentlig innhold lastes inn. Forenklet modus brukes ikke på inkognitofaner.</translation>
 <translation id="7444811645081526538">Flere kategorier</translation>
-<translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
 <translation id="7453467225369441013">Logger deg av de fleste nettsteder. Du blir ikke logget av Google-kontoen din.</translation>
 <translation id="7454641608352164238">Det er ikke nok plass</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7810647596859435254">Åpne med…</translation>
 <translation id="7821588508402923572">Datasparingen din vises her</translation>
-<translation id="7837721118676387834">Tillat automatisk avspilling av videoer med dempet lyd for et bestemt nettsted.</translation>
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>

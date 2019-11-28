@@ -21,7 +21,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.TimeoutTimer;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

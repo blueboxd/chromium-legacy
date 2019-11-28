@@ -5,13 +5,13 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+    <org.chromium.chrome.browser.settings.ChromeSwitchPreference
         android:key="content_suggestions"
         android:title="@string/notifications_content_suggestions_title"
         android:summary="@string/notifications_content_suggestions_summary" />
 
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.website.SingleCategoryPreferences"
         android:title="@string/notifications_from_websites_title"
         android:key="from_websites" />
 </PreferenceScreen>

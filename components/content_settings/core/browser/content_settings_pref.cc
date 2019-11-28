@@ -92,9 +92,9 @@ ContentSettingsPref::ContentSettingsPref(
 
   ReadContentSettingsFromPref();
 
-  registrar_->Add(
-      pref_name_,
-      base::Bind(&ContentSettingsPref::OnPrefChanged, base::Unretained(this)));
+  registrar_->Add(pref_name_,
+                  base::BindRepeating(&ContentSettingsPref::OnPrefChanged,
+                                      base::Unretained(this)));
 }
 
 ContentSettingsPref::~ContentSettingsPref() {

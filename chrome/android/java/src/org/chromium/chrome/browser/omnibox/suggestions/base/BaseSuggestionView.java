@@ -11,8 +11,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.widget.ImageView;
+import android.widget.Space;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
@@ -70,6 +70,15 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
                 LayoutParams.MATCH_PARENT));
         addView(mActionView);
 
+        // TODO(ender): Drop this view and expand the last icon size by 8dp to ensure it remains
+        // centered with the omnibox "Clear" button.
+        Space space = new Space(getContext());
+        space.setLayoutParams(
+                new LayoutParams(getResources().getDimensionPixelSize(
+                                         R.dimen.omnibox_suggestion_refine_view_modern_end_padding),
+                        LayoutParams.MATCH_PARENT));
+        addView(space);
+
         setContentView(view);
     }
 
@@ -81,17 +90,6 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      */
     public BaseSuggestionView(Context context, @LayoutRes int layoutId) {
         this(LayoutInflater.from(context).inflate(layoutId, null));
-    }
-
-    @Override
-    protected void onMeasure(int widthSpec, int heightSpec) {
-        int contentViewWidth = MeasureSpec.getSize(widthSpec);
-        // TODO(ender): Drop this end padding, and expand the icon size by 8dp to ensure it remains
-        // centered with the omnibox "Clear" button.
-        contentViewWidth -= getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
-        super.onMeasure(
-                MeasureSpec.makeMeasureSpec(contentViewWidth, MeasureSpec.EXACTLY), heightSpec);
     }
 
     @Override

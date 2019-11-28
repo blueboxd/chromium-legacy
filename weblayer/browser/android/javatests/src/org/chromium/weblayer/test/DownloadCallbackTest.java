@@ -45,13 +45,14 @@ public class DownloadCallbackTest {
         public long mContentLength;
 
         @Override
-        public void onDownloadRequested(Uri uri, String userAgent, String contentDisposition,
+        public boolean onInterceptDownload(Uri uri, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
             mUrl = uri.toString();
             mUserAgent = userAgent;
             mContentDisposition = contentDisposition;
             mMimetype = mimetype;
             mContentLength = contentLength;
+            return true;
         }
 
         public void waitForDownload() {

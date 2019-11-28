@@ -5,7 +5,6 @@
 #include "extensions/test/test_background_page_first_load_observer.h"
 
 #include "base/logging.h"
-#include "extensions/browser/extension_host.h"
 
 namespace extensions {
 
@@ -21,12 +20,8 @@ TestBackgroundPageFirstLoadObserver::TestBackgroundPageFirstLoadObserver(
     OnObtainedExtensionHost();
 }
 
-TestBackgroundPageFirstLoadObserver::~TestBackgroundPageFirstLoadObserver() {
-  if (extension_host_) {
-    static_cast<DeferredStartRenderHost*>(extension_host_)
-        ->RemoveDeferredStartRenderHostObserver(this);
-  }
-}
+TestBackgroundPageFirstLoadObserver::~TestBackgroundPageFirstLoadObserver() =
+    default;
 
 void TestBackgroundPageFirstLoadObserver::Wait() {
   if (!extension_host_ || !extension_host_->has_loaded_once())
@@ -42,15 +37,13 @@ void TestBackgroundPageFirstLoadObserver::OnBackgroundHostCreated(
   }
 }
 
-void TestBackgroundPageFirstLoadObserver::
-    OnDeferredStartRenderHostDidStopFirstLoad(
-        const DeferredStartRenderHost* host) {
+void TestBackgroundPageFirstLoadObserver::OnExtensionHostDidStopFirstLoad(
+    const ExtensionHost* host) {
   run_loop_.Quit();
 }
 
 void TestBackgroundPageFirstLoadObserver::OnObtainedExtensionHost() {
-  static_cast<DeferredStartRenderHost*>(extension_host_)
-      ->AddDeferredStartRenderHostObserver(this);
+  extension_host_observer_.Add(extension_host_);
 }
 
 }  // namespace extensions

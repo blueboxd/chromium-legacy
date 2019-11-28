@@ -163,6 +163,7 @@
       Als het beleid is ingesteld op 'false', wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="1160479894929412407">QUIC-protocol toestaan</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
+<translation id="1163080558183062209">Printertypen op de weigeringslijst uitschakelen</translation>
 <translation id="117059611145966538">Externe afdrukservers</translation>
 <translation id="1189817621108632689">Hiermee kun je een lijst met URL's opgeven voor sites die afbeeldingen mogen weergeven.
 
@@ -877,6 +878,13 @@
 
       Onjuist opgemaakte templates worden genegeerd.</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS zonder onveilige fallback inschakelen</translation>
+<translation id="2347264058558503729">Hiermee wordt ingeschakeld dat <ph name="PRODUCT_NAME" /> documenten naar <ph name="CLOUD_PRINT_NAME" /> kan sturen om ze af te drukken.  OPMERKING: Dit is alleen van invloed op support voor <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />.  Dit voorkomt niet dat gebruikers afdruktaken op websites indienen.
+
+      Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers afdrukken naar <ph name="CLOUD_PRINT_NAME" /> vanuit het afdrukdialoogvenster van <ph name="PRODUCT_NAME" />.
+
+      Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken naar <ph name="CLOUD_PRINT_NAME" /> vanuit het afdrukdialoogvenster van <ph name="PRODUCT_NAME" />.
+
+      Je kunt ervoor zorgen dat <ph name="CLOUD_PRINT_NAME" />-bestemmingen vindbaar blijven door dit beleid in te stellen op True en 'cloud' niet op te nemen in het beleid 'PrinterTypeDenyList'.</translation>
 <translation id="237494535617297575">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -987,6 +995,7 @@
           Als dit beleid is ingeschakeld of niet is ingesteld, worden waarschuwingen uitgeschakeld wanneer bepaalde opdrachtregelmarkeringen worden gebruikt om Chrome te starten.
 
           In Windows is dit beleid alleen beschikbaar op instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer.</translation>
+<translation id="247658312644322296">De bestemming 'Opslaan als pdf'</translation>
 <translation id="2480971699591919564">De functie 'Klik om te bellen' inschakelen, waarmee gebruikers telefoonnummers van Chrome-desktops naar een Android-apparaat kunnen sturen als de gebruiker is ingelogd. Bekijk het volgende Helpcentrum-artikel voor meer informatie: https://support.google.com/chrome/answer/9430554?hl=nl.
 
       Als dit beleid is ingeschakeld, wordt de mogelijkheid om telefoonnummers naar Android-apparaten te sturen ingeschakeld voor de Chrome-gebruiker.
@@ -2237,15 +2246,6 @@
           Deze functie is momenteel uitgeschakeld aan de serverzijde.</translation>
 <translation id="4363057787588706121">Toestaan dat lijstbeleid van verschillende bronnen kan worden samengevoegd</translation>
 <translation id="4363101430102811068">Gegevenslekdetectie voor ingevoerde gegevens inschakelen</translation>
-<translation id="4363136876356691536">Als dit beleid is ingesteld op True, worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
-
-          Als dit beleid is ingesteld op False, worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als dit beleid niet is ingesteld, worden toegankelijkheidsopties niet weergegeven in het systeemvakmenu, maar kan de gebruiker er via de pagina Instellingen voor zorgen dat de toegankelijkheidsopties worden weergegeven.
-
-          Als de toegankelijkheidsfuncties zijn ingeschakeld (via een andere manier, zoals een toetsencombinatie), worden de toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.</translation>
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
@@ -2389,7 +2389,19 @@
       Er worden installatieverzoeken voor extensies gemaakt als gebruikers proberen een extensie te installeren die niet op de witte lijst van <ph name="EXTENSION_INSTALL_WHITELIST" /> of <ph name="EXTENSION_SETTINGS" /> staat.
 
       Dit beleid is alleen effectief als de machine is ingeschreven bij <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> en <ph name="CLOUD_REPORTING_ENABLED" /> is ingeschakeld.</translation>
+<translation id="4638162097046412832">De printertypen die op de weigeringslijst zijn geplaatst, kunnen niet worden gevonden en hun mogelijkheden kunnen niet worden opgehaald.
+
+      Als je alle printertypen op de weigeringslijst plaatst, schakel je in feite de afdrukfunctie uit. Er zijn dan geen bestemmingen beschikbaar waar een document naartoe kan worden gestuurd voor afdrukken.
+
+      Als je 'cloud' opneemt op de weigeringslijst, heeft dit hetzelfde effect als het beleid 'CloudPrintSubmitEnabled' instellen op False. Je kunt ervoor zorgen dat <ph name="CLOUD_PRINT_NAME" />-bestemmingen vindbaar blijven door het beleid 'CloudPrintSubmitEnabled' in te stellen op True en 'cloud' niet op te nemen op de weigeringslijst.
+
+      Als het beleid niet is ingesteld of is ingesteld op een lege lijst, kunnen alle printertypen worden gevonden.
+
+      Extensieprinters staan ook bekend als afdrukproviderbestemmingen en omvatten elke bestemming die hoort bij een <ph name="PRODUCT_NAME" />-extensie.
+
+      Lokale printers staan ook bekend als systeemeigen afdrukbestemmingen en omvatten bestemmingen die beschikbaar zijn voor de lokale computer en gedeelde netwerkprinters.</translation>
 <translation id="4639407427807680016">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de zwarte lijst</translation>
+<translation id="4649395978608361979">Lokale printerbestemmingen</translation>
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>
 <translation id="465099050592230505">URL van zakelijke webwinkel (verouderd)</translation>
 <translation id="4661889655253181651">Met instellingen voor content kun je opgeven hoe content van een bepaald type (zoals cookies, afbeeldingen of JavaScript) wordt verwerkt.</translation>
@@ -2416,6 +2428,7 @@
       Als je dit beleid inschakelt, kunnen sites tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.
       Als dit beleid is uitgeschakeld of niet is ingesteld, kunnen sites niet tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
+<translation id="4693779768620889402">Op extensies gebaseerde bestemmingen</translation>
 <translation id="4703402283970867140">Slim dimmodel inschakelen, zodat het langer duurt tot het scherm wordt gedimd</translation>
 <translation id="4722122254122249791">Site-isolatie inschakelen voor gespecificeerde herkomsten</translation>
 <translation id="4722399051042571387">Als dit is ingesteld op 'false', kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd en gemakkelijk kunnen worden geraden.
@@ -3068,6 +3081,7 @@
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="5656177735561364047">De functie voor gedeeld klembord inschakelen</translation>
 <translation id="5666457529647159548">Gebruikers toestaan geïnstalleerde clientcertificaten te beheren.</translation>
+<translation id="5676740747107495269">Toegankelijkheidsopties weergeven in het systeemvakmenu op het inlogscherm</translation>
 <translation id="5689430183304951538">Standaard paginagrootte voor afdrukken</translation>
 <translation id="5693469654327063861">Gegevensmigratie toestaan</translation>
 <translation id="5694594914843889579">Wanneer de instelling is ingesteld op 'True', is externe opslag niet beschikbaar in de bestandsbrowser.
@@ -3608,6 +3622,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="6813263547126514821">Energiebeheer en uitschakelen</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
+<translation id="6821268164692776674">De bestemmingen <ph name="CLOUD_PRINT_NAME" /> en 'Opslaan in Google Drive'</translation>
 <translation id="6833988859168635883">Startpagina, homepage en pagina 'Nieuw tabblad'</translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
 <translation id="683688607121170501">Deze instelling biedt gebruikers de mogelijkheid om in het contentgedeelte van hun browservenster tussen Google-accounts te schakelen nadat ze zijn ingelogd bij hun <ph name="PRODUCT_OS_NAME" />-apparaat.
@@ -4043,6 +4058,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7469554574977894907">Zoeksuggesties inschakelen</translation>
 <translation id="747275827471712187">Het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" /> voor cookies op deze sites terugzetten</translation>
 <translation id="7477231245051133709">De toegankelijkheidsfunctie voor monogeluid inschakelen</translation>
+<translation id="7477239290070847560">Op zeroconf gebaseerde (mDNS + DNS-SD) protocolbestemmingen</translation>
 <translation id="7485481791539008776">Regels voor selectie van standaardprinter</translation>
 <translation id="7485730741952775732">Als dit beleid is ingesteld, gebruikt de host voor externe toegang deze URL om verificatietokens van clients voor externe toegang te valideren om zo connecties te accepteren. Moet samen met RemoteAccessHostTokenUrl worden gebruikt.
 

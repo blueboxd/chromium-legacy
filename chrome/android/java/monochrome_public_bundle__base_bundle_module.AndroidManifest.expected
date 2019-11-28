@@ -270,13 +270,13 @@
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/preferences"
-        android:name="org.chromium.chrome.browser.preferences.Preferences"
+        android:name="org.chromium.chrome.browser.settings.Preferences"
         android:theme="@style/Theme.Chromium.Preferences"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/storage_management_activity_label"
-        android:name="org.chromium.chrome.browser.preferences.website.ManageSpaceActivity"
+        android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
         android:theme="@style/Theme.Chromium.Preferences.ManageSpace"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"

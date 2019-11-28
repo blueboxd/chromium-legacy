@@ -17,7 +17,7 @@
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password;
 
-// Blacklists the current site to never prompt the user to save its credentials
+// Blocks the current site to never prompt the user to save its credentials
 // again.
 - (void)neverSaveCredentialsForCurrentSite;
 

@@ -81,12 +81,14 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
 }
 
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {
-  // TODO(domfc): Add DRAG_AND_DROP and PASTE access points.
+  // TODO(domfc): Add PASTE access point.
   switch (access_point) {
     case DeepScanAccessPoint::DOWNLOAD:
       return "Download";
     case DeepScanAccessPoint::UPLOAD:
       return "Upload";
+    case DeepScanAccessPoint::DRAG_AND_DROP:
+      return "DragAndDrop";
   }
   NOTREACHED();
   return "";

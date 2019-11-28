@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">발신자: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google 제공<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하여 Chrome을 개선하는 데 동참하세요.</translation>
-<translation id="410351446219883937">자동재생</translation>
 <translation id="4116038641877404294">페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
 <translation id="4135200667068010335">탭을 공유할 기기 목록이 닫혔습니다.</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
@@ -529,7 +528,7 @@
 <translation id="4962975101802056554">기기에서 모든 권한을 취소합니다.</translation>
 <translation id="4970824347203572753">현재 위치에서 사용할 수 없습니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
-<translation id="4988210275050210843">파일 다운로드 중(<ph name="MEGABYTES" />MB)</translation>
+<translation id="4988210275050210843">파일 다운로드 중(<ph name="MEGABYTES" />)</translation>
 <translation id="4988526792673242964">페이지</translation>
 <translation id="4994033804516042629">연락처 없음</translation>
 <translation id="4996978546172906250">공유 방법</translation>
@@ -594,7 +593,7 @@
 <translation id="5427766642345310212">알겠습니다. 새로운 알림 요청을 기본적으로 여기에 표시합니다.</translation>
 <translation id="543338862236136125">비밀번호 수정</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
-<translation id="543509235395288790">파일 <ph name="COUNT" />개(<ph name="MEGABYTES" />MB) 다운로드 중</translation>
+<translation id="543509235395288790">파일 <ph name="COUNT" />개(<ph name="MEGABYTES" />) 다운로드 중</translation>
 <translation id="5441522332038954058">검색주소창으로 이동</translation>
 <translation id="5447201525962359567">쿠키 및 기타 로컬에 저장된 데이터 등 모든 사이트 저장공간</translation>
 <translation id="5447765697759493033">이 사이트는 번역되지 않습니다.</translation>
@@ -815,6 +814,7 @@
 <translation id="6989267951144302301">다운로드할 수 없음</translation>
 <translation id="6990079615885386641">Google Play 스토어에서 앱 다운로드: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">사이트에서 마이크를 사용하기 전에 확인(권장)</translation>
+<translation id="6995899638241819463">데이터 유출로 인해 비밀번호가 노출된 경우 알림</translation>
 <translation id="7015203776128479407">초기 동기화 설정이 완료되지 않았습니다. 동기화가 사용 중지되었습니다.</translation>
 <translation id="7016516562562142042">현재 검색엔진에 허용됨</translation>
 <translation id="7022756207310403729">브라우저에서 열기</translation>
@@ -871,7 +871,6 @@
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7438641746574390233">라이트 모드가 사용 설정되어 있으면 Chrome이 Google 서버를 사용하여 페이지를 더 빠르게 로드합니다. 라이트 모드에서는 속도가 아주 느린 페이지를 다시 작성하여 꼭 필요한 콘텐츠만 로드합니다. 시크릿 탭에는 라이트 모드가 적용되지 않습니다.</translation>
 <translation id="7444811645081526538">카테고리 더보기</translation>
-<translation id="7445411102860286510">사이트에서 음소거된 동영상을 자동재생하도록 허용(권장)</translation>
 <translation id="7453467225369441013">대부분의 사이트에서 로그아웃됩니다. Google 계정에서는 로그아웃되지 않습니다.</translation>
 <translation id="7454641608352164238">저장공간 부족</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
@@ -926,7 +925,6 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
-<translation id="7837721118676387834">특정 사이트에서 음소거된 동영상이 자동재생되도록 허용합니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>

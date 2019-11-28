@@ -413,7 +413,6 @@ Til að breyta leitarstrengnum geturðu haldið inni til að velja hann. Til að
 <translation id="4084712963632273211">Frá <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />birt af Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Eyða forritsgögnum?</translation>
 <translation id="4099578267706723511">Hjálpaðu til við að bæta Google Chrome með því að senda talnagögn um notkun og tilkynningar um hrun til Google.</translation>
-<translation id="410351446219883937">Sjálfvirk spilun</translation>
 <translation id="4116038641877404294">Náðu í síður til að nota þær án nettengingar</translation>
 <translation id="4135200667068010335">Tækjalisti fyrir deilingu flipa er lokaður.</translation>
 <translation id="4149994727733219643">Einfaldað yfirlit fyrir vefsíður</translation>
@@ -872,7 +871,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="7437998757836447326">Skrá út af Chrome</translation>
 <translation id="7438641746574390233">Þegar kveikt er á léttútgáfu notar Chrome þjóna Google til að hlaða síðum hraðar. Léttútgáfa endurskrifar mjög hægar síður og hleður aðeins nauðsynlegu efni. Léttútgáfa er ekki notuð á huliðsflipum.</translation>
 <translation id="7444811645081526538">Fleiri flokkar</translation>
-<translation id="7445411102860286510">Leyfa vefsvæðum að spila myndskeið sjálfkrafa án hljóðs (ráðlagt)</translation>
 <translation id="7453467225369441013">Skráir þig út af flestum vefsvæðum. Þú verður ekki skráð(ur) út af Google reikningnum þínum.</translation>
 <translation id="7454641608352164238">Ekki nægt pláss</translation>
 <translation id="7475192538862203634">Ef þú sérð þetta oft skaltu prófa þessar <ph name="BEGIN_LINK" />tillögur<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7810647596859435254">Opna með…</translation>
 <translation id="7821588508402923572">Gagnasparnaður birtist hér</translation>
-<translation id="7837721118676387834">Leyfa sjálfspilun á myndskeiðum án hljóðs fyrir tiltekið vefsvæði.</translation>
 <translation id="7846076177841592234">Hætta við val</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>

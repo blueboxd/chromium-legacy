@@ -113,7 +113,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
-#include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
@@ -382,15 +381,6 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   RemoterFactoryImpl(int process_id, int routing_id)
       : process_id_(process_id), routing_id_(routing_id) {}
 
-  static void Bind(
-      int process_id,
-      int routing_id,
-      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<RemoterFactoryImpl>(process_id, routing_id),
-        std::move(receiver));
-  }
-
  private:
   void Create(mojo::PendingRemote<media::mojom::RemotingSource> source,
               mojo::PendingReceiver<media::mojom::Remoter> receiver) final {
@@ -517,6 +507,9 @@ url::Origin GetOriginForURLLoaderFactory(
 
   // Any non-opaque |result| must be an origin that is allowed to be accessed
   // from the process that is the target of this navigation.
+  //
+  // TODO(lukasza): https://crbug.com/1029092: The CHECK below should also apply
+  // to opaque origin.
   if (!result.opaque()) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     CHECK(policy->CanAccessDataForOrigin(
@@ -4641,14 +4634,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
-      &SharedWorkerConnectorImpl::Create, process_->GetID(), routing_id_));
 
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
@@ -4657,11 +4644,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  registry_->AddInterface(base::BindRepeating(
-      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
-#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.
@@ -5295,7 +5277,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // happen. When reusing the same renderer, overwrite to recover the mode.
   if (is_view_source && IsCurrent()) {
     DCHECK(!GetParent());
-    render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
+    GetAssociatedLocalFrame()->EnableViewSourceMode();
   }
 
   // TODO(lfg): The renderer is not able to handle a null response, so the
@@ -6465,6 +6447,15 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
           &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
           base::Unretained(this))));
 }
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+void RenderFrameHostImpl::BindMediaRemoterFactoryReceiver(
+    mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<RemoterFactoryImpl>(GetProcess()->GetID(), routing_id_),
+      std::move(receiver));
+}
+#endif
 
 void RenderFrameHostImpl::CreateWebSocketConnector(
     mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {

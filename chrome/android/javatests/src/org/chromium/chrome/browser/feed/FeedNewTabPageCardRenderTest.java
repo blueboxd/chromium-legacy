@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -95,6 +96,7 @@ public class FeedNewTabPageCardRenderTest {
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
     }
 
+    @DisabledTest(message = "crbug.com/1029059")
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage", "RenderTest"})

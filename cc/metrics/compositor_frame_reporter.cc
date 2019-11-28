@@ -173,8 +173,8 @@ void CompositorFrameReporter::StartStage(
   CHECK_LT(stage_type_index, static_cast<int>(StageType::kStageTypeCount));
   CHECK_GE(stage_type_index, 0);
   TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-      "cc,benchmark", "PipelineReporter", this,
-      TRACE_STR_COPY(GetStageName(stage_type_index)), start_time);
+      "cc,benchmark", "PipelineReporter", this, GetStageName(stage_type_index),
+      start_time);
 }
 
 void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
@@ -257,9 +257,8 @@ void CompositorFrameReporter::TerminateReporter() {
       submitted_frame_missed_deadline_ ? "missed_frame" : "non_missed_frame";
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP2(
       "cc,benchmark", "PipelineReporter", this, frame_termination_time_,
-      "termination_status", TRACE_STR_COPY(termination_status_str),
-      "compositor_frame_submission_status",
-      TRACE_STR_COPY(submission_status_str));
+      "termination_status", termination_status_str,
+      "compositor_frame_submission_status", submission_status_str);
 
   // Only report histograms if the frame was presented.
   if (report_latency) {

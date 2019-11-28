@@ -413,7 +413,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4084712963632273211">Nuo <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />pateikė „Google“<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Ištrinti programos duomenis?</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
-<translation id="410351446219883937">Automatinis paleidimas</translation>
 <translation id="4116038641877404294">Atsisiųskite puslapius, kad galėtumėte naudoti juos neprisijungę</translation>
 <translation id="4135200667068010335">Įrenginių, su kuriais reikia bendrinti skirtuką, sąrašas uždarytas.</translation>
 <translation id="4149994727733219643">Supaprastinta tinklalapių peržiūra</translation>
@@ -872,7 +871,6 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
 <translation id="7438641746574390233">Kai įjungtas supaprastintasis režimas, „Chrome“ naudoja „Google“ serverius, kad puslapiai būtų įkeliami greičiau. Kai įjungtas supaprastintasis režimas, itin lėti puslapiai perrašomi, kad būtų įkeliamas tik svarbiausias turinys. Supaprastintasis režimas netaikomas inkognito skirtukams.</translation>
 <translation id="7444811645081526538">Daugiau kategorijų</translation>
-<translation id="7445411102860286510">Leisti svetainėms automatiškai leisti nutildytus vaizdo įrašus (rekomenduojama)</translation>
 <translation id="7453467225369441013">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="7454641608352164238">Nepakanka vietos</translation>
 <translation id="7475192538862203634">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK" />pasiūlymus<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7810647596859435254">Atidaryti naudojant...</translation>
 <translation id="7821588508402923572">Čia bus rodoma informacija apie sutaupytus duomenis</translation>
-<translation id="7837721118676387834">Leisti automatiškai paleisti nutildytus vaizdo įrašus konkrečioje svetainėje</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
 <translation id="784934925303690534">Laikotarpis</translation>
 <translation id="7851858861565204677">Kiti įrenginiai</translation>

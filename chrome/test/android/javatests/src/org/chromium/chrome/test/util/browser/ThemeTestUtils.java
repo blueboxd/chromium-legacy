@@ -26,11 +26,15 @@ public class ThemeTestUtils {
      */
     public static void waitForThemeColor(ChromeActivity activity, int expectedColor)
             throws ExecutionException, TimeoutException {
-        // Use longer-than-default timeout to give page time to finish loading.
+        waitForThemeColor(activity, expectedColor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    public static void waitForThemeColor(ChromeActivity activity, int expectedColor, long timeoutMs)
+            throws ExecutionException, TimeoutException {
         CriteriaHelper.pollUiThread(
                 Criteria.equals(expectedColor,
                         () -> TabThemeColorHelper.getColor(activity.getActivityTab())),
-                10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+                timeoutMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**

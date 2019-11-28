@@ -34,9 +34,8 @@ class SlowDownloadHttpResponse : public net::test_server::HttpResponse {
   ~SlowDownloadHttpResponse() override;
 
   // net::test_server::HttpResponse implementations.
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override;
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override;
 
  private:
   std::string url_;

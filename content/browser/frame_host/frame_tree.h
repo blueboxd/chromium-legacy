@@ -199,7 +199,7 @@ class CONTENT_EXPORT FrameTree {
   // to receive the RenderViewHostImpl containing the frame and the renderer-
   // specific frame routing ID of the removed frame.
   void SetFrameRemoveListener(
-      const base::Callback<void(RenderFrameHost*)>& on_frame_removed);
+      base::RepeatingCallback<void(RenderFrameHost*)> on_frame_removed);
 
   // Creates a RenderViewHostImpl for a given |site_instance| in the tree.
   //
@@ -299,7 +299,7 @@ class CONTENT_EXPORT FrameTree {
 
   int focused_frame_tree_node_id_;
 
-  base::Callback<void(RenderFrameHost*)> on_frame_removed_;
+  base::RepeatingCallback<void(RenderFrameHost*)> on_frame_removed_;
 
   // Overall load progress.
   double load_progress_;

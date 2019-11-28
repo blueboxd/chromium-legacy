@@ -17,6 +17,9 @@
 // The headline below the image.
 @property(nonatomic, readonly) NSString* titleString;
 
+// The help button item in the top left of the view.
+@property(nonatomic, readonly) UIBarButtonItem* helpButton;
+
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<PasswordBreachActionHandler> actionHandler;
 

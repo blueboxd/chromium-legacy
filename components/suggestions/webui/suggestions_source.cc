@@ -100,7 +100,7 @@ SuggestionsSource::SuggestionsSource(SuggestionsService* suggestions_service,
 SuggestionsSource::~SuggestionsSource() {}
 
 void SuggestionsSource::StartDataRequest(const std::string& path,
-                                         const GotDataCallback& callback) {
+                                         GotDataCallback callback) {
   // If this was called as "chrome://suggestions/refresh", we also trigger an
   // async update of the suggestions.
   bool is_refresh = (path == kRefreshPath);
@@ -108,7 +108,7 @@ void SuggestionsSource::StartDataRequest(const std::string& path,
   // |suggestions_service| is null for guest profiles.
   if (!suggestions_service_) {
     std::string output = RenderOutputHtmlNoSuggestions(base_url_, is_refresh);
-    callback.Run(base::RefCountedString::TakeString(&output));
+    std::move(callback).Run(base::RefCountedString::TakeString(&output));
     return;
   }
 
@@ -123,7 +123,7 @@ void SuggestionsSource::StartDataRequest(const std::string& path,
   std::string output =
       !size ? RenderOutputHtmlNoSuggestions(base_url_, is_refresh)
             : RenderOutputHtml(base_url_, is_refresh, suggestions_profile);
-  callback.Run(base::RefCountedString::TakeString(&output));
+  std::move(callback).Run(base::RefCountedString::TakeString(&output));
 }
 
 std::string SuggestionsSource::GetMimeType(const std::string& path) const {

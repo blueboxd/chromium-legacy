@@ -1362,9 +1362,8 @@ TEST_F(MDnsConnectionSendTest, SendQueued) {
 
 TEST(MDnsSocketTest, CreateSocket) {
   // Verifies that socket creation hasn't been broken.
-  NetLog net_log;
-  auto socket =
-      CreateAndBindMDnsSocket(AddressFamily::ADDRESS_FAMILY_IPV4, 1, &net_log);
+  auto socket = CreateAndBindMDnsSocket(AddressFamily::ADDRESS_FAMILY_IPV4, 1,
+                                        net::NetLog::Get());
   EXPECT_TRUE(socket);
   socket->Close();
 }

@@ -166,20 +166,17 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.WebSocketConnector"})
+                  "blink.mojom.QuotaDispatcherHost"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:dedicated_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.WebSocketConnector"})
+                  "blink.mojom.QuotaDispatcherHost"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.QuotaDispatcherHost",
-                  "network.mojom.RestrictedCookieManager",
-                  "blink.mojom.WebSocketConnector"})
+                  "network.mojom.RestrictedCookieManager"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
@@ -188,19 +185,14 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.Portal",
-                  "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SharedWorkerConnector",
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
-                  "media.mojom.RemoterFactory",
-                  "media.mojom.Renderer",
                   "network.mojom.RestrictedCookieManager",
-                  "blink.mojom.WebSocketConnector",
                   "viz.mojom.Gpu"})
           .PackageService(content::GetManifest())
           .Build()};

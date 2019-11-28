@@ -192,6 +192,7 @@ class PermissionDialogTest
 
   // TestBrowserDialog:
   void ShowUi(const std::string& name) override;
+  void DismissUi() override;
 
   // Holds requests that do not delete themselves.
   std::vector<std::unique_ptr<PermissionRequest>> owned_requests_;
@@ -284,6 +285,11 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
       return;
   }
   base::RunLoop().RunUntilIdle();
+}
+
+void PermissionDialogTest::DismissUi() {
+  GetPermissionRequestManager()->Closing();
+  TestBrowserDialog::DismissUi();
 }
 
 // Requests before the load event should be bundled into one bubble.

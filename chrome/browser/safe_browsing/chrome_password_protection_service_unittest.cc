@@ -1234,6 +1234,16 @@ TEST_F(ChromePasswordProtectionServiceTest,
       base::UTF8ToUTF16(domains[2]));
   EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
                                                          &placeholder_offsets));
+
+  // Default domains should be prioritzed over other domains.
+  domains.push_back("amazon.com");
+  service_->set_saved_passwords_matching_domains(domains);
+  warning_text = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS,
+      base::UTF8ToUTF16("amazon.com"), base::UTF8ToUTF16(domains[0]),
+      base::UTF8ToUTF16(domains[1]));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
+                                                         &placeholder_offsets));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,

@@ -257,11 +257,17 @@ export class TabElement extends CustomElement {
   slideIn() {
     const paddingInlineEnd = getPaddingInlineEndProperty();
 
+    // If this TabElement is the last tab, there needs to be enough space for
+    // the view to scroll to it. Therefore, immediately take up all the space
+    // it needs to and only animate the scale.
+    const isLastChild = this.nextElementSibling === null;
+
     const startState = {
-      maxWidth: 0,
+      maxWidth: isLastChild ? 'var(--tabstrip-tab-width)' : 0,
       transform: `scale(0)`,
     };
-    startState[paddingInlineEnd] = 0;
+    startState[paddingInlineEnd] =
+        isLastChild ? 'var(--tabstrip-tab-spacing)' : 0;
 
     const finishState = {
       maxWidth: `var(--tabstrip-tab-width)`,

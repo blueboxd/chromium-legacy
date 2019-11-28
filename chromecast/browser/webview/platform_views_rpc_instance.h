@@ -39,6 +39,9 @@ class PlatformViewsRpcInstance : public WebContentController::Client,
   virtual void CreateNewInstance() = 0;
   virtual bool Initialize() = 0;
 
+  // WebContentController::Client:
+  void OnError(const std::string& error_message) override;
+
   grpc::ServerContext ctx_;
   grpc::ServerCompletionQueue* cq_;
   std::unique_ptr<webview::WebviewRequest> request_;
@@ -69,7 +72,6 @@ class PlatformViewsRpcInstance : public WebContentController::Client,
 
   // WebContentController::Client:
   void EnqueueSend(std::unique_ptr<webview::WebviewResponse> response) override;
-  void OnError(const std::string& error_message) override;
 
   // WebviewWindowManager::Observer:
   void OnNewWebviewContainerWindow(aura::Window* window, int app_id) override;

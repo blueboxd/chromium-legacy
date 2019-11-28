@@ -123,18 +123,18 @@ PrefProvider::PrefProvider(PrefService* prefs,
     if (!content_type_info || content_type_info->storage_behavior() ==
                                   ContentSettingsInfo::PERSISTENT) {
       content_settings_prefs_.insert(std::make_pair(
-          info->type(),
-          std::make_unique<ContentSettingsPref>(
-              info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
-              off_the_record_,
-              base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
+          info->type(), std::make_unique<ContentSettingsPref>(
+                            info->type(), prefs_, &pref_change_registrar_,
+                            info->pref_name(), off_the_record_,
+                            base::BindRepeating(&PrefProvider::Notify,
+                                                base::Unretained(this)))));
     } else if (info->type() == ContentSettingsType::PLUGINS) {
       // TODO(https://crbug.com/850062): Remove after M71, two milestones after
       // migration of the Flash permissions to ephemeral provider.
       flash_content_settings_pref_ = std::make_unique<ContentSettingsPref>(
           info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
           off_the_record_,
-          base::Bind(&PrefProvider::Notify, base::Unretained(this)));
+          base::BindRepeating(&PrefProvider::Notify, base::Unretained(this)));
     }
   }
 

@@ -65,8 +65,8 @@ BackgroundSyncNetworkObserverAndroid::Observer::Observer(
 }
 
 BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
-    const base::Closure& network_changed_callback)
-    : BackgroundSyncNetworkObserver(network_changed_callback) {
+    base::RepeatingClosure network_changed_callback)
+    : BackgroundSyncNetworkObserver(std::move(network_changed_callback)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   observer_ = Observer::Create(base::BindRepeating(

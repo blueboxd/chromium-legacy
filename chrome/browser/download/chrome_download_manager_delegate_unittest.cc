@@ -265,12 +265,6 @@ class ChromeDownloadManagerDelegateTest
   void DetermineDownloadTarget(DownloadItem* download,
                                DetermineDownloadTargetResult* result);
 
-  // Invokes ChromeDownloadManagerDelegate::CheckForFileExistence and waits for
-  // the asynchronous callback. The result passed into
-  // content::CheckForFileExistenceCallback is the return value from this
-  // method.
-  bool CheckForFileExistence(DownloadItem* download);
-
   void OnConfirmationCallbackComplete(
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
       DownloadConfirmationResult result,
@@ -415,24 +409,6 @@ void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
       download_item,
       base::Bind(&StoreDownloadTargetInfo, loop_runner.QuitClosure(), result));
   loop_runner.Run();
-}
-
-void StoreBoolAndRunClosure(const base::Closure& closure,
-                            bool* result_storage,
-                            bool result) {
-  *result_storage = result;
-  closure.Run();
-}
-
-bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
-    DownloadItem* download_item) {
-  base::RunLoop loop_runner;
-  bool result = false;
-  delegate()->CheckForFileExistence(
-      download_item, base::BindOnce(&StoreBoolAndRunClosure,
-                                    loop_runner.QuitClosure(), &result));
-  loop_runner.Run();
-  return result;
 }
 
 void ChromeDownloadManagerDelegateTest::OnConfirmationCallbackComplete(
@@ -679,25 +655,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
     EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               result.danger_type);
   }
-}
-
-TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
-  const char kData[] = "helloworld";
-  const size_t kDataLength = sizeof(kData) - 1;
-  base::FilePath existing_path = GetDownloadDirectory().AppendASCII("foo");
-  base::FilePath non_existent_path = GetDownloadDirectory().AppendASCII("bar");
-  base::WriteFile(existing_path, kData, kDataLength);
-
-  std::unique_ptr<download::MockDownloadItem> download_item =
-      CreateActiveDownloadItem(1);
-  EXPECT_CALL(*download_item, GetTargetFilePath())
-      .WillRepeatedly(ReturnRef(existing_path));
-  EXPECT_TRUE(CheckForFileExistence(download_item.get()));
-
-  download_item = CreateActiveDownloadItem(1);
-  EXPECT_CALL(*download_item, GetTargetFilePath())
-      .WillRepeatedly(ReturnRef(non_existent_path));
-  EXPECT_FALSE(CheckForFileExistence(download_item.get()));
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {

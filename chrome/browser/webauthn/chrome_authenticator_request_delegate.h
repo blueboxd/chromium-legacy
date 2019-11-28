@@ -65,7 +65,7 @@ class ChromeAuthenticatorRequestDelegate
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
-      base::Closure start_over_callback,
+      base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
@@ -153,7 +153,7 @@ class ChromeAuthenticatorRequestDelegate
       transient_dialog_model_holder_;
   AuthenticatorRequestDialogModel* weak_dialog_model_;
   base::OnceClosure cancel_callback_;
-  base::Closure start_over_callback_;
+  base::RepeatingClosure start_over_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
 
   // If in the TransportAvailabilityInfo reported by the request handler,

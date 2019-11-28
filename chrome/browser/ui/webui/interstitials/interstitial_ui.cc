@@ -338,7 +338,7 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   // parts which depend on the NavigationEntry are not hit.
   return safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
       g_browser_process->safe_browsing_service()->ui_manager().get(),
-      web_contents, main_frame_url, resource);
+      web_contents, main_frame_url, resource, true);
 }
 
 TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(

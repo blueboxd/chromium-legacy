@@ -522,43 +522,6 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   return ret
 
 
-def _CalculatePadding(raw_symbols):
-  """Populates the |padding| field based on symbol addresses.
-
-  Symbols must already be sorted by |address|.
-  """
-  seen_sections = set()
-  for i, symbol in enumerate(raw_symbols[1:]):
-    prev_symbol = raw_symbols[i]
-    if symbol.IsOverhead():
-      # Overhead symbols are not actionable so should be padding-only.
-      symbol.padding = symbol.size
-    if prev_symbol.section_name != symbol.section_name:
-      assert symbol.section_name not in seen_sections, (
-          'Input symbols must be sorted by section, then address.')
-      seen_sections.add(symbol.section_name)
-      continue
-    if (symbol.address <= 0 or prev_symbol.address <= 0 or
-        not symbol.IsNative() or not prev_symbol.IsNative()):
-      continue
-
-    if symbol.address == prev_symbol.address:
-      if symbol.aliases and symbol.aliases is prev_symbol.aliases:
-        symbol.padding = prev_symbol.padding
-        symbol.size = prev_symbol.size
-        continue
-      # Padding-only symbols happen for ** symbol gaps.
-      assert prev_symbol.size_without_padding == 0, (
-          'Found duplicate symbols:\n%r\n%r' % (prev_symbol, symbol))
-
-    padding = symbol.address - prev_symbol.end_address
-    symbol.padding = padding
-    symbol.size += padding
-    assert symbol.size >= 0, (
-        'Symbol has negative size (likely not sorted propertly): '
-        '%r\nprev symbol: %r' % (symbol, prev_symbol))
-
-
 def _ParseComponentFromOwners(filename):
   """Searches an OWNERS file for lines that start with `# COMPONENT:`.
 
@@ -720,8 +683,6 @@ def LoadAndPostProcessSizeInfo(path, file_obj=None):
   size_info = file_format.LoadSizeInfo(path, file_obj=file_obj)
   logging.info('Normalizing symbol names')
   _NormalizeNames(size_info.raw_symbols)
-  logging.info('Calculating padding')
-  _CalculatePadding(size_info.raw_symbols)
   logging.info('Loaded %d symbols', len(size_info.raw_symbols))
   return size_info
 
@@ -1588,22 +1549,24 @@ def CreateSectionSizesAndSymbols(map_path=None,
   return section_sizes, raw_symbols
 
 
-def CreateSizeInfo(
-    section_sizes, raw_symbols, metadata=None, normalize_names=True):
-  """Performs operations on all symbols and creates a SizeInfo object."""
+def SortSymbols(raw_symbols):
   logging.debug('Sorting %d symbols', len(raw_symbols))
   # TODO(agrieve): Either change this sort so that it's only sorting by section
   #     (and not using .sort()), or have it specify a total ordering (which must
   #     also include putting padding-only symbols before others of the same
   #     address). Note: The sort as-is takes ~1.5 seconds.
-  raw_symbols.sort(key=lambda s: (
-      s.IsPak(), s.IsBss(), s.section_name, s.address))
+  raw_symbols.sort(
+      key=lambda s: (s.IsPak(), s.IsBss(), s.section_name, s.address))
   logging.info('Processed %d symbols', len(raw_symbols))
 
-  # Padding not really required, but it is useful to check for large padding and
-  # log a warning.
-  logging.info('Calculating padding')
-  _CalculatePadding(raw_symbols)
+
+def CreateSizeInfo(section_sizes,
+                   raw_symbols,
+                   metadata=None,
+                   normalize_names=True):
+  """Performs operations on all symbols and creates a SizeInfo object."""
+  SortSymbols(raw_symbols)
+  file_format.CalculatePadding(raw_symbols)
 
   # Do not call _NormalizeNames() during archive since that method tends to need
   # tweaks over time. Calling it only when loading .size files allows for more
@@ -1786,6 +1749,11 @@ def AddArguments(parser):
       '--no-java', action='store_true', help='Do not run on Java symbols')
   parser.add_argument(
       '--no-native', action='store_true', help='Do not run on native symbols')
+  parser.add_argument(
+      '--include-padding',
+      action='store_true',
+      help='Include a padding field for each symbol, instead of rederiving '
+      'from consecutive symbols on file load.')
   AddMainPathsArguments(parser)
 
 
@@ -1969,6 +1937,7 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
   logging.info('Saving result to %s', args.size_file)
-  file_format.SaveSizeInfo(size_info, args.size_file)
+  file_format.SaveSizeInfo(
+      size_info, args.size_file, include_padding=args.include_padding)
   size_in_mb = os.path.getsize(args.size_file) / 1024.0 / 1024.0
   logging.info('Done. File size is %.2fMiB.', size_in_mb)

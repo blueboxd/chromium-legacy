@@ -168,7 +168,8 @@ public class TrustedWebActivityTest {
         ThemeTestUtils.assertStatusBarColor(activity, Color.RED);
 
         mCustomTabActivityTestRule.loadUrl(pageWithoutThemeColor);
-        ThemeTestUtils.waitForThemeColor(activity, Color.GREEN);
+        // Use longer-than-default timeout to give page time to finish loading.
+        ThemeTestUtils.waitForThemeColor(activity, Color.GREEN, 10000 /* timeoutMs */);
         ThemeTestUtils.assertStatusBarColor(activity, Color.GREEN);
     }
 
@@ -204,7 +205,8 @@ public class TrustedWebActivityTest {
                 () -> { return TabThemeColorHelper.getDefaultColor(activity.getActivityTab()); });
         int expectedColor =
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? defaultColor : Color.BLACK;
-        ThemeTestUtils.waitForThemeColor(activity, defaultColor);
+        // Use longer-than-default timeout to give page time to finish loading.
+        ThemeTestUtils.waitForThemeColor(activity, defaultColor, 10000 /* timeoutMs */);
         ThemeTestUtils.assertStatusBarColor(activity, expectedColor);
     }
 

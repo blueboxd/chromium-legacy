@@ -33,7 +33,7 @@ class BackgroundTracingActiveScenario::TracingTimer {
  public:
   TracingTimer(BackgroundTracingActiveScenario* scenario,
                BackgroundTracingManager::StartedFinalizingCallback callback)
-      : scenario_(scenario), callback_(callback) {
+      : scenario_(scenario), callback_(std::move(callback)) {
     DCHECK_NE(scenario->GetConfig()->tracing_mode(),
               BackgroundTracingConfigImpl::SYSTEM);
   }
@@ -51,7 +51,7 @@ class BackgroundTracingActiveScenario::TracingTimer {
   }
 
  private:
-  void TracingTimerFired() { scenario_->BeginFinalizing(callback_); }
+  void TracingTimerFired() { scenario_->BeginFinalizing(std::move(callback_)); }
 
   BackgroundTracingActiveScenario* scenario_;
   base::OneShotTimer tracing_timer_;
@@ -61,8 +61,8 @@ class BackgroundTracingActiveScenario::TracingTimer {
 class BackgroundTracingActiveScenario::TracingSession {
  public:
   virtual ~TracingSession() = default;
-  virtual void BeginFinalizing(const base::RepeatingClosure& on_success,
-                               const base::RepeatingClosure& on_failure) = 0;
+  virtual void BeginFinalizing(base::OnceClosure on_success,
+                               base::OnceClosure on_failure) = 0;
   virtual void AbortScenario(
       const base::RepeatingClosure& on_abort_callback) = 0;
 };
@@ -107,18 +107,18 @@ class PerfettoTracingSession
   }
 
   // BackgroundTracingActiveScenario::TracingSession implementation.
-  void BeginFinalizing(const base::RepeatingClosure& on_success,
-                       const base::RepeatingClosure& on_failure) override {
+  void BeginFinalizing(base::OnceClosure on_success,
+                       base::OnceClosure on_failure) override {
     bool is_allowed_finalization =
         BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization();
 
     if (!is_allowed_finalization) {
-      on_failure.Run();
+      std::move(on_failure).Run();
       return;
     }
 
     tracing_session_host_->DisableTracing();
-    on_success.Run();
+    std::move(on_success).Run();
   }
 
   void AbortScenario(const base::RepeatingClosure& on_abort_callback) override {
@@ -214,24 +214,25 @@ class LegacyTracingSession
   }
 
   // BackgroundTracingActiveScenario::TracingSession implementation.
-  void BeginFinalizing(const base::RepeatingClosure& on_success,
-                       const base::RepeatingClosure& on_failure) override {
+  void BeginFinalizing(base::OnceClosure on_success,
+                       base::OnceClosure on_failure) override {
     if (!BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization()) {
       TracingControllerImpl::GetInstance()->StopTracing(
-          TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
-              [](const base::RepeatingClosure& on_failure,
-                 std::unique_ptr<std::string>) { on_failure.Run(); },
+          TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
+              [](base::OnceClosure on_failure, std::unique_ptr<std::string>) {
+                std::move(on_failure).Run();
+              },
               std::move(on_failure))));
       return;
     }
 
     auto trace_data_endpoint =
         TracingControllerImpl::CreateCompressedStringEndpoint(
-            TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+            TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
                 [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
-                   const base::RepeatingClosure& on_success,
+                   base::OnceClosure on_success,
                    std::unique_ptr<std::string> file_contents) {
-                  on_success.Run();
+                  std::move(on_success).Run();
                   if (weak_this) {
                     weak_this->OnJSONDataComplete(std::move(file_contents));
                   }
@@ -383,7 +384,12 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
   triggered_named_event_handle_ = -1;
   tracing_timer_.reset();
 
-  auto on_begin_finalization_success = base::BindRepeating(
+  // |callback| is only run once, but we need 2 callbacks pointing to it.
+  auto run_callback = callback
+                          ? base::AdaptCallbackForRepeating(std::move(callback))
+                          : base::NullCallback();
+
+  base::OnceClosure on_begin_finalization_success = base::BindOnce(
       [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
          BackgroundTracingManager::StartedFinalizingCallback callback) {
         if (!weak_this) {
@@ -395,13 +401,13 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
             Metrics::FINALIZATION_ALLOWED);
         DCHECK(!weak_this->started_finalizing_closure_);
         if (!callback.is_null()) {
-          weak_this->started_finalizing_closure_ =
-              base::BindOnce(callback, /*is_allowed_finalization=*/true);
+          weak_this->started_finalizing_closure_ = base::BindOnce(
+              std::move(callback), /*is_allowed_finalization=*/true);
         }
       },
-      weak_ptr_factory_.GetWeakPtr(), callback);
+      weak_ptr_factory_.GetWeakPtr(), run_callback);
 
-  auto on_begin_finalization_failure = base::BindRepeating(
+  base::OnceClosure on_begin_finalization_failure = base::BindOnce(
       [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
          BackgroundTracingManager::StartedFinalizingCallback callback) {
         if (!weak_this) {
@@ -413,10 +419,10 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
         weak_this->SetState(State::kAborted);
 
         if (!callback.is_null()) {
-          callback.Run(false);
+          std::move(callback).Run(false);
         }
       },
-      weak_ptr_factory_.GetWeakPtr(), callback);
+      weak_ptr_factory_.GetWeakPtr(), run_callback);
 
   tracing_session_->BeginFinalizing(std::move(on_begin_finalization_success),
                                     std::move(on_begin_finalization_failure));

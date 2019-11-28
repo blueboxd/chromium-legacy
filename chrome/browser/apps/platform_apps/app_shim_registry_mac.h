@@ -59,6 +59,11 @@ class AppShimRegistry {
   void OnAppQuit(const std::string& app_id,
                  std::set<base::FilePath> active_profiles);
 
+  // Return all apps installed for the specified profile. Used to delete apps
+  // when a profile is removed.
+  std::set<std::string> GetInstalledAppsForProfile(
+      const base::FilePath& profile) const;
+
   // Helper functions for testing.
   void SetPrefServiceAndUserDataDirForTesting(
       PrefService* pref_service,

@@ -8,7 +8,6 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -62,7 +61,6 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
@@ -103,8 +101,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     private boolean mIsInitialized;
     private Integer mBrandColor;
-
-    private Bitmap mLargestFavicon;
 
     private static Integer sOverrideCoreCountForTesting;
 
@@ -359,14 +355,11 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(
                         commonsModule, webappModule);
+        onComponentCreated(component);
+
         mTabController = component.resolveTabController();
-        mToolbarCoordinator = component.resolveToolbarCoordinator();
-        mNavigationController = component.resolveNavigationController();
 
-        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
-
-        component.resolveCompositorContentInitializer();
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
         mNavigationController.setLandingPageOnCloseCriterion(
@@ -374,6 +367,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mSplashController = component.resolveSplashController();
+
         return component;
     }
 
@@ -438,7 +432,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 // Avoid situations where Android starts two Activities with the same data.
                 AndroidTaskUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
             }
-            updateTaskDescription();
+            updateToolbarColor();
         }
         super.onResume();
     }
@@ -589,24 +583,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                mBrandColor = color;
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onTitleUpdated(Tab tab) {
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onFaviconUpdated(Tab tab, Bitmap icon) {
-                // No need to cache the favicon if there is an icon declared in app manifest.
-                if (mWebappInfo.icon() != null || icon == null) return;
-                if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
-                        || icon.getHeight() > mLargestFavicon.getHeight()) {
-                    mLargestFavicon = icon;
-                    updateTaskDescription();
-                }
+                updateToolbarColor();
             }
 
             @Override
@@ -672,46 +649,13 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         }
     }
 
-    private void updateTaskDescription() {
-        Tab tab = getActivityTab();
-
-        String title = null;
-        if (!TextUtils.isEmpty(mWebappInfo.shortName())) {
-            title = mWebappInfo.shortName();
-        } else if (tab != null) {
-            title = tab.getTitle();
-        }
-
-        Bitmap icon = null;
-        if (mWebappInfo.icon() != null) {
-            icon = mWebappInfo.icon().bitmap();
-        } else if (tab != null) {
-            icon = mLargestFavicon;
-        }
-
-        if (mBrandColor == null && mWebappInfo.hasValidToolbarColor()) {
-            mBrandColor = (int) mWebappInfo.toolbarColor();
-        }
-
-        int taskDescriptionColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
-
-        // Don't use the brand color for the status bars if we're in display: fullscreen. This works
-        // around an issue where the status bars go transparent and can't be seen on top of the page
-        // content when users swipe them in or they appear because the on-screen keyboard was
-        // triggered.
-        if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
-            taskDescriptionColor = mBrandColor;
-        }
-
-        ApiCompatibilityUtils.setTaskDescription(this, title, icon,
-                ColorUtils.getOpaqueColor(taskDescriptionColor));
-
+    private void updateToolbarColor() {
         if (getToolbarManager() != null && !isStatusBarDefaultThemeColor()) {
             int toolbarColor = getBaseStatusBarColor();
             if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
-                toolbarColor = (tab == null) ? mIntentDataProvider.getToolbarColor()
-                                             : TabThemeColorHelper.getColor(tab);
+                toolbarColor = (getActivityTab() == null)
+                        ? mIntentDataProvider.getToolbarColor()
+                        : TabThemeColorHelper.getColor(getActivityTab());
             }
             getToolbarManager().onThemeColorChanged(toolbarColor, false);
         }

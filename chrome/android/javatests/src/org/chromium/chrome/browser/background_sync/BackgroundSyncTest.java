@@ -57,7 +57,8 @@ public final class BackgroundSyncTest {
     private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) scaleTimeout(10);
     private static final long WAIT_TIME_MS = scaleTimeout(5000);
 
-    private CountDownLatch mScheduleLatch, mCancelLatch;
+    private CountDownLatch mScheduleLatch;
+    private CountDownLatch mCancelLatch;
 
     private BackgroundSyncBackgroundTaskScheduler.Observer mSchedulerObserver;
 

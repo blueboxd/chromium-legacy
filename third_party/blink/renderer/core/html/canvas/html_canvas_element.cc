@@ -335,7 +335,10 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     UseCounter::Count(GetDocument(), WebFeature::kHTMLCanvasElementLowLatency);
   }
 
-  SetNeedsCompositingUpdate();
+  // A 2D context does not know before lazy creation whether or not it is
+  // direct composited. The Canvas2DLayerBridge will handle this
+  if (!Is2d())
+    SetNeedsCompositingUpdate();
 
   return context_.Get();
 }

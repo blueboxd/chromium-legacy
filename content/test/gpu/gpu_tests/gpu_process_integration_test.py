@@ -281,7 +281,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _GpuProcess_readback_webgl_gpu_process(self, test_path):
     # Hit test group 1 with entry 152 from kSoftwareRenderingListEntries.
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--gpu-blacklist-test-group=1', '--disable-gpu-compositing']))
+      '--gpu-blacklist-test-group=1']))
     self._Navigate(test_path)
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')

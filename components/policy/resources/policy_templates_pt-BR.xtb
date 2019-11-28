@@ -2201,15 +2201,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           No momento, esse recurso está desativado para servidores.</translation>
 <translation id="4363057787588706121">Permitir a mescla de políticas de lista de diferentes fontes</translation>
 <translation id="4363101430102811068">Ativa a detecção de vazamento para credenciais digitadas</translation>
-<translation id="4363136876356691536">Se esta política for definida como verdadeira, as opções de acessibilidade sempre aparecerão no menu da bandeja do sistema.
-
-          Se esta política for definida como falsa, as opções de acessibilidade nunca aparecerão no menu da bandeja do sistema.
-
-          Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
-
-          Se esta política não for definida, as opções de acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página "Configurações".
-
-          Quando os recursos de acessibilidade são ativados por outros meios (por exemplo, por uma combinação de teclas), as opções de acessibilidade sempre são exibidas no menu da bandeja do sistema.</translation>
 <translation id="436581050240847513">Relatar interfaces de redes de dispositivos</translation>
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>

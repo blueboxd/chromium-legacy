@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Cambia la contraseña</translation>
 <translation id="1484290072879560759">Elegir dirección de envío</translation>
 <translation id="1492194039220927094">Notificaciones push de políticas:</translation>
 <translation id="1501859676467574491">Mostrar tarjetas de tu Cuenta de Google</translation>
@@ -209,6 +210,7 @@
 <translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1915697529809968049">¿Deseas usar Touch ID en lugar de CVC?</translation>
 <translation id="1916770123977586577">Para aplicar la configuración actualizada en este sitio, vuelve a cargar la página</translation>
+<translation id="1917876262703816781">Tu contraseña quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda cambiar ahora la contraseña que usas en <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Cómo obtener ayuda con un mensaje de error específico</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ninguno}=1{1 sitio}other{# sitios}}</translation>
@@ -643,7 +645,6 @@
 <translation id="4082393374666368382">Configuración - Administración</translation>
 <translation id="4098354747657067197">Sitio engañoso</translation>
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
-<translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver las URL en lista negra y otras políticas que estableció el administrador del sistema.</translation>
 <translation id="4108231218301530806">Usar la huella digital para verificar esta tarjeta la próxima vez</translation>
 <translation id="4110652170750985508">Revisar el pago</translation>
@@ -903,6 +904,7 @@
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este sitio usa una configuración de seguridad obsoleta. Si envías información (p. ej., contraseñas o números de tarjetas de crédito) a este sitio, es posible que quede expuesta.</translation>
 <translation id="5288108484102287882">La validación de los valores de la política generó advertencias</translation>
+<translation id="5295292838686006428">Tu contraseña quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -1335,6 +1337,7 @@ Detalles adicionales:
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="748406663033922918">Usa el bloqueo de pantalla para verificar tus formas de pago guardadas.</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
+<translation id="7495290002932347110">Tu contraseña quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar las contraseñas que tengas guardadas y cambiar la que usas en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="7498234416455752244">Seguir editando</translation>
 <translation id="7508255263130623398">El ID de dispositivo de la política que se muestra está vacío o no coincide con el ID de dispositivo actual</translation>
 <translation id="7508870219247277067">Verde aguacate</translation>

@@ -21,6 +21,7 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "net/base/backoff_entry.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast_channel {
 class CastSocketService;
@@ -201,7 +202,7 @@ class CastMediaSinkServiceImpl : public MediaSinkServiceBase,
   void OnError(const cast_channel::CastSocket& socket,
                cast_channel::ChannelError error_state) override;
   void OnMessage(const cast_channel::CastSocket& socket,
-                 const cast_channel::CastMessage& message) override;
+                 const cast::channel::CastMessage& message) override;
 
   // DiscoveryNetworkMonitor::Observer implementation
   void OnNetworksChanged(const std::string& network_id) override;

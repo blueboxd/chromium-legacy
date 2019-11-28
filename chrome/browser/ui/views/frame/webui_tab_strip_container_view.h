@@ -101,7 +101,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   Browser* const browser_;
   views::WebView* const web_view_;
-  views::View* const tab_contents_container_;
+  views::View* tab_contents_container_;
   ToolbarButton* new_tab_button_ = nullptr;
   views::View* tab_counter_ = nullptr;
 

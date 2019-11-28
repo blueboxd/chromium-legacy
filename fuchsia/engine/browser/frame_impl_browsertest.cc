@@ -288,10 +288,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
 class ChunkedHttpTransaction {
  public:
   ChunkedHttpTransaction(const net::test_server::SendBytesCallback& send,
-                         const net::test_server::SendCompleteCallback& done)
+                         net::test_server::SendCompleteCallback done)
       : io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         send_callback_(send),
-        done_callback_(done) {
+        done_callback_(std::move(done)) {
     DCHECK(!current_instance_);
     DCHECK(send_callback_);
     DCHECK(done_callback_);
@@ -306,7 +306,7 @@ class ChunkedHttpTransaction {
 
   void Close() {
     EnsureSendCompleted();
-    io_task_runner_->PostTask(FROM_HERE, done_callback_);
+    io_task_runner_->PostTask(FROM_HERE, std::move(done_callback_));
     delete this;
   }
 
@@ -383,11 +383,10 @@ class ChunkedHttpTransactionFactory : public net::test_server::HttpResponse {
   }
 
   // net::test_server::HttpResponse implementation.
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     // The ChunkedHttpTransaction manages its own lifetime.
-    new ChunkedHttpTransaction(send, done);
+    new ChunkedHttpTransaction(send, std::move(done));
 
     if (on_response_created_)
       std::move(on_response_created_).Run();

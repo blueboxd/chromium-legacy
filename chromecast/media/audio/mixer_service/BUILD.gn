@@ -51,10 +51,10 @@ cast_source_set("connection") {
   ]
 
   deps = [
+    ":audio_socket_service",
     ":common",
     "//base",
     "//chromecast/base",
-    "//chromecast/media/audio:audio_buildflags",
     "//net",
   ]
 }

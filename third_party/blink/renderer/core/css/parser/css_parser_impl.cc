@@ -265,12 +265,15 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   ParseSheetResult result = ParseSheetResult::kSucceeded;
   bool first_rule_valid = parser.ConsumeRuleList(
       stream, kTopLevelRuleList,
-      [&style_sheet, &result, allow_import_rules](StyleRuleBase* rule) {
+      [&style_sheet, &result, allow_import_rules,
+       context](StyleRuleBase* rule) {
         if (rule->IsCharsetRule())
           return;
-        if (rule->IsImportRule() && !allow_import_rules) {
-          result = ParseSheetResult::kHasUnallowedImportRule;
-          return;
+        if (rule->IsImportRule()) {
+          if (!allow_import_rules || context->IsForMarkupSanitization()) {
+            result = ParseSheetResult::kHasUnallowedImportRule;
+            return;
+          }
         }
         style_sheet->ParserAppendRule(rule);
       });

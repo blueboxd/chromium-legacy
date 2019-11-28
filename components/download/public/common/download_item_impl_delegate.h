@@ -92,10 +92,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Opens the file associated with this download.
   virtual void OpenDownload(DownloadItemImpl* download);
 
-  // Returns whether this is the most recent download in the rare event where
-  // multiple downloads are associated with the same file path.
-  virtual bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download);
-
   // Shows the download via the OS shell.
   virtual void ShowDownloadInShell(DownloadItemImpl* download);
 

@@ -7,6 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -20,7 +23,8 @@ namespace performance_manager {
 // BrowserContextKeyedServiceFactory to manage the lifetime of this cache.
 //
 // Instances of this class are expected to live on the UI thread.
-class SiteDataCacheFacade : public KeyedService {
+class SiteDataCacheFacade : public KeyedService,
+                            public history::HistoryServiceObserver {
  public:
   explicit SiteDataCacheFacade(content::BrowserContext* browser_context);
   ~SiteDataCacheFacade() override;
@@ -29,9 +33,18 @@ class SiteDataCacheFacade : public KeyedService {
 
   void WaitUntilCacheInitializedForTesting();
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
+
  private:
   // The browser context associated with this cache.
   content::BrowserContext* browser_context_;
+
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+      history_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataCacheFacade);
 };

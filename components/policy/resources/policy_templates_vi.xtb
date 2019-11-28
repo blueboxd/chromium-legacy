@@ -2252,15 +2252,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="4363057787588706121">Cho phép hợp nhất các chính sách trong danh sách thuộc các nguồn khác nhau</translation>
 <translation id="4363101430102811068">Bật tùy chọn phát hiện rò rỉ thông tin đăng nhập đã nhập</translation>
-<translation id="4363136876356691536">Nếu bạn đặt chính sách này thành true, thì các tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong trình đơn ở khay hệ thống.
-
-          Nếu bạn đặt chính sách này thành false, thì các tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong trình đơn ở khay hệ thống.
-
-          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, thì các tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong trình đơn ở khay hệ thống. Tuy nhiên, người dùng có thể đặt để các tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.
-
-          Khi bạn dùng cách khác (chẳng hạn như dùng tổ hợp phím) để bật tính năng hỗ trợ tiếp cận, các tùy chọn của tính năng này sẽ luôn xuất hiện trong trình đơn ở khay hệ thống.</translation>
 <translation id="436581050240847513">Báo cáo giao diện mạng thiết bị</translation>
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>

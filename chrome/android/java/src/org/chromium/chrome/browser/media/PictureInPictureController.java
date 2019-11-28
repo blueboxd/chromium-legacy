@@ -257,7 +257,8 @@ public class PictureInPictureController {
         // The currently playing video size is the video frame size, not the on-screen size.
         // We know the video will be touching either the sides or the top and bottom of the screen
         // so we can work out the screen bounds of the video from this.
-        int width, height;
+        int width;
+        int height;
         if (videoAspectRatio > phoneAspectRatio) {
             // The video takes up the full width of the phone and there are black bars at the top
             // and bottom.

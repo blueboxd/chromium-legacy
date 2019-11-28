@@ -229,6 +229,7 @@ void ParseSizeInfo(const char* gzipped,
   ReadJsonBlob(&rest, &info->metadata);
 
   const bool has_components = info->metadata["has_components"].asBool();
+  const bool has_padding = info->metadata["has_padding"].asBool();
 
   // List of paths: (object_path, [source_path])
   int n_paths = ReadLoneInt(&rest);
@@ -296,6 +297,12 @@ void ParseSizeInfo(const char* gzipped,
       ReadIntListForEachSection<int64_t>(&rest, section_counts, true);
   std::vector<std::vector<int32_t>> sizes =
       ReadIntListForEachSection<int32_t>(&rest, section_counts, false);
+  std::vector<std::vector<int32_t>> paddings;
+  if (has_padding) {
+    paddings = ReadIntListForEachSection<int32_t>(&rest, section_counts, false);
+  } else {
+    paddings.resize(addresses.size());
+  }
   std::vector<std::vector<int32_t>> path_indices =
       ReadIntListForEachSection<int32_t>(&rest, section_counts, true);
   std::vector<std::vector<int32_t>> component_indices;
@@ -315,6 +322,7 @@ void ParseSizeInfo(const char* gzipped,
     const int cur_section_count = section_counts[section_idx];
     const std::vector<int64_t>& cur_addresses = addresses[section_idx];
     const std::vector<int32_t>& cur_sizes = sizes[section_idx];
+    const std::vector<int32_t>& cur_paddings = paddings[section_idx];
     const std::vector<int32_t>& cur_path_indices = path_indices[section_idx];
     const std::vector<int32_t>& cur_component_indices =
         component_indices[section_idx];
@@ -353,6 +361,10 @@ void ParseSizeInfo(const char* gzipped,
       new_sym.section_id_ = cur_section_id;
       new_sym.address_ = cur_addresses[i];
       new_sym.size_ = cur_sizes[i];
+      if (has_padding) {
+        new_sym.padding_ = cur_paddings[i];
+        new_sym.size_ += new_sym.padding_;
+      }
       new_sym.section_name_ = cur_section_name;
       new_sym.object_path_ = info->object_paths[cur_path_indices[i]];
       new_sym.source_path_ = info->source_paths[cur_path_indices[i]];
@@ -377,7 +389,9 @@ void ParseSizeInfo(const char* gzipped,
     }
   }
 
-  CalculatePadding(&info->raw_symbols);
+  if (!has_padding) {
+    CalculatePadding(&info->raw_symbols);
+  }
 
   // If there are unparsed non-empty lines, something's gone wrong.
   CheckNoNonEmptyLinesRemain(rest);

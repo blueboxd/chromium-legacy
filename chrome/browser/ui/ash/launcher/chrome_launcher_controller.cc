@@ -875,11 +875,11 @@ void ChromeLauncherController::DoShowAppInfoFlow(
     if (extension->is_hosted_app() && extension->from_bookmark()) {
       base::UmaHistogramEnumeration(
           kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kLauncherContextMenuAppInfoWebApp);
+          AppManagementEntryPoint::kShelfContextMenuAppInfoWebApp);
     } else {
       base::UmaHistogramEnumeration(
           kAppManagementEntryPointsHistogramName,
-          AppManagementEntryPoint::kLauncherContextMenuAppInfoChromeApp);
+          AppManagementEntryPoint::kShelfContextMenuAppInfoChromeApp);
     }
     return;
   }

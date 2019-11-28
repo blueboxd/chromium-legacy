@@ -105,6 +105,15 @@ TEST_F(RealTimePolicyEngineTest,
 }
 
 TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_DisabledOffTheRecord) {
+  base::test::ScopedFeatureList feature_list;
+  pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
+                               std::make_unique<base::Value>(true));
+  test_context_.set_is_off_the_record(true);
+  EXPECT_FALSE(CanPerformFullURLLookup());
+}
+
+TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUserOptin) {
   ASSERT_FALSE(IsUserOptedIn());
 }

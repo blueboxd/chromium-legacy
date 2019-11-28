@@ -134,6 +134,21 @@ void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
           this, browser_context_id, std::move(cb)));
 }
 
+void SiteDataCacheFactory::ReplaceCacheForTesting(
+    const std::string& browser_context_id,
+    std::unique_ptr<SiteDataCacheImpl> cache) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* cache_raw = cache.get();
+
+  DCHECK(base::Contains(data_cache_map_, browser_context_id));
+  data_cache_map_.erase(browser_context_id);
+  data_cache_map_.emplace(std::make_pair(browser_context_id, std::move(cache)));
+
+  DCHECK(!base::Contains(data_cache_inspector_map_, browser_context_id));
+  data_cache_inspector_map_.emplace(std::make_pair(
+      browser_context_id, static_cast<SiteDataCacheInspector*>(cache_raw)));
+}
+
 void SiteDataCacheFactory::OnBrowserContextCreated(
     const std::string& browser_context_id,
     const base::FilePath& context_path,

@@ -127,8 +127,8 @@ TEST_F(U2FControllerTest, XCallbackFromRequestURLWithDuplicatedParamsTest) {
   EXPECT_EQ(1u, [duplicatedParamsMatches count]);
 }
 
-TEST_F(U2FControllerTest, XCallbackFromRequestURLWithNonWhitelistedURLTest) {
-  // Test when request site is not whitelisted.
+TEST_F(U2FControllerTest, XCallbackFromRequestURLWithNonAllowListedURLTest) {
+  // Test when request site is not in an allow-listed domain.
   GURL requestURL("u2f://accounts.google.com?data=abc&def%26ghi");
   GURL evilOriginURL("https://evil.appspot.com");
   GURL tabURL("https://accounts.google.com");

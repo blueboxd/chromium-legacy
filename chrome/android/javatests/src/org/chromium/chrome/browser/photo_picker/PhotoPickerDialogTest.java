@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // See crbug.com/888931 for details.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                                               DecoderServiceHost.ServiceReadyCallback,
@@ -213,7 +214,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -231,7 +231,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -261,7 +260,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.

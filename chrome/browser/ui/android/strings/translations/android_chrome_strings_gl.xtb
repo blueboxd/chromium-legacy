@@ -413,7 +413,6 @@ Se queres axustar o termo de busca, manteno premido para seleccionalo. Se queres
 <translation id="4084712963632273211">Contido publicado por <ph name="PUBLISHER_ORIGIN" /> e <ph name="BEGIN_DEEMPHASIZED" />ofrecido por Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Queres eliminar os datos da aplicación?</translation>
 <translation id="4099578267706723511">Axúdanos a mellorar Chrome enviando estatísticas de uso e informes de erros a Google.</translation>
-<translation id="410351446219883937">Reprodución automática</translation>
 <translation id="4116038641877404294">Descarga as páxinas para velas cando non teñas conexión</translation>
 <translation id="4135200667068010335">A lista de dispositivos cos que compartir unha pestana está pechada.</translation>
 <translation id="4149994727733219643">Vista simplificada de páxinas web</translation>
@@ -815,6 +814,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6989267951144302301">Non se puido descargar</translation>
 <translation id="6990079615885386641">Descarga a aplicación en Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pregunta antes de permitir que os sitios utilicen o teu micrófono (recomendado)</translation>
+<translation id="6995899638241819463">Avisarte se os teus contrasinais están en risco debido a unha violación da seguranza dos datos</translation>
 <translation id="7015203776128479407">A configuración da sincronización inicial non finalizou. A sincronización está desactivada.</translation>
 <translation id="7016516562562142042">Permitido para o motor de busca actual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
@@ -871,7 +871,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="7437998757836447326">Pechar sesión en Chrome</translation>
 <translation id="7438641746574390233">Cando está activado o modo básico, Chrome usa os servidores de Google para facer que as páxinas carguen máis rápido. O modo básico reescribe as páxinas que se executan de forma moi lenta para que carguen só contido esencial. O modo básico non se aplica ás pestanas do modo de incógnito.</translation>
 <translation id="7444811645081526538">Máis categorías</translation>
-<translation id="7445411102860286510">Permite que os sitios reproduzan automaticamente os vídeos silenciados (recomendado)</translation>
 <translation id="7453467225369441013">Pecha a túa sesión na maioría dos sitios. Non se pechará a sesión na túa conta de Google.</translation>
 <translation id="7454641608352164238">Non hai espazo suficiente</translation>
 <translation id="7475192538862203634">Se esta mensaxe aparece frecuentemente, proba estas <ph name="BEGIN_LINK" />suxestións<ph name="END_LINK" />.</translation>
@@ -926,7 +925,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="780301667611848630">Non, grazas</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">A cifra de aforro de datos aparecerá aquí</translation>
-<translation id="7837721118676387834">Permite a reprodución automática de vídeos silenciados nun sitio específico.</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>

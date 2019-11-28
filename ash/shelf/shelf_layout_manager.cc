@@ -802,8 +802,16 @@ void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
 }
 
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
-  return is_background_blur_enabled_ &&
-         shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&
+  if (!is_background_blur_enabled_)
+    return false;
+
+  if (chromeos::switches::ShouldShowShelfHotseat()) {
+    return shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&
+           state_.session_state == session_manager::SessionState::ACTIVE;
+  }
+
+  return (shelf_background_type_ == SHELF_BACKGROUND_HOME_LAUNCHER ||
+          shelf_background_type_ == SHELF_BACKGROUND_DEFAULT) &&
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
 

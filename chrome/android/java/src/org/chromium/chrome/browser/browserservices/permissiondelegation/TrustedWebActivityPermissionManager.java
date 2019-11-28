@@ -16,7 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -117,7 +117,7 @@ void SVGPathElement::InvalidateMPathDependencies() {
   // dependencies manually.
   if (SVGElementSet* dependencies = SetOfIncomingReferences()) {
     for (SVGElement* element : *dependencies) {
-      if (auto* mpath = ToSVGMPathElementOrNull(*element))
+      if (auto* mpath = DynamicTo<SVGMPathElement>(*element))
         mpath->TargetPathChanged();
     }
   }

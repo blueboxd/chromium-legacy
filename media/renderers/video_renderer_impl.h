@@ -66,7 +66,7 @@ class MEDIA_EXPORT VideoRendererImpl
                   RendererClient* client,
                   const TimeSource::WallClockTimeCB& wall_clock_time_cb,
                   const PipelineStatusCB& init_cb) override;
-  void Flush(const base::Closure& callback) override;
+  void Flush(base::OnceClosure callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeProgressing() override;
   void OnTimeStopped() override;
@@ -262,7 +262,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Playback operation callbacks.
   PipelineStatusCB init_cb_;
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
   TimeSource::WallClockTimeCB wall_clock_time_cb_;
 
   base::TimeDelta start_timestamp_;

@@ -96,7 +96,7 @@ static void SetGradientAttributes(const SVGGradientElement& element,
 
   if (!is_linear)
     return;
-  const SVGLinearGradientElement& linear = ToSVGLinearGradientElement(element);
+  const auto& linear = To<SVGLinearGradientElement>(element);
 
   if (!attributes.HasX1() && linear.x1()->IsSpecified())
     attributes.SetX1(linear.x1()->CurrentValue());
@@ -120,7 +120,7 @@ bool SVGLinearGradientElement::CollectGradientAttributes(
 
   while (true) {
     SetGradientAttributes(*current, attributes,
-                          IsSVGLinearGradientElement(*current));
+                          IsA<SVGLinearGradientElement>(*current));
     visited.insert(current);
 
     current = current->ReferencedElement();

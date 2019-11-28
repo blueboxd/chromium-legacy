@@ -140,6 +140,7 @@
 #include "content/browser/theme_helper.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/v8_snapshot_files.h"
+#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
@@ -1974,6 +1975,22 @@ void RenderProcessHostImpl::CreateNotificationService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
       origin, std::move(receiver));
+}
+
+void RenderProcessHostImpl::CreateWebSocketConnector(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
+  // TODO(jam): is it ok to not send extraHeaders for sockets created from
+  // shared and service workers?
+  //
+  // Shared Workers and service workers are not directly associated with a
+  // frame, so the concept of "top-level frame" does not exist. Can use
+  // (origin, origin) for the NetworkIsolationKey for requests because these
+  // workers can only be created when the site has cookie access.
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
+                                  GetID(), MSG_ROUTING_NONE, origin,
+                                  net::NetworkIsolationKey(origin, origin)),
+                              std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

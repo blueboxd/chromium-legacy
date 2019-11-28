@@ -24,17 +24,19 @@ class BitmapScalerTask extends AsyncTask<Bitmap> {
     private final int mSize;
     private final Bitmap mBitmap;
     private final String mVideoDuration;
+    private final float mRatio;
 
     /**
      * A BitmapScalerTask constructor.
      */
     public BitmapScalerTask(LruCache<String, PickerCategoryView.Thumbnail> cache, Bitmap bitmap,
-            String filePath, String videoDuration, int size) {
+            String filePath, String videoDuration, int size, float ratio) {
         mCache = cache;
         mFilePath = filePath;
         mSize = size;
         mBitmap = bitmap;
         mVideoDuration = videoDuration;
+        mRatio = ratio;
     }
 
     /**
@@ -66,6 +68,8 @@ class BitmapScalerTask extends AsyncTask<Bitmap> {
 
         List<Bitmap> bitmaps = new ArrayList<>(1);
         bitmaps.add(bitmap);
-        mCache.put(mFilePath, new PickerCategoryView.Thumbnail(bitmaps, mVideoDuration));
+        mCache.put(mFilePath,
+                new PickerCategoryView.Thumbnail(
+                        bitmaps, mVideoDuration, /*fullWidth=*/false, mRatio));
     }
 }

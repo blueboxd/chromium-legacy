@@ -111,6 +111,8 @@ DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 DirectRenderer::SwapFrameData::SwapFrameData() = default;
 DirectRenderer::SwapFrameData::~SwapFrameData() = default;
 DirectRenderer::SwapFrameData::SwapFrameData(SwapFrameData&&) = default;
+DirectRenderer::SwapFrameData& DirectRenderer::SwapFrameData::operator=(
+    SwapFrameData&&) = default;
 
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                OutputSurface* output_surface,

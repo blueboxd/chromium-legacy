@@ -163,6 +163,7 @@
       このポリシーが False に設定されている場合、Dev スイッチの状態は報告されません。</translation>
 <translation id="1160479894929412407">QUIC プロトコルを許可する</translation>
 <translation id="1160939557934457296">セーフ ブラウジングの警告ページからの続行を無効にする</translation>
+<translation id="1163080558183062209">拒否リストのプリンタタイプを無効にする</translation>
 <translation id="117059611145966538">外部プリント サーバー</translation>
 <translation id="1189817621108632689">画像の表示を許可しないサイトの URL パターンリストを設定します。
 
@@ -858,6 +859,13 @@
 
       不適切な形式のテンプレートは無視されます。</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS を有効にする（安全でないフォールバックなし）</translation>
+<translation id="2347264058558503729"><ph name="PRODUCT_NAME" /> でドキュメントを <ph name="CLOUD_PRINT_NAME" />に送信して印刷できるようにします。注: このポリシーでは、<ph name="PRODUCT_NAME" /> で <ph name="CLOUD_PRINT_NAME" />を使用できるようにするかどうかのみを管理します。有効に設定しても、ユーザーがウェブサイトで印刷ジョブを送信できなくなるわけではありません。
+
+      このポリシーを有効に設定した場合または設定しない場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" />で印刷できるようになります。
+
+      このポリシーを無効に設定した場合、ユーザーは <ph name="PRODUCT_NAME" /> の印刷ダイアログから <ph name="CLOUD_PRINT_NAME" />で印刷できなくなります。
+
+      <ph name="CLOUD_PRINT_NAME" />を送信先として選択できるようにするには、このポリシーを true に設定し、「PrinterTypeDenyList」ポリシーで「cloud」を指定しないようにします。</translation>
 <translation id="237494535617297575">通知表示を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultNotificationsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="2386362615870139244">ウェイクアップ画面のロックを許可する</translation>
 <translation id="2398554235599593694"> このポリシーでは、外部プロトコルの呼び出しに関する確認メッセージに [常に開く] チェックボックスを表示するかどうかを管理します。
@@ -966,6 +974,7 @@
           有効または未設定の場合は、Chrome の起動にコマンドライン フラグが使用されるとセキュリティ警告が表示されます。
 
           Windows の場合、このポリシーは <ph name="MS_AD_NAME" /> ドメインに追加したインスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
+<translation id="247658312644322296">「PDF に保存」の送信先</translation>
 <translation id="2480971699591919564">Click-to-Call 機能を有効にします。この機能により、ログインしているユーザーは Chrome デスクトップから Android デバイスに電話番号を送信できます。詳しくは、ヘルプセンター記事 https://support.google.com/chrome/answer/9430554?hl=ja をご覧ください。
 
       このポリシーを有効に設定した場合は、該当の Chrome ユーザーに対して、Android デバイスへの電話番号の送信機能が有効になります。
@@ -2192,15 +2201,6 @@
           現在、この機能はサーバー側で無効になっています。</translation>
 <translation id="4363057787588706121">ソースの異なるリストポリシーの統合を許可する</translation>
 <translation id="4363101430102811068">入力された認証情報に対して漏洩の検出を有効にする</translation>
-<translation id="4363136876356691536">このポリシーが true の場合、通知領域（システムトレイ）メニューにユーザー補助オプションが常に表示されます。
-
-          このポリシーが false の場合、通知領域（システムトレイ）メニューにユーザー補助オプションは表示されません。
-
-          このポリシーを設定した場合、ユーザーによる変更やオーバーライドはできません。
-
-          このポリシーが未設定の場合、通知領域（システムトレイ）メニューにユーザー補助オプションは表示されませんが、ユーザーは [設定] ページからユーザー補助オプションを表示できます。
-
-          ユーザー補助機能を他の手段（キーの組み合わせなど）によって有効にした場合は、通知領域（システムトレイ）メニューにユーザー補助オプションが常に表示されます。</translation>
 <translation id="436581050240847513">デバイスのネットワーク インターフェースを報告する</translation>
 <translation id="4372704773119750918">マルチプロフィール（プライマリまたはセカンダリ）への参加を企業ユーザーに許可しない</translation>
 <translation id="4377599627073874279">すべてのサイトに対してすべての画像表示を許可する</translation>
@@ -2336,7 +2336,19 @@
       拡張機能のインストールのリクエストは、<ph name="EXTENSION_INSTALL_WHITELIST" /> または <ph name="EXTENSION_SETTINGS" /> でホワイトリストに登録されていない拡張機能をユーザーがインストールしようとしたときに作成されます。
 
       このポリシーは、パソコンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録され、<ph name="CLOUD_REPORTING_ENABLED" /> が有効になっている場合のみ適用されます。</translation>
+<translation id="4638162097046412832">拒否リストで指定したプリンタタイプを送信先として選択したり、機能を取得したりできないようにします。
+
+      拒否リストですべてのプリンタタイプを指定すると、印刷するドキュメントの送信先として何も選択できなくなるため、印刷は実質的に無効化されます。
+
+      拒否リストで「cloud」を指定すると、「CloudPrintSubmitEnabled」ポリシーを false に設定した場合と同じ結果になります。<ph name="CLOUD_PRINT_NAME" />を送信先として選択できるようにするには、「CloudPrintSubmitEnabled」ポリシーを true に設定し、拒否リストで「cloud」を指定しないようにします。
+
+      このポリシーを設定しない場合または空のリストを指定した場合、すべてのプリンタタイプが選択可能になります。
+
+      拡張機能プリンタは、印刷プロバイダの送信先のことで、<ph name="PRODUCT_NAME" /> の拡張機能で利用できる送信先が該当します。
+
+      ローカル プリンタは、ネイティブ印刷の送信先のことで、ローカルマシンや共有ネットワークのプリンタで利用できる送信先が該当します。</translation>
 <translation id="4639407427807680016">ブラックリストから除外するネイティブ メッセージング ホストの名前</translation>
+<translation id="4649395978608361979">ローカル プリンタの送信先</translation>
 <translation id="4650759511838826572">URL プロトコル スキームを無効にする</translation>
 <translation id="465099050592230505">エンタープライズ ウェブストアの URL（サポート終了）</translation>
 <translation id="4661889655253181651">[コンテンツの設定] では、特定のタイプのコンテンツ（Cookie、画像、JavaScript など）を処理する方法を指定できます。</translation>
@@ -2363,6 +2375,7 @@
       このポリシーが有効な場合、サイトでは移動と同時に新しいウィンドウやタブを開くことができます。
       このポリシーが無効または未設定の場合、サイトでは移動と同時に新しいウィンドウやタブを開くことはできません。</translation>
 <translation id="4680961954980851756">自動入力を有効にする</translation>
+<translation id="4693779768620889402">拡張機能プリンタの送信先</translation>
 <translation id="4703402283970867140">スマート消灯モデルを有効にして、画面が暗くなるまでの時間を延長する</translation>
 <translation id="4722122254122249791">指定した発行元に対してサイト分離を有効にする</translation>
 <translation id="4722399051042571387">false の場合、ユーザーは強度が低く推測されやすい PIN を設定できません。
@@ -2987,6 +3000,7 @@
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
 <translation id="5656177735561364047">共有クリップボード機能を有効にする</translation>
 <translation id="5666457529647159548">インストール済みクライアント証明書の管理をユーザーに許可する。</translation>
+<translation id="5676740747107495269">ログイン画面の通知領域（システムトレイ）メニューにユーザー補助オプションを表示する</translation>
 <translation id="5689430183304951538">デフォルトの印刷ページサイズ</translation>
 <translation id="5693469654327063861">データ移行を許可する</translation>
 <translation id="5694594914843889579">このポリシーを true に設定すると、ファイル ブラウザでは外部ストレージを利用できなくなります。
@@ -3533,6 +3547,7 @@
 <translation id="6810445994095397827">これらのサイトの Javascript をブロックする</translation>
 <translation id="6813263547126514821">電源とシャットダウン</translation>
 <translation id="681446116407619279">サポートされる認証スキーム</translation>
+<translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />と「Google ドライブに保存」の送信先</translation>
 <translation id="6833988859168635883">起動ページ、ホームページ、新しいタブページ</translation>
 <translation id="6835883744948188639">再起動が推奨されることを示すメッセージをユーザーに繰り返し表示する</translation>
 <translation id="683688607121170501">ユーザーが <ph name="PRODUCT_OS_NAME" /> デバイスにログインした後に、ブラウザ ウィンドウのコンテンツ領域内や Android アプリケーションで Google アカウントを切り替えることができるかどうかを制御します。
@@ -3956,6 +3971,7 @@
 <translation id="7469554574977894907">検索キーワード候補を有効にする</translation>
 <translation id="747275827471712187">指定したサイトの Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻す</translation>
 <translation id="7477231245051133709">「モノラル音声」のユーザー補助機能を有効にする</translation>
+<translation id="7477239290070847560">Zeroconf（mDNS+DNS-SD）プロトコルの送信先</translation>
 <translation id="7485481791539008776">デフォルト プリンタ選択ルール</translation>
 <translation id="7485730741952775732">このポリシーが設定されている場合、リモート アクセス ホストでは、この URL を使用してリモート アクセス クライアントからの認証トークンを検証し、接続を受け入れるかどうかを判断します。このポリシーは RemoteAccessHostTokenUrl と一緒に使用してください。
 

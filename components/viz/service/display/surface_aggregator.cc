@@ -1637,6 +1637,8 @@ CompositorFrame SurfaceAggregator::Aggregate(
       "SurfaceAggregation", "display_trace", display_trace_id_);
 
   CompositorFrame frame;
+  frame.metadata.top_controls_visible_height =
+      root_surface_frame.metadata.top_controls_visible_height;
 
   dest_pass_list_ = &frame.render_pass_list;
   expected_display_time_ = expected_display_time;

@@ -15,8 +15,8 @@ jumbo_static_library("cast_certificate") {
   ]
   deps = [
     "//base",
-    "//components/cast_certificate/proto",
     "//net",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_proto",
   ]
 }
 
@@ -29,9 +29,9 @@ jumbo_static_library("test_support") {
   deps = [
     ":cast_certificate",
     "//base",
-    "//components/cast_certificate/proto:unittest_proto",
     "//net",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_unittest_proto",
   ]
 }
 
@@ -45,8 +45,8 @@ jumbo_source_set("unit_tests") {
     ":cast_certificate",
     ":test_support",
     "//base",
-    "//components/cast_certificate/proto:unittest_proto",
     "//net",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_unittest_proto",
   ]
 }

@@ -30,7 +30,7 @@ bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
 
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
-    base::Closure start_over_callback,
+    base::RepeatingClosure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback,
     device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {}

@@ -190,7 +190,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
       [] { ADD_FAILURE() << "Connection error handler called unexpectedly"; }));
 
   geolocation->QueryNextPosition(base::BindOnce(
-      [](base::Closure callback, GeopositionPtr geoposition) {
+      [](base::OnceClosure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
         std::move(callback).Run();
@@ -217,7 +217,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
       [] { ADD_FAILURE() << "Connection error handler called unexpectedly"; }));
 
   geolocation->QueryNextPosition(base::BindOnce(
-      [](base::Closure callback, GeopositionPtr geoposition) {
+      [](base::OnceClosure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
         std::move(callback).Run();
@@ -269,7 +269,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
       [] { ADD_FAILURE() << "Connection error handler called unexpectedly"; }));
 
   geolocation->QueryNextPosition(base::BindOnce(
-      [](base::Closure callback, GeopositionPtr geoposition) {
+      [](base::OnceClosure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
         std::move(callback).Run();

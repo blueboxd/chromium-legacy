@@ -216,9 +216,8 @@ void SecurityStateTabHelper::DidFinishNavigation(
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
   }
 
-  // TODO(cthomp): Replace this with triggering on the new CertStatus flag.
-  MaybeShowKnownInterceptionDisclosureDialog(web_contents(),
-                                             navigation_handle->GetURL());
+  MaybeShowKnownInterceptionDisclosureDialog(
+      web_contents(), visible_security_state->cert_status);
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {

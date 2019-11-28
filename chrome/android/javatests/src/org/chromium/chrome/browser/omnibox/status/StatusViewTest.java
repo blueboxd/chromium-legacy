@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.UiRestriction;
@@ -142,7 +141,6 @@ public class StatusViewTest extends DummyUiActivityTestCase {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
-    @EnableFeatures("OmniboxSearchEngineLogo")
     public void testSearchEngineLogo_noIncognitoPadding() {
         // Set incognito badge visible.
         runOnUiThreadBlocking(

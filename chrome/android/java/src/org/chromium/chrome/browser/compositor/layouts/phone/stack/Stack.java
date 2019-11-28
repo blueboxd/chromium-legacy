@@ -825,7 +825,8 @@ public abstract class Stack {
      * @param amountY The number of pixels dragged in the y direction since the last event.
      */
     public void drag(long time, float x, float y, float amountX, float amountY) {
-        float scrollDrag, discardDrag;
+        float scrollDrag;
+        float discardDrag;
         if (mCurrentMode == Orientation.PORTRAIT) {
             discardDrag = amountX;
             scrollDrag = amountY;

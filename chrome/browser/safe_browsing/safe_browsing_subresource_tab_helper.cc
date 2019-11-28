@@ -33,7 +33,8 @@ void SafeBrowsingSubresourceTabHelper::ReadyToCommitNavigation(
       safe_browsing::SafeBrowsingBlockingPage* blocking_page =
           safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
               manager.get(), navigation_handle->GetWebContents(),
-              navigation_handle->GetURL(), resource);
+              navigation_handle->GetURL(), resource,
+              /*should_trigger_reporting=*/true);
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(navigation_handle->GetWebContents(),
                                 navigation_handle->GetNavigationId(),

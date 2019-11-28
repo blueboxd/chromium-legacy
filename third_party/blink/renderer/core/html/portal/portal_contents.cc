@@ -163,8 +163,10 @@ void PortalContents::Navigate(
 
 void PortalContents::Destroy() {
   DCHECK(!IsActivating());
-  if (HTMLPortalElement* element = std::exchange(portal_element_, nullptr))
-    element->ConsumePortal();
+  if (portal_element_) {
+    portal_element_->PortalContentsWillBeDestroyed(this);
+    portal_element_ = nullptr;
+  }
   portal_token_ = base::UnguessableToken();
   remote_portal_.reset();
   portal_client_receiver_.reset();

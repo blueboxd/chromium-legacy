@@ -641,7 +641,6 @@
 <translation id="4082393374666368382">Sozlamalar – Boshqaruv</translation>
 <translation id="4098354747657067197">Ehtiyot bo‘ling, qalbaki sayt!</translation>
 <translation id="4103249731201008433">Qurilma seriya raqami noto‘g‘ri</translation>
-<translation id="410351446219883937">Avtoijro</translation>
 <translation id="4103763322291513355">Administrator tomonidan qora ro‘yxatga qo‘shilgan URL manzillar va boshqa parametrlarni ko‘rish uchun quyidagi sahifaga o‘ting: &lt;strong&gt;chrome://policy&lt;/strong&gt;</translation>
 <translation id="4108231218301530806">Keyingi safar bu karta barmoq izi bilan tasdiqlansin.</translation>
 <translation id="4110652170750985508">To‘lovingizni tekshiring</translation>
@@ -952,7 +951,7 @@
 <translation id="5540224163453853">So‘ralgan maqola topilmadi.</translation>
 <translation id="5541546772353173584">Email manzilini qo‘shing</translation>
 <translation id="5545756402275714221">Sizga atalgan maqolalar</translation>
-<translation id="5552137475244467770">Vaqti-vaqti bilan Chrome internetda oshkor etilgan roʻyxatlarda parolingiz borligini tekshirib turadi. Bunda parolingiz va foydalanuvchi nomingiz shifrlanadi va hatto Google xodimlariga ham koʻrinmaydi.</translation>
+<translation id="5552137475244467770">Vaqti-vaqti bilan Chrome internetda oshkor etilgan roʻyxatlarda parolingiz borligini tekshirib turadi. Bunda parolingiz va foydalanuvchi nomingiz shifrlanadi, hatto Google xodimlariga ham koʻrinmaydi.</translation>
 <translation id="5556459405103347317">Qayta yuklash</translation>
 <translation id="5560088892362098740">Tugash muddati</translation>
 <translation id="5565735124758917034">Faol</translation>

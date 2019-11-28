@@ -145,6 +145,7 @@ if (use_locally_built_instrumented_libraries) {
       ":libxfixes3",
       ":libxi6",
       ":libxinerama1",
+      ":libxkbcommon0",
       ":libxrandr2",
       ":libxrender1",
       ":libxss1",
@@ -681,6 +682,7 @@ if (use_locally_built_instrumented_libraries) {
       "--enable-unicode-properties",
       "--disable-static",
     ]
+    pre_build = "scripts/pre-build/dh_autoreconf.sh"
   }
 
   instrumented_library("libpixman-1-0") {
@@ -806,6 +808,12 @@ if (use_locally_built_instrumented_libraries) {
 
   instrumented_library("libxinerama1") {
     extra_configure_flags = [ "--disable-static" ]
+  }
+
+  instrumented_library("libxkbcommon0") {
+    package_ldflags = [ "-Wl,-z,undefs" ]
+    build_method = "debian"
+    pre_build = "scripts/pre-build/xkbcommon.sh"
   }
 
   instrumented_library("libxrandr2") {

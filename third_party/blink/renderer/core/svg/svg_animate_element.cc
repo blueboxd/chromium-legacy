@@ -188,7 +188,7 @@ void SVGAnimateElement::ResolveTargetProperty() {
   // also disallows the perfectly "valid" animation of 'className' on said
   // element. If SVGScriptElement.href is transitioned off of SVGAnimatedHref,
   // this can be removed.
-  if (IsSVGScriptElement(*targetElement())) {
+  if (IsA<SVGScriptElement>(*targetElement())) {
     type_ = kAnimatedUnknown;
     css_property_id_ = CSSPropertyID::kInvalid;
   }

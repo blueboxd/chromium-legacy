@@ -31,7 +31,6 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -52,6 +51,7 @@
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
@@ -63,6 +63,8 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::_;
+
+using ::cast::channel::CastMessage;
 
 namespace cast_channel {
 namespace {

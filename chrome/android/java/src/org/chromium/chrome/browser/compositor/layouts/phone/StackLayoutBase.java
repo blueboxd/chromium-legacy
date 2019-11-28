@@ -1002,7 +1002,8 @@ public abstract class StackLayoutBase extends Layout {
     }
 
     class PortraitViewport {
-        protected float mWidth, mHeight;
+        protected float mWidth;
+        protected float mHeight;
         PortraitViewport() {
             mWidth = StackLayoutBase.this.getWidth();
             mHeight = StackLayoutBase.this.getHeightMinusBrowserControls();

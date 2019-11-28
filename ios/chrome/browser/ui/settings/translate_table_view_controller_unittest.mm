@@ -35,7 +35,7 @@ using user_prefs::PrefRegistrySyncable;
 
 namespace {
 
-const char kBlacklistedSite[] = "http://blacklistedsite.com";
+const char kBlockedSite[] = "http://blockedsite.com";
 const char kLanguage1[] = "klingon";
 const char kLanguage2[] = "pirate";
 
@@ -94,8 +94,8 @@ TEST_F(TranslateTableViewControllerTest, TestClearPreferences) {
   // Set some preferences.
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(pref_service_.get()));
-  translate_prefs->BlacklistSite(kBlacklistedSite);
-  ASSERT_TRUE(translate_prefs->IsSiteBlacklisted(kBlacklistedSite));
+  translate_prefs->BlacklistSite(kBlockedSite);
+  ASSERT_TRUE(translate_prefs->IsSiteBlacklisted(kBlockedSite));
   translate_prefs->AddToLanguageList(kLanguage1, /*force_blocked=*/true);
   ASSERT_TRUE(translate_prefs->IsBlockedLanguage(kLanguage1));
   translate_prefs->WhitelistLanguagePair(kLanguage1, kLanguage2);
@@ -109,7 +109,7 @@ TEST_F(TranslateTableViewControllerTest, TestClearPreferences) {
   [controller tableView:controller.tableView
       didSelectRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]];
   // Check that preferences are gone.
-  EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(kBlacklistedSite));
+  EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(kBlockedSite));
   EXPECT_FALSE(translate_prefs->IsBlockedLanguage(kLanguage1));
   EXPECT_FALSE(
       translate_prefs->IsLanguagePairWhitelisted(kLanguage1, kLanguage2));

@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -46,9 +46,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPBoundSocket
   // error code on failure. Must be called before Listen() or Connect().
   int Bind(const net::IPEndPoint& local_addr, net::IPEndPoint* local_addr_out);
 
-  // Sets the id used to remove the socket from the owning BindingSet. Must be
+  // Sets the id used to remove the socket from the owning ReceiverSet. Must be
   // called before Listen() or Connect().
-  void set_id(mojo::BindingId binding_id) { binding_id_ = binding_id; }
+  void set_id(mojo::ReceiverId receiver_id) { receiver_id_ = receiver_id; }
 
   // mojom::TCPBoundSocket implementation.
   void Listen(uint32_t backlog,
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPBoundSocket
 
   net::IPEndPoint bind_address_;
 
-  mojo::BindingId binding_id_ = -1;
+  mojo::ReceiverId receiver_id_ = -1;
   SocketFactory* const socket_factory_;
   std::unique_ptr<net::TCPSocket> socket_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

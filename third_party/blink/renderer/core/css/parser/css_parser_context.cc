@@ -263,6 +263,10 @@ bool CSSParserContext::CustomElementsV0Enabled() const {
   return RuntimeEnabledFeatures::CustomElementsV0Enabled(document_);
 }
 
+bool CSSParserContext::IsForMarkupSanitization() const {
+  return document_ && document_->IsForMarkupSanitization();
+}
+
 void CSSParserContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
 }

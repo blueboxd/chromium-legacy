@@ -218,7 +218,7 @@ void CastActivityRecord::CreateMediaController(
 }
 
 void CastActivityRecord::OnAppMessage(
-    const cast_channel::CastMessage& message) {
+    const cast::channel::CastMessage& message) {
   if (!session_id_) {
     DVLOG(2) << "No session associated with activity!";
     return;

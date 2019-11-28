@@ -25,10 +25,9 @@ class SuggestionsSource {
   ~SuggestionsSource();
 
   using GotDataCallback =
-      base::Callback<void(scoped_refptr<base::RefCountedMemory>)>;
+      base::OnceCallback<void(scoped_refptr<base::RefCountedMemory>)>;
 
-  void StartDataRequest(const std::string& path,
-                        const GotDataCallback& callback);
+  void StartDataRequest(const std::string& path, GotDataCallback callback);
   std::string GetMimeType(const std::string& path) const;
 
  private:

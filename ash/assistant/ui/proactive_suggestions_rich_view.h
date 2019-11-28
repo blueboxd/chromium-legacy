@@ -30,6 +30,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
   // ProactiveSuggestionsView:
   const char* GetClassName() const override;
   void InitLayout() override;
+  void ShowWhenReady() override;
+  void Hide() override;
+  void Close() override;
 
   // content::NavigableContentsObserver:
   void DidAutoResizeView(const gfx::Size& new_size) override;
@@ -41,6 +44,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
  private:
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
+
+  // Because the web contents that this view embeds loads asynchronously, it
+  // may cause UI jank if we show our widget before loading has stopped. To
+  // address this we won't show the widget for this view until our contents has
+  // stopped loading and we use this flag to track if we have a pending show.
+  bool show_when_ready_ = false;
 };
 
 }  // namespace ash

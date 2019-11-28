@@ -1205,8 +1205,8 @@ class NavigationHandleGrabber : public WebContentsObserver {
       return;
     NavigationRequest::From(navigation_handle)
         ->set_complete_callback_for_testing(
-            base::Bind(&NavigationHandleGrabber::SendingNavigationCommitted,
-                       base::Unretained(this), navigation_handle));
+            base::BindOnce(&NavigationHandleGrabber::SendingNavigationCommitted,
+                           base::Unretained(this), navigation_handle));
   }
 
   bool SendingNavigationCommitted(

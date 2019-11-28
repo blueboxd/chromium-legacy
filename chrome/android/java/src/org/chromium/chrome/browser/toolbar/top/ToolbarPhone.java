@@ -2774,7 +2774,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private static class NtpSearchBoxDrawable extends DrawableWrapper {
         private final Drawable.Callback mCallback;
 
-        private int mBoundsLeft, mBoundsTop, mBoundsRight, mBoundsBottom;
+        private int mBoundsLeft;
+        private int mBoundsTop;
+        private int mBoundsRight;
+        private int mBoundsBottom;
         private boolean mPendingBoundsUpdateFromToolbar;
         private boolean mDrawnByNtp;
 

@@ -1014,9 +1014,8 @@ class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
 
  private:
   // net::test_server::HttpResponse implementation.
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     send.Run(
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n\r\n"

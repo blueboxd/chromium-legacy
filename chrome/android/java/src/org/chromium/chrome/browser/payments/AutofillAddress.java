@@ -16,8 +16,8 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.payments.mojom.PaymentAddress;
 

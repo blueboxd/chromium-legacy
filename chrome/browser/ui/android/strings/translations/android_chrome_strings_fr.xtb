@@ -413,7 +413,6 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />proposé par Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
 <translation id="4099578267706723511">Envoyer des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome</translation>
-<translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4116038641877404294">Téléchargez des pages pour y accéder hors connexion</translation>
 <translation id="4135200667068010335">La liste des appareils avec lesquels vous pouvez partager un onglet est fermée.</translation>
 <translation id="4149994727733219643">Vue simplifiée pour les pages Web</translation>
@@ -815,6 +814,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6989267951144302301">Échec du téléchargement</translation>
 <translation id="6990079615885386641">Télécharger l'application sur le Google Play Store : <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Demander avant d'autoriser des sites à utiliser mon micro (recommandé)</translation>
+<translation id="6995899638241819463">Recevoir une alerte si des mots de passe sont compromis lors d'une violation des données</translation>
 <translation id="7015203776128479407">La configuration de la synchronisation initiale n'était pas terminée. La synchronisation est désactivée.</translation>
 <translation id="7016516562562142042">Autorisé pour le moteur de recherche actuel</translation>
 <translation id="7022756207310403729">Ouvrir dans le navigateur</translation>
@@ -871,7 +871,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7438641746574390233">Lorsque le mode simplifié est activé, Chrome utilise les serveurs Google pour accélérer le chargement des pages. Le mode simplifié réécrit les pages dont le chargement est très lent pour ne charger que le contenu essentiel. Ce mode ne s'applique pas aux onglets de navigation privée.</translation>
 <translation id="7444811645081526538">Autres catégories</translation>
-<translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
 <translation id="7454641608352164238">Espace insuffisant</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
@@ -926,7 +925,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>
 <translation id="7821588508402923572">Vos économies de données s'affichent ici</translation>
-<translation id="7837721118676387834">Autorisez la lecture automatique des vidéos dont le son est coupé pour un site spécifique.</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="784934925303690534">Période</translation>
 <translation id="7851858861565204677">Autres appareils</translation>

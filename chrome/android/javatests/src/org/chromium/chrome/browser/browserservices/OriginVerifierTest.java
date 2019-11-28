@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerifica
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

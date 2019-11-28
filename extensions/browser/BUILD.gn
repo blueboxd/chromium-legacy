@@ -103,7 +103,6 @@ jumbo_source_set("browser_sources") {
     "declarative_user_script_master.cc",
     "declarative_user_script_master.h",
     "deferred_start_render_host.h",
-    "deferred_start_render_host_observer.h",
     "device_local_account_util.cc",
     "device_local_account_util.h",
     "disable_reason.h",
@@ -672,7 +671,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/cast_certificate",
     "//components/cast_certificate:test_support",
-    "//components/cast_certificate/proto:unittest_proto",
     "//components/crx_file",
     "//components/keyed_service/content",
     "//components/onc",
@@ -705,6 +703,7 @@ source_set("unit_tests") {
     "//services/service_manager/public/cpp/test:test_support",
     "//storage/browser:test_support",
     "//third_party/leveldatabase",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_unittest_proto",
     "//third_party/zlib/google:zip",
   ]
 

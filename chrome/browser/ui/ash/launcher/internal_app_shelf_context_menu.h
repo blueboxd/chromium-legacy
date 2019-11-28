@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_INTERNAL_APP_SHELF_CONTEXT_MENU_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 
 // Class for context menu which is shown for internal app in the shelf.
-class InternalAppShelfContextMenu : public LauncherContextMenu {
+class InternalAppShelfContextMenu : public ShelfContextMenu {
  public:
   InternalAppShelfContextMenu(ChromeLauncherController* controller,
                               const ash::ShelfItem* item,
                               int64_t display_id);
   ~InternalAppShelfContextMenu() override = default;
 
-  // LauncherContextMenu:
+  // ShelfContextMenu:
   void GetMenuModel(GetMenuModelCallback callback) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 

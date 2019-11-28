@@ -265,7 +265,9 @@ void StyleInvalidator::InvalidateChildren(Element& element) {
   if (UNLIKELY(!!element.GetShadowRoot()))
     InvalidateShadowRootChildren(element);
 
-  SiblingData sibling_data;
+  // Initialization of the variable costs up to 15% on blink_perf.css
+  // AttributeDescendantSelector.html benchmark.
+  SiblingData sibling_data STACK_UNINITIALIZED;
   PushNthSiblingInvalidationSets(sibling_data);
 
   for (Element* child = ElementTraversal::FirstChild(element); child;

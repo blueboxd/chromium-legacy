@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//chromecast/chromecast.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -28,7 +27,7 @@ cast_source_set("receiver") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//chromecast/media/audio:audio_buildflags",
+    "//chromecast/media/audio/mixer_service:audio_socket_service",
     "//chromecast/net:small_message_socket",
     "//media",
     "//net",

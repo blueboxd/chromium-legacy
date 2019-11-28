@@ -54,7 +54,7 @@ NSString* const kPageInfoWillHideNotification =
 @synthesize dispatcher = _dispatcher;
 @synthesize pageInfoViewController = _pageInfoViewController;
 @synthesize presentationProvider = _presentationProvider;
-@synthesize tabModel = _tabModel;
+@synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
 
@@ -65,7 +65,7 @@ NSString* const kPageInfoWillHideNotification =
   [self.dispatcher stopDispatchingToTarget:self];
   self.dispatcher = nil;
   self.presentationProvider = nil;
-  self.tabModel = nil;
+  self.webStateList = nullptr;
 }
 
 #pragma mark - Public
@@ -83,7 +83,7 @@ NSString* const kPageInfoWillHideNotification =
 #pragma mark - PageInfoCommands
 
 - (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
-  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  web::WebState* webState = self.webStateList->GetActiveWebState();
   web::NavigationItem* navItem =
       webState->GetNavigationManager()->GetVisibleItem();
 
@@ -164,7 +164,7 @@ NSString* const kPageInfoWillHideNotification =
 #pragma mark - PageInfoReloading
 
 - (void)reload {
-  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  web::WebState* webState = self.webStateList->GetActiveWebState();
   if (webState) {
     // |check_for_repost| is true because the reload is explicitly initiated
     // by the user.

@@ -695,7 +695,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     if (style.Display() == EDisplay::kContents &&
         (is_svg_root ||
-         (!IsSVGSVGElement(element) && !IsSVGGElement(element) &&
+         (!IsSVGSVGElement(element) && !IsA<SVGGElement>(element) &&
           !IsSVGUseElement(element) && !IsSVGTSpanElement(element)))) {
       // According to the CSS Display spec[1], nested <svg> elements, <g>,
       // <use>, and <tspan> elements are not rendered and their children are

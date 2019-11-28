@@ -148,7 +148,8 @@ public class WebApkShareTargetUtil {
         }
 
         for (Uri fileUri : shareFiles) {
-            String fileType, fileName;
+            String fileType;
+            String fileName;
 
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 fileType = getFileTypeFromContentUri(fileUri);

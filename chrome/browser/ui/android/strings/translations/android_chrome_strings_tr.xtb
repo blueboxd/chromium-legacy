@@ -413,7 +413,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> web sitesinden - <ph name="BEGIN_DEEMPHASIZED" />Google tarafından yayınlandı<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Uygulama verileri silinsin mi?</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
-<translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="4116038641877404294">Sayfaları çevrimdışı olarak kullanmak için indirin</translation>
 <translation id="4135200667068010335">Sekme paylaşılacak cihazların listesi kapalı.</translation>
 <translation id="4149994727733219643">Web sayfalarının basitleştirilmiş görünümü</translation>
@@ -872,7 +871,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="7438641746574390233">Basit mod açıkken, Chrome sayfaların daha hızlı yüklenmesi için Google sunucularını kullanır. Basit mod, çok yavaş sayfaları yalnızca önemli içerikleri yüklenecek şekilde yeniden yazar. Basit mod, Gizli sekmelerde kullanılamaz.</translation>
 <translation id="7444811645081526538">Diğer kategoriler</translation>
-<translation id="7445411102860286510">Sitelerin, sesi kapatılmış videoları otomatik olarak oynatmasına izin ver (önerilen)</translation>
 <translation id="7453467225369441013">Çoğu sitedeki oturumunuz kapatılır. Google Hesabınızdaki oturumunuz kapatılmaz.</translation>
 <translation id="7454641608352164238">Yeterli alan yok</translation>
 <translation id="7475192538862203634">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
@@ -927,7 +925,6 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
-<translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>

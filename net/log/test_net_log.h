@@ -19,13 +19,28 @@ namespace net {
 
 struct NetLogSource;
 
+// NetLog subclass that follows normal lifetime rules (has a public
+// destructor.)
+//
+// This class is for testing only. Production code should use the singleton
+// NetLog::Get().
+class TestNetLog : public NetLog {
+ public:
+  TestNetLog();
+  ~TestNetLog() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestNetLog);
+};
+
 // NetLog subclass that attaches a single observer (this) to record NetLog
 // events and their parameters into an in-memory buffer. The NetLog is observed
 // at kSensitive level by default, however can be changed with
 // SetObserverCaptureMode().
 //
 // This class is for testing only.
-class RecordingTestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
+class RecordingTestNetLog : public TestNetLog,
+                            public NetLog::ThreadSafeObserver {
  public:
   RecordingTestNetLog();
   ~RecordingTestNetLog() override;

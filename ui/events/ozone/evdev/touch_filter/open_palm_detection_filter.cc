@@ -19,6 +19,8 @@ void OpenPalmDetectionFilter::Filter(
     std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) {
   slots_to_hold->reset();
   slots_to_suppress->reset();
+  // Open Palm doesn't know if it's running on a stylus device, or a
+  // touchscreen. It doesn't track active fingers/palms on the device.
 }
 
 const char OpenPalmDetectionFilter::kFilterName[] = "OpenPalmDetectionFilter";

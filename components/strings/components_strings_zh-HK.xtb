@@ -630,7 +630,6 @@
 <translation id="4082393374666368382">設定 - 管理</translation>
 <translation id="4098354747657067197">前往的是欺詐網站</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
-<translation id="410351446219883937">自動播放</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
 <translation id="4108231218301530806">下次使用指紋來驗證此卡。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
@@ -940,7 +939,7 @@
 <translation id="5540224163453853">找不到要求的文章。</translation>
 <translation id="5541546772353173584">新增電郵地址</translation>
 <translation id="5545756402275714221">為您推薦的文章</translation>
-<translation id="5552137475244467770">Chrome 會定期將您的密碼與網上發佈的清單比對。比對時，您的密碼和使用者名稱將會加密，任何人 (包括 Google) 均無法讀取。</translation>
+<translation id="5552137475244467770">Chrome 會定期將您的密碼與網上發佈的清單互相核對。核對時，您的密碼和使用者名稱將會加密，任何人 (包括 Google) 均無法讀取。</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5560088892362098740">到期日</translation>
 <translation id="5565735124758917034">啟用</translation>

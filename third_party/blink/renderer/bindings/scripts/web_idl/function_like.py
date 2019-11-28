@@ -142,6 +142,9 @@ class OverloadGroup(WithIdentifier):
             function.set_overload_group(self)
         self._is_static = functions[0].is_static
 
+    def __getitem__(self, index):
+        return self._functions[index]
+
     def __iter__(self):
         return iter(self._functions)
 

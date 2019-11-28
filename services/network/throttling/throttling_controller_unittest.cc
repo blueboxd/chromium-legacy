@@ -62,9 +62,8 @@ class ThrottlingControllerTestHelper {
                                                  base::Unretained(&callback_))),
         mock_transaction_(kSimpleGET_Transaction),
         buffer_(base::MakeRefCounted<net::IOBuffer>(64)),
-        net_log_(std::make_unique<net::NetLog>()),
         net_log_with_source_(
-            net::NetLogWithSource::Make(net_log_.get(),
+            net::NetLogWithSource::Make(net::NetLog::Get(),
                                         net::NetLogSourceType::URL_REQUEST)),
         profile_id_(base::UnguessableToken::Create()) {
     mock_transaction_.test_mode = TEST_MODE_SYNC_NET_START;
@@ -157,7 +156,6 @@ class ThrottlingControllerTestHelper {
   scoped_refptr<net::IOBuffer> buffer_;
   std::unique_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
   std::unique_ptr<MockHttpRequest> request_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<network::ScopedThrottlingToken> throttling_token_;
   const net::NetLogWithSource net_log_with_source_;
   const base::UnguessableToken profile_id_;

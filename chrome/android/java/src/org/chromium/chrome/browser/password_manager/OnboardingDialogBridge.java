@@ -35,7 +35,8 @@ public class OnboardingDialogBridge {
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         mOnboardingDialog = new PasswordManagerDialogCoordinator(windowAndroid.getContext().get(),
                 activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
-                activity.getFullscreenManager(), activity.getControlContainerHeightResource());
+                activity.getFullscreenManager(), activity.getControlContainerHeightResource(),
+                false);
         mResources = activity.getResources();
     }
 

@@ -413,7 +413,6 @@ Për të rregulluar termin e kërkimit, bëj një shtypje të gjatë për të zg
 <translation id="4084712963632273211">Nga <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />dërguar nga Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Të fshihen të dhënat e aplikacioneve?</translation>
 <translation id="4099578267706723511">Ndihmo në përmirësimin e Chrome duke dërguar automatikisht te Google statistika përdorimi dhe raporte të ndërprerjeve aksidentale.</translation>
-<translation id="410351446219883937">Luajtja automatike</translation>
 <translation id="4116038641877404294">Shkarko faqet për t'i përdorur ato jashtë linje</translation>
 <translation id="4135200667068010335">Lista e pajisjeve për të ndarë një skedë është e mbyllur.</translation>
 <translation id="4149994727733219643">Pamje e thjeshtuar për faqet e uebit</translation>
@@ -872,7 +871,6 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="7437998757836447326">Dil nga Chrome</translation>
 <translation id="7438641746574390233">Kur "Modaliteti i lehtë" është aktiv, Chrome përdor serverët e Google për të bërë që faqet të ngarkohen më shpejt. "Modaliteti i lehtë" i rishkruan faqet shumë të ngadalta për të ngarkuar vetëm përmbajtjen thelbësore. "Modaliteti i lehtë" nuk zbatohet në skedat "e fshehta".</translation>
 <translation id="7444811645081526538">Më shumë kategori</translation>
-<translation id="7445411102860286510">Lejo që sajtet të luajnë automatikisht video me zë të hequr (rekomandohet)</translation>
 <translation id="7453467225369441013">Të nxjerr nga shumica e sajteve. Nuk do të dalësh nga llogaria jote e Google.</translation>
 <translation id="7454641608352164238">Nuk ka hapësirë të mjaftueshme</translation>
 <translation id="7475192538862203634">Nëse e shikon shpesh këtë, provo këto <ph name="BEGIN_LINK" />sugjerime<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7810647596859435254">Hape me...</translation>
 <translation id="7821588508402923572">Kursimet e të dhënave të tua do të shfaqen këtu</translation>
-<translation id="7837721118676387834">Lejo luajtjen automatike të videove me zërin të çaktivizuar për një sajt specifik.</translation>
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
 <translation id="784934925303690534">Shtrirja kohore</translation>
 <translation id="7851858861565204677">Pajisjet e tjera</translation>

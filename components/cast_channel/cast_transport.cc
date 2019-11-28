@@ -20,8 +20,8 @@
 #include "components/cast_channel/cast_framer.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/net_errors.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 #define VLOG_WITH_CONNECTION(level) \
   VLOG(level) << "[" << ip_endpoint_.ToString() << ", auth=SSL_VERIFIED] "

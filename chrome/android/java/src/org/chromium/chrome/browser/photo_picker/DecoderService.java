@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.Pair;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -36,7 +37,9 @@ public class DecoderService extends Service {
     static final String KEY_FILE_DESCRIPTOR = "file_descriptor";
     static final String KEY_FILE_PATH = "file_path";
     static final String KEY_IMAGE_BITMAP = "image_bitmap";
-    static final String KEY_SIZE = "size";
+    static final String KEY_WIDTH = "width";
+    static final String KEY_RATIO = "ratio";
+    static final String KEY_FULL_WIDTH = "full_width";
     static final String KEY_SUCCESS = "success";
     static final String KEY_DECODE_TIME = "decode_time";
 
@@ -79,11 +82,13 @@ public class DecoderService extends Service {
         public void decodeImage(Bundle payload, IDecoderServiceCallback callback) {
             Bundle bundle = null;
             String filePath = "";
-            int size = 0;
+            int width = 0;
+            boolean fullWidth = false;
             try {
                 filePath = payload.getString(KEY_FILE_PATH);
                 ParcelFileDescriptor pfd = payload.getParcelable(KEY_FILE_DESCRIPTOR);
-                size = payload.getInt(KEY_SIZE);
+                width = payload.getInt(KEY_WIDTH);
+                fullWidth = payload.getBoolean(KEY_FULL_WIDTH);
 
                 // Setup a minimum viable response to parent process. Will be fleshed out
                 // further below.
@@ -92,7 +97,7 @@ public class DecoderService extends Service {
                 bundle.putBoolean(KEY_SUCCESS, false);
 
                 if (!mNativeLibraryAndSandboxInitialized) {
-                    Log.e(TAG, "Decode failed %s (size: %d): no sandbox", filePath, size);
+                    Log.e(TAG, "Decode failed %s (width: %d): no sandbox", filePath, width);
                     sendReply(callback, bundle); // Sends SUCCESS == false;
                     return;
                 }
@@ -100,17 +105,19 @@ public class DecoderService extends Service {
                 FileDescriptor fd = pfd.getFileDescriptor();
 
                 long begin = SystemClock.elapsedRealtime();
-                Bitmap bitmap = BitmapUtils.decodeBitmapFromFileDescriptor(fd, size);
+                Pair<Bitmap, Float> decodedBitmap =
+                        BitmapUtils.decodeBitmapFromFileDescriptor(fd, width, fullWidth);
                 long decodeTime = SystemClock.elapsedRealtime() - begin;
 
                 try {
                     pfd.close();
                 } catch (IOException e) {
-                    Log.e(TAG, "Closing failed " + filePath + " (size: " + size + ") " + e);
+                    Log.e(TAG, "Closing failed " + filePath + " (width: " + width + ") " + e);
                 }
 
+                Bitmap bitmap = decodedBitmap.first;
                 if (bitmap == null) {
-                    Log.e(TAG, "Decode failed " + filePath + " (size: " + size + ")");
+                    Log.e(TAG, "Decode failed " + filePath + " (width: " + width + ")");
                     sendReply(callback, bundle); // Sends SUCCESS == false;
                     return;
                 }
@@ -121,8 +128,10 @@ public class DecoderService extends Service {
                 // descriptor. In the receiving process it will just leave the bitmap on
                 // ashmem since it's immutable and carry on.
                 bundle.putParcelable(KEY_IMAGE_BITMAP, bitmap);
+                bundle.putFloat(KEY_RATIO, decodedBitmap.second);
                 bundle.putBoolean(KEY_SUCCESS, true);
                 bundle.putLong(KEY_DECODE_TIME, decodeTime);
+                bundle.putBoolean(KEY_FULL_WIDTH, payload.getBoolean(KEY_FULL_WIDTH));
                 sendReply(callback, bundle);
                 bitmap.recycle();
             } catch (Exception e) {
@@ -130,7 +139,7 @@ public class DecoderService extends Service {
                 // decoding a photo, it is better UX to eat the exception instead of showing
                 // a crash dialog and discarding other requests that have already been sent.
                 Log.e(TAG,
-                        "Unexpected error during decoding " + filePath + " (size: " + size + ") "
+                        "Unexpected error during decoding " + filePath + " (width: " + width + ") "
                                 + e);
 
                 if (bundle != null) sendReply(callback, bundle);

@@ -129,6 +129,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                                  main_frame_url,
                                  unsafe_resources,
                                  display_options,
+                                 true,
                                  url_loader_for_testing) {
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);
@@ -155,8 +156,8 @@ class TestSafeBrowsingBlockingPageFactory
       BaseUIManager* manager,
       WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) override {
     PrefService* prefs =
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
             ->GetPrefs();
@@ -196,7 +197,8 @@ class TestSafeBrowsingBlockingPageQuiet : public SafeBrowsingBlockingPage {
                                  web_contents,
                                  main_frame_url,
                                  unsafe_resources,
-                                 display_options),
+                                 display_options,
+                                 true),
         sb_error_ui_(unsafe_resources[0].url,
                      main_frame_url,
                      GetInterstitialReason(unsafe_resources),
@@ -235,8 +237,8 @@ class TestSafeBrowsingBlockingQuietPageFactory
       BaseUIManager* manager,
       WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) override {
     PrefService* prefs =
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
             ->GetPrefs();

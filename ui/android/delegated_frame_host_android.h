@@ -118,6 +118,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void DidNavigate();
 
+  void SetTopControlsVisibleHeight(float height);
+
  private:
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -133,6 +135,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
+
+  float top_controls_visible_height_ = 0.f;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;
 

@@ -1034,7 +1034,8 @@ public class TabsTest {
 
             float tabOffsetX = layoutTab.getX();
             float tabOffsetY = layoutTab.getY();
-            float tabRightX, tabBottomY;
+            float tabRightX;
+            float tabBottomY;
             if (isLandscape) {
                 tabRightX = nextLayoutTab != null
                         ? nextLayoutTab.getX()

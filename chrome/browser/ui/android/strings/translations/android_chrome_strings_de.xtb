@@ -413,7 +413,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4084712963632273211">Von <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />bereitgestellt durch Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">App-Daten löschen?</translation>
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
-<translation id="410351446219883937">Autoplay</translation>
 <translation id="4116038641877404294">Seiten zur Offline-Ansicht herunterladen</translation>
 <translation id="4135200667068010335">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist geschlossen.</translation>
 <translation id="4149994727733219643">Vereinfachte Ansicht für Webseiten</translation>
@@ -872,7 +871,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7438641746574390233">Wenn der Lite-Modus aktiviert ist, wird der Seitenaufbau in Chrome mithilfe von Google-Servern beschleunigt. Im Lite-Modus werden sehr langsame Seiten so umgeschrieben, dass nur die wesentlichen Inhalte geladen werden. Der Lite-Modus wird nicht auf Inkognito-Tabs angewendet.</translation>
 <translation id="7444811645081526538">Weitere Kategorien</translation>
-<translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
 <translation id="7453467225369441013">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="7454641608352164238">Zu wenig Speicherplatz</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
@@ -927,7 +925,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
-<translation id="7837721118676387834">Automatische Wiedergabe stummgeschalteter Videos für eine bestimmte Website zulassen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>

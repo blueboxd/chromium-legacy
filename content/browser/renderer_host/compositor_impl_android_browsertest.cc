@@ -232,9 +232,6 @@ class CompositorImplBrowserTestRefreshRate
       public ui::WindowAndroid::TestHooks {
  public:
   std::string GetTestUrl() override { return "/media/tulip2.webm"; }
-  void AppendFeatures(std::vector<base::Feature>* features) override {
-    features->push_back(media::kUseSurfaceLayerForVideo);
-  }
 
   // WindowAndroid::TestHooks impl.
   std::vector<float> GetSupportedRates() override {

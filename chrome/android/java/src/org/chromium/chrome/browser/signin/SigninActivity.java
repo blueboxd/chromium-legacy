@@ -13,7 +13,7 @@ import androidx.annotation.IntDef;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
+import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;

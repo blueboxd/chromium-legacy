@@ -26,4 +26,5 @@ public_deps = [
 type_mappings = [
   "chromeos.device_sync.mojom.ConnectivityStatus=cryptauthv2::ConnectivityStatus",
   "chromeos.device_sync.mojom.FeatureStatusChange=chromeos::device_sync::FeatureStatusChange",
+  "chromeos.device_sync.mojom.CryptAuthService=cryptauthv2::TargetService",
 ]

@@ -235,7 +235,7 @@ void RunTestThreads(NetLog* net_log) {
 
 // Makes sure that events on multiple threads are dispatched to all observers.
 TEST(NetLogTest, NetLogEventThreads) {
-  NetLog net_log;
+  TestNetLog net_log;
 
   // Attach some observers.  Since they're created after |net_log|, they'll
   // safely detach themselves on destruction.
@@ -256,7 +256,7 @@ TEST(NetLogTest, NetLogEventThreads) {
 
 // Test adding and removing a single observer.
 TEST(NetLogTest, NetLogAddRemoveObserver) {
-  NetLog net_log;
+  TestNetLog net_log;
   CountingObserver observer;
 
   AddEvent(&net_log);
@@ -298,7 +298,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
 
 // Test adding and removing two observers at different log levels.
 TEST(NetLogTest, NetLogTwoObservers) {
-  NetLog net_log;
+  TestNetLog net_log;
   LoggingObserver observer[2];
 
   // Add first observer.
@@ -354,7 +354,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
 // Makes sure that adding and removing observers simultaneously on different
 // threads works.
 TEST(NetLogTest, NetLogAddRemoveObserverThreads) {
-  NetLog net_log;
+  TestNetLog net_log;
 
   // Run a bunch of threads to completion, each of which will repeatedly add
   // and remove an observer, and set its logging level.

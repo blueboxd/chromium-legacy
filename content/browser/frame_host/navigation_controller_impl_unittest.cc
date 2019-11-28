@@ -4843,6 +4843,44 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
   BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(nullptr);
 }
 
+// Test that if an empty WebContents is navigated via frame proxy with
+// replacement, the NavigationRequest does not specify replacement, since there
+// is no entry to replace.
+TEST_F(NavigationControllerTest,
+       NavigateFromFrameProxyWithReplacementWithoutEntries) {
+  const GURL main_url("http://foo1");
+  const GURL other_contents_url("http://foo2");
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), main_url);
+
+  // Suppose the main WebContents creates another WebContents which it can
+  // navigate via frame proxy.
+  std::unique_ptr<WebContents> other_contents = CreateTestWebContents();
+  TestWebContents* other_contents_impl =
+      static_cast<TestWebContents*>(other_contents.get());
+  NavigationControllerImpl& other_controller =
+      other_contents_impl->GetController();
+  FrameTreeNode* node = other_contents_impl->GetFrameTree()->root();
+  RenderFrameHostImpl* frame = node->current_frame_host();
+
+  // The newly created contents has no entries.
+  EXPECT_EQ(0, other_controller.GetEntryCount());
+
+  // Simulate the main WebContents navigating the new WebContents with
+  // replacement.
+  const bool should_replace_current_entry = true;
+  other_controller.NavigateFromFrameProxy(
+      frame, other_contents_url, url::Origin::Create(main_url),
+      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
+      Referrer(), ui::PAGE_TRANSITION_LINK, should_replace_current_entry,
+      NavigationDownloadPolicy(), "GET", nullptr, "", nullptr);
+  NavigationRequest* request = node->navigation_request();
+  ASSERT_TRUE(request);
+
+  // Since the new WebContents had no entries, the request is not done with
+  // replacement.
+  EXPECT_FALSE(request->common_params().should_replace_current_entry);
+}
+
 // Tests that calling RemoveForwareEntries() clears all forward entries
 // including non-committed entries.
 TEST_F(NavigationControllerTest, PruneForwardEntries) {

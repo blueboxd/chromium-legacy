@@ -371,11 +371,6 @@ const base::Feature kUseR16Texture{"use-r16-texture",
 const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
-// aren't MediaStream.
-const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable VA-API hardware encode acceleration for H264 on AMD.
 const base::Feature kVaapiH264AMDEncoder{"VaapiH264AMDEncoder",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

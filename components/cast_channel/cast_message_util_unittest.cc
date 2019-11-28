@@ -6,8 +6,8 @@
 
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using base::test::IsJson;
 using base::test::ParseJsonDeprecated;

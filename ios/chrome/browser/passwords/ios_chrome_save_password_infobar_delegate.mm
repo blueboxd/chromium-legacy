@@ -177,7 +177,7 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
         return IsPasswordUpdate()
                    ? base::string16()
                    : l10n_util::GetStringUTF16(
-                         IDS_IOS_PASSWORD_MANAGER_MODAL_BLACKLIST_BUTTON);
+                         IDS_IOS_PASSWORD_MANAGER_MODAL_BLOCK_BUTTON);
       }
       case BUTTON_NONE:
         NOTREACHED();
@@ -186,7 +186,7 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
   } else {
     return l10n_util::GetStringUTF16(
         (button == BUTTON_OK) ? IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON
-                              : IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+                              : IDS_IOS_PASSWORD_MANAGER_BLOCK_BUTTON);
   }
 }
 

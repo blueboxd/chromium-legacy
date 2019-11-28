@@ -10,9 +10,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 
 /**
  * An infobar to disclose to the user that the default search engine has geolocation access by

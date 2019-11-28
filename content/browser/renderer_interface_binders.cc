@@ -16,7 +16,6 @@
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,11 +69,6 @@ class RendererInterfaceBinders {
  private:
   void InitializeParameterizedBinderRegistry();
 
-  static void CreateWebSocketConnector(
-      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
-      RenderProcessHost* host,
-      const url::Origin& origin);
-
   service_manager::BinderRegistryWithArgs<RenderProcessHost*,
                                           const url::Origin&>
       parameterized_binder_registry_;
@@ -87,16 +81,6 @@ class RendererInterfaceBinders {
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
-  // Used for shared workers and service workers to create a websocket.
-  // In other cases, RenderFrameHostImpl for documents or DedicatedWorkerHost
-  // for dedicated workers handles interface requests in order to associate
-  // websockets with a frame. Shared workers and service workers don't have to
-  // do it because they don't have a frame.
-  // TODO(nhiroki): Consider moving this into SharedWorkerHost and
-  // ServiceWorkerProviderHost.
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(CreateWebSocketConnector));
-
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
 }
@@ -104,23 +88,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
   static base::NoDestructor<RendererInterfaceBinders> binders;
   return *binders;
-}
-
-void RendererInterfaceBinders::CreateWebSocketConnector(
-    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  // TODO(jam): is it ok to not send extraHeaders for sockets created from
-  // shared and service workers?
-  //
-  // Shared Workers and service workers are not directly associated with a
-  // frame, so the concept of "top-level frame" does not exist. Can use
-  // (origin, origin) for the NetworkIsolationKey for requests because these
-  // workers can only be created when the site has cookie access.
-  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
-                                  host->GetID(), MSG_ROUTING_NONE, origin,
-                                  net::NetworkIsolationKey(origin, origin)),
-                              std::move(receiver));
 }
 
 }  // namespace

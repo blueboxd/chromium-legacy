@@ -220,6 +220,13 @@ class CONTENT_EXPORT ContentRendererClient {
                                 bool is_redirect);
 #endif
 
+  // Returns true if we should fork a new process for the given navigation.
+  virtual bool ShouldFork(blink::WebLocalFrame* frame,
+                          const GURL& url,
+                          const std::string& http_method,
+                          bool is_initial_navigation,
+                          bool is_server_redirect);
+
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|. If the function returns a valid |new_url|, the request must be
   // updated to use it. The |attach_same_site_cookies| output parameter

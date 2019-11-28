@@ -107,14 +107,13 @@ std::unique_ptr<Page::ScreencastFrameMetadata> BuildScreencastFrameMetadata(
     float device_scale_factor,
     float page_scale_factor,
     const gfx::Vector2dF& root_scroll_offset,
-    float top_controls_height,
-    float top_controls_shown_ratio) {
+    float top_controls_visible_height) {
   if (surface_size.IsEmpty() || device_scale_factor == 0)
     return nullptr;
 
   const gfx::SizeF content_size_dip =
       gfx::ScaleSize(gfx::SizeF(surface_size), 1 / device_scale_factor);
-  float top_offset_dip = top_controls_height * top_controls_shown_ratio;
+  float top_offset_dip = top_controls_visible_height;
   gfx::Vector2dF root_scroll_offset_dip = root_scroll_offset;
   if (IsUseZoomForDSFEnabled()) {
     top_offset_dip /= device_scale_factor;
@@ -157,8 +156,7 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
                           double* device_scale_factor,
                           double* page_scale_factor,
                           gfx::Vector2dF* root_scroll_offset,
-                          double* top_controls_height,
-                          double* top_controls_shown_ratio) {
+                          double* top_controls_visible_height) {
   // Get metadata from |frame| and ensure that no metadata is missing.
   bool success = true;
   double root_scroll_offset_x, root_scroll_offset_y;
@@ -171,10 +169,8 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
   success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::TOP_CONTROLS_HEIGHT, top_controls_height);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
-      top_controls_shown_ratio);
+      media::VideoFrameMetadata::TOP_CONTROLS_VISIBLE_HEIGHT,
+      top_controls_visible_height);
   DCHECK(success);
 
   root_scroll_offset->set_x(root_scroll_offset_x);
@@ -982,15 +978,16 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (snapshot_size.IsEmpty())
     return;
 
-  double top_controls_height = frame_metadata_->top_controls_height;
-  double top_controls_shown_ratio = frame_metadata_->top_controls_shown_ratio;
+  double top_controls_visible_height =
+      frame_metadata_->top_controls_height *
+      frame_metadata_->top_controls_shown_ratio;
 
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
       BuildScreencastFrameMetadata(
           surface_size, frame_metadata_->device_scale_factor,
           frame_metadata_->page_scale_factor,
           frame_metadata_->root_scroll_offset.value_or(gfx::Vector2dF()),
-          top_controls_height, top_controls_shown_ratio);
+          top_controls_visible_height);
   if (!page_metadata)
     return;
 
@@ -1027,15 +1024,14 @@ void PageHandler::OnFrameFromVideoConsumer(
   }
 
   double device_scale_factor, page_scale_factor;
-  double top_controls_height, top_controls_shown_ratio;
+  double top_controls_visible_height;
   gfx::Vector2dF root_scroll_offset;
   GetMetadataFromFrame(*frame, &device_scale_factor, &page_scale_factor,
-                       &root_scroll_offset, &top_controls_height,
-                       &top_controls_shown_ratio);
+                       &root_scroll_offset, &top_controls_visible_height);
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
-      BuildScreencastFrameMetadata(
-          surface_size, device_scale_factor, page_scale_factor,
-          root_scroll_offset, top_controls_height, top_controls_shown_ratio);
+      BuildScreencastFrameMetadata(surface_size, device_scale_factor,
+                                   page_scale_factor, root_scroll_offset,
+                                   top_controls_visible_height);
   if (!page_metadata)
     return;
 

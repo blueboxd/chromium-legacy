@@ -172,8 +172,8 @@ class CastContentBrowserClient
       const GURL& request_url,
       bool is_main_frame_request,
       bool strict_enforcement,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback) override;
+      base::OnceCallback<void(content::CertificateRequestResultType)> callback)
+      override;
   base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,

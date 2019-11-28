@@ -662,7 +662,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         }
 
         prepared_pending_script_ = ClassicPendingScript::CreateInline(
-            element_, position, script_location_type, options);
+            element_, position, base_url, element_->TextFromChildren(),
+            script_location_type, options);
 
         // <spec step="25.2.A.2">Set the script's script to script.</spec>
         //

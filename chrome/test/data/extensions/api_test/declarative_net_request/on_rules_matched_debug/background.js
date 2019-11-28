@@ -72,6 +72,35 @@ var tests = [
     });
   },
 
+  // Ensure listening to requests not originating from a tab works fine.
+  function testBackgroundPageRequest() {
+    addRuleMatchedListener();
+
+    const url = getServerURL('abc.com');
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+
+    xhr.onload = () => {
+      removeRuleMatchedListener();
+      chrome.test.fail('Request should be blocked by rule with ID 1');
+    };
+
+    // The request from the background page to abc.com should be blocked.
+    xhr.onerror = () => {
+      chrome.test.assertEq(1, matchedRules.length);
+      const matchedRule = matchedRules[0];
+      chrome.test.assertEq(1, matchedRule.rule.ruleId);
+
+      // Tab ID should be -1 since this request was made from a background page.
+      chrome.test.assertEq(-1, matchedRule.request.tabId);
+
+      removeRuleMatchedListener();
+      chrome.test.succeed();
+    };
+
+    xhr.send();
+  },
+
   function testNoRuleMatched() {
     addRuleMatchedListener();
     const url = getServerURL('nomatch.com');

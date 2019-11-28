@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -88,8 +87,6 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
 
  protected:
   // Exposed for testing.
@@ -98,10 +95,6 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
  private:
   // extensions::DeferredStartRenderHost implementation:
   void CreateRenderViewNow() override;
-  void AddDeferredStartRenderHostObserver(
-      extensions::DeferredStartRenderHostObserver* observer) override;
-  void RemoveDeferredStartRenderHostObserver(
-      extensions::DeferredStartRenderHostObserver* observer) override;
 
   // The delegate for this BackgroundContents.
   Delegate* delegate_;
@@ -111,8 +104,6 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
 
   Profile* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  base::ObserverList<extensions::DeferredStartRenderHostObserver>::Unchecked
-      deferred_start_render_host_observer_list_;
 
   // The initial URL to load.
   GURL initial_url_;

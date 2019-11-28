@@ -8,9 +8,15 @@
 #include <memory>
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+class GURL;
 
 namespace chromeos {
 class AppTimeController;
@@ -24,6 +30,20 @@ class ChildUserService : public KeyedService {
   ChildUserService(const ChildUserService&) = delete;
   ChildUserService& operator=(const ChildUserService&) = delete;
   ~ChildUserService() override;
+
+  // Returns whether web time limit was reached for child user.
+  // Always returns false if per-app times limits feature is disabled.
+  bool WebTimeLimitReached() const;
+
+  // Returns whether given |url| can be used without any time restrictions.
+  // Viewing of whitelisted |url| does not count towards usage web time.
+  // Always returns false if per-app times limits feature is disabled.
+  bool WebTimeLimitWhitelistedURL(const GURL& url) const;
+
+  // Returns time limit set for using the web on a given day.
+  // Should only be called if |features::kPerAppTimeLimits| and
+  // |features::kWebTimeLimits| features are enabled.
+  base::TimeDelta GetWebTimeLimit() const;
 
   const AppTimeController* app_time_controller() const {
     return app_time_controller_.get();

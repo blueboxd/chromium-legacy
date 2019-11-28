@@ -65,15 +65,22 @@ class SiteDataCacheImpl : public SiteDataCache,
   SiteDataCacheImpl* GetDataCache() override;
 
   // Remove a specific set of entries from the cache and the on-disk store.
-  void ClearSiteDataForOrigins(
+  // Virtual for testing.
+  virtual void ClearSiteDataForOrigins(
       const std::vector<url::Origin>& origins_to_remove);
 
   // Clear the data cache and the on-disk store.
-  void ClearAllSiteData();
+  // Virtual for testing.
+  virtual void ClearAllSiteData();
 
   // Set a callback that will be called once the data store backing this cache
   // has been fully initialized.
   void SetInitializationCallbackForTesting(base::OnceClosure callback);
+
+ protected:
+  // Version of the constructor that doesn't create the data store, for testing
+  // purposes only.
+  explicit SiteDataCacheImpl(const std::string& browser_context_id);
 
  private:
   // Returns a pointer to the SiteDataImpl object associated with |origin|,

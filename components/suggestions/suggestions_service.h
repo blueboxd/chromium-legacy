@@ -15,17 +15,13 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "url/gurl.h"
 
-namespace gfx {
-class Image;
-}  // namespace gfx
-
 namespace suggestions {
 
 // An interface to fetch server suggestions asynchronously.
 class SuggestionsService : public KeyedService {
  public:
-  using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
-  using BitmapCallback = base::Callback<void(const GURL&, const gfx::Image&)>;
+  using ResponseCallback =
+      base::RepeatingCallback<void(const SuggestionsProfile&)>;
 
   using ResponseCallbackList =
       base::CallbackList<void(const SuggestionsProfile&)>;

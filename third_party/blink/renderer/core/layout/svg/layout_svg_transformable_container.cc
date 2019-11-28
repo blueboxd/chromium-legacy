@@ -80,7 +80,7 @@ bool LayoutSVGTransformableContainer::IsUseElement() const {
   if (IsSVGUseElement(element))
     return true;
   // Nested <use> are replaced by <g> during shadow tree expansion.
-  if (IsSVGGElement(element) && ToSVGGElement(element).InUseShadowTree())
+  if (IsA<SVGGElement>(element) && To<SVGGElement>(element).InUseShadowTree())
     return IsSVGUseElement(element.CorrespondingElement());
   return false;
 }

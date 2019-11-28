@@ -641,8 +641,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
   FrameDeadline frame_deadline(base::TimeTicks(), 4u, base::TimeDelta(), true);
   const float min_page_scale_factor = 3.5f;
-  const float top_bar_height(1234.5f);
-  const float top_bar_shown_ratio(1.0f);
+  const float top_controls_visible_height = 12.f;
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
 
@@ -662,8 +661,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.frame_token = frame_token;
   input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
   input.min_page_scale_factor = min_page_scale_factor;
-  input.top_controls_height = top_bar_height;
-  input.top_controls_shown_ratio = top_bar_shown_ratio;
+  input.top_controls_visible_height.emplace(top_controls_visible_height);
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
 
   CompositorFrameMetadata output;
@@ -692,8 +690,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(begin_frame_ack_sequence_number,
             output.begin_frame_ack.sequence_number);
   EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
-  EXPECT_EQ(top_bar_height, output.top_controls_height);
-  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
+  EXPECT_EQ(*output.top_controls_visible_height, top_controls_visible_height);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.local_surface_id_allocation_time);
 }

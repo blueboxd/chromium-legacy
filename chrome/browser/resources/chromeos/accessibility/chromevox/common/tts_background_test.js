@@ -127,3 +127,22 @@ TEST_F(
       assertCallsCallbacks('  ', 2);
       assertCallsCallbacks(' \u00a0 ', 3);
     });
+
+SYNC_TEST_F(
+    'ChromeVoxTtsBackgroundTest', 'CapitalizeSingleLettersAfterNumbers',
+    function() {
+      var tts = new TtsBackground(false);
+      var preprocess = tts.preprocess.bind(tts);
+
+      // Capitalize single letters if they appear directly after a number.
+      assertEquals(
+          'Click to join the 5G network',
+          preprocess('Click to join the 5g network'));
+      assertEquals(
+          'I ran a 100M sprint in 10 S',
+          preprocess('I ran a 100m sprint in 10 s'));
+      // Do not capitalize the letter "a".
+      assertEquals(
+          'Please do the shopping at 3 a thing came up at work',
+          preprocess('Please do the shopping at 3 a thing came up at work'));
+    });

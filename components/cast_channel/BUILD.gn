@@ -34,7 +34,6 @@ static_library("cast_channel") {
   deps = [
     "//base",
     "//components/cast_certificate",
-    "//components/cast_channel/proto:cast_channel_proto",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/prefs",
@@ -44,6 +43,7 @@ static_library("cast_channel") {
     "//crypto",
     "//net",
     "//services/data_decoder/public/cpp",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
   public_deps = [
     "//services/network/public/mojom",
@@ -59,12 +59,12 @@ static_library("test_support") {
   deps = [
     ":cast_channel",
     "//base",
-    "//components/cast_channel/proto:cast_channel_proto",
     "//net",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
 }
 
@@ -88,8 +88,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/cast_certificate",
     "//components/cast_certificate:test_support",
-    "//components/cast_certificate/proto:unittest_proto",
-    "//components/cast_channel/proto:cast_channel_proto",
     "//components/prefs",
     "//components/prefs:test_support",
     "//content/test:test_support",
@@ -98,6 +96,8 @@ source_set("unit_tests") {
     "//services/data_decoder/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_unittest_proto",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
 }
 
@@ -109,8 +109,8 @@ fuzzer_test("cast_message_fuzzer") {
     ":test_support",
     "//base",
     "//components/cast_channel",
-    "//components/cast_channel/proto:cast_channel_proto",
     "//net",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
   seed_corpus = "fuzz_corpus"
 

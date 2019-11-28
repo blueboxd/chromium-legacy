@@ -51,8 +51,11 @@ public class AwProxyController {
         int length = (proxyRules == null ? 0 : proxyRules.length);
         String[] urlSchemes = new String[length];
         String[] proxyUrls = new String[length];
-        boolean schemeHttp = false, schemeHttps = false;
-        boolean urlHttp = false, urlHttps = false, urlDirect = false;
+        boolean schemeHttp = false;
+        boolean schemeHttps = false;
+        boolean urlHttp = false;
+        boolean urlHttps = false;
+        boolean urlDirect = false;
         for (int i = 0; i < length; i++) {
             // URL schemes
             if (proxyRules[i][0] == null) {

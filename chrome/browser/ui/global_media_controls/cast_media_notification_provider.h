@@ -54,6 +54,7 @@ class CastMediaNotificationProvider : public media_router::MediaRoutesObserver {
   virtual bool HasItems() const;
 
  private:
+  media_router::MediaRouter* const router_;
   media_message_center::MediaNotificationController* const
       notification_controller_;
 

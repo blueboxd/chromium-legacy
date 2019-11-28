@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using openscreen::osp::ServiceInfo;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -22,20 +23,20 @@ namespace media_router {
 const char kServiceType[] = "openscreen_.udp_";
 
 class MockServiceListenerObserver
-    : public openscreen::ServiceListener::Observer {
+    : public openscreen::osp::ServiceListener::Observer {
  public:
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStopped, void());
   MOCK_METHOD0(OnSuspended, void());
   MOCK_METHOD0(OnSearching, void());
 
-  MOCK_METHOD1(OnReceiverAdded, void(const openscreen::ServiceInfo&));
-  MOCK_METHOD1(OnReceiverChanged, void(const openscreen::ServiceInfo&));
-  MOCK_METHOD1(OnReceiverRemoved, void(const openscreen::ServiceInfo&));
+  MOCK_METHOD1(OnReceiverAdded, void(const ServiceInfo&));
+  MOCK_METHOD1(OnReceiverChanged, void(const ServiceInfo&));
+  MOCK_METHOD1(OnReceiverRemoved, void(const ServiceInfo&));
   MOCK_METHOD0(OnAllReceiversRemoved, void());
 
   MOCK_METHOD1(OnError, void(openscreen::osp::ServiceListenerError));
-  MOCK_METHOD1(OnMetrics, void(openscreen::ServiceListener::Metrics));
+  MOCK_METHOD1(OnMetrics, void(openscreen::osp::ServiceListener::Metrics));
 };
 
 // Although the testing framework can do a byte comparison, when it fails
@@ -69,22 +70,22 @@ class OpenScreenListenerTest : public ::testing::Test {
     listener.AddObserver(&observer);
   }
 
-  void ExpectReceiverAdded(const openscreen::ServiceInfo& info) {
+  void ExpectReceiverAdded(const ServiceInfo& info) {
     EXPECT_CALL(observer, OnReceiverAdded(ServiceInfoEquals(info)));
   }
 
-  void ExpectReceiverChanged(const openscreen::ServiceInfo& info) {
+  void ExpectReceiverChanged(const ServiceInfo& info) {
     EXPECT_CALL(observer, OnReceiverChanged(ServiceInfoEquals(info)));
   }
 
-  void ExpectReceiverRemoved(const openscreen::ServiceInfo& info) {
+  void ExpectReceiverRemoved(const ServiceInfo& info) {
     EXPECT_CALL(observer, OnReceiverRemoved(ServiceInfoEquals(info)));
   }
 
   OpenScreenListener listener;
   StrictMock<MockServiceListenerObserver> observer;
   local_discovery::ServiceDescription valid_description_;
-  openscreen::ServiceInfo service_info_;
+  ServiceInfo service_info_;
 };
 
 TEST_F(OpenScreenListenerTest, DeviceAddedNotifiesObserversIfStarted) {

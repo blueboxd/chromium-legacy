@@ -10,6 +10,7 @@
 #include "ash/keyboard/ui/container_behavior.h"
 #include "ash/keyboard/ui/drag_descriptor.h"
 #include "ash/keyboard/ui/keyboard_export.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -62,10 +63,32 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
     double top_padding_allotment_ratio;
   };
 
-  // Ensures that the keyboard is neither off the screen nor overlapping an
-  // edge.
-  gfx::Rect ContainKeyboardToScreenBounds(
-      const gfx::Rect& keyboard_bounds_in_screen,
+  // This returns a new bounds that is guaranteed to be contained within the
+  // bounds of the user's display. If the given bounds is contained within
+  // the display's bounds then they remain unchanged. If the given bounds are
+  // overlapping an edge of the display, or are completely off the display,
+  // then the closest valid bounds within the display will be returned.
+  gfx::Rect GetBoundsWithinDisplay(const gfx::Rect& bounds,
+                                   const gfx::Rect& display_bounds) const;
+
+  // Convert bounds that are relative to the origin of the keyboard window, to
+  // bounds that are relative to the origin of the display.
+  gfx::Rect ConvertAreaInKeyboardToScreenBounds(
+      const gfx::Rect& area_in_keyboard_window,
+      const gfx::Rect& keyboard_window_bounds_in_display) const;
+
+  // This returns a new bounds for the keyboard window that is guaranteed to
+  // keep the keyboard window on the display. The area of the keyboard window
+  // that is guaranteed to remain on the display is either;
+  //
+  //  1) the area defined by area_in_window_to_remain_on_screen_, or
+  //  2) the entire keyboard window bounds.
+  //
+  // If area_in_window_to_remain_on_screen_ is not defined, then the entire
+  // keyboard window bounds are kept on the display. Otherwise the area
+  // defined by area_in_window_to_remain_on_screen_ is kept on the display.
+  gfx::Rect ContainKeyboardToDisplayBounds(
+      const gfx::Rect& keyboard_window_bounds_in_screen,
       const gfx::Rect& display_bounds) const;
 
   // Saves the current keyboard location for use the next time it is displayed.
@@ -79,8 +102,11 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   std::unique_ptr<const DragDescriptor> drag_descriptor_;
 
   gfx::Rect draggable_area_ = gfx::Rect();
-  gfx::Rect clip_bounds_ = gfx::Rect();
-  gfx::Rect area_to_remain_on_screen_;
+
+  // The area within the keyboard window that must remain on screen during a
+  // drag operation. Note that this is relative to the current keyboard window
+  // not the screen.
+  base::Optional<gfx::Rect> area_in_window_to_remain_on_screen_;
 };
 
 }  // namespace keyboard

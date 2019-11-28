@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Mostrar máis</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Cambia o teu contrasinal</translation>
 <translation id="1484290072879560759">Escoller enderezo de envío</translation>
 <translation id="1492194039220927094">Aplicación de políticas:</translation>
 <translation id="1501859676467574491">Mostra tarxetas da túa Conta de Google</translation>
@@ -209,6 +210,7 @@
 <translation id="1914326953223720820">Servizo de descompresión</translation>
 <translation id="1915697529809968049">Queres usar Touch ID en lugar do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar a túa configuración actualizada a este sitio, volve cargar esta páxina</translation>
+<translation id="1917876262703816781">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que cambies o contrasinal de <ph name="ORIGIN" /> agora.</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Obter axuda cando aparece unha mensaxe de erro concreta</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ningún}=1{1 sitio}other{# sitios}}</translation>
@@ -642,7 +644,6 @@
 <translation id="4082393374666368382">Configuración - Xestión</translation>
 <translation id="4098354747657067197">O sitio ao que te dirixes é enganoso</translation>
 <translation id="4103249731201008433">O número de serie do dispositivo non é válido</translation>
-<translation id="410351446219883937">Reprodución automática</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver a lista dos URL incluídos na lista negra e outras políticas aplicadas polo administrador do teu sistema.</translation>
 <translation id="4108231218301530806">Utilizar impresión dixital para verificar esta tarxeta a próxima vez.</translation>
 <translation id="4110652170750985508">Revisa o pago</translation>
@@ -902,6 +903,7 @@
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este sitio utiliza unha configuración de seguranza obsoleta que pode poñer en risco a túa información (por exemplo, contrasinais ou números de tarxetas de crédito) cando se lle envía.</translation>
 <translation id="5288108484102287882">A validación dos valores da política xerou advertencias</translation>
+<translation id="5295292838686006428">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes agora os teus contrasinais gardados.</translation>
 <translation id="5299298092464848405">Erro ao analizar a política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -952,6 +954,7 @@
 <translation id="5540224163453853">Non se puido atopar o artigo solicitado.</translation>
 <translation id="5541546772353173584">Engade un correo electrónico</translation>
 <translation id="5545756402275714221">Artigos personalizados</translation>
+<translation id="5552137475244467770">Chrome comproba periodicamente se os teus contrasinais aparecen nas listas que se publican en liña. Cando o fai, os teus contrasinais e os teus nomes de usuario están encriptados, polo que ninguén pode lelos, nin sequera Google.</translation>
 <translation id="5556459405103347317">Volver cargar</translation>
 <translation id="5560088892362098740">Data de caducidade</translation>
 <translation id="5565735124758917034">Activo</translation>
@@ -1333,6 +1336,7 @@ Detalles adicionais:
 <translation id="7481312909269577407">Adiante</translation>
 <translation id="748406663033922918">Utiliza o bloqueo de pantalla para verificar os teus métodos de pago gardados.</translation>
 <translation id="7485870689360869515">Non se atoparon datos.</translation>
+<translation id="7495290002932347110">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes os teus contrasinais gardados e que cambies o de <ph name="ORIGIN" /> agora.</translation>
 <translation id="7498234416455752244">Seguir editando</translation>
 <translation id="7508255263130623398">O código de dispositivo da política está baleiro ou non coincide co código do dispositivo actual</translation>
 <translation id="7508870219247277067">Verde aguacate</translation>

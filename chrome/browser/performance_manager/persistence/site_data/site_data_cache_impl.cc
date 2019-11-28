@@ -35,6 +35,9 @@ SiteDataCacheImpl::SiteDataCacheImpl(const std::string& browser_context_id,
       this, browser_context_id_);
 }
 
+SiteDataCacheImpl::SiteDataCacheImpl(const std::string& browser_context_id)
+    : browser_context_id_(browser_context_id) {}
+
 SiteDataCacheImpl::~SiteDataCacheImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SiteDataCacheFactory::GetInstance()->SetDataCacheInspectorForBrowserContext(

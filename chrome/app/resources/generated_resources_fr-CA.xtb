@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">Appuyez sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran</translation>
 <translation id="1038168778161626396">Chiffrer seulement</translation>
 <translation id="1039337018183941703">Fichier non valide ou corrompu</translation>
-<translation id="1039850285407663109">Le fichier sélectionné est inconnu et peut être dangereux. Envisager d'analyser ce fichier avant de l'ouvrir.</translation>
+<translation id="1039850285407663109">Le fichier sélectionné est inconnu et peut être dangereux. Envisagez d'analyser ce fichier avant de l'ouvrir.</translation>
 <translation id="1041175011127912238">Cette page ne répond pas</translation>
 <translation id="1041263367839475438">Appareils accessibles</translation>
 <translation id="1042174272890264476">Votre ordinateur est fourni avec la bibliothèque RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ attribue une étiquette non unique et qui ne permet pas d'identifier des internautes afin de mesurer les recherches et l'utilisation de <ph name="SHORT_PRODUCT_NAME" /> générées par une campagne de promotion particulière. Ces étiquettes s'affichent parfois dans les requêtes de recherche Google dans <ph name="PRODUCT_NAME" />.</translation>
@@ -235,7 +235,7 @@
 <translation id="1326317727527857210">Pour synchroniser les onglets de vos autres appareils, connectez-vous à Chrome.</translation>
 <translation id="1327074568633507428">Imprimante connectée à Google Cloud Print</translation>
 <translation id="1327272175893960498">Tickets Kerberos</translation>
-<translation id="1327495825214193325">Pour activer le débogage PDA, vous devez redémarrer ce <ph name="DEVICE_TYPE" />. Pour le désactiver, vous devez réinitialiser votre appareil à ses paramètres par défaut.</translation>
+<translation id="1327495825214193325">Pour activer le débogage PDA, vous devez redémarrer cet appareil <ph name="DEVICE_TYPE" />. Pour désactiver votre appareil, vous devez le réinitialiser à ses paramètres par défaut.</translation>
 <translation id="1327977588028644528">Passerelle</translation>
 <translation id="1329584516321524826">Mise à jour à l'instant</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
@@ -369,7 +369,7 @@
 <translation id="1512210426710821809">La seule façon d'annuler cette action consiste à réinstaller <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importés de Safari</translation>
 <translation id="1515163294334130951">Lancer</translation>
-<translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Hôte</translation>
+<translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Hôte</translation>
 <translation id="1521442365706402292">Gérer les certificats</translation>
 <translation id="1521774566618522728">Actif aujourd'hui</translation>
 <translation id="152234381334907219">Jamais enregistrés</translation>
@@ -1064,7 +1064,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Écran #}one{Écran #}other{Écran #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> de <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507253002925770350">Ticket supprimé</translation>
-<translation id="2507397597949272797"><ph name="NAME" /> est interrompu</translation>
+<translation id="2507397597949272797">L'application <ph name="NAME" /> est interrompue</translation>
 <translation id="2508428939232952663">Compte Google Play Store</translation>
 <translation id="2509495747794740764">La valeur de l'échelle doit être comprise entre 10 et 200.</translation>
 <translation id="2509566264613697683">8x</translation>
@@ -1885,7 +1885,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3699624789011381381">Adresse de courriel</translation>
 <translation id="3699920817649120894">Désactiver la synchronisation et la personnalisation?</translation>
 <translation id="3700888195348409686">Présentation de (<ph name="PAGE_ORIGIN" />) en cours…</translation>
-<translation id="3701167022068948696">Modifier maintenant</translation>
+<translation id="3701167022068948696">Corriger maintenant</translation>
 <translation id="3702500414347826004">Vos pages de démarrage ont été modifiées pour inclure <ph name="URL" />.</translation>
 <translation id="3703699162703116302">Ticket actualisé</translation>
 <translation id="370415077757856453">JavaScript bloqué</translation>
@@ -4099,6 +4099,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6990778048354947307">Thème sombre</translation>
 <translation id="6991665348624301627">Sélectionnez une destination</translation>
 <translation id="6992554835374084304">Activer le correcteur orthographique amélioré</translation>
+<translation id="6995899638241819463">Vous envoyer un avertissement si des mots de passe sont exposés dans une violation de données</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - Journal d'activité</translation>
 <translation id="6997707937646349884">Sur vos appareils :</translation>
 <translation id="6998793565256476099">Inscrire un appareil pour la vidéoconférence</translation>
@@ -4886,7 +4887,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8076835018653442223">Votre administrateur a désactivé l'accès aux fichiers locaux sur votre appareil</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081989000209387414">Désactiver le débogage PDA?</translation>
-<translation id="8082390128630131497">Le fait de désactiver le débogage PDA va réinitialiser ce <ph name="DEVICE_TYPE" /> à ses paramètres par défaut. Tous les comptes utilisateur et toutes les données locales seront supprimés.</translation>
+<translation id="8082390128630131497">Le fait de désactiver le débogage PDA va réinitialiser cet appareil <ph name="DEVICE_TYPE" /> à ses paramètres par défaut. Tous les comptes d'utilisateur et toutes les données locales seront supprimés.</translation>
 <translation id="8084114998886531721">Mot de passe enregistré</translation>
 <translation id="8086015605808120405">Configuration de <ph name="PRINTER_NAME" /> en cours</translation>
 <translation id="8086442853986205778">Configurer <ph name="PRINTER_NAME" /></translation>
@@ -5248,12 +5249,12 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8627795981664801467">Connexions sécurisées seulement</translation>
 <translation id="8630903300770275248">Importer un utilisateur supervisé</translation>
 <translation id="8631032106121706562">Pétale</translation>
-<translation id="863109444997383731">Les sites ne pourront pas demander de vous montrer des notifications. Si un site a besoin de notifications, une barre d'information s'affichera dans la barre d'adresse.</translation>
+<translation id="863109444997383731">Les sites ne pourront pas demander de vous montrer des notifications. Si un site demande d'afficher des notifications, une icône indiquant qu'elles sont bloquées s'affichera dans la barre d'adresse.</translation>
 <translation id="8635628933471165173">Actualisation en cours…</translation>
 <translation id="8637542770513281060">Votre ordinateur contient un module de sécurité, qui est utilisé pour mettre en œuvre de nombreuses fonctionnalités de sécurité cruciales dans Chrome OS. Visitez le Centre d'aide Google Chromebook pour en apprendre davantage : https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Mise à jour du système possible. Préparation du téléchargement…</translation>
 <translation id="8639047128869322042">Recherche de logiciels nuisibles en cours…</translation>
-<translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - Port</translation>
+<translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Port</translation>
 <translation id="8642900771896232685">2 secondes</translation>
 <translation id="8642947597466641025">Augmenter la taille du texte</translation>
 <translation id="8644655801811752511">Impossible de réinitialiser cette clé de sécurité. Essayez de réinitialiser la clé immédiatement après l'avoir insérée.</translation>
@@ -5615,7 +5616,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9116799625073598554">Application de prise de notes</translation>
 <translation id="9117030152748022724">Gérer vos applications</translation>
 <translation id="9121814364785106365">Ouvrir dans un onglet épinglé</translation>
-<translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> est interrompu</translation>
+<translation id="9122176249172999202">L'application <ph name="IDS_SHORT_PRODUCT_NAME" /> est interrompue</translation>
 <translation id="9124003689441359348">Les mots de passe enregistrés s'afficheront ici</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> restantes)</translation>
 <translation id="9128317794749765148">Impossible de terminer la configuration</translation>

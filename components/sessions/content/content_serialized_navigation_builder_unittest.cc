@@ -20,6 +20,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sessions {
@@ -207,6 +209,9 @@ TEST_F(ContentSerializedNavigationBuilderTest,
 // except for fields that aren't preserved, which should be set to
 // expected values.
 TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
+  content::BrowserTaskEnvironment test_environment;
+  content::TestBrowserContext browser_context;
+
   const std::unique_ptr<content::NavigationEntry> old_navigation_entry(
       MakeNavigationEntryForTest());
   SetExtendedInfoForTest(old_navigation_entry.get());
@@ -217,7 +222,7 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
 
   const std::unique_ptr<content::NavigationEntry> new_navigation_entry(
       ContentSerializedNavigationBuilder::ToNavigationEntry(&navigation,
-                                                            nullptr));
+                                                            &browser_context));
 
   EXPECT_EQ(test_data::kReferrerURL, new_navigation_entry->GetReferrer().url);
   EXPECT_EQ(test_data::kReferrerPolicy,

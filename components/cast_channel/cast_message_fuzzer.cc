@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_framer.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/io_buffer.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 #include "third_party/protobuf/src/google/protobuf/stubs/logging.h"
 
 // Silence logging from the protobuf library.

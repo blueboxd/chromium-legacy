@@ -255,9 +255,9 @@
     NSString* bundlePath = [bundle bundlePath];
     path = [bundlePath stringByAppendingPathComponent:resource_];
   } else {
-    // Generate a random resource URL to whitelist the load in
+    // Generate a random resource URL to allow the load in
     // |webView:shouldStartLoadWithRequest:navigationType:| method.
-    path = [NSString stringWithFormat:@"/whitelist%u%u%u%u", arc4random(),
+    path = [NSString stringWithFormat:@"/allow%u%u%u%u", arc4random(),
                                       arc4random(), arc4random(), arc4random()];
   }
   DCHECK(path);

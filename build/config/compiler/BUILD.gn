@@ -1532,15 +1532,18 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1016945) Clean up, enable.
           "-Wno-builtin-assume-aligned-alignment",
-
-          # TODO(https://crbug.com/1024203) Clean up, enable.
-          "-Wno-tautological-bitwise-compare",
         ]
 
         if (is_fuchsia || is_mac) {
           cflags += [
             # TODO(https://crbug.com/999871): Clean up, enable.
             "-Wno-c99-designator",
+          ]
+        }
+        if (is_chromeos) {
+          cflags += [
+            # TODO(https://crbug.com/1024203): Clean up, enable.
+            "-Wno-tautological-bitwise-compare",
           ]
         }
         if (is_win) {

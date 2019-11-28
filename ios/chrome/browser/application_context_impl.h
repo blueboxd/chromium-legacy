@@ -81,7 +81,6 @@ class ApplicationContextImpl : public ApplicationContext {
 
   base::ThreadChecker thread_checker_;
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
   std::unique_ptr<IOSChromeIOThread> ios_chrome_io_thread_;

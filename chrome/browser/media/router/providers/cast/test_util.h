@@ -47,7 +47,7 @@ MATCHER_P(StructPtrTo, expected, "") {
   return arg && testing::Matches(expected)(*arg);
 }
 
-// Matcher for cast_channel::CastMessage arguments.
+// Matcher for cast::channel::CastMessage arguments.
 MATCHER_P(IsCastChannelMessage, expected, "") {
   if (arg.has_source_id() != expected.has_source_id() ||
       arg.has_destination_id() != expected.has_destination_id() ||

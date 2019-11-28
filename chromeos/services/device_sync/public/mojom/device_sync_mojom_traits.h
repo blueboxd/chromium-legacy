@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_PUBLIC_MOJOM_DEVICE_SYNC_MOJOM_TRAITS_H_
 
 #include "chromeos/services/device_sync/feature_status_change.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
@@ -30,6 +31,16 @@ class EnumTraits<chromeos::device_sync::mojom::FeatureStatusChange,
       chromeos::device_sync::FeatureStatusChange input);
   static bool FromMojom(chromeos::device_sync::mojom::FeatureStatusChange input,
                         chromeos::device_sync::FeatureStatusChange* out);
+};
+
+template <>
+class EnumTraits<chromeos::device_sync::mojom::CryptAuthService,
+                 cryptauthv2::TargetService> {
+ public:
+  static chromeos::device_sync::mojom::CryptAuthService ToMojom(
+      cryptauthv2::TargetService input);
+  static bool FromMojom(chromeos::device_sync::mojom::CryptAuthService input,
+                        cryptauthv2::TargetService* out);
 };
 
 }  // namespace mojo

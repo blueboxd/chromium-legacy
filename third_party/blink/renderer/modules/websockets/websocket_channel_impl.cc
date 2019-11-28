@@ -35,8 +35,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -253,15 +252,9 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   }
 
   mojo::Remote<mojom::blink::WebSocketConnector> connector;
-  if (execution_context_->GetInterfaceProvider()) {
-    execution_context_->GetInterfaceProvider()->GetInterface(
-        connector.BindNewPipeAndPassReceiver(
-            execution_context_->GetTaskRunner(TaskType::kWebSocket)));
-  } else {
-    // Create a fake request. This will lead to a closed WebSocket due to
-    // a mojo connection error.
-    ignore_result(connector.BindNewPipeAndPassReceiver());
-  }
+  execution_context_->GetBrowserInterfaceBroker().GetInterface(
+      connector.BindNewPipeAndPassReceiver(
+          execution_context_->GetTaskRunner(TaskType::kWebSocket)));
 
   connector->Connect(
       url, protocols, GetBaseFetchContext()->GetSiteForCookies(),

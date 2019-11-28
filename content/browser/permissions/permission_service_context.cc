@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/permission_controller.h"
@@ -150,14 +149,6 @@ void PermissionServiceContext::CloseBindings(
   if (render_frame_host != render_frame_host_)
     return;
 
-  if (!services_.empty() || !subscriptions_.empty()) {
-    // |services_| and |subscriptions_| are destroyed here, so the page
-    // functionality might be broken if we restore the page from back-forward
-    // cache. Disable back-forward cache for this frame to ensure that this
-    // would not happen.
-    content::BackForwardCache::DisableForRenderFrameHost(
-        render_frame_host_, "PermissionServiceContext");
-  }
   services_.Clear();
   subscriptions_.clear();
 }

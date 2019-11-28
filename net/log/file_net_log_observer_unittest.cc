@@ -29,6 +29,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_util.h"
 #include "net/log/net_log_values.h"
+#include "net/log/test_net_log.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -282,7 +283,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
   }
 
  protected:
-  NetLog net_log_;
+  TestNetLog net_log_;
   std::unique_ptr<FileNetLogObserver> logger_;
   base::ScopedTempDir temp_dir_;
   base::ScopedTempDir scratch_dir_;  // used for bounded + preexisting
@@ -333,7 +334,7 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
 
 
  protected:
-  NetLog net_log_;
+  TestNetLog net_log_;
   std::unique_ptr<FileNetLogObserver> logger_;
   base::FilePath log_path_;
 

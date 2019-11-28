@@ -15,7 +15,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/small_map.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
@@ -74,6 +73,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                           SharedBitmapManager* shared_bitmap_manager,
                           bool enable_shared_images = true);
   ~DisplayResourceProvider() override;
+
+  DisplayResourceProvider(const DisplayResourceProvider&) = delete;
+  DisplayResourceProvider& operator=(const DisplayResourceProvider&) = delete;
 
   bool IsSoftware() const { return mode_ == kSoftware; }
   void DidLoseContextProvider() { lost_context_provider_ = true; }
@@ -137,6 +139,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                      ResourceId resource_id);
     ~ScopedReadLockGL();
 
+    ScopedReadLockGL(const ScopedReadLockGL&) = delete;
+    ScopedReadLockGL& operator=(const ScopedReadLockGL&) = delete;
+
     GLuint texture_id() const { return texture_id_; }
     GLenum target() const { return target_; }
     const gfx::Size& size() const { return size_; }
@@ -150,8 +155,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     GLenum target_ = GL_TEXTURE_2D;
     gfx::Size size_;
     gfx::ColorSpace color_space_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
 
   class VIZ_SERVICE_EXPORT ScopedSamplerGL {
@@ -165,6 +168,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                     GLenum filter);
     ~ScopedSamplerGL();
 
+    ScopedSamplerGL(const ScopedSamplerGL&) = delete;
+    ScopedSamplerGL& operator=(const ScopedSamplerGL&) = delete;
+
     GLuint texture_id() const { return resource_lock_.texture_id(); }
     GLenum target() const { return target_; }
     const gfx::ColorSpace& color_space() const {
@@ -175,8 +181,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     const ScopedReadLockGL resource_lock_;
     const GLenum unit_;
     const GLenum target_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
 
   class VIZ_SERVICE_EXPORT ScopedReadLockSkImage {
@@ -187,6 +191,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                           GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
     ~ScopedReadLockSkImage();
 
+    ScopedReadLockSkImage(const ScopedReadLockSkImage&) = delete;
+    ScopedReadLockSkImage& operator=(const ScopedReadLockSkImage& other) =
+        delete;
+
     const SkImage* sk_image() const { return sk_image_.get(); }
     sk_sp<SkImage> TakeSkImage() { return std::move(sk_image_); }
 
@@ -196,8 +204,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     DisplayResourceProvider* const resource_provider_;
     const ResourceId resource_id_;
     sk_sp<SkImage> sk_image_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
  private:
@@ -212,6 +218,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     ScopedReadLockSharedImage(DisplayResourceProvider* resource_provider,
                               ResourceId resource_id);
     ~ScopedReadLockSharedImage();
+
+    ScopedReadLockSharedImage(const ScopedReadLockSharedImage&) = delete;
+    ScopedReadLockSharedImage& operator=(const ScopedReadLockSharedImage&) =
+        delete;
 
     gpu::Mailbox mailbox() const;
     gpu::SyncToken sync_token() const;
@@ -228,9 +238,13 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // There should be at most one instance of this class per
     // |resource_provider|. Both |resource_provider| and |client| outlive this
     // class.
-    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
+    LockSetForExternalUse(DisplayResourceProvider* resourcqe_provider,
                           ExternalUseClient* client);
     ~LockSetForExternalUse();
+
+    LockSetForExternalUse(const LockSetForExternalUse&) = delete;
+    LockSetForExternalUse& operator=(const LockSetForExternalUse& other) =
+        delete;
 
     // Lock a resource for external use. The return value was created by
     // |client| at some point in the past.
@@ -247,8 +261,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
    private:
     DisplayResourceProvider* const resource_provider_;
     std::vector<std::pair<ResourceId, ChildResource*>> resources_;
-
-    DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
   };
 
   // All resources that are returned to children while an instance of this
@@ -261,13 +273,14 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
 
   class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
    public:
     explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
+
+    SynchronousFence(const SynchronousFence&) = delete;
+    SynchronousFence& operator=(const SynchronousFence&) = delete;
 
     // ResourceFence implementation.
     void Set() override;
@@ -283,8 +296,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
     gpu::gles2::GLES2Interface* gl_;
     bool has_synchronized_;
-
-    DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
   };
 
   // Sets the current read fence. If a resource is locked for read
@@ -537,8 +548,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 #endif
 
   bool enable_shared_images_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
 };
 
 }  // namespace viz

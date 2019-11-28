@@ -35,9 +35,6 @@ class AppUrlLoadingService;
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
 
-// The tab model.
-@property(nonatomic, weak, readonly) TabModel* tabModel;
-
 // Activates/deactivates the object. This will enable/disable the ability for
 // this object to browse, and to have live UIWebViews associated with it. While
 // not active, the UI will not react to changes in the tab model, so generally

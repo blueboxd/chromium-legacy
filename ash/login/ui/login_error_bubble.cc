@@ -58,6 +58,10 @@ void LoginErrorBubble::SetContent(views::View* content) {
   AddChildView(content_);
 }
 
+void LoginErrorBubble::SetAccessibleName(const base::string16& name) {
+  accessible_name_ = name;
+}
+
 bool LoginErrorBubble::IsPersistent() const {
   return is_persistent_;
 }
@@ -81,7 +85,8 @@ const char* LoginErrorBubble::GetClassName() const {
 }
 
 void LoginErrorBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTooltip;
+  node_data->role = ax::mojom::Role::kAlertDialog;
+  node_data->SetName(accessible_name_);
 }
 
 }  // namespace ash

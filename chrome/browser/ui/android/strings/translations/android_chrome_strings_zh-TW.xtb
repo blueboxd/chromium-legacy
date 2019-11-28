@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">發布者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 所提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
-<translation id="410351446219883937">自動播放</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
 <translation id="4135200667068010335">要共用分頁的裝置清單已關閉。</translation>
 <translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7438641746574390233">開啟精簡模式後，Chrome 會使用 Google 伺服器來加快網頁載入速度。精簡模式會改寫載入速度特別慢的網頁，只載入基本內容。精簡模式不適用於無痕模式分頁。</translation>
 <translation id="7444811645081526538">更多類別</translation>
-<translation id="7445411102860286510">允許網站自動播放靜音的影片 (建議)</translation>
 <translation id="7453467225369441013">大多數網站都會將你登出，但系統並不會將你登出 Google 帳戶。</translation>
 <translation id="7454641608352164238">空間不足</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟工具…</translation>
 <translation id="7821588508402923572">你省下的數據流量會顯示在這裡</translation>
-<translation id="7837721118676387834">允許特定網站自動播放靜音的影片。</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>

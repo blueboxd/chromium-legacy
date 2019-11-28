@@ -27,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,6 +91,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
+#if !defined(OS_IOS)
+    prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
+                                            true);
+#endif
   }
   ~MockPasswordManagerClient() override {}
 

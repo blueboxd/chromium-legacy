@@ -3947,32 +3947,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(observer.did_fire());
 }
 
-// Check that back-forward cache is disabled when PermissionService is used.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PermissionServiceContext) {
-  content::BackForwardCacheDisabledTester tester;
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  auto* rfh = current_frame_host();
-  int process_id = rfh->GetProcess()->GetID();
-  int frame_routing_id = rfh->GetRoutingID();
-
-  // 2) Invoke PermissionService.
-  EXPECT_TRUE(ExecJs(rfh, R"(
-          navigator.permissions.query({ name: "geolocation" })
-          )"));
-
-  // 3) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-
-  // 4) Check that back-forward cache is disabled for A.
-  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(process_id, frame_routing_id,
-                                                  "PermissionServiceContext"));
-}
-
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        SetsThemeColorWhenRestoredFromCache) {
   ASSERT_TRUE(embedded_test_server()->Start());

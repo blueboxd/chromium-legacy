@@ -49,9 +49,9 @@ NightLightControllerImpl* GetController() {
   return Shell::Get()->night_light_controller();
 }
 
-// Tests that the given display with |display_id| has the expected color matrix
-// on its compositor that corresponds to the given |temperature|.
-void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
+// Returns RGB scaling factors already applied on the display's compositor in a
+// Vector3df given a |display_id|.
+gfx::Vector3dF GetDisplayCompositorRGBScaleFactors(int64_t display_id) {
   WindowTreeHostManager* wth_manager = Shell::Get()->window_tree_host_manager();
   aura::Window* root_window =
       wth_manager->GetRootWindowForDisplayId(display_id);
@@ -62,8 +62,27 @@ void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
   DCHECK(compositor);
 
   const SkMatrix44& matrix = compositor->display_color_matrix();
-  const float blue_scale = matrix.get(2, 2);
-  const float green_scale = matrix.get(1, 1);
+  return gfx::Vector3dF(matrix.get(0, 0), matrix.get(1, 1), matrix.get(2, 2));
+}
+
+// Returns a vector with a Vector3dF for each compositor.
+// Each element contains RGB scaling factors.
+std::vector<gfx::Vector3dF> GetAllDisplaysCompositorsRGBScaleFactors() {
+  std::vector<gfx::Vector3dF> scale_factors;
+  for (int64_t display_id :
+       Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
+    scale_factors.push_back(GetDisplayCompositorRGBScaleFactors(display_id));
+  }
+  return scale_factors;
+}
+
+// Tests that the given display with |display_id| has the expected color matrix
+// on its compositor that corresponds to the given |temperature|.
+void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
+  const gfx::Vector3dF& scaling_factors =
+      GetDisplayCompositorRGBScaleFactors(display_id);
+  const float blue_scale = scaling_factors.z();
+  const float green_scale = scaling_factors.y();
   EXPECT_FLOAT_EQ(
       blue_scale,
       NightLightControllerImpl::BlueColorScaleFromTemperature(temperature));
@@ -189,6 +208,28 @@ class NightLightTest : public NoSessionAshTestBase {
   void SetNightLightEnabled(bool enabled) {
     GetController()->SetEnabled(
         enabled, NightLightControllerImpl::AnimationDuration::kShort);
+  }
+
+  // Simulate powerd sending multiple times an ambient temperature of
+  // |powerd_temperature|. The remapped ambient temperature should eventually
+  // reach |target_remapped_temperature|.
+  float SimulateAmbientColorFromPowerd(int32_t powerd_temperature,
+                                       float target_remapped_temperature) {
+    auto* controller = GetController();
+    int max_steps = 1000;
+    float ambient_temperature = 0.0f;
+    const float initial_difference =
+        controller->ambient_temperature() - target_remapped_temperature;
+    do {
+      controller->AmbientColorChanged(powerd_temperature);
+      ambient_temperature = controller->ambient_temperature();
+    } while (max_steps-- &&
+             ((ambient_temperature - target_remapped_temperature) *
+              initial_difference) > 0.0f);
+    // We should reach the expected remapped temperature.
+    EXPECT_GT(max_steps, 0);
+
+    return ambient_temperature;
   }
 
  private:
@@ -941,6 +982,96 @@ TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
   // NightLight should end in 5 hours.
   EXPECT_EQ(base::TimeDelta::FromHours(5),
             controller->timer()->GetCurrentDelay());
+}
+
+TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
+  NightLightControllerImpl* controller = GetController();
+
+  // Test that at the beginning the ambient temperature is neutral.
+  constexpr float kNeutralColorTemperatureInKelvin = 6500;
+  EXPECT_EQ(kNeutralColorTemperatureInKelvin,
+            controller->ambient_temperature());
+
+  controller->SetAmbientColorEnabled(true);
+  EXPECT_EQ(kNeutralColorTemperatureInKelvin,
+            controller->ambient_temperature());
+
+  // Simulate powerd sending multiple times an ambient temperature of 8000.
+  // The remapped ambient temperature should grow and eventually reach ~7350.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+
+  // If powerd sends the same temperature, the remapped temperature should not
+  // change.
+  controller->AmbientColorChanged(8000);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+
+  // Simulate powerd sending multiple times an ambient temperature of 2700.
+  // The remapped ambient temperature should grow and eventually reach 5700.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+
+  // Disabling ambient color should not affect the returned temperature.
+  controller->SetAmbientColorEnabled(false);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+
+  // Re-enabling should still keep the same temperature.
+  controller->SetAmbientColorEnabled(true);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+}
+
+TEST_F(NightLightTest, TestAmbientColorMatrix) {
+  NightLightControllerImpl* controller = GetController();
+  SetNightLightEnabled(false);
+  controller->SetAmbientColorEnabled(true);
+  auto scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // If no temperature is set, we expect 1.0 for each scaling factor.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_TRUE((rgb - gfx::Vector3dF(1.0f, 1.0f, 1.0f)).IsZero());
+  }
+
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+
+  scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // A cool temperature should affect only red and green.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_LT(rgb.x(), 1.0f);
+    EXPECT_LT(rgb.y(), 1.0f);
+    EXPECT_EQ(rgb.z(), 1.0f);
+  }
+
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+
+  scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // A warm temperature should affect only green and blue.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_EQ(rgb.x(), 1.0f);
+    EXPECT_LT(rgb.y(), 1.0f);
+    EXPECT_LT(rgb.z(), 1.0f);
+  }
+}
+
+TEST_F(NightLightTest, TestNightLightAndAmbientColorInteraction) {
+  NightLightControllerImpl* controller = GetController();
+  SetNightLightEnabled(true);
+
+  auto night_light_rgb = GetAllDisplaysCompositorsRGBScaleFactors().front();
+
+  controller->SetAmbientColorEnabled(true);
+
+  auto night_light_and_ambient_rgb =
+      GetAllDisplaysCompositorsRGBScaleFactors().front();
+  // Ambient color with neutral temperature should not affect night light.
+  EXPECT_TRUE((night_light_rgb - night_light_and_ambient_rgb).IsZero());
+
+  SimulateAmbientColorFromPowerd(2700, 5800.0f);
+
+  night_light_and_ambient_rgb =
+      GetAllDisplaysCompositorsRGBScaleFactors().front();
+
+  // Red should not be affected by a warmed ambient temperature.
+  EXPECT_EQ(night_light_and_ambient_rgb.x(), night_light_rgb.x());
+  // Green and blue should be lowered instead.
+  EXPECT_LT(night_light_and_ambient_rgb.y(), night_light_rgb.y());
+  EXPECT_LT(night_light_and_ambient_rgb.z(), night_light_rgb.z());
 }
 
 // Fixture for testing behavior of Night Light when displays support hardware

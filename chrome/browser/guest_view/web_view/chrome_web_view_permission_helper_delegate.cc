@@ -115,7 +115,7 @@ void ChromeWebViewPermissionHelperDelegate::OnDownloadPermissionResponse(
 void ChromeWebViewPermissionHelperDelegate::RequestPointerLockPermission(
     bool user_gesture,
     bool last_unlocked_by_target,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   base::DictionaryValue request_info;
   request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
   request_info.SetBoolean(webview::kLastUnlockedBySelf,
@@ -124,20 +124,18 @@ void ChromeWebViewPermissionHelperDelegate::RequestPointerLockPermission(
                          web_contents()->GetLastCommittedURL().spec());
 
   web_view_permission_helper()->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK,
-      request_info,
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                     OnPointerLockPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
+      WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK, request_info,
+      base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
+                         OnPointerLockPermissionResponse,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
       false /* allowed_by_default */);
 }
 
 void ChromeWebViewPermissionHelperDelegate::OnPointerLockPermissionResponse(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     bool allow,
     const std::string& user_input) {
-  callback.Run(allow && web_view_guest()->attached());
+  std::move(callback).Run(allow && web_view_guest()->attached());
 }
 
 void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(

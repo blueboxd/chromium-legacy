@@ -81,6 +81,10 @@
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+#include "chrome/browser/sync/roaming_profile_directory_deleter_win.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,
@@ -276,6 +280,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   auto pss =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
+
+#if defined(OS_WIN)
+  if (!local_sync_backend_enabled)
+    DeleteRoamingUserDataDirectoryLater();
+#endif
+
   pss->Initialize();
 
   // Hook PSS into PersonalDataManager (a circular dependency).

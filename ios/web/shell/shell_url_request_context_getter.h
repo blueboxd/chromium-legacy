@@ -16,7 +16,6 @@
 
 namespace net {
 class NetworkDelegate;
-class NetLog;
 class ProxyConfigService;
 class TransportSecurityPersister;
 class URLRequestContext;
@@ -50,7 +49,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::NetworkDelegate> network_delegate_;
   std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
   // SystemCookieStore must be created on UI thread in

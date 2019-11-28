@@ -9,6 +9,8 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/network",
   "+services/service_manager/public",
+  "+third_party/openscreen/src/cast/common/channel/proto",
+  "+third_party/openscreen/src/cast/common/certificate/proto",
 ]
 
 specific_include_rules = {

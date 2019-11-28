@@ -266,8 +266,10 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
   }
 
   SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparent74,
+      IsTabletMode() ? AshColorProvider::BaseLayerType::kTransparent60
+                     : AshColorProvider::BaseLayerType::kTransparent74,
       AshColorProvider::AshColorMode::kDark);
+  int final_alpha = SkColorGetA(final_color);
 
   if (!Shell::Get()->wallpaper_controller())
     return final_color;
@@ -284,7 +286,7 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
   final_color = color_utils::GetResultingPaintColor(
       SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
 
-  return SkColorSetA(final_color, 189);  // 74% opacity
+  return SkColorSetA(final_color, final_alpha);
 }
 
 int ShelfConfig::GetShelfControlButtonBlurRadius() const {

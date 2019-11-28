@@ -20,7 +20,6 @@
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
@@ -30,6 +29,7 @@
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using testing::_;
 using testing::DoAll;

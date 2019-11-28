@@ -19,7 +19,7 @@ namespace ui {
 class BaseWindow;
 }
 
-class LauncherContextMenu;
+class ShelfContextMenu;
 
 // This is a ShelfItemDelegate for abstract app windows (extension or ARC).
 // There is one instance per app, per launcher id. For apps with multiple
@@ -104,7 +104,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   // Scoped list of observed windows (for removal on destruction)
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 
-  std::unique_ptr<LauncherContextMenu> context_menu_;
+  std::unique_ptr<ShelfContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherItemController);
 };

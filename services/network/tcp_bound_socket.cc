@@ -75,7 +75,7 @@ void TCPBoundSocket::Listen(
 
   // Tear down everything on error.
   if (result != net::OK) {
-    socket_factory_->DestroyBoundSocket(binding_id_);
+    socket_factory_->DestroyBoundSocket(receiver_id_);
     return;
   }
 
@@ -84,8 +84,8 @@ void TCPBoundSocket::Listen(
       std::make_unique<TCPServerSocket>(
           std::make_unique<net::TCPServerSocket>(std::move(socket_)), backlog,
           socket_factory_, traffic_annotation_);
-  socket_factory_->OnBoundSocketListening(binding_id_, std::move(server_socket),
-                                          std::move(receiver));
+  socket_factory_->OnBoundSocketListening(
+      receiver_id_, std::move(server_socket), std::move(receiver));
   // The above call will have destroyed |this|.
 }
 
@@ -141,13 +141,13 @@ void TCPBoundSocket::OnConnectComplete(
       .Run(result, local_addr, peer_addr, std::move(receive_stream),
            std::move(send_stream));
   if (result != net::OK) {
-    socket_factory_->DestroyBoundSocket(binding_id_);
+    socket_factory_->DestroyBoundSocket(receiver_id_);
     // The above call will have destroyed |this|.
     return;
   }
 
   socket_factory_->OnBoundSocketConnected(
-      binding_id_, std::move(connecting_socket_),
+      receiver_id_, std::move(connecting_socket_),
       std::move(connected_socket_receiver_));
   // The above call will have destroyed |this|.
 }

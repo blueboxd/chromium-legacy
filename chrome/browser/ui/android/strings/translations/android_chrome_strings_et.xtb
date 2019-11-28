@@ -413,7 +413,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4084712963632273211">Avaldajalt <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />sisu pakub Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Kas kustutada rakenduse andmed?</translation>
 <translation id="4099578267706723511">Aidake muuta Chrome'i paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
-<translation id="410351446219883937">Automaatesitus</translation>
 <translation id="4116038641877404294">Laadige lehed alla, et neid võrguühenduseta kasutada</translation>
 <translation id="4135200667068010335">Vahelehe jagamise seadmete loend on suletud.</translation>
 <translation id="4149994727733219643">Veebilehtede lihtsustatud vaade</translation>
@@ -872,7 +871,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7437998757836447326">Chrome'ist väljalogimine</translation>
 <translation id="7438641746574390233">Kui lihtsustatud režiim on sees, kasutab Chrome Google'i servereid, et lehtede laadimist kiirendada. Lihtsustatud režiim kirjutab väga aeglased lehed ümber, et laadida ainult oluline sisu. Lihtsustatud režiimi ei saa kasutada inkognito režiimis vahelehtedel.</translation>
 <translation id="7444811645081526538">Rohkem kategooriaid</translation>
-<translation id="7445411102860286510">Luba saitidel vaigistatud videoid automaatselt esitada (soovitatav)</translation>
 <translation id="7453467225369441013">Logib teid enamikult saitidelt välja. Google'i kontolt teid välja ei logita.</translation>
 <translation id="7454641608352164238">Pole piisavalt ruumi</translation>
 <translation id="7475192538862203634">Kui näete seda sageli, proovige neid <ph name="BEGIN_LINK" />soovitusi<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7810647596859435254">Ava rakendusega …</translation>
 <translation id="7821588508402923572">Siin kuvatakse teie säästetud andmemaht</translation>
-<translation id="7837721118676387834">Lubage vaigistatud videote automaatne esitamine konkreetsel saidil.</translation>
 <translation id="7846076177841592234">Tühista valik</translation>
 <translation id="784934925303690534">Ajavahemik</translation>
 <translation id="7851858861565204677">Muud seadmed</translation>

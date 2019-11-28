@@ -13,18 +13,13 @@ namespace blink {
 ScriptValue DeprecationReportBody::anticipatedRemoval(
     ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
-  // We can't use AnticipatedRemoval() here because it's time value is not
-  // compatible due to FromDoubleT().
-  if (!anticipatedRemoval_)
+  if (!anticipated_removal_)
     return ScriptValue::CreateNull(isolate);
-  return ScriptValue(
-      isolate, ToV8(base::Time::FromJsTime(anticipatedRemoval_), script_state));
+  return ScriptValue(isolate, ToV8(*anticipated_removal_, script_state));
 }
 
 base::Optional<base::Time> DeprecationReportBody::AnticipatedRemoval() const {
-  if (!anticipatedRemoval_)
-    return base::nullopt;
-  return base::Time::FromDoubleT(anticipatedRemoval_);
+  return anticipated_removal_;
 }
 
 void DeprecationReportBody::BuildJSONValue(V8ObjectBuilder& builder) const {
@@ -32,13 +27,13 @@ void DeprecationReportBody::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddString("id", id());
   builder.AddString("message", message());
 
-  if (!anticipatedRemoval_) {
+  if (!anticipated_removal_) {
     builder.AddNull("anticipatedRemoval");
   } else {
     DateComponents anticipated_removal_date;
     bool is_valid =
         anticipated_removal_date.SetMillisecondsSinceEpochForDateTimeLocal(
-            anticipatedRemoval_);
+            anticipated_removal_->ToJsTimeIgnoringNull());
     if (!is_valid) {
       builder.AddNull("anticipatedRemoval");
     } else {

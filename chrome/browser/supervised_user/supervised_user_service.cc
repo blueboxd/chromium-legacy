@@ -747,6 +747,12 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
       // extensions should not be affected.
       return ExtensionState::BLOCKED;
     }
+    if (ExtensionPrefs::Get(profile_)->DidExtensionEscalatePermissions(
+            extension.id())) {
+      // Block child users from approving existing extensions asking for
+      // additional permissions.
+      return ExtensionState::BLOCKED;
+    }
   }
 
   auto extension_it = approved_extensions_map_.find(extension.id());

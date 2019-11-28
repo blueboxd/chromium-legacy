@@ -17,6 +17,7 @@
 #include "components/cast_channel/cast_message_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace url {
 class Origin;
@@ -80,7 +81,7 @@ class CastActivityRecord : public ActivityRecord {
   void ClosePresentationConnections(
       blink::mojom::PresentationConnectionCloseReason close_reason) override;
   void TerminatePresentationConnections() override;
-  void OnAppMessage(const cast_channel::CastMessage& message) override;
+  void OnAppMessage(const cast::channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
   void CreateMediaController(
       mojo::PendingReceiver<mojom::MediaController> media_controller,

@@ -133,6 +133,10 @@ class ASH_EXPORT NightLightControllerImpl
   bool is_current_geoposition_from_cache() const {
     return is_current_geoposition_from_cache_;
   }
+  float ambient_temperature() const { return ambient_temperature_; }
+  const gfx::Vector3dF& ambient_rgb_scaling_factors() const {
+    return ambient_rgb_scaling_factors_;
+  }
 
   // Get the NightLight settings stored in the current active user prefs.
   bool GetEnabled() const;
@@ -148,6 +152,7 @@ class ASH_EXPORT NightLightControllerImpl
   void SetScheduleType(ScheduleType type);
   void SetCustomStartTime(TimeOfDay start_time);
   void SetCustomEndTime(TimeOfDay end_time);
+  void SetAmbientColorEnabled(bool enabled);
 
   // This is always called as a result of a user action and will always use the
   // AnimationDurationType::kShort.
@@ -168,6 +173,7 @@ class ASH_EXPORT NightLightControllerImpl
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void AmbientColorChanged(const int32_t color_temperature) override;
 
   // message_center::NotificationObserver:
   void Close(bool by_user) override;
@@ -209,6 +215,10 @@ class ASH_EXPORT NightLightControllerImpl
   // |color_temperature|, which will be overridden to a value of 0 if NightLight
   // is turned off.
   void RefreshDisplaysTemperature(float color_temperature);
+
+  // Refreshes the displays color transforms based on the given status of the
+  // controller.
+  void RefreshDisplaysColorTemperatures();
 
   void StartWatchingPrefsChanges();
 
@@ -291,6 +301,15 @@ class ASH_EXPORT NightLightControllerImpl
   // NOTE: Prefs are how Chrome communicates changes to the NightLight settings
   // controlled by this class from the WebUI settings.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Last ambient temperature read from the sensor. It is continuously
+  // updated for every new value even when GetAmbientColorEnabled() returns
+  // false.
+  float ambient_temperature_;
+
+  // The ambient color R, G, and B scaling factors.
+  // Valid only if ambient color is enabled.
+  gfx::Vector3dF ambient_rgb_scaling_factors_;
 
   base::WeakPtrFactory<NightLightControllerImpl> weak_ptr_factory_;
 

@@ -207,9 +207,15 @@ class IntegrationTest(unittest.TestCase):
           section_sizes, raw_symbols, metadata=metadata)
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
-  def _DoArchive(self, archive_path, use_output_directory=True, use_elf=True,
-                 use_apk=False, use_minimal_apks=False, use_pak=False,
-                 debug_measures=False):
+  def _DoArchive(self,
+                 archive_path,
+                 use_output_directory=True,
+                 use_elf=True,
+                 use_apk=False,
+                 use_minimal_apks=False,
+                 use_pak=False,
+                 debug_measures=False,
+                 include_padding=False):
     args = [
       archive_path,
       '--map-file', _TEST_MAP_PATH,
@@ -234,16 +240,28 @@ class IntegrationTest(unittest.TestCase):
       args += ['--pak-file', _TEST_APK_LOCALE_PAK_PATH,
                '--pak-file', _TEST_APK_PAK_PATH,
                '--pak-info-file', _TEST_PAK_INFO_PATH]
+    if include_padding:
+      args += ['--include-padding']
     _RunApp('archive', args, debug_measures=debug_measures)
 
-  def _DoArchiveTest(self, use_output_directory=True, use_elf=True,
-                     use_apk=False, use_minimal_apks=False, use_pak=False,
-                     debug_measures=False):
+  def _DoArchiveTest(self,
+                     use_output_directory=True,
+                     use_elf=True,
+                     use_apk=False,
+                     use_minimal_apks=False,
+                     use_pak=False,
+                     debug_measures=False,
+                     include_padding=False):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       self._DoArchive(
-          temp_file.name, use_output_directory=use_output_directory,
-          use_elf=use_elf, use_apk=use_apk, use_minimal_apks=use_minimal_apks,
-          use_pak=use_pak, debug_measures=debug_measures)
+          temp_file.name,
+          use_output_directory=use_output_directory,
+          use_elf=use_elf,
+          use_apk=use_apk,
+          use_minimal_apks=use_minimal_apks,
+          use_pak=use_pak,
+          debug_measures=debug_measures,
+          include_padding=include_padding)
       size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing.
     expected_size_info = self._CloneSizeInfo(
@@ -292,6 +310,11 @@ class IntegrationTest(unittest.TestCase):
   @_CompareWithGolden(name='Archive_Elf')
   def test_Archive_Elf_DebugMeasures(self):
     return self._DoArchiveTest(debug_measures=True)
+
+  @_CompareWithGolden(name='Archive')
+  def test_ArchiveSparse(self):
+    return self._DoArchiveTest(
+        use_output_directory=False, use_elf=False, include_padding=True)
 
   @_CompareWithGolden()
   def test_Console(self):

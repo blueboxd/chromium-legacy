@@ -13,8 +13,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/painter.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -124,29 +124,22 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
     views::View* contents,
     LocationBarView* location_bar)
     : contents_(contents) {
-  // Host the contents in its own View to simplify layout and clipping.
+  // Host the contents in its own View to simplify layout and customization.
   contents_host_ = new views::View();
   contents_host_->SetPaintToLayer();
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
-  // Use a solid background. Note this is clipped to get rounded corners.
+  // Use a solid background with rounded corners.
   const SkColor background_color = GetOmniboxColor(
       &ThemeService::GetThemeProviderForProfile(location_bar->profile()),
       OmniboxPart::RESULTS_BACKGROUND);
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));
 
-  // Use a textured mask to clip contents. This doesn't work on Windows
-  // (https://crbug.com/713359), and can't be animated, but it simplifies
-  // selection highlights.
-  // TODO(tapted): Remove this and have the contents paint a half-rounded rect
-  // for the background, and when selecting the bottom row.
   int corner_radius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
-  contents_mask_ = views::Painter::CreatePaintedLayer(
-      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                  corner_radius));
-  contents_mask_->layer()->SetFillsBoundsOpaquely(false);
-  contents_host_->layer()->SetMaskLayer(contents_mask_->layer());
+  contents_host_->layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(corner_radius));
+  contents_host_->layer()->SetIsFastRoundedCorner(true);
 
   top_background_ = new TopBackgroundView(location_bar, background_color);
   contents_host_->AddChildView(top_background_);
@@ -219,7 +212,6 @@ void RoundedOmniboxResultsFrame::Layout() {
   // TODO(tapted): Investigate using a static Widget size.
   const gfx::Rect bounds = GetContentsBounds();
   contents_host_->SetBoundsRect(bounds);
-  contents_mask_->layer()->SetBounds(bounds);
 
   gfx::Rect top_bounds(contents_host_->GetContentsBounds());
   top_bounds.set_height(GetNonResultSectionHeight());

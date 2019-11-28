@@ -413,7 +413,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memerinc
 <translation id="4084712963632273211">Dari <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />dikirim oleh Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Hapus data aplikasi?</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan error ke Google.</translation>
-<translation id="410351446219883937">Putar otomatis</translation>
 <translation id="4116038641877404294">Download halaman untuk melihat secara offline</translation>
 <translation id="4135200667068010335">Daftar perangkat yang dapat digunakan untuk berbagi tab tertutup.</translation>
 <translation id="4149994727733219643">Tampilan sederhana untuk halaman web</translation>
@@ -872,7 +871,6 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7437998757836447326">Logout dari Chrome</translation>
 <translation id="7438641746574390233">Ketika Mode Ringan dalam keadaan aktif, Chrome menggunakan server Google agar halaman lebih cepat dimuat. Mode Ringan akan menulis ulang halaman yang sangat lambat agar hanya memuat konten penting. Mode Ringan tidak berlaku untuk tab Samaran.</translation>
 <translation id="7444811645081526538">Kategori lainnya</translation>
-<translation id="7445411102860286510">Izinkan situs untuk otomatis memutar video yang dibisukan (disarankan)</translation>
 <translation id="7453467225369441013">Membuat Anda logout dari sebagian besar situs. Anda tidak akan logout dari Akun Google.</translation>
 <translation id="7454641608352164238">Tidak cukup ruang</translation>
 <translation id="7475192538862203634">Jika masalah ini sering terjadi, coba <ph name="BEGIN_LINK" />saran<ph name="END_LINK" /> berikut.</translation>
@@ -927,7 +925,6 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penghematan data Anda akan terlihat di sini</translation>
-<translation id="7837721118676387834">Izinkan pemutaran otomatis video yang dibisukan untuk situs tertentu.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>

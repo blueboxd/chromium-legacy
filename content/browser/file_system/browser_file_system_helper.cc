@@ -131,6 +131,8 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
   GetContentClient()->browser()->GetURLRequestAutoMountHandlers(
       &url_request_auto_mount_handlers);
 
+  auto options = CreateBrowserFileSystemOptions(
+      browser_context->CanUseDiskWhenOffTheRecord() ? false : is_incognito);
   scoped_refptr<storage::FileSystemContext> file_system_context =
       new storage::FileSystemContext(
           base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
@@ -138,7 +140,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(), quota_manager_proxy,
           std::move(additional_backends), url_request_auto_mount_handlers,
-          profile_path, CreateBrowserFileSystemOptions(is_incognito));
+          profile_path, options);
 
   for (const storage::FileSystemType& type :
        file_system_context->GetFileSystemTypes()) {

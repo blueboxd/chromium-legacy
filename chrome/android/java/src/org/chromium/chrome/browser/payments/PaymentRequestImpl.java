@@ -38,9 +38,9 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
-import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.MainPreferences;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;

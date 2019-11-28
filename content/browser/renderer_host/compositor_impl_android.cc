@@ -189,8 +189,10 @@ void CreateContextProviderAfterGpuChannelEstablished(
     gpu::SharedMemoryLimits shared_memory_limits,
     Compositor::ContextProviderCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  if (!gpu_channel_host)
-    callback.Run(nullptr);
+  if (!gpu_channel_host) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
   gpu::GpuChannelEstablishFactory* factory =
       BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
@@ -210,7 +212,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
           automatic_flushes, support_locking, support_grcontext,
           shared_memory_limits, attributes,
           viz::command_buffer_metrics::ContextType::UNKNOWN);
-  callback.Run(std::move(context_provider));
+  std::move(callback).Run(std::move(context_provider));
 }
 
 static bool g_initialized = false;
@@ -275,9 +277,9 @@ void Compositor::CreateContextProvider(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
-      ->EstablishGpuChannel(
-          base::BindOnce(&CreateContextProviderAfterGpuChannelEstablished,
-                         handle, attributes, shared_memory_limits, callback));
+      ->EstablishGpuChannel(base::BindOnce(
+          &CreateContextProviderAfterGpuChannelEstablished, handle, attributes,
+          shared_memory_limits, std::move(callback)));
 }
 
 // static
@@ -862,10 +864,12 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
                                          ->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
-  params.hit_test_data_provider =
-      std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          false /* should_ask_for_child_region */,
-          true /* root_accepts_events */);
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            false /* should_ask_for_child_region */,
+            true /* root_accepts_events */);
+  }
   params.client_name = kBrowser;
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(

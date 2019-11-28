@@ -14,6 +14,9 @@
 
 namespace net {
 
+TestNetLog::TestNetLog() : NetLog(util::PassKey<TestNetLog>()) {}
+TestNetLog::~TestNetLog() = default;
+
 RecordingTestNetLog::RecordingTestNetLog() {
   AddObserver(this, NetLogCaptureMode::kIncludeSensitive);
 }

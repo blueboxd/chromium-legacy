@@ -216,7 +216,7 @@ class MCSProbe {
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
-  net::NetLog net_log_;
+  net::NetLog* net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
   MCSProbeAuthPreferences http_auth_preferences_;
 
@@ -245,6 +245,7 @@ MCSProbe::MCSProbe(const base::CommandLine& command_line)
       server_port_(0),
       network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),
+      net_log_(net::NetLog::Get()),
       file_thread_("FileThread") {
   network_connection_tracker_->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_ETHERNET);
@@ -341,13 +342,13 @@ void MCSProbe::InitializeNetworkState() {
     logger_ = net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
     net::NetLogCaptureMode capture_mode =
         net::NetLogCaptureMode::kIncludeSensitive;
-    logger_->StartObserving(&net_log_, capture_mode);
+    logger_->StartObserving(net_log_, capture_mode);
   }
 
   net::URLRequestContextBuilder builder;
-  builder.set_net_log(&net_log_);
+  builder.set_net_log(net_log_);
   builder.set_host_resolver(
-      net::HostResolver::CreateStandaloneResolver(&net_log_));
+      net::HostResolver::CreateStandaloneResolver(net_log_));
   builder.SetHttpAuthHandlerFactory(net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_,
       std::vector<std::string>{net::kBasicAuthScheme}));

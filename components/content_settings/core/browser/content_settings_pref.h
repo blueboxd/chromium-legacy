@@ -30,10 +30,11 @@ class RuleIterator;
 // Represents a single pref for reading/writing content settings of one type.
 class ContentSettingsPref {
  public:
-  typedef base::Callback<void(const ContentSettingsPattern&,
-                              const ContentSettingsPattern&,
-                              ContentSettingsType,
-                              const std::string&)> NotifyObserversCallback;
+  typedef base::RepeatingCallback<void(const ContentSettingsPattern&,
+                                       const ContentSettingsPattern&,
+                                       ContentSettingsType,
+                                       const std::string&)>
+      NotifyObserversCallback;
 
   ContentSettingsPref(ContentSettingsType content_type,
                       PrefService* prefs,

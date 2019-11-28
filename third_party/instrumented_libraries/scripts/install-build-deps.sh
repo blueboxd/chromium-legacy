@@ -63,6 +63,7 @@ libxext6 \
 libxfixes3 \
 libxi6 \
 libxinerama1 \
+libxkbcommon0 \
 libxrandr2 \
 libxrender1 \
 libxss1 \

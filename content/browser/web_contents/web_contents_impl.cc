@@ -5429,8 +5429,9 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   NavigationEntry* entry = controller_.GetPendingEntry();
   if (entry && entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
-    render_frame_host->Send(
-        new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
+    static_cast<RenderFrameHostImpl*>(render_frame_host)
+        ->GetAssociatedLocalFrame()
+        ->EnableViewSourceMode();
   }
 }
 

@@ -47,8 +47,9 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
-          element, TextPosition(), ScriptSourceLocationType::kExternalFile,
-          options, true /* is_external */);
+          element, TextPosition(), KURL(), String(),
+          ScriptSourceLocationType::kExternalFile, options,
+          true /* is_external */);
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -74,12 +75,14 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    const KURL& base_url,
+    const String& source_text,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options) {
   ClassicPendingScript* pending_script =
-      MakeGarbageCollected<ClassicPendingScript>(element, starting_position,
-                                                 source_location_type, options,
-                                                 false /* is_external */);
+      MakeGarbageCollected<ClassicPendingScript>(
+          element, starting_position, base_url, source_text,
+          source_location_type, options, false /* is_external */);
   pending_script->CheckState();
   return pending_script;
 }
@@ -87,20 +90,29 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
 ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    const KURL& base_url_for_inline_script,
+    const String& source_text_for_inline_script,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options,
     bool is_external)
     : PendingScript(element, starting_position),
       options_(options),
-      base_url_for_inline_script_(
-          is_external ? KURL() : element->GetDocument().BaseURL()),
-      source_text_for_inline_script_(is_external ? String()
-                                                 : element->TextFromChildren()),
+      base_url_for_inline_script_(base_url_for_inline_script),
+      source_text_for_inline_script_(source_text_for_inline_script),
       source_location_type_(source_location_type),
       is_external_(is_external),
       ready_state_(is_external ? kWaitingForResource : kReady),
       integrity_failure_(false) {
   CHECK(GetElement());
+
+  if (is_external_) {
+    DCHECK(base_url_for_inline_script_.IsNull());
+    DCHECK(source_text_for_inline_script_.IsNull());
+  } else {
+    DCHECK(!base_url_for_inline_script_.IsNull());
+    DCHECK(!source_text_for_inline_script_.IsNull());
+  }
+
   MemoryPressureListenerRegistry::Instance().RegisterClient(this);
 }
 

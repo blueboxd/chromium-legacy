@@ -10,10 +10,10 @@ import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
-import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.website.SettingsNavigationSource;
+import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 
 import java.util.ArrayList;
 import java.util.Collection;

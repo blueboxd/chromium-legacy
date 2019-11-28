@@ -76,8 +76,10 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
 }
 
 void HTMLPortalElement::ConsumePortal() {
-  if (PortalContents* portal = std::exchange(portal_, nullptr))
-    portal->Destroy();
+  if (portal_)
+    portal_->Destroy();
+
+  DCHECK(!portal_);
 }
 
 void HTMLPortalElement::ExpireAdoptionLifetime() {
@@ -88,6 +90,11 @@ void HTMLPortalElement::ExpireAdoptionLifetime() {
   // but wasn't inserted or activated, we destroy it.
   if (!CanHaveGuestContents())
     ConsumePortal();
+}
+
+void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
+  DCHECK_EQ(portal_, portal);
+  portal_ = nullptr;
 }
 
 // https://wicg.github.io/portals/#htmlportalelement-may-have-a-guest-browsing-context

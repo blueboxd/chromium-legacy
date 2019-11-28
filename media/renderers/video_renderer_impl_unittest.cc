@@ -493,9 +493,9 @@ TEST_F(VideoRendererImplTest, FlushCallbackNoLock) {
   EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
   StartPlayingFrom(0);
   WaitableMessageLoopEvent event;
-  renderer_->Flush(base::BindRepeating(
-      &VideoRendererImplTest_FlushDoneCB, base::Unretained(this),
-      base::Unretained(renderer_.get()), event.GetClosure()));
+  renderer_->Flush(
+      base::BindOnce(&VideoRendererImplTest_FlushDoneCB, base::Unretained(this),
+                     base::Unretained(renderer_.get()), event.GetClosure()));
   event.RunAndWait();
   Destroy();
 }

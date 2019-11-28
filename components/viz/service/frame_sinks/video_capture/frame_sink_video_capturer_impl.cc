@@ -522,10 +522,12 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                       frame_metadata.root_scroll_offset.x());
   metadata->SetDouble(VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y,
                       frame_metadata.root_scroll_offset.y());
-  metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_HEIGHT,
-                      frame_metadata.top_controls_height);
-  metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
-                      frame_metadata.top_controls_shown_ratio);
+  if (frame_metadata.top_controls_visible_height.has_value()) {
+    last_top_controls_visible_height_ =
+        *frame_metadata.top_controls_visible_height;
+  }
+  metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_VISIBLE_HEIGHT,
+                      last_top_controls_visible_height_);
 
   oracle_->RecordCapture(utilization);
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", oracle_frame_number,

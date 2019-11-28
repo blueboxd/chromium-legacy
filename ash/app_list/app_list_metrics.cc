@@ -296,7 +296,7 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   }
 
   switch (command_id) {
-    // Used by LauncherContextMenu (shelf).
+    // Used by ShelfContextMenu (shelf).
     case ash::CommandId::MENU_OPEN_NEW:
     case ash::CommandId::MENU_NEW_WINDOW:
     case ash::CommandId::MENU_NEW_INCOGNITO_WINDOW:
@@ -306,12 +306,12 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case ash::CommandId::OPTIONS:
     case ash::CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
     case ash::CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
-    // Used by both AppContextMenu and LauncherContextMenu for app shortcuts.
+    // Used by both AppContextMenu and ShelfContextMenu for app shortcuts.
     case ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST:
     case ash::CommandId::LAUNCH_APP_SHORTCUT_LAST:
       return true;
 
-    // Used by LauncherContextMenu (shelf).
+    // Used by ShelfContextMenu (shelf).
     case ash::CommandId::MENU_CLOSE:
     case ash::CommandId::MENU_PIN:
     case ash::CommandId::LAUNCH_TYPE_PINNED_TAB:

@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace {
@@ -73,8 +75,10 @@ media_session::mojom::MediaSessionInfo::SessionState ToSessionState(
 
 CastMediaNotificationItem::CastMediaNotificationItem(
     const media_router::MediaRoute& route,
-    media_message_center::MediaNotificationController* notification_controller)
+    media_message_center::MediaNotificationController* notification_controller,
+    std::unique_ptr<CastMediaSessionController> session_controller)
     : notification_controller_(notification_controller),
+      session_controller_(std::move(session_controller)),
       media_route_id_(route.media_route_id()),
       session_info_(CreateSessionInfo()) {
   metadata_.artist = base::UTF8ToUTF16(route.description());
@@ -93,7 +97,7 @@ void CastMediaNotificationItem::SetView(
 
 void CastMediaNotificationItem::OnMediaSessionActionButtonPressed(
     media_session::mojom::MediaSessionAction action) {
-  // TODO(crbug.com/987479): Forward the action to the Cast receiver.
+  session_controller_->Send(action);
 }
 
 void CastMediaNotificationItem::Dismiss() {
@@ -109,6 +113,12 @@ void CastMediaNotificationItem::OnMediaStatusUpdated(
 
   // TODO(crbug.com/987479): Fetch and set the background image.
   UpdateView();
+  session_controller_->OnMediaStatusUpdated(std::move(status));
+}
+
+mojo::PendingRemote<media_router::mojom::MediaStatusObserver>
+CastMediaNotificationItem::GetObserverPendingRemote() {
+  return observer_receiver_.BindNewPipeAndPassRemote();
 }
 
 void CastMediaNotificationItem::UpdateView() {

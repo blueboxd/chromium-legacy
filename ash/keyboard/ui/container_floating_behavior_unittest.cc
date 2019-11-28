@@ -151,4 +151,113 @@ TEST(ContainerFloatingBehaviorTest, DontSaveCoordinatesUntilKeyboardMoved) {
   ASSERT_EQ(center, result);
 }
 
+TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestOverlapLeftEdge) {
+  ContainerFloatingBehavior floating_behavior(nullptr);
+
+  const int keyboard_width = 600;
+  const int keyboard_height = 70;
+
+  gfx::Rect area_to_remain_on_screen(10, 10, keyboard_width - 20,
+                                     keyboard_height - 20);
+  gfx::Rect workspace(0, 0, 1000, 600);
+  gfx::Rect left_edge_overlap(-150, 30, keyboard_width, keyboard_height);
+
+  floating_behavior.SetAreaToRemainOnScreen(area_to_remain_on_screen);
+
+  // Save an arbitrary position so that default location will not be used.
+  floating_behavior.SavePosition(
+      gfx::Rect(0, 0, keyboard_width, keyboard_height), workspace.size());
+
+  // Left edge of keyboard should go offscreen up to leftmost bound of
+  // area_to_remain_on_screen.
+  gfx::Rect result =
+      floating_behavior.AdjustSetBoundsRequest(workspace, left_edge_overlap);
+  ASSERT_EQ(gfx::Rect(area_to_remain_on_screen.x() * -1, left_edge_overlap.y(),
+                      keyboard_width, keyboard_height),
+            result);
+}
+
+TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestOverlapTopEdge) {
+  ContainerFloatingBehavior floating_behavior(nullptr);
+
+  const int keyboard_width = 600;
+  const int keyboard_height = 70;
+
+  gfx::Rect area_to_remain_on_screen(10, 10, keyboard_width - 20,
+                                     keyboard_height - 20);
+  gfx::Rect workspace(0, 0, 1000, 600);
+  gfx::Rect top_edge_overlap(30, -40, keyboard_width, keyboard_height);
+
+  floating_behavior.SetAreaToRemainOnScreen(area_to_remain_on_screen);
+
+  // Save an arbitrary position so that default location will not be used.
+  floating_behavior.SavePosition(
+      gfx::Rect(0, 0, keyboard_width, keyboard_height), workspace.size());
+
+  // Top edge of keyboard should go offscreen up to uppermost bound of
+  // area_to_remain_on_screen.
+  gfx::Rect result =
+      floating_behavior.AdjustSetBoundsRequest(workspace, top_edge_overlap);
+  ASSERT_EQ(gfx::Rect(top_edge_overlap.x(), area_to_remain_on_screen.y() * -1,
+                      keyboard_width, keyboard_height),
+            result);
+}
+
+TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestOverlapRightEdge) {
+  ContainerFloatingBehavior floating_behavior(nullptr);
+
+  const int keyboard_width = 600;
+  const int keyboard_height = 70;
+  const int inner_offset_x = 10;
+
+  gfx::Rect area_to_remain_on_screen(inner_offset_x, 10, keyboard_width - 20,
+                                     keyboard_height - 20);
+  gfx::Rect workspace(0, 0, 1000, 600);
+  gfx::Rect right_edge_overlap(workspace.width() + 30 - keyboard_width, 0,
+                               keyboard_width, keyboard_height);
+
+  floating_behavior.SetAreaToRemainOnScreen(area_to_remain_on_screen);
+
+  // Save an arbitrary position so that default location will not be used.
+  floating_behavior.SavePosition(
+      gfx::Rect(0, 0, keyboard_width, keyboard_height), workspace.size());
+
+  // Right edge of keyboard should go offscreen up to rightmost bound of
+  // area_to_remain_on_screen.
+  gfx::Rect result =
+      floating_behavior.AdjustSetBoundsRequest(workspace, right_edge_overlap);
+  ASSERT_EQ(gfx::Rect((workspace.width() + inner_offset_x) - keyboard_width,
+                      right_edge_overlap.y(), keyboard_width, keyboard_height),
+            result);
+}
+
+TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestBottomEdge) {
+  ContainerFloatingBehavior floating_behavior(nullptr);
+
+  const int keyboard_width = 600;
+  const int keyboard_height = 70;
+  const int inner_offset_y = 10;
+
+  gfx::Rect area_to_remain_on_screen(10, inner_offset_y, keyboard_width - 20,
+                                     keyboard_height - 20);
+  gfx::Rect workspace(0, 0, 1000, 600);
+  gfx::Rect bottom_edge_overlap(0, workspace.height() + 30 - keyboard_height,
+                                keyboard_width, keyboard_height);
+
+  floating_behavior.SetAreaToRemainOnScreen(area_to_remain_on_screen);
+
+  // Save an arbitrary position so that default location will not be used.
+  floating_behavior.SavePosition(
+      gfx::Rect(0, 0, keyboard_width, keyboard_height), workspace.size());
+
+  // Bottom edge of keyboard should go offscreen up to bottommost bound of
+  // area_to_remain_on_screen.
+  gfx::Rect result =
+      floating_behavior.AdjustSetBoundsRequest(workspace, bottom_edge_overlap);
+  ASSERT_EQ(gfx::Rect(bottom_edge_overlap.x(),
+                      (workspace.height() + inner_offset_y) - keyboard_height,
+                      keyboard_width, keyboard_height),
+            result);
+}
+
 }  // namespace keyboard

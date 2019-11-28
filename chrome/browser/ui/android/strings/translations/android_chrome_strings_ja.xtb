@@ -413,7 +413,6 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> のコンテンツ - <ph name="BEGIN_DEEMPHASIZED" />Google により配信<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">アプリデータを削除しますか？</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
-<translation id="410351446219883937">自動再生</translation>
 <translation id="4116038641877404294">ページをダウンロードするとオフラインで使用できるようになります</translation>
 <translation id="4135200667068010335">タブを共有するデバイスのリストが閉じられました。</translation>
 <translation id="4149994727733219643">ウェブページの簡易表示</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">Chrome からログアウト</translation>
 <translation id="7438641746574390233">ライトモードをオンにすると、Chrome では Google のサーバーを使用してページの読み込みを高速化します。特に読み込みの遅いページでは、ライトモードにより、主要コンテンツのみを読み込むようページが書き換えられます。なお、ライトモードはシークレット タブには適用されません。</translation>
 <translation id="7444811645081526538">その他のカテゴリ</translation>
-<translation id="7445411102860286510">ミュートされた動画の自動再生をサイトに許可する（推奨）</translation>
 <translation id="7453467225369441013">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="7454641608352164238">空き容量が不足しています</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7810647596859435254">アプリで開く…</translation>
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
-<translation id="7837721118676387834">特定のサイトに対し、ミュートされた動画の自動再生を許可します。</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">他のデバイス</translation>

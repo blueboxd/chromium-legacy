@@ -18,14 +18,14 @@ namespace net {
 namespace test_server {
 
 // Callback called when the response is done being sent.
-using SendCompleteCallback = base::Callback<void(void)>;
+using SendCompleteCallback = base::OnceClosure;
 
 // Callback called when the response is ready to be sent that takes the
 // |response| that is being sent along with the callback |write_done| that is
 // called when the response has been fully written.
 using SendBytesCallback =
-    base::Callback<void(const std::string& response,
-                        const SendCompleteCallback& write_done)>;
+    base::RepeatingCallback<void(const std::string& response,
+                                 SendCompleteCallback write_done)>;
 
 // Interface for HTTP response implementations.
 class HttpResponse{
@@ -36,7 +36,7 @@ class HttpResponse{
   // |write_done| when complete. When the entire response has been sent,
   // |done| must be called.
   virtual void SendResponse(const SendBytesCallback& send,
-                            const SendCompleteCallback& done) = 0;
+                            SendCompleteCallback done) = 0;
 };
 
 // This class is used to handle basic HTTP responses with commonly used
@@ -69,7 +69,7 @@ class BasicHttpResponse : public HttpResponse {
   std::string ToResponseString() const;
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override;
+                    SendCompleteCallback done) override;
 
  private:
   HttpStatusCode code_;
@@ -87,7 +87,7 @@ class DelayedHttpResponse : public BasicHttpResponse {
 
   // Issues a delayed send to the to the task runner.
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override;
+                    SendCompleteCallback done) override;
 
  private:
   // The delay time for the response.
@@ -102,7 +102,7 @@ class RawHttpResponse : public HttpResponse {
   ~RawHttpResponse() override;
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override;
+                    SendCompleteCallback done) override;
 
   void AddHeader(const std::string& key_value_pair);
 
@@ -121,7 +121,7 @@ class HungResponse : public HttpResponse {
   ~HungResponse() override {}
 
   void SendResponse(const SendBytesCallback& send,
-                    const SendCompleteCallback& done) override;
+                    SendCompleteCallback done) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HungResponse);

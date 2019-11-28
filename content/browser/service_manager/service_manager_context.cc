@@ -470,8 +470,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     metadata->SetPID(base::GetCurrentProcId());
 
     service_manager_->SetInstanceQuitCallback(
-        base::Bind(&OnInstanceQuitOnServiceManagerThread,
-                   std::move(ui_thread_task_runner)));
+        base::BindOnce(&OnInstanceQuitOnServiceManagerThread,
+                       std::move(ui_thread_task_runner)));
   }
 
   static void OnInstanceQuitOnServiceManagerThread(

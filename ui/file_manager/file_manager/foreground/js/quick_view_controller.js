@@ -291,15 +291,17 @@ class QuickViewController {
         return;  // Bail: there's no point drawing a stale selection.
       }
 
-      this.quickView_.type = params.type || '';
-      this.quickView_.subtype = params.subtype || '';
-      this.quickView_.filePath = params.filePath || '';
-      this.quickView_.hasTask = params.hasTask || false;
-      this.quickView_.contentUrl = params.contentUrl || '';
-      this.quickView_.videoPoster = params.videoPoster || '';
-      this.quickView_.audioArtwork = params.audioArtwork || '';
-      this.quickView_.autoplay = params.autoplay || false;
-      this.quickView_.browsable = params.browsable || false;
+      this.quickView_.setProperties({
+        type: params.type || '',
+        subtype: params.subtype || '',
+        filePath: params.filePath || '',
+        hasTask: params.hasTask || false,
+        contentUrl: params.contentUrl || '',
+        videoPoster: params.videoPoster || '',
+        audioArtwork: params.audioArtwork || '',
+        autoplay: params.autoplay || false,
+        browsable: params.browsable || false,
+      });
     });
   }
 

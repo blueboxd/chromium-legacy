@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/util/xr_standard_gamepad_builder.h"
@@ -75,10 +76,12 @@ XrResult OpenXrController::Initialize(
   XrActionSetCreateInfo action_set_create_info = {
       XR_TYPE_ACTION_SET_CREATE_INFO};
 
-  errno_t error =
-      strcpy_s(action_set_create_info.actionSetName, action_set_name.c_str());
+  errno_t error = strcpy_s(action_set_create_info.actionSetName,
+                           base::size(action_set_create_info.actionSetName),
+                           action_set_name.c_str());
   DCHECK(!error);
   error = strcpy_s(action_set_create_info.localizedActionSetName,
+                   base::size(action_set_create_info.localizedActionSetName),
                    action_set_name.c_str());
   DCHECK(!error);
 
@@ -373,9 +376,13 @@ XrResult OpenXrController::CreateAction(
   XrActionCreateInfo action_create_info = {XR_TYPE_ACTION_CREATE_INFO};
   action_create_info.actionType = type;
 
-  errno_t error = strcpy_s(action_create_info.actionName, action_name.data());
+  errno_t error =
+      strcpy_s(action_create_info.actionName,
+               base::size(action_create_info.actionName), action_name.data());
   DCHECK(error == 0);
-  error = strcpy_s(action_create_info.localizedActionName, action_name.data());
+  error = strcpy_s(action_create_info.localizedActionName,
+                   base::size(action_create_info.localizedActionName),
+                   action_name.data());
   DCHECK(error == 0);
 
   RETURN_IF_XR_FAILED(xrCreateAction(action_set_, &action_create_info, action));

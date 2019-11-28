@@ -429,7 +429,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
 TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
   base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
-  NetLog net_log;
+  TestNetLog net_log;
   observer.WatchForTraceStart(&net_log);
 
   EXPECT_FALSE(net_log.IsCapturing());
@@ -446,7 +446,7 @@ TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {
 TEST(TraceNetLogObserverCategoryTest, EnabledCategory) {
   base::test::TaskEnvironment task_environment;
   TraceNetLogObserver observer;
-  NetLog net_log;
+  TestNetLog net_log;
   observer.WatchForTraceStart(&net_log);
 
   EXPECT_FALSE(net_log.IsCapturing());

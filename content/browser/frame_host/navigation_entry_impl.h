@@ -147,6 +147,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   std::string GetExtraHeaders() override;
   void AddExtraHeaders(const std::string& extra_headers) override;
   int64_t GetMainFrameDocumentSequenceNumber() override;
+  void InitRestoredEntry(BrowserContext* browser_context) override;
 
   // Creates a copy of this NavigationEntryImpl that can be modified
   // independently from the original.  Does not copy any value that would be

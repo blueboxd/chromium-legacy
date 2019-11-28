@@ -46,10 +46,22 @@ public class Ui2LocatorsTest {
     @Mock
     Resources mResources;
 
-    List<UiObject2> mRootAsList, mChild0And1, mChild1AsList, mGrandchildren, mGrandchild1AsList;
+    List<UiObject2> mRootAsList;
+    List<UiObject2> mChild0And1;
+    List<UiObject2> mChild1AsList;
+    List<UiObject2> mGrandchildren;
+    List<UiObject2> mGrandchild1AsList;
 
     @Mock
-    UiObject2 mRoot, mChild0, mChild1, mGrandchild0, mGrandchild1;
+    UiObject2 mRoot;
+    @Mock
+    UiObject2 mChild0;
+    @Mock
+    UiObject2 mChild1;
+    @Mock
+    UiObject2 mGrandchild0;
+    @Mock
+    UiObject2 mGrandchild1;
 
     @Before
     public void setUp() {

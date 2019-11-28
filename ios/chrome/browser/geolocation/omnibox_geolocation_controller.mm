@@ -55,8 +55,8 @@ typedef enum {
   kHeaderStateNotSentAuthorizationChromeDenied,
   // The user denied Chrome from using geolocation for Omnibox queries.
   kHeaderStateNotSentAuthorizationOmniboxDenied,
-  // The user's Google search domain is not whitelisted.
-  kHeaderStateNotSentDomainNotWhitelisted,
+  // The user's Google search domain is not allowed.
+  kHeaderStateNotSentDomainNotAllowed,
   // The number of possible of HeaderState values to report.
   kHeaderStateCount,
 } HeaderState;
@@ -225,7 +225,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
   // Check the URL with URLIsQueryURL:transition: here and not
   // URLIsEligibleQueryURL:transition:, because we want to log the cases where
   // we did not send the X-Geo header due to the Google search domain not being
-  // whitelisted.
+  // allow-listed.
   DCHECK(item);
   const GURL& url = item->GetURL();
   if (!browserState || browserState->IsOffTheRecord() ||
@@ -234,7 +234,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
   }
 
   if (![[OmniboxGeolocationConfig sharedInstance] URLHasEligibleDomain:url]) {
-    [self recordHeaderState:kHeaderStateNotSentDomainNotWhitelisted];
+    [self recordHeaderState:kHeaderStateNotSentDomainNotAllowed];
     return NO;
   }
 

@@ -206,9 +206,8 @@ class CONTENT_EXPORT DownloadManagerImpl
       uint32_t id,
       const download::DownloadCreateInfo& info);
 
-  // Called with the result of DownloadManagerDelegate::CheckForFileExistence.
-  // Updates the state of the file and then notifies this update to the file's
-  // observer.
+  // Called with the result of CheckForFileExistence. Updates the state of the
+  // file and then notifies this update to the file's observer.
   void OnFileExistenceChecked(uint32_t download_id, bool result);
 
   // Overridden from DownloadItemImplDelegate
@@ -225,8 +224,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       std::unique_ptr<download::DownloadUrlParameters> params,
       const GURL& site_url) override;
   void OpenDownload(download::DownloadItemImpl* download) override;
-  bool IsMostRecentDownloadItemAtFilePath(
-      download::DownloadItemImpl* download) override;
   void ShowDownloadInShell(download::DownloadItemImpl* download) override;
   void DownloadRemoved(download::DownloadItemImpl* download) override;
   void DownloadInterrupted(download::DownloadItemImpl* download) override;
@@ -356,6 +353,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Callbacks to run once download ID is determined.
   using IdCallbackVector = std::vector<std::unique_ptr<GetNextIdCallback>>;
   IdCallbackVector id_callbacks_;
+
+  // SequencedTaskRunner to check for file existence. A sequence is used so
+  // that a large download history doesn't cause a large number of concurrent
+  // disk operations.
+  const scoped_refptr<base::SequencedTaskRunner> disk_access_task_runner_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_{this};
 

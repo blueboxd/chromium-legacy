@@ -97,7 +97,9 @@ class ParentAccessServiceTest : public MixinBasedInProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(GetTestAccessCodeValues(&test_values_));
     ParentAccessService::Get().AddObserver(test_observer_.get());
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+    logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
+                                    true /*wait_for_active_session*/,
+                                    true /*request_policy_update*/);
   }
 
   void TearDownOnMainThread() override {
@@ -144,9 +146,13 @@ class ParentAccessServiceTest : public MixinBasedInProcessBrowserTest {
 
   AccessCodeValues test_values_;
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_,           LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server(), true /*should_launch_browser*/,
-      base::nullopt,          false /*include_initial_user*/};
+      &mixin_host_,
+      LoggedInUserMixin::LogInType::kChild,
+      embedded_test_server(),
+      this,
+      true /*should_launch_browser*/,
+      base::nullopt /*account_id*/,
+      false /*include_initial_user*/};
   std::unique_ptr<TestParentAccessServiceObserver> test_observer_;
 
  private:

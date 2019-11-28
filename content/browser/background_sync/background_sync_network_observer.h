@@ -20,7 +20,7 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
   // Creates a BackgroundSyncNetworkObserver. |network_changed_callback| is
   // called when the network connection changes asynchronously via PostMessage.
   BackgroundSyncNetworkObserver(
-      const base::RepeatingClosure& network_changed_callback);
+      base::RepeatingClosure network_changed_callback);
 
   ~BackgroundSyncNetworkObserver() override;
 

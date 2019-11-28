@@ -48,6 +48,20 @@ const Ehdr* GetElfHeader(const void* elf_mapped_base) {
   return elf_header;
 }
 
+// Returns the ELF base address that should be used as a starting point to
+// access other segments.
+const char* GetElfBaseVirtualAddress(const void* elf_mapped_base) {
+  const char* elf_base = reinterpret_cast<const char*>(elf_mapped_base);
+  for (const Phdr& header : GetElfProgramHeaders(elf_mapped_base)) {
+    if (header.p_type == PT_LOAD) {
+      size_t load_bias = static_cast<size_t>(header.p_vaddr);
+      CHECK_GE(reinterpret_cast<uintptr_t>(elf_base), load_bias);
+      return elf_base - load_bias;
+    }
+  }
+  return elf_base;
+}
+
 }  // namespace
 
 span<const Phdr> GetElfProgramHeaders(const void* elf_mapped_base) {
@@ -68,7 +82,7 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
                       ElfBuildIdBuffer build_id) {
   // NOTE: Function should use async signal safe calls only.
 
-  const char* elf_base = reinterpret_cast<const char*>(elf_mapped_base);
+  const char* elf_virtual_base = GetElfBaseVirtualAddress(elf_mapped_base);
   const Ehdr* elf_header = GetElfHeader(elf_mapped_base);
   if (!elf_header)
     return 0;
@@ -78,35 +92,37 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
       continue;
 
     // Look for a NT_GNU_BUILD_ID note with name == "GNU".
-    const void* section_end = elf_base + header.p_vaddr + header.p_memsz;
-    const Nhdr* current_note =
-        reinterpret_cast<const Nhdr*>(elf_base + header.p_vaddr);
+    const char* current_section = elf_virtual_base + header.p_vaddr;
+    const char* section_end = current_section + header.p_memsz;
+    const Nhdr* current_note = nullptr;
     bool found = false;
-    while (current_note < section_end) {
+    while (current_section < section_end) {
+      current_note = reinterpret_cast<const Nhdr*>(current_section);
       if (current_note->n_type == NT_GNU_BUILD_ID) {
-        const char* note_name =
-            reinterpret_cast<const char*>(current_note) + sizeof(Nhdr);
-        if (current_note->n_namesz == 4 &&
-            strncmp(note_name, kGnuNoteName, 4) == 0) {
+        StringPiece note_name(current_section + sizeof(Nhdr),
+                              current_note->n_namesz);
+        // Explicit constructor is used to include the '\0' character.
+        if (note_name == StringPiece(kGnuNoteName, sizeof(kGnuNoteName))) {
           found = true;
           break;
         }
       }
 
-      current_note = reinterpret_cast<const Nhdr*>(
-          reinterpret_cast<const char*>(current_note) + sizeof(Nhdr) +
-          bits::Align(current_note->n_namesz, 4) +
-          bits::Align(current_note->n_descsz, 4));
+      size_t section_size = bits::Align(current_note->n_namesz, 4) +
+                            bits::Align(current_note->n_descsz, 4) +
+                            sizeof(Nhdr);
+      if (section_size >= static_cast<size_t>(section_end - current_section))
+        return 0;
+      current_section += section_size;
     }
+
     if (!found)
       continue;
 
     // Validate that the serialized build ID will fit inside |build_id|.
     size_t note_size = current_note->n_descsz;
-    if (current_note >= section_end ||
-        (note_size * 2) > kMaxBuildIdStringLength) {
+    if ((note_size * 2) > kMaxBuildIdStringLength)
       continue;
-    }
 
     // Write out the build ID as a null-terminated hex string.
     const uint8_t* build_id_raw =

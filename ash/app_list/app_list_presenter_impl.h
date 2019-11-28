@@ -69,10 +69,6 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // folder was closed.
   bool HandleCloseOpenFolder();
 
-  // If app list has an open search box, close it. Returns whether an open
-  // search box was closed.
-  bool HandleCloseOpenSearchBox();
-
   // Show the app list if it is visible, hide it if it is hidden. If
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.

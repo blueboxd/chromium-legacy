@@ -16,7 +16,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
-import org.chromium.chrome.browser.preferences.about.AboutSettingsBridge;
+import org.chromium.chrome.browser.settings.about.AboutSettingsBridge;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;

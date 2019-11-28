@@ -413,7 +413,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vymazat data aplikace?</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky o využívání a zprávy o selhání.</translation>
-<translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="4116038641877404294">Stáhněte si stránky k použití offline</translation>
 <translation id="4135200667068010335">Seznam zařízení, se kterými se má karta sdílet, je zavřený.</translation>
 <translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
@@ -872,7 +871,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7437998757836447326">Odhlášení z Chromu</translation>
 <translation id="7438641746574390233">Když je zapnutý zjednodušený režim, Chrome načítání stránek urychluje pomocí serverů Google. Ve zjednodušeném režimu se velmi pomalé stránky přepisují tak, aby se načítal jen nezbytný obsah. Zjednodušený režim se nepoužívá pro anonymní karty.</translation>
 <translation id="7444811645081526538">Další kategorie</translation>
-<translation id="7445411102860286510">Povolit webům automaticky přehrávat ztlumená videa (doporučeno)</translation>
 <translation id="7453467225369441013">Odhlásí vás z většiny webů. Z účtu Google odhlášeni nebudete.</translation>
 <translation id="7454641608352164238">Nedostatek místa</translation>
 <translation id="7475192538862203634">Pokud se vám tato stránka zobrazuje často, vyzkoušejte tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
 <translation id="7821588508402923572">Zde se budou zobrazovat vaše úspory dat</translation>
-<translation id="7837721118676387834">Povolit automatické přehrávání ztlumených videí na konkrétním webu.</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="784934925303690534">Časové období</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>

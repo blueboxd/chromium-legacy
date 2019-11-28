@@ -115,14 +115,12 @@ bool GLImageD3D::BindTexImage(unsigned target) {
 }
 
 bool GLImageD3D::CopyTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 
 bool GLImageD3D::CopyTexSubImage(unsigned target,
                                  const gfx::Point& offset,
                                  const gfx::Rect& rect) {
-  NOTREACHED();
   return false;
 }
 

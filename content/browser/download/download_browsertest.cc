@@ -766,8 +766,8 @@ class TestRequestPauseHandler {
     EXPECT_FALSE(used_) << "GetOnPauseHandler() should only be called once for "
                            "an instance of TestRequestPauseHandler.";
     used_ = true;
-    return base::Bind(&TestRequestPauseHandler::OnPauseHandler,
-                      base::Unretained(this));
+    return base::BindRepeating(&TestRequestPauseHandler::OnPauseHandler,
+                               base::Unretained(this));
   }
 
   // Wait until the OnPauseHandler returned in a prior call to
@@ -784,8 +784,8 @@ class TestRequestPauseHandler {
   }
 
  private:
-  void OnPauseHandler(const base::Closure& resume_callback) {
-    resume_callback_ = resume_callback;
+  void OnPauseHandler(base::OnceClosure resume_callback) {
+    resume_callback_ = std::move(resume_callback);
     if (run_loop_.running())
       run_loop_.Quit();
   }

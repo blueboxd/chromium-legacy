@@ -1104,7 +1104,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::map<GURL, base::FilePath>& url_to_local_path,
       const std::map<int, base::FilePath>& frame_routing_id_to_local_path,
       bool save_with_empty_url);
-  void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
   void OnClearFocusedElement();
   void OnBlinkFeatureUsageReport(

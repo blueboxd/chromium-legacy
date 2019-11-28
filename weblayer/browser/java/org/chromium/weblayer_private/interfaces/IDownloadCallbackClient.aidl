@@ -8,5 +8,5 @@ package org.chromium.weblayer_private.interfaces;
  * Used to forward download requests to the client.
  */
 interface IDownloadCallbackClient {
-  void downloadRequested(in String uriString, in String userAgent, in String contentDisposition, in String mimetype, long contentLength) = 0;
+  boolean interceptDownload(in String uriString, in String userAgent, in String contentDisposition, in String mimetype, long contentLength) = 0;
 }

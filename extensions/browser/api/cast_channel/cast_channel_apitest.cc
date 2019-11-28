@@ -22,7 +22,6 @@
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
@@ -35,8 +34,9 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
-using ::cast_channel::CastMessage;
+using ::cast::channel::CastMessage;
 using ::cast_channel::CastSocket;
 using ::cast_channel::CastTransport;
 using ::cast_channel::ChannelError;

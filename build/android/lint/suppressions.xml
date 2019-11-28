@@ -397,7 +397,7 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/router/MediaRouteChooserDialogManager.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/router/MediaRouteControllerDialogManager.java"/>
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/OtherFormsOfHistoryDialogFragment.java"/>
+    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/settings/privacy/OtherFormsOfHistoryDialogFragment.java"/>
     <ignore regexp="media/capture/content/android/java/src/org/chromium/media/ScreenCapture.java"/>
   </issue>
   <issue id="VectorPath" severity="ignore"/>

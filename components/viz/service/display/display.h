@@ -263,6 +263,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t last_swap_ack_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
 
+  // The height of the top-controls in the previously drawn frame.
+  float last_top_controls_visible_height_ = 0.f;
+
   gfx::OverlayTransform last_display_transform_swapped_ =
       gfx::OVERLAY_TRANSFORM_NONE;
 

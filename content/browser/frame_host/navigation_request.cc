@@ -2009,7 +2009,7 @@ void NavigationRequest::OnStartChecksComplete(
   DCHECK(result.action() != NavigationThrottle::BLOCK_RESPONSE);
 
   if (on_start_checks_complete_closure_)
-    on_start_checks_complete_closure_.Run();
+    std::move(on_start_checks_complete_closure_).Run();
   // Abort the request if needed. This will destroy the NavigationRequest.
   if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
       result.action() == NavigationThrottle::CANCEL ||

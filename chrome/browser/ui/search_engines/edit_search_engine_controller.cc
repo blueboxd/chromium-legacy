@@ -72,6 +72,13 @@ bool EditSearchEngineController::IsKeywordValid(
       base::CollapseWhitespace(keyword_input, true));
   if (keyword_input_trimmed.empty())
     return false;  // Do not allow empty keyword.
+
+  // The omnibox doesn't properly handle search keywords with whitespace,
+  // so do not allow such keywords.
+  if (keyword_input_trimmed.find_first_of(base::kWhitespaceUTF16) !=
+      base::string16::npos)
+    return false;
+
   const TemplateURL* turl_with_keyword =
       TemplateURLServiceFactory::GetForProfile(profile_)->
       GetTemplateURLForKeyword(keyword_input_trimmed);

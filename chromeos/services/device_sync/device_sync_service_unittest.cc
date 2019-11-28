@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -23,6 +25,7 @@
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
@@ -30,6 +33,7 @@
 #include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/fake_cryptauth_device_notifier.h"
 #include "chromeos/services/device_sync/fake_cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_feature_status_setter.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
@@ -38,6 +42,7 @@
 #include "chromeos/services/device_sync/fake_device_sync_observer.h"
 #include "chromeos/services/device_sync/fake_remote_device_provider.h"
 #include "chromeos/services/device_sync/fake_software_feature_manager.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
@@ -147,6 +152,24 @@ class FakeCryptAuthFeatureStatusSetterDelegate
 
   // FakeCryptAuthFeatureStatusSetter::Delegate:
   void OnSetFeatureStatusCalled() override { on_delegate_call_closure_.Run(); }
+
+ private:
+  base::Closure on_delegate_call_closure_;
+};
+
+// Delegate which invokes the Closure provided to its constructor when a
+// delegate function is invoked.
+class FakeCryptAuthDeviceNotifierDelegate
+    : public FakeCryptAuthDeviceNotifier::Delegate {
+ public:
+  explicit FakeCryptAuthDeviceNotifierDelegate(
+      base::Closure on_delegate_call_closure)
+      : on_delegate_call_closure_(on_delegate_call_closure) {}
+
+  ~FakeCryptAuthDeviceNotifierDelegate() override = default;
+
+  // FakeCryptAuthDeviceNotifier::Delegate:
+  void OnNotifyDevicesCalled() override { on_delegate_call_closure_.Run(); }
 
  private:
   base::Closure on_delegate_call_closure_;
@@ -784,6 +807,11 @@ class DeviceSyncServiceTest
     CryptAuthFeatureStatusSetterImpl::Factory::SetFactoryForTesting(
         fake_feature_status_setter_factory_.get());
 
+    fake_device_notifier_factory_ =
+        std::make_unique<FakeCryptAuthDeviceNotifierFactory>();
+    CryptAuthDeviceNotifierImpl::Factory::SetFactoryForTesting(
+        fake_device_notifier_factory_.get());
+
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
@@ -1008,6 +1036,18 @@ class DeviceSyncServiceTest
     return set_feature_status_results_;
   }
 
+  FakeCryptAuthDeviceNotifier* fake_device_notifier() {
+    if (fake_device_notifier_factory_->instances().empty())
+      return nullptr;
+
+    EXPECT_EQ(1u, fake_device_notifier_factory_->instances().size());
+    return fake_device_notifier_factory_->instances()[0];
+  }
+
+  const std::vector<mojom::NetworkRequestResult>& notify_devices_results() {
+    return notify_devices_results_;
+  }
+
   std::unique_ptr<mojom::NetworkRequestResult>
   GetLastSetSoftwareFeatureStateResponseAndReset() {
     return std::move(last_set_software_feature_state_response_);
@@ -1052,13 +1092,23 @@ class DeviceSyncServiceTest
     EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
               set_feature_status_results_[0]);
 
-    // Likewise, FindEligibleDevices() should also return a struct with the same
-    // error code.
+    // FindEligibleDevices() should return a struct with the special
+    // kErrorNotInitialized error code.
     CallFindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
     auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
     EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
               last_find_response->first);
     EXPECT_FALSE(last_find_response->second /* response */);
+
+    // NotifyDevices() should return a struct with the special
+    // kErrorNotInitialized error code.
+    CallNotifyDevices(
+        {test_devices()[0].instance_id, test_devices()[1].instance_id},
+        cryptauthv2::TargetService::DEVICE_SYNC,
+        multidevice::SoftwareFeature::kBetterTogetherHost);
+    EXPECT_EQ(1u, notify_devices_results_.size());
+    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+              notify_devices_results_[0]);
 
     // GetDebugInfo() returns a null DebugInfo before initialization.
     EXPECT_FALSE(CallGetDebugInfo());
@@ -1233,6 +1283,34 @@ class DeviceSyncServiceTest
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
   }
 
+  void CallNotifyDevices(const std::vector<std::string>& device_instance_ids,
+                         cryptauthv2::TargetService target_service,
+                         multidevice::SoftwareFeature feature) {
+    base::RunLoop run_loop;
+
+    // If the device notifier has not yet been created, the service has not been
+    // initialized. NotifyDevices() is expected to respond synchronously with an
+    // error.
+    if (!fake_device_notifier()) {
+      device_sync_->NotifyDevices(
+          device_instance_ids, target_service, feature,
+          base::Bind(
+              &DeviceSyncServiceTest::OnNotifyDevicesCompletedSynchronously,
+              base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    FakeCryptAuthDeviceNotifierDelegate delegate(run_loop.QuitClosure());
+    fake_device_notifier()->set_delegate(&delegate);
+    device_sync_->NotifyDevices(
+        device_instance_ids, target_service, feature,
+        base::Bind(&DeviceSyncServiceTest::OnNotifyDevicesCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+    fake_device_notifier()->set_delegate(nullptr);
+  }
+
   const base::Optional<mojom::DebugInfo>& CallGetDebugInfo() {
     base::RunLoop run_loop;
     device_sync_->GetDebugInfo(
@@ -1311,6 +1389,17 @@ class DeviceSyncServiceTest
             result_code, std::move(response));
   }
 
+  void OnNotifyDevicesCompleted(mojom::NetworkRequestResult result_code) {
+    notify_devices_results_.push_back(result_code);
+  }
+
+  void OnNotifyDevicesCompletedSynchronously(
+      base::OnceClosure quit_closure,
+      mojom::NetworkRequestResult result_code) {
+    OnNotifyDevicesCompleted(result_code);
+    std::move(quit_closure).Run();
+  }
+
   void OnFindEligibleDevicesCompletedSynchronously(
       base::OnceClosure quit_closure,
       mojom::NetworkRequestResult result_code,
@@ -1362,6 +1451,8 @@ class DeviceSyncServiceTest
       fake_software_feature_manager_factory_;
   std::unique_ptr<FakeCryptAuthFeatureStatusSetterFactory>
       fake_feature_status_setter_factory_;
+  std::unique_ptr<FakeCryptAuthDeviceNotifierFactory>
+      fake_device_notifier_factory_;
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
@@ -1379,6 +1470,7 @@ class DeviceSyncServiceTest
       last_find_eligible_devices_response_;
   base::Optional<mojom::DebugInfo> last_debug_info_result_;
   std::vector<mojom::NetworkRequestResult> set_feature_status_results_;
+  std::vector<mojom::NetworkRequestResult> notify_devices_results_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
   std::unique_ptr<DeviceSyncBase> device_sync_;
@@ -1927,6 +2019,60 @@ TEST_P(DeviceSyncServiceTest, FindEligibleDevices) {
       1);
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", true, 1);
+}
+
+TEST_P(DeviceSyncServiceTest, NotifyDevices_Success) {
+  InitializeServiceSuccessfully();
+
+  EXPECT_EQ(0u, fake_device_notifier()->requests().size());
+
+  std::vector<std::string> device_instance_ids = {
+      test_devices()[0].instance_id, test_devices()[1].instance_id};
+
+  CallNotifyDevices(device_instance_ids,
+                    cryptauthv2::TargetService::DEVICE_SYNC,
+                    multidevice::SoftwareFeature::kBetterTogetherHost);
+  EXPECT_EQ(1u, fake_device_notifier()->requests().size());
+  EXPECT_EQ(device_instance_ids,
+            fake_device_notifier()->requests()[0].device_ids);
+  EXPECT_EQ(cryptauthv2::TargetService::DEVICE_SYNC,
+            fake_device_notifier()->requests()[0].target_service);
+  EXPECT_EQ(CryptAuthFeatureType::kBetterTogetherHostEnabled,
+            fake_device_notifier()->requests()[0].feature_type);
+  EXPECT_TRUE(fake_device_notifier()->requests()[0].success_callback);
+  EXPECT_TRUE(fake_device_notifier()->requests()[0].error_callback);
+
+  // The DeviceSyncImpl::NotifyDevices() callback has not yet been invoked.
+  EXPECT_TRUE(notify_devices_results().empty());
+
+  // Now, invoke the CryptAuthDeviceNotifier success callback.
+  std::move(fake_device_notifier()->requests()[0].success_callback).Run();
+
+  // The DeviceSyncImpl::NotifyDevices() callback should have been invoked.
+  ASSERT_EQ(1u, notify_devices_results().size());
+  EXPECT_EQ(mojom::NetworkRequestResult::kSuccess, notify_devices_results()[0]);
+}
+
+TEST_P(DeviceSyncServiceTest, NotifyDevices_Error) {
+  InitializeServiceSuccessfully();
+
+  CallNotifyDevices(
+      {test_devices()[0].instance_id, test_devices()[1].instance_id},
+      cryptauthv2::TargetService::DEVICE_SYNC,
+      multidevice::SoftwareFeature::kBetterTogetherHost);
+
+  // The DeviceSyncImpl::NotifyDevices() callback has not yet been invoked.
+  EXPECT_TRUE(notify_devices_results().empty());
+
+  // Now, invoke the CryptAuthDeviceNotifier error callback.
+  std::move(fake_device_notifier()->requests()[0].error_callback)
+      .Run(NetworkRequestError::kBadRequest);
+
+  // The DeviceSyncImpl::NotifyDevices() callback is invoked with the same
+  // error code.
+  ASSERT_EQ(1u, notify_devices_results().size());
+  EXPECT_EQ(mojom::NetworkRequestResult::kBadRequest,
+            notify_devices_results()[0]);
 }
 
 TEST_P(DeviceSyncServiceTest, GetDebugInfo) {

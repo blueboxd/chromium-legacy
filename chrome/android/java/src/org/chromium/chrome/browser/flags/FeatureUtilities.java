@@ -496,6 +496,17 @@ public class FeatureUtilities {
         sFlags.put(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY, isEnabled);
     }
 
+    /**
+     * Toggles whether the Duet-TabStrip integration is enabled for testing. Should be reset back to
+     * null after the test has finished. Notice that TabGroup should also be turned on in order to
+     * really get the feature.
+     */
+    @VisibleForTesting
+    public static void setDuetTabStripIntegrationAndroidEnabledForTesting(
+            @Nullable Boolean isEnabled) {
+        sFlags.put(ChromePreferenceKeys.DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY, isEnabled);
+    }
+
     private static boolean isHighEndPhone() {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(

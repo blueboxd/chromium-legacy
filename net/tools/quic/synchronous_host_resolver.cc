@@ -61,12 +61,11 @@ ResolverThread::~ResolverThread() = default;
 void ResolverThread::Run() {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
-  net::NetLog net_log;
   net::HostResolver::ManagerOptions options;
   options.max_concurrent_resolves = 6;
   options.max_system_retry_attempts = 3u;
   std::unique_ptr<net::HostResolver> resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log, options);
+      net::HostResolver::CreateStandaloneResolver(NetLog::Get(), options);
 
   HostPortPair host_port_pair(host_, 80);
   // No need to use a NetworkIsolationKey here, since this is an external tool

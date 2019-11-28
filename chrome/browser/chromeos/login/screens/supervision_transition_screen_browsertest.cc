@@ -60,8 +60,8 @@ class SupervisionTransitionScreenTest
     // and then postpone WaitForActiveSession() until later. So wait for active
     // session immediately if IsPreTest() and postpone the call to
     // WaitForActiveSession() otherwise.
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(
-        host_resolver(), this, false /*issue_any_scope_token*/,
+    logged_in_user_mixin_.LogInUser(
+        false /*issue_any_scope_token*/,
         content::IsPreTest() /*wait_for_active_session*/);
   }
 
@@ -80,7 +80,7 @@ class SupervisionTransitionScreenTest
  private:
   LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, content::IsPreTest() ? GetParam() : GetTargetUserType(),
-      embedded_test_server(), false /*should_launch_browser*/};
+      embedded_test_server(), this, false /*should_launch_browser*/};
 };
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,

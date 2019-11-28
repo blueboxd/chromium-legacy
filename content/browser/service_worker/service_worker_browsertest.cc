@@ -2121,10 +2121,9 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
         : response_(response) {}
     ~CustomResponse() override {}
 
-    void SendResponse(
-        const net::test_server::SendBytesCallback& send,
-        const net::test_server::SendCompleteCallback& done) override {
-      send.Run(response_, done);
+    void SendResponse(const net::test_server::SendBytesCallback& send,
+                      net::test_server::SendCompleteCallback done) override {
+      send.Run(response_, std::move(done));
     }
 
    private:

@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
+import android.util.Pair;
 
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -37,29 +38,44 @@ class BitmapUtils {
     private static final int EXIF_ORIENTATION_ACTION_BOUNDARY = 9;
 
     /**
-     * Takes a |bitmap| and returns a square thumbnail of |size|x|size| from the center of the
-     * bitmap specified, rotating it according to the Exif information, if needed (on Nougat and
-     * up only).
+     * Takes a |bitmap| and (if |!fullWidth|) returns a square thumbnail of |width|x|width| from the
+     * center of the bitmap specified, or (if |fullWidth|) an image that scaled to fit within
+     * |width|. The image is rotated according to the Exif information, if needed (on Nougat and up
+     * only).
      * @param bitmap The bitmap to adjust.
-     * @param size The desired size (width and height).
+     * @param width The desired width (and height if fullWidth is false).
+     * @param fullWidth Whether full screen width is in use. When true, the image returned is
+     *         |width| wide and whatever height scales to. When false, a rectangular |width|x|width|
+     *         image is returned.
      * @param descriptor The file descriptor to read the Exif information from.
      * @return The new bitmap thumbnail.
      */
-    private static Bitmap sizeBitmap(Bitmap bitmap, int size, FileDescriptor descriptor) {
+    private static Bitmap sizeBitmap(
+            Bitmap bitmap, int width, boolean fullWidth, FileDescriptor descriptor) {
         // TODO(finnur): Investigate options that require fewer bitmaps to be created.
-        bitmap = ensureMinSize(bitmap, size);
-        bitmap = rotateAndCropToSquare(bitmap, size, descriptor);
-        return bitmap;
+        if (!fullWidth) {
+            bitmap = ensureMinSize(bitmap, width);
+            bitmap = rotateAndCropToSquare(bitmap, width, descriptor);
+            return bitmap;
+        } else {
+            return rotateAndFitToMaxWidth(bitmap, width, descriptor);
+        }
     }
 
     /**
-     * Given a FileDescriptor, decodes the contents and returns a bitmap of
-     * dimensions |size|x|size|.
+     * Given a FileDescriptor, decodes the contents and returns a square thumbnail of
+     * |width|x|width| from the center of the bitmap specified, or (if |fullwidth|) an image that
+     * scaled to fit within |width|. The image is rotated according to the Exif information, if
+     * needed (on Nougat and up only).
      * @param descriptor The FileDescriptor for the file to read.
-     * @param size The width and height of the bitmap to return.
-     * @return The resulting bitmap.
+     * @param size The width of the bitmap to return.
+     * @param fullWidth Whether full screen width is in use. When true, the image returned is
+     *         |width| wide and whatever height scales to. When false, a rectangular |width|x|width|
+     *         image is returned.
+     * @return The resulting bitmap and its ratio.
      */
-    public static Bitmap decodeBitmapFromFileDescriptor(FileDescriptor descriptor, int size) {
+    public static Pair<Bitmap, Float> decodeBitmapFromFileDescriptor(
+            FileDescriptor descriptor, int size, boolean fullWidth) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFileDescriptor(descriptor, null, options);
@@ -69,31 +85,41 @@ class BitmapUtils {
 
         if (bitmap == null) return null;
 
-        return sizeBitmap(bitmap, size, descriptor);
+        return new Pair<Bitmap, Float>(sizeBitmap(bitmap, size, fullWidth, descriptor),
+                (float) bitmap.getHeight() / bitmap.getWidth());
     }
 
     /**
-     * Given a FileDescriptor, decodes the video and returns a bitmap of dimensions |size|x|size|.
+     * Given a FileDescriptor, decodes the video and returns a square thumbnail of |width|x|width|
+     * from the center of the bitmap specified, or (if |fullwidth|) an image that scaled to fit
+     * within |width|. The image is rotated according to the Exif information, if needed (on Nougat
+     * and up only).
      * @param retriever The MediaMetadataRetriever to use (must have source already set).
      * @param descriptor The FileDescriptor for the file to read.
-     * @param size The width and height of the bitmap to return.
+     * @param width The width of the bitmap to return.
      * @param frames The number of frames to extract.
+     * @param fullWidth Whether full screen width is in use. When true, the image returned is
+     *         |width| wide and whatever height scales to. When false, a rectangular |width|x|width|
+     *         image is returned.
      * @param intervalMs The interval between frames (in milliseconds).
      * @return A list of extracted frames.
      */
-    public static List<Bitmap> decodeVideoFromFileDescriptor(MediaMetadataRetriever retriever,
-            FileDescriptor descriptor, int size, int frames, long intervalMs) {
+    public static Pair<List<Bitmap>, Float> decodeVideoFromFileDescriptor(
+            MediaMetadataRetriever retriever, FileDescriptor descriptor, int width, int frames,
+            boolean fullWidth, long intervalMs) {
         List<Bitmap> bitmaps = new ArrayList<Bitmap>();
         Bitmap bitmap = null;
+        Float ratio = null;
         for (int frame = 0; frame < frames; ++frame) {
             bitmap = retriever.getFrameAtTime(frame * intervalMs * 1000);
             if (bitmap == null) continue;
+            if (ratio == null) ratio = (float) bitmap.getHeight() / bitmap.getWidth();
 
-            bitmap = sizeBitmap(bitmap, size, descriptor);
+            bitmap = sizeBitmap(bitmap, width, fullWidth, descriptor);
             bitmaps.add(bitmap);
         }
 
-        return bitmaps;
+        return new Pair<List<Bitmap>, Float>(bitmaps, ratio);
     }
 
     /**
@@ -158,14 +184,12 @@ class BitmapUtils {
     }
 
     /**
-     * Crops a |bitmap| to a certain square |size| and rotates it according to the Exif information,
-     * if needed (on Nougat and up only).
-     * @param bitmap The bitmap to crop.
-     * @param size The size desired (width and height).
-     * @return The resulting (square) bitmap.
+     * Returns the rotation matrix from the Exif information in the file descriptor (on Nougat and
+     * up only).
+     * @param descriptor The FileDescriptor containing the Exif information.
+     * @return The resulting rotation matrix (or null, if Android < N).
      */
-    private static Bitmap rotateAndCropToSquare(
-            Bitmap bitmap, int size, FileDescriptor descriptor) {
+    private static Matrix getRotationMatrix(FileDescriptor descriptor) {
         Matrix matrix = new Matrix();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             try {
@@ -215,7 +239,19 @@ class BitmapUtils {
             } catch (IOException e) {
             }
         }
+        return matrix;
+    }
 
+    /**
+     * Crops a |bitmap| to a certain square |size| and (on Nougat and up only) rotates it according
+     * to the Exif information, if needed.
+     * @param bitmap The bitmap to crop.
+     * @param size The size desired (width and height).
+     * @param descriptor The FileDescriptor containing the Exif information.
+     * @return The resulting (square) bitmap.
+     */
+    private static Bitmap rotateAndCropToSquare(
+            Bitmap bitmap, int size, FileDescriptor descriptor) {
         int x = 0;
         int y = 0;
         int width = bitmap.getWidth();
@@ -224,7 +260,25 @@ class BitmapUtils {
 
         if (width > size) x = (width - size) / 2;
         if (height > size) y = (height - size) / 2;
-        return Bitmap.createBitmap(bitmap, x, y, size, size, matrix, true);
+        return Bitmap.createBitmap(bitmap, x, y, size, size, getRotationMatrix(descriptor), true);
+    }
+
+    /**
+     * Rotate a bitmap according to its Exif information and make sure it fits to the maximum width.
+     * @param bitmap The input bitmap.
+     * @param maxWidth The maximum width available.
+     * @param descriptor The FileDescriptor containing the Exif information.
+     */
+    private static Bitmap rotateAndFitToMaxWidth(
+            Bitmap bitmap, int maxWidth, FileDescriptor descriptor) {
+        Bitmap rotated = bitmap;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    getRotationMatrix(descriptor), true);
+        }
+        float ratio = (float) maxWidth / rotated.getWidth();
+        int height = (int) (rotated.getHeight() * ratio);
+        return Bitmap.createScaledBitmap(rotated, maxWidth, height, true);
     }
 
     /**

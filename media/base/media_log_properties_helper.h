@@ -138,9 +138,10 @@ struct internal::MediaLogPropertyTypeConverter<VideoDecoderConfig> {
                         value.color_space_info().ToGfxColorSpace().ToString());
 
     if (value.hdr_metadata().has_value()) {
-      result.SetDoubleKey(
+      result.SetKey(
           "luminance range",
-          value.hdr_metadata()->mastering_metadata.luminance_min);
+          MediaLogPropertyTypeConverter<float>::Convert(
+              value.hdr_metadata()->mastering_metadata.luminance_min));
       result.SetStringKey(
           "primaries",
           base::StringPrintf(

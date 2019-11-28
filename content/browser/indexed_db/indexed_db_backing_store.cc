@@ -1496,15 +1496,27 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   DISALLOW_COPY_AND_ASSIGN(ChainedBlobWriterImpl);
 };
 
-class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
-                          public base::RefCountedThreadSafe<LocalWriteClosure> {
+// Collects the writing results given to FileWriterDelegate::Start's callback
+// before reporting success to the ChainedBlobWriter. Before forwarding the
+// completion result, this class also
+// 1. handles the case where an empty file needs to be created (the blob was
+//    empty), and
+// 2. sets the last_modified_time on the resulting file that was saved.
+// Created & used on the IO thread.
+class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
  public:
-  LocalWriteClosure(ChainedBlobWriter* chained_blob_writer,
-                    base::SequencedTaskRunner* idb_task_runner)
-      : chained_blob_writer_(chained_blob_writer),
-        idb_task_runner_(idb_task_runner),
-        bytes_written_(0) {}
+  LocalWriteClosure(scoped_refptr<ChainedBlobWriter> chained_blob_writer,
+                    scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+                    FilePath file_path,
+                    base::Time last_modified)
+      : chained_blob_writer_(std::move(chained_blob_writer)),
+        idb_task_runner_(std::move(idb_task_runner)),
+        file_path_(std::move(file_path)),
+        last_modified_(last_modified) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  }
 
+  // Called on the IO thread.
   void Run(base::File::Error rv,
            int64_t bytes,
            FileWriterDelegate::WriteProgressStatus write_status) {
@@ -1521,45 +1533,68 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     }
 
     bool success = write_status == FileWriterDelegate::SUCCESS_COMPLETED;
-    if (success && !bytes_written_) {
-      // LocalFileStreamWriter only creates a file if data is actually written.
-      // If none was then create one now.
-      idb_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&LocalWriteClosure::CreateEmptyFile, this));
-    } else if (success && !last_modified_.is_null()) {
-      idb_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&LocalWriteClosure::UpdateTimeStamp, this));
-    } else {
-      idb_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ChainedBlobWriter::ReportWriteCompletion,
-                         chained_blob_writer_, success, bytes_written_));
-    }
+
+    idb_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](bool success, FilePath file_path, base::Time last_modified,
+               int64_t bytes_written,
+               scoped_refptr<ChainedBlobWriter> chained_blob_writer) {
+              if (success && !bytes_written) {
+                // Case 1: Success but no bytes were written, so just create an
+                // empty file (LocalFileStreamWriter only creates a file if data
+                // is actually written).
+                base::File file(file_path, base::File::FLAG_CREATE_ALWAYS |
+                                               base::File::FLAG_WRITE);
+                bool file_success = file.created();
+                if (file_success && !last_modified.is_null() &&
+                    !file.SetTimes(last_modified, last_modified)) {
+                  // TODO(cmumford): Complain quietly; timestamp's probably not
+                  // vital.
+                }
+                file.Close();
+              } else if (success && !last_modified.is_null()) {
+                // Case 2: Success and |last_modified| needs to be set. Set that
+                // before reporting write completion.
+                if (!base::TouchFile(file_path, last_modified, last_modified)) {
+                  // TODO(ericu): Complain quietly; timestamp's probably not
+                  // vital.
+                }
+              }
+              chained_blob_writer->ReportWriteCompletion(success,
+                                                         bytes_written);
+            },
+            success, file_path_, last_modified_, bytes_written_,
+            chained_blob_writer_));
   }
 
-  void WriteBlobToFileOnIOThread(const FilePath& file_path,
-                                 std::unique_ptr<storage::BlobDataHandle> blob,
-                                 const base::Time& last_modified) {
+  static void WriteBlobToFileOnIOThread(
+      scoped_refptr<ChainedBlobWriter> chained_blob_writer,
+      scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+      const FilePath& file_path,
+      std::unique_ptr<storage::BlobDataHandle> blob,
+      const base::Time& last_modified) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer =
         storage::FileStreamWriter::CreateForLocalFile(
-            idb_task_runner_.get(), file_path, 0,
+            idb_task_runner.get(), file_path, 0,
             storage::FileStreamWriter::CREATE_NEW_FILE);
     std::unique_ptr<FileWriterDelegate> delegate(
         std::make_unique<FileWriterDelegate>(
-            std::move(writer), chained_blob_writer_->GetFlushPolicy()));
+            std::move(writer), chained_blob_writer->GetFlushPolicy()));
 
     DCHECK(blob);
-    this->file_path_ = file_path;
-    this->last_modified_ = last_modified;
-
-    delegate->Start(blob->CreateReader(),
-                    base::BindRepeating(&LocalWriteClosure::Run, this));
-    chained_blob_writer_->set_delegate(std::move(delegate));
+    scoped_refptr<LocalWriteClosure> write_closure(new LocalWriteClosure(
+        chained_blob_writer, idb_task_runner, file_path, last_modified));
+    delegate->Start(
+        blob->CreateReader(),
+        base::BindRepeating(&LocalWriteClosure::Run, std::move(write_closure)));
+    chained_blob_writer->set_delegate(std::move(delegate));
   }
 
  private:
   virtual ~LocalWriteClosure() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // Make sure the last reference to a ChainedBlobWriter is released (and
     // deleted) on the IDB sequence since it owns a transaction which has
     // sequence affinity.
@@ -1567,35 +1602,9 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
   }
   friend class base::RefCountedThreadSafe<LocalWriteClosure>;
 
-  // If necessary, update the timestamps on the file as a final
-  // step before reporting success.
-  void UpdateTimeStamp() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    if (!base::TouchFile(file_path_, last_modified_, last_modified_)) {
-      // TODO(ericu): Complain quietly; timestamp's probably not vital.
-    }
-    chained_blob_writer_->ReportWriteCompletion(true, bytes_written_);
-  }
-
-  // Create an empty file.
-  void CreateEmptyFile() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    base::File file(file_path_,
-                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-    bool success = file.created();
-    if (success && !last_modified_.is_null() &&
-        !file.SetTimes(last_modified_, last_modified_)) {
-      // TODO(cmumford): Complain quietly; timestamp's probably not vital.
-    }
-    file.Close();
-    chained_blob_writer_->ReportWriteCompletion(success, bytes_written_);
-  }
-
-  SEQUENCE_CHECKER(idb_sequence_checker_);
-
   scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
   scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
-  int64_t bytes_written_;
+  int64_t bytes_written_ = 0;
 
   FilePath file_path_;
   base::Time last_modified_;
@@ -1645,12 +1654,11 @@ bool IndexedDBBackingStore::WriteBlobFile(
                                   chained_blob_writer, true, info.size));
   } else {
     DCHECK(descriptor.blob());
-    scoped_refptr<LocalWriteClosure> write_closure(
-        new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
     base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
-            &LocalWriteClosure::WriteBlobToFileOnIOThread, write_closure, path,
+            &LocalWriteClosure::WriteBlobToFileOnIOThread,
+            base::WrapRefCounted(chained_blob_writer), task_runner_, path,
             std::make_unique<storage::BlobDataHandle>(*descriptor.blob()),
             descriptor.last_modified()));
   }

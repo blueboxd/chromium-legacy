@@ -178,10 +178,10 @@ public class BaseSuggestionViewTest {
                 useContentWidth + mActionIconWidthPx + mSuggestionPaddingEndPx;
         final int giveContentHeight = 25;
 
-        final int expectedRefineLeft = 0;
-        final int expectedRefineRight = mActionIconWidthPx;
+        final int expectedRefineLeft = mSuggestionPaddingEndPx;
+        final int expectedRefineRight = expectedRefineLeft + mActionIconWidthPx;
         final int expectedContentLeft = expectedRefineRight;
-        final int expectedContentRight = giveSuggestionWidth - mSuggestionPaddingEndPx;
+        final int expectedContentRight = giveSuggestionWidth;
 
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
 
@@ -233,8 +233,8 @@ public class BaseSuggestionViewTest {
         final int giveSuggestionWidth = 250;
         final int giveContentHeight = 15;
 
-        final int expectedContentLeft = 0;
-        final int expectedContentRight = giveSuggestionWidth - mSuggestionPaddingEndPx;
+        final int expectedContentLeft = mSuggestionPaddingEndPx;
+        final int expectedContentRight = giveSuggestionWidth;
 
         mRefineView.setVisibility(View.GONE);
 

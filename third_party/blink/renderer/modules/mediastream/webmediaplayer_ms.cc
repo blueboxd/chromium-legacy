@@ -1109,12 +1109,8 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   OnRotationChanged(video_rotation);
   OnOpacityChanged(is_opaque);
 
-  if (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kAlways ||
-      (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kOnDemand &&
-       client_->DisplayType() ==
-           WebMediaPlayer::DisplayType::kPictureInPicture)) {
+  if (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kAlways)
     ActivateSurfaceLayerForVideo();
-  }
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
   SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);

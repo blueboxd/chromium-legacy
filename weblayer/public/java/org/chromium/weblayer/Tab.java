@@ -275,10 +275,10 @@ public final class Tab {
         }
 
         @Override
-        public void downloadRequested(String uriString, String userAgent, String contentDisposition,
-                String mimetype, long contentLength) {
+        public boolean interceptDownload(String uriString, String userAgent,
+                String contentDisposition, String mimetype, long contentLength) {
             StrictModeWorkaround.apply();
-            mCallback.onDownloadRequested(
+            return mCallback.onInterceptDownload(
                     Uri.parse(uriString), userAgent, contentDisposition, mimetype, contentLength);
         }
     }

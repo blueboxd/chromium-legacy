@@ -38,10 +38,10 @@ namespace payments {
 // class validates the requested url payment methods by filtering out methods
 // that cannot be handled by an installed app on the user's device. This filter
 // is done by using the payment method's corresponding URL scheme and the
-// canOpenUrl function of UIApplication. This check also serves as a whitelist
-// for allowed payment method identifiers such that only the URL schemes of
+// canOpenUrl function of UIApplication. This check also serves as a list
+// of allowed payment method identifiers such that only the URL schemes of
 // listed payment method identifiers can be queried. If the identifier is not on
-// this whitelist the validation check fails for that payment method.
+// this list the validation check fails for that payment method.
 //
 // After validating the requested payment methods, the class downloads the
 // payment method's manifest and web app manifest in order to collect the

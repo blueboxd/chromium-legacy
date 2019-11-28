@@ -11781,7 +11781,7 @@ class ZeroRTTResponse : public test_server::BasicHttpResponse {
   ~ZeroRTTResponse() override {}
 
   void SendResponse(const test_server::SendBytesCallback& send,
-                    const test_server::SendCompleteCallback& done) override {
+                    test_server::SendCompleteCallback done) override {
     AddCustomHeader("Vary", "Early-Data");
     set_content_type("text/plain");
     AddCustomHeader("Cache-Control", "no-cache");

@@ -26,9 +26,6 @@
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
 namespace content {
-enum class DiscardableMemoryBacking { kSharedMemory, kMadvFree };
-
-CONTENT_EXPORT DiscardableMemoryBacking GetDiscardableMemoryBacking();
 
 CONTENT_EXPORT std::unique_ptr<base::DiscardableMemoryAllocator>
 CreateDiscardableMemoryAllocator();

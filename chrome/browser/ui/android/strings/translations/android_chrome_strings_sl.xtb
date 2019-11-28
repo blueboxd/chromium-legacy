@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">Vsebino objavil <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />prikazuje jo Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Izbris podatkov aplikacije?</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
-<translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="4116038641877404294">Prenesite strani, če jih želite uporabljati brez povezave</translation>
 <translation id="4135200667068010335">Seznam naprav, s katerimi želite deliti zavihek, je zaprt.</translation>
 <translation id="4149994727733219643">Poenostavljen pogled za spletne strani</translation>
@@ -872,7 +871,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="7437998757836447326">Odjava iz Chroma</translation>
 <translation id="7438641746574390233">Če je vklopljen lahki način, Chrome uporabi Googlove strežnike za hitrejše nalaganje strani. Lahki način znova zapiše zelo počasne strani in naloži samo bistveno vsebino. Lahki način se ne uporablja v zavihkih brez beleženja zgodovine.</translation>
 <translation id="7444811645081526538">Več kategorij</translation>
-<translation id="7445411102860286510">Dovoli spletnim mestom samodejno predvajanje videoposnetkov z izklopljenim zvokom (priporočljivo)</translation>
 <translation id="7453467225369441013">Odjavi vas iz večine spletnih mest, vendar ne iz Google Računa.</translation>
 <translation id="7454641608352164238">Ni dovolj prostora</translation>
 <translation id="7475192538862203634">Če se to pogosto zgodi, preizkusite te <ph name="BEGIN_LINK" />predloge<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Odpiranje z aplikacijo …</translation>
 <translation id="7821588508402923572">Prihranek pri količini prenesenih podatkov bo prikazan tukaj</translation>
-<translation id="7837721118676387834">Dovoli samodejno predvajanje videoposnetkov z izklopljenim zvokom za določeno spletno mesto.</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="784934925303690534">Časovno obdobje</translation>
 <translation id="7851858861565204677">Druge naprave</translation>

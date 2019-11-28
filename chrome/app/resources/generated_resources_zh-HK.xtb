@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">按下 |<ph name="ACCELERATOR" />| 即可退出全螢幕</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1039337018183941703">檔案無效或損毀</translation>
-<translation id="1039850285407663109">所選檔案不明，且可能不安全。建議您在開啟檔案前進行掃瞄。</translation>
+<translation id="1039850285407663109">所選檔案不明，且可能不安全。建議您在開啟檔案前先掃瞄。</translation>
 <translation id="1041175011127912238">此網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">您的電腦也內置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 資料庫。RLZ 可指定非重複、非個人的可識別標記，以評估特定宣傳廣告活動所提升的搜尋數量與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -2588,7 +2588,7 @@
 <translation id="4750394297954878236">建議</translation>
 <translation id="475088594373173692">第一位使用者</translation>
 <translation id="4751476147751820511">動態或光線感應器</translation>
-<translation id="4756269098451810636">從「<ph name="DEVICE_NAME" />」分享的圖片</translation>
+<translation id="4756269098451810636">由「<ph name="DEVICE_NAME" />」分享的圖片</translation>
 <translation id="4756378406049221019">停止/重新載入</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4759238208242260848">下載</translation>
@@ -3879,7 +3879,7 @@
 <translation id="6659594942844771486">分頁</translation>
 <translation id="6664237456442406323">抱歉，您的電腦是由格式錯誤的硬件 ID 所設定。這樣會防止 Chrome 作業系統更新最新的安全性修復，您的電腦也可能<ph name="BEGIN_BOLD" />容易被惡意攻擊<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">開啟您的設定檔時發生錯誤，請先登出，然後再次登入。</translation>
-<translation id="6667776121818773738">從其他裝置分享的圖片</translation>
+<translation id="6667776121818773738">由其他裝置分享的圖片</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">您想 Google 將此網頁的內容由<ph name="SOURCE_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="6675665718701918026">已連接指標裝置</translation>

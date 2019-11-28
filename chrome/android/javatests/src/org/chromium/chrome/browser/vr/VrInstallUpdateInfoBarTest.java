@@ -83,7 +83,8 @@ public class VrInstallUpdateInfoBarTest {
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
                 || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
-            String expectedMessage, expectedButton;
+            String expectedMessage;
+            String expectedButton;
             if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
                 expectedMessage = ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_text);

@@ -15,8 +15,8 @@ class GURL;
 // Returns singleton object for this class.
 + (OmniboxGeolocationConfig*)sharedInstance;
 
-// Returns YES if and only if |url| has a domain that is whitelisted for
-// geolocation for Omnibox queries.
+// Returns YES if and only if |url| has a domain that is allowed for
+// geolocation use in Omnibox queries.
 - (BOOL)URLHasEligibleDomain:(const GURL&)url;
 
 @end

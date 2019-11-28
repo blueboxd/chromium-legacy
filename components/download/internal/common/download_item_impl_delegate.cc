@@ -72,11 +72,6 @@ void DownloadItemImplDelegate::UpdatePersistence(DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::OpenDownload(DownloadItemImpl* download) {}
 
-bool DownloadItemImplDelegate::IsMostRecentDownloadItemAtFilePath(
-    DownloadItemImpl* download) {
-  return true;
-}
-
 void DownloadItemImplDelegate::ShowDownloadInShell(DownloadItemImpl* download) {
 }
 

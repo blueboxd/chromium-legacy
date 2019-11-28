@@ -3,10 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
+<org.chromium.ui.widget.OptimizedFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/default_bg_color_elev_0" >
@@ -16,6 +15,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/modern_primary_color" />
+
+    <ImageView
+        android:id="@+id/zoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/photo_picker_zoom_background"
+        android:src="@drawable/zoom_in"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/playback_container"
@@ -55,4 +66,4 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
     </RelativeLayout>
-</FrameLayout>
+</org.chromium.ui.widget.OptimizedFrameLayout>

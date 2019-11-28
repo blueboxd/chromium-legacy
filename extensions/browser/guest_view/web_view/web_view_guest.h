@@ -231,7 +231,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) final;
+      base::OnceCallback<void(bool)> callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   blink::mojom::MediaStreamType type) final;

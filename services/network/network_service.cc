@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
@@ -80,11 +79,6 @@ namespace network {
 namespace {
 
 NetworkService* g_network_service = nullptr;
-
-net::NetLog* GetNetLog() {
-  static base::NoDestructor<net::NetLog> instance;
-  return instance.get();
-}
 
 // The interval for calls to NetworkService::UpdateLoadStates
 constexpr auto kUpdateLoadStatesInterval =
@@ -249,7 +243,7 @@ NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojo::PendingReceiver<mojom::NetworkService> receiver,
     bool delay_initialization_until_set_client)
-    : net_log_(GetNetLog()), registry_(std::move(registry)) {
+    : net_log_(net::NetLog::Get()), registry_(std::move(registry)) {
   DCHECK(!g_network_service);
   g_network_service = this;
 

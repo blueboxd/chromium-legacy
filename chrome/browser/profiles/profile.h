@@ -352,6 +352,8 @@ class Profile : public content::BrowserContext {
   // Returns whether it is a system profile.
   virtual bool IsSystemProfile() const;
 
+  bool CanUseDiskWhenOffTheRecord() override;
+
   // Did the user restore the last session? This is set by SessionRestore.
   void set_restored_last_session(bool restored_last_session) {
     restored_last_session_ = restored_last_session;

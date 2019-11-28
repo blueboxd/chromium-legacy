@@ -82,12 +82,12 @@ class DelayedHttpResponseWithResolver final
           base::BindOnce(&Resolver::ResolveInServerTaskRunner, this));
     }
 
-    void Add(const ResponseWithCallbacks& response) {
+    void Add(ResponseWithCallbacks response) {
       base::AutoLock auto_lock(lock_);
 
       if (resolved_) {
         response.send_callback.Run(response.response_string,
-                                   response.done_callback);
+                                   std::move(response.done_callback));
         return;
       }
 
@@ -99,16 +99,16 @@ class DelayedHttpResponseWithResolver final
         task_runner_ = std::move(task_runner);
       }
 
-      responses_with_callbacks_.push_back(response);
+      responses_with_callbacks_.push_back(std::move(response));
     }
 
    private:
     void ResolveInServerTaskRunner() {
       auto responses_with_callbacks = std::move(responses_with_callbacks_);
-      for (const auto& response_with_callbacks : responses_with_callbacks) {
+      for (auto& response_with_callbacks : responses_with_callbacks) {
         response_with_callbacks.send_callback.Run(
             response_with_callbacks.response_string,
-            response_with_callbacks.done_callback);
+            std::move(response_with_callbacks.done_callback));
       }
     }
 
@@ -130,10 +130,9 @@ class DelayedHttpResponseWithResolver final
   DelayedHttpResponseWithResolver& operator=(
       const DelayedHttpResponseWithResolver&) = delete;
 
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
-    resolver_->Add({send, done, ToResponseString()});
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
+    resolver_->Add({send, std::move(done), ToResponseString()});
   }
 
  private:

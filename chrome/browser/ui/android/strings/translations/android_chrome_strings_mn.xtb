@@ -413,7 +413,6 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" />-с – <ph name="BEGIN_DEEMPHASIZED" />Google-с хүргэсэн<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Апп-н өгөгдлийг устгах уу?</translation>
 <translation id="4099578267706723511">Хэрэглээний статистик мэдээ болон алдаа ослын тайланг автоматаар Google рүү илгээх замаар Google Chrome-ийг улам сайжруулахад тусална уу.</translation>
-<translation id="410351446219883937">Автоматаар тоглуулах</translation>
 <translation id="4116038641877404294">Хуудсыг офлайн үед ашиглахын тулд татна уу</translation>
 <translation id="4135200667068010335">Таб хуваалцах төхөөрөмжийн жагсаалтыг хаалаа.</translation>
 <translation id="4149994727733219643">Вэб хуудасны хялбаршуулсан харагдац</translation>
@@ -814,6 +813,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6989267951144302301">Татаж чадсангүй</translation>
 <translation id="6990079615885386641">Google Play Store-с апп авах: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Сайтууд микрофон ашиглах зөвшөөрөл авах (санал болгосон)</translation>
+<translation id="6995899638241819463">Өгөгдлийн зөрчлийн улмаас нууц үгийг задруулсан бол танд анхааруулах</translation>
 <translation id="7015203776128479407">Синк хийх анхны тохируулгыг дуусгаагүй байна. Синк хийх унтраалттай байна.</translation>
 <translation id="7016516562562142042">Одоогийн хайлтын хэрэгсэлд зөвшөөрсөн</translation>
 <translation id="7022756207310403729">Хөтчид нээх</translation>
@@ -870,7 +870,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7437998757836447326">Chrome-с гарах</translation>
 <translation id="7438641746574390233">Lite горимыг асаалттай үед Chrome хуудсыг илүү хурдан ачаалах зорилгоор Google-н серверүүдийг ашигладаг. Lite горим маш удаан хуудсыг зөвхөн шаардлагатай контентыг нь ачаалах болгож дахин бичдэг. Lite горим Нууцлалтай табад ажилладаггүй.</translation>
 <translation id="7444811645081526538">Бусад категори</translation>
-<translation id="7445411102860286510">Дууг нь хаасан видеог автоматаар тоглуулах зөвшөөрлийг сайтад олгох (санал болгосон)</translation>
 <translation id="7453467225369441013">Таныг ихэнх сайтаас гаргах болно. Таныг Google бүртгэлээс гаргахгүй.</translation>
 <translation id="7454641608352164238">Хангалттай зай алга</translation>
 <translation id="7475192538862203634">Хэрэв та үүнийг байнга харж байгаа бол эдгээр <ph name="BEGIN_LINK" />зөвлөмжийг<ph name="END_LINK" /> туршина уу.</translation>
@@ -925,7 +924,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="780301667611848630">Үгүй, баярлалаа</translation>
 <translation id="7810647596859435254">Дараахаар нээх...</translation>
 <translation id="7821588508402923572">Таны дата хэмнэлт энд харагдана</translation>
-<translation id="7837721118676387834">Дууг нь хаасан видеог автоматаар тоглохыг тодорхой сайтад зөвшөөрнө үү.</translation>
 <translation id="7846076177841592234">Сонголтыг цуцлах</translation>
 <translation id="784934925303690534">Цагийн хүрээ</translation>
 <translation id="7851858861565204677">Бусад төхөөрөмж</translation>

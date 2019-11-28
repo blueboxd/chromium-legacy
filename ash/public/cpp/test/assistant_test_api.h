@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_TEST_ASSISTANT_TEST_API_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/ash_export.h"
 
@@ -78,6 +79,10 @@ class ASH_EXPORT AssistantTestApi {
   // Returns the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.
   virtual aura::Window* window() = 0;
+
+  // Returns the app list view hosting the Assistant UI.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* app_list_view() = 0;
 };
 
 }  // namespace ash

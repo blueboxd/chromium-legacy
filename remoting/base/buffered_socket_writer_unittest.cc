@@ -100,8 +100,8 @@ class BufferedSocketWriterTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    socket_.reset(new net::MockTCPClientSocket(net::AddressList(), &net_log_,
-                                               &socket_data_provider_));
+    socket_.reset(new net::MockTCPClientSocket(
+        net::AddressList(), net::NetLog::Get(), &socket_data_provider_));
     socket_data_provider_.set_connect_data(
         net::MockConnect(net::SYNCHRONOUS, net::OK));
     EXPECT_EQ(net::OK, socket_->Connect(net::CompletionOnceCallback()));
@@ -159,7 +159,6 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  net::NetLog net_log_;
   SocketDataProvider socket_data_provider_;
   std::unique_ptr<net::StreamSocket> socket_;
   std::unique_ptr<BufferedSocketWriter> writer_;

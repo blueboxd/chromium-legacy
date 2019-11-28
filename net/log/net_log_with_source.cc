@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -42,9 +43,9 @@ NetLogWithSource::NetLogWithSource() {
   // The "dummy" net log used here will always return false for IsCapturing(),
   // and have no sideffects should its method be called. In practice the only
   // method that will get called on it is IsCapturing().
-  static NetLog* dummy = new NetLog();
+  static base::NoDestructor<NetLog> dummy{util::PassKey<NetLogWithSource>()};
   DCHECK(!dummy->IsCapturing());
-  non_null_net_log_ = dummy;
+  non_null_net_log_ = dummy.get();
 }
 
 NetLogWithSource::~NetLogWithSource() {}

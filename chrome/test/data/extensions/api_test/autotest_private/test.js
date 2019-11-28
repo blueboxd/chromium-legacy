@@ -710,6 +710,9 @@ var defaultTests = [
           });
         });
   },
+  function setMetricsEnabled() {
+    chrome.autotestPrivate.setMetricsEnabled(true, chrome.test.callbackPass());
+  },
 
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.

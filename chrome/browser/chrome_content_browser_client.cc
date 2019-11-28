@@ -171,10 +171,10 @@
 #include "chrome/common/pref_names_util.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/prerender_util.h"
+#include "chrome/common/profiler/stack_sampling_configuration.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/common/secure_origin_whitelist.h"
-#include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -540,6 +540,10 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 #endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "chrome/browser/media/cast_remoting_connector.h"
@@ -2663,8 +2667,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        callback) {
+    base::OnceCallback<void(content::CertificateRequestResultType)> callback) {
   DCHECK(web_contents);
   if (!is_main_frame_request) {
     // A sub-resource has a certificate error. The user doesn't really
@@ -2672,7 +2675,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     // request hard, without an info bar to allow showing the insecure
     // content.
     if (!callback.is_null())
-      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+      std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
     return;
   }
 
@@ -2682,12 +2685,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
     if (!callback.is_null()) {
-      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+      std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
     }
     return;
   }
 
-  callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+  std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   return;
 }
 
@@ -3810,6 +3813,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   MaybeAddThrottle(&throttles,
                    FlashDownloadInterception::MaybeCreateThrottleFor(handle));
 #endif
+
+#if defined(OS_CHROMEOS)
+  MaybeAddThrottle(
+      &throttles,
+      chromeos::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle));
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   MaybeAddThrottle(

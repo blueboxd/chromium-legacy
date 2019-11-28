@@ -29,6 +29,7 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
+#include "net/log/net_log.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/quic/quic_utils_chromium.h"
 #include "net/reporting/reporting_policy.h"
@@ -292,12 +293,9 @@ URLRequestContextConfig::~URLRequestContextConfig() {}
 
 void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     net::URLRequestContextBuilder* context_builder,
-    net::HttpNetworkSession::Params* session_params,
-    net::NetLog* net_log) {
+    net::HttpNetworkSession::Params* session_params) {
   if (experimental_options.empty())
     return;
-
-  DCHECK(net_log);
 
   DVLOG(1) << "Experimental Options:" << experimental_options;
   std::unique_ptr<base::Value> options =
@@ -699,7 +697,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
   if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable ||
       disable_ipv6_on_wifi) {
-    CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
     net::HostResolver::ManagerOptions host_resolver_manager_options;
     host_resolver_manager_options.insecure_dns_client_enabled =
@@ -711,11 +708,11 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
           net::HostResolver::CreateStandaloneContextResolver(
-              net_log, std::move(host_resolver_manager_options)),
+              net::NetLog::Get(), std::move(host_resolver_manager_options)),
           stale_dns_options));
     } else {
       host_resolver = net::HostResolver::CreateStandaloneResolver(
-          net_log, std::move(host_resolver_manager_options));
+          net::NetLog::Get(), std::move(host_resolver_manager_options));
     }
     if (host_resolver_rules_enable) {
       std::unique_ptr<net::MappedHostResolver> remapped_resolver(
@@ -745,10 +742,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 }
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
-    net::URLRequestContextBuilder* context_builder,
-    net::NetLog* net_log) {
-  DCHECK(net_log);
-
+    net::URLRequestContextBuilder* context_builder) {
   std::string config_cache;
   if (http_cache != DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
@@ -778,7 +772,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
         kDefaultQuicGoAwaySessionsOnIpChange;
   }
 
-  ParseAndSetExperimentalOptions(context_builder, &session_params, net_log);
+  ParseAndSetExperimentalOptions(context_builder, &session_params);
   context_builder->set_http_network_session_params(session_params);
 
   if (mock_cert_verifier)

@@ -142,6 +142,8 @@ int GetTemperatureRange(float temperature) {
 }
 
 // Returns the color matrix that corresponds to the given |temperature|.
+// The matrix will be affected by the current |ambient_temperature_| if
+// GetAmbientColorEnabled() returns true.
 // If |in_linear_gamma_space| is true, the generated matrix is the one that
 // should be applied after gamma correction, and it corresponds to the
 // non-linear temperature value for the given |temperature|.
@@ -162,6 +164,21 @@ SkMatrix44 MatrixFromTemperature(float temperature,
     matrix.set(1, 1, green_scale);
     matrix.set(2, 2, blue_scale);
   }
+
+  auto* night_light_controller = Shell::Get()->night_light_controller();
+  DCHECK(night_light_controller);
+  if (night_light_controller->GetAmbientColorEnabled()) {
+    const gfx::Vector3dF& ambient_rgb_scaling_factors =
+        night_light_controller->ambient_rgb_scaling_factors();
+
+    // Multiply the two scale factors.
+    // If either night light or ambient EQ are disabled the CTM will be affected
+    // only by the enabled effect.
+    matrix.set(0, 0, ambient_rgb_scaling_factors.x());
+    matrix.set(1, 1, matrix.get(1, 1) * ambient_rgb_scaling_factors.y());
+    matrix.set(2, 2, matrix.get(2, 2) * ambient_rgb_scaling_factors.z());
+  }
+
   return matrix;
 }
 
@@ -205,6 +222,9 @@ bool AttemptSettingHardwareCtm(int64_t display_id,
 
 // Applies the given |temperature| to the display associated with the given
 // |host|. This is useful for when we have a host and not a display ID.
+// The final color transform computed from the temperature, will be affected
+// by the current |ambient_temperature_| if GetAmbientColorEnabled() returns
+// true.
 void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
   DCHECK(host);
   const int64_t display_id = host->GetDisplayId();
@@ -229,6 +249,9 @@ void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
 
 // Applies the given |temperature| value by converting it to the corresponding
 // color matrix that will be set on the output displays.
+// The final color transform computed from the temperature, will be affected
+// by the current |ambient_temperature_| if GetAmbientColorEnabled() returns
+// true.
 void ApplyTemperatureToAllDisplays(float temperature) {
   const SkMatrix44 linear_gamma_space_matrix =
       MatrixFromTemperature(temperature, true);
@@ -256,6 +279,18 @@ void ApplyTemperatureToAllDisplays(float temperature) {
     auto* host = root_window->GetHost();
     DCHECK(host);
     UpdateCompositorMatrix(host, gamma_compressed_matrix, crtc_result);
+  }
+}
+
+void VerifyAmbientColorCtmSupport() {
+  // TODO(dcastagna): Move this function and call it from
+  // DisplayColorManager::OnDisplayModeChanged()
+  Shell* shell = Shell::Get();
+  const DisplayColorManager::DisplayCtmSupport displays_ctm_support =
+      shell->display_color_manager()->displays_ctm_support();
+  if (displays_ctm_support != DisplayColorManager::DisplayCtmSupport::kAll) {
+    LOG(ERROR) << "When ambient color mode is enabled, all the displays must "
+                  "support CTMs.";
   }
 }
 
@@ -332,6 +367,7 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
 NightLightControllerImpl::NightLightControllerImpl()
     : delegate_(std::make_unique<NightLightControllerDelegateImpl>()),
       temperature_animation_(std::make_unique<ColorTemperatureAnimation>()),
+      ambient_temperature_(kNeutralColorTemperatureInKelvin),
       weak_ptr_factory_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -503,6 +539,11 @@ TimeOfDay NightLightControllerImpl::GetCustomEndTime() const {
   return TimeOfDay(kDefaultEndTimeOffsetMinutes);
 }
 
+void NightLightControllerImpl::SetAmbientColorEnabled(bool enabled) {
+  if (active_user_pref_service_)
+    active_user_pref_service_->SetBoolean(prefs::kAmbientColorEnabled, enabled);
+}
+
 bool NightLightControllerImpl::GetAmbientColorEnabled() const {
   return active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
@@ -555,7 +596,7 @@ void NightLightControllerImpl::Toggle() {
 void NightLightControllerImpl::OnDisplayConfigurationChanged() {
   // When display configurations changes, we should re-apply the current
   // temperature immediately without animation.
-  ApplyTemperatureToAllDisplays(GetEnabled() ? GetColorTemperature() : 0.0f);
+  RefreshDisplaysColorTemperatures();
 }
 
 void NightLightControllerImpl::OnHostInitialized(aura::WindowTreeHost* host) {
@@ -638,6 +679,31 @@ void NightLightControllerImpl::Click(
   // NightLightControllerImpl::Close() which will disable showing the
   // notification any further.
   DCHECK(UserHasEverDismissedAutoNightLightNotification());
+}
+
+void NightLightControllerImpl::AmbientColorChanged(
+    const int32_t color_temperature) {
+  const float remapped_color_temperature =
+      RemapAmbientColorTemperature(color_temperature);
+  const float temperature_difference =
+      remapped_color_temperature - ambient_temperature_;
+  const float abs_temperature_difference = std::abs(temperature_difference);
+  // We adjust the ambient color temperature only if the difference with
+  // the last ambient temperature computed is greated than a threshold to
+  // avoid changing it too often when the powerd readings are noisy.
+  constexpr float kAmbientColorChangeThreshold = 100.0f;
+  if (abs_temperature_difference < kAmbientColorChangeThreshold)
+    return;
+
+  ambient_temperature_ +=
+      (temperature_difference / abs_temperature_difference) *
+      kAmbientColorChangeThreshold;
+  if (GetAmbientColorEnabled()) {
+    ambient_rgb_scaling_factors_ =
+        NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
+            ambient_temperature_);
+    RefreshDisplaysColorTemperatures();
+  }
 }
 
 void NightLightControllerImpl::SetDelegateForTesting(
@@ -761,6 +827,10 @@ void NightLightControllerImpl::RefreshDisplaysTemperature(
   Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
+void NightLightControllerImpl::RefreshDisplaysColorTemperatures() {
+  ApplyTemperatureToAllDisplays(GetEnabled() ? GetColorTemperature() : 0.0f);
+}
+
 void NightLightControllerImpl::StartWatchingPrefsChanges() {
   DCHECK(active_user_pref_service_);
 
@@ -840,8 +910,13 @@ void NightLightControllerImpl::OnEnabledPrefChanged() {
 
 void NightLightControllerImpl::OnAmbientColorEnabledPrefChanged() {
   DCHECK(active_user_pref_service_);
-  // TODO(dcastagna): Use GetAmbientColorEnabled() to toggle the state
-  // of Ambient EQ. See b/138731765
+  if (GetAmbientColorEnabled()) {
+    ambient_rgb_scaling_factors_ =
+        NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
+            ambient_temperature_);
+    VerifyAmbientColorCtmSupport();
+  }
+  RefreshDisplaysColorTemperatures();
 }
 
 void NightLightControllerImpl::OnColorTemperaturePrefChanged() {

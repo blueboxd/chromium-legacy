@@ -46,7 +46,7 @@ class SendPromotionHintsBeforeReturning {
 
       std::vector<gpu::SyncToken> locks_sync_tokens;
       for (auto& read_lock : locks)
-        locks_sync_tokens.push_back(read_lock.sync_token());
+        locks_sync_tokens.push_back(read_lock->sync_token());
 
       skia_output_surface_->SendOverlayPromotionNotification(
           std::move(locks_sync_tokens), std::move(promotion_denied),

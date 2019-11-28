@@ -16,7 +16,7 @@ namespace ash {
 // Context Menu launch. Delay deprecating these because it will disrupt
 // histograms. https://crbug.com/854433
 enum CommandId {
-  // Used by LauncherContextMenu.
+  // Used by ShelfContextMenu.
   MENU_OPEN_NEW = 0,
   MENU_CLOSE = 1,
   MENU_PIN = 2,
@@ -52,12 +52,12 @@ enum CommandId {
   USE_LAUNCH_TYPE_COMMAND_END,
 
   // Range of command ids reserved for launching app shortcuts from context
-  // menu for Android app. Used by AppContextMenu and LauncherContextMenu.
+  // menu for Android app. Used by AppContextMenu and ShelfContextMenu.
   LAUNCH_APP_SHORTCUT_FIRST = 1000,
   LAUNCH_APP_SHORTCUT_LAST = 1999,
 
   // Command for stopping an app, or stopping a VM via an associated app. Used
-  // by AppContextMenu and LauncherContextMenu.
+  // by AppContextMenu and ShelfContextMenu.
   STOP_APP = 2000,
 
   // Reserved range for extension/app custom menus as defined by

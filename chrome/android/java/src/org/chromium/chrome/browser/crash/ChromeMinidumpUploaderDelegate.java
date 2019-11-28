@@ -9,7 +9,7 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.PersistableBundle;
 
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;

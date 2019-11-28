@@ -23,6 +23,9 @@ class ExtensionHostObserver {
   // Called when an ExtensionHost is destroyed.
   virtual void OnExtensionHostDestroyed(const ExtensionHost* host) {}
 
+  // Called when the ExtensionHost has finished the first load.
+  virtual void OnExtensionHostDidStopFirstLoad(const ExtensionHost* host) {}
+
   // Called when a message has been disptached to the event page corresponding
   // to |host|.
   virtual void OnBackgroundEventDispatched(const ExtensionHost* host,

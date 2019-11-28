@@ -69,15 +69,17 @@ const FilesQuickView = Polymer({
 
   // Clears fields.
   clear: function() {
-    this.type = '';
-    this.subtype = '';
-    this.filePath = '';
-    this.hasTask = false;
-    this.contentUrl = '';
-    this.videoPoster = '';
-    this.audioArtwork = '';
-    this.autoplay = false;
-    this.browsable = false;
+    this.setProperties({
+        type: '',
+        subtype: '',
+        filePath: '',
+        hasTask: false,
+        contentUrl: '',
+        videoPoster: '',
+        audioArtwork: '',
+        autoplay: false,
+        browsable: false,
+    });
     const video = this.$.contentPanel.querySelector('#videoSafeMedia');
     if (video) {
       video.src = '';

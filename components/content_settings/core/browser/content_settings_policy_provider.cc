@@ -168,8 +168,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   ReadManagedContentSettings(false);
 
   pref_change_registrar_.Init(prefs_);
-  PrefChangeRegistrar::NamedChangeCallback callback =
-      base::Bind(&PolicyProvider::OnPreferenceChanged, base::Unretained(this));
+  PrefChangeRegistrar::NamedChangeCallback callback = base::BindRepeating(
+      &PolicyProvider::OnPreferenceChanged, base::Unretained(this));
   pref_change_registrar_.Add(
       prefs::kManagedAutoSelectCertificateForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, callback);

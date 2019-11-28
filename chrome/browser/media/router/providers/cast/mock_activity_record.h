@@ -64,7 +64,7 @@ class MockActivityRecord : public ActivityRecord {
       ClosePresentationConnections,
       void(blink::mojom::PresentationConnectionCloseReason close_reason));
   MOCK_METHOD0(TerminatePresentationConnections, void());
-  MOCK_METHOD1(OnAppMessage, void(const cast_channel::CastMessage& message));
+  MOCK_METHOD1(OnAppMessage, void(const cast::channel::CastMessage& message));
   MOCK_METHOD1(OnInternalMessage,
                void(const cast_channel::InternalMessage& message));
   MOCK_METHOD2(

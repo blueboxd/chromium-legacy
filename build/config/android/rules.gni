@@ -4271,18 +4271,22 @@ if (enable_java_templates) {
       not_needed(invoker, [ "strip_drawables" ])
     }
 
+    _java_library_vars = [
+      "enable_bytecode_checks",
+      "enable_bytecode_rewriter",
+      "jar_excluded_patterns",
+      "jar_included_patterns",
+      "requires_android",
+      "testonly",
+    ]
+
     # Create android_java_prebuilt target for extra jars within jars/.
     _subjar_targets = []
     foreach(_tuple, _scanned_files.subjar_tuples) {
       _current_target = "${target_name}__subjar_${_tuple[0]}"
       _subjar_targets += [ ":$_current_target" ]
       java_prebuilt(_current_target) {
-        forward_variables_from(invoker,
-                               [
-                                 "jar_excluded_patterns",
-                                 "jar_included_patterns",
-                                 "requires_android",
-                               ])
+        forward_variables_from(invoker, _java_library_vars)
         deps = [
           ":$_unpack_target_name",
         ]
@@ -4300,15 +4304,12 @@ if (enable_java_templates) {
     if (_scanned_files.has_classes_jar) {
       _jar_target_name = "${target_name}__classes"
       java_prebuilt(_jar_target_name) {
+        forward_variables_from(invoker, _java_library_vars)
         forward_variables_from(invoker,
                                [
                                  "deps",
                                  "input_jars_paths",
-                                 "jar_excluded_patterns",
-                                 "jar_included_patterns",
                                  "proguard_configs",
-                                 "requires_android",
-                                 "testonly",
                                ])
         if (!defined(deps)) {
           deps = []

@@ -163,6 +163,7 @@
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
 <translation id="1160479894929412407">Autoriser le protocole QUIC</translation>
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
+<translation id="1163080558183062209">Permet de désactiver les types d'imprimantes figurant dans la liste d'exclusions</translation>
 <translation id="117059611145966538">Serveurs d'impression externes</translation>
 <translation id="1189817621108632689">Permet de définir une liste de formats d'URL spécifiant les sites non autorisés à afficher des images.
 
@@ -890,6 +891,13 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 
       Les modèles dont le format est incorrect sont ignorés.</translation>
 <translation id="2345547870894930157">Activer DNS-over-HTTPS sans solution de secours à risque</translation>
+<translation id="2347264058558503729">Permet à <ph name="PRODUCT_NAME" /> d'envoyer des documents à <ph name="CLOUD_PRINT_NAME" /> en vue d'une impression.  REMARQUE : Cette règle affecte uniquement la disponibilité de <ph name="CLOUD_PRINT_NAME" /> dans <ph name="PRODUCT_NAME" />.  Elle n'empêche pas les utilisateurs d'envoyer des tâches d'impression sur des sites Web.
+
+      Si ce paramètre est activé ou non configuré, les utilisateurs peuvent imprimer sur <ph name="CLOUD_PRINT_NAME" /> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />.
+
+      Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer sur <ph name="CLOUD_PRINT_NAME" /> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />.
+
+      Pour que les emplacements de destination <ph name="CLOUD_PRINT_NAME" /> restent visibles, cette règle doit être définie sur "True", et le terme "cloud" ne doit pas être ajouté à la règle "PrinterTypeDenyList".</translation>
 <translation id="237494535617297575">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1000,6 +1008,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si elle est activée ou si elle n'est pas définie, les avertissements de sécurité s'affichent si certains indicateurs de ligne de commande sont utilisés pour lancer Chrome.
 
           Sur Windows, cette règle est uniquement disponible sur les instances associées à un domaine <ph name="MS_AD_NAME" /> ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
+<translation id="247658312644322296">Emplacement de destination "Enregistrer au format PDF"</translation>
 <translation id="2480971699591919564">Cette règle active la fonctionnalité Click to Call, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
 
       Si cette règle est activée, la fonctionnalité permettant d'envoyer des numéros de téléphone vers des appareils Android sera activée pour l'utilisateur Chrome.
@@ -2257,15 +2266,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Cette fonctionnalité est actuellement désactivée côté serveur.</translation>
 <translation id="4363057787588706121">Autoriser la fusion de règles répertoriées qui proviennent de sources différentes</translation>
 <translation id="4363101430102811068">Autorise la détection de fuite pour les identifiants saisis</translation>
-<translation id="4363136876356691536">Si cette règle est définie sur "True", les options d'accessibilité s'affichent en permanence dans le menu de la barre d'état système.
-
-          Si cette règle est définie sur "False", les options d'accessibilité ne s'affichent jamais dans le menu de la barre d'état système.
-
-          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si vous ne définissez pas cette règle, les options d'accessibilité ne s'affichent pas dans le menu de la barre d'état système, mais l'utilisateur peut activer leur affichage via la page "Paramètres".
-
-          Lorsque les fonctionnalités d'accessibilité sont activées par d'autres moyens (par exemple, une combinaison de touches), les options d'accessibilité restent affichées dans le menu de la barre d'état système.</translation>
 <translation id="436581050240847513">Générer un rapport sur les interfaces réseau de l'appareil</translation>
 <translation id="4372704773119750918">Ne pas autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils, que ce soit en tant qu'utilisateur principal ou secondaire</translation>
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
@@ -2409,7 +2409,19 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Les demandes d'installation d'extension sont créées lorsque les utilisateurs tentent d'installer une extension qui ne figure pas sur la liste blanche <ph name="EXTENSION_INSTALL_WHITELIST" /> ou <ph name="EXTENSION_SETTINGS" />.
 
       Cette règle n'est effective que si l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> et si la règle <ph name="CLOUD_REPORTING_ENABLED" /> est activée.</translation>
+<translation id="4638162097046412832">Si vous ajoutez des types d'imprimantes à la liste d'exclusions ("deny"), vous ne pouvez plus les détecter ni récupérer leurs fonctionnalités.
+
+      Lorsque vous placez tous les types d'imprimantes dans la liste d'exclusions, cela revient à désactiver l'impression. En effet, plus aucun emplacement de destination n'est alors disponible au moment d'envoyer un document pour impression.
+
+      Inclure le terme "cloud" dans la liste d'exclusions a le même effet que définir la règle "CloudPrintSubmitEnabled" sur "False". Pour que les emplacements de destination <ph name="CLOUD_PRINT_NAME" /> restent visibles, la règle "CloudPrintSubmitEnabled" doit être définie sur "True", et le terme "cloud" ne doit pas être ajouté à la liste d'exclusions.
+
+      Si cette règle n'est pas configurée ou si elle est définie sur une liste vide, tous les types d'imprimantes seront visibles.
+
+      Les imprimantes d'extension, ou emplacements de destination du fournisseur d'impression, incluent tous les emplacements de destination appartenant à une extension <ph name="PRODUCT_NAME" />.
+
+      Les imprimantes locales, également appelées emplacements natifs de destination d'impression, incluent les emplacements de destination disponibles sur l'ordinateur local et les imprimantes réseau partagées.</translation>
 <translation id="4639407427807680016">Noms des hôtes de messagerie native à exclure de la liste noire</translation>
+<translation id="4649395978608361979">Emplacements de destination de l'imprimante locale</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
 <translation id="4661889655253181651">L'option "Paramètres de contenu" permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, cookies, images ou JavaScript) est géré.</translation>
@@ -2436,6 +2448,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si cette règle est activée, les sites sont autorisés à parcourir et à ouvrir de nouvelles fenêtres ou de nouveaux onglets simultanément.
       Si cette règle est désactivée ou n'est pas définie, les sites ne sont pas autorisés à parcourir et à ouvrir une nouvelle fenêtre ou un nouvel onglet simultanément.</translation>
 <translation id="4680961954980851756">Activer la saisie automatique</translation>
+<translation id="4693779768620889402">Emplacements de destination en fonction de l'extension</translation>
 <translation id="4703402283970867140">Activer le modèle de réduction intelligente de la luminosité pour augmenter le délai d'assombrissement de l'écran</translation>
 <translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
@@ -3084,6 +3097,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5656177735561364047">Activer la fonctionnalité de presse-papiers partagé</translation>
 <translation id="5666457529647159548">Autoriser les utilisateurs à gérer les certificats client installés.</translation>
+<translation id="5676740747107495269">Permet d'afficher les options d'accessibilité dans le menu de la barre d'état système, sur l'écran de connexion</translation>
 <translation id="5689430183304951538">Format de page d'impression par défaut</translation>
 <translation id="5693469654327063861">Autoriser la migration de données</translation>
 <translation id="5694594914843889579">Lorsque cette règle est définie sur "True", le navigateur de fichiers n'offre pas la possibilité de procéder à un stockage externe.
@@ -3639,6 +3653,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="6813263547126514821">Démarrage et arrêt</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
+<translation id="6821268164692776674">Emplacements de destination <ph name="CLOUD_PRINT_NAME" /> et "Enregistrer dans Google Drive"</translation>
 <translation id="6833988859168635883">Démarrage, page d'accueil et page Nouvel onglet</translation>
 <translation id="6835883744948188639">Afficher une invite récurrente indiquant qu'un redémarrage est recommandé</translation>
 <translation id="683688607121170501">Ce paramètre permet aux utilisateurs de basculer d'un compte Google à l'autre dans la zone de contenu de la fenêtre de leur navigateur et dans les applications Android une fois qu'ils sont connectés sur leur appareil <ph name="PRODUCT_OS_NAME" />.
@@ -4071,6 +4086,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
 <translation id="747275827471712187">Rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour les cookies sur ces sites</translation>
 <translation id="7477231245051133709">Activer la fonctionnalité d'accessibilité d'audio mono</translation>
+<translation id="7477239290070847560">Emplacements de destination en fonction du protocole Zeroconf (mDNS + DNS-SD)</translation>
 <translation id="7485481791539008776">Instructions de sélection de l'imprimante par défaut</translation>
 <translation id="7485730741952775732">Si cette règle est définie, l'hôte distant utilise cette URL pour valider les jetons d’authentification provenant des clients distants afin d'accepter les connexions. Elle doit être utilisée avec la règle RemoteAccessHostTokenUrl.
 

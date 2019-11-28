@@ -340,7 +340,7 @@ void NavigationControllerAndroid::ClearSslPreferences(
   SSLHostStateDelegate* delegate =
       navigation_controller_->GetBrowserContext()->GetSSLHostStateDelegate();
   if (delegate)
-    delegate->Clear(base::Callback<bool(const std::string&)>());
+    delegate->Clear(base::NullCallback());
 }
 
 bool NavigationControllerAndroid::GetUseDesktopUserAgent(

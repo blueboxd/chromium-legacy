@@ -8,6 +8,7 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 
 #include "cc/trees/managed_memory_policy.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 
 namespace viz {
 struct FrameTimingDetails;
@@ -17,7 +18,8 @@ namespace cc {
 
 class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
  public:
-  FakeLayerTreeFrameSinkClient() : memory_policy_(0) {}
+  FakeLayerTreeFrameSinkClient();
+  ~FakeLayerTreeFrameSinkClient() override;
 
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
   base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
@@ -50,11 +52,17 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
     return begin_frame_source_;
   }
 
+  void set_hit_test_region_list(
+      const base::Optional<viz::HitTestRegionList>& hit_test_region_list) {
+    hit_test_region_list_ = hit_test_region_list;
+  }
+
  private:
   int ack_count_ = 0;
   bool did_lose_layer_tree_frame_sink_called_ = false;
-  ManagedMemoryPolicy memory_policy_;
+  ManagedMemoryPolicy memory_policy_{0};
   viz::BeginFrameSource* begin_frame_source_;
+  base::Optional<viz::HitTestRegionList> hit_test_region_list_;
 };
 
 }  // namespace cc

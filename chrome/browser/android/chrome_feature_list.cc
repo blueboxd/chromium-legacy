@@ -158,6 +158,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kOverlayNewLayout,
     &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
+    &kPhotoPickerZoom,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kReorderBookmarks,
@@ -229,6 +230,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &security_state::features::kMarkHttpAsFeature,
     &signin::kMiceFeature,
     &switches::kSyncManualStartAndroid,
+    &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };
 
@@ -489,6 +491,9 @@ const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
 // take place needs to be resolved.
 const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPhotoPickerZoom{"PhotoPickerZoom",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -125,6 +125,10 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "media/mojo/mojom/remoting.mojom-forward.h"
+#endif
+
 class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
@@ -1157,6 +1161,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateWebUsbService(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
+  void CreateWebSocketConnector(
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  void BindMediaRemoterFactoryReceiver(
+      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver);
+#endif
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1665,9 +1677,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaInterfaceFactoryRequest(
       mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
 
-  void CreateWebSocketConnector(
-      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
-
   void CreateDedicatedWorkerHostFactory(
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
@@ -1801,7 +1810,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // under the root at A0, but only B, C, and E are considered immediate local
   // roots of A0. Note that this will exclude any speculative or pending RFHs.
   void ForEachImmediateLocalRoot(
-      const base::Callback<void(RenderFrameHostImpl*)>& callback);
+      const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback);
 
   // Lazily initializes and returns the mojom::FrameNavigationControl interface
   // for this frame. May be overridden by friend subclasses for e.g. tests which

@@ -7,9 +7,11 @@
 
 import argparse
 import ast
+import errno
 import fcntl
 import os
 import platform
+import glob
 import re
 import shlex
 import shutil
@@ -90,13 +92,16 @@ class InstrumentedPackageBuilder(object):
     self._build_env['CXXFLAGS'] = self._cflags
     self._build_env['LDFLAGS'] = self._ldflags
 
+    # libappindicator1 needs this.
+    self._build_env['CSC'] = '/usr/bin/mono-csc'
+
+    self.set_asan_options()
+
+  def set_asan_options(self):
     if self._sanitizer == 'asan':
       # Do not report leaks during the build process.
       self._build_env['ASAN_OPTIONS'] = \
           '%s:detect_leaks=0' % self._build_env.get('ASAN_OPTIONS', '')
-
-    # libappindicator1 needs this.
-    self._build_env['CSC'] = '/usr/bin/mono-csc'
 
   def shell_call(self, command, env=None, cwd=None, ignore_ret_code=False):
     """Wrapper around subprocess.Popen().
@@ -111,11 +116,12 @@ class InstrumentedPackageBuilder(object):
     if ignore_ret_code:
       if self._verbose:
         print stdout
-      return
+      return stdout
     if self._verbose or child.returncode:
       print stdout
     if child.returncode:
       raise Exception('Failed to run: %s' % command)
+    return stdout
 
   def maybe_download_source(self):
     """Checks out the source code (if needed).
@@ -268,6 +274,68 @@ class InstrumentedPackageBuilder(object):
     # We only care for the contents of LIBDIR.
     self.shell_call('cp %s/* %s/ -rdf' % (self.temp_libdir(),
                                           self.dest_libdir()))
+
+
+class DebianBuilder(InstrumentedPackageBuilder):
+  """Builds a package using Debian's build system.
+
+  TODO(spang): Probably the rest of the packages should also use this method..
+  """
+
+  def init_build_env(self):
+    self._build_env = os.environ.copy()
+
+    self._build_env['CC'] = self._cc
+    self._build_env['CXX'] = self._cxx
+
+    self._build_env['DEB_CFLAGS_APPEND'] = self._cflags
+    self._build_env['DEB_CXXFLAGS_APPEND'] = self._cflags
+    self._build_env['DEB_LDFLAGS_APPEND'] = self._ldflags
+
+    self.set_asan_options()
+
+  def build_and_install(self):
+    self.build_debian_packages()
+    self.install_packaged_libs()
+
+  def build_debian_packages(self):
+    configure_cmd = 'dpkg-buildpackage -B -uc'
+    self.shell_call(configure_cmd, env=self._build_env, cwd=self._source_dir)
+
+  def install_packaged_libs(self):
+    for deb_file in self.get_deb_files():
+      self.shell_call("dpkg-deb -x %s %s" % (deb_file, self.temp_dir()))
+
+    dpkg_arch = self.shell_call("dpkg-architecture -qDEB_HOST_MULTIARCH").strip()
+    lib_dir = "usr/lib/%s" % dpkg_arch
+    lib_paths = glob.glob(os.path.join(self.temp_dir(), lib_dir, "*.so.*"))
+    for lib_path in lib_paths:
+      dest_path = os.path.join(self.dest_libdir(), os.path.basename(lib_path))
+      try:
+        os.unlink(dest_path)
+      except OSError as exception:
+        if exception.errno != errno.ENOENT:
+          raise
+      if os.path.islink(lib_path):
+        if self._verbose:
+          print('linking %s' % os.path.basename(lib_path))
+        os.symlink(os.readlink(lib_path), dest_path)
+      elif os.path.isfile(lib_path):
+        if self._verbose:
+          print('copying %s' % os.path.basename(lib_path))
+        shutil.copy(lib_path, dest_path)
+
+
+  def get_deb_files(self):
+    deb_files = []
+    files_file = os.path.join(self._source_dir, 'debian/files')
+
+    for line in open(files_file, 'r').read().splitlines():
+      filename, category, section = line.split(' ')
+      pathname = os.path.join(self._source_dir, '..', filename)
+      deb_files.append(pathname)
+
+    return deb_files
 
 
 class LibcapBuilder(InstrumentedPackageBuilder):
@@ -452,6 +520,8 @@ def main():
     builder = LibcapBuilder(args, clobber)
   elif args.build_method == 'custom_libpci3':
     builder = Libpci3Builder(args, clobber)
+  elif args.build_method == 'debian':
+    builder = DebianBuilder(args, clobber)
   elif args.build_method == 'stub':
     builder = StubBuilder(args, clobber)
   else:

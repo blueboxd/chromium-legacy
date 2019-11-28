@@ -389,7 +389,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // builder or resulting context.
     context->set_net_log(net_log_);
   } else {
-    storage->set_net_log(std::make_unique<NetLog>());
+    context->set_net_log(NetLog::Get());
   }
 
   if (host_resolver_) {

@@ -164,9 +164,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_send_quic_fallback_server_config_on_leto_error,
     false)
 
-// If true, enable QUIC version 49.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_49, true)
-
 // If true, GFE will not request private keys when fetching QUIC ServerConfigs
 // from Leto.
 QUIC_FLAG(bool,
@@ -189,12 +186,6 @@ QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
-
-// When true, QUIC Version Negotiation packets will randomly include fake
-// versions.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          true)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)

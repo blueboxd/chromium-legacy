@@ -413,7 +413,6 @@ Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a raf
 <translation id="4084712963632273211">De la <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />livrată de Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Ștergi datele aplicației?</translation>
 <translation id="4099578267706723511">Contribuie la îmbunătățirea Chrome trimițând statistici de utilizare și rapoarte de blocare la Google.</translation>
-<translation id="410351446219883937">Redare automată</translation>
 <translation id="4116038641877404294">Descarcă paginile pentru a le folosi offline</translation>
 <translation id="4135200667068010335">Lista de dispozitive pe care să trimiți o filă este închisă.</translation>
 <translation id="4149994727733219643">Afișare simplificată pentru paginile web</translation>
@@ -872,7 +871,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
 <translation id="7438641746574390233">Când modul Lite este activat, Chrome folosește serverele Google pentru a încărca paginile mai rapid. Modul Lite rescrie paginile care se încarcă foarte greu ca să încarce numai conținutul esențial. Modul Lite nu se aplică în filele incognito.</translation>
 <translation id="7444811645081526538">Mai multe categorii</translation>
-<translation id="7445411102860286510">Permite site-urilor să redea automat videoclipuri cu sunetul dezactivat (recomandat)</translation>
 <translation id="7453467225369441013">Te deconectează de pe majoritatea site-urilor. Nu te va deconecta de la Contul Google.</translation>
 <translation id="7454641608352164238">Spațiu insuficient</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7810647596859435254">Deschide cu…</translation>
 <translation id="7821588508402923572">Economiile de date vor apărea aici</translation>
-<translation id="7837721118676387834">Permite unui anumit site să redea automat videoclipuri cu sunetul dezactivat.</translation>
 <translation id="7846076177841592234">Anulează selecția</translation>
 <translation id="784934925303690534">Interval de timp</translation>
 <translation id="7851858861565204677">Alte dispozitive</translation>

@@ -51,8 +51,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
 
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
-    store_->Load(base::Bind(&QuotaPolicyCookieStoreTest::OnLoaded,
-                            base::Unretained(this)),
+    store_->Load(base::BindOnce(&QuotaPolicyCookieStoreTest::OnLoaded,
+                                base::Unretained(this)),
                  net::NetLogWithSource());
     loaded_event_.Wait();
     cookies->swap(cookies_);

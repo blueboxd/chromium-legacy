@@ -413,7 +413,6 @@ Yangi qidiruv so‘rovi belgilash uchun, kerakli so‘z ustiga barmoq bilan uzoq
 <translation id="4084712963632273211">Muallifi: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google tomonidan taqdim etildi<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Ilovaga tegishli ma’lumotlar o‘chirilsinmi?</translation>
 <translation id="4099578267706723511">Google’ga foydalanish statistikasi va ishdan chiqish hisobotlarini jo‘natish orqali Chrome’ning takomillashtirishga yordam bering</translation>
-<translation id="410351446219883937">Avtoijro</translation>
 <translation id="4116038641877404294">Saytlarni oflayn ko‘rish uchun yuklab oling</translation>
 <translation id="4135200667068010335">Yopiq varaq uzatiladigan qurilmalar roʻyxati.</translation>
 <translation id="4149994727733219643">Veb sahifalarni ko‘rish uchun oddiy rejim</translation>
@@ -815,7 +814,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6989267951144302301">Yuklab olinmadi</translation>
 <translation id="6990079615885386641">Google Play do‘konidagi ilova: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Mikrofondan foydalanishga ruxsat so‘ralsin (tavsiya etiladi)</translation>
-<translation id="6995899638241819463">Parolingiz oshkor etilganda ogohlantirilsin</translation>
+<translation id="6995899638241819463">Parolim oshkor etilganda ogohlantirilsin</translation>
 <translation id="7015203776128479407">Dastlabki sinxronizatsiya sozlanishi oxiriga yetmagan. Sinxronizatsiya yoqilmagan.</translation>
 <translation id="7016516562562142042">Joriy qidiruv tizimiga ruxsat berilgan</translation>
 <translation id="7022756207310403729">Brauzerda ochish</translation>
@@ -872,7 +871,6 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="7437998757836447326">Chrome’dan chiqish</translation>
 <translation id="7438641746574390233">Lite rejimi yoniqligida, Chrome sahifalarni tezroq yuklash uchun Google serverlaridan foydalanadi. Lite rejimi eng asosiy kontentni yuklash uchun eng sekin sahifalarni qaytadan yozib chiqadi. Lite rejimi inkognito sahifalarda ishlamaydi.</translation>
 <translation id="7444811645081526538">Boshqa turkumlar</translation>
-<translation id="7445411102860286510">Saytlarga ovozsiz videolarni avtomatik ijro etishga ruxsat berish (tavsiya etiladi)</translation>
 <translation id="7453467225369441013">Bir nechta saytdagi hisobingizdan chiqasiz, lekin Google hisobingizdan emas.</translation>
 <translation id="7454641608352164238">Joy yetarli emas</translation>
 <translation id="7475192538862203634">Agar bu muammo tez-tez qaytarilsa, quyidagi <ph name="BEGIN_LINK" />takliflar<ph name="END_LINK" /> bilan tanishing.</translation>
@@ -927,7 +925,6 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="780301667611848630">Kerak emas</translation>
 <translation id="7810647596859435254">Quyidagi bilan ochish…</translation>
 <translation id="7821588508402923572">Tejalgan trafik shu yerda paydo bo‘ladi</translation>
-<translation id="7837721118676387834">Tanlangan saytga ovozsiz videolarni avtomatik ijro etishga ruxsat berish.</translation>
 <translation id="7846076177841592234">Belgilashni bekor qilish</translation>
 <translation id="784934925303690534">Vaqt diapazoni</translation>
 <translation id="7851858861565204677">Boshqa qurilmalar</translation>

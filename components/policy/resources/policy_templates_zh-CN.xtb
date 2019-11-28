@@ -150,6 +150,7 @@
       如果此政策设为False，则不报告dev开关的状态。</translation>
 <translation id="1160479894929412407">允许使用 QUIC 协议</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
+<translation id="1163080558183062209">停用拒绝列表中的打印机类型</translation>
 <translation id="117059611145966538">外部打印服务器</translation>
 <translation id="1189817621108632689">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
 
@@ -822,6 +823,13 @@
 
       格式有误的模板将被忽略。</translation>
 <translation id="2345547870894930157">启用 DNS-over-HTTPS，且禁止改用不安全的查询</translation>
+<translation id="2347264058558503729">允许 <ph name="PRODUCT_NAME" /> 将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。请注意：这仅会影响 <ph name="PRODUCT_NAME" /> 中的 <ph name="CLOUD_PRINT_NAME" />支持，不会妨碍用户在网站上提交打印任务。
+
+      如果启用了或未配置此设置，用户便能够通过 <ph name="PRODUCT_NAME" /> 的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。
+
+      如果停用了此设置，用户就无法通过 <ph name="PRODUCT_NAME" /> 的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。
+
+      若要使 <ph name="CLOUD_PRINT_NAME" />目的地能被用户发现，则必须确保此政策设为 true 且“PrinterTypeDenyList”政策不含“cloud”。</translation>
 <translation id="237494535617297575">可让您设置网址格式的列表，这些网址格式用于指定允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
 <translation id="2398554235599593694"> 此政策用于控制在出现外部协议启动确认提示时是否显示“始终打开”复选框。
@@ -930,6 +938,7 @@
           如果此政策处于启用状态或未设置，当您使用某些命令行标记启动 Chrome 时，系统会显示安全警告。
 
           在 Windows 上，此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
+<translation id="247658312644322296">“另存为 PDF”目的地</translation>
 <translation id="2480971699591919564">启用“点击通话”功能，以允许已登录的 Chrome 用户从桌面设备向 Android 设备发送电话号码。若想了解详情，请参阅这篇帮助中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-CN。
 
       如果启用了此政策，即意味着允许 Chrome 用户向 Android 设备发送电话号码。
@@ -2153,15 +2162,6 @@
           该功能目前在服务器端已停用。</translation>
 <translation id="4363057787588706121">允许合并具有多个不同来源的列表政策</translation>
 <translation id="4363101430102811068">针对输入的凭据启用泄露检测功能</translation>
-<translation id="4363136876356691536">如果将此政策设为 true，系统任务栏菜单中将始终显示无障碍选项。
-
-          如果将此政策设为 false，系统任务栏菜单中绝不会显示无障碍选项。
-
-          如果您设置了此政策，用户将无法更改或覆盖它。
-
-          如果未设置此政策，系统任务栏菜单中将不会显示无障碍选项，但用户可以通过“设置”页面使无障碍选项显示在系统任务栏菜单中。
-
-          通过其他方式（例如组合键）启用无障碍功能后，系统任务栏菜单中将始终显示无障碍选项。</translation>
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
@@ -2297,7 +2297,19 @@
       当用户尝试安装未被 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 列入白名单的扩展程序时，系统将会创建扩展程序安装请求。
 
       仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备且已启用 <ph name="CLOUD_REPORTING_ENABLED" /> 后，此政策才有效。</translation>
+<translation id="4638162097046412832">拒绝列表中所含类型的打印机将被停用，因此用户将无法发现它们或获取它们的功能。
+
+      将所有打印机类型都添加到拒绝列表中可有效地停用打印功能，因为没有任何可接收文档以进行打印的目的地。
+
+      在拒绝列表中添加“cloud”与将“CloudPrintSubmitEnabled”政策设为 false 具有同样的效果。若要使 <ph name="CLOUD_PRINT_NAME" />目的地能被用户发现，则必须确保“CloudPrintSubmitEnabled”政策设为 true 且拒绝列表中不含“cloud”。
+
+      如果此政策未设置，或设为一个空列表，那么所有打印机类型都将能被用户发现。
+
+      基于扩展程序的打印机也称为打印提供程序目的地，包括 <ph name="PRODUCT_NAME" /> 扩展程序名下的所有目的地。
+
+      本地打印机也称为本机打印目的地，包括可供本地计算机使用的目的地以及共享的网络打印机。</translation>
 <translation id="4639407427807680016">免于列入黑名单的本地消息传递主机名</translation>
+<translation id="4649395978608361979">本地打印机目的地</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
 <translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
 <translation id="4661889655253181651">“内容设置”可用来指定对特定类型内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
@@ -2324,6 +2336,7 @@
       如果您启用了此政策，网站将可以在导航的同时打开新窗口/标签页。
       如果您停用了或未设置此政策，网站将无法在导航的同时打开新窗口/标签页。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
+<translation id="4693779768620889402">基于扩展程序的目的地</translation>
 <translation id="4703402283970867140">启用智能调暗模式，以最大限度地推迟屏幕变暗时间</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
@@ -2941,6 +2954,7 @@
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
 <translation id="5656177735561364047">启用“共享剪贴板”功能</translation>
 <translation id="5666457529647159548">允许用户管理已安装的客户端证书。</translation>
+<translation id="5676740747107495269">在登录屏幕的系统任务栏菜单中显示无障碍选项</translation>
 <translation id="5689430183304951538">默认打印页面大小</translation>
 <translation id="5693469654327063861">允许数据迁移</translation>
 <translation id="5694594914843889579">如果此政策设为 True，用户便无法在文件浏览器中使用外部存储设备。
@@ -3471,6 +3485,7 @@
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="6813263547126514821">电源和关机</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
+<translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />和“保存到 Google 云端硬盘”目的地</translation>
 <translation id="6833988859168635883">启动页、主页和新标签页</translation>
 <translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
 <translation id="683688607121170501">通过此设置，您可允许用户在登录其 <ph name="PRODUCT_OS_NAME" />设备后从浏览器窗口的内容区域和 Android 应用中切换 Google 帐号。
@@ -3893,6 +3908,7 @@
 <translation id="7469554574977894907">启用搜索建议</translation>
 <translation id="747275827471712187">将这些网站上的 Cookie 恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为</translation>
 <translation id="7477231245051133709">启用“单声道音频”无障碍功能</translation>
+<translation id="7477239290070847560">基于 Zeroconf (mDNS + DNS-SD) 的协议目的地</translation>
 <translation id="7485481791539008776">默认打印机选择规则</translation>
 <translation id="7485730741952775732">如果此政策已设置，远程访问主机将使用此网址验证来自远程访问客户端的身份验证令牌，以便确定是否允许建立连接。此政策必须与 RemoteAccessHostTokenUrl 结合使用。
 

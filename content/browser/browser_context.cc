@@ -805,4 +805,8 @@ ContentIndexProvider* BrowserContext::GetContentIndexProvider() {
   return nullptr;
 }
 
+bool BrowserContext::CanUseDiskWhenOffTheRecord() {
+  return false;
+}
+
 }  // namespace content

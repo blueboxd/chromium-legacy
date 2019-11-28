@@ -116,6 +116,7 @@
 <translation id="1472675084647422956">Plus</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
+<translation id="1476595624592550506">Modifiez votre mot de passe</translation>
 <translation id="1484290072879560759">Choisir une adresse d'expédition</translation>
 <translation id="1492194039220927094">Notifications poussées des politiques :</translation>
 <translation id="1501859676467574491">Afficher les cartes enregistrées dans votre compte Google</translation>
@@ -209,6 +210,7 @@
 <translation id="1914326953223720820">Service de décompression</translation>
 <translation id="1915697529809968049">Utiliser Touch ID au lieu du code CVC?</translation>
 <translation id="1916770123977586577">Pour appliquer à ce site vos paramètres mis à jour, actualisez cette page</translation>
+<translation id="1917876262703816781">Une violation de données sur un site ou dans une application a exposé votre mot de passe. Chrome vous recommande de changer votre mot de passe sur <ph name="ORIGIN" /> maintenant.</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919367280705858090">Obtenir de l'aide pour un message d'erreur spécifique</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Aucun}=1{1 site}one{# site}other{# sites}}</translation>
@@ -364,7 +366,7 @@
 <translation id="2676271551327853224">Roc 8K</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2684561033061424857">11 po x 12 po</translation>
-<translation id="2691924980723297736">Mise en garde</translation>
+<translation id="2691924980723297736">Avertissement de sécurité</translation>
 <translation id="2699302886720511147">Cartes acceptées</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
 <translation id="2704283930420550640">La valeur ne correspond pas au format.</translation>
@@ -629,7 +631,6 @@
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4098354747657067197">Vous naviguez vers un site Web trompeur</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide</translation>
-<translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4103763322291513355">Consultez &lt;strong&gt;chrome://policy&lt;/strong&gt; pour voir les adresses URL mises sur la liste noire et des politiques mises en œuvre par votre administrateur système.</translation>
 <translation id="4108231218301530806">La prochaine fois, utiliser une empreinte digitale pour vérifier cette carte.</translation>
 <translation id="4110652170750985508">Examiner votre paiement</translation>
@@ -749,7 +750,7 @@
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4597348597567598915">Taille 8</translation>
 <translation id="4600854749408232102">Enveloppe C6/C5</translation>
-<translation id="4613966523036881546">Le certificat de cette connexion n'est pas considéré comme fiable par Google Chrome, parce qu'on sait qu'elle est utilisée pour intercepter et surveiller le réseau.</translation>
+<translation id="4613966523036881546">Le certificat de cette connexion n'est pas considéré comme fiable par Google Chrome, parce qu'on sait qu'il est utilisé pour intercepter et surveiller le réseau.</translation>
 <translation id="4635654612248442824">Le site <ph name="ORIGIN" /> a exigé qu'une politique de sécurité soit appliquée à toutes ses demandes, mais cette politique ne peut pas être appliquée actuellement.</translation>
 <translation id="464342062220857295">Rechercher des fonctionnalités</translation>
 <translation id="4646534391647090355">Y accéder maintenant</translation>
@@ -888,6 +889,7 @@
 <translation id="5287240709317226393">Afficher les témoins</translation>
 <translation id="5287456746628258573">Ce site utilise une configuration de sécurité obsolète qui pourrait exposer vos données personnelles (par exemple, vos mots de passe ou vos numéros de carte de crédit) lorsqu'elles sont envoyées à ce site.</translation>
 <translation id="5288108484102287882">La validation des valeurs de politique a déclenché des avertissements</translation>
+<translation id="5295292838686006428">Une violation de données sur un site ou dans une application a exposé votre mot de passe. Chrome vous recommande de vérifier vos mots de passe enregistrés.</translation>
 <translation id="5299298092464848405">Erreur d'analyse de politique</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5308380583665731573">Connecter</translation>
@@ -938,6 +940,7 @@
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
 <translation id="5541546772353173584">Ajouter une adresse de courriel</translation>
 <translation id="5545756402275714221">Articles pour vous</translation>
+<translation id="5552137475244467770">Chrome vérifie régulièrement que vos mots de passe ne figurent pas dans les listes qui ont été publiées en ligne. Lors de cette opération, vos mots de passe et vos noms d'utilisateur sont chiffrés afin que personne ne puisse les consulter, y compris Google.</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5560088892362098740">Date d'expiration</translation>
 <translation id="5565735124758917034">Actif</translation>
@@ -1319,6 +1322,7 @@ Détails supplémentaires :
 <translation id="7481312909269577407">Suivant</translation>
 <translation id="748406663033922918">Utilisez le verrouillage d'écran pour vérifier vos modes de paiement enregistrés.</translation>
 <translation id="7485870689360869515">Aucune donnée trouvée.</translation>
+<translation id="7495290002932347110">Une violation de données sur un site ou dans une application a exposé votre mot de passe. Chrome vous recommande de vérifier vos mots de passe enregistrés et de modifier votre mot de passe sur <ph name="ORIGIN" /> maintenant.</translation>
 <translation id="7498234416455752244">Poursuivre la modification</translation>
 <translation id="7508255263130623398">L'ID d'appareil de la règle renvoyé est vide ou ne correspond pas à l'ID d'appareil actuel</translation>
 <translation id="7508870219247277067">Avocat</translation>
@@ -1455,7 +1459,7 @@ Détails supplémentaires :
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8105368624971345109">Désactiver</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
-<translation id="8124023448510659215">Le certificat de cette connexion n'est pas considéré comme fiable par Chromium, parce qu'on sait qu'elle est utilisée pour intercepter et surveiller le réseau.</translation>
+<translation id="8124023448510659215">Le certificat de cette connexion n'est pas considéré comme fiable par Chromium, parce qu'on sait qu'il est utilisé pour intercepter et surveiller le réseau.</translation>
 <translation id="8127301229239896662">« <ph name="SOFTWARE_NAME" /> » n'a pas été correctement installé sur votre ordinateur ou votre réseau. Demandez à votre administrateur informatique de résoudre ce problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>

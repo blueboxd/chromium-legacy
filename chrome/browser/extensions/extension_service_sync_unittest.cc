@@ -1874,12 +1874,12 @@ class ExtensionServiceTestSupervised
     EXPECT_EQ(base::Version(version), extension->version());
   }
 
-  // Simulate a custodian approval for enabling the extension coming in
+  // Simulate a custodian or child approval for enabling the extension coming in
   // through Sync by adding the approved version to the map of approved
   // extensions. It doesn't simulate a change in the disable reasons.
-  void SimulateCustodianApprovalChangeViaSync(const std::string& extension_id,
-                                              const std::string& version,
-                                              SyncChange::SyncChangeType type) {
+  void SimulateApprovalChangeViaSync(const std::string& extension_id,
+                                     const std::string& version,
+                                     SyncChange::SyncChangeType type) {
     supervised_user_service()->UpdateApprovedExtensions(extension_id, version,
                                                         type);
   }
@@ -1924,10 +1924,10 @@ class ExtensionServiceTestSupervised
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Test that if "Permissions for sites and apps" toggle is disabled, resulting
+// in the pref kSupervisedUserExtensionsMayRequestPermissions returning false,
+// then child users cannot install new extensions.
 TEST_F(ExtensionServiceTestSupervised, SupervisedUserCannotInstallExtension) {
-  // Test that if "Permissions for sites and apps" toggle is disabled, resulting
-  // in the pref kSupervisedUserExtensionsMayRequestPermissions returning false,
-  // then child users cannot install new extensions.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -1942,10 +1942,10 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserCannotInstallExtension) {
   EXPECT_FALSE(extension);
 }
 
+// Test that a data sync attempting to enable an extension does not circumvent
+// supervised user controls, and the extension remains disabled.
 TEST_F(ExtensionServiceTestSupervised,
        AddSupervisionAndSyncShouldNotReenablePreinstalledExtension) {
-  // Test that a data sync attempting to enable an extension does not circumvent
-  // supervised user controls, and the extension remains disabled.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(false /* profile_is_supervised */);
@@ -1984,10 +1984,10 @@ TEST_F(ExtensionServiceTestSupervised,
       id, extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED));
 }
 
+// Test that simulating custodian approval for regular users doesn't cause any
+// unexpected behavior.
 TEST_F(ExtensionServiceTestSupervised,
        CustodianApprovalDoesNotAffectRegularUsers) {
-  // Test that simulating custodian approval for regular users doesn't cause any
-  // unexpected behavior.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(false /* profile_is_supervised */);
@@ -2005,16 +2005,16 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
   // Simulate custodian approval.
-  SimulateCustodianApprovalChangeViaSync(id, version, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version, SyncChange::ACTION_ADD);
   // The extension should still be enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 }
 
+// Tests that a child user is allowed to install extensions when pref
+// kSupervisedUserExtensionsMayRequestPermissions is set to true, but that
+// newly-installed extensions are disabled until approved.
 TEST_F(ExtensionServiceTestSupervised,
        InstallAllowedButDisabledForSupervisedUser) {
-  // Tests that a child user is allowed to install extensions when pref
-  // kSupervisedUserExtensionsMayRequestPermissions is set to true, but that
-  // newly-installed extensions are disabled until approved.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -2083,9 +2083,9 @@ TEST_F(ExtensionServiceTestSupervised,
             ExtensionPrefs::Get(profile())->GetDisableReasons(id));
 }
 
+// This tests the case when the sync entity flagging the extension as approved
+// arrives before the extension itself is installed.
 TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
-  // This tests the case when the sync entity flagging the extension as approved
-  // arrives before the extension itself is installed.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -2096,7 +2096,7 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
   std::string id = good_crx;
   std::string version("1.0.0.0");
 
-  SimulateCustodianApprovalChangeViaSync(id, version, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version, SyncChange::ACTION_ADD);
 
   // Now install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -2107,9 +2107,9 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
   EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
+// Test that if an approved extension is updated to a newer version that doesn't
+// require additional permissions, it is still enabled.
 TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
-  // Test that if an approved extension is updated to a newer version that
-  // doesn't require additional permissions, it is still enabled.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -2120,7 +2120,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
   // Save the id, as the extension object will be destroyed during updating.
   std::string id = InstallNoPermissionsTestExtension();
   std::string version1("1");
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // Update to a new version.
   std::string version2("2");
@@ -2155,7 +2155,7 @@ TEST_F(ExtensionServiceTestSupervised,
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync, but set the old version. This can happen when there already
   // was a pending request for an earlier version of the extension.
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // The re-enable should be ignored, since the version doesn't match.
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
@@ -2184,17 +2184,17 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync.
-  SimulateCustodianApprovalChangeViaSync(id, version2, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version2, SyncChange::ACTION_ADD);
 
   // The extension should have gotten re-enabled.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
   EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
+// Test that approvals for a newer version don't enable an extension until it
+// updates to that approved, newer version.
 TEST_F(ExtensionServiceTestSupervised,
        UpdateWithPermissionIncreaseApprovalNewVersion) {
-  // Test that approvals for a newer version don't enable an extension until it
-  // updates to that approved, newer version.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -2204,7 +2204,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   std::string id = InstallPermissionsTestExtension();
   const std::string version1("1");
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
@@ -2213,8 +2213,7 @@ TEST_F(ExtensionServiceTestSupervised,
   // Simulate a custodian approval for re-enabling the extension coming in
   // through Sync. Set a newer version than we have installed.
   const std::string version3("3");
-  SimulateCustodianApprovalChangeViaSync(id, version3,
-                                         SyncChange::ACTION_UPDATE);
+  SimulateApprovalChangeViaSync(id, version3, SyncChange::ACTION_UPDATE);
 
   // The re-enable should be delayed until the extension is updated to the
   // matching version.
@@ -2248,16 +2247,14 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
   EXPECT_TRUE(IsPendingCustodianApproval(extension->id()));
 
-  SimulateCustodianApprovalChangeViaSync(good_crx, version,
-                                         SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(good_crx, version, SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
   EXPECT_FALSE(IsPendingCustodianApproval(extension->id()));
 
   // Simulate approval removal coming via Sync.
-  SimulateCustodianApprovalChangeViaSync(good_crx, version,
-                                         SyncChange::ACTION_DELETE);
+  SimulateApprovalChangeViaSync(good_crx, version, SyncChange::ACTION_DELETE);
 
   // The extension should be disabled now.
   EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
@@ -2276,7 +2273,7 @@ TEST_F(ExtensionServiceTestSupervised,
   std::string id = InstallNoPermissionsTestExtension();
   std::string version1("1");
 
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -2318,7 +2315,7 @@ TEST_F(ExtensionServiceTestSupervised,
   std::string id = InstallPermissionsTestExtension();
   std::string version1("1");
 
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -2334,8 +2331,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   std::string version2("2");
   // Approve an older version
-  SimulateCustodianApprovalChangeViaSync(id, version2,
-                                         SyncChange::ACTION_UPDATE);
+  SimulateApprovalChangeViaSync(id, version2, SyncChange::ACTION_UPDATE);
 
   // The extension should remain disabled.
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
@@ -2346,8 +2342,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   EXPECT_TRUE(IsPendingCustodianApproval(id));
   // Approve the latest version
-  SimulateCustodianApprovalChangeViaSync(id, version3,
-                                         SyncChange::ACTION_UPDATE);
+  SimulateApprovalChangeViaSync(id, version3, SyncChange::ACTION_UPDATE);
 
   // The extension should be enabled again.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -2366,15 +2361,14 @@ TEST_F(ExtensionServiceTestSupervised,
   std::string id = InstallPermissionsTestExtension();
 
   std::string version1("1");
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
   std::string version2("2");
   // Approve a newer version
-  SimulateCustodianApprovalChangeViaSync(id, version2,
-                                         SyncChange::ACTION_UPDATE);
+  SimulateApprovalChangeViaSync(id, version2, SyncChange::ACTION_UPDATE);
 
   // The extension should be disabled.
   CheckDisabledForCustodianApproval(id);
@@ -2386,11 +2380,11 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
+// Test that child users cannot install new extensions when the "Permissions for
+// sites and apps" toggle is off. This toggle setting is reflected in the
+// kSupervisedUserExtensionsMayRequestPermissions pref being set to false.
 TEST_F(ExtensionServiceTestSupervised,
        SupervisedUserExtensionsMayRequestPermissionsToggleOff) {
-  // Test that child users cannot install new extensions when the "Permissions
-  // for sites and apps" toggle is off. This toggle setting is reflected in the
-  // kSupervisedUserExtensionsMayRequestPermissions pref being set to false.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(false /* profile_is_supervised */);
@@ -2420,11 +2414,11 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_FALSE(extension2);
 }
 
+// Test that if "Permissions for sites and apps" is toggled off and
+// kSupervisedUserExtensionsMayRequestPermissions is set to false, existing
+// supervised user's approved and enabled extensions are not affected.
 TEST_F(ExtensionServiceTestSupervised,
        SupervisedUserExtensionsMayRequestPermissionsDoesNotAffectExisting) {
-  // Test that if "Permissions for sites and apps" is toggled off and
-  // kSupervisedUserExtensionsMayRequestPermissions is set to false, existing
-  // supervised user's approved and enabled extensions are not affected.
   InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   InitServices(true /* profile_is_supervised */);
@@ -2441,7 +2435,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Now approve the extension.
   const std::string version1("1");
-  SimulateCustodianApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
 
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
@@ -2472,10 +2466,64 @@ TEST_F(ExtensionServiceTestSupervised,
   EXPECT_FALSE(extension2);
 }
 
+// This test verifies that child users cannot approve existing extensions asking
+// for additional permissions when
+// kSupervisedUserExtensionsMayRequestPermissions is false.
+TEST_F(ExtensionServiceTestSupervised,
+       ChildUserCannotApproveAdditionalPermissions) {
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
+
+  InitServices(true /* profile_is_supervised */);
+
+  SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
+
+  std::string id = InstallPermissionsTestExtension();
+  const std::string version1("1");
+  // Simulate parent granting approval for the initial version.
+  SimulateApprovalChangeViaSync(id, version1, SyncChange::ACTION_ADD);
+
+  // The extension should be enabled now.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
+
+  // Update to a new version with increased permissions.
+  const std::string version2("2");
+  UpdatePermissionsTestExtension(id, version2, DISABLED);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
+
+  // Simulate child granting approval for the new permissions.
+  SimulateApprovalChangeViaSync(id, version2, SyncChange::ACTION_UPDATE);
+
+  // The extension should be enabled now.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(IsPendingCustodianApproval(id));
+
+  SetSupervisedUserExtensionsMayRequestPermissionsPref(false);
+
+  // Update to a new version with increased permissions.
+  const std::string version3("3");
+  UpdatePermissionsTestExtension(id, version3, DISABLED);
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
+
+  // The child should not be able to approve additional permissions when
+  // kSupervisedUserExtensionsMayRequestPermissions is false, but suppose
+  // somehow the child is able to circumvent controls and grant approval.
+  SimulateApprovalChangeViaSync(id, version3, SyncChange::ACTION_UPDATE);
+
+  // The extension should still be blocked.
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+  EXPECT_TRUE(IsPendingCustodianApproval(id));
+  int disable_reasons = ExtensionPrefs::Get(profile())->GetDisableReasons(id);
+  EXPECT_EQ(
+      disable_reasons,
+      extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE |
+          extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+}
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-// Tests sync behavior in the case of an item that starts out as an app and
-// gets updated to become an extension.
+// Tests sync behavior in the case of an item that starts out as an app and gets
+// updated to become an extension.
 TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   InitializeEmptyExtensionService();
   service()->Init();

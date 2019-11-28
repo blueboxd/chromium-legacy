@@ -151,12 +151,31 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
   base::CPU cpu_info;
 #endif
 
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  bool is_browser_process =
+      command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+  if (is_browser_process &&
+      command_line.HasSwitch(switches::kWebLayerUserDataDir)) {
+    base::FilePath path =
+        command_line.GetSwitchValuePath(switches::kWebLayerUserDataDir);
+    if (base::DirectoryExists(path) || base::CreateDirectory(path)) {
+      // Profile needs an absolute path, which we would normally get via
+      // PathService. In this case, manually ensure the path is absolute.
+      if (!path.IsAbsolute())
+        path = base::MakeAbsoluteFilePath(path);
+    } else {
+      LOG(ERROR) << "Unable to create data-path directory: " << path.value();
+    }
+    CHECK(base::PathService::OverrideAndCreateIfNeeded(
+        weblayer::DIR_USER_DATA, path, true /* is_absolute */,
+        false /* create */));
+  }
+
   InitializeResourceBundle();
 
 #if defined(OS_ANDROID)
-  EnableCrashReporter(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType));
+  EnableCrashReporter(command_line.GetSwitchValueASCII(switches::kProcessType));
   SetWebLayerCrashKeys();
 #endif
 }
@@ -232,22 +251,6 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
           base::File(fd), region, ui::SCALE_FACTOR_NONE);
       base::GlobalDescriptors::GetInstance()->Set(
           kWebLayerSecondaryLocalePakDescriptor, fd, region);
-    }
-
-    if (command_line.HasSwitch(switches::kWebLayerUserDataDir)) {
-      base::FilePath path =
-          command_line.GetSwitchValuePath(switches::kWebLayerUserDataDir);
-      if (base::DirectoryExists(path) || base::CreateDirectory(path)) {
-        // Profile needs an absolute path, which we would normally get via
-        // PathService. In this case, manually ensure the path is absolute.
-        if (!path.IsAbsolute())
-          path = base::MakeAbsoluteFilePath(path);
-      } else {
-        LOG(ERROR) << "Unable to create data-path directory: " << path.value();
-      }
-      CHECK(base::PathService::OverrideAndCreateIfNeeded(
-          weblayer::DIR_USER_DATA, path, true /* is_absolute */,
-          false /* create */));
     }
   } else {
     base::i18n::SetICUDefaultLocale(

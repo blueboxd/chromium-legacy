@@ -55,6 +55,16 @@ void PlatformViewsRpcInstance::FinishComplete(bool ok) {
   }
 }
 
+void PlatformViewsRpcInstance::OnError(const std::string& error_message) {
+  std::unique_lock<std::mutex> l(send_lock_);
+  errored_ = true;
+  error_message_ = error_message;
+
+  if (!send_pending_)
+    io_.Finish(grpc::Status(grpc::UNKNOWN, error_message_), &destroy_callback_);
+  send_pending_ = true;
+}
+
 void PlatformViewsRpcInstance::ProcessRequestOnControllerThread(
     std::unique_ptr<webview::WebviewRequest> request) {
   controller_->ProcessRequest(*request.get());
@@ -125,16 +135,6 @@ void PlatformViewsRpcInstance::EnqueueSend(
   } else {
     pending_messages_.emplace_back(std::move(response));
   }
-}
-
-void PlatformViewsRpcInstance::OnError(const std::string& error_message) {
-  std::unique_lock<std::mutex> l(send_lock_);
-  errored_ = true;
-  error_message_ = error_message;
-
-  if (!send_pending_)
-    io_.Finish(grpc::Status(grpc::UNKNOWN, error_message_), &destroy_callback_);
-  send_pending_ = true;
 }
 
 void PlatformViewsRpcInstance::OnNewWebviewContainerWindow(aura::Window* window,

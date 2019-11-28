@@ -76,11 +76,11 @@ class ReadingListModel;
 // The notification promo owned by this mediator.
 - (nonnull NotificationPromoWhatsNew*)notificationPromo;
 
-// Blacklists the URL from the Most Visited sites.
-- (void)blacklistMostVisitedURL:(GURL)URL;
+// Block |URL| from Most Visited sites.
+- (void)blockMostVisitedURL:(GURL)URL;
 
-// Whitelists the URL from the Most Visited sites.
-- (void)whitelistMostVisitedURL:(GURL)URL;
+// Always allow |URL| in Most Visited sites.
+- (void)allowMostVisitedURL:(GURL)URL;
 
 // Get the maximum number of sites shown.
 + (NSUInteger)maxSitesShown;

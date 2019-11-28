@@ -2160,7 +2160,7 @@ void Document::setTitle(const String& title) {
       title_element_ = MakeGarbageCollected<SVGTitleElement>(*this);
       element->InsertBefore(title_element_.Get(), element->firstChild());
     }
-    if (auto* svg_title = ToSVGTitleElementOrNull(title_element_.Get()))
+    if (auto* svg_title = DynamicTo<SVGTitleElement>(title_element_.Get()))
       svg_title->SetText(title);
   } else if (element && element->IsHTMLElement()) {
     if (!title_element_) {
@@ -2189,7 +2189,7 @@ void Document::SetTitleElement(Element* title_element) {
 
     // If the root element isn't an svg element in the SVG namespace and the
     // title element is in the SVG namespace, it is ignored.
-    if (IsSVGTitleElement(title_element_)) {
+    if (IsA<SVGTitleElement>(*title_element_)) {
       title_element_ = nullptr;
       return;
     }
@@ -2197,7 +2197,7 @@ void Document::SetTitleElement(Element* title_element) {
 
   if (auto* html_title = DynamicTo<HTMLTitleElement>(title_element_.Get()))
     UpdateTitle(html_title->text());
-  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_.Get()))
+  else if (auto* svg_title = DynamicTo<SVGTitleElement>(title_element_.Get()))
     UpdateTitle(svg_title->textContent());
 }
 

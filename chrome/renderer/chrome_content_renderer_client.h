@@ -137,6 +137,11 @@ class ChromeContentRendererClient
       base::SingleThreadTaskRunner* compositor_thread_task_runner) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
   bool AllowPopup() override;
+  bool ShouldFork(blink::WebLocalFrame* frame,
+                  const GURL& url,
+                  const std::string& http_method,
+                  bool is_initial_navigation,
+                  bool is_server_redirect) override;
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,

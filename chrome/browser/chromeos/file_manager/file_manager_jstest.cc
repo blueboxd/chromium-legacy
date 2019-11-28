@@ -79,6 +79,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
   RunTestURL("common/js/lru_cache_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataProxyTest) {
+  RunTestURL("background/js/metadata_proxy_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
   RunTestURL("background/js/media_import_handler_unittest_gen.html");
 }

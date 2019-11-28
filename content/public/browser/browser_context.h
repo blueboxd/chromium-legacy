@@ -36,7 +36,7 @@ class GURL;
 namespace base {
 class FilePath;
 class Token;
-}
+}  // namespace base
 
 namespace download {
 class InProgressDownloadManager;
@@ -45,7 +45,7 @@ class InProgressDownloadManager;
 namespace service_manager {
 class Connector;
 class Service;
-}
+}  // namespace service_manager
 
 namespace storage {
 class ExternalMountPoints;
@@ -60,12 +60,12 @@ class VideoDecodePerfHistory;
 namespace learning {
 class LearningSession;
 }
-}
+}  // namespace media
 
 namespace storage {
 class BlobStorageContext;
 class SpecialStoragePolicy;
-}
+}  // namespace storage
 
 namespace content {
 
@@ -137,9 +137,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       bool can_create = true);
   using StoragePartitionCallback =
       base::RepeatingCallback<void(StoragePartition*)>;
-  static void ForEachStoragePartition(
-      BrowserContext* browser_context,
-      const StoragePartitionCallback& callback);
+  static void ForEachStoragePartition(BrowserContext* browser_context,
+                                      const StoragePartitionCallback& callback);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
       const GURL& site,
@@ -377,6 +376,15 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the ContentIndexProvider associated with that context if any,
   // nullptr otherwise.
   virtual ContentIndexProvider* GetContentIndexProvider();
+
+  // Returns true iff the sandboxed file system implementation should be disk
+  // backed, even if this browser context is off the record. By default this
+  // returns false, an embedded could override this to return true if for
+  // example the off-the-record browser context is stored in a in-memory file
+  // system anyway, in which case using the disk backed sandboxed file system
+  // API implementation can give some benefits over the in-memory
+  // implementation.
+  virtual bool CanUseDiskWhenOffTheRecord();
 
  private:
   const std::string unique_id_;

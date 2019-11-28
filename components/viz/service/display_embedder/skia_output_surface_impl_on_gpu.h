@@ -21,6 +21,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -64,7 +65,6 @@ class DawnContextProvider;
 class DirectContextProvider;
 class GLRendererCopier;
 class ImageContextImpl;
-class SkiaOutputSurfaceDependency;
 class TextureDeleter;
 class VulkanContextProvider;
 
@@ -84,6 +84,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
   using ContextLostCallback = base::OnceClosure;
 
+  // |gpu_vsync_callback| must be safe to call on any thread. The other
+  // callbacks will only be called via |deps->PostTaskToClientThread|.
   static std::unique_ptr<SkiaOutputSurfaceImplOnGpu> Create(
       SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings,
@@ -201,6 +203,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   // gpu::DisplayContext implementation:
   void MarkContextLost() override;
 
+  void PostTaskToClientThread(base::OnceClosure closure) {
+    dependency_->PostTaskToClientThread(std::move(closure));
+  }
+
  private:
   class ScopedPromiseImageAccess;
 
@@ -248,10 +254,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   // readback using GLRendererCopier.
   // TODO(samans): Remove |sequence_id| once readback always uses Skia.
   const gpu::SequenceId sequence_id_;
-  const DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
-  const BufferPresentedCallback buffer_presented_callback_;
+  DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
+  BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
-  const GpuVSyncCallback gpu_vsync_callback_;
+  GpuVSyncCallback gpu_vsync_callback_;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.

@@ -28,7 +28,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -83,19 +82,12 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
         ->set_value(utils::PolicyToString(policy_content));
   }
 
-  // MixinBasedInProcessBrowserTest:
-  void SetUpOnMainThread() override {
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    // By default, browser tests block anything that doesn't go to localhost, so
-    // account.google.com requests would never reach fake GAIA server without
-    // this.
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
  protected:
   void LogInChildAndSetupClockWithTime(const char* time) {
     SetupTaskRunnerWithTime(utils::TimeFromString(time));
-    logged_in_user_mixin_.LogInUser();
+    logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
+                                    true /*wait_for_active_session*/,
+                                    true /*request_policy_update*/);
     MockClockForActiveUser();
   }
 
@@ -151,9 +143,13 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
 
  private:
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_,           LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server(), true /*should_launch_browser*/,
-      base::nullopt,          false /*include_initial_user*/};
+      &mixin_host_,
+      LoggedInUserMixin::LogInType::kChild,
+      embedded_test_server(),
+      this,
+      true /*should_launch_browser*/,
+      base::nullopt /*account_id*/,
+      false /*include_initial_user*/};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTimeControllerTest);
 };

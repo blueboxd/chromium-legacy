@@ -391,6 +391,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
 
+  const std::list<std::string>& common_spoofed_domains() const {
+    return common_spoofed_domains_;
+  }
+
  private:
   friend class PasswordProtectionServiceTest;
   friend class TestPasswordProtectionService;
@@ -464,6 +468,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Set of PasswordProtectionRequests that are triggering modal warnings.
   std::set<scoped_refptr<PasswordProtectionRequest>> warning_requests_;
+
+  // List of most commonly spoofed domains to default to on the password warning
+  // dialog.
+  std::list<std::string> common_spoofed_domains_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_{this};

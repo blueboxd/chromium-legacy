@@ -85,7 +85,6 @@ class ApplicationContext {
 
   SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<WebViewIOThread> web_view_io_thread_;
   std::string application_locale_;
 

@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.DropdownKeyValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;

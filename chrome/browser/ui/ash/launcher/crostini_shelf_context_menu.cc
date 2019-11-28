@@ -48,7 +48,7 @@ CrostiniShelfContextMenu::CrostiniShelfContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {}
+    : ShelfContextMenu(controller, item, display_id) {}
 
 CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
 
@@ -82,7 +82,7 @@ void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
   if (controller()->IsOpen(item().id)) {
     AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
-                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+                         IDS_SHELF_CONTEXT_MENU_CLOSE);
   } else {
     AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
@@ -111,7 +111,7 @@ bool CrostiniShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       item().id.app_id == crostini::kCrostiniTerminalId) {
     return crostini::IsCrostiniRunning(controller()->profile());
   }
-  return LauncherContextMenu::IsCommandIdEnabled(command_id);
+  return ShelfContextMenu::IsCommandIdEnabled(command_id);
 }
 
 void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {

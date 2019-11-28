@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Layanan Ekstraksi File</translation>
 <translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan setelan yang telah diupdate pada situs ini, muat ulang halaman ini</translation>
-<translation id="1917876262703816781">Pelanggaran data yang terjadi di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan untuk mengubah sandi Anda di <ph name="ORIGIN" /> sekarang.</translation>
+<translation id="1917876262703816781">Pelanggaran data di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk mengubah sandi di <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919367280705858090">Mendapatkan bantuan terkait pesan error tertentu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Tidak ada}=1{1 situs}other{# situs}}</translation>
@@ -645,7 +645,6 @@
 <translation id="4082393374666368382">Setelan - Pengelolaan</translation>
 <translation id="4098354747657067197">Situs yang akan dibuka berisi penipuan</translation>
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
-<translation id="410351446219883937">Putar otomatis</translation>
 <translation id="4103763322291513355">Kunjungi &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat daftar URL yang masuk daftar hitam dan kebijakan lain yang diterapkan oleh administrator sistem Anda.</translation>
 <translation id="4108231218301530806">Gunakan sidik jari untuk memverifikasi kartu ini lain kali.</translation>
 <translation id="4110652170750985508">Tinjau pembayaran</translation>
@@ -905,7 +904,7 @@
 <translation id="5287240709317226393">Tampilkan cookie</translation>
 <translation id="5287456746628258573">Situs ini menggunakan konfigurasi keamanan yang telah habis masa berlakunya, yang dapat mengekspos informasi Anda (misalnya, sandi atau nomor kartu kredit) saat dikirimkan ke situs ini.</translation>
 <translation id="5288108484102287882">Validasi nilai kebijakan telah memunculkan peringatan</translation>
-<translation id="5295292838686006428">Pelanggaran data yang terjadi di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan untuk memeriksa sandi tersimpan Anda sekarang.</translation>
+<translation id="5295292838686006428">Pelanggaran data di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi yang tersimpan sekarang.</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
@@ -956,7 +955,7 @@
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan Email</translation>
 <translation id="5545756402275714221">Artikel untuk Anda</translation>
-<translation id="5552137475244467770">Chrome melakukan pemeriksaan berkala pada sandi Anda terhadap daftar sandi yang telah diterbitkan secara online. Saat pemeriksaan dilakukan, sandi dan nama pengguna Anda dienkripsi, sehingga tidak dapat dibaca oleh siapa pun, termasuk Google.</translation>
+<translation id="5552137475244467770">Chrome memeriksa sandi Anda secara berkala berdasarkan daftar sandi yang telah diterbitkan secara online. Saat pemeriksaan dilakukan, sandi dan nama pengguna Anda dienkripsi, sehingga tidak dapat dibaca oleh siapa pun, termasuk Google.</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5560088892362098740">Tanggal Habis Masa Berlaku</translation>
 <translation id="5565735124758917034">Aktif</translation>
@@ -1336,7 +1335,7 @@
 <translation id="7481312909269577407">Maju</translation>
 <translation id="748406663033922918">Gunakan kunci layar untuk memverifikasi metode pembayaran yang Anda simpan.</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
-<translation id="7495290002932347110">Pelanggaran data yang terjadi di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan untuk memeriksa sandi yang tersimpan dan mengubah sandi Anda di <ph name="ORIGIN" /> sekarang.</translation>
+<translation id="7495290002932347110">Pelanggaran data di situs atau aplikasi mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi yang tersimpan dan mengubah sandi Anda di <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="7498234416455752244">Lanjut mengedit</translation>
 <translation id="7508255263130623398">ID perangkat kebijakan yang dikembalikan kosong atau tidak cocok dengan ID perangkat saat ini</translation>
 <translation id="7508870219247277067">Hijau Avokad</translation>

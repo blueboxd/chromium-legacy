@@ -90,15 +90,13 @@
 - (void)presentLearnMore {
   self.learnMoreViewController =
       [[PasswordBreachLearnMoreViewController alloc] initWithPresenter:self];
-  UINavigationController* navigationViewController =
-      [[UINavigationController alloc]
-          initWithRootViewController:self.learnMoreViewController];
-  self.learnMoreViewController.title = self.viewController.titleString;
-  self.learnMoreViewController.modalPresentationStyle =
-      UIModalPresentationFormSheet;
-  [self.viewController presentViewController:navigationViewController
+  [self.viewController presentViewController:self.learnMoreViewController
                                     animated:YES
                                   completion:nil];
+  self.learnMoreViewController.popoverPresentationController.barButtonItem =
+      self.viewController.helpButton;
+  self.learnMoreViewController.popoverPresentationController
+      .permittedArrowDirections = UIPopoverArrowDirectionUp;
 }
 
 - (void)dismissLearnMore {

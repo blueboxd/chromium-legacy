@@ -117,7 +117,7 @@ class FCMInvalidationServiceBase
   void PopulateClientID();
   void ResetClientID();
   void OnInstanceIdReceived(const std::string& id);
-  void OnDeleteIDCompleted(instance_id::InstanceID::Result);
+  void OnDeleteIDCompleted(instance_id::InstanceID::Result result);
   void DoUpdateRegisteredIdsIfNeeded();
   const std::string GetApplicationName();
 

@@ -1661,12 +1661,10 @@ void StoragePartitionImpl::OnSSLCertificateError(
     OnSSLCertificateErrorCallback response) {
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
   bool is_main_frame_request = IsMainFrameRequest(process_id, routing_id);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), is_main_frame_request, url,
-      std::move(web_contents_getter), net_error, ssl_info, fatal);
+      GetWebContents(process_id, routing_id), net_error, ssl_info, fatal);
 }
 
 void StoragePartitionImpl::OnFileUploadRequested(
@@ -2214,16 +2212,16 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }
 
-mojo::BindingId StoragePartitionImpl::Bind(
+mojo::ReceiverId StoragePartitionImpl::Bind(
     int process_id,
     mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   DCHECK(initialized_);
   return receivers_.Add(this, std::move(receiver), process_id);
 }
 
-void StoragePartitionImpl::Unbind(mojo::BindingId binding_id) {
+void StoragePartitionImpl::Unbind(mojo::ReceiverId receiver_id) {
   DCHECK(initialized_);
-  receivers_.Remove(binding_id);
+  receivers_.Remove(receiver_id);
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(

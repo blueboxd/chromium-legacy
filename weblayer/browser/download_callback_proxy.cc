@@ -24,7 +24,7 @@ DownloadCallbackProxy::~DownloadCallbackProxy() {
   tab_->SetDownloadDelegate(nullptr);
 }
 
-void DownloadCallbackProxy::DownloadRequested(
+bool DownloadCallbackProxy::InterceptDownload(
     const GURL& url,
     const std::string& user_agent,
     const std::string& content_disposition,
@@ -39,8 +39,8 @@ void DownloadCallbackProxy::DownloadRequested(
       ConvertUTF8ToJavaString(env, content_disposition));
   ScopedJavaLocalRef<jstring> jstring_mime_type(
       ConvertUTF8ToJavaString(env, mime_type));
-  TRACE_EVENT0("weblayer", "Java_DownloadCallbackProxy_downloadRequested");
-  Java_DownloadCallbackProxy_downloadRequested(
+  TRACE_EVENT0("weblayer", "Java_DownloadCallbackProxy_interceptDownload");
+  return Java_DownloadCallbackProxy_interceptDownload(
       env, java_delegate_, jstring_url, jstring_user_agent,
       jstring_content_disposition, jstring_mime_type, content_length);
 }

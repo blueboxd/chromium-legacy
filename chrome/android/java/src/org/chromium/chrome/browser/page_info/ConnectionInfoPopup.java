@@ -51,11 +51,14 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
     private final WebContentsObserver mWebContentsObserver;
-    private final int mPaddingWide, mPaddingThin;
+    private final int mPaddingWide;
+    private final int mPaddingThin;
     private final long mNativeConnectionInfoPopup;
     private final CertificateViewer mCertificateViewer;
-    private TextView mCertificateViewerTextView, mMoreInfoLink;
-    private ViewGroup mCertificateLayout, mDescriptionLayout;
+    private TextView mCertificateViewerTextView;
+    private TextView mMoreInfoLink;
+    private ViewGroup mCertificateLayout;
+    private ViewGroup mDescriptionLayout;
     private Button mResetCertDecisionsButton;
     private String mLinkUrl;
 

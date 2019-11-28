@@ -699,14 +699,14 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
       return;
     }
   }
-  if (IsSVGViewElement(anchor_node)) {
+  if (auto* svg_view_element = DynamicTo<SVGViewElement>(anchor_node)) {
     // Spec: If the SVG fragment identifier addresses a 'view' element within an
     // SVG document (e.g., MyDrawing.svg#MyView) then the root 'svg' element is
     // displayed in the SVG viewport. Any view specification attributes included
     // on the given 'view' element override the corresponding view specification
     // attributes on the root 'svg' element.
     SVGViewSpec* view_spec =
-        SVGViewSpec::CreateForViewElement(ToSVGViewElement(*anchor_node));
+        SVGViewSpec::CreateForViewElement(*svg_view_element);
     UseCounter::Count(GetDocument(),
                       WebFeature::kSVGSVGElementFragmentSVGViewElement);
     SetViewSpec(view_spec);

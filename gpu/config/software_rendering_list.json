@@ -1587,7 +1587,6 @@
       "features": [
         "all",
         {"exceptions": [
-          "accelerated_gl",
           "accelerated_webgl"
         ]}
       ]

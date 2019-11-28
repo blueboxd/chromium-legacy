@@ -842,6 +842,11 @@ namespace autotestPrivate {
     static void mouseMove(Location location,
                           double duration_in_ms,
                           VoidCallback callback);
+
+    // Enable/disable metrics reporting in preferences.
+    // |enabled|: Enable metrics reporting.
+    // |callback|: Called when the operation has completed.
+    static void setMetricsEnabled(boolean enabled, VoidCallback callback);
   };
 
   interface Events {

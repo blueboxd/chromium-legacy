@@ -268,7 +268,7 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
   if (view_) {
     // If the |view_| already exists, calling MaybeShowUi() will just ensure
     // that its widget is showing to the user.
-    view_->GetWidget()->ShowInactive();
+    view_->ShowWhenReady();
     return;
   }
 
@@ -306,7 +306,7 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
   }
 
   view_->Init();
-  view_->GetWidget()->ShowInactive();
+  view_->ShowWhenReady();
 
   RecordProactiveSuggestionsShowAttempt(
       view_->proactive_suggestions()->category(),
@@ -340,13 +340,13 @@ void AssistantProactiveSuggestionsController::CloseUi(
 
   auto_close_timer_.Stop();
 
-  view_->GetWidget()->Close();
+  view_->Close();
   view_ = nullptr;
 }
 
 void AssistantProactiveSuggestionsController::HideUi() {
   if (view_)
-    view_->GetWidget()->Hide();
+    view_->Hide();
 }
 
 }  // namespace ash

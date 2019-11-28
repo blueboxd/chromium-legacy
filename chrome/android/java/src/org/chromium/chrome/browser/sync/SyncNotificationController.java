@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -91,7 +91,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      */
     private void showSyncNotification(int message, Intent intent) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        String title = null, text = null;
+        String title = null;
+        String text = null;
         // From Android N, notification by default has the app name and title should not be the same
         // as app name.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

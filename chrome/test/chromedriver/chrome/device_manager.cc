@@ -109,7 +109,8 @@ Status Device::SetUp(const std::string& package,
         return Status(kUnknownError, "known package " + package +
                       " does not accept activity/process");
     } else if (activity.empty()) {
-      return Status(kUnknownError, "WebView apps require activity name");
+      return Status(kUnknownError,
+                    "WebView/WebLayer apps require activity name");
     }
 
     if (!command_line_file.empty()) {
@@ -154,13 +155,21 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
     // The leading '@' means abstract UNIX sockets. Some apps have a custom
     // substring between the required "webview_devtools_remote_" prefix and
     // their PID, which Chrome DevTools accepts and we also should.
-    std::string pattern =
+    std::string webview_pattern =
         base::StringPrintf("@webview_devtools_remote_.*%d", pid);
-    status = adb_->GetSocketByPattern(serial_, pattern, &socket_name);
+    std::string weblayer_pattern =
+        base::StringPrintf("@weblayer_devtools_remote_.*%d", pid);
+    status = adb_->GetSocketByPattern(serial_, webview_pattern, &socket_name);
     if (status.IsError()) {
-      if (socket_name.empty())
+      status =
+          adb_->GetSocketByPattern(serial_, weblayer_pattern, &socket_name);
+    }
+    if (status.IsError()) {
+      if (socket_name.empty()) {
         status.AddDetails(
-            "make sure the app has its WebView configured for debugging");
+            "make sure the app has its WebView/WebLayer "
+            "configured for debugging");
+      }
       return status;
     }
     // When used in adb with "localabstract:", the leading '@' is not needed.

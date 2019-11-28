@@ -323,6 +323,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // make a difference in the overall results.
   base::flat_map<int32_t, std::unique_ptr<VideoCaptureOverlay>> overlays_;
 
+  // The visible height of the top-controls in the last CompositorFrameMetadata
+  // received.
+  double last_top_controls_visible_height_ = 0.f;
+
   // This class assumes its control operations and async callbacks won't execute
   // simultaneously.
   SEQUENCE_CHECKER(sequence_checker_);

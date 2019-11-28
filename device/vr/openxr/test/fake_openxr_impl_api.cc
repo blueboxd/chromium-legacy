@@ -5,6 +5,7 @@
 #include <directxmath.h>
 #include <wrl.h>
 
+#include "base/stl_util.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/openxr/test/openxr_negotiate.h"
 #include "device/vr/openxr/test/openxr_test_helper.h"
@@ -431,8 +432,9 @@ XrResult xrEnumerateInstanceExtensionProperties(
             "XrExtensionProperties is nullptr");
   for (uint32_t i = 0; i < OpenXrTestHelper::NumExtensionsSupported(); i++) {
     properties[i].type = XR_TYPE_EXTENSION_PROPERTIES;
-    errno_t error =
-        strcpy_s(properties[i].extensionName, OpenXrTestHelper::kExtensions[i]);
+    errno_t error = strcpy_s(properties[i].extensionName,
+                             base::size(properties[i].extensionName),
+                             OpenXrTestHelper::kExtensions[i]);
     DCHECK(error == 0);
     properties[i].extensionVersion = 1;
   }

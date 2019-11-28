@@ -14,6 +14,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_state.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -72,7 +74,13 @@ class AndroidWebViewStateSerializerTest : public testing::Test {
     content::SetContentClient(nullptr);
   }
 
+ protected:
+  content::BrowserContext* browser_context() { return &browser_context_; }
+
  private:
+  content::BrowserTaskEnvironment test_environment_;
+  content::TestBrowserContext browser_context_;
+
   content::ContentClient content_client_;
   content::ContentBrowserClient browser_client_;
 
@@ -119,8 +127,8 @@ TEST_F(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  bool result =
-      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result = internal::RestoreNavigationEntryFromPickle(
+      &iterator, browser_context(), copy.get());
   EXPECT_TRUE(result);
 
   EXPECT_EQ(entry->GetURL(), copy->GetURL());
@@ -152,7 +160,8 @@ TEST_F(AndroidWebViewStateSerializerTest,
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
   bool result = internal::RestoreNavigationEntryFromPickle(
-      internal::AW_STATE_VERSION_INITIAL, &iterator, copy.get());
+      internal::AW_STATE_VERSION_INITIAL, &iterator, browser_context(),
+      copy.get());
   EXPECT_TRUE(result);
 
   EXPECT_EQ(entry->GetURL(), copy->GetURL());
@@ -213,8 +222,8 @@ TEST_F(AndroidWebViewStateSerializerTest,
   base::PickleIterator iterator(pickle);
   std::unique_ptr<content::NavigationEntry> copy =
       content::NavigationEntry::Create();
-  bool result =
-      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result = internal::RestoreNavigationEntryFromPickle(
+      &iterator, browser_context(), copy.get());
   EXPECT_TRUE(result);
 
   // In https://crbug.com/999078, the empty PageState would clobber the URL
@@ -253,8 +262,8 @@ TEST_F(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  bool result =
-      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result = internal::RestoreNavigationEntryFromPickle(
+      &iterator, browser_context(), copy.get());
   EXPECT_TRUE(result);
   EXPECT_FALSE(entry->GetDataURLAsString());
 }
@@ -276,8 +285,8 @@ TEST_F(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  bool result =
-      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result = internal::RestoreNavigationEntryFromPickle(
+      &iterator, browser_context(), copy.get());
   EXPECT_TRUE(result);
   EXPECT_EQ(huge_data_url, copy->GetDataURLAsString()->data());
 }

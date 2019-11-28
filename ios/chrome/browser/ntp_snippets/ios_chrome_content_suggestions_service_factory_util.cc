@@ -132,7 +132,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       browser_state->GetStatePath().Append(ntp_snippets::kDatabaseFolder));
 
   std::string api_key;
-  // This API needs whitelisted API keys. Get the key only if it is not a
+  // This API needs allow-listed API keys. Get the key only if it is not a
   // dummy key.
   if (google_apis::HasAPIKeyConfigured()) {
     bool is_stable_channel = GetChannel() == version_info::Channel::STABLE;

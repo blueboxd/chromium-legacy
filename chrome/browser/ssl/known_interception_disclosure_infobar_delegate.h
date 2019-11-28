@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -62,7 +63,7 @@ class KnownInterceptionDisclosureCooldown {
 // dismissed.
 void MaybeShowKnownInterceptionDisclosureDialog(
     content::WebContents* web_contents,
-    const GURL& url);
+    net::CertStatus cert_status);
 
 class KnownInterceptionDisclosureInfoBarDelegate
     : public ConfirmInfoBarDelegate {

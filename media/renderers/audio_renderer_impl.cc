@@ -259,7 +259,7 @@ TimeSource* AudioRendererImpl::GetTimeSource() {
   return this;
 }
 
-void AudioRendererImpl::Flush(const base::Closure& callback) {
+void AudioRendererImpl::Flush(base::OnceClosure callback) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Flush", this);
@@ -273,7 +273,7 @@ void AudioRendererImpl::Flush(const base::Closure& callback) {
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!flush_cb_);
 
-  flush_cb_ = callback;
+  flush_cb_ = std::move(callback);
   ChangeState_Locked(kFlushing);
 
   if (pending_read_)
@@ -317,7 +317,7 @@ void AudioRendererImpl::ResetDecoderDone() {
 
   // Changes in buffering state are always posted. Flush callback must only be
   // run after buffering state has been set back to nothing.
-  flush_cb_ = BindToCurrentLoop(flush_cb_);
+  flush_cb_ = BindToCurrentLoop(std::move(flush_cb_));
   FinishFlush();
 }
 

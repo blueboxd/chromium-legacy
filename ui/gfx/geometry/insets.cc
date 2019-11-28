@@ -15,8 +15,10 @@ std::string Insets::ToString() const {
 }
 
 Insets Insets::Offset(const gfx::Vector2d& vector) const {
-  return gfx::Insets(top() + vector.y(), left() + vector.x(),
-                     bottom() - vector.y(), right() - vector.x());
+  return gfx::Insets(base::ClampAdd(top(), vector.y()),
+                     base::ClampAdd(left(), vector.x()),
+                     base::ClampSub(bottom(), vector.y()),
+                     base::ClampSub(right(), vector.x()));
 }
 
 }  // namespace gfx

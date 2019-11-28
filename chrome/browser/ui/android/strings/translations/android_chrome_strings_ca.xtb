@@ -413,7 +413,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4084712963632273211">Publicada originalment per <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />oferida per Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vols suprimir les dades de l'aplicació?</translation>
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i informes d'error a Google.</translation>
-<translation id="410351446219883937">Reproducció automàtica</translation>
 <translation id="4116038641877404294">Baixa pàgines per utilitzar-les sense connexió</translation>
 <translation id="4135200667068010335">La llista de dispositius amb què es compartirà una pestanya està tancada.</translation>
 <translation id="4149994727733219643">Visualització simplificada de pàgines web</translation>
@@ -815,7 +814,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6989267951144302301">No s'ha pogut baixar</translation>
 <translation id="6990079615885386641">Baixeu l'aplicació des de Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pregunta'm abans de permetre que els llocs web utilitzin el micròfon (opció recomanada)</translation>
-<translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en produir-se una violació de les dades</translation>
+<translation id="6995899638241819463">Rep un advertiment si les contrasenyes queden exposades en l'àmbit d'una violació de les dades</translation>
 <translation id="7015203776128479407">La configuració de la sincronització inicial no ha finalitzat. La sincronització està desactivada.</translation>
 <translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7022756207310403729">Obre al navegador</translation>
@@ -872,7 +871,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="7437998757836447326">Tanca la sessió de Chrome</translation>
 <translation id="7438641746574390233">Quan el mode bàsic estigui activat, Chrome utilitzarà els servidors de Google perquè les pàgines es carreguin més de pressa. El mode bàsic reescriu les pàgines molt lentes per carregar només el contingut essencial. El mode bàsic no s'aplica a les pestanyes d'incògnit.</translation>
 <translation id="7444811645081526538">Més categories</translation>
-<translation id="7445411102860286510">Permet que els llocs web reprodueixin automàticament vídeos silenciats (opció recomanada)</translation>
 <translation id="7453467225369441013">Et tanca la sessió de la majoria de llocs web, però no la del Compte de Google.</translation>
 <translation id="7454641608352164238">No hi ha prou espai</translation>
 <translation id="7475192538862203634">Si això passa sovint, prova aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7810647596859435254">Obre amb…</translation>
 <translation id="7821588508402923572">Les dades que estalviïs es mostraran aquí</translation>
-<translation id="7837721118676387834">Permet la reproducció automàtica de vídeos silenciats d'un lloc web concret.</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
 <translation id="784934925303690534">Interval de temps</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>

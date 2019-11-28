@@ -1151,9 +1151,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
                                TopChromeShownState::kFullyShown);
 
   // Dismiss the bubble.
-  EXPECT_TRUE(permission_manager->GetBubbleWindow());
-  views::Widget::GetWidgetForNativeView(permission_manager->GetBubbleWindow())
-      ->CloseNow();
+  permission_manager->Closing();
   EXPECT_FALSE(permission_manager->IsBubbleVisible());
   content::WaitForResizeComplete(active_contents);
 

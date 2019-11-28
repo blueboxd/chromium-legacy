@@ -134,6 +134,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
     'EqualsBrokenForNull',
     'InvalidThrows',
     'LongLiteralLowerCaseSuffix',
+    'MultiVariableDeclaration',
     'RedundantOverride',
     'RemoveUnusedImports',
     'StaticQualifiedUsingExpression',

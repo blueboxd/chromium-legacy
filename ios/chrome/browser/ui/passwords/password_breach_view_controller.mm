@@ -277,6 +277,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
                            action:nil];
   topToolbar.items = @[ helpButton, spacer, doneButton ];
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  // Set the help button as the left button item so it can be used as the
+  // popover anchor.
+  _helpButton = helpButton;
   return topToolbar;
 }
 

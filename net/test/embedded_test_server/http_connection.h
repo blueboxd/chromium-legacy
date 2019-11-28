@@ -27,8 +27,8 @@ class HttpConnection;
 
 // Calblack called when a request is parsed. Response should be sent
 // using HttpConnection::SendResponse() on the |connection| argument.
-typedef base::Callback<void(HttpConnection* connection,
-                            std::unique_ptr<HttpRequest> request)>
+typedef base::RepeatingCallback<void(HttpConnection* connection,
+                                     std::unique_ptr<HttpRequest> request)>
     HandleRequestCallback;
 
 // Wraps the connection socket. Accepts incoming data and sends responses.
@@ -41,7 +41,7 @@ class HttpConnection {
 
   // Sends the |response_string| to the client and calls |callback| once done.
   void SendResponseBytes(const std::string& response_string,
-                         const SendCompleteCallback& callback);
+                         SendCompleteCallback callback);
 
   // Accepts raw chunk of data from the client. Internally, passes it to the
   // HttpRequestParser class. If a request is parsed, then |callback_| is
@@ -53,9 +53,9 @@ class HttpConnection {
  private:
   friend class EmbeddedTestServer;
 
-  void SendInternal(const base::Closure& callback,
+  void SendInternal(base::OnceClosure callback,
                     scoped_refptr<DrainableIOBuffer> buffer);
-  void OnSendInternalDone(const base::Closure& callback,
+  void OnSendInternalDone(base::OnceClosure callback,
                           scoped_refptr<DrainableIOBuffer> buffer,
                           int rv);
 

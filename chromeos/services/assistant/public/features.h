@@ -89,6 +89,9 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 int GetProactiveSuggestionsMaxWidth();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+int GetProactiveSuggestionsRichEntryPointCornerRadius();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 std::string GetProactiveSuggestionsServerExperimentIds();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)

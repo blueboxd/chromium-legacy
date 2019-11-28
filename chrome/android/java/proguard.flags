@@ -5,7 +5,7 @@
 # Fragments loaded by name via Fragment.instantiate(Context,String)
 # Not all fragments in this package are PreferenceFragments. E.g. HomepageEditor
 # is a normal Fragment.
--keep public class org.chromium.chrome.browser.preferences.** extends android.support.v4.app.Fragment {
+-keep public class org.chromium.chrome.browser.settings.** extends android.support.v4.app.Fragment {
   public <init>();
 }
 

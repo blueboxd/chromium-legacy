@@ -22,6 +22,7 @@ CastMediaNotificationProvider::CastMediaNotificationProvider(
     media_message_center::MediaNotificationController* notification_controller,
     base::RepeatingClosure items_changed_callback)
     : media_router::MediaRoutesObserver(router),
+      router_(router),
       notification_controller_(notification_controller),
       items_changed_callback_(std::move(items_changed_callback)) {}
 
@@ -48,11 +49,18 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
     if (std::find_if(items_.begin(), items_.end(), [&route](const auto& item) {
           return item.first == route.media_route_id();
         }) == items_.end()) {
-      items_.emplace(std::piecewise_construct,
-                     std::forward_as_tuple(route.media_route_id()),
-                     std::forward_as_tuple(route, notification_controller_));
-      // TODO(crbug.com/987479): Connect the CastMediaNotificationItem to a
-      // controller through MediaRouter::GetMediaController().
+      mojo::Remote<media_router::mojom::MediaController> controller_remote;
+      mojo::PendingReceiver<media_router::mojom::MediaController>
+          controller_receiver = controller_remote.BindNewPipeAndPassReceiver();
+      auto it_pair = items_.emplace(
+          std::piecewise_construct,
+          std::forward_as_tuple(route.media_route_id()),
+          std::forward_as_tuple(route, notification_controller_,
+                                std::make_unique<CastMediaSessionController>(
+                                    std::move(controller_remote))));
+      router_->GetMediaController(
+          route.media_route_id(), std::move(controller_receiver),
+          it_pair.first->second.GetObserverPendingRemote());
     }
   }
   if (HasItems() != had_items)

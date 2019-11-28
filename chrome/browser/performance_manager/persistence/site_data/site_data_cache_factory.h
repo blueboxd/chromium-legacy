@@ -27,6 +27,7 @@ class BrowserContext;
 namespace performance_manager {
 
 class SiteDataCacheInspector;
+class SiteDataCacheImpl;
 
 // This class is responsible for tracking the SiteDataCache instances associated
 // with each browser context. It is meant to be used as a bridge between the
@@ -94,6 +95,9 @@ class SiteDataCacheFactory : public GraphOwnedDefaultImpl {
   // only on the UI thread.
   void IsDataCacheRecordingForTesting(const std::string& browser_context_id,
                                       base::OnceCallback<void(bool)> cb);
+
+  void ReplaceCacheForTesting(const std::string& browser_context_id,
+                              std::unique_ptr<SiteDataCacheImpl> cache);
 
  private:
   // Implementation of the corresponding *OnUIThread public static functions

@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
@@ -18,11 +19,22 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
+namespace {
 
 using Logger = autofill::SavePasswordProgressLogger;
+
+void LogString(PasswordManagerClient* client, Logger::StringID string_id) {
+  if (password_manager_util::IsLoggingActive(client)) {
+    BrowserSavePasswordProgressLogger logger(client->GetLogManager());
+    logger.LogMessage(string_id);
+  }
+}
+
+}  // namespace
 
 LeakDetectionDelegate::LeakDetectionDelegate(PasswordManagerClient* client)
     : client_(client),
@@ -36,9 +48,15 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
 
   if (!client_->GetPrefs()->GetBoolean(
           password_manager::prefs::kPasswordLeakDetectionEnabled)) {
+    LogString(client_, Logger::STRING_LEAK_DETECTION_DISABLED_FEATURE);
     return;
   }
-
+#if !defined(OS_IOS)
+  if (!client_->GetPrefs()->GetBoolean(::prefs::kSafeBrowsingEnabled)) {
+    LogString(client_, Logger::STRING_LEAK_DETECTION_DISABLED_SAFE_BROWSING);
+    return;
+  }
+#endif
   if (form.username_value.empty())
     return;
 

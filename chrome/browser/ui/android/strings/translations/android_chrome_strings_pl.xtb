@@ -413,7 +413,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4084712963632273211">Opublikowane na <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />wyświetlone przez Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
-<translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4135200667068010335">Lista urządzeń, którym udostępnisz kartę, jest zamknięta.</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
@@ -872,7 +871,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="7438641746574390233">W wersji uproszczonej Chrome korzysta z serwerów Google, by szybciej wczytywać strony. W wersji uproszczonej bardzo wolne strony są przepisywane na nowo, by ładowały się tylko najważniejsze treści. Wersja uproszczona nie działa na kartach incognito.</translation>
 <translation id="7444811645081526538">Więcej kategorii</translation>
-<translation id="7445411102860286510">Zezwalaj witrynom na automatyczne odtwarzanie wyciszonych filmów (zalecane)</translation>
 <translation id="7453467225369441013">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="7454641608352164238">Za mało miejsca</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
-<translation id="7837721118676387834">Zezwalaj określonej stronie na automatyczne odtwarzanie wyciszonych filmów.</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>

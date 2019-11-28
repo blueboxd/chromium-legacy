@@ -94,7 +94,12 @@ bool GetAddress(const struct nlmsghdr* header,
         local = reinterpret_cast<uint8_t*>(RTA_DATA(attr));
         break;
       case IFA_CACHEINFO: {
-        const struct ifa_cacheinfo *cache_info =
+        if (RTA_PAYLOAD(attr) < sizeof(struct ifa_cacheinfo)) {
+          LOG(ERROR)
+              << "attr does not have enough bytes to read an ifa_cacheinfo";
+          return false;
+        }
+        const struct ifa_cacheinfo* cache_info =
             reinterpret_cast<const struct ifa_cacheinfo*>(RTA_DATA(attr));
         if (really_deprecated)
           *really_deprecated = (cache_info->ifa_prefered == 0);

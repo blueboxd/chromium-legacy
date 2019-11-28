@@ -115,9 +115,9 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     AddPasswordForm(std::move(form));
   }
 
-  // Creates and adds a blacklisted site form to never offer to save
+  // Creates and adds a blocked site form to never offer to save
   // user's password to those sites.
-  void AddBlacklistedForm1() {
+  void AddBlockedForm1() {
     auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret.com/login");
     form->action = GURL("http://www.secret.com/action");
@@ -133,9 +133,9 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     AddPasswordForm(std::move(form));
   }
 
-  // Creates and adds another blacklisted site form to never offer to save
+  // Creates and adds another blocked site form to never offer to save
   // user's password to those sites.
-  void AddBlacklistedForm2() {
+  void AddBlockedForm2() {
     auto form = std::make_unique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret2.com/login");
     form->action = GURL("http://www.secret2.com/action");
@@ -166,7 +166,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
-// Tests default case has no saved sites and no blacklisted sites.
+// Tests default case has no saved sites and no blocked sites.
 TEST_F(PasswordsTableViewControllerTest, TestInitialization) {
   CheckController();
   EXPECT_EQ(2, NumberOfSections());
@@ -180,27 +180,27 @@ TEST_F(PasswordsTableViewControllerTest, AddSavedPasswords) {
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
-// Tests adding one item in blacklisted password section.
-TEST_F(PasswordsTableViewControllerTest, AddBlacklistedPasswords) {
-  AddBlacklistedForm1();
+// Tests adding one item in blocked password section.
+TEST_F(PasswordsTableViewControllerTest, AddBlockedPasswords) {
+  AddBlockedForm1();
 
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
-// Tests adding one item in saved password section, and two items in blacklisted
+// Tests adding one item in saved password section, and two items in blocked
 // password section.
-TEST_F(PasswordsTableViewControllerTest, AddSavedAndBlacklisted) {
+TEST_F(PasswordsTableViewControllerTest, AddSavedAndBlocked) {
   AddSavedForm1();
-  AddBlacklistedForm1();
-  AddBlacklistedForm2();
+  AddBlockedForm1();
+  AddBlockedForm2();
 
   // There should be two sections added.
   EXPECT_EQ(4, NumberOfSections());
 
   // There should be 1 row in saved password section.
   EXPECT_EQ(1, NumberOfItemsInSection(1));
-  // There should be 2 rows in blacklisted password section.
+  // There should be 2 rows in blocked password section.
   EXPECT_EQ(2, NumberOfItemsInSection(2));
 }
 
@@ -215,12 +215,12 @@ TEST_F(PasswordsTableViewControllerTest, TestSavedPasswordsOrder) {
   CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 1, 1);
 }
 
-// Tests the order in which the blacklisted passwords are displayed.
-TEST_F(PasswordsTableViewControllerTest, TestBlacklistedPasswordsOrder) {
-  AddBlacklistedForm2();
+// Tests the order in which the blocked passwords are displayed.
+TEST_F(PasswordsTableViewControllerTest, TestBlockedPasswordsOrder) {
+  AddBlockedForm2();
   CheckTextCellText(@"secret2.com", 1, 0);
 
-  AddBlacklistedForm1();
+  AddBlockedForm1();
   CheckTextCellText(@"secret.com", 1, 0);
   CheckTextCellText(@"secret2.com", 1, 1);
 }
@@ -235,31 +235,31 @@ TEST_F(PasswordsTableViewControllerTest, AddSavedDuplicates) {
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
-// Tests displaying passwords in the blacklisted passwords section when there
+// Tests displaying passwords in the blocked passwords section when there
 // are duplicates in the password store.
-TEST_F(PasswordsTableViewControllerTest, AddBlacklistedDuplicates) {
-  AddBlacklistedForm1();
-  AddBlacklistedForm1();
+TEST_F(PasswordsTableViewControllerTest, AddBlockedDuplicates) {
+  AddBlockedForm1();
+  AddBlockedForm1();
 
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
-// Tests deleting items from saved passwords and blacklisted passwords sections.
+// Tests deleting items from saved passwords and blocked passwords sections.
 TEST_F(PasswordsTableViewControllerTest, DeleteItems) {
   AddSavedForm1();
-  AddBlacklistedForm1();
-  AddBlacklistedForm2();
+  AddBlockedForm1();
+  AddBlockedForm2();
 
   // Delete item in save passwords section.
   ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfSections() == 3;
   }));
-  // Section 2 should now be the blacklisted passwords section, and should still
+  // Section 2 should now be the blocked passwords section, and should still
   // have both its items.
   EXPECT_EQ(2, NumberOfItemsInSection(1));
 
-  // Delete item in blacklisted passwords section.
+  // Delete item in blocked passwords section.
   ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfItemsInSection(1) == 1;
   }));
@@ -269,24 +269,24 @@ TEST_F(PasswordsTableViewControllerTest, DeleteItems) {
   }));
 }
 
-// Tests deleting items from saved passwords and blacklisted passwords sections
+// Tests deleting items from saved passwords and blocked passwords sections
 // when there are duplicates in the store.
 TEST_F(PasswordsTableViewControllerTest, DeleteItemsWithDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
-  AddBlacklistedForm1();
-  AddBlacklistedForm1();
-  AddBlacklistedForm2();
+  AddBlockedForm1();
+  AddBlockedForm1();
+  AddBlockedForm2();
 
   // Delete item in save passwords section.
   ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfSections() == 3;
   }));
-  // Section 2 should now be the blacklisted passwords section, and should still
+  // Section 2 should now be the blocked passwords section, and should still
   // have both its items.
   EXPECT_EQ(2, NumberOfItemsInSection(1));
 
-  // Delete item in blacklisted passwords section.
+  // Delete item in blocked passwords section.
   ASSERT_TRUE(deleteItemAndWait(1, 0, ^{
     return NumberOfItemsInSection(1) == 1;
   }));
@@ -309,9 +309,9 @@ TEST_F(PasswordsTableViewControllerTest,
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 
-  // Add blacklisted form.
-  AddBlacklistedForm1();
-  // The export button should still be disabled as exporting blacklisted forms
+  // Add blocked form.
+  AddBlockedForm1();
+  // The export button should still be disabled as exporting blocked forms
   // is not currently supported.
   EXPECT_NSEQ(UIColor.cr_labelColor, exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
@@ -397,8 +397,8 @@ TEST_F(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
 TEST_F(PasswordsTableViewControllerTest, FilterItems) {
   AddSavedForm1();
   AddSavedForm2();
-  AddBlacklistedForm1();
-  AddBlacklistedForm2();
+  AddBlockedForm1();
+  AddBlockedForm2();
 
   EXPECT_EQ(4, NumberOfSections());
 
@@ -426,7 +426,7 @@ TEST_F(PasswordsTableViewControllerTest, FilterItems) {
   CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 1, 1);
 
   [passwords_controller searchBar:bar textDidChange:@"secret"];
-  // Only two items in blacklisted should remain.
+  // Only two blocked items should remain.
   EXPECT_EQ(0, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
   CheckTextCellText(@"secret.com", 2, 0);

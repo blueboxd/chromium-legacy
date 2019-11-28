@@ -61,26 +61,31 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_welcome_dialog.css">
     <style include="cr-shared-style"></style>
-    <oobe-dialog has-buttons>
+    <oobe-dialog has-buttons footer-shrinkable>
       <h1 slot="title" id="title">
         [[i18nDynamic(locale, 'welcomeScreenGreeting')]]
       </h1>
-      <div slot="footer" class="welcome-illustration layout vertical">
+      <div slot="footer" class="welcome-illustration flex layout vertical center
+          center-justified">
         <if expr="chromeos and _google_chrome">
           <video muted hidden oobe_devices="chromebox"
               oobe_orientations="portrait,landscape" oobe_types="intro"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/chromebox_intro_2x.webm">
           </video>
           <video muted loop hidden oobe_devices="chromebox"
               oobe_orientations="portrait,landscape" oobe_types="loop"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/chromebox_loop_2x.webm">
           </video>
           <video muted hidden oobe_devices="laptop_G"
               oobe_orientations="portrait,landscape" oobe_types="intro"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_intro_2x.webm">
           </video>
           <video muted loop hidden oobe_devices="laptop_G"
               oobe_orientations="portrait,landscape" oobe_types="loop"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_G_loop_2x.webm">
           </video>
           <video muted hidden oobe_devices="laptop"
@@ -89,22 +94,27 @@
           </video>
           <video muted loop hidden oobe_devices="laptop"
               oobe_orientations="portrait,landscape" oobe_types="loop"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/laptop_loop_2x.webm">
           </video>
           <video muted hidden oobe_devices="tablet_G"
               oobe_orientations="portrait,landscape" oobe_types="intro"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_intro_2x.webm">
           </video>
           <video muted loop hidden oobe_devices="tablet_G"
               oobe_orientations="portrait,landscape" oobe_types="loop"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_G_loop_2x.webm">
           </video>
           <video muted hidden oobe_devices="tablet"
               oobe_orientations="portrait,landscape" oobe_types="intro"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_intro_2x.webm">
           </video>
           <video muted loop hidden oobe_devices="tablet"
               oobe_orientations="portrait,landscape" oobe_types="loop"
+              class="oobe-illustration"
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_loop_2x.webm">
           </video>
         </if>

@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
@@ -253,21 +254,24 @@ class WebSocketChannelImplTest : public PageTestBase {
   }
 
   void SetUp() override {
-    auto* local_frame_client = MakeGarbageCollected<EmptyLocalFrameClient>();
-    service_manager::InterfaceProvider::TestApi(
-        local_frame_client->GetInterfaceProvider())
-        .SetBinderForName(mojom::blink::WebSocketConnector::Name_,
-                          base::BindRepeating(
-                              &WebSocketChannelImplTest::BindWebSocketConnector,
-                              weak_ptr_factory_.GetWeakPtr()));
+    local_frame_client_ = MakeGarbageCollected<EmptyLocalFrameClient>();
+    local_frame_client_->GetBrowserInterfaceBroker().SetBinderForTesting(
+        mojom::blink::WebSocketConnector::Name_,
+        base::BindRepeating(&WebSocketChannelImplTest::BindWebSocketConnector,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     PageTestBase::SetupPageWithClients(nullptr /* page_clients */,
-                                       local_frame_client);
+                                       local_frame_client_.Get());
     const KURL page_url("http://example.com/");
     NavigateTo(page_url);
     channel_ = WebSocketChannelImpl::CreateForTesting(
         &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
         std::move(handshake_throttle_));
+  }
+
+  void TearDown() override {
+    local_frame_client_->GetBrowserInterfaceBroker().SetBinderForTesting(
+        mojom::blink::WebSocketConnector::Name_, {});
   }
 
   MockWebSocketChannelClient* ChannelClient() { return channel_client_.Get(); }
@@ -318,6 +322,7 @@ class WebSocketChannelImplTest : public PageTestBase {
   }
 
   WebSocketConnector connector_;
+  Persistent<EmptyLocalFrameClient> local_frame_client_;
   Persistent<MockWebSocketChannelClient> channel_client_;
   std::unique_ptr<MockWebSocketHandshakeThrottle> handshake_throttle_;
   MockWebSocketHandshakeThrottle* const raw_handshake_throttle_;

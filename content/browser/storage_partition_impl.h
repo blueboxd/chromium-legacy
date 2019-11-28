@@ -271,13 +271,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   BrowserContext* browser_context() const;
 
   // Called by each renderer process for each StoragePartitionService interface
-  // it binds in the renderer process. Returns the id of the created binding.
-  mojo::BindingId Bind(
+  // it binds in the renderer process. Returns the id of the created receiver.
+  mojo::ReceiverId Bind(
       int process_id,
       mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
 
-  // Remove a binding created by a previous Bind() call.
-  void Unbind(mojo::BindingId binding_id);
+  // Remove a receiver created by a previous Bind() call.
+  void Unbind(mojo::ReceiverId receiver_id);
 
   auto& receivers_for_testing() { return receivers_; }
 

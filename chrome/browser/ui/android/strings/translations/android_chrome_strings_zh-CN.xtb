@@ -413,7 +413,6 @@
 <translation id="4084712963632273211">来自 <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />由 Google 提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
-<translation id="410351446219883937">自动播放</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
 <translation id="4135200667068010335">要与之分享标签页的设备的列表已关闭。</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
@@ -815,7 +814,7 @@
 <translation id="6989267951144302301">无法下载</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
-<translation id="6995899638241819463">如有密码遭遇数据泄露，就向您发出警告</translation>
+<translation id="6995899638241819463">在密码遭遇数据泄露时，向您发出警告</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
 <translation id="7016516562562142042">允许当前搜索引擎使用</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
@@ -872,7 +871,6 @@
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7438641746574390233">当精简模式处于开启状态时，Chrome 会使用 Google 服务器提高网页加载速度。精简模式会重写加载速度非常慢的网页，以便仅加载必要的内容。精简模式不适用于无痕式标签页。</translation>
 <translation id="7444811645081526538">更多类别</translation>
-<translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7454641608352164238">空间不足</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
@@ -927,7 +925,6 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
-<translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>

@@ -31,7 +31,7 @@ bool gExecutedSetUpForTestCase = false;
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
 
 // Contains a list of test names that run in multitasking test suite.
-NSArray* whiteListedMultitaskingTests = @[
+NSArray* multitaskingTests = @[
   // Integration tests
   @"testContextMenuOpenInNewTab",        // ContextMenuTestCase
   @"testSwitchToMain",                   // CookiesTestCase
@@ -50,13 +50,13 @@ NSArray* whiteListedMultitaskingTests = @[
   // UI tests
   @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
   // ActivityServiceControllerTestCase
-  @"testDismissOnDestroy",                      // AlertCoordinatorTestCase
-  @"testAddRemoveBookmark",                     // BookmarksTestCase
-  @"testJavaScriptInOmnibox",                   // BrowserViewControllerTestCase
-  @"testChooseCastReceiverChooser",             // CastReceiverTestCase
-  @"testErrorPage",                             // ErrorPageTestCase
-  @"testFindInPage",                            // FindInPageTestCase
-  @"testDismissFirstRun",                       // FirstRunTestCase
+  @"testDismissOnDestroy",           // AlertCoordinatorTestCase
+  @"testAddRemoveBookmark",          // BookmarksTestCase
+  @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
+  @"testChooseCastReceiverChooser",  // CastReceiverTestCase
+  @"testErrorPage",                  // ErrorPageTestCase
+  @"testFindInPage",                 // FindInPageTestCase
+  @"testDismissFirstRun",            // FirstRunTestCase
   // TODO(crbug.com/872788) Failing after move to Xcode 10.
   // @"testLongPDFScroll",                         // FullscreenTestCase
   @"testDeleteHistory",                         // HistoryUITestCase
@@ -368,7 +368,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   NSMutableArray* multitaskingTestNames = [NSMutableArray array];
   for (unsigned int i = 0; i < count; i++) {
     SEL selector = method_getName(methods[i]);
-    if ([whiteListedMultitaskingTests
+    if ([multitaskingTests
             containsObject:base::SysUTF8ToNSString(sel_getName(selector))]) {
       NSMethodSignature* methodSignature =
           [self instanceMethodSignatureForSelector:selector];

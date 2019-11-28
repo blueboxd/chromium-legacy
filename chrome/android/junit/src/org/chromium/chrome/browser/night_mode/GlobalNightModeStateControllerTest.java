@@ -32,7 +32,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
+import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 
 /**
  * Unit tests for {@link GlobalNightModeStateController}.

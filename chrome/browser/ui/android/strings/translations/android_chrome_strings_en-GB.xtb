@@ -413,7 +413,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4084712963632273211">From <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />delivered by Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Delete app data?</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
-<translation id="410351446219883937">Auto-play</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4135200667068010335">List of devices with which to share a tab is closed.</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
@@ -872,7 +871,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7438641746574390233">When Lite mode is on, Chrome uses Google servers to make pages load faster. Lite mode rewrites very slow pages to load only essential content. Lite mode does not apply to Incognito tabs.</translation>
 <translation id="7444811645081526538">More categories</translation>
-<translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7454641608352164238">Not enough space</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7810647596859435254">Open with…</translation>
 <translation id="7821588508402923572">Your data savings will appear here</translation>
-<translation id="7837721118676387834">Allow auto-play of muted videos for a specific site.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>

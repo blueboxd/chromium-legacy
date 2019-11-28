@@ -102,7 +102,7 @@ public class DecoderServiceTest {
         });
     }
 
-    private void decode(String filePath, FileDescriptor fd, int size,
+    private void decode(String filePath, FileDescriptor fd, int width,
             final DecoderServiceCallback callback) throws Exception {
         Bundle bundle = new Bundle();
         bundle.putString(DecoderService.KEY_FILE_PATH, filePath);
@@ -112,7 +112,7 @@ public class DecoderServiceTest {
             Assert.assertTrue(pfd != null);
         }
         bundle.putParcelable(DecoderService.KEY_FILE_DESCRIPTOR, pfd);
-        bundle.putInt(DecoderService.KEY_SIZE, size);
+        bundle.putInt(DecoderService.KEY_WIDTH, width);
 
         mIRemoteService.decodeImage(bundle, callback);
         CriteriaHelper.pollUiThread(new Criteria() {

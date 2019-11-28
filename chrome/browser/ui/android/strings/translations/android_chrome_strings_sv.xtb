@@ -413,7 +413,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4084712963632273211">Från <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />via Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4095146165863963773">Vill du ta bort appdata?</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
-<translation id="410351446219883937">Automatisk uppspelning</translation>
 <translation id="4116038641877404294">Ladda ned sidor så att du kan använda dem offline</translation>
 <translation id="4135200667068010335">Listan över enheter som fliken kan delas med är stängd.</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
@@ -872,7 +871,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
 <translation id="7438641746574390233">När begränsat läge är aktiverat används Googles servrar så att sidinläsningen ska gå snabbare i Chrome. Mycket långsamma sidor skrivs om i begränsat läge så att bara det viktigaste innehållet visas. Inkognitoflikar påverkas inte av begränsat läge.</translation>
 <translation id="7444811645081526538">Fler kategorier</translation>
-<translation id="7445411102860286510">Tillåt att webbplatser automatiskt spelar upp videor utan ljud (rekommenderas)</translation>
 <translation id="7453467225369441013">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot.</translation>
 <translation id="7454641608352164238">Utrymmet räcker inte</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>
@@ -927,7 +925,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
-<translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>

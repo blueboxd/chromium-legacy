@@ -84,7 +84,7 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
   // Temporary cache of obtained store results.
   std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_;
 
-  // Combination of fillable and blacklisted credentials from the store.
+  // Combination of fillable and blocked credentials from the store.
   std::vector<autofill::PasswordForm> results_;
 };
 

@@ -46,6 +46,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -334,6 +335,10 @@ class PasswordManagerTest : public testing::Test {
         prefs::kWasOnboardingFeatureCheckedBefore, false);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
+#if !defined(OS_IOS)
+    prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
+                                            true);
+#endif
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 
     // When waiting for predictions is on, it makes tests more complicated.

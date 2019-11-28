@@ -784,7 +784,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& request_url,
       bool is_main_frame_request,
       bool strict_enforcement,
-      const base::Callback<void(CertificateRequestResultType)>& callback);
+      base::OnceCallback<void(CertificateRequestResultType)> callback);
 
   // Selects a SSL client certificate and returns it to the |delegate|. Note:
   // |delegate| may be called synchronously or asynchronously.

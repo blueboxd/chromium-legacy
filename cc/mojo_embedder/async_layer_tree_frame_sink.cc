@@ -96,7 +96,7 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
   // We should not create hit test data provider if we want to use cc layer tree
   // to generated data.
   if (features::IsVizHitTestingSurfaceLayerEnabled())
-    DCHECK(!params->hit_test_data_provider);
+    DCHECK(!hit_test_data_provider_);
   DETACH_FROM_THREAD(thread_checker_);
 }
 

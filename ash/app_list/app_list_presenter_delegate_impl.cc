@@ -262,20 +262,6 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     if (!hotseat_window || !hotseat_window->Contains(target))
       presenter_->Dismiss(event->time_stamp());
   }
-
-  if (IsTabletMode() && presenter_->IsShowingEmbeddedAssistantUI()) {
-    auto* contents_view =
-        presenter_->GetView()->app_list_main_view()->contents_view();
-    if (contents_view->bounds().Contains(event->location())) {
-      // Keep Assistant open if event happen inside.
-      return;
-    }
-
-    // Touching anywhere else closes Assistant.
-    view_->Back();
-    view_->search_box_view()->ClearSearch();
-    view_->search_box_view()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

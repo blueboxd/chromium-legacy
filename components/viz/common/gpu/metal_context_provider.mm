@@ -35,15 +35,15 @@ bool CompileTestShader() {
   // https://crbug.com/974219
   metal::TestShaderResult result = metal::TestShaderResult::kNotAttempted;
   base::WaitableEvent event;
-  auto lambda = [](base::WaitableEvent* event,
-                   metal::TestShaderResult* out_result,
-                   metal::TestShaderResult result) {
-    *out_result = result;
-    event->Signal();
-  };
-  metal::TestShader(metal::kTestShaderSeedContextProvider,
-                    base::BindOnce(lambda, &event, &result),
-                    kTestShaderCompileTimeout);
+  auto lambda =
+      [](base::WaitableEvent* event, metal::TestShaderResult* out_result,
+         metal::TestShaderResult result, const base::TimeDelta& method_time,
+         const base::TimeDelta& compile_time) {
+        *out_result = result;
+        event->Signal();
+      };
+  metal::TestShader(base::BindOnce(lambda, &event, &result),
+                    base::TimeDelta() /* delay */, kTestShaderCompileTimeout);
   event.Wait();
   return result == metal::TestShaderResult::kSucceeded;
 }

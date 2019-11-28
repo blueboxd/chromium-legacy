@@ -339,12 +339,6 @@ void PermissionRequestManager::Deny() {
 }
 
 void PermissionRequestManager::Closing() {
-#if defined(OS_MACOSX)
-  // Mac calls this whenever you press Esc.
-  if (!view_)
-    return;
-#endif
-
   DCHECK(view_);
   std::vector<PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();

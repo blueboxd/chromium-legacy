@@ -14,9 +14,13 @@
 
 namespace base {
 class CommandLine;
-}
+}  // namespace base
+
+namespace content {
+class WebContents;
+}  // namespace content
+
 class PermissionRequest;
-class Browser;
 
 class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
  public:
@@ -50,8 +54,8 @@ class PermissionBubbleBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SetUpOnMainThread() override;
 
-  // Opens an app window, and returns the associated browser.
-  Browser* OpenExtensionAppWindow();
+  // Opens an app window and returns its WebContents.
+  content::WebContents* OpenExtensionAppWindow();
 
   PermissionPrompt::Delegate* test_delegate() { return &test_delegate_; }
 

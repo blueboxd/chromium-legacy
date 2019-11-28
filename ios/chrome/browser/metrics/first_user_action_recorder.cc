@@ -197,8 +197,8 @@ bool FirstUserActionRecorder::ShouldProcessAction(
     return false;
   }
 
-  // Processed actions must either start with 'Mobile' or be in the
-  // |new_task_actions_| whitelist.
+  // Processed actions must either start with 'Mobile' or be explicitly allowed
+  // inkNewTaskActions.
   bool known_mobile_action =
       base::StartsWith(action_name, "Mobile", base::CompareCase::SENSITIVE) ||
       ArrayContainsString(kNewTaskActions, base::size(kNewTaskActions),

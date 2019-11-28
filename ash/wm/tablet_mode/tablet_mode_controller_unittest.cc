@@ -186,16 +186,18 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   bool IsScreenshotShown() const { return test_api_->IsScreenshotShown(); }
 
   // Creates a test window snapped on the left in desktop mode.
-  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
+  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft(
+      const gfx::Rect& bounds = gfx::Rect()) {
+    std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
     WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
     WindowState::Get(window.get())->OnWMEvent(&snap_to_left);
     return window;
   }
 
   // Creates a test window snapped on the right in desktop mode.
-  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedRight() {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
+  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedRight(
+      const gfx::Rect& bounds = gfx::Rect()) {
+    std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
     WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
     WindowState::Get(window.get())->OnWMEvent(&snap_to_right);
     return window;
@@ -1403,6 +1405,32 @@ TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(window1.get(), split_view_controller()->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
+}
+
+TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapOnSecondaryDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window =
+      CreateDesktopWindowSnappedLeft(gfx::Rect(800, 0, 400, 400));
+  EXPECT_NE(Shell::GetPrimaryRootWindow(), window->GetRootWindow());
+  tablet_mode_controller()->SetEnabledForTest(true);
+  // Make sure display mirroring triggers without any crashes.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(
+    TabletModeControllerTest,
+    StartTabletActiveLeftSnapOnPrimaryDisplayPreviousRightSnapOnSecondaryDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window1 =
+      CreateDesktopWindowSnappedLeft(gfx::Rect(0, 0, 400, 400));
+  EXPECT_EQ(Shell::GetPrimaryRootWindow(), window1->GetRootWindow());
+  std::unique_ptr<aura::Window> window2 =
+      CreateDesktopWindowSnappedRight(gfx::Rect(800, 0, 400, 400));
+  EXPECT_NE(Shell::GetPrimaryRootWindow(), window2->GetRootWindow());
+  wm::ActivateWindow(window1.get());
+  tablet_mode_controller()->SetEnabledForTest(true);
+  // Make sure display mirroring triggers without any crashes.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that tablet mode controller does not respond to the input device changes

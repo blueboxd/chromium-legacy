@@ -23,7 +23,7 @@ class DownloadCallbackProxy : public DownloadDelegate {
   ~DownloadCallbackProxy() override;
 
   // DownloadDelegate:
-  void DownloadRequested(const GURL& url,
+  bool InterceptDownload(const GURL& url,
                          const std::string& user_agent,
                          const std::string& content_disposition,
                          const std::string& mime_type,

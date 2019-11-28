@@ -17,25 +17,6 @@
 
 namespace web {
 
-// Delays |delay| seconds before sending a response to the client.
-class DelayedHttpResponse : public net::test_server::BasicHttpResponse {
- public:
-  explicit DelayedHttpResponse(double delay) : delay_(delay) {}
-
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(send, ToResponseString(), done),
-        base::TimeDelta::FromSecondsD(delay_));
-  }
-
- private:
-  const double delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedHttpResponse);
-};
-
 DelayedResponseProvider::DelayedResponseProvider(
     std::unique_ptr<web::ResponseProvider> delayed_provider,
     double delay)
@@ -52,7 +33,8 @@ bool DelayedResponseProvider::CanHandleRequest(const Request& request) {
 std::unique_ptr<net::test_server::HttpResponse>
 DelayedResponseProvider::GetEmbeddedTestServerResponse(const Request& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      std::make_unique<DelayedHttpResponse>(delay_));
+      std::make_unique<net::test_server::DelayedHttpResponse>(
+          base::TimeDelta::FromSecondsD(delay_)));
   http_response->set_content_type("text/html");
   http_response->set_content("Slow Page");
   return std::move(http_response);

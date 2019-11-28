@@ -580,22 +580,35 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "true"}};
+        {"feed_ui_enabled", "true"},
+        {"snippets_enabled", "false"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedSnippetsFeatureVariationConstant[] = {
-        {"snippets_enabled", "true"}};
+        {"feed_ui_enabled", "false"},
+        {"snippets_enabled", "true"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
-        {"snippets_enabled", "true"}};
+        {"snippets_enabled", "true"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
+        {"snippets_enabled", "false"},
         {"undoable_actions_enabled", "true"},
         {"manage_interests_enabled", "true"},
         {"card_menu_tooltip_eligible", "true"}};
 const FeatureEntry::FeatureParam
     kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant[] = {
+        {"feed_ui_enabled", "false"},
         {"snippets_enabled", "true"},
         {"undoable_actions_enabled", "true"},
         {"manage_interests_enabled", "true"},
@@ -2600,10 +2613,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
-    {"enable-surfaces-for-videos",
-     flag_descriptions::kUseSurfaceLayerForVideoName,
-     flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
 #if defined(OS_CHROMEOS)
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,

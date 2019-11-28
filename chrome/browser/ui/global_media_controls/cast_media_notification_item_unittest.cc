@@ -53,14 +53,28 @@ class MockMediaNotificationView
   MOCK_METHOD1(UpdateWithMediaArtwork, void(const gfx::ImageSkia&));
 };
 
+class MockSessionController : public CastMediaSessionController {
+ public:
+  MockSessionController(
+      mojo::Remote<media_router::mojom::MediaController> remote)
+      : CastMediaSessionController(std::move(remote)) {}
+
+  MOCK_METHOD1(Send, void(media_session::mojom::MediaSessionAction));
+  MOCK_METHOD1(OnMediaStatusUpdated, void(media_router::mojom::MediaStatusPtr));
+};
+
 }  // namespace
 
 class CastMediaNotificationItemTest : public testing::Test {
  public:
   void SetUp() override {
     EXPECT_CALL(notification_controller_, ShowNotification(kRouteId));
+    auto session_controller = std::make_unique<MockSessionController>(
+        mojo::Remote<media_router::mojom::MediaController>());
+    session_controller_ = session_controller.get();
     item_ = std::make_unique<CastMediaNotificationItem>(
-        CreateMediaRoute(), &notification_controller_);
+        CreateMediaRoute(), &notification_controller_,
+        std::move(session_controller));
   }
 
   void SetView() {
@@ -87,6 +101,7 @@ class CastMediaNotificationItemTest : public testing::Test {
 
  protected:
   MockMediaNotificationController notification_controller_;
+  MockSessionController* session_controller_ = nullptr;
   MockMediaNotificationView view_;
   std::unique_ptr<CastMediaNotificationItem> item_;
 };
@@ -176,4 +191,22 @@ TEST_F(CastMediaNotificationItemTest, HideNotificationOnDismiss) {
 TEST_F(CastMediaNotificationItemTest, HideNotificationOnDelete) {
   EXPECT_CALL(notification_controller_, HideNotification(kRouteId));
   item_.reset();
+}
+
+TEST_F(CastMediaNotificationItemTest, SendMediaStatusToController) {
+  auto status = MediaStatus::New();
+  status->can_play_pause = true;
+  EXPECT_CALL(*session_controller_, OnMediaStatusUpdated(_))
+      .WillOnce([](const media_router::mojom::MediaStatusPtr& media_status) {
+        EXPECT_TRUE(media_status->can_play_pause);
+      });
+  item_->OnMediaStatusUpdated(std::move(status));
+}
+
+TEST_F(CastMediaNotificationItemTest, SendActionToController) {
+  auto status = MediaStatus::New();
+  item_->OnMediaStatusUpdated(std::move(status));
+
+  EXPECT_CALL(*session_controller_, Send(MediaSessionAction::kPlay));
+  item_->OnMediaSessionActionButtonPressed(MediaSessionAction::kPlay);
 }

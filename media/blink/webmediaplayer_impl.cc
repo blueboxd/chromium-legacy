@@ -1851,11 +1851,7 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
     }
 
     if (surface_layer_mode_ ==
-            blink::WebMediaPlayer::SurfaceLayerMode::kAlways ||
-        (surface_layer_mode_ ==
-             blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand &&
-         client_->DisplayType() ==
-             WebMediaPlayer::DisplayType::kPictureInPicture)) {
+        blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
       ActivateSurfaceLayerForVideo();
     } else {
       DCHECK(!video_layer_);

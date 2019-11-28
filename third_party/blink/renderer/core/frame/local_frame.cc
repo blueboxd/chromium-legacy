@@ -1855,6 +1855,11 @@ void LocalFrame::Collapse(bool collapsed) {
   To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
+void LocalFrame::EnableViewSourceMode() {
+  DCHECK(!Tree().Parent());
+  SetInViewSourceMode(true);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

@@ -9,7 +9,7 @@
 
 @class CommandDispatcher;
 @protocol PageInfoPresentation;
-@class TabModel;
+class WebStateList;
 
 // Notification sent when the page info is shown.
 extern NSString* const kPageInfoWillShowNotification;
@@ -31,8 +31,8 @@ extern NSString* const kPageInfoWillHideNotification;
 // present Page Info.
 @property(nonatomic, weak) id<PageInfoPresentation> presentationProvider;
 
-// The active TabModel to be used to display Page Info.
-@property(nonatomic, weak) TabModel* tabModel;
+// The active WebStateList to be used to display Page Info.
+@property(nonatomic, assign) WebStateList* webStateList;
 
 @end
 

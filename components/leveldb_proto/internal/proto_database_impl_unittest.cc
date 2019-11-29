@@ -7,10 +7,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread.h"
 #include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -154,14 +153,12 @@ template <typename T>
 class ProtoDatabaseImplTest : public testing::Test {
  public:
   void SetUp() override {
-    temp_dir_ = std::make_unique<base::ScopedTempDir>();
-    ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
-    shared_db_temp_dir_ = std::make_unique<base::ScopedTempDir>();
-    ASSERT_TRUE(shared_db_temp_dir_->CreateUniqueTempDir());
-    test_thread_ = std::make_unique<base::Thread>("test_thread");
-    ASSERT_TRUE(test_thread_->Start());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(shared_db_temp_dir_.CreateUniqueTempDir());
+    test_task_runner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     shared_db_ = base::WrapRefCounted(new SharedProtoDatabase(
-        kDefaultClientName, shared_db_temp_dir_->GetPath()));
+        kDefaultClientName, shared_db_temp_dir_.GetPath()));
   }
 
   void SetUpExperimentParams(std::map<std::string, std::string> params) {
@@ -196,6 +193,11 @@ class ProtoDatabaseImplTest : public testing::Test {
         run_init.QuitClosure()));
 
     run_init.Run();
+
+    // Destroy the db and run all tasks to allow resources to be released before
+    // |temp_dir| is cleaned up.
+    db.reset();
+    task_environment_.RunUntilIdle();
   }
 
   std::unique_ptr<TestProtoDatabaseProvider> CreateProviderNoSharedDB() {
@@ -207,17 +209,17 @@ class ProtoDatabaseImplTest : public testing::Test {
 
   std::unique_ptr<TestProtoDatabaseProvider> CreateProviderWithSharedDB() {
     return std::make_unique<TestProtoDatabaseProvider>(
-        shared_db_temp_dir_->GetPath(), shared_db_);
+        shared_db_temp_dir_.GetPath(), shared_db_);
   }
 
   std::unique_ptr<TestProtoDatabaseProvider> CreateProviderWithTestSharedDB(
       Enums::InitStatus shared_client_init_status) {
     auto test_shared_db = base::WrapRefCounted(new TestSharedProtoDatabase(
-        kDefaultClientName, shared_db_temp_dir_->GetPath(),
+        kDefaultClientName, shared_db_temp_dir_.GetPath(),
         shared_client_init_status));
 
     return std::make_unique<TestProtoDatabaseProvider>(
-        shared_db_temp_dir_->GetPath(), test_shared_db);
+        shared_db_temp_dir_.GetPath(), test_shared_db);
   }
 
   std::unique_ptr<TestSharedProtoDatabaseProvider> CreateSharedProvider(
@@ -382,20 +384,22 @@ class ProtoDatabaseImplTest : public testing::Test {
   }
 
   scoped_refptr<base::SequencedTaskRunner> GetTestThreadTaskRunner() {
-    return test_thread_->task_runner();
+    return test_task_runner_;
   }
 
-  base::FilePath temp_dir() { return temp_dir_->GetPath(); }
+  base::FilePath temp_dir() { return temp_dir_.GetPath(); }
 
  private:
-  std::unique_ptr<base::ScopedTempDir> temp_dir_;
-  std::unique_ptr<base::ScopedTempDir> shared_db_temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir shared_db_temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
+ protected:
+  base::test::TaskEnvironment task_environment_;
+
+ private:
   // Shared database.
-  std::unique_ptr<base::Thread> test_thread_;
-  std::unique_ptr<base::Thread> shared_db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> test_task_runner_;
   scoped_refptr<SharedProtoDatabase> shared_db_;
 };
 
@@ -1039,6 +1043,11 @@ TYPED_TEST(ProtoDatabaseImplTest, InitUniqueTwiceShouldSucceed) {
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
+
+  // Destroy the db provider and run all tasks to allow resources to be released
+  // before |temp_dir| is cleaned up.
+  db_provider.reset();
+  this->task_environment_.RunUntilIdle();
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
@@ -1057,6 +1066,11 @@ TYPED_TEST(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
+
+  // Destroy the db provider and run all tasks to allow resources to be released
+  // before |temp_dir_profile| is cleaned up.
+  db_provider.reset();
+  this->task_environment_.RunUntilIdle();
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
@@ -1075,6 +1089,11 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
+
+  // Destroy the db provider and run all tasks to allow resources to be released
+  // before |temp_dir_profile| is cleaned up.
+  db_provider.reset();
+  this->task_environment_.RunUntilIdle();
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
@@ -1093,6 +1112,11 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
   this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
+
+  // Destroy the db provider and run all tasks to allow resources to be released
+  // before |temp_dir_profile| is cleaned up.
+  db_provider.reset();
+  this->task_environment_.RunUntilIdle();
 }
 
 }  // namespace leveldb_proto

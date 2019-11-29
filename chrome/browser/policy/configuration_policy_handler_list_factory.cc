@@ -367,6 +367,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kNtlmV2Enabled,
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_POSIX)
+  { key::kAmbientAuthenticationInPrivateModesEnabled,
+    prefs::kAmbientAuthenticationInPrivateModesEnabled,
+    base::Value::Type::INTEGER },
   { key::kDisable3DAPIs,
     prefs::kDisable3DAPIs,
     base::Value::Type::BOOLEAN },

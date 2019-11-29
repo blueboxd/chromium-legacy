@@ -227,6 +227,14 @@ TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
       width: 500px;
       height: 500px;
     }
+    #initial-area {
+      position: relative;
+      left: 0px;
+      top: 0px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
+    }
     #area {
       position: relative;
       left: 200px;
@@ -237,12 +245,21 @@ TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
     }
     </style>
     <div id='container'>
+      <div id='initial-area'></div>
       <div id='area'></div>
     </div>
   )HTML");
   Compositor().BeginFrame();
 
-  GestureScroll(100, 100, -50, -50);
+  // The scroller snaps to the snap area that is closest to the origin (0,0) on
+  // the initial layout.
+  ASSERT_EQ(Window().scrollX(), 0);
+  ASSERT_EQ(Window().scrollY(), 0);
+
+  // The scroll delta needs to be large enough such that the closer snap area
+  // will be the one at (200,200).
+  // i.e. distance((200,200), (110,110)) <  distance((0,0), (110,110))
+  GestureScroll(100, 100, -110, -110);
 
   // Sanity check that body is the viewport defining element
   ASSERT_EQ(GetDocument().body(), GetDocument().ViewportDefiningElement());
@@ -276,6 +293,14 @@ TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
       width: 500px;
       height: 500px;
     }
+    #initial-area {
+      position: relative;
+      left: 0px;
+      top: 0px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
+    }
     #area {
       position: relative;
       left: 200px;
@@ -286,12 +311,21 @@ TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
     }
     </style>
     <div id='container'>
+      <div id='initial-area'></div>
       <div id='area'></div>
     </div>
   )HTML");
   Compositor().BeginFrame();
 
-  GestureScroll(100, 100, -50, -50);
+  // The scroller snaps to the snap area that is closest to the origin (0,0) on
+  // the initial layout.
+  ASSERT_EQ(Window().scrollX(), 0);
+  ASSERT_EQ(Window().scrollY(), 0);
+
+  // The scroll delta needs to be large enough such that the closer snap area
+  // will be the one at (200,200).
+  // i.e. distance((200,200), (110,110)) <  distance((0,0), (110,110))
+  GestureScroll(100, 100, -110, -110);
 
   // Sanity check that document element is the viewport defining element
   ASSERT_EQ(GetDocument().documentElement(),
@@ -325,8 +359,16 @@ TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
     #container {
       margin: 0px;
       padding: 0px;
-      width: 500px;
-      height: 500px;
+      width: 600px;
+      height: 600px;
+    }
+    #initial-area {
+      position: relative;
+      left: 0px;
+      top: 0px;
+      width: 100px;
+      height: 100px;
+      scroll-snap-align: start;
     }
     #area {
       position: relative;
@@ -338,12 +380,22 @@ TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
     }
     </style>
     <div id='container'>
+      <div id='initial-area'></div>
       <div id='area'></div>
     </div>
   )HTML");
   Compositor().BeginFrame();
 
-  GestureScroll(100, 100, -50, -50);
+  // The scroller snaps to the snap area that is closest to the origin (0,0) on
+  // the initial layout.
+  Element* body = GetDocument().body();
+  ASSERT_EQ(body->scrollLeft(), 0);
+  ASSERT_EQ(body->scrollTop(), 0);
+
+  // The scroll delta needs to be large enough such that the closer snap area
+  // will be the one at (200,200).
+  // i.e. distance((200,200), (110,110)) <  distance((0,0), (110,110))
+  GestureScroll(100, 100, -110, -110);
 
   // Sanity check that document element is the viewport defining element
   ASSERT_EQ(GetDocument().documentElement(),
@@ -351,9 +403,8 @@ TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
 
   // When body and document elements are both scrollable then body element
   // should capture snap points defined on it as opposed to layout view.
-  Element* body = GetDocument().body();
-  ASSERT_EQ(body->scrollLeft(), 100);
-  ASSERT_EQ(body->scrollTop(), 100);
+  ASSERT_EQ(body->scrollLeft(), 200);
+  ASSERT_EQ(body->scrollTop(), 200);
 }
 
 }  // namespace blink

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 #define COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 
+#include <string>
+
 #include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 
@@ -32,6 +34,7 @@ using UserSelectableTypeSet = EnumSet<UserSelectableType,
                                       UserSelectableType::kLastType>;
 
 const char* GetUserSelectableTypeName(UserSelectableType type);
+UserSelectableType GetUserSelectableTypeFromString(const std::string& type);
 ModelTypeSet UserSelectableTypeToAllModelTypes(UserSelectableType type);
 
 ModelType UserSelectableTypeToCanonicalModelType(UserSelectableType type);

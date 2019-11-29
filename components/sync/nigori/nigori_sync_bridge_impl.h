@@ -104,7 +104,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
       const sync_pb::EncryptedData& encryption_keybag,
       const sync_pb::EncryptedData& keystore_decryptor_token);
 
-  void UpdateCryptographerFromNonKeystoreNigori(
+  base::Optional<ModelError> UpdateCryptographerFromNonKeystoreNigori(
       const sync_pb::EncryptedData& keybag);
 
   // Uses |key_bag| to try to decrypt pending keys as represented in

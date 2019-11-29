@@ -822,7 +822,7 @@ void DownloadManagerImpl::InterceptNavigation(
 }
 
 int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
-    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
   int count = 0;

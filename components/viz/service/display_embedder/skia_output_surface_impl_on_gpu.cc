@@ -1551,12 +1551,12 @@ base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  // Handled by SkiaOutputDevice already.
 }
 
 void SkiaOutputSurfaceImplOnGpu::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  // Handled by SkiaOutputDevice already.
 }
 
 void SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification(

@@ -594,7 +594,12 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     const JavaParamRef<jstring>& jsw_js_url,
     const JavaParamRef<jstring>& jsw_scope,
     jboolean juse_cache,
-    const JavaParamRef<jstring>& jmethod) {
+    const JavaParamRef<jstring>& jmethod,
+    // Flatten supported_delegations to avoid performance penalty.
+    jboolean jsupported_delegations_shipping_address,
+    jboolean jsupported_delegations_payer_name,
+    jboolean jsupported_delegations_payer_email,
+    jboolean jsupported_delegations_payer_phone) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
@@ -615,13 +620,18 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
   host->set_sw_origin_for_logs(url::Origin::Create(GURL(sw_scope)));
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
 
-  // Todo(sahel): SupportedDelegations should be properly populated after
-  // implementing delegation on Android. https://crbug.com/984694
+  content::SupportedDelegations supported_delegations;
+  supported_delegations.shipping_address =
+      jsupported_delegations_shipping_address;
+  supported_delegations.payer_name = jsupported_delegations_payer_name;
+  supported_delegations.payer_email = jsupported_delegations_payer_email;
+  supported_delegations.payer_phone = jsupported_delegations_payer_phone;
+
   content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
       web_contents, std::move(event_data),
       ConvertJavaStringToUTF8(env, japp_name), icon_bitmap,
       ConvertJavaStringToUTF8(env, jsw_js_url), sw_scope, juse_cache,
-      ConvertJavaStringToUTF8(env, jmethod), content::SupportedDelegations(),
+      ConvertJavaStringToUTF8(env, jmethod), supported_delegations,
       base::BindOnce(
           &payments::PaymentHandlerHost::set_registration_id_for_logs,
           host->AsWeakPtr()),

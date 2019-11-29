@@ -774,6 +774,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 #endif
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */
       );
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -849,6 +850,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
 #endif
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */
       );
   mojom::BeginNavigationParamsPtr begin_params =

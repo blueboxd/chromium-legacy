@@ -1104,14 +1104,15 @@ void PeerConnectionTracker::TrackGetUserMedia(
 
 void PeerConnectionTracker::TrackRtcEventLogWrite(
     RTCPeerConnectionHandler* pc_handler,
-    const String& output) {
+    const std::string& output) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
 
-  String non_null_output = output.IsNull() ? WTF::g_empty_string : output;
-  peer_connection_tracker_host_->WebRtcEventLogWrite(id, non_null_output);
+  WTF::Vector<uint8_t> converted_output;
+  converted_output.AppendRange(output.begin(), output.end());
+  peer_connection_tracker_host_->WebRtcEventLogWrite(id, converted_output);
 }
 
 int PeerConnectionTracker::GetNextLocalID() {

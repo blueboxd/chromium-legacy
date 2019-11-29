@@ -11,9 +11,11 @@ This tests that aria-hidden works as expected on elements that are subclasses of
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS child_1.childrenCount is 2
-PASS child_1.childAtIndex(0).isIgnored is true
-PASS child_1.childAtIndex(1).isIgnored is true
+PASS child_1.childrenCount is 1
+PASS grandchild_1.isIgnored is true
+PASS grandchild_1.childrenCount is 2
+PASS grandchild_1.childAtIndex(0).isIgnored is true
+PASS grandchild_1.childAtIndex(1).isIgnored is true
 PASS child_2.childAtIndex(0).isIgnored is true
 PASS child_3.childrenCount is 2
 PASS child_3.childAtIndex(0).isIgnored is true

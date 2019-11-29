@@ -45,6 +45,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -917,11 +918,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
                           @"popup_menu_history", kToolsMenuHistoryId);
   history.enabled = !self.isIncognito;
 
+  // Open Downloads folder.
+  TableViewItem* downloadsFolder = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_DOWNLOADS, PopupMenuActionOpenDownloads,
+      @"popup_menu_downloads", kToolsMenuDownloadsId);
+
   // Settings.
   TableViewItem* settings =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_SETTINGS, PopupMenuActionSettings,
                           @"popup_menu_settings", kToolsMenuSettingsId);
 
+  // If downloads manager's flag is enabled, displays Downloads.
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
+    return @[
+      bookmarks, self.readingListItem, recentTabs, history, downloadsFolder,
+      settings
+    ];
+  }
   return @[ bookmarks, self.readingListItem, recentTabs, history, settings ];
 }
 

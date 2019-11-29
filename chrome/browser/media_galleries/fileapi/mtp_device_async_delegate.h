@@ -188,16 +188,15 @@ class MTPDeviceAsyncDelegate {
       const GURL& origin,
       const base::FilePath& file_path,
       const bool recursive,
-      const storage::WatcherManager::StatusCallback& callback,
-      const storage::WatcherManager::NotificationCallback&
-          notification_callback) = 0;
+      storage::WatcherManager::StatusCallback callback,
+      storage::WatcherManager::NotificationCallback notification_callback) = 0;
 
   // Removes watcher from |file_path| of |origin|.
   virtual void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& file_path,
       const bool recursive,
-      const storage::WatcherManager::StatusCallback& callback) = 0;
+      storage::WatcherManager::StatusCallback callback) = 0;
 
   // Called when the
   // (1) Browser application is in shutdown mode (or)

@@ -497,44 +497,6 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeSitePerProcessPDFTest);
 };
 
-class ChromeSitePerProcessBrowserPluginPDFTest
-    : public ChromeSitePerProcessPDFTest {
-  void SetUpCommandLine(base::CommandLine* cl) override {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kMimeHandlerViewInCrossProcessFrame);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Regression test for https://crbug.com/870536. Ensure that the test doesn't
-// crash when a GestureScrollBegin is sent to BrowserPluginGuest, while the
-// GestureScrollUpdates are sent to its embedder. For both non-OOPIF and OOPIF
-// cases.
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessBrowserPluginPDFTest,
-                       ResendGestureToEmbedderOOPIF) {
-  ResendGestureToEmbedder("b.com");
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessBrowserPluginPDFTest,
-                       ResendGestureToEmbedderNonOOPIF) {
-  ResendGestureToEmbedder("a.com");
-}
-
-// Regression test for https://crbug.com/873211. MaybeSendSyntheticTapGesture
-// can be called with no touch action set in TouchActionFilter and results in
-// a crash.
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessBrowserPluginPDFTest,
-                       SendSyntheticTapGestureOOPIF) {
-  SendSyntheticTapGesture("b.com");
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessBrowserPluginPDFTest,
-                       SendSyntheticTapGestureNonOOPIF) {
-  SendSyntheticTapGesture("a.com");
-}
-
 // This test verifies that when navigating an OOPIF to a page with <embed>-ed
 // PDF, the guest is properly created, and by removing the embedder frame, the
 // guest is properly destroyed (https://crbug.com/649856).

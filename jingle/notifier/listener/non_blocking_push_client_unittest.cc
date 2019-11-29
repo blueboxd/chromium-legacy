@@ -31,11 +31,10 @@ class NonBlockingPushClientTest : public testing::Test {
   ~NonBlockingPushClientTest() override {}
 
   void SetUp() override {
-    push_client_.reset(
-        new NonBlockingPushClient(
-            base::ThreadTaskRunnerHandle::Get(),
-            base::Bind(&NonBlockingPushClientTest::CreateFakePushClient,
-                       base::Unretained(this))));
+    push_client_ = std::make_unique<NonBlockingPushClient>(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::BindOnce(&NonBlockingPushClientTest::CreateFakePushClient,
+                       base::Unretained(this)));
     push_client_->AddObserver(&fake_observer_);
     // Pump message loop to run CreateFakePushClient.
     base::RunLoop().RunUntilIdle();
@@ -54,10 +53,11 @@ class NonBlockingPushClientTest : public testing::Test {
   std::unique_ptr<PushClient> CreateFakePushClient() {
     if (fake_push_client_) {
       ADD_FAILURE();
-      return std::unique_ptr<PushClient>();
+      return nullptr;
     }
-    fake_push_client_ = new FakePushClient();
-    return std::unique_ptr<PushClient>(fake_push_client_);
+    auto client = std::make_unique<FakePushClient>();
+    fake_push_client_ = client.get();
+    return client;
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;

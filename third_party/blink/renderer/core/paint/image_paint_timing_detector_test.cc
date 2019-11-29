@@ -225,7 +225,7 @@ class ImagePaintTimingDetectorTest : public testing::Test {
     DCHECK(element);
     // Set image and make it loaded.
     ImageResourceContent* content = CreateImageForTest(width, height);
-    ToHTMLVideoElement(element)->SetImageForTest(content);
+    To<HTMLVideoElement>(element)->SetImageForTest(content);
   }
 
   void SetSVGImageAndPaint(AtomicString id, int width, int height) {

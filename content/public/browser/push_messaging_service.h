@@ -44,9 +44,8 @@ class CONTENT_EXPORT PushMessagingService {
                           const GURL& endpoint,
                           const std::vector<uint8_t>& p256dh,
                           const std::vector<uint8_t>& auth)>;
-  using StringCallback = base::Callback<void(const std::string& data,
-                                             bool success,
-                                             bool not_found)>;
+  using StringCallback = base::OnceCallback<
+      void(const std::string& data, bool success, bool not_found)>;
 
   virtual ~PushMessagingService() {}
 
@@ -116,7 +115,7 @@ class CONTENT_EXPORT PushMessagingService {
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,
                           int64_t service_worker_registration_id,
-                          const StringCallback& callback);
+                          StringCallback callback);
 
   // Clear the push subscription id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.

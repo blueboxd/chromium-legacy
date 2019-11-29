@@ -182,18 +182,20 @@ class URLLoaderInterceptor::IOState
 class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
  public:
   explicit URLLoaderClientInterceptor(
-      const base::Callback<network::mojom::URLLoaderFactory*()>& factory_getter,
+      base::OnceCallback<network::mojom::URLLoaderFactory*()> factory_getter,
       URLLoaderInterceptor::RequestParams params,
       const URLLoaderInterceptor::URLLoaderCompletionStatusCallback&
           completion_status_callback)
       : original_client_(std::move(params.client)),
         completion_status_callback_(std::move(completion_status_callback)),
         request_url_(params.url_request.url) {
-    factory_getter.Run()->CreateLoaderAndStart(
-        std::move(params.receiver), params.routing_id, params.request_id,
-        params.options, std::move(params.url_request),
-        delegating_client_receiver_.BindNewPipeAndPassRemote(),
-        params.traffic_annotation);
+    std::move(factory_getter)
+        .Run()
+        ->CreateLoaderAndStart(
+            std::move(params.receiver), params.routing_id, params.request_id,
+            params.options, std::move(params.url_request),
+            delegating_client_receiver_.BindNewPipeAndPassRemote(),
+            params.traffic_annotation);
   }
 
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
@@ -243,16 +245,16 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
 class URLLoaderInterceptor::Interceptor
     : public network::mojom::URLLoaderFactory {
  public:
-  using ProcessIdGetter = base::Callback<int()>;
+  using ProcessIdGetter = base::RepeatingCallback<int()>;
   using OriginalFactoryGetter =
-      base::Callback<network::mojom::URLLoaderFactory*()>;
+      base::RepeatingCallback<network::mojom::URLLoaderFactory*()>;
 
   Interceptor(URLLoaderInterceptor::IOState* parent,
-              const ProcessIdGetter& process_id_getter,
-              const OriginalFactoryGetter& original_factory_getter)
+              ProcessIdGetter process_id_getter,
+              OriginalFactoryGetter original_factory_getter)
       : parent_(parent),
-        process_id_getter_(process_id_getter),
-        original_factory_getter_(original_factory_getter) {
+        process_id_getter_(std::move(process_id_getter)),
+        original_factory_getter_(std::move(original_factory_getter)) {
     receivers_.set_disconnect_handler(base::BindRepeating(
         &Interceptor::OnConnectionError, base::Unretained(this)));
   }
@@ -294,7 +296,7 @@ class URLLoaderInterceptor::Interceptor
 
     url_loader_client_interceptors_.push_back(
         std::make_unique<URLLoaderClientInterceptor>(
-            std::move(original_factory_getter_), std::move(params),
+            original_factory_getter_, std::move(params),
             parent_->GetCompletionStatusCallback()));
   }
 
@@ -441,14 +443,15 @@ URLLoaderInterceptor::RequestParams::RequestParams(RequestParams&& other) =
 URLLoaderInterceptor::RequestParams& URLLoaderInterceptor::RequestParams::
 operator=(RequestParams&& other) = default;
 
-URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
-    : URLLoaderInterceptor(callback, {}, {}) {}
+URLLoaderInterceptor::URLLoaderInterceptor(InterceptCallback callback)
+    : URLLoaderInterceptor(std::move(callback), {}, {}) {}
 
 URLLoaderInterceptor::URLLoaderInterceptor(
-    const InterceptCallback& callback,
+    InterceptCallback callback,
     const URLLoaderCompletionStatusCallback& completion_status_callback,
     base::OnceClosure ready_callback)
-    : callback_(callback), io_thread_(base::MakeRefCounted<IOState>(this)) {
+    : callback_(std::move(callback)),
+      io_thread_(base::MakeRefCounted<IOState>(this)) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   use_runloop_ = !ready_callback;

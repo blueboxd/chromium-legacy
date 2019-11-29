@@ -50,7 +50,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
   void OnResize(
       const HeapVector<Member<ResizeObserverEntry>>& entries) override {
     DCHECK_EQ(entries.size(), 1u);
-    DCHECK(IsHTMLVideoElement(entries[0]->target()));
+    DCHECK(IsA<HTMLVideoElement>(entries[0]->target()));
     text_track_container_->UpdateDefaultFontSize(
         entries[0]->target()->GetLayoutObject());
   }
@@ -71,7 +71,7 @@ TextTrackContainer::TextTrackContainer(HTMLMediaElement& media_element)
       media_element_(&media_element),
       default_font_size_(0) {
   SetShadowPseudoId(AtomicString("-webkit-media-text-track-container"));
-  if (IsHTMLVideoElement(*media_element_))
+  if (IsA<HTMLVideoElement>(*media_element_))
     ObserveSizeChanges(*media_element_);
 }
 
@@ -84,7 +84,7 @@ void TextTrackContainer::Trace(Visitor* visitor) {
 Node::InsertionNotificationRequest TextTrackContainer::InsertedInto(
     ContainerNode& root) {
   if (!video_size_observer_ && media_element_->isConnected() &&
-      IsHTMLVideoElement(*media_element_)) {
+      IsA<HTMLVideoElement>(*media_element_)) {
     ObserveSizeChanges(*media_element_);
   }
 
@@ -163,7 +163,7 @@ void TextTrackContainer::UpdateDisplay(HTMLMediaElement& media_element,
     return;
 
   // 2. Let video be the media element or other playback mechanism.
-  HTMLVideoElement& video = ToHTMLVideoElement(media_element);
+  auto& video = To<HTMLVideoElement>(media_element);
 
   // 3. Let output be an empty list of absolutely positioned CSS block boxes.
 

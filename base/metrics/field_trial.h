@@ -674,16 +674,6 @@ class BASE_EXPORT FieldTrialList {
   // For testing, sets the global instance to |instance|.
   static void RestoreInstanceForTesting(FieldTrialList* instance);
 
-  // Allows nested instances of FieldTrialList without having to use the
-  // backup&restore methods above.
-  // TODO(crbug.com/1018667): Remove after all unit tests have been migrated.
-  static void AllowNestedFieldTrialListForTesting();
-
-  // Exposes the previous instance of FieldTrialNest, where |this| was nested.
-  // Null except in tests that use AllowNestedFieldTrialListForTesting().
-  // TODO(crbug.com/1018667): Remove after all unit tests have been migrated.
-  const FieldTrialList* GetPreviousGlobal() const;
-
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, InstantiateAllocator);
@@ -812,9 +802,6 @@ class BASE_EXPORT FieldTrialList {
 
   // Tracks whether CreateTrialsFromCommandLine() has been called.
   bool create_trials_from_command_line_called_ = false;
-
-  // TODO(crbug.com/1018667): Remove after all unit tests have been migrated.
-  FieldTrialList* previous_global_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialList);
 };

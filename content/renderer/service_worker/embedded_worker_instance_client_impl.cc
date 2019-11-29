@@ -43,11 +43,10 @@ void EmbeddedWorkerInstanceClientImpl::Create(
 
 void EmbeddedWorkerInstanceClientImpl::CreateForRequest(
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
-    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
-  // Implicit conversion from EmbeddedWorkerInstanceClientRequest to
-  // mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>.
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
   EmbeddedWorkerInstanceClientImpl::Create(
-      std::move(initiator_thread_task_runner), std::move(request));
+      std::move(initiator_thread_task_runner), std::move(receiver));
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {

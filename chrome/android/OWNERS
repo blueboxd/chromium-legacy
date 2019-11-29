@@ -14,11 +14,11 @@ per-file chrome_java_sources.gni=*
 per-file chrome_test_java_sources.gni=*
 per-file chrome_junit_test_java_sources.gni=*
 
-per-file BUILD.gn=estevenson@chromium.org
-per-file BUILD.gn=tiborg@chromium.org
-per-file BUILD.gn=wnwen@chromium.org
-# For VR Javatest changes
+# For VR Javatest changes.
 per-file BUILD.gn=bsheedy@chromium.org
+
+# Build-related files.
+per-file *.gn*=file://build/android/OWNERS
 
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS

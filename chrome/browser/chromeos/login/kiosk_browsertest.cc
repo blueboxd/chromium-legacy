@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -825,6 +826,10 @@ class KioskTest : public OobeBaseTest {
 
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
+  // We need Fake gaia to avoid network errors that can be caused by
+  // attempts to load real GAIA.
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+
  private:
   bool use_consumer_kiosk_mode_ = true;
   std::string test_app_id_;
@@ -1155,18 +1160,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
                                              base::Value("kiosk_enable"));
 
   // Wait for the kiosk_enable screen to show and cancel the screen.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-      content::NotificationService::AllSources())
-      .Wait();
-  GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting", base::Value(false));
+  OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
+  test::OobeJS().TapOnPath({"kiosk-enable", "close"});
 
   // Wait for the kiosk_enable screen to disappear.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
-      content::NotificationService::AllSources())
-      .Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Check that the status still says configurable.
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
@@ -1190,13 +1188,9 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
 
-  // Wait for the kiosk_enable screen to show and cancel the screen.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-      content::NotificationService::AllSources())
-      .Wait();
-  GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting", base::Value(true));
+  // Wait for the kiosk_enable screen to show and enable kiosk.
+  OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
+  test::OobeJS().TapOnPath({"kiosk-enable", "enable"});
 
   // Wait for the signal that indicates Kiosk Mode is enabled.
   content::WindowedNotificationObserver(
@@ -1224,32 +1218,17 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
                                              base::Value("kiosk_enable"));
 
   // Wait for the kiosk_enable screen to show and cancel the screen.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-      content::NotificationService::AllSources())
-      .Wait();
-  GetLoginUI()->CallJavascriptFunctionUnsafe(
-      "login.KioskEnableScreen.enableKioskForTesting", base::Value(false));
+  OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
+  test::OobeJS().TapOnPath({"kiosk-enable", "close"});
 
-  // Wait for the kiosk_enable screen to disappear.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
-      content::NotificationService::AllSources())
-      .Wait();
-
-  // Show signin screen again.
-  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
+  // Wait for signin screen to appear again.
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Show kiosk enable screen again.
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
-
   // And it should show up.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-      content::NotificationService::AllSources())
-      .Wait();
+  OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
 }
 
 // crbug.com/766169
@@ -2291,7 +2270,6 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
  private:
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
   DeviceStateMixin device_state_{
       &mixin_host_,

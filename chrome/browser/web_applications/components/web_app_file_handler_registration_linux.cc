@@ -32,22 +32,22 @@ void OnShortcutInfoReceived(const std::set<std::string> mime_types,
 
 }  // namespace
 
-bool OsSupportsWebAppFileHandling() {
+bool ShouldRegisterFileHandlersWithOs() {
   return true;
 }
 
-void RegisterFileHandlersForWebApp(const AppId& app_id,
-                                   const std::string& app_name,
-                                   Profile* profile,
-                                   const std::set<std::string>& file_extensions,
-                                   const std::set<std::string>& mime_types) {
+void RegisterFileHandlersWithOs(const AppId& app_id,
+                                const std::string& app_name,
+                                Profile* profile,
+                                const std::set<std::string>& file_extensions,
+                                const std::set<std::string>& mime_types) {
   AppShortcutManager& shortcut_manager =
       WebAppProviderBase::GetProviderBase(profile)->shortcut_manager();
   shortcut_manager.GetShortcutInfoForApp(
       app_id, base::BindOnce(OnShortcutInfoReceived, mime_types));
 }
 
-void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile) {
+void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
   // TODO(harrisjay): Add support for unregistering file handlers.
 }
 

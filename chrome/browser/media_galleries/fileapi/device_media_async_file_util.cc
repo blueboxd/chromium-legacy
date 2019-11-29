@@ -609,33 +609,32 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
 void DeviceMediaAsyncFileUtil::AddWatcher(
     const storage::FileSystemURL& url,
     bool recursive,
-    const storage::WatcherManager::StatusCallback& callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::StatusCallback callback,
+    storage::WatcherManager::NotificationCallback notification_callback) {
   MTPDeviceAsyncDelegate* const delegate =
       MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
     return;
   }
 
-  delegate->AddWatcher(url.origin().GetURL(), url.path(), recursive, callback,
-                       notification_callback);
+  delegate->AddWatcher(url.origin().GetURL(), url.path(), recursive,
+                       std::move(callback), std::move(notification_callback));
 }
 
 void DeviceMediaAsyncFileUtil::RemoveWatcher(
     const storage::FileSystemURL& url,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback) {
+    storage::WatcherManager::StatusCallback callback) {
   MTPDeviceAsyncDelegate* const delegate =
       MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
     return;
   }
 
   delegate->RemoveWatcher(url.origin().GetURL(), url.path(), recursive,
-                          callback);
+                          std::move(callback));
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(

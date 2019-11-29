@@ -154,7 +154,7 @@ class TestNavigationObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   // Callback invoked on WebContents creation.
-  base::Callback<void(WebContents*)> web_contents_created_callback_;
+  base::RepeatingCallback<void(WebContents*)> web_contents_created_callback_;
 
   // Living TestWebContentsObservers created by this observer.
   std::set<std::unique_ptr<TestWebContentsObserver>, base::UniquePtrComparator>

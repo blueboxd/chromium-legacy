@@ -797,6 +797,19 @@
     ]
   },
 
+  "SyncTypesListDisabled": {
+    "os": ["win", "linux", "mac", "android", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SyncTypesListDisabled": ["preferences", "bookmarks"] },
+        "prefs": {
+          "sync.preferences": { "value": false },
+          "sync.bookmarks": { "value": false}
+        }
+      }
+    ]
+  },
+
   "SigninAllowed": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
@@ -4488,6 +4501,19 @@
           "NTLMShareAuthenticationEnabled": true
         },
         "prefs": { "network_file_shares.ntlm_share_authentication.enabled": {} }
+      }
+    ]
+  },
+
+  "AmbientAuthenticationInPrivateModesEnabled":{
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy":{"AmbientAuthenticationInPrivateModesEnabled": true},
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "AmbientAuthenticationInPrivateModesEnabled": 0
+        },
+        "prefs": { "auth.ambient_auth_in_private_modes": {"local_state": true } }
       }
     ]
   },

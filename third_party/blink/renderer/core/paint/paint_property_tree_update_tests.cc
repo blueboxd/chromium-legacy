@@ -1375,6 +1375,11 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   )HTML");
 
   GetDocument().View()->Resize(300, 300);
+  // Manually set the visual viewport size because the testing client does not
+  // do this. The size needs to be updated because otherwise the
+  // RootFrameViewport's maximum scroll offset would be negative and trigger a
+  // DCHECK.
+  GetDocument().GetPage()->GetVisualViewport().SetSize(IntSize(300, 300));
   UpdateAllLifecyclePhasesForTest();
 
   auto doc_snap_container_data = DocScroll()->GetSnapContainerData();

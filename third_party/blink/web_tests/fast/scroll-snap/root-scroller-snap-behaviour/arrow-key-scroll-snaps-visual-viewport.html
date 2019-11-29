@@ -27,6 +27,13 @@ body, html {
   height: 100%;
 }
 
+#initial-snap-area {
+  width: 200px;
+  height: 50%;
+  background-color: blue;
+  scroll-snap-align: start;
+}
+
 #snap-area {
   width: 200px;
   height: 50%;
@@ -40,6 +47,7 @@ body, html {
 <script src="../../../resources/testharnessreport.js"></script>
 
 <div id="root-scroller">
+  <div id="initial-snap-area"></div>
   <div class="spacer" style="background-color: PaleGreen"></div>
   <div class="spacer" style="background-color: PaleGreen"></div>
   <div id="snap-area"></div>
@@ -50,8 +58,9 @@ if (window.internals) {
   internals.runtimeFlags.implicitRootScrollerEnabled = true;
 }
 
-const rootscroller = document.getElementById("root-scroller");
-const snaparea = document.getElementById("snap-area");
+const root_scroller = document.getElementById("root-scroller");
+const snap_area = document.getElementById("snap-area");
+const initial_area = document.getElementById("initial-snap-area");
 
 async function arrowDown() {
   // Click on the middle of the viewport.
@@ -87,22 +96,26 @@ promise_test(async function () {
   await waitForCompositorCommit();
 
   assert_equals(window.internals.effectiveRootScroller(document),
-    rootscroller,
+    root_scroller,
     "#root-scroller must be the effective root scroller");
+  // Should be snapped to the closer snap area (0,0) on the initial layout.
+  assert_equals(visualViewport.offsetTop + root_scroller.scrollTop,
+      initial_area.offsetTop);
 
   await arrowDown()
 
   const max_frames = 500;
   const max_unchanged_frames = 15;
   await waitForAnimationEnd(() => {
-    return rootscroller.scrollTop;
+    return root_scroller.scrollTop;
   }, max_frames, max_unchanged_frames);
 
   // The offset of the visual viewport and the layout viewport combined should
   // be at the snap point.
-  assert_equals(visualViewport.offsetTop + rootscroller.scrollTop,
-    snaparea.offsetTop, "Visual viewport offset combined with the scroller's\
-    scroll offset should add to the snap area's position.");
-}, "Snapping the root scroller after arrow key scrolling should affect the\
+  assert_equals(visualViewport.offsetTop + root_scroller.scrollTop,
+    snap_area.offsetTop, "Visual viewport offset combined with the scroller's \
+scroll offset should add to the snap area's position.");
+
+}, "Snapping the root scroller after arrow key scrolling should affect the \
 visual viewport offset.");
 </script>

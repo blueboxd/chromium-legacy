@@ -83,12 +83,13 @@ public class PaymentRequestTestBridge {
         private final long mOnNotSupportedErrorPtr;
         private final long mOnConnectionTerminatedPtr;
         private final long mOnAbortCalledPtr;
+        private final long mOnCompleteCalledPtr;
 
         PaymentRequestNativeObserverBridgeToNativeForTest(long onCanMakePaymentCalledPtr,
                 long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
                 long onHasEnrolledInstrumentReturnedPtr, long onShowAppsReadyPtr,
-                long onNotSupportedErrorPtr, long onConnectionTerminatedPtr,
-                long onAbortCalledPtr) {
+                long onNotSupportedErrorPtr, long onConnectionTerminatedPtr, long onAbortCalledPtr,
+                long onCompleteCalledPtr) {
             mOnCanMakePaymentCalledPtr = onCanMakePaymentCalledPtr;
             mOnCanMakePaymentReturnedPtr = onCanMakePaymentReturnedPtr;
             mOnHasEnrolledInstrumentCalledPtr = onHasEnrolledInstrumentCalledPtr;
@@ -97,6 +98,7 @@ public class PaymentRequestTestBridge {
             mOnNotSupportedErrorPtr = onNotSupportedErrorPtr;
             mOnConnectionTerminatedPtr = onConnectionTerminatedPtr;
             mOnAbortCalledPtr = onAbortCalledPtr;
+            mOnCompleteCalledPtr = onCompleteCalledPtr;
         }
 
         @Override
@@ -131,6 +133,10 @@ public class PaymentRequestTestBridge {
         public void onAbortCalled() {
             nativeResolvePaymentRequestObserverCallback(mOnAbortCalledPtr);
         }
+        @Override
+        public void onCompleteCalled() {
+            nativeResolvePaymentRequestObserverCallback(mOnCompleteCalledPtr);
+        }
     }
 
     private static final String TAG = "PaymentRequestTestBridge";
@@ -151,12 +157,14 @@ public class PaymentRequestTestBridge {
     public static void setUseNativeObserverForTest(long onCanMakePaymentCalledPtr,
             long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
             long onHasEnrolledInstrumentReturnedPtr, long onShowAppsReadyPtr,
-            long onNotSupportedErrorPtr, long onConnectionTerminatedPtr, long onAbortCalledPtr) {
+            long onNotSupportedErrorPtr, long onConnectionTerminatedPtr, long onAbortCalledPtr,
+            long onCompleteCalledPtr) {
         PaymentRequestFactory.sNativeObserverForTest =
                 new PaymentRequestNativeObserverBridgeToNativeForTest(onCanMakePaymentCalledPtr,
                         onCanMakePaymentReturnedPtr, onHasEnrolledInstrumentCalledPtr,
                         onHasEnrolledInstrumentReturnedPtr, onShowAppsReadyPtr,
-                        onNotSupportedErrorPtr, onConnectionTerminatedPtr, onAbortCalledPtr);
+                        onNotSupportedErrorPtr, onConnectionTerminatedPtr, onAbortCalledPtr,
+                        onCompleteCalledPtr);
     }
 
     /**

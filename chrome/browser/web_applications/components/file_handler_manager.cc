@@ -31,15 +31,15 @@ void FileHandlerManager::Start() {
 
 void FileHandlerManager::OnWebAppUninstalled(const AppId& installed_app_id) {
   if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
-      OsSupportsWebAppFileHandling()) {
-    UnregisterFileHandlersForWebApp(installed_app_id, profile_);
+      ShouldRegisterFileHandlersWithOs()) {
+    UnregisterFileHandlersWithOs(installed_app_id, profile_);
   }
 }
 
 void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
   if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
-      OsSupportsWebAppFileHandling()) {
-    UnregisterFileHandlersForWebApp(app_id, profile_);
+      ShouldRegisterFileHandlersWithOs()) {
+    UnregisterFileHandlersWithOs(app_id, profile_);
   }
 }
 
@@ -49,7 +49,7 @@ void FileHandlerManager::OnAppRegistrarDestroyed() {
 
 void FileHandlerManager::OnShortcutsCreated(const AppId& installed_app_id) {
   if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
-      !OsSupportsWebAppFileHandling()) {
+      !ShouldRegisterFileHandlersWithOs()) {
     return;
   }
 
@@ -62,8 +62,8 @@ void FileHandlerManager::OnShortcutsCreated(const AppId& installed_app_id) {
       GetFileExtensionsFromFileHandlers(*file_handlers);
   std::set<std::string> mime_types =
       GetMimeTypesFromFileHandlers(*file_handlers);
-  RegisterFileHandlersForWebApp(installed_app_id, app_name, profile_,
-                                file_extensions, mime_types);
+  RegisterFileHandlersWithOs(installed_app_id, app_name, profile_,
+                             file_extensions, mime_types);
 }
 
 void FileHandlerManager::OnShortcutManagerDestroyed() {

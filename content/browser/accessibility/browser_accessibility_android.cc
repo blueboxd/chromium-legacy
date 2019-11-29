@@ -989,11 +989,14 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kRootWebArea:
       // No role description.
       break;
-    case ax::mojom::Role::kRowHeader:
-      message_id = IDS_AX_ROLE_ROW_HEADER;
-      break;
     case ax::mojom::Role::kRow:
       // No role description.
+      break;
+    case ax::mojom::Role::kRowGroup:
+      // No role description.
+      break;
+    case ax::mojom::Role::kRowHeader:
+      message_id = IDS_AX_ROLE_ROW_HEADER;
       break;
     case ax::mojom::Role::kRuby:
       // No role description.

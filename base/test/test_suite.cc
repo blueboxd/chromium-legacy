@@ -23,7 +23,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -125,17 +124,10 @@ class ResetCommandLineBetweenTests : public testing::EmptyTestEventListener {
 // to initialize them manually.
 class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
  public:
-  FeatureListScopedToEachTest() {
-    // Allow nested FieldTrialList instances, for unit tests that instantiate
-    // them explicitly despite |field_trial_list_| being auto-instantiated here.
-    // TODO(crbug.com/1018667): Remove after all unit tests have been migrated.
-    base::FieldTrialList::AllowNestedFieldTrialListForTesting();
-  }
-
-  FeatureListScopedToEachTest(const FeatureListScopedToEachTest&) = delete;
-
+  FeatureListScopedToEachTest() = default;
   ~FeatureListScopedToEachTest() override = default;
 
+  FeatureListScopedToEachTest(const FeatureListScopedToEachTest&) = delete;
   FeatureListScopedToEachTest& operator=(const FeatureListScopedToEachTest&) =
       delete;
 

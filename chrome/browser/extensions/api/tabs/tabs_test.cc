@@ -47,7 +47,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -2082,13 +2081,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   EXPECT_TRUE(load_success);
 
   auto* web_contents_for_click = second_web_contents;
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    auto inner_web_contents = web_contents_for_click->GetInnerWebContents();
-    ASSERT_EQ(1U, inner_web_contents.size());
-    // With MimeHandlerViewInCrossProcessFrame input should directly route to
-    // the guest WebContents as there is no longer a BrowserPlugin involved.
-    web_contents_for_click = inner_web_contents[0];
-  }
+  auto inner_web_contents = web_contents_for_click->GetInnerWebContents();
+  ASSERT_EQ(1U, inner_web_contents.size());
+  // With MimeHandlerViewInCrossProcessFrame input should directly route to
+  // the guest WebContents as there is no longer a BrowserPlugin involved.
+  web_contents_for_click = inner_web_contents[0];
+
   // The actual PDF page coordinates that this click goes to is (346, 333),
   // after several space transformations, not (400, 400). This clicks on a link
   // to "http://www.facebook.com:83".

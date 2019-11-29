@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // TODO(crbug.com/845472): rename, see

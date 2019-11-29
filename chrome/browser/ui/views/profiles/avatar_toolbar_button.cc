@@ -457,14 +457,10 @@ void AvatarToolbarButton::MaybeHideIdentityAnimation() {
     return;
   }
 
-  // Keep identity visible if this button is in use (hovered or has focus) or
-  // if |parent_| is in use (which makes it highlighted). We should not move
-  // things around when the user wants to click on |this| or another button in
-  // |parent_|.
-  if (this->IsMouseHovered() || this->HasFocus() ||
-      (parent_ && parent_->IsHighlighted())) {
+  // Keep identity visible if this button is in use (hovered or has focus). We
+  // should not move things around when the user wants to click on |this|.
+  if (this->IsMouseHovered() || this->HasFocus())
     return;
-  }
 
   identity_animation_state_ = IdentityAnimationState::kNotShowing;
   // Update the text to the pre-shown state. This also makes sure that we now

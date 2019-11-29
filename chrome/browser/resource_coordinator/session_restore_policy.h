@@ -8,10 +8,13 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
@@ -129,27 +132,29 @@ class SessionRestorePolicy {
                                            size_t score);
 
  protected:
+#if !defined(OS_ANDROID)
+  friend class TabDataAccess;
+#endif
+
   // Holds a handful of data about a tab which is used to prioritize it during
   // session restore.
   struct TabData {
     TabData();
     TabData(const TabData&) = delete;
-    TabData(TabData&&);
+    TabData(TabData&&) = delete;
     ~TabData();
 
     TabData& operator=(const TabData&) = delete;
-    TabData& operator=(TabData&&);
+    TabData& operator=(TabData&&) = delete;
 
-    // This is used to populate |used_in_bg| once the reader is ready. The
-    // reader is not available on all platforms and test environments. The
-    // presence of a reader indicates that the tab is waiting for additional
-    // data and has not yet provided a final score to the embedder.
-    std::unique_ptr<SiteCharacteristicsDataReader> reader;
+    // Return true if |used_in_bg| is initialized and set to true, false
+    // otherwise.
+    bool UsedInBg() const;
 
     // Indicates whether or not the tab communicates with the user even when it
     // is in the background (notifications, tab title changes, favicons, etc).
-    // This is set asynchronously.
-    bool used_in_bg = false;
+    // It is initialized to nullopt and set asynchronously to the proper value.
+    base::Optional<bool> used_in_bg;
 
     // Indicates whether or not the tab has been pinned by the user. Only
     // applicable on desktop platforms.
@@ -179,15 +184,15 @@ class SessionRestorePolicy {
     // is calculated based on the values of the above properties, which may
     // change as new data becomes available.
     float score = 0.0f;
+
+    // Cancelable closure used to cancel the async initialization of the
+    // |used_in_bg| if it comes too late.
+    base::CancelableOnceClosure used_in_bg_setter_cancel_closure;
   };
 
   // This is safe to call from the constructor if |delegate_| is already
   // initialized.
   size_t CalculateSimultaneousTabLoads() const;
-
-  // Initializes |used_in_bg| using the data from the |reader|. The reader must
-  // be initialized at the time this is called.
-  static void SetUsedInBg(TabData* tab_data);
 
   // Posts a task to invoke "NotifyAllTabsScored".
   void DispatchNotifyAllTabsScoredIfNeeded();
@@ -195,10 +200,6 @@ class SessionRestorePolicy {
   // Invokes the |notify_tab_scored_callback_| with a nullptr WebContents,
   // notifying the embedder that all tabs have final scores.
   void NotifyAllTabsScored();
-
-  // Callback that is invoked when the SiteCharacteristicsDataReader associated
-  // with a WebContents (see TabData above) is ready to use.
-  void OnDataLoaded(content::WebContents* contents);
 
   // This is a testing seam. By default it immediately redirects to ScoreTab.
   // This should return true if the score has changed, false otherwise.
@@ -287,7 +288,10 @@ class SessionRestorePolicy {
 
   // The collection of tabs being tracked and various data used for scoring
   // them.
-  base::flat_map<content::WebContents*, TabData> tab_data_;
+  //
+  // Note that the value here is a unique_ptr instead of a TabData as this
+  // struct isn't movable.
+  base::flat_map<content::WebContents*, std::unique_ptr<TabData>> tab_data_;
 
   // The callback that is invoked in order to update tab restore order.
   NotifyTabScoreChangedCallback notify_tab_score_changed_callback_;

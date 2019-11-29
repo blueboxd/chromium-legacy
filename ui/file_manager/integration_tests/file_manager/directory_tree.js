@@ -74,4 +74,68 @@
     const noScrollLeft = scrolled.scrollLeft === 0;
     chrome.test.assertTrue(noScrollLeft, 'Tree should not scroll left');
   };
+
+  /**
+   * Tests that the directory tree does not horizontally scroll when expanding
+   * nested folder items.
+   */
+  testcase.directoryTreeExpandHorizontalScroll = async () => {
+    /**
+     * Creates a folder test entry from a folder |path|.
+     * @param {string} path The folder path.
+     * @return {!TestEntryInfo}
+     */
+    function createFolderTestEntry(path) {
+      const name = path.split('/').pop();
+      return new TestEntryInfo({
+        targetPath: path,
+        nameText: name,
+        type: EntryType.DIRECTORY,
+        lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+        sizeText: '--',
+        typeText: 'Folder',
+      });
+    }
+
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = [];
+    for (let path = 'nested-folder1', i = 0; i < 6; ++i) {
+      nestedFolderTestEntries.push(createFolderTestEntry(path));
+      path += `/nested-folder${i + 1}`;
+    }
+
+    // Open FilesApp on Downloads containing the folder test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Verify the directory tree is not horizontally scrolled.
+    const directoryTree = '#directory-tree';
+    const original = await remoteCall.waitForElementStyles(
+        appId, directoryTree, ['scrollLeft']);
+    chrome.test.assertTrue(original.scrollLeft === 0);
+
+    // Shrink the tree to 150px, enough to hide the deep folder names.
+    const navigationList = '.dialog-navigation-list';
+    await remoteCall.callRemoteTestUtil(
+        'setElementStyles', appId, [navigationList, {width: '150px'}]);
+
+    // Expand the tree Downloads > nested-folder1 > nested-folder2 ...
+    const lastFolderPath = nestedFolderTestEntries.pop().targetPath;
+    await remoteCall.navigateWithDirectoryTree(
+        appId, '/Downloads/' + lastFolderPath, 'My files');
+
+    // Check: the directory tree should be showing the last test entry.
+    await remoteCall.waitForElement(
+        appId, '.tree-item[entry-label="nested-folder5"]:not([hidden])');
+
+    // Ensure the directory tree scroll event handling is complete.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'requestAnimationFrame', appId, []));
+
+    // Check: the directory tree should not be horizontally scrolled.
+    const scrolled = await remoteCall.waitForElementStyles(
+        appId, directoryTree, ['scrollLeft']);
+    const noScrollLeft = scrolled.scrollLeft === 0;
+    chrome.test.assertTrue(noScrollLeft, 'Tree should not scroll left');
+  };
 })();

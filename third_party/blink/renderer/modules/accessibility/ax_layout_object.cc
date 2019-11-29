@@ -198,6 +198,8 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   // considered a data table if ARIA markup indicates it is a table.
   if (layout_object_->IsTable() && node)
     return ax::mojom::Role::kLayoutTable;
+  if (layout_object_->IsTableSection())
+    return DetermineTableSectionRole();
   if (layout_object_->IsTableRow() && node)
     return DetermineTableRowRole();
   if (layout_object_->IsTableCell() && node)
@@ -224,16 +226,6 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kImage;
   if (layout_object_->IsSVGRoot())
     return ax::mojom::Role::kSvgRoot;
-
-  // Table sections should be ignored if there is no reason not to, e.g.
-  // ARIA 1.2 (and Core-AAM 1.1) state that elements which are focusable
-  // and not hidden must be included in the accessibility tree.
-  if (layout_object_->IsTableSection()) {
-    auto* element = DynamicTo<Element>(node);
-    if (element && element->SupportsFocus())
-      return ax::mojom::Role::kGroup;
-    return ax::mojom::Role::kIgnored;
-  }
 
   if (layout_object_->IsHR())
     return ax::mojom::Role::kSplitter;
@@ -974,7 +966,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
     image_bitmap =
         ImageBitmap::Create(canvas, base::Optional<IntRect>(), options);
-  } else if (auto* video = ToHTMLVideoElementOrNull(node)) {
+  } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
     image_bitmap = ImageBitmap::Create(video, base::Optional<IntRect>(),
                                        document, options);
   }

@@ -1213,13 +1213,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
           kNetworkTestPort)),
       "Out scope page from server / out scope script from server");
 
-  // TODO(crbug.com/1027050): Add this test after isolating memory cache.
-  //
-  // NavigateToURLAndWaitForTitle(
-  //     GURL(base::StringPrintf(
-  //         "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-  //         kNetworkTestPort)),
-  //     "In scope page from server / in scope script from server");
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+          kNetworkTestPort)),
+      "In scope page from server / in scope script from server");
 }
 
 }  // namespace content

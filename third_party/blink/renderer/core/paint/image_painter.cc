@@ -249,7 +249,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  if ((IsHTMLImageElement(node) || IsHTMLVideoElement(node)) &&
+  if ((IsHTMLImageElement(node) || IsA<HTMLVideoElement>(node)) &&
       !context.ContextDisabled() && layout_image_.CachedImage() &&
       layout_image_.CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();

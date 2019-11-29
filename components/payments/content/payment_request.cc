@@ -435,6 +435,10 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
     return;
   }
 
+  if (observer_for_testing_) {
+    observer_for_testing_->OnCompleteCalled();
+  }
+
   // Failed transactions show an error. Successful and unknown-state
   // transactions don't show an error.
   if (result == mojom::PaymentComplete::FAIL) {

@@ -67,8 +67,7 @@ class LocalSyncTest : public InProcessBrowserTest {
 };
 
 // The local sync backend is currently only supported on Windows.
-// TODO(crbug.com/1028113) Fix in Chrome-branded builds.
-#if defined(OS_WIN) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
@@ -82,10 +81,15 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
 
   // Verify certain features are disabled.
   EXPECT_FALSE(send_tab_to_self::IsUserSyncTypeActive(browser()->profile()));
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // SharingService is only disabled if kSharingDeriveVapidKey is enabled by
+  // field trial config, which is never the case for branded builds.
   EXPECT_EQ(SharingService::State::DISABLED,
             SharingServiceFactory::GetForBrowserContext(browser()->profile())
                 ->GetStateForTesting());
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
-#endif  // defined(OS_WIN) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // defined(OS_WIN)
 
 }  // namespace

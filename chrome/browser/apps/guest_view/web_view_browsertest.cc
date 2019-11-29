@@ -74,7 +74,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -900,24 +899,6 @@ class WebViewWithZoomForDSFTest : public WebViewTest {
   }
 
   static float scale() { return 2.0f; }
-};
-
-// TODO(mcnee): These tests are BrowserPlugin specific. While WebView itself
-// is no longer based on BrowserPlugin, MimeHandlerViewGuest is. We'll keep
-// these tests (that would otherwise be removed) so that we keep test coverage
-// of functionality that could still be relevant to MimeHandlerViewGuest. Once
-// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these
-// tests. (See https://crbug.com/533069 and https://crbug.com/659750).
-class WebViewBrowserPluginSpecificTest : public WebViewTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kGuestViewCrossProcessFrames);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class WebContentsAudioMutedObserver : public content::WebContentsObserver {
@@ -4072,71 +4053,6 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
     embedder_frame_observer.WaitForScrollOffset(default_offset);
   }
 }
-
-class WebViewScrollGuestContentBrowserPluginSpecificTest
-    : public WebViewBrowserPluginSpecificTest {
- public:
-  ~WebViewScrollGuestContentBrowserPluginSpecificTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewBrowserPluginSpecificTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitchASCII(
-        switches::kTouchEventFeatureDetection,
-        switches::kTouchEventFeatureDetectionEnabled);
-  }
-};
-
-#if defined(USE_AURA)
-// This verifies the fix for crbug.com/694393 .
-IN_PROC_BROWSER_TEST_F(WebViewScrollGuestContentBrowserPluginSpecificTest,
-                       OverscrollControllerSeesConsumedScrollsInGuest) {
-  // This test is only relevant for non-OOPIF WebView as OOPIF-based WebView
-  // uses different scroll bubbling logic.
-  DCHECK(
-      !base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
-
-  LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
-
-  content::WebContents* embedder_contents = GetEmbedderWebContents();
-  content::RenderFrameSubmissionObserver embedder_frame_observer(
-      embedder_contents);
-
-  std::vector<content::WebContents*> guest_web_contents_list;
-  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
-  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
-  ASSERT_EQ(1u, guest_web_contents_list.size());
-
-  content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
-
-  gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
-  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
-  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
-  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
-
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  gfx::Vector2dF default_offset;
-  guest_frame_observer.WaitForScrollOffset(default_offset);
-  embedder_frame_observer.WaitForScrollOffset(default_offset);
-
-  // If we scroll the guest, the OverscrollController for the
-  // RenderWidgetHostViewAura should see that the scroll was consumed.
-  // If it doesn't, this test will time out indicating failure.
-  content::MockOverscrollController* mock_overscroll_controller =
-      content::MockOverscrollController::Create(embedder_host_view);
-
-  gfx::Point guest_scroll_location(guest_rect.width() / 2, 0);
-  float gesture_distance = 15.f;
-  // It's sufficient to scroll vertically, since all we need to test is that
-  // the OverscrollController sees consumed scrolls.
-  content::SimulateGestureScrollSequence(guest_contents, guest_scroll_location,
-                                         gfx::Vector2dF(0, -gesture_distance));
-
-  mock_overscroll_controller->WaitForConsumedScroll();
-}
-#endif
 
 // This runs the chrome://chrome-signin page which includes an OOPIF-<webview>
 // of accounts.google.com.

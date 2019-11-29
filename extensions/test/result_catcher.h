@@ -59,7 +59,7 @@ class ResultCatcher : public content::NotificationObserver {
 
   // Only set if we're in a nested run loop waiting for results from
   // the extension.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 };
 
 }  // namespace extensions

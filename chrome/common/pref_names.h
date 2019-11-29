@@ -730,6 +730,7 @@ extern const char kGSSAPILibraryName[];
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kGloballyScopeHTTPAuthCacheEnabled[];
+extern const char kAmbientAuthenticationInPrivateModesEnabled[];
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kAuthNegotiateDelegateByKdcPolicy[];

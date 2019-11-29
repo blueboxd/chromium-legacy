@@ -1028,8 +1028,7 @@ void CompositedLayerMapping::UpdateContentsRect() {
 void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   bool in_overlay_fullscreen_video = false;
   if (GetLayoutObject().IsVideo()) {
-    HTMLVideoElement* video_element =
-        ToHTMLVideoElement(GetLayoutObject().GetNode());
+    auto* video_element = To<HTMLVideoElement>(GetLayoutObject().GetNode());
     if (video_element->IsFullscreen() &&
         video_element->UsesOverlayFullscreenVideo())
       in_overlay_fullscreen_video = true;

@@ -254,7 +254,7 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
 # Find sub-directories from a given directory by running:
 # for i in `find . -maxdepth 1 -type d|sort`; do
 #   echo "-- $i"
-#   (cd $i; git grep -P 'base::(Bind\(|(Callback<|Closure))'|wc -l)
+#   (cd $i; git grep -nP 'base::(Bind\(|(Callback<|Closure))'|wc -l)
 # done
 #
 # TODO(crbug.com/714018): Remove (or narrow the scope of) paths from this list
@@ -384,7 +384,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ios/web/',
   '^ios/web_view/',
   '^ipc/',
-  '^jingle/',
   '^media/audio/',
   '^media/base/',
   '^media/blink/',
@@ -401,7 +400,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^media/remoting/',
   '^media/renderers/',
   '^media/test/',
-  '^mojo/public/',
   '^net/',
   '^ppapi/proxy/',
   '^ppapi/shared_impl/',

@@ -81,7 +81,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void GetUninitializedActiveDownloadsIfAny(
       download::SimpleDownloadManager::DownloadVector* result) override;
   int RemoveDownloadsByURLAndTime(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
   bool CanDownload(download::DownloadUrlParameters* parameters) override;

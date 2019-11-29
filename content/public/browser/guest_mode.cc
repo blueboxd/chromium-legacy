@@ -19,12 +19,7 @@ bool GuestMode::IsCrossProcessFrameGuest(const WebContents* web_contents) {
       static_cast<const WebContentsImpl*>(web_contents)
           ->GetBrowserPluginGuest();
 
-  if (!browser_plugin_guest ||
-      !browser_plugin_guest->can_use_cross_process_frames()) {
-    return false;
-  }
-
-  return base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames);
+  return browser_plugin_guest != nullptr;
 }
 
 }  // namespace content

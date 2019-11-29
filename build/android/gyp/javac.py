@@ -477,6 +477,10 @@ def _ParseOptions(argv):
       '--enable-errorprone',
       action='store_true',
       help='Enable errorprone checks')
+  parser.add_option(
+      '--warnings-as-errors',
+      action='store_true',
+      help='Treat all warnings as errors.')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option(
       '--javac-arg',
@@ -550,6 +554,8 @@ def main(argv):
       errorprone_flags.append('-Xep:{}:OFF'.format(warning))
     for warning in ERRORPRONE_WARNINGS_TO_ERROR:
       errorprone_flags.append('-Xep:{}:ERROR'.format(warning))
+    if not options.warnings_as_errors:
+      errorprone_flags.append('-XepAllErrorsAsWarnings')
     javac_cmd += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
 
   if options.java_version:
@@ -561,7 +567,7 @@ def main(argv):
     # Android's boot jar doesn't contain all java 8 classes.
     options.bootclasspath.append(build_utils.RT_JAR_PATH)
 
-  if options.chromium_code:
+  if options.warnings_as_errors:
     javac_cmd.extend(['-Werror'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of

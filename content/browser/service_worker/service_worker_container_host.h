@@ -335,7 +335,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
     return web_contents_getter_;
   }
 
-  const std::string& client_uuid() const { return client_uuid_; }
+  // For service worker clients.
+  const std::string& client_uuid() const;
 
   // For service worker clients. Describes whether the client has a controller
   // and if it has a fetch event handler.
@@ -434,7 +435,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
 
-  // A GUID that is web-exposed as FetchEvent.clientId.
+  // For service worker clients. A GUID that is web-exposed as
+  // FetchEvent.clientId.
   std::string client_uuid_;
 
   // For service worker clients.

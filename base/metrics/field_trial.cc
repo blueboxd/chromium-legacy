@@ -33,9 +33,6 @@ namespace base {
 
 namespace {
 
-// TODO(crbug.com/1018667): Remove when all unit tests are migrated.
-bool nested_field_trial_list_allowed_for_testing = false;
-
 // Define a separator character to use when creating a persistent form of an
 // instance.  This is intended for use as a command line argument, passed to a
 // second process to mimic our state (i.e., provide the same group name).
@@ -445,14 +442,8 @@ FieldTrialList::FieldTrialList(
     : entropy_provider_(std::move(entropy_provider)),
       observer_list_(new ObserverListThreadSafe<FieldTrialList::Observer>(
           ObserverListPolicy::EXISTING_ONLY)) {
+  DCHECK(!global_);
   DCHECK(!used_without_global_);
-
-  if (nested_field_trial_list_allowed_for_testing) {
-    previous_global_ = global_;
-  } else {
-    DCHECK(!global_);
-  }
-
   global_ = this;
 }
 
@@ -467,7 +458,7 @@ FieldTrialList::~FieldTrialList() {
   // likely caused by nested ScopedFeatureLists being destroyed in a different
   // order than they are initialized.
   DCHECK_EQ(this, global_);
-  global_ = previous_global_;
+  global_ = nullptr;
 }
 
 // static
@@ -1163,15 +1154,6 @@ FieldTrialList* FieldTrialList::BackupInstanceForTesting() {
 // static
 void FieldTrialList::RestoreInstanceForTesting(FieldTrialList* instance) {
   global_ = instance;
-}
-
-// static
-void FieldTrialList::AllowNestedFieldTrialListForTesting() {
-  nested_field_trial_list_allowed_for_testing = true;
-}
-
-const FieldTrialList* FieldTrialList::GetPreviousGlobal() const {
-  return previous_global_;
 }
 
 // static

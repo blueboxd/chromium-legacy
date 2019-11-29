@@ -62,7 +62,7 @@ void MediaControlsMediaEventListener::Attach() {
       media_controls_->GetDocument()
           .GetSettings()
           ->GetPictureInPictureEnabled() &&
-      GetMediaElement().IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(GetMediaElement())) {
     GetMediaElement().addEventListener(event_type_names::kEnterpictureinpicture,
                                        this, false);
     GetMediaElement().addEventListener(event_type_names::kLeavepictureinpicture,

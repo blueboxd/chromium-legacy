@@ -25,8 +25,8 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace {
-
-const char SERIALIZATION_VERSION[] = "Size File Format v1";
+const char kDiffHeader[] = "# Created by //tools/binary_size\nDIFF\n";
+const char kSerializationVersion[] = "Size File Format v1";
 
 int ReadLoneInt(char** rest) {
   char* token = strsep(rest, "\n");
@@ -206,9 +206,7 @@ void CalculatePadding(std::vector<Symbol>* raw_symbols) {
   }
 }
 
-void ParseSizeInfo(const char* gzipped,
-                   unsigned long len,
-                   ::caspian::SizeInfo* info) {
+void ParseSizeInfo(const char* gzipped, unsigned long len, SizeInfo* info) {
   // To avoid memory allocations, all the char* in our final Symbol set will
   // be pointers into the region originally pointed to by |decompressed_start|.
   // Calls to strsep() replace delimiter characters with null terminators.
@@ -220,7 +218,7 @@ void ParseSizeInfo(const char* gzipped,
 
   // Serialization version
   line = strsep(&rest, "\n");
-  if (std::strcmp(line, SERIALIZATION_VERSION)) {
+  if (std::strcmp(line, kSerializationVersion)) {
     std::cerr << "Serialization version: '" << line << "' not recognized."
               << std::endl;
     exit(1);
@@ -397,6 +395,34 @@ void ParseSizeInfo(const char* gzipped,
   CheckNoNonEmptyLinesRemain(rest);
 
   std::cout << "Parsed " << info->raw_symbols.size() << " symbols" << std::endl;
+}
+
+bool IsDiffSizeInfo(const char* file, unsigned long len) {
+  return !strncmp(file, kDiffHeader, 4);
+}
+
+void ParseDiffSizeInfo(char* file,
+                       unsigned long len,
+                       SizeInfo* before,
+                       SizeInfo* after) {
+  // Skip "DIFF" header.
+  char* rest = file;
+  rest += strlen(kDiffHeader);
+  Json::Value metadata;
+  ReadJsonBlob(&rest, &metadata);
+
+  if (metadata["version"].asInt() != 1) {
+    std::cerr << ".sizediff version mismatch, write some upgrade code. version="
+              << metadata["version"] << std::endl;
+    exit(1);
+  }
+
+  unsigned long header_len = rest - file;
+  unsigned long before_len = metadata["before_length"].asUInt();
+  unsigned long after_len = len - header_len - before_len;
+
+  ParseSizeInfo(rest, before_len, before);
+  ParseSizeInfo(rest + before_len, after_len, after);
 }
 
 }  // namespace caspian

@@ -1158,6 +1158,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
         performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+        performAction:grey_tap()];
   }
 
   // Make sure that French to English translation is not automatic yet.
@@ -1210,6 +1212,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
          j++) {
       [[EarlGrey
           selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+          performAction:grey_tap()];
+      [[EarlGrey
+          selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
           performAction:grey_tap()];
     }
     // Tap the notification snackbar's "UNDO" button.

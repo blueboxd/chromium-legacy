@@ -179,6 +179,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kRevision, NSAccessibilityGroupRole},
       {ax::mojom::Role::kRootWebArea, @"AXWebArea"},
       {ax::mojom::Role::kRow, NSAccessibilityRowRole},
+      {ax::mojom::Role::kRowGroup, NSAccessibilityGroupRole},
       {ax::mojom::Role::kRowHeader, @"AXCell"},
       // TODO(accessibility) What should kRuby be? It's not listed? Any others
       // missing? Maybe use switch statement so that compiler doesn't allow us

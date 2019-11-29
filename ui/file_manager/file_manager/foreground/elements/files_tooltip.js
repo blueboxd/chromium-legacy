@@ -12,7 +12,7 @@
  * document.querySelector('files-tooltip').addTargets(
  *     document.querySelectorAll('[has-tooltip]'))
  */
-var FilesTooltip = Polymer({
+const FilesTooltip = Polymer({
   is: 'files-tooltip',
 
   properties: {
@@ -80,7 +80,7 @@ var FilesTooltip = Polymer({
 
   /**
    * Adds a target to tooltip.
-   * @param {!HTMLElement} target
+   * @param {!EventTarget} target
    */
   addTarget: function(target) {
     target.addEventListener('mouseover', this.onMouseOver_.bind(this, target));

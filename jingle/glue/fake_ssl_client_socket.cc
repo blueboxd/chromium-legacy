@@ -194,8 +194,8 @@ void FakeSSLClientSocket::DoHandshakeLoopWithUserConnectCallback() {
 }
 
 int FakeSSLClientSocket::DoConnect() {
-  int status = transport_socket_->Connect(
-      base::Bind(&FakeSSLClientSocket::OnConnectDone, base::Unretained(this)));
+  int status = transport_socket_->Connect(base::BindOnce(
+      &FakeSSLClientSocket::OnConnectDone, base::Unretained(this)));
   if (status != net::OK) {
     return status;
   }
@@ -224,8 +224,8 @@ void FakeSSLClientSocket::ProcessConnectDone() {
 int FakeSSLClientSocket::DoSendClientHello() {
   int status = transport_socket_->Write(
       write_buf_.get(), write_buf_->BytesRemaining(),
-      base::Bind(&FakeSSLClientSocket::OnSendClientHelloDone,
-                 base::Unretained(this)),
+      base::BindOnce(&FakeSSLClientSocket::OnSendClientHelloDone,
+                     base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
   if (status < net::OK) {
     return status;
@@ -258,10 +258,9 @@ void FakeSSLClientSocket::ProcessSendClientHelloDone(size_t written) {
 
 int FakeSSLClientSocket::DoVerifyServerHello() {
   int status = transport_socket_->Read(
-      read_buf_.get(),
-      read_buf_->BytesRemaining(),
-      base::Bind(&FakeSSLClientSocket::OnVerifyServerHelloDone,
-                 base::Unretained(this)));
+      read_buf_.get(), read_buf_->BytesRemaining(),
+      base::BindOnce(&FakeSSLClientSocket::OnVerifyServerHelloDone,
+                     base::Unretained(this)));
   if (status < net::OK) {
     return status;
   }

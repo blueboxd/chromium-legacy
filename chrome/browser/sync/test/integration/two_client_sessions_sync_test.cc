@@ -23,6 +23,7 @@ namespace {
 using sessions_helper::CheckInitialState;
 using sessions_helper::CloseTab;
 using sessions_helper::DeleteForeignSession;
+using sessions_helper::ForeignSessionsMatchChecker;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
 using sessions_helper::NavigateTab;
@@ -39,16 +40,8 @@ class TwoClientSessionsSyncTest : public SyncTest {
   TwoClientSessionsSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientSessionsSyncTest() override {}
 
-  void WaitForWindowsInForeignSession(int index, ScopedWindowMap windows) {
-    std::vector<ScopedWindowMap> expected_windows(1);
-    expected_windows[0] = std::move(windows);
-    EXPECT_TRUE(ForeignSessionsMatchChecker(index, expected_windows).Wait());
-  }
-
-  void WaitForForeignSessionsToSync(int local_index, int non_local_index) {
-    ScopedWindowMap client_windows;
-    ASSERT_TRUE(GetLocalWindows(local_index, &client_windows));
-    WaitForWindowsInForeignSession(non_local_index, std::move(client_windows));
+  bool WaitForForeignSessionsToSync(int local_index, int non_local_index) {
+    return ForeignSessionsMatchChecker(non_local_index, local_index).Wait();
   }
 
  private:
@@ -77,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       base::StringPrintf(kURLTemplate, base::GenerateGUID().c_str());
 
   ASSERT_TRUE(OpenTab(0, GURL(url)));
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientClosed) {
@@ -86,13 +79,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientClosed) {
   // Open two tabs on client 0.
   OpenTab(0, GURL(kURL1));
   OpenTab(0, GURL(kURL2));
-  WaitForForeignSessionsToSync(0, 1);
+  ASSERT_TRUE(WaitForForeignSessionsToSync(0, 1));
 
   // Close one of the two tabs. We also issue another navigation to make sure
   // association logic kicks in.
   CloseTab(/*index=*/0, /*tab_index=*/1);
   NavigateTab(0, GURL(kURL3));
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
 
   std::vector<sync_pb::SyncEntity> entities =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::SESSIONS);
@@ -105,20 +98,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, E2E_ENABLED(AllChanged)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tabs on all clients and retain window information.
-  std::vector<ScopedWindowMap> client_windows(num_clients());
   for (int i = 0; i < num_clients(); ++i) {
     ScopedWindowMap windows;
     std::string url =
         base::StringPrintf(kURLTemplate, base::GenerateGUID().c_str());
     ASSERT_TRUE(OpenTab(i, GURL(url)));
-    ASSERT_TRUE(GetLocalWindows(i, &windows));
-    client_windows[i] = std::move(windows);
   }
 
   // Get foreign session data from all clients and check it against all
-  // client_windows.
+  // local sessions.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(ForeignSessionsMatchChecker(i, client_windows).Wait());
+    for (int j = 0; j < num_clients(); ++j) {
+      if (i == j) {
+        continue;
+      }
+      EXPECT_TRUE(WaitForForeignSessionsToSync(i, j));
+    }
   }
 }
 
@@ -131,12 +126,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
   ASSERT_TRUE(OpenTab(1, GURL(kURL2)));
 
-  WaitForForeignSessionsToSync(0, 1);
-  WaitForForeignSessionsToSync(1, 0);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
+  EXPECT_TRUE(WaitForForeignSessionsToSync(1, 0));
 
   // Check that a navigation in client 0 is reflected on client 1.
   NavigateTab(0, GURL(kURL3));
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteIdleSession) {
@@ -147,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteIdleSession) {
 
   // Client 0 opened some tabs then went idle.
   ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
-  WaitForForeignSessionsToSync(0, 1);
+  ASSERT_TRUE(WaitForForeignSessionsToSync(0, 1));
 
   // Get foreign session data from client 1.
   SyncedSessionVector sessions1;
@@ -167,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteActiveSession) {
 
   // Client 0 opened some tabs then went idle.
   ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
-  WaitForForeignSessionsToSync(0, 1);
+  ASSERT_TRUE(WaitForForeignSessionsToSync(0, 1));
 
   SyncedSessionVector sessions1;
   ASSERT_TRUE(GetSessionData(1, &sessions1));
@@ -180,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteActiveSession) {
 
   // Client 0 becomes active again with a new tab.
   ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
   EXPECT_TRUE(GetSessionData(1, &sessions1));
 }
 
@@ -198,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MultipleWindowsMultipleTabs) {
   EXPECT_TRUE(OpenTab(2, GURL(kURL3)));
   EXPECT_TRUE(OpenTabAtIndex(2, 1, GURL(kURL4)));
 
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
@@ -216,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
       "passphrase"));
 
   EXPECT_TRUE(OpenTab(0, GURL(kURL1)));
-  WaitForForeignSessionsToSync(0, 1);
+  EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));
 
   EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(), IsEmpty());
 }

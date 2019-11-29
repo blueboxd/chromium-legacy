@@ -353,6 +353,10 @@ struct BLINK_EXPORT WebNavigationParams {
 
   base::Optional<WebOriginPolicy> origin_policy;
 
+  // The physical URL of Web Bundle from which the document is loaded.
+  // Used as an additional identifier for MemoryCache.
+  WebURL web_bundle_physical_url;
+
   // The base URL which will be set for the document to support relative path
   // subresource loading in an unsigned Web Bundle file.
   WebURL base_url_override_for_web_bundle;

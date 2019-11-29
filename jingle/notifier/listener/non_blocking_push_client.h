@@ -31,15 +31,14 @@ class NonBlockingPushClient : public PushClient {
  public:
   // The type for a function that creates a (blocking) PushClient.
   // Will be called on the delegate task runner.
-  typedef base::Callback<std::unique_ptr<PushClient>()>
-      CreateBlockingPushClientCallback;
+  using CreateBlockingPushClientCallback =
+      base::OnceCallback<std::unique_ptr<PushClient>()>;
 
   // Runs the given callback on the given task runner, and delegates
   // to that PushClient.
   explicit NonBlockingPushClient(
       const scoped_refptr<base::SingleThreadTaskRunner>& delegate_task_runner,
-      const CreateBlockingPushClientCallback&
-          create_blocking_push_client_callback);
+      CreateBlockingPushClientCallback create_blocking_push_client_callback);
   ~NonBlockingPushClient() override;
 
   // PushClient implementation.

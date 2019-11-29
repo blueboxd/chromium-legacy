@@ -124,14 +124,16 @@ void PeerConnectionTrackerHost::GetUserMedia(
   }
 }
 
-void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
-                                                    const std::string& output) {
+void PeerConnectionTrackerHost::WebRtcEventLogWrite(
+    int lid,
+    const std::vector<uint8_t>& output) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  std::string converted_output(output.begin(), output.end());
   WebRtcEventLogger* logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->OnWebRtcEventLogWrite(
-        render_process_id_, lid, output,
+        render_process_id_, lid, converted_output,
         base::OnceCallback<void(std::pair<bool, bool>)>());
   }
 }

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,8 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
@@ -45,6 +48,7 @@ const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
     "&device_id=%s&device_type=chrome&lib_ver=extension";
 const char kIssueAdviceKey[] = "issueAdvice";
 const char kIssueAdviceValueConsent[] = "consent";
+const char kIssueAdviceValueRemoteConsent[] = "remoteConsent";
 const char kAccessTokenKey[] = "token";
 const char kConsentKey[] = "consent";
 const char kExpiresInKey[] = "expiresIn";
@@ -95,6 +99,11 @@ static GoogleServiceAuthError CreateAuthError(
   return GoogleServiceAuthError::FromServiceError(*message);
 }
 
+bool AreCookiesEqual(const std::unique_ptr<net::CanonicalCookie>& lhs,
+                     const std::unique_ptr<net::CanonicalCookie>& rhs) {
+  return lhs->IsEquivalent(*rhs);
+}
+
 }  // namespace
 
 IssueAdviceInfoEntry::IssueAdviceInfoEntry() = default;
@@ -107,6 +116,19 @@ IssueAdviceInfoEntry& IssueAdviceInfoEntry::operator=(
 
 bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
   return description == rhs.description && details == rhs.details;
+}
+
+RemoteConsentResolutionData::RemoteConsentResolutionData() = default;
+RemoteConsentResolutionData::~RemoteConsentResolutionData() = default;
+RemoteConsentResolutionData::RemoteConsentResolutionData(
+    RemoteConsentResolutionData&& other) = default;
+RemoteConsentResolutionData& RemoteConsentResolutionData::operator=(
+    RemoteConsentResolutionData&& other) = default;
+
+bool RemoteConsentResolutionData::operator==(
+    const RemoteConsentResolutionData& rhs) const {
+  return url == rhs.url && std::equal(cookies.begin(), cookies.end(),
+                                      rhs.cookies.begin(), &AreCookiesEqual);
 }
 
 OAuth2MintTokenFlow::Parameters::Parameters() : mode(MODE_ISSUE_ADVICE) {}
@@ -148,6 +170,14 @@ void OAuth2MintTokenFlow::ReportIssueAdviceSuccess(
     delegate_->OnIssueAdviceSuccess(issue_advice);
 
   // |this| may already be deleted.
+}
+
+void OAuth2MintTokenFlow::ReportRemoteConsentSuccess(
+    const RemoteConsentResolutionData& resolution_data) {
+  if (delegate_)
+    delegate_->OnRemoteConsentSuccess(resolution_data);
+
+  // |this| may already be deleted;
 }
 
 void OAuth2MintTokenFlow::ReportFailure(
@@ -208,21 +238,34 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   }
   if (*issue_advice_value == kIssueAdviceValueConsent) {
     IssueAdviceInfo issue_advice;
-    if (ParseIssueAdviceResponse(&(*value), &issue_advice))
+    if (ParseIssueAdviceResponse(&(*value), &issue_advice)) {
       ReportIssueAdviceSuccess(issue_advice);
-    else
+    } else {
       ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
           "Not able to parse the contents of consent "
           "from a service response."));
+    }
+  } else if (*issue_advice_value == kIssueAdviceValueRemoteConsent) {
+    RemoteConsentResolutionData resolution_data;
+    if (ParseRemoteConsentResponse(&(*value), &resolution_data)) {
+      ReportRemoteConsentSuccess(resolution_data);
+    } else {
+      // Fallback to the issue advice flow.
+      // TODO(https://crbug.com/1026237): Remove the fallback after making sure
+      // that the new flow works correctly.
+      IssueAdviceInfo empty_issue_advice;
+      ReportIssueAdviceSuccess(empty_issue_advice);
+    }
   } else {
     std::string access_token;
     int time_to_live;
-    if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live))
+    if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live)) {
       ReportSuccess(access_token, time_to_live);
-    else
+    } else {
       ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
           "Not able to parse the contents of access token "
           "from a service response."));
+    }
   }
 
   // |this| may be deleted!
@@ -298,6 +341,91 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
 
   if (!success)
     issue_advice->clear();
+
+  return success;
+}
+
+// static
+bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
+    const base::Value* dict,
+    RemoteConsentResolutionData* resolution_data) {
+  CHECK(dict);
+  CHECK(resolution_data);
+
+  const base::Value* resolution_dict = dict->FindDictKey("resolutionData");
+  if (!resolution_dict)
+    return false;
+
+  const std::string* resolution_approach =
+      resolution_dict->FindStringKey("resolutionApproach");
+  if (!resolution_approach || *resolution_approach != "resolveInBrowser")
+    return false;
+
+  const std::string* resolution_url_string =
+      resolution_dict->FindStringKey("resolutionUrl");
+  if (!resolution_url_string)
+    return false;
+  GURL resolution_url(*resolution_url_string);
+  if (!resolution_url.is_valid())
+    return false;
+
+  const base::Value* browser_cookies =
+      resolution_dict->FindListKey("browserCookies");
+  base::span<const base::Value> cookie_list;
+  if (browser_cookies)
+    cookie_list = browser_cookies->GetList();
+
+  base::Time time_now = base::Time::Now();
+  bool success = true;
+  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  for (const auto& cookie_dict : cookie_list) {
+    if (!cookie_dict.is_dict()) {
+      success = false;
+      break;
+    }
+
+    // Required parameters:
+    const std::string* name = cookie_dict.FindStringKey("name");
+    const std::string* value = cookie_dict.FindStringKey("value");
+    const std::string* domain = cookie_dict.FindStringKey("domain");
+
+    if (!name || !value || !domain) {
+      success = false;
+      break;
+    }
+
+    // Optional parameters:
+    const std::string* path = cookie_dict.FindStringKey("path");
+    const std::string* max_age_seconds =
+        cookie_dict.FindStringKey("maxAgeSeconds");
+    base::Optional<bool> is_secure = cookie_dict.FindBoolKey("isSecure");
+    base::Optional<bool> is_http_only = cookie_dict.FindBoolKey("isHttpOnly");
+    const std::string* same_site = cookie_dict.FindStringKey("sameSite");
+
+    int64_t max_age = -1;
+    if (max_age_seconds && !base::StringToInt64(*max_age_seconds, &max_age)) {
+      success = false;
+      break;
+    }
+
+    base::Time expiration_time = base::Time();
+    if (max_age > 0)
+      expiration_time = time_now + base::TimeDelta::FromSeconds(max_age);
+
+    std::unique_ptr<net::CanonicalCookie> cookie =
+        net::CanonicalCookie::CreateSanitizedCookie(
+            resolution_url, *name, *value, *domain, path ? *path : "/",
+            time_now, expiration_time, time_now, is_secure ? *is_secure : false,
+            is_http_only ? *is_http_only : false,
+            net::StringToCookieSameSite(same_site ? *same_site : ""),
+            net::COOKIE_PRIORITY_DEFAULT);
+    cookies.push_back(std::move(cookie));
+  }
+
+  if (success) {
+    resolution_data->url = std::move(resolution_url);
+    resolution_data->cookies = std::move(cookies);
+  }
 
   return success;
 }

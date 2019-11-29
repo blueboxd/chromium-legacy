@@ -150,16 +150,21 @@ class LiveSignInTest : public signin::test::LiveTest {
   }
 };
 
+// Often timing out on windows.  http://crbug.com/1025335
+#if defined(OS_WIN)
+#define MAYBE_SimpleSignInFlow DISABLED_SimpleSignInFlow
+#define MAYBE_WebSignOut DISABLED_WebSignOut
+#define MAYBE_TurnOffSync DISABLED_TurnOffSync
+#else
+#define MAYBE_SimpleSignInFlow SimpleSignInFlow
+#define MAYBE_WebSignOut WebSignOut
+#define MAYBE_TurnOffSync TurnOffSync
+#endif
+
 // Sings in an account through the settings page and checks that the account is
 // added to Chrome. Sync should be disabled because the test doesn't pass
 // through the Sync confirmation dialog.
 
-// crbug/1025335 Flaky on Win7 builders.
-#if defined(OS_WIN)
-#define MAYBE_SimpleSignInFlow DISABLED_SimpleSignInFlow
-#else
-#define MAYBE_SimpleSignInFlow SimpleSignInFlow
-#endif
 IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_SimpleSignInFlow) {
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
@@ -181,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_SimpleSignInFlow) {
 // Sync is enabled.
 // Then, signs out on the web and checks that the account is removed from
 // cookies and Sync paused error is displayed.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignOut) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_WebSignOut) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
   TurnOnSync(test_account);
@@ -261,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignInAndSignOut) {
 // Sync is enabled. Signs in a second account on the web.
 // Then, turns Sync off from the settings page and checks that both accounts are
 // removed from Chrome and from cookies.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, TurnOffSync) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_TurnOffSync) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
   TurnOnSync(test_account_1);

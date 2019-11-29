@@ -62,7 +62,8 @@ class PeerConnectionTrackerHost
                     bool video,
                     const std::string& audio_constraints,
                     const std::string& video_constraints) override;
-  void WebRtcEventLogWrite(int lid, const std::string& output) override;
+  void WebRtcEventLogWrite(int lid,
+                           const std::vector<uint8_t>& output) override;
   void AddStandardStats(int lid, base::Value value) override;
   void AddLegacyStats(int lid, base::Value value) override;
 

@@ -1855,6 +1855,14 @@ const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 const char kGloballyScopeHTTPAuthCacheEnabled[] =
     "auth.globally_scoped_http_auth_cache_enabled";
 
+// Integer specifying the cases where ambient authentication is enabled.
+// 0 - Only allow ambient authentication in regular sessions
+// 1 - Only allow ambient authentication in regular and incognito sessions
+// 2 - Only allow ambient authentication in regular and guest sessions
+// 3 - Allow ambient authentication in regular, incognito and guest sessions
+const char kAmbientAuthenticationInPrivateModesEnabled[] =
+    "auth.ambient_auth_in_private_modes";
+
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected
 // along with kAuthNegotiateDelegateWhitelist.

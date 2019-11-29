@@ -25,60 +25,61 @@ using StatusCallback = storage::WatcherManager::StatusCallback;
 using NotificationCallback = storage::WatcherManager::NotificationCallback;
 using ChangeType = storage::WatcherManager::ChangeType;
 
-void CallStatusCallbackOnIOThread(const StatusCallback& callback,
+void CallStatusCallbackOnIOThread(StatusCallback callback,
                                   base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(callback, error));
+                 base::BindOnce(std::move(callback), error));
 }
 
-void CallNotificationCallbackOnIOThread(const NotificationCallback& callback,
+void CallNotificationCallbackOnIOThread(NotificationCallback callback,
                                         ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(callback, type));
+                 base::BindOnce(std::move(callback), type));
 }
 
 void AddWatcherOnUIThread(const storage::FileSystemURL& url,
                           bool recursive,
-                          const StatusCallback& callback,
-                          const NotificationCallback& notification_callback) {
+                          StatusCallback callback,
+                          NotificationCallback notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   if (!parser.file_system()->GetFileSystemInfo().watchable()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   parser.file_system()->AddWatcher(url.origin().GetURL(), parser.file_path(),
-                                   recursive, false /* persistent */, callback,
-                                   notification_callback);
+                                   recursive, false /* persistent */,
+                                   std::move(callback),
+                                   std::move(notification_callback));
 }
 
 void RemoveWatcherOnUIThread(const storage::FileSystemURL& url,
                              bool recursive,
-                             const StatusCallback& callback) {
+                             StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   if (!parser.file_system()->GetFileSystemInfo().watchable()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   parser.file_system()->RemoveWatcher(url.origin().GetURL(), parser.file_path(),
-                                      recursive, callback);
+                                      recursive, std::move(callback));
 }
 
 }  // namespace
@@ -86,28 +87,28 @@ void RemoveWatcherOnUIThread(const storage::FileSystemURL& url,
 WatcherManager::WatcherManager() = default;
 WatcherManager::~WatcherManager() = default;
 
-void WatcherManager::AddWatcher(
-    const storage::FileSystemURL& url,
-    bool recursive,
-    const StatusCallback& callback,
-    const NotificationCallback& notification_callback) {
+void WatcherManager::AddWatcher(const storage::FileSystemURL& url,
+                                bool recursive,
+                                StatusCallback callback,
+                                NotificationCallback notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&AddWatcherOnUIThread, url, recursive,
-                     base::Bind(&CallStatusCallbackOnIOThread, callback),
-                     base::Bind(&CallNotificationCallbackOnIOThread,
-                                notification_callback)));
+      base::BindOnce(
+          &AddWatcherOnUIThread, url, recursive,
+          base::BindOnce(&CallStatusCallbackOnIOThread, std::move(callback)),
+          base::BindRepeating(&CallNotificationCallbackOnIOThread,
+                              std::move(notification_callback))));
 }
 
 void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
                                    bool recursive,
-                                   const StatusCallback& callback) {
+                                   StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RemoveWatcherOnUIThread, url, recursive,
-                     base::Bind(&CallStatusCallbackOnIOThread, callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&RemoveWatcherOnUIThread, url, recursive,
+                                base::BindOnce(&CallStatusCallbackOnIOThread,
+                                               std::move(callback))));
 }
 
 }  // namespace file_system_provider

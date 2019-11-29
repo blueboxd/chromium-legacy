@@ -2,8 +2,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 
 <!--
   Simple OOBE dialog which should be used for OOBE UI elements.
@@ -64,7 +66,7 @@
     <link rel="stylesheet" href="oobe_dialog.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <style include="cr-shared-style"></style>
-    <div id="top-scroll-container" class="layout vertical flex">
+    <div id="top-scroll-container" class="layout vertical flex" scrollable>
       <div id="header-container" hidden="[[noHeader]]">
         <div id="oobe-icon-div" class="slot-container">
           <slot name="oobe-icon"></slot>

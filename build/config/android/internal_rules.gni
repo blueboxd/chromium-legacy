@@ -968,13 +968,15 @@ if (enable_java_templates) {
             rebase_path(invoker.build_config, root_build_dir)
         args += [
           "--srcjars=@FileArg($_rebased_build_config:gradle:bundled_srcjars)",
-          "--can-fail-build",
         ]
         if (invoker.requires_android) {
           args += [
             "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_dirs)",
             "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_zips)",
           ]
+        }
+        if (java_warnings_as_errors) {
+          args += [ "--can-fail-build" ]
         }
       }
 
@@ -2820,6 +2822,9 @@ if (enable_java_templates) {
       }
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
+        if (java_warnings_as_errors) {
+          args += [ "--warnings-as-errors" ]
+        }
       }
       if (defined(invoker.jar_excluded_patterns)) {
         args += [ "--jar-info-exclude-globs=${invoker.jar_excluded_patterns}" ]

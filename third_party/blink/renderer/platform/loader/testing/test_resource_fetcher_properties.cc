@@ -41,4 +41,8 @@ void TestResourceFetcherProperties::Trace(Visitor* visitor) {
   ResourceFetcherProperties::Trace(visitor);
 }
 
+const KURL& TestResourceFetcherProperties::WebBundlePhysicalUrl() const {
+  return NullURL();
+}
+
 }  // namespace blink

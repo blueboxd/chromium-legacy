@@ -39,7 +39,7 @@ TEST(PythonUtils, PythonRunTime) {
   // we want.
   cmd_line.AppendArg("-c");
   std::string input("PythonUtilsTest");
-  std::string python_cmd = base::StringPrintf("print '%s';", input.c_str());
+  std::string python_cmd = base::StringPrintf("print('%s');", input.c_str());
   cmd_line.AppendArg(python_cmd);
   std::string output;
   EXPECT_TRUE(base::GetAppOutput(cmd_line, &output));

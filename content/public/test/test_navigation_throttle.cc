@@ -71,7 +71,7 @@ void TestNavigationThrottle::SetResponseForAllMethods(
 }
 
 void TestNavigationThrottle::SetCallback(ThrottleMethod method,
-                                         base::Closure callback) {
+                                         base::RepeatingClosure callback) {
   method_properties_[method].callback = std::move(callback);
 }
 

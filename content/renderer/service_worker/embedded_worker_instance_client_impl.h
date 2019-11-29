@@ -54,7 +54,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // service_manager::BinderRegistry.
   static void CreateForRequest(
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 

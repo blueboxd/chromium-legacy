@@ -37,8 +37,6 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
                    std::vector<ui::LatencyInfo> latency_info) override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
-  void EnsureBackbuffer() override;
-  void DiscardBackbuffer() override;
 
  private:
   // Create a platform-specific swapchain implementation.

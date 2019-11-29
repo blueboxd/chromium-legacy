@@ -267,10 +267,6 @@ WebDistillabilityFeatures WebDocument::DistillabilityFeatures() {
 void WebDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
   if (!IsHTMLDocument())
     return;
-  if (!IsPluginDocument() &&
-      !RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
-    return;
-  }
 
   Document* doc = Unwrap<Document>();
   doc->SetShowBeforeUnloadDialog(show_dialog);

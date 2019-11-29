@@ -66,6 +66,7 @@
 // The size of score and address will be given in the first two bytes of the
 // model file.
 
+// TODO(crbug.com/925072): rename OnDeviceHeadServing to *Model.
 class OnDeviceHeadServing {
  public:
   // Creates and returns an instance for serving on device head model.

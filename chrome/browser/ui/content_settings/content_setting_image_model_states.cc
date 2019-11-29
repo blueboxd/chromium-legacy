@@ -60,6 +60,17 @@ bool ContentSettingImageModelStates::BubbleWasAutoOpened(ImageType type) const {
   return auto_opened_bubbles_[static_cast<int>(type)];
 }
 
+void ContentSettingImageModelStates::SetPromoWasShown(ImageType type,
+                                                      bool promo_was_shown) {
+  VerifyType(type);
+  promo_was_shown_[static_cast<int>(type)] = promo_was_shown;
+}
+
+bool ContentSettingImageModelStates::PromoWasShown(ImageType type) const {
+  VerifyType(type);
+  return promo_was_shown_[static_cast<int>(type)];
+}
+
 ContentSettingImageModelStates::ContentSettingImageModelStates(
     content::WebContents* contents) {}
 

@@ -210,7 +210,7 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
 void GetStringAtPointForRenderWidget(
     RenderWidgetHost* rwh,
     const gfx::Point& point,
-    base::Callback<void(const std::string&, const gfx::Point&)>
+    base::OnceCallback<void(const std::string&, const gfx::Point&)>
         result_callback);
 
 // This method will request the string identified by |range| inside the |rwh|.
@@ -219,7 +219,7 @@ void GetStringAtPointForRenderWidget(
 void GetStringFromRangeForRenderWidget(
     RenderWidgetHost* rwh,
     const gfx::Range& range,
-    base::Callback<void(const std::string&, const gfx::Point&)>
+    base::OnceCallback<void(const std::string&, const gfx::Point&)>
         result_callback);
 
 #endif

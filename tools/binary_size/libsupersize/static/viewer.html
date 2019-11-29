@@ -313,6 +313,27 @@ if ('serviceWorker' in navigator) {
         />
       </svg>
     </div>
+    <div hidden id="symbol-diff-status-icons">
+      <svg class="diff-status-icon addedicon" height="24" width="24" fill="#388e3c">
+        <title>Added</title>
+        <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+        />
+      </svg>
+      <svg class="diff-status-icon removedicon" height="24" width="24" fill="#d32f2f">
+        <title>Removed</title>
+        <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+        />
+      </svg>
+      <svg class="diff-status-icon changedicon" height="24" width="24" fill="#ffa000">
+        <title>Changed</title>
+        <path d="M 12,2 C 6.48,2 2,6.48 2,12 2,17.52 6.48,22 12,22 17.52,22 22,17.52 22,12 22,6.48 17.52,2 12,2 Z m 0,2 c 4.41,0 8,3.59 8,8 0,4.41 -3.59,8 -8,8 C 7.59,20 4,16.41 4,12 4,7.59 7.59,4 12,4 Z m 6.013672,5.0996094 c -0.864639,1.2275146 -1.84046,2.4119546 -2.97461,2.6171876 -1.62753,0.266321 -3.031358,-1.51476 -4.576171,-2.060547 -1.6000305,-0.6291486 -3.2358559,0.547346 -4.4765629,2.294922 v 2.949219 c 0.8441312,-1.258592 1.8238599,-2.395455 2.9472657,-2.613282 1.6489612,-0.286526 3.0751832,1.532994 4.6445312,2.056641 1.587066,0.590903 3.205095,-0.561821 4.435547,-2.294922 z"
+        />
+      </svg>
+      <!--A default empty svg for spacing. Used in non-diff mode, since in diff mode unchanged symbols are pruned.-->
+      <svg class="diff-status-icon unchangedicon" height="24" width="24">
+        <title>Unchanged</title>
+      </svg>
+    </div>
     <!-- Template for trees and leaves -->
     <template id="treenode-container">
       <li role="treeitem" aria-expanded="false" aria-describedby="infocard-container">

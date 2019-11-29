@@ -2575,7 +2575,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
     const MediaPlayerAction& action) {
   HitTestResult result = HitTestResultForVisualViewportPos(location);
   Node* node = result.InnerNode();
-  if (!IsHTMLVideoElement(*node) && !IsA<HTMLAudioElement>(*node))
+  if (!IsA<HTMLVideoElement>(*node) && !IsA<HTMLAudioElement>(*node))
     return;
 
   HTMLMediaElement* media_element = ToHTMLMediaElement(node);
@@ -2597,15 +2597,15 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
                                          action.enable);
       break;
     case MediaPlayerAction::Type::kPictureInPicture:
-      DCHECK(media_element->IsHTMLVideoElement());
+      DCHECK(IsA<HTMLVideoElement>(media_element));
       if (action.enable) {
         PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(ToHTMLVideoElement(media_element),
+            .EnterPictureInPicture(To<HTMLVideoElement>(media_element),
                                    nullptr /* promise */,
                                    nullptr /* options */);
       } else {
         PictureInPictureController::From(node->GetDocument())
-            .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+            .ExitPictureInPicture(To<HTMLVideoElement>(media_element), nullptr);
       }
 
       break;

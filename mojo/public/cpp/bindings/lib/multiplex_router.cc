@@ -903,7 +903,7 @@ void MultiplexRouter::MaybePostToProcessTasks(
 
 void MultiplexRouter::LockAndCallProcessTasks() {
   // There is no need to hold a ref to this class in this case because this is
-  // always called using base::Bind(), which holds a ref.
+  // always called from a bound callback, which holds a ref.
   MayAutoLock locker(&lock_);
   posted_to_process_tasks_ = false;
   scoped_refptr<base::SequencedTaskRunner> runner(

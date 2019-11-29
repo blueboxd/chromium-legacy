@@ -277,6 +277,7 @@ DocumentLoader::DocumentLoader(
     history_item_ = history_item;
   }
 
+  web_bundle_physical_url_ = params_->web_bundle_physical_url;
   base_url_override_for_web_bundle_ = params_->base_url_override_for_web_bundle;
 }
 

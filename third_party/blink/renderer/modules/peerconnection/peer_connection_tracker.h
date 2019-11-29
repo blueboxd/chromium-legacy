@@ -219,7 +219,7 @@ class MODULES_EXPORT PeerConnectionTracker
 
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
-                                     const String& output);
+                                     const std::string& output);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);

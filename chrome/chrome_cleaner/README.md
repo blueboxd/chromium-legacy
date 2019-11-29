@@ -36,36 +36,61 @@ Tool includes:
     Chrome Cleanup Tool, so both this directory and the other Chromium
     directories above have dependencies on them.
 
-## Internal Resources
+## Targets
 
-If |is_official_chrome_cleaner_build| is set in GN, the build looks for
-internal resources in the chrome_cleaner/internal directory. These resources
-are not open source so are only available internally to Google. They include
-the licensed scanning engine used to find real-world UwS.
+The main build targets for this application are:
 
-Otherwise the build will link to the test scanning engine in
+*   //chrome/chrome_cleaner:software_reporter_tool
+*   //chrome/chrome_cleaner:chrome_cleanup_tool
+*   //chrome/chrome_cleaner:chrome_cleaner_unittests
+
+## Internal resources
+
+The public build will link to the test scanning engine in
 `chrome/chrome_cleaner/engines/target/test_engine_delegate.cc` which only
 detects test files. This is the default when building on the Chromium
 buildbots.
+
+If `is_internal_chrome_cleaner_build` is set in GN, the build looks for
+internal resources in the `chrome_cleaner/internal` directory. These resources
+are not open source so are only available internally to Google. They include
+the licensed scanning engine used to find real-world UwS.
 
 To ship a non-test version of the tool, implement EngineDelegate to wrap an
 engine that can detect and remove UwS. The engine will be run inside a sandbox
 with low privileges. To perform operations like opening file handles, scanning
 process memory, and deleting files, the engine will need to call the callbacks
-passed to EngineDelegate as |privileged_file_calls|, |privileged_scan_calls|
-and |privileged_removal_calls|.
+passed to EngineDelegate as `privileged_file_calls`, `privileged_scan_calls`
+and `privileged_removal_calls`.
 
-## Status
+### Getting the internal resources through gclient
 
-Code complete. Some tests are still in the Google internal repository.
+To check out the internal resources set both of these to True in .gclient:
 
-The unit tests (`chrome_cleaner_unittests.exe`) are built and executed on the
-Chromium buildbots. The final binaries (`chrome_cleanup_tool.exe` and
-`software_reporter_tool.exe`) are also built because chrome_cleaner_unittests
-has an artificial dependency on them, but nothing currently executes them.
+*  `checkout_src_internal` (standard argument defined in DEPS)
+*  `checkout_chrome_cleaner_internal` (defined in src-internal's DEPS, causes the
+   internal resources to be checked out under `chrome/chrome_cleaner/internal`)
 
-[TODO(crbug.com/949669)](https://crbug.com/949669): add an integration test
-that builds and runs the binaries, and remove the artificial dependency.
+To actually build with the internal resources, also set
+`is_internal_chrome_cleaner_build` to true in args.gn.
+
+## Build arguments
+
+The build is controlled by the following arguments that can be set in args.gn:
+
+*  `is_internal_chrome_cleaner_build`: If true, GN targets will depend on
+   targets in chrome/chrome_cleaner/internal, otherwise will depend only on
+   public resources.
+*  `is_official_chrome_cleaner_build`: If true, various development options
+   will be disabled since the build is meant for release to end users.
+*  `reporter_branding_path`, `cleaner_branding_path`, `version_path`: Paths to
+   resource files that will be used to populate the VERSIONINFO of the
+   executables.
+   * By default these identify as The Chromium Authors. When
+   `is_internal_chrome_cleaner_build` is set, these are overridden to identify
+   as Google.
+   * To ship a customized version of the tool, override these to point
+   to files identifying the authors of the custom version.
 
 ## Contact
 

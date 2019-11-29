@@ -9,8 +9,9 @@ AXWebArea
 ++++AXColumn
 ++++AXGroup
 ++AXTable
-++++AXRow AXDisclosureLevel='0'
-++++++AXCell
-++++++++AXStaticText AXValue='Cell at level 1'
+++++AXGroup
+++++++AXRow AXDisclosureLevel='0'
+++++++++AXCell
+++++++++++AXStaticText AXValue='Cell at level 1'
 ++++AXColumn
 ++++AXGroup

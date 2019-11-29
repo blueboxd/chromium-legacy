@@ -1948,7 +1948,6 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-a
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ Skip ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ Skip ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ Skip ]
-[ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Skip ]
 
 # ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
 # The section below lists web tests that are incompatible with the WPT Origin

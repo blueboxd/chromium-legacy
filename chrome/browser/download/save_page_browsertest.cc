@@ -55,7 +55,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -1155,13 +1154,10 @@ class SavePageOriginalVsSavedComparisonTest
     // - iframe with a.htm
     // - object with svg.svg
     // - object with text.txt
-    // - (in presence of MimeHandlerViewMode::UsesCrossProcessFrame) object with
-    //   pdf.pdf is responsible for presence of 2 extra frames (about:blank +
-    //   one frame for the actual pdf.pdf).  These frames are an implementation
-    //   detail and are not web-exposed (e.g. via window.frames).
-    int expected_number_of_frames = 7;
-    if (content::MimeHandlerViewMode::UsesCrossProcessFrame())
-      expected_number_of_frames = 9;
+    // - object with pdf.pdf is responsible for presence of 2 extra frames
+    //   (about:blank + one frame for the actual pdf.pdf).  These frames are an
+    //   implementation detail and are not web-exposed (e.g. via window.frames).
+    int expected_number_of_frames = 9;
 
     std::vector<std::string> expected_substrings = {
         "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
@@ -1274,12 +1270,9 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
 }
 
 // Tests that saving a page from file: URI works.
+// TODO(lukasza): https://crbug.com/964364: Re-enable the test.
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
-                       ObjectElementsViaFile) {
-  // TODO(lukasza): https://crbug.com/964364: Re-enable the test.
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return;
-
+                       DISABLED_ObjectElementsViaFile) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   GURL url(net::FilePathToFileURL(

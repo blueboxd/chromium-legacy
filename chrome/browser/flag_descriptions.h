@@ -775,9 +775,6 @@ extern const char kMediaInspectorLoggingDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
-extern const char kMimeHandlerViewInCrossProcessFrameName[];
-extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
-
 extern const char kMixBrowserTypeTabsName[];
 extern const char kMixBrowserTypeTabsDescription[];
 

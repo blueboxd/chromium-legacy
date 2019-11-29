@@ -30,60 +30,26 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
   return dst;
 }
 
-// This canvas is used only for tracking transform/clip/filter state from the
-// non-drawing ops.
-class PaintTrackingCanvas final : public SkNoDrawCanvas {
- public:
-  PaintTrackingCanvas(int width, int height) : SkNoDrawCanvas(width, height) {}
-  ~PaintTrackingCanvas() override = default;
-
-  bool ComputePaintBounds(const SkRect& rect,
-                          const SkPaint* current_paint,
-                          SkRect* paint_bounds) {
-    *paint_bounds = rect;
-    if (current_paint) {
-      if (!current_paint->canComputeFastBounds())
-        return false;
-      *paint_bounds =
-          current_paint->computeFastBounds(*paint_bounds, paint_bounds);
-    }
-
-    for (const auto& paint : base::Reversed(saved_paints_)) {
-      if (!paint.canComputeFastBounds())
-        return false;
-      *paint_bounds = paint.computeFastBounds(*paint_bounds, paint_bounds);
-    }
-
-    return true;
+bool ComputePaintBounds(const SkRect& rect,
+                        const SkPaint* current_paint,
+                        SkRect* paint_bounds) {
+  *paint_bounds = rect;
+  if (current_paint) {
+    if (!current_paint->canComputeFastBounds())
+      return false;
+    *paint_bounds =
+        current_paint->computeFastBounds(*paint_bounds, paint_bounds);
   }
 
- private:
-  // SkNoDrawCanvas overrides.
-  SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
-    saved_paints_.push_back(rec.fPaint ? *rec.fPaint : SkPaint());
-    return SkNoDrawCanvas::getSaveLayerStrategy(rec);
-  }
-
-  void willSave() override {
-    saved_paints_.push_back(SkPaint());
-    return SkNoDrawCanvas::willSave();
-  }
-
-  void willRestore() override {
-    DCHECK_GT(saved_paints_.size(), 0u);
-    saved_paints_.pop_back();
-    SkNoDrawCanvas::willRestore();
-  }
-
-  std::vector<SkPaint> saved_paints_;
-};
+  return true;
+}
 
 class DiscardableImageGenerator {
  public:
   DiscardableImageGenerator(int width,
                             int height,
                             const PaintOpBuffer* buffer) {
-    PaintTrackingCanvas canvas(width, height);
+    SkNoDrawCanvas canvas(width, height);
     GatherDiscardableImages(buffer, nullptr, &canvas);
   }
   ~DiscardableImageGenerator() = default;
@@ -157,7 +123,7 @@ class DiscardableImageGenerator {
   // this image in the top-level buffer.
   void GatherDiscardableImages(const PaintOpBuffer* buffer,
                                const gfx::Rect* top_level_op_rect,
-                               PaintTrackingCanvas* canvas) {
+                               SkNoDrawCanvas* canvas) {
     if (!buffer->HasDiscardableImages())
       return;
 
@@ -221,7 +187,7 @@ class DiscardableImageGenerator {
   // Given the |op_rect|, which is the rect for the draw op, returns the
   // transformed rect accounting for the current transform, clip and paint
   // state on |canvas_|.
-  gfx::Rect ComputePaintRect(const PaintOp* op, PaintTrackingCanvas* canvas) {
+  gfx::Rect ComputePaintRect(const PaintOp* op, SkNoDrawCanvas* canvas) {
     const SkRect& clip_rect = SkRect::Make(canvas->getDeviceClipBounds());
     const SkMatrix& ctm = canvas->getTotalMatrix();
 
@@ -243,7 +209,7 @@ class DiscardableImageGenerator {
 
       SkRect paint_rect = MapRect(ctm, op_rect);
       bool computed_paint_bounds =
-          canvas->ComputePaintBounds(paint_rect, &paint, &paint_rect);
+          ComputePaintBounds(paint_rect, &paint, &paint_rect);
       if (!computed_paint_bounds) {
         // TODO(vmpstr): UMA this case.
         paint_rect = clip_rect;
@@ -308,8 +274,8 @@ class DiscardableImageGenerator {
         return;
       }
 
-      PaintTrackingCanvas canvas(scaled_tile_rect.width(),
-                                 scaled_tile_rect.height());
+      SkNoDrawCanvas canvas(scaled_tile_rect.width(),
+                            scaled_tile_rect.height());
       canvas.setMatrix(SkMatrix::MakeRectToRect(
           shader->tile(), scaled_tile_rect, SkMatrix::kFill_ScaleToFit));
       base::AutoReset<bool> auto_reset(&only_gather_animated_images_, true);

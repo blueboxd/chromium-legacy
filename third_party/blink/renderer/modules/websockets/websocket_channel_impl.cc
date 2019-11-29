@@ -329,8 +329,8 @@ void WebSocketChannelImpl::Send(
 
 WebSocketChannel::SendResult WebSocketChannelImpl::Send(
     const DOMArrayBuffer& buffer,
-    unsigned byte_offset,
-    unsigned byte_length,
+    size_t byte_offset,
+    size_t byte_length,
     base::OnceClosure completion_callback) {
   NETWORK_DVLOG(1) << this << " Send(" << buffer.Data() << ", " << byte_offset
                    << ", " << byte_length << ") "

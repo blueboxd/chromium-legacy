@@ -264,6 +264,7 @@ enum Role {
   kRevision,
   kRootWebArea,
   kRow,
+  kRowGroup,
   kRowHeader,
   kRuby,
   kRubyAnnotation,

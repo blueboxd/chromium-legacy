@@ -41,8 +41,6 @@ using guest_view::TestGuestViewManagerFactory;
 class AppViewTest : public extensions::PlatformAppBrowserTest {
  public:
   AppViewTest() {
-    CHECK(
-        base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
     GuestViewManager::set_factory_for_testing(&factory_);
   }
 

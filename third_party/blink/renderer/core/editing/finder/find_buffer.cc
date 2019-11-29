@@ -108,7 +108,7 @@ bool ShouldIgnoreContents(const Node& node) {
          (IsA<HTMLSelectElement>(*element) &&
           To<HTMLSelectElement>(*element).UsesMenuList()) ||
          IsA<HTMLStyleElement>(*element) || IsA<HTMLScriptElement>(*element) ||
-         IsHTMLVideoElement(*element) || IsA<HTMLAudioElement>(*element) ||
+         IsA<HTMLVideoElement>(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&
           !element->GetDisplayLockContext()->IsActivatable(
               DisplayLockActivationReason::kFindInPage));

@@ -2059,6 +2059,9 @@
       <message desc="Describes rows within tables on the web." name="IDS_CHROMEVOX_ROLE_ROW">
         Row
       </message>
+      <message desc="Describes row groups within tables on the web." name="IDS_CHROMEVOX_ROLE_ROW_GROUP">
+        Row group
+      </message>
       <message desc="Describes columns within tables on the web." name="IDS_CHROMEVOX_ROLE_COLUMN">
         Column
       </message>

@@ -8323,8 +8323,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(frame->GetDocument()->getElementById("video"));
+  auto* video =
+      To<HTMLVideoElement>(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -8396,8 +8396,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
           ->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(iframe);
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(iframe->GetDocument()->getElementById("video"));
+  auto* video =
+      To<HTMLVideoElement>(iframe->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -13019,27 +13019,4 @@ TEST_F(WebFrameTest, RemoteViewportIntersection) {
   EXPECT_EQ(PhysicalRect(7, 0, 25, 24), rect);
 }
 
-class ExternallyHandledPluginDocumentTest
-    : public WebFrameTest,
-      public testing::WithParamInterface<
-          bool /* mime_handler_view_in_cross_process_frame */> {};
-
-TEST_P(ExternallyHandledPluginDocumentTest, DocumentType) {
-  bool cross_process = GetParam();
-  ScopedMimeHandlerViewInCrossProcessFrameForTest scoped_feature(cross_process);
-  ScopedFakePluginRegistry fake_plugins;
-  RegisterMockedHttpURLLoadWithMimeType("test.pdf", "application/pdf");
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "test.pdf");
-  WebViewImpl* web_view = web_view_helper.GetWebView();
-  WebLocalFrameImpl* web_frame = web_view->MainFrameImpl();
-  Document* document = web_frame->GetFrame()->GetDocument();
-  ASSERT_TRUE(document);
-  ASSERT_TRUE(document->IsHTMLDocument());
-  EXPECT_NE(cross_process, document->IsPluginDocument());
-}
-
-INSTANTIATE_TEST_SUITE_P(P,
-                         ExternallyHandledPluginDocumentTest,
-                         testing::Bool());
 }  // namespace blink

@@ -312,6 +312,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
   TakePendingWorkerTimingReceiver(int request_id);
 
+  const KURL& WebBundlePhysicalUrl() const { return web_bundle_physical_url_; }
+
  protected:
   Vector<KURL> redirect_chain_;
 
@@ -507,6 +509,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
+  KURL web_bundle_physical_url_;
   KURL base_url_override_for_web_bundle_;
 
   // This UseCounterHelper tracks feature usage associated with the lifetime of

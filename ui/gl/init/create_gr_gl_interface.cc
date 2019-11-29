@@ -5,6 +5,7 @@
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -106,45 +107,67 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
   };
 }
 
-template <typename R, typename... Args>
+template <bool droppable_call, typename R, typename... Args>
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> maybe_drop_call(
+    R(GL_BINDING_CALL* func)(Args...)) {
+  // One branch is optimized away because droppable_call is set at compile time.
+  if (droppable_call) {
+    return [func](Args... args) {
+      if (!HasInitializedNullDrawGLBindings())
+        func(args...);
+    };
+  } else {
+    return func;
+  }
+}
+
+template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
     R(GL_BINDING_CALL* func)(Args...),
     gl::ProgressReporter* progress_reporter) {
 #if defined(OS_MACOSX)
-  if (!progress_reporter)
-    return func;
+  if (!progress_reporter) {
+    return maybe_drop_call<droppable_call>(func);
+  }
   return [func, progress_reporter](Args... args) {
     gl::ScopedProgressReporter scoped_reporter(progress_reporter);
-    return func(args...);
+    // Conditional may be optimized out because droppable_call is set at compile
+    // time.
+    if (!droppable_call || !HasInitializedNullDrawGLBindings())
+      return func(args...);
   };
 #endif
-  return func;
+  return maybe_drop_call<droppable_call>(func);
 }
 
-template <typename R, typename... Args>
+template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     R(GL_BINDING_CALL* func)(Args...)) {
 #if defined(OS_MACOSX)
   return [func](Args... args) {
-    glFlush();
-    func(args...);
-    glFlush();
+    // Conditional may be optimized out because droppable_call is set at compile
+    // time.
+    if (!droppable_call || !HasInitializedNullDrawGLBindings()) {
+      glFlush();
+      func(args...);
+      glFlush();
+    }
   };
 #else
-  return func;
+  return maybe_drop_call<droppable_call>(func);
 #endif
 }
 
-template <typename R, typename... Args>
+template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_with_flush_on_mac(
     R(GL_BINDING_CALL* func)(Args...),
     gl::ProgressReporter* progress_reporter) {
   if (!progress_reporter) {
-    return bind_with_flush_on_mac(func);
+    return bind_with_flush_on_mac<droppable_call>(func);
   }
   return [func, progress_reporter](Args... args) {
     gl::ScopedProgressReporter scoped_reporter(progress_reporter);
-    return bind_with_flush_on_mac(func)(args...);
+    return bind_with_flush_on_mac<droppable_call>(func)(args...);
   };
 }
 
@@ -256,7 +279,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fBufferData = gl->glBufferDataFn;
   functions->fBufferSubData = gl->glBufferSubDataFn;
   functions->fClear =
-      bind_slow_with_flush_on_mac(gl->glClearFn, progress_reporter);
+      bind_slow_with_flush_on_mac<true>(gl->glClearFn, progress_reporter);
   functions->fClearColor = gl->glClearColorFn;
   functions->fClearStencil = gl->glClearStencilFn;
   functions->fClearTexImage = gl->glClearTexImageFn;
@@ -287,23 +310,25 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fDisableVertexAttribArray = gl->glDisableVertexAttribArrayFn;
   functions->fDiscardFramebuffer = gl->glDiscardFramebufferEXTFn;
   functions->fDrawArrays =
-      bind_slow_on_mac(gl->glDrawArraysFn, progress_reporter);
+      bind_slow_on_mac<true>(gl->glDrawArraysFn, progress_reporter);
   functions->fDrawBuffer = gl->glDrawBufferFn;
   functions->fDrawBuffers = gl->glDrawBuffersARBFn;
   functions->fDrawElements =
-      bind_slow_on_mac(gl->glDrawElementsFn, progress_reporter);
+      bind_slow_on_mac<true>(gl->glDrawElementsFn, progress_reporter);
 
-  functions->fDrawArraysInstanced =
-      bind_slow_on_mac(gl->glDrawArraysInstancedANGLEFn, progress_reporter);
-  functions->fDrawElementsInstanced =
-      bind_slow_on_mac(gl->glDrawElementsInstancedANGLEFn, progress_reporter);
+  functions->fDrawArraysInstanced = bind_slow_on_mac<true>(
+      gl->glDrawArraysInstancedANGLEFn, progress_reporter);
+  functions->fDrawElementsInstanced = bind_slow_on_mac<true>(
+      gl->glDrawElementsInstancedANGLEFn, progress_reporter);
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1
-  functions->fDrawArraysIndirect = gl->glDrawArraysIndirectFn;
-  functions->fDrawElementsIndirect = gl->glDrawElementsIndirectFn;
+  functions->fDrawArraysIndirect =
+      bind_slow_on_mac<true>(gl->glDrawArraysIndirectFn, progress_reporter);
+  functions->fDrawElementsIndirect =
+      bind_slow_on_mac<true>(gl->glDrawElementsIndirectFn, progress_reporter);
 
   functions->fDrawRangeElements =
-      bind_slow_on_mac(gl->glDrawRangeElementsFn, progress_reporter);
+      bind_slow_on_mac<true>(gl->glDrawRangeElementsFn, progress_reporter);
   functions->fEnable = gl->glEnableFn;
   functions->fEnableVertexAttribArray = gl->glEnableVertexAttribArrayFn;
   functions->fEndQuery = gl->glEndQueryFn;

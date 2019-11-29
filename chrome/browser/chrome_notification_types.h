@@ -177,14 +177,8 @@ enum NotificationType {
   // Send when kiosk auto-launch warning screen had completed.
   NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_COMPLETED,
 
-  // Send when enable consumer kiosk warning screen is visible.
-  NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-
   // Send when consumer kiosk has been enabled.
   NOTIFICATION_KIOSK_ENABLED,
-
-  // Send when enable consumer kiosk warning screen had completed.
-  NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
 
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,

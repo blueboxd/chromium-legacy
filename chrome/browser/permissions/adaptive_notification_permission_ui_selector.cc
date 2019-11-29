@@ -28,6 +28,16 @@ namespace {
 constexpr char kEnableQuietNotificationPermissionUiPrefPath[] =
     "profile.content_settings.enable_quiet_permission_ui.notifications";
 
+// Preference storing whether to show a promo.
+constexpr char kQuietNotificationPermissionShouldShowPromo[] =
+    "profile.content_settings.quiet_permission_ui_promo.should_show."
+    "notifications";
+
+// Preference storing whether the promo was shown.
+constexpr char kQuietNotificationPermissionPromoWasShown[] =
+    "profile.content_settings.quiet_permission_ui_promo.was_shown."
+    "notifications";
+
 // Enable the quiet UX after 3 consecutive denies in adapative activation mode.
 constexpr int kConsecutiveDeniesThresholdForActivation = 3u;
 
@@ -112,6 +122,10 @@ void AdaptiveNotificationPermissionUiSelector::RegisterProfilePrefs(
   // TODO(crbug.com/1001857): Consider making this syncable.
   registry->RegisterBooleanPref(kEnableQuietNotificationPermissionUiPrefPath,
                                 false /* default_value */);
+  registry->RegisterBooleanPref(kQuietNotificationPermissionShouldShowPromo,
+                                false /* default_value */);
+  registry->RegisterBooleanPref(kQuietNotificationPermissionPromoWasShown,
+                                false /* default_value */);
 }
 
 bool AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi() {
@@ -137,6 +151,9 @@ bool AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi() {
 void AdaptiveNotificationPermissionUiSelector::DisableQuietUi() {
   profile_->GetPrefs()->ClearPref(kEnableQuietNotificationPermissionUiPrefPath);
 
+  // No promo should be enabled for the quiet UI since it is turned off.
+  DisableShowingPromo();
+
   // Clear interaction history so that if we are in adaptive mode, and the
   // triggering conditions are met, we won't turn it back on immediately.
   ClearInteractionHistory(base::Time(), base::Time::Max());
@@ -144,6 +161,30 @@ void AdaptiveNotificationPermissionUiSelector::DisableQuietUi() {
 
 void AdaptiveNotificationPermissionUiSelector::EnableQuietUi() {
   profile_->GetPrefs()->SetBoolean(kEnableQuietNotificationPermissionUiPrefPath,
+                                   true /* value */);
+}
+
+void AdaptiveNotificationPermissionUiSelector::DisableShowingPromo() {
+  profile_->GetPrefs()->SetBoolean(kQuietNotificationPermissionShouldShowPromo,
+                                   false /* value */);
+  profile_->GetPrefs()->SetBoolean(kQuietNotificationPermissionPromoWasShown,
+                                   false /* value */);
+}
+
+void AdaptiveNotificationPermissionUiSelector::EnableShowingPromo() {
+  profile_->GetPrefs()->SetBoolean(kQuietNotificationPermissionShouldShowPromo,
+                                   true /* value */);
+}
+
+bool AdaptiveNotificationPermissionUiSelector::ShouldShowPromo() {
+  return profile_->GetPrefs()->GetBoolean(
+             kQuietNotificationPermissionShouldShowPromo) &&
+         !profile_->GetPrefs()->GetBoolean(
+             kQuietNotificationPermissionPromoWasShown);
+}
+
+void AdaptiveNotificationPermissionUiSelector::PromoWasShown() {
+  profile_->GetPrefs()->SetBoolean(kQuietNotificationPermissionPromoWasShown,
                                    true /* value */);
 }
 
@@ -206,6 +247,9 @@ void AdaptiveNotificationPermissionUiSelector::RecordPermissionPromptOutcome(
 
       if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
         EnableQuietUi();
+
+        // Enable showing promo for the next quiet prompt.
+        EnableShowingPromo();
         break;
       }
 

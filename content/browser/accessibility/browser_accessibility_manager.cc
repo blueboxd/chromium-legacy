@@ -342,20 +342,12 @@ void BrowserAccessibilityManager::OnWindowBlurred() {
     SetLastFocusedNode(nullptr);
 }
 
-void BrowserAccessibilityManager::UserIsNavigatingAway() {
-  user_is_navigating_away_ = true;
-}
-
 void BrowserAccessibilityManager::UserIsReloading() {
   user_is_navigating_away_ = true;
 }
 
-void BrowserAccessibilityManager::NavigationSucceeded() {
-  user_is_navigating_away_ = false;
-}
-
-void BrowserAccessibilityManager::NavigationFailed() {
-  user_is_navigating_away_ = false;
+void BrowserAccessibilityManager::DidStartLoading() {
+  user_is_navigating_away_ = true;
 }
 
 void BrowserAccessibilityManager::DidStopLoading() {

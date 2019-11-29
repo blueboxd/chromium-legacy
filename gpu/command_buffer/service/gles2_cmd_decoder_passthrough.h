@@ -38,6 +38,7 @@
 
 namespace gl {
 class GLFence;
+class ProgressReporter;
 }
 
 namespace gpu {
@@ -64,7 +65,7 @@ struct PassthroughResources {
   ~PassthroughResources();
 
   // api is null if we don't have a context (e.g. lost).
-  void Destroy(gl::GLApi* api);
+  void Destroy(gl::GLApi* api, gl::ProgressReporter* progress_reporter);
 
   // Resources stores a shared list of textures pending deletion.
   // If we have don't context when this function is called, we can mark

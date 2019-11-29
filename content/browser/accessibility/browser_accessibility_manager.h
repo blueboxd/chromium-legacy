@@ -191,14 +191,16 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // view lost focus.
   virtual void OnWindowBlurred();
 
-  // Notify the accessibility manager about page navigation.
-  // TODO(domfarolino, dmazzoni): Implement WebContentsObserver methods that
-  // correspond to the ones we provide today, so we can stop being manually
-  // notified of navigation events when they happen.
-  void UserIsNavigatingAway();
   virtual void UserIsReloading();
-  void NavigationSucceeded();
-  void NavigationFailed();
+
+  // WebContentsObserver implementation.
+  // Notify the accessibility manager about page navigation.
+  // BrowserAccessibilityManager used to be manually notified at the same time
+  // WebContentsObserver's DidStartLoading(), DidStopLoading(), and
+  // DidFinishNavigation() methods were called. Since then, it was determined
+  // BrowserAccessibilityManager does not need to distinguish between
+  // DidFinishNavigation() and DidStopLoading().
+  void DidStartLoading() override;
   void DidStopLoading() override;
 
   // Keep track of if this page is hidden by an interstitial, in which case

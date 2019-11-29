@@ -1,2 +1,2 @@
-AutomationFocusChanged on role=group, name=tfoot
-AutomationFocusChanged on role=group, name=tfoot
+AutomationFocusChanged on role=rowgroup, name=tfoot
+AutomationFocusChanged on role=rowgroup, name=tfoot

@@ -11,6 +11,7 @@
 #include "base/supports_user_data.h"
 
 class BrowserObserver;
+@class CommandDispatcher;
 @class TabModel;
 class WebStateList;
 
@@ -39,6 +40,9 @@ class Browser : public base::SupportsUserData {
 
   // Accessor for the WebStateList.
   virtual WebStateList* GetWebStateList() const = 0;
+
+  // Accessor for the CommandDispatcher.
+  virtual CommandDispatcher* GetCommandDispatcher() const = 0;
 
   // Adds and removes observers.
   virtual void AddObserver(BrowserObserver* observer) = 0;

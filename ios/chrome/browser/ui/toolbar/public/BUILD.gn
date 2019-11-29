@@ -7,7 +7,6 @@ source_set("public") {
   sources = [
     "fakebox_focuser.h",
     "omnibox_focuser.h",
-    "primary_toolbar_coordinator.h",
     "side_swipe_toolbar_interacting.h",
     "side_swipe_toolbar_snapshot_providing.h",
     "toolbar_coordinating.h",

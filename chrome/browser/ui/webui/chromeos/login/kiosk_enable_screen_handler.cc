@@ -53,11 +53,6 @@ void KioskEnableScreenHandler::OnGetConsumerKioskAutoLaunchStatus(
   }
 
   ShowScreen(kScreenId);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 void KioskEnableScreenHandler::SetDelegate(KioskEnableScreen* delegate) {
@@ -97,11 +92,6 @@ void KioskEnableScreenHandler::RegisterMessages() {
 void KioskEnableScreenHandler::HandleOnClose() {
   if (delegate_)
     delegate_->OnExit();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 void KioskEnableScreenHandler::HandleOnEnable() {
@@ -109,11 +99,6 @@ void KioskEnableScreenHandler::HandleOnEnable() {
     NOTREACHED();
     if (delegate_)
       delegate_->OnExit();
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
     return;
   }
 

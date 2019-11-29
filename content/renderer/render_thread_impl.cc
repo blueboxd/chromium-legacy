@@ -1070,9 +1070,9 @@ void RenderThreadImpl::RegisterExtension(
   WebScriptController::RegisterExtension(std::move(extension));
 }
 
-int RenderThreadImpl::PostTaskToAllWebWorkers(
-    const base::RepeatingClosure& closure) {
-  return WorkerThreadRegistry::Instance()->PostTaskToAllThreads(closure);
+int RenderThreadImpl::PostTaskToAllWebWorkers(base::RepeatingClosure closure) {
+  return WorkerThreadRegistry::Instance()->PostTaskToAllThreads(
+      std::move(closure));
 }
 
 bool RenderThreadImpl::ResolveProxy(const GURL& url, std::string* proxy_list) {

@@ -421,10 +421,8 @@ DevToolsWindow::~DevToolsWindow() {
   DCHECK(it != instances->end());
   instances->erase(it);
 
-  if (!close_callback_.is_null()) {
-    close_callback_.Run();
-    close_callback_ = base::Closure();
-  }
+  if (!close_callback_.is_null())
+    std::move(close_callback_).Run();
   // Defer deletion of the main web contents, since we could get here
   // via RenderFrameHostImpl method that expects WebContents to live
   // for some time. See http://crbug.com/997299 for details.
@@ -1516,10 +1514,8 @@ void DevToolsWindow::OnLoadCompleted() {
 
 void DevToolsWindow::ReadyForTest() {
   ready_for_test_ = true;
-  if (!ready_for_test_callback_.is_null()) {
-    ready_for_test_callback_.Run();
-    ready_for_test_callback_ = base::Closure();
-  }
+  if (!ready_for_test_callback_.is_null())
+    std::move(ready_for_test_callback_).Run();
 }
 
 void DevToolsWindow::ConnectionReady() {

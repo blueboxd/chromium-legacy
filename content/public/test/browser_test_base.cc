@@ -146,10 +146,10 @@ void RunTaskOnRendererThread(base::OnceClosure task,
   base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_task));
 }
 
-void TraceStopTracingComplete(const base::Closure& quit,
-                                   const base::FilePath& file_path) {
+void TraceStopTracingComplete(base::OnceClosure quit,
+                              const base::FilePath& file_path) {
   LOG(ERROR) << "Tracing written to: " << file_path.value();
-  quit.Run();
+  std::move(quit).Run();
 }
 
 // See SetInitialWebContents comment for more information.

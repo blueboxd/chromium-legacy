@@ -59,6 +59,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
+  ax::mojom::Role DetermineTableSectionRole() const;
   ax::mojom::Role DetermineTableCellRole() const;
   ax::mojom::Role DetermineTableRowRole() const;
   ax::mojom::Role DetermineAccessibilityRole() override;

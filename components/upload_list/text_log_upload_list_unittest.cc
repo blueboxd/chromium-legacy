@@ -44,8 +44,10 @@ class TextLogUploadListTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+
+ protected:
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TextLogUploadListTest);
 };
@@ -376,6 +378,9 @@ TEST_F(TextLogUploadListTest, SimultaneousAccess) {
     time_double = uploads[0].capture_time.ToDoubleT();
     EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
   }
+
+  // Allow the remaining loads to complete.
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace

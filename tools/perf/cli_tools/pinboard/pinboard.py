@@ -142,9 +142,10 @@ def CollectPinpointResults(state):
 def LoadJobsState():
   """Load the latest recorded state of pinpoint jobs."""
   local_path = CachedFilePath(JOBS_STATE_FILE)
-  if os.path.exists(local_path):
+  if os.path.exists(local_path) or DownloadFromCloudStorage(local_path):
     return LoadJsonFile(local_path)
   else:
+    logging.info('No jobs state found. Creating empty state.')
     return []
 
 
@@ -164,26 +165,52 @@ def UpdateJobsState(state):
       UploadToCloudStorage(local_path)
 
 
-def AggregateAndUploadResults(state):
-  """Aggregate results collected and upload them to cloud storage."""
-  cached_results = CachedFilePath(DATASET_PKL_FILE)
-  dfs = []
-
-  keep_revisions = set(item['revision'] for item in state)
-  if os.path.exists(cached_results):
-    # To speed things up, we take the cache computed from previous results.
-    df = pd.read_pickle(cached_results)
-    # Drop possible old data from revisions no longer in recent state.
-    df = df[df['revision'].isin(keep_revisions)]
-    dfs.append(df)
-    known_revisions = set(df['revision'])
+def GetCachedDataset():
+  """Load the latest dataset with cached data."""
+  local_path = CachedFilePath(DATASET_PKL_FILE)
+  if os.path.exists(local_path) or DownloadFromCloudStorage(local_path):
+    return pd.read_pickle(local_path)
   else:
-    known_revisions = set()
+    return None
+
+
+def UpdateCachedDataset(df):
+  """Write back the dataset with cached data."""
+  local_path = CachedFilePath(DATASET_PKL_FILE)
+  df.to_pickle(local_path)
+  UploadToCloudStorage(local_path)
+
+
+def GetItemsToUpdate(state):
+  """Select jobs with new data to download and cached data for existing jobs.
+
+  This also filters out old revisions to keep only recent (6 months) data.
+
+  Returns:
+    new_items: A list of job items from which to get data.
+    cached_df: A DataFrame with existing cached data, may be None.
+  """
+  from_date = str(TimeAgo(months=6).date())
+  new_items = [item for item in state if item['timestamp'] > from_date]
+  df = GetCachedDataset()
+  if df is not None:
+    recent_revisions = set(item['revision'] for item in new_items)
+    df = df[df['revision'].isin(recent_revisions)]
+    known_revisions = set(df['revision'])
+    new_items = [
+        item for item in new_items if item['revision'] not in known_revisions]
+  return new_items, df
+
+
+def AggregateAndUploadResults(new_items, cached_df=None):
+  """Aggregate results collected and upload them to cloud storage."""
+  dfs = []
+  if cached_df is not None:
+    dfs.append(cached_df)
 
   found_new = False
-  for item in state:
-    if item['revision'] in known_revisions or _SkipProcessing(item):
-      # Revision is already in cache, jobs are not ready, or all have failed.
+  for item in new_items:
+    if _SkipProcessing(item):  # Jobs are not ready, or all have failed.
       continue
     if not found_new:
       logging.info('Processing data from new results:')
@@ -197,7 +224,7 @@ def AggregateAndUploadResults(state):
 
   # Otherwise update our cache and upload.
   df = pd.concat(dfs, ignore_index=True)
-  df.to_pickle(cached_results)
+  UpdateCachedDataset(df)
 
   # Drop revisions with no results and mark the last result for each metric,
   # both with/without patch, as a 'reference'. This allows making score cards
@@ -327,6 +354,18 @@ def UploadToCloudStorage(filepath):
       filepath, posixpath.join(CLOUD_STORAGE_DIR, os.path.basename(filepath)))
 
 
+def DownloadFromCloudStorage(filepath):
+  """Get the given file from cloud storage."""
+  try:
+    gsutil.Copy(
+        posixpath.join(CLOUD_STORAGE_DIR, os.path.basename(filepath)), filepath)
+    logging.info('Downloaded copy of %s from cloud storage.', filepath)
+    return True
+  except subprocess.CalledProcessError:
+    logging.info('Failed to download copy of %s from cloud storage.', filepath)
+    return False
+
+
 def LoadJsonFile(filename):
   with open(filename) as f:
     return json.load(f)
@@ -353,12 +392,6 @@ def SetUpLogging(level):
   logger.addHandler(h2)
 
 
-def SelectRecentRevisions(state):
-  """Filter out old revisions from state to keep only recent (6 months) data."""
-  from_date = str(TimeAgo(months=6).date())
-  return [item for item in state if item['timestamp'] > from_date]
-
-
 def Main():
   SetUpLogging(level=logging.INFO)
   actions = ('start', 'collect', 'upload')
@@ -377,15 +410,19 @@ def Main():
     logging.info('=== auto run for %s ===', args.date)
     args.actions = actions
 
+  cached_results_dir = CachedFilePath('job_results')
+  if not os.path.isdir(cached_results_dir):
+    os.makedirs(cached_results_dir)
+
   state = LoadJobsState()
   try:
     if 'start' in args.actions:
       StartPinpointJobs(state, args.date)
-    recent_state = SelectRecentRevisions(state)
+    new_items, cached_df = GetItemsToUpdate(state)
     if 'collect' in args.actions:
-      CollectPinpointResults(recent_state)
+      CollectPinpointResults(new_items)
   finally:
     UpdateJobsState(state)
 
   if 'upload' in args.actions:
-    AggregateAndUploadResults(recent_state)
+    AggregateAndUploadResults(new_items, cached_df)

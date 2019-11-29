@@ -114,7 +114,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
   // remove_end (exclusive). You may pass in null Time values to do an unbounded
   // delete in either direction.
   virtual int RemoveDownloadsByURLAndTime(
-      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) = 0;
 

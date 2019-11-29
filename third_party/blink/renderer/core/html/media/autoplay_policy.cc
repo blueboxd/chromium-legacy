@@ -176,7 +176,7 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
 }
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
-  if (!element_->IsHTMLVideoElement())
+  if (!IsA<HTMLVideoElement>(element_.Get()))
     return false;
 
   if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
@@ -281,7 +281,7 @@ bool AutoplayPolicy::IsOrWillBeAutoplayingMuted() const {
 }
 
 bool AutoplayPolicy::IsOrWillBeAutoplayingMutedInternal(bool muted) const {
-  if (!element_->IsHTMLVideoElement() ||
+  if (!IsA<HTMLVideoElement>(element_.Get()) ||
       !DocumentShouldAutoplayMutedVideos(element_->GetDocument())) {
     return false;
   }

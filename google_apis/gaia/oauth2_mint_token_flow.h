@@ -23,6 +23,10 @@ namespace base {
 class Value;
 }
 
+namespace net {
+class CanonicalCookie;
+}
+
 // IssueAdvice: messages to show to the user to get a user's approval.
 // The structure is as follows:
 // * Description 1
@@ -49,6 +53,27 @@ struct IssueAdviceInfoEntry {
 };
 
 typedef std::vector<IssueAdviceInfoEntry> IssueAdviceInfo;
+
+// Data for the remote consent resolution:
+// - URL of the consent page to be displayed to the user.
+// - Cookies that should be set before navigating to that URL.
+struct RemoteConsentResolutionData {
+  RemoteConsentResolutionData();
+  ~RemoteConsentResolutionData();
+
+  RemoteConsentResolutionData(const RemoteConsentResolutionData& other) =
+      delete;
+  RemoteConsentResolutionData& operator=(
+      const RemoteConsentResolutionData& other) = delete;
+
+  RemoteConsentResolutionData(RemoteConsentResolutionData&& other);
+  RemoteConsentResolutionData& operator=(RemoteConsentResolutionData&& other);
+
+  GURL url;
+  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+
+  bool operator==(const RemoteConsentResolutionData& rhs) const;
+};
 
 // This class implements the OAuth2 flow to Google to mint an OAuth2 access
 // token for the given client and the given set of scopes from the OAuthLogin
@@ -93,6 +118,8 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
                                     int time_to_live) {}
     virtual void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice)  {}
     virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) {}
+    virtual void OnRemoteConsentSuccess(
+        const RemoteConsentResolutionData& resolution_data) {}
 
    protected:
     virtual ~Delegate() {}
@@ -118,16 +145,46 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   friend class OAuth2MintTokenFlowTest;
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, CreateApiCallBody);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseRemoteConsentResponse);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_EmptyCookies);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_NoResolutionData);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_NoUrl);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_BadUrl);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_NoApproach);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_BadApproach);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_NoCookies);
+  FRIEND_TEST_ALL_PREFIXES(
+      OAuth2MintTokenFlowTest,
+      ParseRemoteConsentResponse_BadCookie_MissingRequiredField);
+  FRIEND_TEST_ALL_PREFIXES(
+      OAuth2MintTokenFlowTest,
+      ParseRemoteConsentResponse_MissingCookieOptionalField);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_BadCookie_BadMaxAge);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+                           ParseRemoteConsentResponse_BadCookieList);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseMintTokenResponse);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallSuccess);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallFailure);
 
   void ReportSuccess(const std::string& access_token, int time_to_live);
   void ReportIssueAdviceSuccess(const IssueAdviceInfo& issue_advice);
+  void ReportRemoteConsentSuccess(
+      const RemoteConsentResolutionData& resolution_data);
   void ReportFailure(const GoogleServiceAuthError& error);
 
   static bool ParseIssueAdviceResponse(const base::Value* dict,
                                        IssueAdviceInfo* issue_advice);
+  static bool ParseRemoteConsentResponse(
+      const base::Value* dict,
+      RemoteConsentResolutionData* resolution_data);
   static bool ParseMintTokenResponse(const base::Value* dict,
                                      std::string* access_token,
                                      int* time_to_live);

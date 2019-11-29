@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
@@ -19,7 +21,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
@@ -67,8 +69,8 @@
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 
-// Handles command dispatching.
-@property(nonatomic, strong) CommandDispatcher* dispatcher;
+// Handles command dispatching, provided by the Browser instance.
+@property(nonatomic, weak) CommandDispatcher* dispatcher;
 
 // The coordinator managing the container view controller.
 @property(nonatomic, strong)
@@ -156,13 +158,20 @@
 
 #pragma mark - ChromeCoordinator
 
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  if (self = [super initWithBaseViewController:viewController
+                                       browser:browser]) {
+    _dispatcher = browser->GetCommandDispatcher();
+  }
+  return self;
+}
 - (void)start {
   if (self.started)
     return;
 
   DCHECK(self.browserState);
   DCHECK(!self.viewController);
-  self.dispatcher = [[CommandDispatcher alloc] init];
   [self startBrowserContainer];
   [self createViewController];
   [self startChildCoordinators];
@@ -434,6 +443,26 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
   [self.readingListCoordinator start];
+}
+
+- (void)showDownloadsFolder {
+  base::FilePath download_dir;
+  if (!GetDownloadsDirectory(&download_dir)) {
+    return;
+  }
+  UIDocumentPickerViewController* documentPicker =
+      [[UIDocumentPickerViewController alloc]
+          initWithDocumentTypes:@[ @"public.data" ]
+                         inMode:UIDocumentPickerModeImport];
+  documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+  if (@available(iOS 13, *)) {
+    NSURL* URL =
+        [NSURL fileURLWithPath:base::SysUTF8ToNSString(download_dir.value())];
+    documentPicker.directoryURL = URL;
+  }
+  [self.viewController presentViewController:documentPicker
+                                    animated:YES
+                                  completion:nil];
 }
 
 - (void)showRecentTabs {

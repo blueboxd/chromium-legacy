@@ -274,6 +274,7 @@ source_set("perf_tests") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/location_bar:location_bar_model_delegate",
     "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",

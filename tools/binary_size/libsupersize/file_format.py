@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Deals with loading & saving .size files.
+"""Deals with loading & saving .size and .sizediff files.
 
 The .size file is written in the following format. There are no section
 delimeters, instead the end of a section is usually determined by a row count
@@ -73,6 +73,32 @@ a single symbol. Values are tab seperated and follow this format:
 symbol.full_name, symbol.num_aliases, symbol.flags
 |num_aliases| will be omitted if the aliases of the symbol are the same as the
 previous line. |flags| will be omitted if there are no flags.
+
+
+
+The .sizediff file stores a sparse representation of a difference between .size
+files. Each .sizediff file stores two sparse .size files, before and after,
+containing only symbols that differed between "before" and "after". They can
+be rendered via the Tiger viewer. .sizediff files use the following format:
+
+Header
+------
+3 lines long.
+Line 0 of the file is a header comment.
+Line 1 is the number of characters in the metadata string.
+Line 2 is the metadata string, a stringified JSON object. This currently
+contains two fields, 'before_length' (the length in bytes of the 'before'
+section) and 'version', which is always 1.
+
+Before
+------
+The next |metadata.before_length| bytes are a valid gzipped sparse .size file
+containing the "before" snapshot.
+
+After
+-----
+All remaining bytes are a valid gzipped sparse .size file containing the
+"after" snapshot.
 """
 
 import cStringIO
@@ -84,11 +110,15 @@ import logging
 import os
 import shutil
 
+import concurrent
 import models
 
 
 # File format version for .size files.
 _SERIALIZATION_VERSION = 'Size File Format v1'
+
+# Header for .sizediff files
+_SIZEDIFF_HEADER = '# Created by //tools/binary_size\nDIFF\n'
 
 
 def CalculatePadding(raw_symbols):
@@ -137,13 +167,18 @@ def _LogSize(file_obj, desc):
   logging.debug('File size with %s: %d' % (desc, size))
 
 
-def _SaveSizeInfoToFile(size_info, file_obj, include_padding=False):
+def _SaveSizeInfoToFile(size_info,
+                        file_obj,
+                        include_padding=False,
+                        sparse_symbols=None):
   """Saves size info to a .size file.
 
   Args:
     size_info: Data to write to the file
     file_object: File opened for writing
+    sparse_symbols: If present, only save these symbols to the file
   """
+  raw_symbols = sparse_symbols or size_info.raw_symbols
   # Created by supersize header
   file_obj.write('# Created by //tools/binary_size\n')
   file_obj.write('%s\n' % _SERIALIZATION_VERSION)
@@ -161,22 +196,22 @@ def _SaveSizeInfoToFile(size_info, file_obj, include_padding=False):
   _LogSize(file_obj, 'header')  # For libchrome: 570 bytes.
 
   # Store a single copy of all paths and have them referenced by index.
-  unique_path_tuples = sorted(set(
-      (s.object_path, s.source_path) for s in size_info.raw_symbols))
+  unique_path_tuples = sorted(
+      set((s.object_path, s.source_path) for s in raw_symbols))
   path_tuples = {tup: i for i, tup in enumerate(unique_path_tuples)}
   file_obj.write('%d\n' % len(unique_path_tuples))
   file_obj.writelines('%s\t%s\n' % pair for pair in unique_path_tuples)
   _LogSize(file_obj, 'paths')  # For libchrome, adds 200kb.
 
   # Store a single copy of all components and have them referenced by index.
-  unique_components = sorted(set(s.component for s in size_info.raw_symbols))
+  unique_components = sorted(set(s.component for s in raw_symbols))
   components = {comp: i for i, comp in enumerate(unique_components)}
   file_obj.write('%d\n' % len(unique_components))
   file_obj.writelines('%s\n' % comp for comp in unique_components)
   _LogSize(file_obj, 'components')
 
   # Symbol counts by section.
-  by_section = size_info.raw_symbols.GroupedBySectionName()
+  by_section = raw_symbols.GroupedBySectionName()
   file_obj.write('%s\n' % '\t'.join(g.name for g in by_section))
   file_obj.write('%s\n' % '\t'.join(str(len(g)) for g in by_section))
 
@@ -413,15 +448,27 @@ def _OpenGzipForWrite(path, file_obj=None):
         yield fz
 
 
-def SaveSizeInfo(size_info, path, file_obj=None, include_padding=False):
-  """Saves |size_info| to |path}."""
+def SaveSizeInfo(size_info,
+                 path,
+                 file_obj=None,
+                 include_padding=False,
+                 sparse_symbols=None):
+  """Saves |size_info| to |path|."""
   if os.environ.get('SUPERSIZE_MEASURE_GZIP') == '1':
     with _OpenGzipForWrite(path, file_obj=file_obj) as f:
-      _SaveSizeInfoToFile(size_info, f, include_padding=include_padding)
+      _SaveSizeInfoToFile(
+          size_info,
+          f,
+          include_padding=include_padding,
+          sparse_symbols=sparse_symbols)
   else:
     # It is seconds faster to do gzip in a separate step. 6s -> 3.5s.
     stringio = cStringIO.StringIO()
-    _SaveSizeInfoToFile(size_info, stringio, include_padding=include_padding)
+    _SaveSizeInfoToFile(
+        size_info,
+        stringio,
+        include_padding=include_padding,
+        sparse_symbols=sparse_symbols)
 
     logging.debug('Serialization complete. Gzipping...')
     stringio.seek(0)
@@ -433,3 +480,50 @@ def LoadSizeInfo(filename, file_obj=None):
   """Returns a SizeInfo loaded from |filename|."""
   with gzip.GzipFile(filename=filename, fileobj=file_obj) as f:
     return _LoadSizeInfoFromFile(f, filename)
+
+
+def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
+  """Saves |delta_size_info| to |path|."""
+
+  changed_symbols = delta_size_info.raw_symbols \
+      .WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
+  before_symbols = models.SymbolGroup(
+      [sym.before_symbol for sym in changed_symbols if sym.before_symbol])
+  after_symbols = models.SymbolGroup(
+      [sym.after_symbol for sym in changed_symbols if sym.after_symbol])
+
+  before_size_file = cStringIO.StringIO()
+  after_size_file = cStringIO.StringIO()
+
+  after_promise = concurrent.CallOnThread(
+      SaveSizeInfo,
+      delta_size_info.after,
+      '',
+      file_obj=after_size_file,
+      include_padding=True,
+      sparse_symbols=after_symbols)
+  SaveSizeInfo(
+      delta_size_info.before,
+      '',
+      file_obj=before_size_file,
+      include_padding=True,
+      sparse_symbols=before_symbols)
+
+  with file_obj or open(path, 'wb') as output_file:
+    output_file.write(_SIZEDIFF_HEADER)
+    # JSON metadata
+    headers = {
+        'version': 1,
+        'before_length': before_size_file.tell(),
+    }
+    metadata_str = json.dumps(headers, output_file, indent=2, sort_keys=True)
+    output_file.write('%d\n' % len(metadata_str))
+    output_file.write(metadata_str)
+    output_file.write('\n')
+
+    before_size_file.seek(0)
+    shutil.copyfileobj(before_size_file, output_file)
+
+    after_promise.get()
+    after_size_file.seek(0)
+    shutil.copyfileobj(after_size_file, output_file)

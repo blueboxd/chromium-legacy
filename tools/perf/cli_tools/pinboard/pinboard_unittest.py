@@ -34,6 +34,9 @@ class PinboardToolTests(unittest.TestCase):
         'cli_tools.pinboard.pinboard.subprocess').start()
     self.upload_to_cloud = mock.patch(
         'cli_tools.pinboard.pinboard.UploadToCloudStorage').start()
+    self.download_from_cloud = mock.patch(
+        'cli_tools.pinboard.pinboard.DownloadFromCloudStorage').start()
+    self.download_from_cloud.return_value = False
 
   def tearDown(self):
     mock.patch.stopall()
@@ -109,7 +112,8 @@ class PinboardToolTests(unittest.TestCase):
     self.assertEqual(self.upload_to_cloud.call_count, 2)
 
   @mock.patch('cli_tools.pinboard.pinboard.GetRevisionResults')
-  def testAggregateAndUploadResults(self, get_revision_results):
+  @mock.patch('cli_tools.pinboard.pinboard.TimeAgo')
+  def testAggregateAndUploadResults(self, time_ago, get_revision_results):
     state = [
         StateItem('a100', timestamp='2019-03-15', job1='completed'),
         StateItem('a200', timestamp='2019-03-16', job2='completed'),
@@ -129,26 +133,31 @@ class PinboardToolTests(unittest.TestCase):
       return df
 
     get_revision_results.side_effect = GetFakeResults
+    time_ago.return_value = pd.Timestamp('2018-10-20')
 
     # Only process first few revisions.
-    pinboard.AggregateAndUploadResults(state[:3])
+    new_items, cached_df = pinboard.GetItemsToUpdate(state[:3])
+    pinboard.AggregateAndUploadResults(new_items, cached_df)
     dataset_file = pinboard.CachedFilePath(pinboard.DATASET_CSV_FILE)
     df = pd.read_csv(dataset_file)
     self.assertEqual(set(df['revision']), set(['a100', 'a200']))
     self.assertTrue((df[df['reference']]['revision'] == 'a200').all())
 
     # Incrementally process the rest.
-    pinboard.AggregateAndUploadResults(state)
+    new_items, cached_df = pinboard.GetItemsToUpdate(state)
+    pinboard.AggregateAndUploadResults(new_items, cached_df)
     dataset_file = pinboard.CachedFilePath(pinboard.DATASET_CSV_FILE)
     df = pd.read_csv(dataset_file)
     self.assertEqual(set(df['revision']), set(['a100', 'a200', 'a500']))
     self.assertTrue((df[df['reference']]['revision'] == 'a500').all())
 
     # No new revisions. This should be a no-op.
-    pinboard.AggregateAndUploadResults(state)
+    new_items, cached_df = pinboard.GetItemsToUpdate(state)
+    pinboard.AggregateAndUploadResults(new_items, cached_df)
 
     self.assertEqual(get_revision_results.call_count, 4)
-    self.assertEqual(self.upload_to_cloud.call_count, 2)
+    # Uploads twice (the pkl and csv) on each call to aggregate results.
+    self.assertEqual(self.upload_to_cloud.call_count, 2 * 2)
 
   def testGetRevisionResults_simple(self):
     item = StateItem('2a66ba', timestamp='2019-03-17T23:50:16-07:00')

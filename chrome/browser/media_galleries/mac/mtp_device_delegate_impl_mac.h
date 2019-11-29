@@ -91,14 +91,13 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   void AddWatcher(const GURL& origin,
                   const base::FilePath& file_path,
                   const bool recursive,
-                  const storage::WatcherManager::StatusCallback& callback,
-                  const storage::WatcherManager::NotificationCallback&
+                  storage::WatcherManager::StatusCallback callback,
+                  storage::WatcherManager::NotificationCallback
                       notification_callback) override;
-  void RemoveWatcher(
-      const GURL& origin,
-      const base::FilePath& file_path,
-      const bool recursive,
-      const storage::WatcherManager::StatusCallback& callback) override;
+  void RemoveWatcher(const GURL& origin,
+                     const base::FilePath& file_path,
+                     const bool recursive,
+                     storage::WatcherManager::StatusCallback callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // Forward delegates for ImageCaptureDeviceListener. These are

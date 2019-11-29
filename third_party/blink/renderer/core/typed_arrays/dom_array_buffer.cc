@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -124,4 +126,10 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
   return Create(ArrayBuffer::Create(contents));
 }
 
+DOMArrayBuffer* DOMArrayBuffer::Slice(size_t begin, size_t end) const {
+  begin = std::min(begin, ByteLengthAsSizeT());
+  end = std::min(end, ByteLengthAsSizeT());
+  size_t size = begin <= end ? end - begin : 0;
+  return Create(static_cast<const char*>(Data()) + begin, size);
+}
 }  // namespace blink

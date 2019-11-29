@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -79,7 +80,7 @@ void RunAllTasksUntilIdle();
 // Prefer RunLoop::RunUntilIdle() to this.
 // TODO(gab): Assess the need for this API (see comment on
 // RunAllPendingInMessageLoop() above).
-base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
+base::OnceClosure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
 
 // Executes the specified JavaScript in the specified frame, and runs a nested
 // MessageLoop. When the result is available, it is returned.
@@ -153,7 +154,7 @@ class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
   //   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   //   kick_off_some_api(runner->QuitClosure());
   //   runner->Run();
-  base::Closure QuitClosure();
+  base::RepeatingClosure QuitClosure();
 
   bool loop_running() const { return loop_running_; }
 
@@ -164,10 +165,10 @@ class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
   QuitMode quit_mode_;
 
   // True when the message loop is running.
-  bool loop_running_;
+  bool loop_running_ = false;
 
   // True after closure returned by |QuitClosure| has been called.
-  bool quit_closure_called_;
+  bool quit_closure_called_ = false;
 
   base::RunLoop run_loop_;
 
@@ -205,11 +206,11 @@ class WindowedNotificationObserver : public NotificationObserver {
   // being waited for is met. For convenience, there is a choice between two
   // callback types, one that is provided with the notification source and
   // details, and one that is not.
-  typedef base::Callback<bool(const NotificationSource&,
-                              const NotificationDetails&)>
-      ConditionTestCallback;
-  typedef base::Callback<bool(void)>
-      ConditionTestCallbackWithoutSourceAndDetails;
+  using ConditionTestCallback =
+      base::RepeatingCallback<bool(const NotificationSource&,
+                                   const NotificationDetails&)>;
+  using ConditionTestCallbackWithoutSourceAndDetails =
+      base::RepeatingCallback<bool(void)>;
 
   // Set up to wait for a simple condition. The condition is met when a
   // notification of the given |notification_type| from the given |source| is
@@ -222,10 +223,10 @@ class WindowedNotificationObserver : public NotificationObserver {
   // |callback| returns |true|. The callback is invoked whenever a notification
   // of |notification_type| from any source is received.
   WindowedNotificationObserver(int notification_type,
-                               const ConditionTestCallback& callback);
+                               ConditionTestCallback callback);
   WindowedNotificationObserver(
       int notification_type,
-      const ConditionTestCallbackWithoutSourceAndDetails& callback);
+      ConditionTestCallbackWithoutSourceAndDetails callback);
 
   ~WindowedNotificationObserver() override;
 
@@ -287,13 +288,12 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
  private:
   void JoinAllUtilityThreads();
   void CheckHasRunningChildProcess();
-  static void CheckHasRunningChildProcessOnIO(
-      const base::RepeatingClosure& quit_closure);
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
 
-  base::RepeatingClosure quit_closure_;
+  base::OnceClosure quit_closure_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
+  base::WeakPtrFactory<InProcessUtilityThreadHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
 };

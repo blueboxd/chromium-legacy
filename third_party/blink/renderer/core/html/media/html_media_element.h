@@ -765,7 +765,7 @@ class CORE_EXPORT HTMLMediaElement
 };
 
 inline bool IsHTMLMediaElement(const HTMLElement& element) {
-  return IsA<HTMLAudioElement>(element) || IsHTMLVideoElement(element);
+  return IsA<HTMLAudioElement>(element) || IsA<HTMLVideoElement>(element);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);

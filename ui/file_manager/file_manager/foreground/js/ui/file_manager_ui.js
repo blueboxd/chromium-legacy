@@ -169,6 +169,10 @@ class FileManagerUI {
     this.searchBox = new SearchBox(
         queryRequiredElement('#search-box', this.element),
         queryRequiredElement('#search-button', this.element));
+    // Add a listener to the containing action bar for hiding the search box.
+    this.actionbar.addEventListener('click', (event) => {
+      this.searchBox.removeHidePending(event);
+    });
 
     /**
      * Empty folder UI.
@@ -490,8 +494,11 @@ class FileManagerUI {
    * Attaches files tooltip.
    */
   attachFilesTooltip() {
-    assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
-        .addTargets(document.querySelectorAll('[has-tooltip]'));
+    const filesTooltip =
+        assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip);
+    filesTooltip.addTargets(document.querySelectorAll('[has-tooltip]'));
+
+    this.locationLine.filesTooltip = filesTooltip;
   }
 
   /**

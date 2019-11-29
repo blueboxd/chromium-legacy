@@ -644,28 +644,6 @@ class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
 // with WebViewInteractiveTest (see crbug.com/582562).
 class DISABLED_WebViewPopupInteractiveTest : public WebViewInteractiveTest {};
 
-// TODO(mcnee): These tests are BrowserPlugin specific. While WebView itself
-// is no longer based on BrowserPlugin, MimeHandlerViewGuest is. We'll keep
-// these tests (that would otherwise be removed) so that we keep test coverage
-// of functionality that could still be relevant to MimeHandlerViewGuest. Once
-// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these
-// tests. (See https://crbug.com/533069 and https://crbug.com/659750).
-class WebViewBrowserPluginSpecificInteractiveTest
-    : public WebViewInteractiveTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewInteractiveTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kGuestViewCrossProcessFrames);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-class WebViewContextMenuBrowserPluginSpecificInteractiveTest
-    : public WebViewBrowserPluginSpecificInteractiveTest {};
-
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
 // likely won't work on many other platforms as well, so for now this test
 // is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
@@ -1160,91 +1138,6 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowInteractiveTest,
   // Before the embedder goes away, both the guests should go away.
   // This ensures that unattached guests are gone if opener is gone.
   GetGuestViewManager()->WaitForAllGuestsDeleted();
-}
-
-// Tests whether <webview> context menu sees <webview> local coordinates
-// in its RenderViewContextMenu params.
-// Local coordinates are required for plugin actions to work properly.
-//
-// This test is not needed in --use-cross-process-frames-for-guests,
-// since it tests that the <webview> sees local coordinates, which is not
-// true with the out-of-process iframes architecture. In that case, the
-// <webview> sees transformed coordinates, the point is transformed in
-// CrossProcessFrameConnector::TransformPointToRootCoordSpace.
-IN_PROC_BROWSER_TEST_F(WebViewContextMenuBrowserPluginSpecificInteractiveTest,
-                       DISABLED_ContextMenuParamCoordinates) {
-  ASSERT_FALSE(
-      base::FeatureList::IsEnabled(features::kGuestViewCrossProcessFrames));
-
-  TestHelper("testCoordinates", "web_view/context_menus/coordinates",
-             NO_TEST_SERVER);
-  ASSERT_TRUE(guest_web_contents());
-
-  ContextMenuWaiter menu_observer;
-  SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost()->GetWidget(),
-                        blink::WebMouseEvent::Button::kRight, 10, 20);
-  // Wait until the context menu is opened and closed.
-  menu_observer.WaitForMenuOpenAndClose();
-  ASSERT_EQ(10, menu_observer.params().x);
-  ASSERT_EQ(20, menu_observer.params().y);
-}
-
-// https://crbug.com/754890: The embedder could become out of sync and think
-// that the guest is not focused when the guest actually was.
-// TODO(crbug.com/807116): Flaky on the Linux MSAN bot.
-#if defined(OS_LINUX)
-#define MAYBE_EnsureFocusSynced DISABLED_EnsureFocusSynced
-#else
-#define MAYBE_EnsureFocusSynced EnsureFocusSynced
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginSpecificInteractiveTest,
-                       MAYBE_EnsureFocusSynced) {
-  LoadAndLaunchPlatformApp("web_view/focus_sync", "WebViewTest.LAUNCHED");
-
-  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
-
-  content::MainThreadFrameObserver embedder_observer(
-      embedder_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
-  content::MainThreadFrameObserver guest_observer(
-      guest_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
-  embedder_observer.Wait();
-  guest_observer.Wait();
-
-  ExtensionTestMessageListener listener{"WebViewTest.WEBVIEW_LOADED", false};
-  EXPECT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
-  EXPECT_TRUE(content::ExecuteScript(embedder_web_contents,
-                                     "chrome.app.window.getAll()[0].focus()"));
-
-  // Embedder should be focused.
-  EXPECT_EQ(guest_web_contents,
-            content::GetFocusedWebContents(guest_web_contents));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  // Check that the inner contents is correctly focused.
-  bool result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      guest_web_contents,
-      "window.requestAnimationFrame(function() {"
-      "  window.domAutomationController.send(checkValid());"
-      "});",
-      &result));
-  EXPECT_TRUE(result);
-
-  listener.Reset();
-  EXPECT_TRUE(
-      content::ExecuteScript(embedder_web_contents, "reloadWebview();"));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  // Check that the inner contents is correctly focused after a reload.
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      guest_web_contents,
-      "window.requestAnimationFrame(function() {"
-      "  window.domAutomationController.send(checkValid());"
-      "});",
-      &result));
-  EXPECT_TRUE(result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {

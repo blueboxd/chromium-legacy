@@ -5,6 +5,8 @@
 Polymer({
   is: 'oobe-dialog',
 
+  behaviors: [CrScrollableBehavior],
+
   properties: {
     /**
      * Controls visibility of the bottom-buttons element.
@@ -99,6 +101,14 @@ Polymer({
     el.scrollTop = el.scrollHeight;
   },
 
+
+  /**
+   * Updates the scroll behaviour.
+   */
+  updateScroll: function() {
+    this.requestUpdateScroll();
+  },
+
   /**
    * This is called from oobe_welcome when this dialog is shown.
    */
@@ -117,6 +127,7 @@ Polymer({
       focusedElements[0].focus();
 
     this.fire('show-dialog');
+    this.updateScroll();
   },
 
   /** @private */

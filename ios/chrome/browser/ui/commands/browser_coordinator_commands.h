@@ -17,6 +17,9 @@
 // Prints the currently active tab.
 - (void)printTab;
 
+// Shows the downloads folder.
+- (void)showDownloadsFolder;
+
 // Shows the Reading List UI.
 - (void)showReadingList;
 

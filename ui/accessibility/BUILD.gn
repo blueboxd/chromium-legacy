@@ -16,6 +16,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 mojom_component("ax_enums_mojo") {
   sources = [
     "ax_enums.mojom",
@@ -113,8 +119,6 @@ jumbo_component("accessibility") {
     "platform/ax_platform_node_delegate.h",
     "platform/ax_platform_node_delegate_base.cc",
     "platform/ax_platform_node_delegate_base.h",
-    "platform/ax_platform_node_delegate_utils_win.cc",
-    "platform/ax_platform_node_delegate_utils_win.h",
     "platform/ax_platform_node_test_helper.cc",
     "platform/ax_platform_node_test_helper.h",
     "platform/ax_unique_id.cc",
@@ -123,28 +127,45 @@ jumbo_component("accessibility") {
     "platform/compute_attributes.h",
   ]
 
+  if (is_win) {
+    sources += [
+      "platform/ax_platform_node_delegate_utils_win.cc",
+      "platform/ax_platform_node_delegate_utils_win.h",
+    ]
+  }
+
   if (has_native_accessibility) {
     sources += [
-      "platform/ax_fragment_root_delegate_win.h",
-      "platform/ax_fragment_root_win.cc",
-      "platform/ax_fragment_root_win.h",
-      "platform/ax_platform_node_mac.h",
-      "platform/ax_platform_node_mac.mm",
-      "platform/ax_platform_node_textchildprovider_win.cc",
-      "platform/ax_platform_node_textchildprovider_win.h",
-      "platform/ax_platform_node_textprovider_win.cc",
-      "platform/ax_platform_node_textprovider_win.h",
-      "platform/ax_platform_node_textrangeprovider_win.cc",
-      "platform/ax_platform_node_textrangeprovider_win.h",
-      "platform/ax_platform_node_win.cc",
-      "platform/ax_platform_node_win.h",
-      "platform/ax_platform_relation_win.cc",
-      "platform/ax_platform_relation_win.h",
       "platform/ax_platform_text_boundary.cc",
       "platform/ax_platform_text_boundary.h",
-      "platform/ax_system_caret_win.cc",
-      "platform/ax_system_caret_win.h",
     ]
+
+    if (is_mac) {
+      sources += [
+        "platform/ax_platform_node_mac.h",
+        "platform/ax_platform_node_mac.mm",
+      ]
+    }
+
+    if (is_win) {
+      sources += [
+        "platform/ax_fragment_root_delegate_win.h",
+        "platform/ax_fragment_root_win.cc",
+        "platform/ax_fragment_root_win.h",
+        "platform/ax_platform_node_textchildprovider_win.cc",
+        "platform/ax_platform_node_textchildprovider_win.h",
+        "platform/ax_platform_node_textprovider_win.cc",
+        "platform/ax_platform_node_textprovider_win.h",
+        "platform/ax_platform_node_textrangeprovider_win.cc",
+        "platform/ax_platform_node_textrangeprovider_win.h",
+        "platform/ax_platform_node_win.cc",
+        "platform/ax_platform_node_win.h",
+        "platform/ax_platform_relation_win.cc",
+        "platform/ax_platform_relation_win.h",
+        "platform/ax_system_caret_win.cc",
+        "platform/ax_system_caret_win.h",
+      ]
+    }
   }
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
@@ -257,17 +278,22 @@ test("accessibility_unittests") {
     "mojom/ax_tree_id_mojom_traits_unittest.cc",
     "mojom/ax_tree_update_mojom_traits_unittest.cc",
     "null_ax_action_target_unittest.cc",
-    "platform/ax_fragment_root_win_unittest.cc",
-    "platform/ax_platform_node_textchildprovider_win_unittest.cc",
-    "platform/ax_platform_node_textprovider_win_unittest.cc",
-    "platform/ax_platform_node_textrangeprovider_win_unittest.cc",
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
-    "platform/ax_platform_node_win_unittest.cc",
-    "platform/ax_platform_node_win_unittest.h",
     "platform/ax_unique_id_unittest.cc",
     "run_all_unittests.cc",
   ]
+
+  if (is_win) {
+    sources += [
+      "platform/ax_fragment_root_win_unittest.cc",
+      "platform/ax_platform_node_textchildprovider_win_unittest.cc",
+      "platform/ax_platform_node_textprovider_win_unittest.cc",
+      "platform/ax_platform_node_textrangeprovider_win_unittest.cc",
+      "platform/ax_platform_node_win_unittest.cc",
+      "platform/ax_platform_node_win_unittest.h",
+    ]
+  }
 
   deps = [
     ":accessibility",

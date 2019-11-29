@@ -4,15 +4,13 @@
 
 #include "chrome/browser/sync/test/integration/dictionary_load_observer.h"
 
-DictionaryLoadObserver::DictionaryLoadObserver(const base::Closure& quit_task)
-    : quit_task_(quit_task) {
-}
+DictionaryLoadObserver::DictionaryLoadObserver(base::OnceClosure quit_task)
+    : quit_task_(std::move(quit_task)) {}
 
-DictionaryLoadObserver::~DictionaryLoadObserver() {
-}
+DictionaryLoadObserver::~DictionaryLoadObserver() = default;
 
 void DictionaryLoadObserver::OnCustomDictionaryLoaded() {
-  quit_task_.Run();
+  std::move(quit_task_).Run();
 }
 
 void DictionaryLoadObserver::OnCustomDictionaryChanged(

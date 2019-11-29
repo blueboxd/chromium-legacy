@@ -55,6 +55,7 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   scheduler::FrameStatus GetFrameStatus() const override {
     return frame_status_;
   }
+  const KURL& WebBundlePhysicalUrl() const override;
 
   void SetIsMainFrame(bool value) { is_main_frame_ = value; }
   void SetControllerServiceWorkerMode(ControllerServiceWorkerMode mode) {

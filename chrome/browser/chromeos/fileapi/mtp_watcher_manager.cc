@@ -19,21 +19,21 @@ MTPWatcherManager::MTPWatcherManager(
 MTPWatcherManager::~MTPWatcherManager() {
 }
 
-void MTPWatcherManager::AddWatcher(
-    const storage::FileSystemURL& url,
-    bool recursive,
-    const StatusCallback& callback,
-    const NotificationCallback& notification_callback) {
+void MTPWatcherManager::AddWatcher(const storage::FileSystemURL& url,
+                                   bool recursive,
+                                   StatusCallback callback,
+                                   NotificationCallback notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  device_media_async_file_util_->AddWatcher(url, recursive, callback,
-                                            notification_callback);
+  device_media_async_file_util_->AddWatcher(url, recursive, std::move(callback),
+                                            std::move(notification_callback));
 }
 
 void MTPWatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
                                       bool recursive,
-                                      const StatusCallback& callback) {
+                                      StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  device_media_async_file_util_->RemoveWatcher(url, recursive, callback);
+  device_media_async_file_util_->RemoveWatcher(url, recursive,
+                                               std::move(callback));
 }
 
 }  // namespace chromeos

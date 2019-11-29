@@ -357,6 +357,8 @@ class AccountTrackerServiceTest : public testing::Test {
       account_tracker_->Shutdown();
       account_tracker_.reset();
     }
+    // Allow residual |account_tracker_| posted tasks to run.
+    task_environment_.RunUntilIdle();
   }
 
   TestingPrefServiceSimple pref_service_;
@@ -726,6 +728,11 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
 #else
   EXPECT_FALSE(infos[0].is_under_advanced_protection);
 #endif
+
+  // Delete the account tracker before cleaning up |scoped_user_data_dir| so
+  // that all in-use files are closed.
+  ResetAccountTracker();
+  ASSERT_TRUE(scoped_user_data_dir.Delete());
 }
 
 TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {

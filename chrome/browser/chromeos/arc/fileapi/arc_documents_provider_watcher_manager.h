@@ -27,17 +27,16 @@ class ArcDocumentsProviderWatcherManager : public storage::WatcherManager {
   // storage::WatcherManager overrides.
   void AddWatcher(const storage::FileSystemURL& url,
                   bool recursive,
-                  const StatusCallback& callback,
-                  const NotificationCallback& notification_callback) override;
+                  StatusCallback callback,
+                  NotificationCallback notification_callback) override;
   void RemoveWatcher(const storage::FileSystemURL& url,
                      bool recursive,
-                     const StatusCallback& callback) override;
+                     StatusCallback callback) override;
 
  private:
-  void OnAddWatcher(const StatusCallback& callback, base::File::Error result);
-  void OnRemoveWatcher(const StatusCallback& callback,
-                       base::File::Error result);
-  void OnNotification(const NotificationCallback& notification_callback,
+  void OnAddWatcher(StatusCallback callback, base::File::Error result);
+  void OnRemoveWatcher(StatusCallback callback, base::File::Error result);
+  void OnNotification(NotificationCallback notification_callback,
                       ChangeType change_type);
 
   base::WeakPtrFactory<ArcDocumentsProviderWatcherManager> weak_ptr_factory_{

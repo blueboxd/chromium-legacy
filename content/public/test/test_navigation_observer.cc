@@ -146,8 +146,8 @@ TestNavigationObserver::TestNavigationObserver(
       last_navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       message_loop_runner_(new MessageLoopRunner(quit_mode)),
       web_contents_created_callback_(
-          base::Bind(&TestNavigationObserver::OnWebContentsCreated,
-                     base::Unretained(this))) {
+          base::BindRepeating(&TestNavigationObserver::OnWebContentsCreated,
+                              base::Unretained(this))) {
   if (web_contents)
     RegisterAsObserver(web_contents);
 }

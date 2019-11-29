@@ -841,7 +841,7 @@ class RTCPeerConnectionHandler::Observer
       : handler_(handler), main_thread_(task_runner) {}
 
   // When an RTC event log is sent back from PeerConnection, it arrives here.
-  void OnWebRtcEventLogWrite(const String& output) override {
+  void OnWebRtcEventLogWrite(const std::string& output) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
           FROM_HERE,
@@ -2015,7 +2015,8 @@ void RTCPeerConnectionHandler::StopEventLog() {
   native_peer_connection_->StopRtcEventLog();
 }
 
-void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(const String& output) {
+void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
+    const std::string& output) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackRtcEventLogWrite(this, output);

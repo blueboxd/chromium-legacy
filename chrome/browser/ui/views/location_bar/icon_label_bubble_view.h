@@ -188,6 +188,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // currently paused.
   bool is_animation_paused() const { return is_animation_paused_; }
 
+  // Slide animation for label.
+  gfx::SlideAnimation slide_animation_{this};
+
  private:
   class HighlightPathGenerator;
 
@@ -239,9 +242,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // prevent the bubble from reshowing. This flag is necessary because the
   // bubble gets dismissed before the button handles the mouse release event.
   bool suppress_button_release_ = false;
-
-  // Slide animation for label.
-  gfx::SlideAnimation slide_animation_{this};
 
   // Parameters for the slide animation.
   bool is_animation_paused_ = false;

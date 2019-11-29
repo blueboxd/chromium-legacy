@@ -14,7 +14,7 @@
 // SpellcheckCustomDictionary finishes loading, the message loop is quit.
 class DictionaryLoadObserver : public SpellcheckCustomDictionary::Observer {
  public:
-  explicit DictionaryLoadObserver(const base::Closure& quit_task);
+  explicit DictionaryLoadObserver(base::OnceClosure quit_task);
   virtual ~DictionaryLoadObserver();
 
   // SpellcheckCustomDictionary::Observer implementation.
@@ -23,7 +23,7 @@ class DictionaryLoadObserver : public SpellcheckCustomDictionary::Observer {
       const SpellcheckCustomDictionary::Change& dictionary_change) override;
 
  private:
-  base::Closure quit_task_;
+  base::OnceClosure quit_task_;
   DISALLOW_COPY_AND_ASSIGN(DictionaryLoadObserver);
 };
 

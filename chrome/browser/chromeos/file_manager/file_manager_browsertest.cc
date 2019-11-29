@@ -472,6 +472,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTree, /* directory_tree.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("directoryTreeHorizontalScroll"),
+                      TestCase("directoryTreeExpandHorizontalScroll"),
                       TestCase("directoryTreeVerticalScroll")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -755,7 +756,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("enableToggleHiddenAndroidFoldersShowsHiddenFiles"),
         TestCase("hideCurrentDirectoryByTogglingHiddenAndroidFolders"),
         TestCase("newFolderInDownloads"),
-        TestCase("showSendFeedbackAction")));
+        TestCase("showSendFeedbackAction"),
+        TestCase("enableDisableStorageSettingsLink")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesTooltip, /* files_tooltip.js */
@@ -833,7 +835,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
                       TestCase("searchDownloadsClearSearchKeyDown"),
-                      TestCase("searchDownloadsClearSearch")));
+                      TestCase("searchDownloadsClearSearch"),
+                      TestCase("searchHidingTextEntryField")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */
@@ -845,6 +848,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("breadcrumbsNavigate"),
                       TestCase("breadcrumbsLeafNoFocus"),
+                      TestCase("breadcrumbsTooltip"),
                       TestCase("breadcrumbsDownloadsTranslation")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

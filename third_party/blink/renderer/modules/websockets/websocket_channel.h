@@ -77,8 +77,8 @@ class MODULES_EXPORT WebSocketChannel
   virtual SendResult Send(const std::string&,
                           base::OnceClosure completion_callback) = 0;
   virtual SendResult Send(const DOMArrayBuffer&,
-                          unsigned byte_offset,
-                          unsigned byte_length,
+                          size_t byte_offset,
+                          size_t byte_length,
                           base::OnceClosure completion_callback) = 0;
 
   // Blobs are always sent asynchronously. No callers currently need completion

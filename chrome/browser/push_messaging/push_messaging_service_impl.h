@@ -134,11 +134,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SetMessageCallbackForTesting(const base::Closure& callback);
   void SetUnsubscribeCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
   void SetServiceWorkerUnregisteredCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
   void SetServiceWorkerDatabaseWipedCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
 
  private:
   friend class PushMessagingBrowserTest;

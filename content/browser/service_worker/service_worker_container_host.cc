@@ -55,19 +55,20 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
               ? base::NullCallback()
               : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                                     frame_tree_node_id)),
-      client_uuid_(base::GenerateGUID()),
+      client_uuid_(IsContainerForClient() ? base::GenerateGUID()
+                                          : std::string()),
       provider_host_(provider_host),
       context_(std::move(context)) {
   DCHECK(provider_host_);
   DCHECK(context_);
-  if (container_remote) {
-    DCHECK(IsContainerForClient());
+
+  if (IsContainerForClient()) {
+    DCHECK(container_remote);
     container_.Bind(std::move(container_remote));
+    context_->RegisterContainerHostByClientID(client_uuid(), this);
   } else {
     DCHECK(IsContainerForServiceWorker());
   }
-
-  context_->RegisterContainerHostByClientID(client_uuid_, this);
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
@@ -79,14 +80,15 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
       rfh->RemoveServiceWorkerContainerHost(this);
   }
 
-  if (context_)
-    context_->UnregisterContainerHostByClientID(client_uuid_);
-
   if (fetch_request_window_id_)
     FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
-  if (controller_)
-    controller_->OnControlleeDestroyed(client_uuid_);
+  if (IsContainerForClient()) {
+    if (context_)
+      context_->UnregisterContainerHostByClientID(client_uuid());
+    if (controller_)
+      controller_->OnControlleeDestroyed(client_uuid());
+  }
 
   // Remove |provider_host_| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
@@ -169,7 +171,7 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
   DCHECK(IsContainerForClient());
 
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  controller_info->client_id = client_uuid_;
+  controller_info->client_id = client_uuid();
   // Set |fetch_request_window_id| only when |controller_| is available.
   // Setting |fetch_request_window_id| should not affect correctness, however,
   // we have the extensions bug, https://crbug.com/963748, which we don't yet
@@ -424,10 +426,10 @@ void ServiceWorkerContainerHost::UpdateUrls(
 
     // Set UUID to the new one.
     if (context_)
-      context_->UnregisterContainerHostByClientID(client_uuid_);
+      context_->UnregisterContainerHostByClientID(client_uuid());
     client_uuid_ = base::GenerateGUID();
     if (context_)
-      context_->RegisterContainerHostByClientID(client_uuid_, this);
+      context_->RegisterContainerHostByClientID(client_uuid(), this);
   }
 }
 
@@ -598,6 +600,11 @@ void ServiceWorkerContainerHost::SetContainerProcessId(
     controller_->UpdateForegroundPriority();
 }
 
+const std::string& ServiceWorkerContainerHost::client_uuid() const {
+  DCHECK(IsContainerForClient());
+  return client_uuid_;
+}
+
 blink::mojom::ControllerServiceWorkerMode
 ServiceWorkerContainerHost::GetControllerMode() const {
   DCHECK(IsContainerForClient());
@@ -656,7 +663,7 @@ void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (controller_)
-    controller_->MoveControlleeToBackForwardCacheMap(client_uuid_);
+    controller_->MoveControlleeToBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = true;
 }
 
@@ -665,7 +672,7 @@ void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (controller_)
-    controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid_);
+    controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = false;
 }
 
@@ -691,7 +698,7 @@ void ServiceWorkerContainerHost::UpdateController(
   if (version)
     version->AddControllee(this);
   if (previous_version)
-    previous_version->RemoveControllee(client_uuid_);
+    previous_version->RemoveControllee(client_uuid());
 
   // SetController message should be sent only for clients.
   DCHECK(IsContainerForClient());

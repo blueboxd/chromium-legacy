@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_functions.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
@@ -98,20 +97,15 @@ PostMessageSupport::Delegate::~Delegate() = default;
 // static
 PostMessageSupport* PostMessageSupport::FromWebLocalFrame(
     blink::WebLocalFrame* web_local_frame) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // TODO(ekaramad): We shouldn't have this dependency here. After resolving
-    // 659750 move implementation of Delegate::FromWebLocalFrame to MHVCM
-    // instead.
-    // If this is for an <iframe> or main frame navigation to PDF, then the
-    // MHVCM is created before |web_local_frame| loads.
-    auto* manager = MimeHandlerViewContainerManager::Get(
-        content::RenderFrame::FromWebFrame(web_local_frame),
-        false /* create_if_does_not_exist */);
-    return manager ? manager->GetPostMessageSupport() : nullptr;
-  }
-  if (auto* delegate = Delegate::FromWebLocalFrame(web_local_frame))
-    return delegate->post_message_support();
-  return nullptr;
+  // TODO(ekaramad): We shouldn't have this dependency here. After resolving
+  // 659750 move implementation of Delegate::FromWebLocalFrame to MHVCM
+  // instead.
+  // If this is for an <iframe> or main frame navigation to PDF, then the
+  // MHVCM is created before |web_local_frame| loads.
+  auto* manager = MimeHandlerViewContainerManager::Get(
+      content::RenderFrame::FromWebFrame(web_local_frame),
+      false /* create_if_does_not_exist */);
+  return manager ? manager->GetPostMessageSupport() : nullptr;
 }
 
 PostMessageSupport::PostMessageSupport(Delegate* delegate)

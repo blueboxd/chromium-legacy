@@ -315,7 +315,7 @@ class SavePackageFinishedObserver : public download::DownloadItem::Observer,
                                     public DownloadManager::Observer {
  public:
   SavePackageFinishedObserver(DownloadManager* manager,
-                              const base::Closure& callback);
+                              base::OnceClosure callback);
   ~SavePackageFinishedObserver() override;
 
   // download::DownloadItem::Observer:
@@ -330,7 +330,7 @@ class SavePackageFinishedObserver : public download::DownloadItem::Observer,
  private:
   DownloadManager* download_manager_;
   download::DownloadItem* download_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
 };

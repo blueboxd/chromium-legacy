@@ -1713,16 +1713,16 @@ EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
 namespace {
 void AddToSetIfFrameMatchesPredicate(
     std::set<RenderFrameHost*>* frame_set,
-    const base::Callback<bool(RenderFrameHost*)>& predicate,
+    base::OnceCallback<bool(RenderFrameHost*)> predicate,
     RenderFrameHost* host) {
-  if (predicate.Run(host))
+  if (std::move(predicate).Run(host))
     frame_set->insert(host);
 }
 }
 
 RenderFrameHost* FrameMatchingPredicate(
     WebContents* web_contents,
-    const base::Callback<bool(RenderFrameHost*)>& predicate) {
+    base::RepeatingCallback<bool(RenderFrameHost*)> predicate) {
   std::set<RenderFrameHost*> frame_set;
   web_contents->ForEachFrame(base::BindRepeating(
       &AddToSetIfFrameMatchesPredicate, &frame_set, predicate));

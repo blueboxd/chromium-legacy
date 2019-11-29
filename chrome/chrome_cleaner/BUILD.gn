@@ -134,6 +134,7 @@ group("chrome_cleaner") {
     ":chrome_cleaner_unittests",
     "//chrome/chrome_cleaner/executables:chrome_cleanup_tool",
     "//chrome/chrome_cleaner/executables:software_reporter_tool",
+    "//chrome/chrome_cleaner/tools:generate_test_uws",
   ]
 
   if (is_internal_chrome_cleaner_build) {

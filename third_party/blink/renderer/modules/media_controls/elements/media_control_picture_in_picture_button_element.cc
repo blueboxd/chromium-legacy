@@ -25,7 +25,7 @@ MediaControlPictureInPictureButtonElement::
 
   bool isInPictureInPicture =
       PictureInPictureController::IsElementInPictureInPicture(
-          &ToHTMLVideoElement(MediaElement()));
+          &To<HTMLVideoElement>(MediaElement()));
 
   UpdateAriaString(isInPictureInPicture);
 
@@ -40,10 +40,10 @@ bool MediaControlPictureInPictureButtonElement::
 }
 
 void MediaControlPictureInPictureButtonElement::UpdateDisplayType() {
-  DCHECK(MediaElement().IsHTMLVideoElement());
+  DCHECK(IsA<HTMLVideoElement>(MediaElement()));
   bool isInPictureInPicture =
       PictureInPictureController::IsElementInPictureInPicture(
-          &ToHTMLVideoElement(MediaElement()));
+          &To<HTMLVideoElement>(MediaElement()));
   SetClass("on", isInPictureInPicture);
   UpdateOverflowString();
 
@@ -53,10 +53,10 @@ void MediaControlPictureInPictureButtonElement::UpdateDisplayType() {
 }
 
 int MediaControlPictureInPictureButtonElement::GetOverflowStringId() const {
-  DCHECK(MediaElement().IsHTMLVideoElement());
+  DCHECK(IsA<HTMLVideoElement>(MediaElement()));
   bool isInPictureInPicture =
       PictureInPictureController::IsElementInPictureInPicture(
-          &ToHTMLVideoElement(MediaElement()));
+          &To<HTMLVideoElement>(MediaElement()));
 
   return isInPictureInPicture
              ? IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE
@@ -84,8 +84,7 @@ void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     PictureInPictureControllerImpl& controller =
         PictureInPictureControllerImpl::From(MediaElement().GetDocument());
 
-    DCHECK(MediaElement().IsHTMLVideoElement());
-    HTMLVideoElement* video_element = &ToHTMLVideoElement(MediaElement());
+    auto* video_element = &To<HTMLVideoElement>(MediaElement());
     if (PictureInPictureController::IsElementInPictureInPicture(
             video_element)) {
       controller.ExitPictureInPicture(video_element, nullptr);

@@ -803,6 +803,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           std::string(),
 #endif
           false, network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {

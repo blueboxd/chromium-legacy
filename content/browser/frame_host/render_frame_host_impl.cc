@@ -105,6 +105,8 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/web_bundle_handle.h"
 #include "content/browser/web_package/web_bundle_handle_tracker.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
+#include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
@@ -155,7 +157,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/page_visibility_state.h"
@@ -5417,6 +5418,9 @@ void RenderFrameHostImpl::CommitNavigation(
       web_bundle_handle_->CreateURLLoaderFactory(
           pending_default_factory.InitWithNewPipeAndPassReceiver(),
           std::move(fallback_factory));
+      DCHECK(web_bundle_handle_->navigation_info());
+      commit_params->web_bundle_physical_url =
+          web_bundle_handle_->navigation_info()->source().url();
       if (web_bundle_handle_->base_url_override().is_valid()) {
         commit_params->base_url_override_for_web_bundle =
             web_bundle_handle_->base_url_override();

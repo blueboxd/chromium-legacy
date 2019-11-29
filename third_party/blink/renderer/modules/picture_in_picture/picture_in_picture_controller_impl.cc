@@ -39,7 +39,7 @@ bool IsVideoElement(const Element& element) {
   if (!element.IsMediaElement())
     return false;
 
-  return static_cast<const HTMLMediaElement&>(element).IsHTMLVideoElement();
+  return IsA<HTMLVideoElement>(static_cast<const HTMLMediaElement&>(element));
 }
 
 }  // namespace

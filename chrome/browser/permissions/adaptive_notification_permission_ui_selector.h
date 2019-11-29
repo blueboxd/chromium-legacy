@@ -39,6 +39,12 @@ class AdaptiveNotificationPermissionUiSelector : public KeyedService {
   // Turns on the quiet UI.
   void EnableQuietUi();
 
+  // Whether to show a promo for the prompt indicator
+  bool ShouldShowPromo();
+
+  // Records that the promo was shown.
+  void PromoWasShown();
+
   // Records the outcome of a notification permission prompt, i.e. how the user
   // interacted with it, to be called once a permission request finishes.
   void RecordPermissionPromptOutcome(PermissionAction action);
@@ -76,6 +82,12 @@ class AdaptiveNotificationPermissionUiSelector : public KeyedService {
     content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
   };
+
+  // Turns off showing a promo for the prompt indicator.
+  void DisableShowingPromo();
+
+  // Turns on showing a promo for the prompt indicator.
+  void EnableShowingPromo();
 
   explicit AdaptiveNotificationPermissionUiSelector(Profile* profile);
   ~AdaptiveNotificationPermissionUiSelector() override;

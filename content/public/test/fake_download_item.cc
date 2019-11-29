@@ -395,9 +395,8 @@ const std::string& FakeDownloadItem::GetHash() const {
   return hash_;
 }
 
-void FakeDownloadItem::DeleteFile(const base::Callback<void(bool)>& callback) {
+void FakeDownloadItem::DeleteFile(base::OnceCallback<void(bool)> callback) {
   NOTREACHED();
-  callback.Run(false);
 }
 
 download::DownloadFile* FakeDownloadItem::GetDownloadFile() {

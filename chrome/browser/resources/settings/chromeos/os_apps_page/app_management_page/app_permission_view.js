@@ -18,7 +18,15 @@ Polymer({
      */
     app_: {
       type: Object,
-      observer: 'appChanged_',
+    },
+
+    /**
+     * @type {AppMap}
+     * @private
+     */
+    apps_: {
+      type: Object,
+      observer: 'appsChanged_',
     },
 
     /**
@@ -33,6 +41,7 @@ Polymer({
 
   attached: function() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.watch('apps_', state => state.apps);
     this.watch('selectedAppId_', state => state.selectedAppId);
     this.updateFromStore();
   },
@@ -53,14 +62,14 @@ Polymer({
       return;
     }
 
-    const appId = settings.getQueryParameters().get('id');
-    const apps = this.getState().apps;
-
-    if (!apps[appId] && Object.entries(apps).length !== 0) {
-      // TODO(crbug.com/1010398): this call does not open the main page.
-      app_management.util.openMainPage();
+    if (this.selectedAppNotFound_()) {
+      this.async(() => {
+        app_management.util.openMainPage();
+      });
       return;
     }
+
+    const appId = settings.getQueryParameters().get('id');
 
     this.dispatch(app_management.actions.updateSelectedAppId(appId));
   },
@@ -88,20 +97,30 @@ Polymer({
     }
   },
 
-  /**
-   * @param {?App} app
-   * @private
-   */
-  appChanged_: function(app) {
-    if (app === null) {
-      app_management.util.openMainPage();
-    }
-  },
-
   selectedAppIdChanged_: function(appId) {
     if (appId && this.app_) {
       app_management.util.recordAppManagementUserAction(
           this.app_.type, AppManagementUserAction.ViewOpened);
     }
-  }
+  },
+
+  /**
+   * @private
+   */
+  appsChanged_: function() {
+    if (this.selectedAppNotFound_()) {
+      this.async(() => {
+        app_management.util.openMainPage();
+      });
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  selectedAppNotFound_: function() {
+    const appId = settings.getQueryParameters().get('id');
+    return this.apps_ && !this.apps_[appId];
+  },
 });

@@ -25,7 +25,8 @@ bool IsMediaElement(const Element* element) {
   if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
       !element->GetDocument().IsImageDocument())
     return true;
-  if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
+  if (IsA<HTMLVideoElement>(element) &&
+      !element->GetDocument().IsMediaDocument())
     return true;
   return false;
 }

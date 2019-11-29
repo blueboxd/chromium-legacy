@@ -1,10 +1,12 @@
-<html> 
+<html>
+    <script src="../../resources/testdriver.js"></script>
+    <script src="../../resources/testdriver-vendor.js"></script>
     <body>
         <form action="resources/popup-allowed-from-gesture-initiated-form-submit-target.html" method="post" target="_blank">
             <input id="button" type="submit" value="Click Here" />
         </form>
         <div id="console">FAIL</div>
-        <script> 
+        <script>
             if (window.testRunner) {
                 testRunner.dumpAsText();
                 testRunner.setCanOpenWindows();
@@ -15,13 +17,9 @@
                 var button = document.getElementById("button");
 
                 window.onload = function() {
-                    if (window.eventSender) {
-                        eventSender.mouseMoveTo(button.offsetLeft + button.offsetWidth / 2, button.offsetTop + button.offsetHeight / 2);
-                        eventSender.mouseDown();
-                        eventSender.mouseUp();
-                    }
+                    test_driver.click(button);
                 }
             }
-        </script> 
-    </body> 
+        </script>
+    </body>
 </html>

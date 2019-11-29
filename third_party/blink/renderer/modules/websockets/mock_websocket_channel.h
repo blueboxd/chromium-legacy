@@ -33,8 +33,8 @@ class MockWebSocketChannel : public WebSocketChannel {
                                             base::OnceClosure));
   MOCK_METHOD4(Send,
                WebSocketChannel::SendResult(const DOMArrayBuffer&,
-                                            unsigned,
-                                            unsigned,
+                                            size_t,
+                                            size_t,
                                             base::OnceClosure));
   MOCK_METHOD1(SendMock, void(BlobDataHandle*));
   void Send(scoped_refptr<BlobDataHandle> handle) override {

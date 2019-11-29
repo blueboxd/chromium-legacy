@@ -6,7 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_macros.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_action_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

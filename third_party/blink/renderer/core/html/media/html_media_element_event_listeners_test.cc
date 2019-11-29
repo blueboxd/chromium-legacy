@@ -101,7 +101,7 @@ class HTMLMediaElementEventListenersTest : public PageTestBase {
 
   void DestroyDocument() { PageTestBase::TearDown(); }
   HTMLVideoElement* Video() {
-    return ToHTMLVideoElement(GetDocument().QuerySelector("video"));
+    return To<HTMLVideoElement>(GetDocument().QuerySelector("video"));
   }
   FakeWebMediaPlayer* WebMediaPlayer() {
     return static_cast<FakeWebMediaPlayer*>(Video()->GetWebMediaPlayer());

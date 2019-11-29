@@ -41,10 +41,17 @@ std::string JsonSerialize(const Json::Value& value) {
 }  // namespace
 
 extern "C" {
-void LoadSizeFile(const char* compressed, size_t size) {
-  diff_info.reset(nullptr);
-  info = std::make_unique<SizeInfo>();
-  ParseSizeInfo(compressed, size, info.get());
+void LoadSizeFile(char* compressed, size_t size) {
+  if (IsDiffSizeInfo(compressed, size)) {
+    info = std::make_unique<SizeInfo>();
+    before_info = std::make_unique<SizeInfo>();
+    diff_info.reset(nullptr);
+    ParseDiffSizeInfo(compressed, size, before_info.get(), info.get());
+  } else {
+    diff_info.reset(nullptr);
+    info = std::make_unique<SizeInfo>();
+    ParseSizeInfo(compressed, size, info.get());
+  }
 }
 
 void LoadBeforeSizeFile(const char* compressed, size_t size) {

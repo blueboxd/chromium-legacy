@@ -1,5 +1,7 @@
 <html>
     <head>
+        <script src="../../resources/testdriver.js"></script>
+        <script src="../../resources/testdriver-vendor.js"></script>
         <script>
         if (window.testRunner) {
             testRunner.dumpAsText();
@@ -15,13 +17,7 @@
             var myLink = document.getElementById('link');
             var myFrame = window.frames['otherFrame'];
             myLink.onclick = myFrame.handleClick;
-            if (window.testRunner) {
-                var x = myLink.offsetLeft + 2;
-                var y = myLink.offsetTop + 2;
-                eventSender.mouseMoveTo(x, y);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-            }
+            test_driver.click(myLink);
         }
 
         function log(msg)

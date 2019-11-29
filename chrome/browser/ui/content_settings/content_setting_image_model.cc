@@ -18,6 +18,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -179,6 +180,7 @@ class ContentSettingNotificationsImageModel
 
   // ContentSettingSimpleImageModel:
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
+  void SetPromoWasShown(content::WebContents* contents) override;
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       WebContents* web_contents) override;
@@ -333,6 +335,10 @@ void ContentSettingImageModel::Update(content::WebContents* contents) {
       ContentSettingImageModelStates::Get(contents)->SetBubbleWasAutoOpened(
           image_type(), false);
     }
+    if (should_show_promo_) {
+      ContentSettingImageModelStates::Get(contents)->SetPromoWasShown(
+          image_type(), false);
+    }
   }
 }
 
@@ -361,6 +367,20 @@ void ContentSettingImageModel::AccessibilityWasNotified(
     content::WebContents* contents) {
   ContentSettingImageModelStates::Get(contents)->SetAccessibilityNotified(
       image_type(), true);
+}
+
+bool ContentSettingImageModel::ShouldShowPromo(content::WebContents* contents) {
+  DCHECK(contents);
+  return should_show_promo_ &&
+         !ContentSettingImageModelStates::Get(contents)->PromoWasShown(
+             image_type());
+}
+
+void ContentSettingImageModel::SetPromoWasShown(
+    content::WebContents* contents) {
+  DCHECK(contents);
+  ContentSettingImageModelStates::Get(contents)->SetPromoWasShown(image_type(),
+                                                                  true);
 }
 
 bool ContentSettingImageModel::ShouldAutoOpenBubble(
@@ -858,8 +878,31 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
 bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   auto* manager = PermissionRequestManager::FromWebContents(web_contents);
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  auto* adaptive_notification_permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+
   // |manager| may be null in tests.
+  // Show promo the first time a quiet prompt is shown to the user.
+  // TODO(hkamila) Check that this is only shown the first time the promo is
+  // shown.
+  if (manager && manager->ShouldShowQuietPermissionPrompt() &&
+      adaptive_notification_permission_ui_selector->ShouldShowPromo()) {
+    set_should_show_promo(true);
+  }
   return manager ? manager->ShouldShowQuietPermissionPrompt() : false;
+}
+
+void ContentSettingNotificationsImageModel::SetPromoWasShown(
+    content::WebContents* contents) {
+  DCHECK(contents);
+  auto* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  auto* adaptive_notification_permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  adaptive_notification_permission_ui_selector->PromoWasShown();
+
+  ContentSettingImageModel::SetPromoWasShown(contents);
 }
 
 std::unique_ptr<ContentSettingBubbleModel>

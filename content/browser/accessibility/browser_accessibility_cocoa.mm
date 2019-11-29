@@ -3301,20 +3301,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       NSAccessibilityDisclosedRowsAttribute
     ]];
   } else if ([role isEqualToString:NSAccessibilityRowRole]) {
-    if (owner_->PlatformGetParent()) {
-      base::string16 parentRole;
-      owner_->PlatformGetParent()->GetHtmlAttribute("role", &parentRole);
-      const base::string16 treegridRole(base::ASCIIToUTF16("treegrid"));
-      if (parentRole == treegridRole) {
-        [ret addObjectsFromArray:@[
-          NSAccessibilityDisclosingAttribute,
-          NSAccessibilityDisclosedByRowAttribute,
-          NSAccessibilityDisclosureLevelAttribute,
-          NSAccessibilityDisclosedRowsAttribute
-        ]];
-      } else {
-        [ret addObjectsFromArray:@[ NSAccessibilityIndexAttribute ]];
-      }
+    BrowserAccessibility* container = owner_->PlatformGetParent();
+    if (container && container->GetRole() == ax::mojom::Role::kRowGroup)
+      container = container->PlatformGetParent();
+    if (container && container->GetRole() == ax::mojom::Role::kTreeGrid) {
+      [ret addObjectsFromArray:@[
+        NSAccessibilityDisclosingAttribute,
+        NSAccessibilityDisclosedByRowAttribute,
+        NSAccessibilityDisclosureLevelAttribute,
+        NSAccessibilityDisclosedRowsAttribute
+      ]];
+    } else {
+      [ret addObjectsFromArray:@[ NSAccessibilityIndexAttribute ]];
     }
   } else if ([role isEqualToString:NSAccessibilityListRole]) {
     [ret addObjectsFromArray:@[

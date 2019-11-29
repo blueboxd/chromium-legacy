@@ -6461,7 +6461,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     base::RunLoop run_loop;
     viz::FrameSinkId received_frame_sink_id;
     gfx::PointF returned_point;
-    base::Closure quit_closure =
+    base::OnceClosure quit_closure =
         content::GetDeferredQuitTaskForRunLoop(&run_loop);
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
@@ -6471,7 +6471,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
               returned_point = point;
-              quit_closure.Run();
+              std::move(quit_closure).Run();
             }));
     content::RunThisRunLoop(&run_loop);
     // |point_in_child| should hit test to the view for |child_node|.
@@ -6483,7 +6483,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     base::RunLoop run_loop;
     viz::FrameSinkId received_frame_sink_id;
     gfx::PointF returned_point;
-    base::Closure quit_closure =
+    base::OnceClosure quit_closure =
         content::GetDeferredQuitTaskForRunLoop(&run_loop);
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
@@ -6493,7 +6493,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
               returned_point = point;
-              quit_closure.Run();
+              std::move(quit_closure).Run();
             }));
     content::RunThisRunLoop(&run_loop);
     // |point_in_nested_child| should hit test to |rwhv_grandchild|.

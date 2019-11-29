@@ -1,5 +1,6 @@
 <html>
 <head>
+<script src="../resources/gesture-util.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -16,10 +17,7 @@ function test() {
     window.windowCount = testRunner.windowCount();
     console.log("window count: " + testRunner.windowCount());
     // Send a mouse-click event to set the input focus to the test plugin.
-    eventSender.mouseMoveTo(0, 0);
-    eventSender.mouseMoveTo(20, 20);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
+    mouseClickOn(20, 20);
 }
 
 // This function will be called when plugin receives a mousedown event.
@@ -36,11 +34,9 @@ function popup_by_mousedown() {
 
 function send_key_to_plugin() {
     // Send keyboard events to the plugin.
-    eventSender.mouseMoveTo(0, 0);
-    eventSender.mouseMoveTo(60, 60);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    eventSender.keyDown('p');
+    mouseClickOn(60, 60).then(()=> {
+      eventSender.keyDown('p');
+    });
 }
 
 // This function will be called when plugin receives a keydown event.

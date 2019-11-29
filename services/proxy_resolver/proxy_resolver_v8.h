@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
-#define SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
+#ifndef SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
+#define SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
 
 #include <stddef.h>
 
@@ -81,4 +81,4 @@ class ProxyResolverV8 {
 
 }  // namespace proxy_resolver
 
-#endif  // SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
+#endif  // SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_

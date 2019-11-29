@@ -70,7 +70,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1359,9 +1358,7 @@ class PDFExtensionLinkClickTest : public PDFExtensionTest {
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
-    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
-               ? guest_contents_
-               : GetActiveWebContents();
+    return guest_contents_;
   }
 
  private:
@@ -1553,9 +1550,7 @@ class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
-    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
-               ? guest_contents_
-               : GetActiveWebContents();
+    return guest_contents_;
   }
 
  private:
@@ -1744,9 +1739,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
-    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
-               ? guest_contents_
-               : GetActiveWebContents();
+    return guest_contents_;
   }
 
  private:
@@ -2152,13 +2145,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 // The plugin document and the mime handler should both use the same background
 // color.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // The background color for plugins is injected when the first response
-    // is intercepted, at which point not all the plugins have loaded. This line
-    // ensures that the PDF plugin has loaded and the right background color is
-    // beign used.
-    WaitForPluginServiceToLoad();
-  }
+  // The background color for plugins is injected when the first response
+  // is intercepted, at which point not all the plugins have loaded. This line
+  // ensures that the PDF plugin has loaded and the right background color is
+  // beign used.
+  WaitForPluginServiceToLoad();
   WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(guest_contents);
@@ -2194,65 +2185,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerNetworkFallback) {
 // provides a response.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
   RunServiceWorkerTest("respond_with_fetch_worker.js");
-}
-
-// Flaky on Windows. https://crbug.com/952066
-#if defined(OS_WIN)
-#define MAYBE_EmbeddedPdfGetsFocus DISABLED_EmbeddedPdfGetsFocus
-#else
-#define MAYBE_EmbeddedPdfGetsFocus EmbeddedPdfGetsFocus
-#endif
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // This test verifies focus for a BrowserPlugin and is not relevant with
-    // MHVICPF since no BrowserPlugin is created with this flag.
-    return;
-  }
-  GURL test_iframe_url(embedded_test_server()->GetURL(
-      "/pdf/test-offset-cross-site-iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), test_iframe_url);
-  WebContents* contents = GetActiveWebContents();
-
-  // Get BrowserPluginGuest for the PDF.
-  WebContents* guest_contents = nullptr;
-  content::BrowserPluginGuestManager* guest_manager =
-      contents->GetBrowserContext()->GetGuestManager();
-  guest_manager->ForEachGuest(
-      contents, base::BindRepeating(&RetrieveGuestContents, &guest_contents));
-  ASSERT_TRUE(guest_contents);
-  EXPECT_NE(contents, guest_contents);
-  // Wait for the guest's view to be created.
-  while (!guest_contents->GetRenderWidgetHostView()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-  WaitForHitTestData(guest_contents);
-
-  // Verify it's not focused.
-  EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));
-
-  // Send mouse-click.
-  gfx::Point point_in_pdf(10, 10);
-  gfx::Point point_in_root =
-      guest_contents->GetRenderWidgetHostView()->TransformPointToRootCoordSpace(
-          point_in_pdf);
-  EXPECT_NE(point_in_pdf, point_in_root);
-  content::SimulateRoutedMouseClickAt(contents, kDefaultKeyModifier,
-                                      blink::WebMouseEvent::Button::kLeft,
-                                      point_in_root);
-
-  // Wait for the BPG to get focus. This test will timeout if the focus fails
-  // to occur. Alternatively, we could add an IPC filter to the guest's
-  // RenderProcessHost.
-  while (!IsWebContentsBrowserPluginFocused(guest_contents)) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
 }
 
 // A helper for waiting for the first request for |url_to_intercept|.

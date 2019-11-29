@@ -67,7 +67,7 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
   String aria_label =
-      GetLocale().QueryString(MediaElement().IsHTMLVideoElement()
+      GetLocale().QueryString(IsA<HTMLVideoElement>(MediaElement())
                                   ? IDS_AX_MEDIA_VIDEO_SLIDER_HELP
                                   : IDS_AX_MEDIA_AUDIO_SLIDER_HELP) +
       " " + GetMediaControls().CurrentTimeDisplay().textContent(true) + " " +

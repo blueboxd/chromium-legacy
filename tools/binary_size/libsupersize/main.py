@@ -17,6 +17,8 @@ import sys
 
 import archive
 import console
+import diff
+import file_format
 import html_report
 import start_server
 
@@ -64,6 +66,32 @@ class _DiffAction(object):
     console.Run(args, parser)
 
 
+class _SaveDiffAction(object):
+
+  @staticmethod
+  def AddArguments(parser):
+    parser.add_argument('before', help='Before-patch .size file.')
+    parser.add_argument('after', help='After-patch .size file.')
+    parser.add_argument(
+        'output_file',
+        help='Write generated data to the specified .sizediff file.')
+
+  @staticmethod
+  def Run(args, parser):
+    if not args.before.endswith('.size'):
+      parser.error('Before input must end with ".size"')
+    if not args.after.endswith('.size'):
+      parser.error('After input must end with ".size"')
+    if not args.output_file.endswith('.sizediff'):
+      parser.error('Output must end with ".sizediff"')
+
+    before_size_info = archive.LoadAndPostProcessSizeInfo(args.before)
+    after_size_info = archive.LoadAndPostProcessSizeInfo(args.after)
+    delta_size_info = diff.Diff(before_size_info, after_size_info)
+
+    file_format.SaveDeltaSizeInfo(delta_size_info, args.output_file)
+
+
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   sub_parsers = parser.add_subparsers()
@@ -80,6 +108,9 @@ def main():
       _DiffAction(),
       'Shorthand for console --query "Print(Diff())" (plus highlights static '
       'initializers in diff)')
+  actions['save_diff'] = (
+      _SaveDiffAction(),
+      'Create a stand-alone .sizediff diff report from two .size files.')
 
   for name, tup in actions.iteritems():
     sub_parser = sub_parsers.add_parser(name, help=tup[1])

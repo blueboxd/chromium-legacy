@@ -272,6 +272,13 @@
                                     action:^{
                                       [weakDispatcher showHelpPage];
                                     }],
+      [UIKeyCommand
+          cr_keyCommandWithInput:@"l"
+                   modifierFlags:UIKeyModifierCommand | UIKeyModifierAlternate
+                           title:nil
+                          action:^{
+                            [weakDispatcher showDownloadsFolder];
+                          }],
       [UIKeyCommand cr_keyCommandWithInput:@"1"
                              modifierFlags:UIKeyModifierCommand
                                      title:nil

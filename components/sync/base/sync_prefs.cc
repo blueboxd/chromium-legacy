@@ -125,37 +125,6 @@ void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
   }
 }
 
-const char* GetPrefNameForType(UserSelectableType type) {
-  switch (type) {
-    case UserSelectableType::kBookmarks:
-      return prefs::kSyncBookmarks;
-    case UserSelectableType::kPreferences:
-      return prefs::kSyncPreferences;
-    case UserSelectableType::kPasswords:
-      return prefs::kSyncPasswords;
-    case UserSelectableType::kAutofill:
-      return prefs::kSyncAutofill;
-    case UserSelectableType::kThemes:
-      return prefs::kSyncThemes;
-    case UserSelectableType::kHistory:
-      // kSyncTypedUrls used here for historic reasons and pref backward
-      // compatibility.
-      return prefs::kSyncTypedUrls;
-    case UserSelectableType::kExtensions:
-      return prefs::kSyncExtensions;
-    case UserSelectableType::kApps:
-      return prefs::kSyncApps;
-    case UserSelectableType::kReadingList:
-      return prefs::kSyncReadingList;
-    case UserSelectableType::kTabs:
-      return prefs::kSyncTabs;
-    case UserSelectableType::kWifiConfigurations:
-      return prefs::kSyncWifiConfigurations;
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 #if defined(OS_CHROMEOS)
 const char* GetPrefNameForOsType(UserSelectableOsType type) {
   switch (type) {
@@ -487,18 +456,22 @@ bool SyncPrefs::HasKeepEverythingSynced() const {
 UserSelectableTypeSet SyncPrefs::GetSelectedTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
-    return UserSelectableTypeSet::All();
-  }
-
   UserSelectableTypeSet selected_types;
+
+  const bool sync_all_types =
+      pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
+
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     const char* pref_name = GetPrefNameForType(type);
     DCHECK(pref_name);
-    if (pref_service_->GetBoolean(pref_name)) {
+    // If the preference is managed, |sync_all_types| is ignored for this
+    // preference.
+    if (pref_service_->GetBoolean(pref_name) ||
+        (sync_all_types && !pref_service_->IsManagedPreference(pref_name))) {
       selected_types.Put(type);
     }
   }
+
   return selected_types;
 }
 
@@ -594,8 +567,35 @@ void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
 }
 
 // static
-const char* SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType type) {
-  return GetPrefNameForType(type);
+const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
+  switch (type) {
+    case UserSelectableType::kBookmarks:
+      return prefs::kSyncBookmarks;
+    case UserSelectableType::kPreferences:
+      return prefs::kSyncPreferences;
+    case UserSelectableType::kPasswords:
+      return prefs::kSyncPasswords;
+    case UserSelectableType::kAutofill:
+      return prefs::kSyncAutofill;
+    case UserSelectableType::kThemes:
+      return prefs::kSyncThemes;
+    case UserSelectableType::kHistory:
+      // kSyncTypedUrls used here for historic reasons and pref backward
+      // compatibility.
+      return prefs::kSyncTypedUrls;
+    case UserSelectableType::kExtensions:
+      return prefs::kSyncExtensions;
+    case UserSelectableType::kApps:
+      return prefs::kSyncApps;
+    case UserSelectableType::kReadingList:
+      return prefs::kSyncReadingList;
+    case UserSelectableType::kTabs:
+      return prefs::kSyncTabs;
+    case UserSelectableType::kWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void SyncPrefs::OnSyncManagedPrefChanged() {

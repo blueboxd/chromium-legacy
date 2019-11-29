@@ -17,7 +17,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_registry.h"
@@ -286,12 +285,6 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   }
   manager->AttachGuest(embedder_render_process_id, element_instance_id,
                        guest_instance_id, attach_params);
-
-  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
-        element_instance_id));
-    return;
-  }
 }
 
 }  // namespace extensions

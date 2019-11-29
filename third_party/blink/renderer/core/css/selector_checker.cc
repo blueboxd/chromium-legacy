@@ -1241,10 +1241,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.ContainsFullScreenElement();
     case CSSSelector::kPseudoPictureInPicture:
       return PictureInPictureController::IsElementInPictureInPicture(&element);
-    case CSSSelector::kPseudoVideoPersistent:
+    case CSSSelector::kPseudoVideoPersistent: {
       DCHECK(is_ua_rule_);
-      return IsHTMLVideoElement(element) &&
-             ToHTMLVideoElement(element).IsPersistent();
+      auto* video_element = DynamicTo<HTMLVideoElement>(element);
+      return video_element && video_element->IsPersistent();
+    }
     case CSSSelector::kPseudoVideoPersistentAncestor:
       DCHECK(is_ua_rule_);
       return element.ContainsPersistentVideo();

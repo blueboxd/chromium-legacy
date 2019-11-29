@@ -799,6 +799,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
 
   const sync_pb::EncryptedData& encryption_keybag =
       specifics.encryption_keybag();
+  base::Optional<ModelError> error;
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
       // NigoriSpecifics with UNKNOWN type is not valid and shouldn't reach
@@ -806,14 +807,10 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       // it can't be in this state as well.
       NOTREACHED();
       break;
-    case NigoriSpecifics::KEYSTORE_PASSPHRASE: {
-      base::Optional<ModelError> error = UpdateCryptographerFromKeystoreNigori(
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      error = UpdateCryptographerFromKeystoreNigori(
           encryption_keybag, specifics.keystore_decryptor_token());
-      if (error) {
-        return error;
-      }
       break;
-    }
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       state_.custom_passphrase_key_derivation_params =
           GetKeyDerivationParamsFromSpecifics(specifics);
@@ -821,7 +818,10 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      UpdateCryptographerFromNonKeystoreNigori(encryption_keybag);
+      error = UpdateCryptographerFromNonKeystoreNigori(encryption_keybag);
+  }
+  if (error) {
+    return error;
   }
 
   if (passphrase_type_changed) {
@@ -894,46 +894,30 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
   return base::nullopt;
 }
 
-void NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
+base::Optional<ModelError>
+NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
     const sync_pb::EncryptedData& encryption_keybag) {
-  // TODO(crbug.com/922900): support the case when client knows passphrase.
-  NOTIMPLEMENTED();
   DCHECK(!encryption_keybag.blob().empty());
 
-  // TODO(crbug.com/922900): consider detection of protocol violation instead
-  // of cleaning previously set |pending_keys|. If they was set, they should
-  // remain set after exiting this function (but might have different value).
-  // Clean up previous pending keys state.
-  state_.pending_keys.reset();
-
-  if (!state_.cryptographer->CanDecrypt(encryption_keybag)) {
-    // Historically, prior to USS, key derived from explicit passphrase was
-    // stored in prefs and effectively we do migration here.
-    NigoriKeyBag key_bag = NigoriKeyBag::CreateEmpty();
-    const std::string key_name =
-        key_bag.AddKeyFromProto(explicit_passphrase_key_);
-    if (key_bag.CanDecrypt(encryption_keybag)) {
-      state_.cryptographer->EmplaceKeysFrom(key_bag);
-      DCHECK(state_.cryptographer->CanDecrypt(encryption_keybag));
-      state_.cryptographer->SelectDefaultEncryptionKey(key_name);
-    } else {
-      // This will lead to OnPassphraseRequired() call later.
-      state_.pending_keys = encryption_keybag;
-      state_.cryptographer->ClearDefaultEncryptionKey();
-      return;
-    }
+  // Attempt to decrypt |encryption_keybag| with current default key and
+  // restored |explicit_passphrase_key_|. Note: key derived from explicit
+  // passphrase was stored in prefs prior to USS, and using
+  // |explicit_passphrase_key_| here effectively does migration.
+  NigoriKeyBag decryption_key_bag = NigoriKeyBag::CreateEmpty();
+  // If |explicit_passphrase_key_| is empty, following line is no-op.
+  // TODO(crbug.com/1020084): don't allow decryption with
+  // |explicit_passphrase_key_| for TRUSTED_VAULT_PASSPHRASE.
+  decryption_key_bag.AddKeyFromProto(explicit_passphrase_key_);
+  if (state_.cryptographer->CanEncrypt()) {
+    // TODO(crbug.com/922900): don't allow decryption with default key if
+    // |passphrase_type| was changed.
+    decryption_key_bag.AddKeyFromProto(
+        state_.cryptographer->ExportDefaultKey());
   }
-  // |cryptographer_| can already have explicit passphrase, in that case it
-  // should be able to decrypt |encryption_keybag|. We need to take keys from
-  // |encryption_keybag| since some other client can write old keys to
-  // |encryption_keybag| and could encrypt some data with them.
-  // TODO(crbug.com/922900): find and document at least one real case
-  // corresponding to the sentence above.
-  // TODO(crbug.com/922900): we may also need to rewrite Nigori with keys
-  // currently stored in cryptographer, in case it doesn't have them already.
-  sync_pb::NigoriKeyBag key_bag;
-  state_.cryptographer->Decrypt(encryption_keybag, &key_bag);
-  state_.cryptographer->EmplaceKeysFrom(NigoriKeyBag::CreateFromProto(key_bag));
+
+  state_.pending_keys = encryption_keybag;
+  state_.cryptographer->ClearDefaultEncryptionKey();
+  return TryDecryptPendingKeysWith(decryption_key_bag);
 }
 
 base::Optional<ModelError> NigoriSyncBridgeImpl::TryDecryptPendingKeysWith(

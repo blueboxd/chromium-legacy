@@ -52,7 +52,8 @@ class StoragePartition;
 // IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {
  public:
-  using InterfaceBinder = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+  using InterfaceBinder =
+      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
 
   explicit MockRenderProcessHost(BrowserContext* browser_context);
   ~MockRenderProcessHost() override;

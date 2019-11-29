@@ -134,6 +134,13 @@ ul {
   flex: none;
 }
 
+.diff-status-icon {
+  display: block;
+  position: absolute;
+  flex: none;
+  transform: scale(0.6);
+}
+
 /** Tree nodes */
 .node {
   display: flex;

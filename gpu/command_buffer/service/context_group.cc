@@ -629,7 +629,7 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
 
   if (passthrough_resources_) {
     gl::GLApi* api = have_context ? gl::g_current_gl_context : nullptr;
-    passthrough_resources_->Destroy(api);
+    passthrough_resources_->Destroy(api, progress_reporter_);
     passthrough_resources_.reset();
     ReportProgress();
   }

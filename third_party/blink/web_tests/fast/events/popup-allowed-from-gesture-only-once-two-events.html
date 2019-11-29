@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html> 
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
+<html>
     <body>
         <p>
             Test that only a single popup is allowed in response to a single
@@ -33,12 +35,7 @@
                 windowCount = testRunner.windowCount();
 
                 var button = document.getElementById("button");
-
-                if (window.eventSender) {
-                    eventSender.mouseMoveTo(button.offsetLeft + button.offsetWidth / 2, button.offsetTop + button.offsetHeight / 2);
-                    eventSender.mouseDown();
-                    eventSender.mouseUp();
-                }
+                test_driver.click(button);
             }
         </script>
     </body>

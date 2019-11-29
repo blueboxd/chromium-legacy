@@ -1120,7 +1120,7 @@
     ],
 
     'android_debug_trybot_compile_only': [
-      'android', 'debug_trybot', 'compile_only',
+      'android', 'debug_trybot', 'compile_only', 'java_warnings_as_errors',
     ],
 
     'android_debug_trybot_compile_only_arm64_fastbuild': [
@@ -2278,6 +2278,10 @@
     # times.
     'enable_archive_compression': {
       'gn_args': 'skip_archive_compression=false',
+    },
+
+    'java_warnings_as_errors': {
+      'gn_args': ('java_warnings_as_errors=true'),
     },
 
     'enable_vulkan': {

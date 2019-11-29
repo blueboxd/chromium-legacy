@@ -253,19 +253,6 @@ unsigned ArrayBuffer::ByteLengthAsUnsigned() const {
   // only uint32_t based.
   return static_cast<unsigned>(contents_.DataLength());
 }
-
-scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(unsigned begin,
-                                              unsigned end) const {
-  begin = ClampIndex(begin);
-  end = ClampIndex(end);
-  size_t size = static_cast<size_t>(begin <= end ? end - begin : 0);
-  return ArrayBuffer::Create(static_cast<const char*>(Data()) + begin, size);
-}
-
-unsigned ArrayBuffer::ClampIndex(unsigned index) const {
-  return index < ByteLengthAsUnsigned() ? index : ByteLengthAsUnsigned();
-}
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_ARRAY_BUFFER_ARRAY_BUFFER_H_

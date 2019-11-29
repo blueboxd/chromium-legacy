@@ -106,4 +106,9 @@ scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {
       frame_or_imported_document_->GetFrame().GetFrameScheduler());
 }
 
+const KURL& FrameResourceFetcherProperties::WebBundlePhysicalUrl() const {
+  return frame_or_imported_document_->GetMasterDocumentLoader()
+      .WebBundlePhysicalUrl();
+}
+
 }  // namespace blink

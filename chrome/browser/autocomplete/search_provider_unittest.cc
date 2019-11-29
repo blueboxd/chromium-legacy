@@ -47,7 +47,6 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/escape.h"
@@ -144,18 +143,17 @@ class SearchProviderFeatureTestComponent {
       const base::Optional<bool> warm_up_on_focus,
       const bool command_line_overrides);
 
- private:
-  void ResetFieldTrialList();
+  ~SearchProviderFeatureTestComponent() {
+    variations::testing::ClearAllVariationParams();
+  }
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+ private:
   base::test::ScopedFeatureList feature_list_;
 };
 
 SearchProviderFeatureTestComponent::SearchProviderFeatureTestComponent(
     const base::Optional<bool> warm_up_on_focus,
     const bool command_line_overrides) {
-  ResetFieldTrialList();
-
   if (warm_up_on_focus.has_value()) {
     if (warm_up_on_focus.value())
       feature_list_.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
@@ -170,15 +168,6 @@ SearchProviderFeatureTestComponent::SearchProviderFeatureTestComponent(
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kExtraSearchQueryParams, "a=b");
   }
-}
-
-void SearchProviderFeatureTestComponent::ResetFieldTrialList() {
-  // Destroy the existing FieldTrialList before creating a new one to avoid
-  // a DCHECK.
-  field_trial_list_.reset();
-  field_trial_list_.reset(new base::FieldTrialList(
-      std::make_unique<variations::SHA1EntropyProvider>("foo")));
-  variations::testing::ClearAllVariationParams();
 }
 
 // BaseSearchProviderTest -----------------------------------------------------

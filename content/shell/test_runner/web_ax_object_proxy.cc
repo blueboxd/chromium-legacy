@@ -301,10 +301,12 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Region");
     case ax::mojom::Role::kRevision:
       return result.append("Revision");
-    case ax::mojom::Role::kRowHeader:
-      return result.append("RowHeader");
     case ax::mojom::Role::kRow:
       return result.append("Row");
+    case ax::mojom::Role::kRowGroup:
+      return result.append("RowGroup");
+    case ax::mojom::Role::kRowHeader:
+      return result.append("RowHeader");
     case ax::mojom::Role::kRuby:
       return result.append("Ruby");
     case ax::mojom::Role::kRubyAnnotation:

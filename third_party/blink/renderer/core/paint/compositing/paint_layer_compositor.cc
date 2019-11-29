@@ -178,7 +178,7 @@ static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
       return nullptr;
     fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
   }
-  if (!IsHTMLVideoElement(fullscreen_element))
+  if (!IsA<HTMLVideoElement>(fullscreen_element))
     return nullptr;
   LayoutObject* layout_object = fullscreen_element->GetLayoutObject();
   if (!layout_object)

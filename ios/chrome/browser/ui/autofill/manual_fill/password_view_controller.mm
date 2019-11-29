@@ -8,7 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"

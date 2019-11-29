@@ -183,8 +183,8 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
 
   // Evaluate whether the navigation should be allowed or blocked based on
   // existing content-security-policy on the response.
-  if (base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
+  if (is_response_check && base::FeatureList::IsEnabled(
+                               network::features::kOutOfBlinkFrameAncestors)) {
     if (network::mojom::ContentSecurityPolicyPtr policy =
             request->response()->head.content_security_policy) {
       // TODO(arthursonzogni): Remove content::ContentSecurityPolicy in favor of

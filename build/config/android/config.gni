@@ -224,6 +224,9 @@ if (is_android || is_chromeos) {
 
     # Use hashed symbol names to reduce JNI symbol overhead.
     use_hashed_jni_names = !is_java_debug
+
+    # For local development, it's nice to not fail builds on warnings.
+    java_warnings_as_errors = !is_java_debug
   }
 
   # Path to where selected build variables are written to.

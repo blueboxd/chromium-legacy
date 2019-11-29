@@ -70,9 +70,8 @@ inline bool IsVisibleToPaint(const NGFragmentItem& item,
          style.Visibility() == EVisibility::kVisible;
 }
 
-bool FragmentVisibleToHitTestRequest(const NGPaintFragment& paint_fragment,
+bool FragmentVisibleToHitTestRequest(const NGPhysicalFragment& fragment,
                                      const HitTestRequest& request) {
-  const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
   const ComputedStyle& style = fragment.Style();
   return IsVisibleToPaint(fragment, style) &&
          (request.IgnorePointerEventsNone() ||
@@ -1459,17 +1458,14 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
     }
   }
 
-  DCHECK(paint_fragment_);
   if (!skip_children) {
     PhysicalOffset scrolled_offset = physical_offset;
     if (box_fragment_.HasOverflowClip()) {
       scrolled_offset -=
           PhysicalOffset(PhysicalFragment().ScrolledContentOffset());
     }
-    if (HitTestChildren(result, paint_fragment_->Children(), hit_test_location,
-                        scrolled_offset, action)) {
+    if (HitTestChildren(result, hit_test_location, scrolled_offset, action))
       return true;
-    }
   }
 
   if (style.HasBorderRadius() &&
@@ -1506,23 +1502,23 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
 
 bool NGBoxFragmentPainter::VisibleToHitTestRequest(
     const HitTestRequest& request) const {
-  DCHECK(paint_fragment_);
-  return FragmentVisibleToHitTestRequest(*paint_fragment_, request);
+  return FragmentVisibleToHitTestRequest(box_fragment_, request);
 }
 
 bool NGBoxFragmentPainter::HitTestTextFragment(
     HitTestResult& result,
-    const NGPaintFragment& text_paint_fragment,
+    const NGInlineBackwardCursor& cursor,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& physical_offset,
     HitTestAction action) {
   if (action != kHitTestForeground)
     return false;
 
+  const NGPaintFragment* text_paint_fragment = cursor.CurrentPaintFragment();
+  DCHECK(text_paint_fragment);
   const auto& text_fragment =
-      To<NGPhysicalTextFragment>(text_paint_fragment.PhysicalFragment());
-  PhysicalSize size(text_fragment.Size().width, text_fragment.Size().height);
-  PhysicalRect border_rect(physical_offset, size);
+      To<NGPhysicalTextFragment>(text_paint_fragment->PhysicalFragment());
+  PhysicalRect border_rect(physical_offset, text_fragment.Size());
 
   // TODO(layout-dev): Clip to line-top/bottom.
   PhysicalRect rect(PixelSnappedIntRect(border_rect));
@@ -1532,13 +1528,13 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
     rect.Move(border_rect.offset);
   }
 
-  if (FragmentVisibleToHitTestRequest(text_paint_fragment,
+  if (FragmentVisibleToHitTestRequest(text_fragment,
                                       result.GetHitTestRequest()) &&
       hit_test_location.Intersects(rect)) {
     Node* node = text_fragment.NodeForHitTest();
     if (!result.InnerNode() && node) {
       PhysicalOffset point = hit_test_location.Point() - physical_offset +
-                             text_paint_fragment.InlineOffsetToContainerBox();
+                             text_paint_fragment->InlineOffsetToContainerBox();
       result.SetNodeAndPosition(node, point);
     }
 
@@ -1554,11 +1550,12 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
 // Replicates logic in legacy InlineFlowBox::NodeAtPoint().
 bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     HitTestResult& result,
-    const NGPaintFragment& fragment,
+    const NGPhysicalLineBoxFragment& fragment,
+    const NGInlineBackwardCursor& cursor,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& physical_offset,
     HitTestAction action) {
-  if (HitTestChildren(result, fragment.Children(), hit_test_location,
+  if (HitTestChildren(result, cursor.CursorForDescendants(), hit_test_location,
                       physical_offset, action))
     return true;
 
@@ -1569,12 +1566,11 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     return false;
 
   const PhysicalOffset overflow_location =
-      fragment.SelfInkOverflow().offset + physical_offset;
+      cursor.CurrentSelfInkOverflow().offset + physical_offset;
   if (HitTestClippedOutByBorder(hit_test_location, overflow_location))
     return false;
 
-  const PhysicalSize size = fragment.Size();
-  const PhysicalRect bounds_rect(physical_offset, size);
+  const PhysicalRect bounds_rect(physical_offset, fragment.Size());
   const ComputedStyle& containing_box_style = box_fragment_.Style();
   if (containing_box_style.HasBorderRadius() &&
       !hit_test_location.Intersects(containing_box_style.GetRoundedBorderFor(
@@ -1592,19 +1588,18 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   // descendants. TODO(kojii): Computing this is redundant, consider
   // restructuring. Changing the caller logic isn't easy because currently
   // floats are in the bounds of line boxes only in NG.
-  const auto& line = To<NGPhysicalLineBoxFragment>(fragment.PhysicalFragment());
-  if (line.HasFloatingDescendantsForPaint()) {
+  if (fragment.HasFloatingDescendantsForPaint()) {
     DCHECK_NE(action, kHitTestFloat);
-    if (HitTestChildren(result, fragment.Children(), hit_test_location,
-                        physical_offset, kHitTestFloat)) {
+    if (HitTestChildren(result, cursor.CursorForDescendants(),
+                        hit_test_location, physical_offset, kHitTestFloat)) {
       return false;
     }
   }
 
-  Node* node = line.NodeForHitTest();
+  Node* node = fragment.NodeForHitTest();
   if (!result.InnerNode() && node) {
-    const PhysicalOffset point = hit_test_location.Point() - physical_offset +
-                                 fragment.InlineOffsetToContainerBox();
+    const PhysicalOffset point =
+        hit_test_location.Point() - physical_offset + cursor.CurrentOffset();
     result.SetNodeAndPosition(node, point);
   }
   return result.AddNodeToListBasedTestResult(node, hit_test_location,
@@ -1613,18 +1608,16 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
 
 bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     HitTestResult& result,
-    const NGPaintFragment& paint_fragment,
+    const NGPhysicalBoxFragment& fragment,
+    const NGInlineBackwardCursor& cursor,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& physical_offset,
     HitTestAction action) {
-  const NGPhysicalFragment& fragment = paint_fragment.PhysicalFragment();
-
   // Note: Floats should only be hit tested in the |kHitTestFloat| phase, so we
   // shouldn't enter a float when |action| doesn't match. However, as floats may
   // scatter around in the entire inline formatting context, we should always
   // enter non-floating inline child boxes to search for floats in the
   // |kHitTestFloat| phase, unless the child box forms another context.
-
   if (fragment.IsFloating() && action != kHitTestFloat)
     return false;
 
@@ -1633,7 +1626,12 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     // falling back to legacy for child atomic inlines and floats.
     DCHECK(!fragment.IsAtomicInline());
     DCHECK(!fragment.IsFloating());
-    return NGBoxFragmentPainter(paint_fragment)
+    if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
+      return NGBoxFragmentPainter(*paint_fragment)
+          .NodeAtPoint(result, hit_test_location, physical_offset, action);
+    }
+    NGInlineCursor descendants = cursor.CursorForDescendants();
+    return NGBoxFragmentPainter(fragment, &descendants)
         .NodeAtPoint(result, hit_test_location, physical_offset, action);
   }
 
@@ -1645,56 +1643,146 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   // https://www.w3.org/TR/CSS22/zindex.html#painting-order
   // Hit test all phases of inline blocks, inline tables, replaced elements and
   // non-positioned floats as if they created their own stacking contexts.
-  const bool should_hit_test_all_phases =
-      fragment.IsAtomicInline() || fragment.IsFloating();
-  return should_hit_test_all_phases
-             ? layout_box->HitTestAllPhases(result, hit_test_location,
-                                            physical_offset)
-             : layout_box->NodeAtPoint(result, hit_test_location,
-                                       physical_offset, action);
+  if (fragment.IsAtomicInline() || fragment.IsFloating()) {
+    return layout_box->HitTestAllPhases(result, hit_test_location,
+                                        physical_offset);
+  }
+  return layout_box->NodeAtPoint(result, hit_test_location, physical_offset,
+                                 action);
 }
 
 bool NGBoxFragmentPainter::HitTestChildren(
     HitTestResult& result,
-    NGPaintFragment::ChildList children,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
-  Vector<NGPaintFragment*, 16> child_vector;
-  children.ToList(&child_vector);
-  for (unsigned i = child_vector.size(); i;) {
-    const NGPaintFragment* child = child_vector[--i];
-    const PhysicalOffset offset = child->Offset();
-    if (child->HasSelfPaintingLayer())
+  if (paint_fragment_) {
+    NGInlineCursor cursor(*paint_fragment_);
+    return HitTestChildren(result, cursor, hit_test_location,
+                           accumulated_offset, action);
+  }
+  if (UNLIKELY(descendants_)) {
+    if (!*descendants_)
+      return false;
+    return HitTestChildren(result, *descendants_, hit_test_location,
+                           accumulated_offset, action);
+  }
+  if (items_) {
+    NGInlineCursor cursor(*items_);
+    return HitTestChildren(result, cursor, hit_test_location,
+                           accumulated_offset, action);
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestChildren(
+    HitTestResult& result,
+    const NGInlineCursor& children,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
+    HitTestAction action) {
+  if (children.IsPaintFragmentCursor()) {
+    return HitTestPaintFragmentChildren(result, children, hit_test_location,
+                                        accumulated_offset, action);
+  }
+  if (children.IsItemCursor()) {
+    return HitTestItemsChildren(result, children, hit_test_location,
+                                accumulated_offset, action);
+  }
+  // Hits nothing if there were no children.
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestPaintFragmentChildren(
+    HitTestResult& result,
+    const NGInlineCursor& children,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
+    HitTestAction action) {
+  DCHECK(children.IsPaintFragmentCursor());
+  for (NGInlineBackwardCursor cursor(children); cursor;) {
+    const NGPaintFragment* child_paint_fragment = cursor.CurrentPaintFragment();
+    DCHECK(child_paint_fragment);
+    const NGPhysicalFragment& child_fragment =
+        child_paint_fragment->PhysicalFragment();
+    if (child_fragment.HasSelfPaintingLayer()) {
+      cursor.MoveToPreviousSibling();
       continue;
-
-    const NGPhysicalFragment& fragment = child->PhysicalFragment();
-    const PhysicalOffset child_physical_offset = accumulated_offset + offset;
-
-    bool stop_hit_testing = false;
-    if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
-      stop_hit_testing = HitTestChildBoxFragment(
-          result, *child, hit_test_location, child_physical_offset, action);
-
-    } else if (fragment.Type() == NGPhysicalFragment::kFragmentLineBox) {
-      stop_hit_testing = HitTestLineBoxFragment(
-          result, *child, hit_test_location, child_physical_offset, action);
-
-    } else if (fragment.Type() == NGPhysicalFragment::kFragmentText) {
-      stop_hit_testing = HitTestTextFragment(result, *child, hit_test_location,
-                                             child_physical_offset, action);
     }
-    if (stop_hit_testing)
-      return true;
 
-    if (!fragment.IsInline() || action != kHitTestForeground)
+    const PhysicalOffset child_offset =
+        child_paint_fragment->Offset() + accumulated_offset;
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
+      if (HitTestChildBoxFragment(
+              result, To<NGPhysicalBoxFragment>(child_fragment), cursor,
+              hit_test_location, child_offset, action))
+        return true;
+    } else if (child_fragment.Type() == NGPhysicalFragment::kFragmentLineBox) {
+      if (HitTestLineBoxFragment(
+              result, To<NGPhysicalLineBoxFragment>(child_fragment), cursor,
+              hit_test_location, child_offset, action))
+        return true;
+    } else if (child_fragment.Type() == NGPhysicalFragment::kFragmentText) {
+      if (HitTestTextFragment(result, cursor, hit_test_location, child_offset,
+                              action))
+        return true;
+    }
+
+    cursor.MoveToPreviousSibling();
+
+    if (child_fragment.IsInline() && action == kHitTestForeground) {
+      // Hit test culled inline boxes between |fragment| and its parent
+      // fragment.
+      const NGPaintFragment* previous_sibling =
+          cursor ? cursor.CurrentPaintFragment() : nullptr;
+      if (HitTestCulledInlineAncestors(result, *child_paint_fragment,
+                                       previous_sibling, hit_test_location,
+                                       child_offset))
+        return true;
+    }
+  }
+
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestItemsChildren(
+    HitTestResult& result,
+    const NGInlineCursor& children,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
+    HitTestAction action) {
+  DCHECK(children.IsItemCursor());
+  for (NGInlineBackwardCursor cursor(children); cursor;) {
+    const NGFragmentItem* item = cursor.CurrentItem();
+    DCHECK(item);
+    if (item->HasSelfPaintingLayer()) {
+      cursor.MoveToPreviousSibling();
       continue;
+    }
 
-    // Hit test culled inline boxes between |fragment| and its parent fragment.
-    const NGPaintFragment* previous_sibling = i ? child_vector[i - 1] : nullptr;
-    if (HitTestCulledInlineAncestors(result, *child, previous_sibling,
-                                     hit_test_location, child_physical_offset))
-      return true;
+    const PhysicalOffset child_offset = item->Offset() + accumulated_offset;
+    if (item->IsText()) {
+      // TODO(kojii): Implement for a text item.
+    } else if (item->Type() == NGFragmentItem::kLine) {
+      const NGPhysicalLineBoxFragment* child_fragment = item->LineBoxFragment();
+      DCHECK(child_fragment);
+      if (HitTestLineBoxFragment(result, *child_fragment, cursor,
+                                 hit_test_location, child_offset, action))
+        return true;
+    } else if (item->Type() == NGFragmentItem::kBox) {
+      if (const NGPhysicalBoxFragment* child_fragment = item->BoxFragment()) {
+        if (HitTestChildBoxFragment(result, *child_fragment, cursor,
+                                    hit_test_location, child_offset, action))
+          return true;
+      }
+    } else {
+      NOTREACHED();
+    }
+
+    cursor.MoveToPreviousSibling();
+
+    // TODO(kojii): Implement hit-testing culled inline box.
   }
 
   return false;

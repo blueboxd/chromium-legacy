@@ -12,11 +12,11 @@
 
 // HistoryIndexRestoreObserver is used when blocking until the InMemoryURLIndex
 // finishes restoring. As soon as the InMemoryURLIndex finishes restoring the
-// provided Closure is invoked.
+// provided OnceClosure is invoked.
 class HistoryIndexRestoreObserver
     : public InMemoryURLIndex::RestoreCacheObserver {
  public:
-  explicit HistoryIndexRestoreObserver(const base::Closure& task);
+  explicit HistoryIndexRestoreObserver(base::OnceClosure task);
   ~HistoryIndexRestoreObserver() override;
 
   bool succeeded() const { return succeeded_; }
@@ -25,7 +25,7 @@ class HistoryIndexRestoreObserver
   void OnCacheRestoreFinished(bool success) override;
 
  private:
-  base::Closure task_;
+  base::OnceClosure task_;
   bool succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryIndexRestoreObserver);

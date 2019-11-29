@@ -1,7 +1,7 @@
 rootWebArea name='Table example - focusable thead, tbody, tfoot'
 ++genericContainer ignored
 ++++table
-++++++group
+++++++rowGroup
 ++++++++row
 ++++++++++columnHeader name='Sum'
 ++++++++++++staticText name='Sum'
@@ -9,7 +9,7 @@ rootWebArea name='Table example - focusable thead, tbody, tfoot'
 ++++++++++columnHeader name='Subtraction'
 ++++++++++++staticText name='Subtraction'
 ++++++++++++++inlineTextBox name='Subtraction'
-++++++group
+++++++rowGroup
 ++++++++row
 ++++++++++cell name='10'
 ++++++++++++staticText name='10'
@@ -24,7 +24,7 @@ rootWebArea name='Table example - focusable thead, tbody, tfoot'
 ++++++++++cell name='4'
 ++++++++++++staticText name='4'
 ++++++++++++++inlineTextBox name='4'
-++++++group
+++++++rowGroup
 ++++++++row
 ++++++++++cell name='12'
 ++++++++++++staticText name='12'

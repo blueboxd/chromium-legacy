@@ -276,8 +276,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kFractionalScrollOffsets, kUseFeatureState},
           {wf::EnableGetDisplayMedia, blink::features::kRTCGetDisplayMedia,
            kUseFeatureState},
-          {wf::EnableMimeHandlerViewInCrossProcessFrame,
-           features::kMimeHandlerViewInCrossProcessFrame, kUseFeatureState},
           {wf::EnableFallbackCursorMode, features::kFallbackCursorMode,
            kUseFeatureState},
           {wf::EnableSignedExchangePrefetchCacheForNavigations,

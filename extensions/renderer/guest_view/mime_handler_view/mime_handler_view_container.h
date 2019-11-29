@@ -75,10 +75,8 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   gfx::Size GetElementSize() const final;
 
   // Message handlers.
-  void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
   void OnGuestAttached(int element_instance_id,
                        int guest_proxy_routing_id);
-  void OnMimeHandlerViewGuestOnLoadCompleted(int32_t element_instance_id);
 
   // The RenderView routing ID of the guest.
   int guest_proxy_routing_id_;

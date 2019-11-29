@@ -1294,6 +1294,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE" desc="Title and accessibility label of the badge displayed on a tools menu item when it represents a new feature [Length: 20em]" meaning="A badge with this title is displayed informing the user that this feature that is new to them.">
         New
       </message>
+      <message name="IDS_IOS_TOOLS_MENU_DOWNLOADS" desc="The iOS menu item for opening the downloads folder [iOS only]" meaning="[Length: unlimited]">
+        Downloads
+      </message>
       <message name="IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE" desc="Title of the button to display the Offline version instead of the Online one. [Length: 50em]">
         View Offline Version in New Tab
       </message>

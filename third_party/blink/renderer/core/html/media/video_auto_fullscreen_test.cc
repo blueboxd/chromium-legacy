@@ -77,7 +77,7 @@ class VideoAutoFullscreen : public testing::Test,
         web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
     GetDocument()->write("<body><video></video></body>");
 
-    video_ = ToHTMLVideoElement(*GetDocument()->QuerySelector("video"));
+    video_ = To<HTMLVideoElement>(*GetDocument()->QuerySelector("video"));
 
     frame_host_.set_frame_widget(GetWebView()->MainFrameWidget());
   }

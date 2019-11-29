@@ -17,7 +17,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -94,8 +93,6 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     std::string* payload,
     uint32_t* data_pipe_size,
     base::OnceClosure resume_load) {
-  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return false;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   std::string token = base::UnguessableToken::Create().ToString();
   auto html_str = base::StringPrintf(

@@ -43,11 +43,16 @@
 
    if (window.accessibilityController) {
       var container = accessibilityController.accessibleElementById("container");
-      // first child is a table that has 0 unignored children
+      // first child is a table that has an unignored rowgroup.
+      // the rowgroup's child has 0 unignored children.
       var child_1 = container.childAtIndex(0);
-      shouldBe("child_1.childrenCount", "2")
-      for (let i = 0; i < child_1.childrenCount; ++i) {
-        shouldBeTrue("child_1.childAtIndex(" + i + ").isIgnored");
+      shouldBe("child_1.childrenCount", "1")
+      var grandchild_1 = child_1.childAtIndex(0);
+      shouldBeTrue("grandchild_1.isIgnored");
+
+      shouldBe("grandchild_1.childrenCount", "2")
+      for (let i = 0; i < grandchild_1.childrenCount; ++i) {
+        shouldBeTrue("grandchild_1.childAtIndex(" + i + ").isIgnored");
       }
 
       // second child is a grid that has 0 unignored children

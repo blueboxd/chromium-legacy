@@ -13,6 +13,7 @@ NSString* const kPopupMenuToolsMenuTableViewId =
 NSString* const kPopupMenuNavigationTableViewId =
     @"kPopupMenuNavigationTableViewId";
 
+NSString* const kToolsMenuDownloadsId = @"kToolsMenuDownloadsId";
 NSString* const kToolsMenuReload = @"kToolsMenuReload";
 NSString* const kToolsMenuStop = @"kToolsMenuStop";
 NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";

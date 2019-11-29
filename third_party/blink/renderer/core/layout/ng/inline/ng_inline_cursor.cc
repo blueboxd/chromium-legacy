@@ -1078,8 +1078,8 @@ void NGInlineCursor::MoveToPreviousSiblingPaintFragment() {
   NOTREACHED();
 }
 
-NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor) {
-  DCHECK(cursor);
+NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
+    : cursor_(cursor) {
   if (cursor.root_paint_fragment_) {
     for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
       sibling_paint_fragments_.push_back(sibling.CurrentPaintFragment());
@@ -1102,9 +1102,31 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor) {
 NGInlineCursor NGInlineBackwardCursor::CursorForDescendants() const {
   if (const NGPaintFragment* current_paint_fragment = CurrentPaintFragment())
     return NGInlineCursor(*current_paint_fragment);
-  // TODO(kojii): Implement for items.
+  if (current_item_) {
+    NGInlineCursor cursor(cursor_);
+    cursor.MoveToItem(sibling_item_iterators_[current_index_]);
+    return cursor.CursorForDescendants();
+  }
   NOTREACHED();
   return NGInlineCursor();
+}
+
+const PhysicalOffset NGInlineBackwardCursor::CurrentOffset() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->InlineOffsetToContainerBox();
+  if (current_item_)
+    return current_item_->Offset();
+  NOTREACHED();
+  return PhysicalOffset();
+}
+
+const PhysicalRect NGInlineBackwardCursor::CurrentSelfInkOverflow() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->SelfInkOverflow();
+  if (current_item_)
+    return current_item_->SelfInkOverflow();
+  NOTREACHED();
+  return PhysicalRect();
 }
 
 void NGInlineBackwardCursor::MoveToPreviousSibling() {

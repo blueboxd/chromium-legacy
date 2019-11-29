@@ -364,6 +364,8 @@ class CORE_EXPORT NGInlineCursor {
   friend class NGInlineBackwardCursor;
 };
 
+// This class provides the |MoveToPreviousSibling| functionality, but as a
+// separate class because it consumes memory, and only rarely used.
 class CORE_EXPORT NGInlineBackwardCursor {
   STACK_ALLOCATED();
 
@@ -381,9 +383,13 @@ class CORE_EXPORT NGInlineBackwardCursor {
     return current_paint_fragment_;
   }
 
+  const PhysicalOffset CurrentOffset() const;
+  const PhysicalRect CurrentSelfInkOverflow() const;
+
   void MoveToPreviousSibling();
 
  private:
+  const NGInlineCursor& cursor_;
   Vector<const NGPaintFragment*, 16> sibling_paint_fragments_;
   Vector<NGInlineCursor::ItemsSpan::iterator, 16> sibling_item_iterators_;
   const NGPaintFragment* current_paint_fragment_ = nullptr;

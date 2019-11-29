@@ -4,15 +4,12 @@
 
 #include "components/omnibox/browser/history_index_restore_observer.h"
 
-HistoryIndexRestoreObserver::HistoryIndexRestoreObserver(
-    const base::Closure& task)
-    : task_(task),
-      succeeded_(false) {
-}
+HistoryIndexRestoreObserver::HistoryIndexRestoreObserver(base::OnceClosure task)
+    : task_(std::move(task)), succeeded_(false) {}
 
 HistoryIndexRestoreObserver::~HistoryIndexRestoreObserver() {}
 
 void HistoryIndexRestoreObserver::OnCacheRestoreFinished(bool success) {
   succeeded_ = success;
-  task_.Run();
+  std::move(task_).Run();
 }

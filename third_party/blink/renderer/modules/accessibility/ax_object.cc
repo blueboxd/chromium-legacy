@@ -203,6 +203,7 @@ const RoleEntry kRoles[] = {
     {"region", ax::mojom::Role::kRegion},
     {"revision", ax::mojom::Role::kRevision},
     {"row", ax::mojom::Role::kRow},
+    {"rowgroup", ax::mojom::Role::kRowGroup},
     {"rowheader", ax::mojom::Role::kRowHeader},
     {"scrollbar", ax::mojom::Role::kScrollBar},
     {"search", ax::mojom::Role::kSearch},
@@ -391,8 +392,9 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kRegion, "Region"},
     {ax::mojom::Role::kRevision, "Revision"},
     {ax::mojom::Role::kRootWebArea, "WebArea"},
-    {ax::mojom::Role::kRowHeader, "RowHeader"},
     {ax::mojom::Role::kRow, "Row"},
+    {ax::mojom::Role::kRowGroup, "RowGroup"},
+    {ax::mojom::Role::kRowHeader, "RowHeader"},
     {ax::mojom::Role::kRuby, "Ruby"},
     {ax::mojom::Role::kRubyAnnotation, "RubyAnnotation"},
     {ax::mojom::Role::kSection, "Section"},
@@ -456,9 +458,6 @@ static ARIARoleMap* CreateARIARoleMap() {
 
   for (size_t i = 0; i < base::size(kRoles); ++i)
     role_map->Set(String(kRoles[i].aria_role), kRoles[i].webcore_role);
-
-  // Grids "ignore" their non-row children during computation of children.
-  role_map->Set(String("rowgroup"), ax::mojom::Role::kIgnored);
 
   return role_map;
 }
@@ -2137,18 +2136,24 @@ ax::mojom::Role AXObject::RemapAriaRoleDueToParent(ax::mojom::Role role) const {
   // https://bugs.webkit.org/show_bug.cgi?id=65174
 
   // Don't return table roles unless inside a table-like container.
-  if (role == ax::mojom::Role::kRow || role == ax::mojom::Role::kCell ||
-      role == ax::mojom::Role::kRowHeader ||
-      role == ax::mojom::Role::kColumnHeader) {
-    for (AXObject* ancestor = ParentObjectUnignored(); ancestor;
-         ancestor = ancestor->ParentObjectUnignored()) {
-      ax::mojom::Role ancestor_aria_role = ancestor->AriaRoleAttribute();
-      if (ancestor_aria_role == ax::mojom::Role::kCell)
-        return ax::mojom::Role::kGenericContainer;  // In another cell, illegal.
-      if (ancestor->IsTableLikeRole())
-        return role;  // Inside a table: ARIA role is legal.
-    }
-    return ax::mojom::Role::kGenericContainer;  // Not in a table.
+  switch (role) {
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRowGroup:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kColumnHeader:
+      for (AXObject* ancestor = ParentObjectUnignored(); ancestor;
+           ancestor = ancestor->ParentObjectUnignored()) {
+        ax::mojom::Role ancestor_aria_role = ancestor->AriaRoleAttribute();
+        if (ancestor_aria_role == ax::mojom::Role::kCell)
+          return ax::mojom::Role::kGenericContainer;  // In another cell,
+                                                      // illegal.
+        if (ancestor->IsTableLikeRole())
+          return role;  // Inside a table: ARIA role is legal.
+      }
+      return ax::mojom::Role::kGenericContainer;  // Not in a table.
+    default:
+      break;
   }
 
   if (role != ax::mojom::Role::kListBoxOption &&
@@ -2941,7 +2946,7 @@ AXObject::AXObjectVector AXObject::TableRowChildren() const {
   for (const auto& child : Children()) {
     if (child->IsTableRowLikeRole())
       result.push_back(child);
-    else if (child->RoleValue() == ax::mojom::Role::kGenericContainer)
+    else if (child->RoleValue() == ax::mojom::Role::kRowGroup)
       result.AppendVector(child->TableRowChildren());
   }
   return result;
@@ -3545,6 +3550,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kRootWebArea:
+    case ax::mojom::Role::kRowGroup:
     case ax::mojom::Role::kScrollBar:
     case ax::mojom::Role::kScrollView:
     case ax::mojom::Role::kSearch:

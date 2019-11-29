@@ -23,7 +23,6 @@
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/constants.h"
@@ -406,7 +405,6 @@ bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const GURL& resource_url,
     const std::string& mime_type,
     const content::WebPluginInfo& plugin_info) {
-  CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   return extensions::MimeHandlerViewContainerManager::Get(
              content::RenderFrame::FromWebFrame(
                  plugin_element.GetDocument().GetFrame()),
@@ -418,7 +416,6 @@ bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
 v8::Local<v8::Object> ChromeExtensionsRendererClient::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
-  CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   // If there is a MimeHandlerView that can provide the scriptable object then
   // MaybeCreateMimeHandlerView must have been called before and a container
   // manager should exist.

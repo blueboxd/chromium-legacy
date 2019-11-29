@@ -1,5 +1,6 @@
 <html>
     <head>
+        <script src="../../resources/gesture-util.js"></script>
         <script>
         if (window.testRunner) {
             testRunner.dumpAsText();
@@ -37,10 +38,7 @@
 
         function test()
         {
-            if (window.testRunner) {
-                eventSender.mouseMoveTo(2, 2);
-                eventSender.scheduleAsynchronousClick();
-            }
+            mouseClickOn(2, 2);
         }
 
         function log(msg)

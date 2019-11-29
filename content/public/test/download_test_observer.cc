@@ -463,8 +463,10 @@ DownloadTestItemCreationObserver::callback() {
 
 SavePackageFinishedObserver::SavePackageFinishedObserver(
     DownloadManager* manager,
-    const base::Closure& callback)
-    : download_manager_(manager), download_(nullptr), callback_(callback) {
+    base::OnceClosure callback)
+    : download_manager_(manager),
+      download_(nullptr),
+      callback_(std::move(callback)) {
   download_manager_->AddObserver(this);
 }
 
@@ -480,7 +482,7 @@ void SavePackageFinishedObserver::OnDownloadUpdated(
     download::DownloadItem* download) {
   if (download->GetState() == download::DownloadItem::COMPLETE ||
       download->GetState() == download::DownloadItem::CANCELLED) {
-    callback_.Run();
+    std::move(callback_).Run();
   }
 }
 

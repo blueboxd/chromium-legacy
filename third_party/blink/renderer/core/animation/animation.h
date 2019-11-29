@@ -403,7 +403,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
           hold_time(animation.hold_time_),
           playback_rate(animation.EffectivePlaybackRate()),
           effect_changed(false),
-          pending_action(kStart) {}
+          pending_action(animation.start_time_ ? kNone : kStart) {}
     base::Optional<double> start_time;
     base::Optional<double> hold_time;
     double playback_rate;

@@ -259,11 +259,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 
-  // TODO(ekaramad): Remove this once https://crbug.com/642826 is resolved.
-  bool can_use_cross_process_frames() const {
-    return can_use_cross_process_frames_;
-  }
-
   gfx::Point GetCoordinatesInEmbedderWebContents(
       const gfx::Point& relative_point);
 
@@ -458,11 +453,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   base::circular_deque<std::unique_ptr<IPC::Message>> pending_messages_;
 
   BrowserPluginGuestDelegate* const delegate_;
-
-  // Whether or not this BrowserPluginGuest can use cross process frames. This
-  // means when we have --use-cross-process-frames-for-guests on, the
-  // WebContents associated with this BrowserPluginGuest has OOPIF structure.
-  bool can_use_cross_process_frames_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
   ScreenInfo screen_info_;

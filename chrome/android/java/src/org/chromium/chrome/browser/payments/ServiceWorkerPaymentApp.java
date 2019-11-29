@@ -104,30 +104,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     /**
-     * This class represents the supported delegations of a service worker based payment app.
-     */
-    protected static class SupportedDelegations {
-        private final boolean mShippingAddress;
-        private final boolean mPayerName;
-        private final boolean mPayerPhone;
-        private final boolean mPayerEmail;
-
-        SupportedDelegations(boolean shippingAddress, boolean payerName, boolean payerPhone,
-                boolean payerEmail) {
-            mShippingAddress = shippingAddress;
-            mPayerName = payerName;
-            mPayerPhone = payerPhone;
-            mPayerEmail = payerEmail;
-        }
-        SupportedDelegations() {
-            mShippingAddress = false;
-            mPayerName = false;
-            mPayerPhone = false;
-            mPayerEmail = false;
-        }
-    }
-
-    /**
      * Build a service worker payment app instance per origin.
      *
      * @see https://w3c.github.io/webpayments-payment-handler/#structure-of-a-web-payment-app
@@ -400,7 +376,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
                     new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
                     mPaymentHandlerHost, callback, mAppName, icon == null ? null : icon.getBitmap(),
-                    mSwUri, mScope, mUseCache, mMethodNames.toArray(new String[0])[0]);
+                    mSwUri, mScope, mUseCache, mMethodNames.toArray(new String[0])[0],
+                    mSupportedDelegations);
         } else {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId,
                     mScope.toString(), origin, iframeOrigin, id, new HashSet<>(methodData.values()),
@@ -442,22 +419,22 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
     @Override
     public boolean handlesShippingAddress() {
-        return mSupportedDelegations.mShippingAddress;
+        return mSupportedDelegations.getShippingAddress();
     }
 
     @Override
     public boolean handlesPayerName() {
-        return mSupportedDelegations.mPayerName;
+        return mSupportedDelegations.getPayerName();
     }
 
     @Override
     public boolean handlesPayerEmail() {
-        return mSupportedDelegations.mPayerEmail;
+        return mSupportedDelegations.getPayerEmail();
     }
 
     @Override
     public boolean handlesPayerPhone() {
-        return mSupportedDelegations.mPayerPhone;
+        return mSupportedDelegations.getPayerPhone();
     }
 
     @Override

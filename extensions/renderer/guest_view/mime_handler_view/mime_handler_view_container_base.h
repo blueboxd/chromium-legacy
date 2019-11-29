@@ -70,7 +70,6 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   virtual int32_t GetInstanceId() const = 0;
   virtual gfx::Size GetElementSize() const = 0;
 
-  void DidLoadInternal();
   void SendResourceRequest();
   void EmbedderRenderFrameWillBeGone();
   v8::Local<v8::Object> GetScriptableObjectInternal(v8::Isolate* isolate);

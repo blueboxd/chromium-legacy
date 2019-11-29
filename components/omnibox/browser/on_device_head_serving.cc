@@ -89,12 +89,13 @@ OnDeviceHeadServing::GetSuggestionsForPrefix(const std::string& prefix) {
     return suggestions;
   }
 
-  OpenModelFileStream(kRootNodeOffset);
-  MatchCandidate start_match;
-  if (FindStartNode(prefix, &start_match)) {
-    suggestions = DoSearch(start_match);
+  if (OpenModelFileStream(kRootNodeOffset)) {
+    MatchCandidate start_match;
+    if (FindStartNode(prefix, &start_match)) {
+      suggestions = DoSearch(start_match);
+    }
+    MaybeCloseModelFileStream();
   }
-  MaybeCloseModelFileStream();
   return suggestions;
 }
 

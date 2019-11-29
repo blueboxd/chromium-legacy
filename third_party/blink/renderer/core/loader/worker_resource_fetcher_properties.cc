@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -33,6 +34,10 @@ WorkerResourceFetcherProperties::GetControllerServiceWorkerMode() const {
 
 bool WorkerResourceFetcherProperties::IsPaused() const {
   return global_scope_->IsContextPaused();
+}
+
+const KURL& WorkerResourceFetcherProperties::WebBundlePhysicalUrl() const {
+  return NullURL();
 }
 
 }  // namespace blink

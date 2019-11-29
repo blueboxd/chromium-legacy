@@ -42,7 +42,7 @@ void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
 //
 // We only recursively check for the following roles in between a table and
 // its rows: generic containers like <div>, any nodes that are ignored, and
-// table sections (which have Role::kGroup).
+// table sections (which have Role::kRowGroup).
 void FindRowsAndThenCells(AXNode* node,
                           std::vector<AXNode*>* row_nodes,
                           std::vector<std::vector<AXNode*>>* cell_nodes_per_row,
@@ -50,7 +50,8 @@ void FindRowsAndThenCells(AXNode* node,
   for (AXNode* child : node->children()) {
     if (child->IsIgnored() ||
         child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kGroup) {
+        child->data().role == ax::mojom::Role::kGroup ||
+        child->data().role == ax::mojom::Role::kRowGroup) {
       FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row,
                            caption_node_id);
     } else if (IsTableRow(child->data().role)) {

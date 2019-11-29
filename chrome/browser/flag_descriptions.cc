@@ -1283,12 +1283,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
-const char kMimeHandlerViewInCrossProcessFrameName[] =
-    "MimeHandlerView in cross-process frame";
-const char kMimeHandlerViewInCrossProcessFrameDescription[] =
-    "Loads the MimeHandlerView (the extension viewer for certain MIME types "
-    "such as PDF) in a cross-process frame as opposed to a BrowserPlugin.";
-
 const char kMixBrowserTypeTabsName[] = "Mix browser type tabs";
 const char kMixBrowserTypeTabsDescription[] =
     "Allows tabs to be dragged between any browsers that support tabs, "

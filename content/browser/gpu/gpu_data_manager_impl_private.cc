@@ -141,7 +141,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       *base::CommandLine::ForCurrentProcess();
   const gpu::GpuFeatureType kGpuFeatures[] = {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
-      gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING,
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_GL,
       gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION,
       gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
@@ -615,10 +615,6 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
-  if (IsGpuCompositingDisabled()) {
-    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-        gpu::kGpuFeatureStatusDisabled;
-  }
   if (!gpu_feature_info_for_hardware_gpu_.IsInitialized()) {
     if (gpu_feature_info_for_hardware_gpu.has_value()) {
       DCHECK(gpu_feature_info_for_hardware_gpu->IsInitialized());
@@ -658,14 +654,10 @@ bool GpuDataManagerImplPrivate::IsGpuCompositingDisabled() const {
 }
 
 void GpuDataManagerImplPrivate::SetGpuCompositingDisabled() {
-  disable_gpu_compositing_ = true;
-
-  if (gpu_feature_info_.IsInitialized() &&
-      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] ==
-          gpu::kGpuFeatureStatusEnabled) {
-    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] =
-        gpu::kGpuFeatureStatusDisabled;
-    NotifyGpuInfoUpdate();
+  if (!IsGpuCompositingDisabled()) {
+    disable_gpu_compositing_ = true;
+    if (gpu_feature_info_.IsInitialized())
+      NotifyGpuInfoUpdate();
   }
 }
 

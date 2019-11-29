@@ -695,6 +695,10 @@ TEST_F(PermissionRequestManagerTest,
   MockPermissionRequest notification7_request(
       "request7", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification7);
+  // For the first quiet permission prompt, show a promo.
+  EXPECT_TRUE(
+      permission_ui_selector
+          ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
   manager_->AddRequest(&notification7_request);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
@@ -714,6 +718,10 @@ TEST_F(PermissionRequestManagerTest,
   MockPermissionRequest notification8_request(
       "request8", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification8);
+  // For the rest of the quiet permission prompts, do not show promo.
+  EXPECT_TRUE(
+      permission_ui_selector
+          ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
   manager_->AddRequest(&notification8_request);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());

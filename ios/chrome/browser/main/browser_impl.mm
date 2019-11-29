@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 
@@ -19,7 +20,8 @@
 #endif
 
 BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state)
-    : browser_state_(browser_state) {
+    : browser_state_(browser_state),
+      command_dispatcher_([[CommandDispatcher alloc] init]) {
   DCHECK(browser_state_);
 
   web_state_list_delegate_ = std::make_unique<BrowserWebStateListDelegate>();
@@ -58,6 +60,10 @@ TabModel* BrowserImpl::GetTabModel() const {
 
 WebStateList* BrowserImpl::GetWebStateList() const {
   return web_state_list_.get();
+}
+
+CommandDispatcher* BrowserImpl::GetCommandDispatcher() const {
+  return command_dispatcher_;
 }
 
 void BrowserImpl::AddObserver(BrowserObserver* observer) {

@@ -30,6 +30,7 @@
 
 namespace cc {
 namespace {
+using Rects = base::StackVector<gfx::Rect, 1>;
 
 struct PositionScaleDrawImage {
   PositionScaleDrawImage(const PaintImage& image,
@@ -376,6 +377,65 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image);
+}
+
+// Check if SkNoDrawCanvas does not crash for large layers.
+TEST_F(DiscardableImageMapTest, RestoreSavedBigLayers) {
+  PaintFlags flags;
+  SkRect rect = SkRect::MakeWH(INT_MAX, INT_MAX);
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList;
+  display_list->StartPaint();
+  display_list->push<DrawRectOp>(rect, flags);
+  display_list->EndPaintOfUnpaired(gfx::Rect(INT_MAX, INT_MAX));
+  display_list->Finalize();
+  display_list->GenerateDiscardableImagesMetadata();
+}
+
+// Test if SaveLayer and Restore work together.
+// 1. Move cursor to (25, 25) draw a black rect of size 25x25.
+// 2. save layer, move the cursor by (100, 100) or to point (125, 125), draw a
+// red rect of size 25x25.
+// 3. Restore layer, so the cursor moved back to (25, 25), move cursor by (100,
+// 0) or at the point (125, 25), draw a yellow rect of size 25x25.
+//  (25, 25)
+//  +---+
+//  |   |
+//  +---+
+//  (25, 125) (125, 125)
+//  +---+     +---+
+//  |   |     |   |
+//  +---+     +---+
+TEST_F(DiscardableImageMapTest, RestoreSavedTransformedLayers) {
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList;
+  PaintFlags paint;
+  gfx::Rect visible_rect(200, 200);
+  display_list->StartPaint();
+
+  PaintImage discardable_image1 =
+      CreateDiscardablePaintImage(gfx::Size(25, 25));
+  PaintImage discardable_image2 =
+      CreateDiscardablePaintImage(gfx::Size(25, 25));
+  PaintImage discardable_image3 =
+      CreateDiscardablePaintImage(gfx::Size(25, 25));
+  display_list->push<TranslateOp>(25, 25);
+  display_list->push<DrawImageOp>(discardable_image1, 0.f, 0.f, nullptr);
+  display_list->push<SaveLayerOp>(nullptr, &paint);
+  display_list->push<TranslateOp>(100, 100);
+  display_list->push<DrawImageOp>(discardable_image2, 0.f, 0.f, nullptr);
+  display_list->push<RestoreOp>();
+  display_list->push<TranslateOp>(0, 100);
+  display_list->push<DrawImageOp>(discardable_image3, 0.f, 0.f, nullptr);
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
+
+  display_list->GenerateDiscardableImagesMetadata();
+  const DiscardableImageMap& image_map = display_list->discardable_image_map();
+  std::vector<PositionScaleDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 200, 200));
+  EXPECT_EQ(3u, images.size());
+  EXPECT_EQ(gfx::Rect(25, 25, 25, 25), InsetImageRects(images)[0]);
+  EXPECT_EQ(gfx::Rect(125, 125, 25, 25), InsetImageRects(images)[1]);
+  EXPECT_EQ(gfx::Rect(25, 125, 25, 25), InsetImageRects(images)[2]);
 }
 
 TEST_F(DiscardableImageMapTest, NullPaintOnSaveLayer) {

@@ -782,11 +782,10 @@ void MTPDeviceDelegateImplLinux::AddWatcher(
     const GURL& origin,
     const base::FilePath& file_path,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::StatusCallback callback,
+    storage::WatcherManager::NotificationCallback notification_callback) {
   if (recursive) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -794,46 +793,47 @@ void MTPDeviceDelegateImplLinux::AddWatcher(
   if (it != subscribers_.end()) {
     // Adds to existing origin callback map.
     if (base::Contains(it->second, origin)) {
-      callback.Run(base::File::FILE_ERROR_EXISTS);
+      std::move(callback).Run(base::File::FILE_ERROR_EXISTS);
       return;
     }
 
-    it->second.insert(std::make_pair(origin, notification_callback));
+    it->second.insert(std::make_pair(origin, std::move(notification_callback)));
   } else {
     // Creates new origin callback map.
     OriginNotificationCallbackMap callback_map;
-    callback_map.insert(std::make_pair(origin, notification_callback));
+    callback_map.insert(
+        std::make_pair(origin, std::move(notification_callback)));
     subscribers_.insert(std::make_pair(file_path, callback_map));
   }
 
-  callback.Run(base::File::FILE_OK);
+  std::move(callback).Run(base::File::FILE_OK);
 }
 
 void MTPDeviceDelegateImplLinux::RemoveWatcher(
     const GURL& origin,
     const base::FilePath& file_path,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback) {
+    storage::WatcherManager::StatusCallback callback) {
   if (recursive) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   const auto it = subscribers_.find(file_path);
   if (it == subscribers_.end()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
   if (it->second.erase(origin) == 0) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
   if (it->second.empty())
     subscribers_.erase(it);
 
-  callback.Run(base::File::FILE_OK);
+  std::move(callback).Run(base::File::FILE_OK);
 }
 
 void MTPDeviceDelegateImplLinux::NotifyFileChange(

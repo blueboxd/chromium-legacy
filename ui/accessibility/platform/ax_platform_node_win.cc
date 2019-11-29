@@ -4930,6 +4930,9 @@ int AXPlatformNodeWin::MSAARole() {
       return IsInTreeGrid() ? ROLE_SYSTEM_OUTLINEITEM : ROLE_SYSTEM_ROW;
     }
 
+    case ax::mojom::Role::kRowGroup:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kRowHeader:
       return ROLE_SYSTEM_ROWHEADER;
 
@@ -5755,6 +5758,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return IsInTreeGrid() ? L"treeitem" : L"row";
     }
 
+    case ax::mojom::Role::kRowGroup:
+      return L"rowgroup";
+
     case ax::mojom::Role::kRowHeader:
       return L"rowheader";
 
@@ -6416,6 +6422,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
                             : UIA_DataItemControlTypeId;
     }
 
+    case ax::mojom::Role::kRowGroup:
+      return UIA_GroupControlTypeId;
+
     case ax::mojom::Role::kRowHeader:
       return UIA_DataItemControlTypeId;
 
@@ -6570,6 +6579,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
           case ax::mojom::Role::kMenuListOption:
           case ax::mojom::Role::kRadioButton:
           case ax::mojom::Role::kRow:
+          case ax::mojom::Role::kRowGroup:
           case ax::mojom::Role::kRowHeader:
           case ax::mojom::Role::kStaticText:
           case ax::mojom::Role::kSwitch:
@@ -7117,7 +7127,7 @@ bool AXPlatformNodeWin::IsInTreeGrid() {
   AXPlatformNodeBase* container = FromNativeViewAccessible(GetParent());
 
   // If parent was a rowgroup, we need to look at the grandparent
-  if (container && container->GetData().role == ax::mojom::Role::kGroup)
+  if (container && container->GetData().role == ax::mojom::Role::kRowGroup)
     container = FromNativeViewAccessible(container->GetParent());
 
   if (!container)

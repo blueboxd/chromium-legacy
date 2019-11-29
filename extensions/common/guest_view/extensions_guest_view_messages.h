@@ -14,17 +14,6 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
 #define IPC_MESSAGE_START ExtensionsGuestViewMsgStart
-// Messages sent from the browser to the renderer.
-
-// The ACK for GuestViewHostMsg_CreateMimeHandlerViewGuest.
-IPC_MESSAGE_CONTROL1(ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK,
-                     int /* element_instance_id */)
-
-// Once a MimeHandlerView guest's JavaScript onload function has been called,
-// this IPC is sent to the container to notify it.
-IPC_MESSAGE_CONTROL1(ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
-                     int /* element_instance_id */)
-
 // Messages sent from the renderer to the browser.
 
 // Queries whether the RenderView of the provided |routing_id| is allowed to

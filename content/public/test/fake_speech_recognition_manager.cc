@@ -20,10 +20,6 @@
 
 namespace {
 const char kTestResult[] = "Pictures of the moon";
-
-void RunCallback(const base::Closure recognition_started_closure) {
-  recognition_started_closure.Run();
-}
 }  // namespace
 
 namespace content {
@@ -52,7 +48,6 @@ void FakeSpeechRecognitionManager::WaitForRecognitionStarted() {
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   recognition_started_closure_ = runner->QuitClosure();
   runner->Run();
-  recognition_started_closure_.Reset();
 }
 
 void FakeSpeechRecognitionManager::SetFakeResult(const std::string& value) {
@@ -96,7 +91,7 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
   }
   if (!recognition_started_closure_.is_null()) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&RunCallback, recognition_started_closure_));
+                   std::move(recognition_started_closure_));
   }
 }
 

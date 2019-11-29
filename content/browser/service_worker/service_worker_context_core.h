@@ -179,7 +179,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 
-  // Maintains a map from Client UUID to ServiceWorkerContainerHost.
+  // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
+  // worker clients. |container_host| should not be for a service worker
+  // execution context.
   // (Note: instead of maintaining 2 maps we might be able to uniformly use
   // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
   // these as provider_id is deeply wired everywhere)
@@ -350,7 +352,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // |providers_| owns the provider hosts.
   std::unique_ptr<ProviderByIdMap> providers_;
 
-  // |container_host_by_uuid_| contains raw pointers to container hosts.
+  // |container_host_by_uuid_| contains raw pointers to container hosts for
+  // service worker clients. This doesn't contain container hosts for service
+  // worker execution contexts.
   std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
 
   std::unique_ptr<ServiceWorkerStorage> storage_;

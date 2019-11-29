@@ -46,7 +46,7 @@ class HTMLVideoElementPersistentTest : public PageTestBase {
   }
 
   HTMLVideoElement* VideoElement() {
-    return ToHTMLVideoElement(GetDocument().QuerySelector("video"));
+    return To<HTMLVideoElement>(GetDocument().QuerySelector("video"));
   }
 
   HTMLDivElement* DivElement() {

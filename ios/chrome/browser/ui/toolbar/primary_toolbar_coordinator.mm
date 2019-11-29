@@ -105,14 +105,10 @@
   self.started = NO;
 }
 
-#pragma mark - PrimaryToolbarCoordinator
+#pragma mark - Public
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
   return self.viewController;
-}
-
-- (id<OmniboxFocuser>)omniboxFocuser {
-  return self.locationBarCoordinator;
 }
 
 - (void)showPrerenderingAnimation {

@@ -269,7 +269,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   if (gpu_channel_host &&
       gpu_channel_host->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
+              .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_GL] !=
           gpu::kGpuFeatureStatusEnabled) {
     use_gpu_compositing = false;
   }
@@ -785,7 +785,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
       gpu_channel_factory_->EstablishGpuChannelSync();
   if (!gpu_channel_host ||
       gpu_channel_host->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
+              .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_GL] !=
           gpu::kGpuFeatureStatusEnabled) {
     DisableGpuCompositing(nullptr);
     if (gpu_channel_host)

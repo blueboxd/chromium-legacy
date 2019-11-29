@@ -361,7 +361,7 @@ void DOMWebSocket::send(DOMArrayBuffer* binary_data,
                                  binary_data->ByteLengthAsSizeT());
   DCHECK(channel_);
   buffered_amount_ += binary_data->ByteLengthAsSizeT();
-  channel_->Send(*binary_data, 0, binary_data->DeprecatedByteLengthAsUnsigned(),
+  channel_->Send(*binary_data, 0, binary_data->ByteLengthAsSizeT(),
                  base::OnceClosure());
 }
 
@@ -387,8 +387,8 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
   buffered_amount_ +=
       array_buffer_view.View()->deprecatedByteLengthAsUnsigned();
   channel_->Send(*array_buffer_view.View()->buffer(),
-                 array_buffer_view.View()->deprecatedByteOffsetAsUnsigned(),
-                 array_buffer_view.View()->deprecatedByteLengthAsUnsigned(),
+                 array_buffer_view.View()->byteOffsetAsSizeT(),
+                 array_buffer_view.View()->byteLengthAsSizeT(),
                  base::OnceClosure());
 }
 

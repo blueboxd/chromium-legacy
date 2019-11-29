@@ -435,3 +435,47 @@ testcase.showSendFeedbackAction = async () => {
           '[command=\'#send-feedback\']' +
           ':not([disabled]):not([hidden])');
 };
+
+/**
+ * Tests that the link of the volume space info item in the gear menu is
+ * disabled when the files app is opened on the Google Drive section, and active
+ * otherwise. The volume space info item should only link to the storage
+ * settings page when the user is navigating within local folders (i.e.
+ * My files, Play files or Linux files).
+ */
+testcase.enableDisableStorageSettingsLink = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN);
+
+  // Click the gear menu button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Check: volume space info should be disabled for Drive.
+  await remoteCall.waitForElement(appId, '#volume-space-info[disabled]');
+
+  // Navigate to Android files.
+  await remoteCall.waitAndClickElement(
+      appId, '#directory-tree [entry-label="Play files"]');
+
+  // Click the gear menu button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Check: volume space info should be enabled for Play files.
+  await remoteCall.waitForElement(appId, '#volume-space-info:not([disabled])');
+
+  // Mount empty USB volume.
+  await sendTestMessage({name: 'mountFakeUsbEmpty'});
+
+  // Wait for the USB mount.
+  await remoteCall.waitAndClickElement(
+      appId, '#directory-tree [volume-type-icon="removable"]');
+
+  // Click the gear menu button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Check: volume space info should be disabled for external volume.
+  await remoteCall.waitForElement(appId, '#volume-space-info[disabled]');
+};

@@ -871,6 +871,42 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
               Ne(base::nullopt));
 }
 
+// Test emulates remote update in custom passphrase mode, which contains
+// |encryption_keybag| encrypted with known key, but without this key inside
+// the |encryption_keybag|. This is a protocol violation and bridge should
+// return ModelError on such updates.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldFailOnCustomPassphraseUpdateWithMissingKeybagDecryptionKey) {
+  const KeyParams kOldKeyParams = Pbkdf2KeyParams("old_key");
+  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+
+  sync_pb::NigoriSpecifics specifics =
+      BuildCustomPassphraseNigoriSpecifics(kPassphraseKeyParams, kOldKeyParams);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = specifics;
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  bridge()->SetDecryptionPassphrase(kPassphraseKeyParams.password);
+
+  // Emulate |encryption_keybag| corruption: it will contain only key derived
+  // from |kOldKeyParams|, but will be encrypted with key derived from
+  // |kPassphraseKeyParams|.
+  std::unique_ptr<CryptographerImpl> passphrase_cryptographer =
+      CryptographerImpl::FromSingleKeyForTesting(
+          kPassphraseKeyParams.password,
+          kPassphraseKeyParams.derivation_params);
+  NigoriKeyBag old_key_key_bag = NigoriKeyBag::CreateEmpty();
+  old_key_key_bag.AddKey(Nigori::CreateByDerivation(
+      kOldKeyParams.derivation_params, kOldKeyParams.password));
+  ASSERT_TRUE(passphrase_cryptographer->Encrypt(
+      old_key_key_bag.ToProto(), specifics.mutable_encryption_keybag()));
+  EntityData corrupted_entity_data;
+  *entity_data.specifics.mutable_nigori() = specifics;
+
+  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(entity_data)),
+              Ne(base::nullopt));
+}
+
 TEST_F(NigoriSyncBridgeImplTest, ShouldClearDataWhenSyncDisabled) {
   const std::string kRawKeystoreKey = "raw_keystore_key";
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);

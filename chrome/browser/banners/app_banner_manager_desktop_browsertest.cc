@@ -11,10 +11,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -125,6 +127,7 @@ class AppBannerManagerDesktopBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        WebAppBannerResolvesUserChoice) {
+  base::HistogramTester tester;
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* manager =
@@ -153,6 +156,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   const base::string16 title = base::ASCIIToUTF16("Got userChoice: accepted");
   content::TitleWatcher watcher(web_contents, title);
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
+
+  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+                            blink::mojom::DisplayMode::kStandalone, 1);
 }
 
 // TODO(crbug.com/988292): Flakes on most platforms.
@@ -248,6 +254,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest, DestroyWebContents) {
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        InstallPromptAfterUserMenuInstall) {
+  base::HistogramTester tester;
+
   FakeAppBannerManagerDesktop* manager =
       FakeAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
@@ -256,8 +264,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     base::RunLoop run_loop;
     manager->PrepareDone(run_loop.QuitClosure());
 
-    ui_test_utils::NavigateToURL(browser(),
-                                 GetBannerURLWithAction("stash_event"));
+    ui_test_utils::NavigateToURL(
+        browser(), GetBannerURLWithManifestAndQuery("/banners/minimal-ui.json",
+                                                    "action", "stash_event"));
     run_loop.Run();
     EXPECT_EQ(State::PENDING_PROMPT, manager->state());
   }
@@ -269,10 +278,15 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
+
+  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+                            blink::mojom::DisplayMode::kMinimalUi, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        InstallPromptAfterUserOmniboxInstall) {
+  base::HistogramTester tester;
+
   FakeAppBannerManagerDesktop* manager =
       FakeAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
@@ -281,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     base::RunLoop run_loop;
     manager->PrepareDone(run_loop.QuitClosure());
 
-    ui_test_utils::NavigateToURL(browser(),
-                                 GetBannerURLWithAction("stash_event"));
+    ui_test_utils::NavigateToURL(
+        browser(), GetBannerURLWithManifestAndQuery("/banners/fullscreen.json",
+                                                    "action", "stash_event"));
     run_loop.Run();
     EXPECT_EQ(State::PENDING_PROMPT, manager->state());
   }
@@ -296,4 +311,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
+
+  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+                            blink::mojom::DisplayMode::kFullscreen, 1);
 }

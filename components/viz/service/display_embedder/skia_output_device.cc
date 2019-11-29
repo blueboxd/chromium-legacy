@@ -18,7 +18,8 @@ SkiaOutputDevice::SkiaOutputDevice(
     bool need_swap_semaphore,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : need_swap_semaphore_(need_swap_semaphore),
-      did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback) {}
+      did_swap_buffer_complete_callback_(
+          std::move(did_swap_buffer_complete_callback)) {}
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
@@ -27,9 +28,6 @@ void SkiaOutputDevice::PostSubBuffer(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
   NOTREACHED();
-  StartSwapBuffers(std::move(feedback));
-  FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED, gfx::Size(),
-                    std::move(latency_info));
 }
 
 void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
@@ -48,8 +46,7 @@ void SkiaOutputDevice::ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) {
 }
 #endif
 
-void SkiaOutputDevice::StartSwapBuffers(
-    base::Optional<BufferPresentedCallback> feedback) {
+void SkiaOutputDevice::StartSwapBuffers(BufferPresentedCallback feedback) {
   DCHECK_LT(static_cast<int>(pending_swaps_.size()),
             capabilities_.max_frames_pending);
 
@@ -95,7 +92,7 @@ std::unique_ptr<gfx::GpuFence> SkiaOutputDevice::SubmitOverlayGpuFence() {
 
 SkiaOutputDevice::SwapInfo::SwapInfo(
     uint64_t swap_id,
-    base::Optional<SkiaOutputDevice::BufferPresentedCallback> feedback)
+    SkiaOutputDevice::BufferPresentedCallback feedback)
     : feedback_(std::move(feedback)) {
   params_.swap_response.swap_id = swap_id;
   params_.swap_response.timings.swap_start = base::TimeTicks::Now();
@@ -115,13 +112,13 @@ const gpu::SwapBuffersCompleteParams& SkiaOutputDevice::SwapInfo::Complete(
 
 void SkiaOutputDevice::SwapInfo::CallFeedback() {
   if (feedback_) {
-    std::move(*feedback_)
-        .Run(gfx::PresentationFeedback(
-            params_.swap_response.timings.swap_start,
-            base::TimeDelta() /* interval */,
-            params_.swap_response.result == gfx::SwapResult::SWAP_ACK
-                ? 0
-                : gfx::PresentationFeedback::Flags::kFailure));
+    uint32_t flags = 0;
+    if (params_.swap_response.result != gfx::SwapResult::SWAP_ACK)
+      flags = gfx::PresentationFeedback::Flags::kFailure;
+
+    std::move(feedback_).Run(
+        gfx::PresentationFeedback(params_.swap_response.timings.swap_start,
+                                  /*interval=*/base::TimeDelta(), flags));
   }
 }
 

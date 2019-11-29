@@ -631,9 +631,9 @@ bool SpatialNavigationController::UpdateIsFormFocused(Element* element) {
 
 bool SpatialNavigationController::UpdateHasDefaultVideoControls(
     Element* element) {
-  bool has_default_video_controls =
-      IsFocused(element) && IsHTMLVideoElement(element) &&
-      ToHTMLVideoElement(element)->ShouldShowControls();
+  auto* video_element = DynamicTo<HTMLVideoElement>(element);
+  bool has_default_video_controls = IsFocused(element) && video_element &&
+                                    video_element->ShouldShowControls();
   if (has_default_video_controls ==
       spatial_navigation_state_->has_default_video_controls) {
     return false;

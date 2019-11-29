@@ -269,7 +269,7 @@ TEST_F(SyncPrefsTest, Basic) {
 }
 
 TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
-  EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+  ASSERT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
@@ -279,6 +279,16 @@ TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
         /*selected_types=*/{type});
     EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
   }
+}
+
+TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSyncedButPolicyRestricted) {
+  ASSERT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+  pref_service_.SetManagedPref(prefs::kSyncPreferences,
+                               std::make_unique<base::Value>(false));
+
+  UserSelectableTypeSet expected_type_set = UserSelectableTypeSet::All();
+  expected_type_set.Remove(UserSelectableType::kPreferences);
+  EXPECT_EQ(expected_type_set, sync_prefs_->GetSelectedTypes());
 }
 
 TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
@@ -294,6 +304,27 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
         /*registered_types=*/UserSelectableTypeSet::All(),
         /*selected_types=*/{type});
     EXPECT_EQ(UserSelectableTypeSet{type}, sync_prefs_->GetSelectedTypes());
+  }
+}
+
+TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSyncedAndPolicyRestricted) {
+  pref_service_.SetManagedPref(prefs::kSyncPreferences,
+                               std::make_unique<base::Value>(false));
+  sync_prefs_->SetSelectedTypes(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet());
+
+  ASSERT_FALSE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kPreferences));
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    sync_prefs_->SetSelectedTypes(
+        /*keep_everything_synced=*/false,
+        /*registered_types=*/UserSelectableTypeSet::All(),
+        /*selected_types=*/{type});
+    UserSelectableTypeSet expected_type_set = UserSelectableTypeSet{type};
+    expected_type_set.Remove(UserSelectableType::kPreferences);
+    EXPECT_EQ(expected_type_set, sync_prefs_->GetSelectedTypes());
   }
 }
 

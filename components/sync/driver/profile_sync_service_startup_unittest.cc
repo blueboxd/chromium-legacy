@@ -414,7 +414,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   pref_service()->ClearPref(prefs::kSyncKeepEverythingSynced);
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    pref_service()->ClearPref(SyncPrefs::GetPrefNameForTypeForTesting(type));
+    pref_service()->ClearPref(SyncPrefs::GetPrefNameForType(type));
   }
 
   sync_prefs()->SetFirstSetupComplete();

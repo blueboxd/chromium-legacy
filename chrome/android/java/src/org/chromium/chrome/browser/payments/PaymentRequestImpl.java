@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.Overv
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
@@ -113,7 +114,8 @@ public class PaymentRequestImpl
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
-                   PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker {
+                   PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker,
+                   PaymentHandlerUiObserver {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -144,6 +146,64 @@ public class PaymentRequestImpl
          * be true in tests.
          */
         boolean skipUiForBasicCard();
+    }
+
+    /**
+     * This class is to coordinate the show state of the Payment Handler UI and the Payment
+     * Request UI so that these visibility rules are enforced:
+     * 1. at most one UI is shown at any moment in case the Payment Request UI obstructs the Payment
+     * Handler UI.
+     * 2. Payment Handler UI is prioritized to show over Payment Request UI
+     */
+    public class PaymentUisShowStateReconciler {
+        // Whether the Payment Handler UI is showing.
+        private boolean mShowingHandlerUi;
+        // Whether to show the Payment Request UI when the Payment Handler is not being shown.
+        private boolean mShouldShowDialog;
+
+        /**
+         * Show the Payment Request UI dialog when Payment Handler UI is hidden, i.e., if Payment
+         * Handler UI is hidden, show the dialog immediately; otherwise, do it on Payment Handler UI
+         * hidden.
+         */
+        public void showPaymentRequestDialogWhenNoPaymentHandlerUi() {
+            mShouldShowDialog = true;
+            updatePaymentRequestDialogShowState();
+        }
+
+        /** Hide the Payment Request UI dialog. */
+        public void hidePaymentRequestDialog() {
+            mShouldShowDialog = false;
+            updatePaymentRequestDialogShowState();
+        }
+
+        /** A callback invoked when the Payment Request UI is closed. */
+        /* package */ void onPaymentRequestUiClosed() {
+            assert mUI == null;
+            mShouldShowDialog = false;
+        }
+
+        /**
+         * A callback invoked when the Payment Handler UI is shown, to enforce the visibility rules.
+         */
+        public void onPaymentHandlerUiShown() {
+            mShowingHandlerUi = true;
+            updatePaymentRequestDialogShowState();
+        }
+
+        /**
+         * A callback invoked when the Payment Handler UI is hidden, to enforce the visibility
+         * rules.
+         */
+        public void onPaymentHandlerUiClosed() {
+            mShowingHandlerUi = false;
+            updatePaymentRequestDialogShowState();
+        }
+
+        private void updatePaymentRequestDialogShowState() {
+            if (mUI == null) return;
+            mUI.setVisible(!mShowingHandlerUi && mShouldShowDialog);
+        }
     }
 
     /**
@@ -227,6 +287,7 @@ public class PaymentRequestImpl
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
+        void onCompleteCalled();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -423,6 +484,7 @@ public class PaymentRequestImpl
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentInstrument mInvokedPaymentInstrument;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
+    private PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
     private boolean mUserCanAddCreditCard;
     private boolean mHideServerAutofillInstruments;
@@ -544,6 +606,8 @@ public class PaymentRequestImpl
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
+
+        mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
     }
 
     /**
@@ -797,7 +861,7 @@ public class PaymentRequestImpl
         mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillPaymentInstruments,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
-                new ShippingStrings(mShippingType));
+                new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler);
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
@@ -1314,7 +1378,18 @@ public class PaymentRequestImpl
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
-        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito);
+        return mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito, /*observer=*/this);
+    }
+
+    @Override
+    public void onPaymentHandlerUiClosed() {
+        mPaymentUisShowStateReconciler.onPaymentHandlerUiClosed();
+        mPaymentHandlerUi = null;
+    }
+
+    @Override
+    public void onPaymentHandlerUiShown() {
+        mPaymentUisShowStateReconciler.onPaymentHandlerUiShown();
     }
 
     @Override
@@ -2202,6 +2277,10 @@ public class PaymentRequestImpl
             return;
         }
 
+        if (mNativeObserverForTest != null) {
+            mNativeObserverForTest.onCompleteCalled();
+        }
+
         closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
     }
 
@@ -2845,6 +2924,7 @@ public class PaymentRequestImpl
                 closeClient();
             });
             mUI = null;
+            mPaymentUisShowStateReconciler.onPaymentRequestUiClosed();
         }
 
         setShowingPaymentRequest(null);

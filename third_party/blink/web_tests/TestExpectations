@@ -2702,6 +2702,9 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPr
 crbug.com/893480 external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure Timeout ]
 crbug.com/893480 virtual/threaded/external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure Timeout ]
 
+# Need to support 'direction: rtl' for scroll snap
+crbug.com/1012173 external/wpt/css/css-scroll-snap/snap-after-initial-layout/direction-rtl.html [ Failure ]
+crbug.com/1012173 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/direction-rtl.html [ Failure ]
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -2725,9 +2728,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 
 crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.html [ Failure Crash ]
 
-# Subgrid is not implemented yet
-crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
-
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
@@ -2746,9 +2746,6 @@ crbug.com/626703 [ Win ] external/wpt/quirks/percentage-height-quirk-excludes-fl
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-baseline-align-cycles-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-baseline-align-cycles-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-baseline-align-cycles-001.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
@@ -2783,10 +2780,6 @@ crbug.com/626703 external/wpt/streams/readable-byte-streams/construct-byob-reque
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
-
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
@@ -2831,9 +2824,6 @@ crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrol
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-005.html [ Failure ]
@@ -2843,9 +2833,6 @@ crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-001.htm
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-004.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-004.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-004.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-contain-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-004.html [ Failure ]
@@ -2855,9 +2842,6 @@ crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-003.html [ Fail
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-006.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-007.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-007.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-007.html [ Failure ]
@@ -2870,9 +2854,6 @@ crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-002.htm
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-009.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-009.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-009.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
@@ -3139,9 +3120,6 @@ crbug.com/626703 [ Win10 ] external/wpt/html/infrastructure/urls/resolving-urls/
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Failure Timeout Pass ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
 crbug.com/626703 [ Retina Mac ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-width-height.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ic-unit-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ic-unit-011.html [ Failure ]
@@ -4030,14 +4008,26 @@ crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
 
 # [css-grid]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
-crbug.com/511177 external/wpt/css/css-grid/grid-layout-properties.html [ Failure ]
-crbug.com/868380 external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-002.html [ Failure ]
+crbug.com/921722  external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
+crbug.com/921722  external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
+crbug.com/921722  external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
+crbug.com/941987  external/wpt/css/css-grid/alignment/grid-baseline-align-cycles-001.html [ Failure ]
+crbug.com/1005519 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-001.html [ Failure ]
+crbug.com/1005519 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Failure ]
+crbug.com/1005519 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Failure ]
+crbug.com/1005519 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Failure ]
+crbug.com/759665  external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
+crbug.com/759665  external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
+crbug.com/1018439 external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
+crbug.com/511177  external/wpt/css/css-grid/grid-layout-properties.html [ Failure ]
+crbug.com/868380  external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-002.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
+
+# Subgrid is not implemented yet
+crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # [css-logical]
 crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
@@ -5236,8 +5226,6 @@ crbug.com/931533 virtual/audio-service/media/video-played-collapse.html [ Pass F
 
 # Test was blocking WPT importer
 crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure Crash ]
-
-crbug.com/940829 external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Timeout Pass ]
 
 # Sheriff 2019-03-14
 crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]

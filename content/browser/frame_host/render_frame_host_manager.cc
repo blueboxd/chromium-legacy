@@ -54,7 +54,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -1386,7 +1385,6 @@ void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
 
 void RenderFrameHostManager::PrepareForInnerDelegateAttach(
     RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback) {
-  DCHECK(MimeHandlerViewMode::UsesCrossProcessFrame());
   CHECK(frame_tree_node_->parent());
   attach_inner_delegate_callback_ = std::move(callback);
   DCHECK_EQ(attach_to_inner_delegate_state_, AttachToInnerDelegateState::NONE);

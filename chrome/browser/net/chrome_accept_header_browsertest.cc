@@ -7,7 +7,6 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 
@@ -39,17 +38,12 @@ IN_PROC_BROWSER_TEST_F(ChromeAcceptHeaderTest, Check) {
   plugin_loop.Run();
   favicon_loop.Run();
 
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // With MimeHandlerViewInCrossProcessFrame, embedded PDF will go through the
-    // navigation code path and behaves similarly to PDF loaded inside <iframe>.
-    ASSERT_EQ(
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/"
-        "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        plugin_accept_header);
-  } else {
-    // This is for a sub-resource request.
-    ASSERT_EQ("*/*", plugin_accept_header);
-  }
+  // With MimeHandlerViewInCrossProcessFrame, embedded PDF will go through the
+  // navigation code path and behaves similarly to PDF loaded inside <iframe>.
+  ASSERT_EQ(
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/"
+      "webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+      plugin_accept_header);
 
   ASSERT_EQ("image/webp,image/apng,image/*,*/*;q=0.8", favicon_accept_header);
 

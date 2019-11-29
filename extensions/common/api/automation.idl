@@ -233,6 +233,7 @@
     revision,
     rootWebArea,
     row,
+    rowGroup,
     rowHeader,
     ruby,
     rubyAnnotation,

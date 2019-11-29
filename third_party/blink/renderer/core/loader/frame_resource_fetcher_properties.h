@@ -41,6 +41,7 @@ class CORE_EXPORT FrameResourceFetcherProperties final
   bool ShouldBlockLoadingSubResource() const override;
   bool IsSubframeDeprioritizationEnabled() const override;
   scheduler::FrameStatus GetFrameStatus() const override;
+  const KURL& WebBundlePhysicalUrl() const override;
 
  private:
   const Member<FrameOrImportedDocument> frame_or_imported_document_;

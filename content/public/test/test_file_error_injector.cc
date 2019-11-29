@@ -40,8 +40,8 @@ class DownloadFileWithError : public download::DownloadFileImpl {
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       const TestFileErrorInjector::FileErrorInfo& error_info,
-      const base::Closure& ctor_callback,
-      const base::Closure& dtor_callback);
+      base::OnceClosure ctor_callback,
+      base::OnceClosure dtor_callback);
 
   ~DownloadFileWithError() override;
 
@@ -92,7 +92,7 @@ class DownloadFileWithError : public download::DownloadFileImpl {
   std::map<TestFileErrorInjector::FileOperationCode, int> operation_counter_;
 
   // Callback for destruction.
-  base::Closure destruction_callback_;
+  base::OnceClosure destruction_callback_;
 };
 
 static void InitializeErrorCallback(
@@ -122,27 +122,28 @@ DownloadFileWithError::DownloadFileWithError(
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
-    const base::Closure& ctor_callback,
-    const base::Closure& dtor_callback)
+    base::OnceClosure ctor_callback,
+    base::OnceClosure dtor_callback)
     : download::DownloadFileImpl(std::move(save_info),
                                  default_download_directory,
                                  std::move(stream),
                                  download_id,
                                  observer),
       error_info_(error_info),
-      destruction_callback_(dtor_callback) {
+      destruction_callback_(std::move(dtor_callback)) {
   // DownloadFiles are created on the UI thread and are destroyed on the
   // download task runner. Schedule the ConstructionCallback on the
   // download task runner, so that if a download::DownloadItem schedules a
   // DownloadFile to be destroyed and creates another one (as happens during
   // download resumption), then the DestructionCallback for the old DownloadFile
   // is run before the ConstructionCallback for the next DownloadFile.
-  download::GetDownloadTaskRunner()->PostTask(FROM_HERE, ctor_callback);
+  download::GetDownloadTaskRunner()->PostTask(FROM_HERE,
+                                              std::move(ctor_callback));
 }
 
 DownloadFileWithError::~DownloadFileWithError() {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-  destruction_callback_.Run();
+  std::move(destruction_callback_).Run();
 }
 
 void DownloadFileWithError::Initialize(
@@ -301,8 +302,8 @@ download::DownloadInterruptReason DownloadFileWithError::ShouldReturnError(
 // A factory for constructing DownloadFiles that inject errors.
 class DownloadFileWithErrorFactory : public download::DownloadFileFactory {
  public:
-  DownloadFileWithErrorFactory(const base::Closure& ctor_callback,
-                                const base::Closure& dtor_callback);
+  DownloadFileWithErrorFactory(base::RepeatingClosure ctor_callback,
+                               base::RepeatingClosure dtor_callback);
   ~DownloadFileWithErrorFactory() override;
 
   // DownloadFileFactory interface.
@@ -319,16 +320,16 @@ class DownloadFileWithErrorFactory : public download::DownloadFileFactory {
   // Our injected error.
   TestFileErrorInjector::FileErrorInfo injected_error_;
 
-  // Callback for creation and destruction.
-  base::Closure construction_callback_;
-  base::Closure destruction_callback_;
+  // Callback for creation and destruction of a DownloadFile.
+  base::RepeatingClosure construction_callback_;
+  base::RepeatingClosure destruction_callback_;
 };
 
 DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
-    const base::Closure& ctor_callback,
-    const base::Closure& dtor_callback)
-    : construction_callback_(ctor_callback),
-      destruction_callback_(dtor_callback) {}
+    base::RepeatingClosure ctor_callback,
+    base::RepeatingClosure dtor_callback)
+    : construction_callback_(std::move(ctor_callback)),
+      destruction_callback_(std::move(dtor_callback)) {}
 
 DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 

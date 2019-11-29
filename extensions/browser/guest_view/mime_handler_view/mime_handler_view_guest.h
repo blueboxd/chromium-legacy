@@ -79,7 +79,6 @@ class MimeHandlerViewGuest
   static const char Type[];
 
   // BrowserPluginGuestDelegate overrides.
-  bool CanUseCrossProcessFrames() override;
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;

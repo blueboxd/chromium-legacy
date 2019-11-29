@@ -102,10 +102,15 @@ class SearchBox extends cr.EventTarget {
   }
 
   /**
-   * Handles a focus event of the search box.
+   * Handles a focus event of the search box <cr-input> element.
    * @private
    */
   onFocus_() {
+    // Early out if we closing the search cr-input: do not just go ahead and
+    // re-open it on focus, crbug.com/668427.
+    if (this.element.classList.contains('hide-pending')) {
+      return;
+    }
     this.element.classList.toggle('has-cursor', true);
     this.autocompleteList.attachToInput(this.inputElement);
     this.updateStyles_();
@@ -114,16 +119,33 @@ class SearchBox extends cr.EventTarget {
   }
 
   /**
-   * Handles a blur event of the search box.
+   * Handles a blur event of the search box <cr-input> element.
    * @private
    */
   onBlur_() {
     this.element.classList.toggle('has-cursor', false);
+    this.element.classList.toggle('hide-pending', true);
     this.autocompleteList.detach();
     this.updateStyles_();
     this.searchButtonToggleRipple_.activated = false;
-    // When input has any text we keep it displayed with current search.
-    this.inputElement.hidden = this.inputElement.value.length == 0;
+  }
+
+  /**
+   * Handles delayed hiding of the search box (until click).
+   * @param {Event} event
+   */
+  removeHidePending(event) {
+    if (this.element.classList.contains('hide-pending')) {
+      // If the search box was waiting to hide, but we clicked on it, don't.
+      if (event.target === this.inputElement) {
+        this.element.classList.toggle('hide-pending', false);
+        this.onFocus_();
+      } else {
+        // When input has any text we keep it displayed with current search.
+        this.inputElement.disabled = this.inputElement.value.length == 0;
+        this.element.classList.toggle('hide-pending', false);
+      }
+    }
   }
 
   /**
@@ -140,6 +162,8 @@ class SearchBox extends cr.EventTarget {
 
     this.inputElement.tabIndex = -1;  // Focus to default element after blur.
     this.inputElement.blur();
+    this.inputElement.disabled = this.inputElement.value.length == 0;
+    this.element.classList.toggle('hide-pending', false);
   }
 
   /**
@@ -183,7 +207,7 @@ class SearchBox extends cr.EventTarget {
    * @private
    */
   onSearchButtonClick_() {
-    this.inputElement.hidden = false;
+    this.inputElement.disabled = false;
     this.inputElement.focus();
   }
 

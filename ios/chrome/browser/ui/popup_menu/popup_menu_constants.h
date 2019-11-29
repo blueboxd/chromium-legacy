@@ -12,6 +12,8 @@ extern NSString* const kPopupMenuToolsMenuTableViewId;
 extern NSString* const kPopupMenuNavigationTableViewId;
 
 // Accessibility IDs for the Tools Menu items.
+// Downloads item accessibility Identifier.
+extern NSString* const kToolsMenuDownloadsId;
 // Reload item accessibility Identifier.
 extern NSString* const kToolsMenuReload;
 // Stop item accessibility Identifier.

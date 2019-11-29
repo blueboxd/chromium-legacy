@@ -121,4 +121,46 @@
         await remoteCall.waitForElement(appId, '#search-box [type="search"]');
     chrome.test.assertEq('', searchInput.value);
   };
+
+  /**
+   * Tests that the search text entry box stays expanded until the end of user
+   * interaction.
+   */
+  testcase.searchHidingTextEntryField = async () => {
+    const entry = ENTRIES.hello;
+
+    // Open Files app on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+    // Select an entry in the file list.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'selectFile', appId, [entry.nameText]));
+
+    // Focus the toolbar search button.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, ['#search-button', 'click']));
+
+    // Verify the toolbar search text entry box is enabled.
+    let textInputElement =
+        await remoteCall.waitForElement(appId, ['#search-box cr-input']);
+    chrome.test.assertEq('false', textInputElement.attributes['aria-disabled']);
+
+    // Send a 'mousedown' to the toolbar 'delete' button.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, ['#delete-button', 'mousedown']));
+
+    // Verify the toolbar search text entry is still enabled.
+    textInputElement =
+        await remoteCall.waitForElement(appId, ['#search-box cr-input']);
+    chrome.test.assertEq('false', textInputElement.attributes['aria-disabled']);
+
+    // Send a 'mouseup' to the toolbar 'delete' button.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, ['#delete-button', 'mouseup']));
+
+    // Verify the toolbar search text entry is still enabled.
+    textInputElement =
+        await remoteCall.waitForElement(appId, ['#search-box cr-input']);
+    chrome.test.assertEq('false', textInputElement.attributes['aria-disabled']);
+  };
 })();

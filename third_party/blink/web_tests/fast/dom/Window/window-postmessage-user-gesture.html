@@ -1,6 +1,8 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 </head>
 <body>
 <div id="description">Test that user gesture is kept when postMessage() to self or across frames.</div>
@@ -90,12 +92,7 @@ function clickHandler() {
 }
 
 function clickDiv() {
-    var div1 = document.getElementById("div1");
-    if (window.eventSender) {
-        eventSender.mouseMoveTo(div1.offsetLeft + 10, div1.offsetTop + 5);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-    }
+    test_driver.click(div1)
 }
 
 function startTest() {

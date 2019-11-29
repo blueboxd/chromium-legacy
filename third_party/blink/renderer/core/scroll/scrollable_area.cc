@@ -842,7 +842,8 @@ bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
-  return PerformSnapping(*strategy, std::move(on_finish));
+  return PerformSnapping(*strategy, kScrollBehaviorSmooth,
+                         std::move(on_finish));
 }
 
 bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
@@ -853,7 +854,8 @@ bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
       cc::SnapSelectionStrategy::CreateForDirection(
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()));
-  return PerformSnapping(*strategy, std::move(on_finish));
+  return PerformSnapping(*strategy, kScrollBehaviorSmooth,
+                         std::move(on_finish));
 }
 
 bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
@@ -866,7 +868,21 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
   return PerformSnapping(*strategy);
 }
 
+void ScrollableArea::SnapAfterLayout() {
+  const cc::SnapContainerData* container_data = GetSnapContainerData();
+  if (!container_data || !container_data->size())
+    return;
+
+  FloatPoint current_position = ScrollPosition();
+  std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+      cc::SnapSelectionStrategy::CreateForTargetElement(
+          gfx::ScrollOffset(current_position));
+
+  PerformSnapping(*strategy, kScrollBehaviorInstant);
+}
+
 bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
+                                     ScrollBehavior scroll_behavior,
                                      base::ScopedClosureRunner on_finish) {
   base::Optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
   if (!snap_point)
@@ -874,8 +890,7 @@ bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
   CancelScrollAnimation();
   CancelProgrammaticScrollAnimation();
   SetScrollOffset(ScrollPositionToOffset(snap_point.value()),
-                  kProgrammaticScroll, kScrollBehaviorSmooth,
-                  on_finish.Release());
+                  kProgrammaticScroll, scroll_behavior, on_finish.Release());
   return true;
 }
 

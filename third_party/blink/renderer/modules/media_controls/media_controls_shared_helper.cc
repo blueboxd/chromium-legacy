@@ -143,7 +143,7 @@ bool MediaControlsSharedHelpers::ShouldShowFullscreenButton(
   if (media_element.IsFullscreen())
     return true;
 
-  if (!media_element.IsHTMLVideoElement())
+  if (!IsA<HTMLVideoElement>(media_element))
     return false;
 
   if (!media_element.HasVideo())

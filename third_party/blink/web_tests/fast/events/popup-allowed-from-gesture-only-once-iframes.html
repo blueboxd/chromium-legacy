@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html> 
+<html>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
     <body>
         <p>
             Test that we don't create a new user gesture indicator every time
@@ -34,12 +36,7 @@
                 windowCount = testRunner.windowCount();
 
                 var frame = document.getElementById("iframe");
-
-                if (window.eventSender) {
-                    eventSender.mouseMoveTo(frame.offsetLeft + frame.offsetWidth / 2, frame.offsetTop + frame.offsetHeight / 2);
-                    eventSender.mouseDown();
-                    eventSender.mouseUp();
-                }
+                test_driver.click(frame)
             }
         </script>
     </body>

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments.handler;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.payments.SslValidityChecker;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -28,6 +29,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     // mWebContents (a weak ref) requires null checks, while mWebContentsRef is guaranteed to be not
     // null.
     private final WebContents mWebContentsRef;
+    private final PaymentHandlerUiObserver mPaymentHandlerUiObserver;
 
     /**
      * Build a new mediator that handle events from outside the payment handler component.
@@ -36,14 +38,16 @@ import org.chromium.ui.modelutil.PropertyModel;
      * @param hider The callback to clean up {@link PaymentHandlerCoordinator} when the sheet is
      *         hidden.
      * @param webContents The web-contents that loads the payment app.
+     * @param observer The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
      */
-    /* package */ PaymentHandlerMediator(
-            PropertyModel model, Runnable hider, WebContents webContents) {
+    /* package */ PaymentHandlerMediator(PropertyModel model, Runnable hider,
+            WebContents webContents, PaymentHandlerUiObserver observer) {
         super(webContents);
         assert webContents != null;
         mWebContentsRef = webContents;
         mModel = model;
         mHider = hider;
+        mPaymentHandlerUiObserver = observer;
     }
 
     // BottomSheetObserver:
@@ -63,7 +67,9 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     @Override
-    public void onSheetOpened(@StateChangeReason int reason) {}
+    public void onSheetOpened(@StateChangeReason int reason) {
+        mPaymentHandlerUiObserver.onPaymentHandlerUiShown();
+    }
 
     @Override
     public void onSheetClosed(@StateChangeReason int reason) {

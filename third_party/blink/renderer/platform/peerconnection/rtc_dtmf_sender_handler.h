@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/dtmf_sender_interface.h"
@@ -32,10 +34,12 @@ namespace blink {
 // occur on the main render thread.
 class PLATFORM_EXPORT RtcDtmfSenderHandler final {
  public:
-  class PLATFORM_EXPORT Client {
+  class PLATFORM_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() = default;
     virtual void DidPlayTone(const String& tone) = 0;
+
+    void Trace(blink::Visitor* visitor) override {}
   };
 
   RtcDtmfSenderHandler(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
@@ -51,7 +55,7 @@ class PLATFORM_EXPORT RtcDtmfSenderHandler final {
 
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;
-  RtcDtmfSenderHandler::Client* webkit_client_;
+  WeakPersistent<RtcDtmfSenderHandler::Client> webkit_client_;
   class Observer;
   scoped_refptr<Observer> observer_;
 

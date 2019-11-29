@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
 <body>
 <p>
     Check that the NavigationScheduler correctly tracks user gestures.
@@ -33,11 +35,7 @@
     var button = document.querySelector('button');
     button.onclick = popup;
 
-    if (window.testRunner) {
-        eventSender.mouseMoveTo(button.offsetLeft + 2, button.offsetTop + 2);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-    }
+    test_driver.click(button)
 </script>
 </body>
 </html>

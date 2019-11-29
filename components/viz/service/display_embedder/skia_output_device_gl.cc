@@ -32,16 +32,17 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     gpu::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(false /*need_swap_semaphore */,
-                       did_swap_buffer_complete_callback),
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
+    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
+                       std::move(did_swap_buffer_complete_callback)),
       mailbox_manager_(mailbox_manager),
       gl_surface_(std::move(gl_surface)) {
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
-          .disable_post_sub_buffers_for_onscreen_surfaces)
+          .disable_post_sub_buffers_for_onscreen_surfaces) {
     capabilities_.supports_post_sub_buffer = false;
+  }
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
   capabilities_.supports_gpu_vsync = gl_surface_->SupportsGpuVSync();
   capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
@@ -52,8 +53,12 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   // only update this for Android.
   // This output device is never offscreen.
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
+  if (gl_surface_->SupportsSwapTimestamps())
+    gl_surface_->SetEnableSwapTimestamps();
 #endif
 }
+
+SkiaOutputDeviceGL::~SkiaOutputDeviceGL() = default;
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
                                     gl::GLContext* gl_context) {
@@ -79,8 +84,6 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   CHECK_GL_ERROR();
   supports_alpha_ = alpha_bits > 0;
 }
-
-SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {}
 
 bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,

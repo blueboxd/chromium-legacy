@@ -811,7 +811,7 @@ EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
 // frame matches.
 RenderFrameHost* FrameMatchingPredicate(
     WebContents* web_contents,
-    const base::Callback<bool(RenderFrameHost*)>& predicate);
+    base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
 
 // Predicates for use with FrameMatchingPredicate.
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);

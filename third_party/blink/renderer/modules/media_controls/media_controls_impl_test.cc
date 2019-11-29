@@ -176,8 +176,7 @@ class MediaControlsImplTest : public PageTestBase,
                          MakeGarbageCollected<StubLocalFrameClientForImpl>());
 
     GetDocument().write("<video controls>");
-    HTMLVideoElement& video =
-        ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
+    auto& video = To<HTMLVideoElement>(*GetDocument().QuerySelector("video"));
     media_controls_ = static_cast<MediaControlsImpl*>(video.GetMediaControls());
 
     // Scripts are disabled by default which forces controls to be on.
@@ -1118,8 +1117,8 @@ TEST_F(MediaControlsImplTest,
   page_holder->GetDocument().write("<video controls>");
   page_holder->GetDocument().Parser()->Finish();
 
-  HTMLVideoElement& video =
-      ToHTMLVideoElement(*page_holder->GetDocument().QuerySelector("video"));
+  auto& video =
+      To<HTMLVideoElement>(*page_holder->GetDocument().QuerySelector("video"));
   WeakPersistent<HTMLMediaElement> weak_persistent_video = &video;
   video.remove();
 

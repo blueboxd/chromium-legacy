@@ -20,6 +20,19 @@ class LocationLine extends cr.EventTarget {
     this.listContainer_ = listContainer;
     this.entry_ = null;
     this.components_ = [];
+
+    /** @private {?FilesTooltip} */
+    this.filesTooltip_ = null;
+  }
+
+  /**
+   * @param {?FilesTooltip} filesTooltip
+   * */
+  set filesTooltip(filesTooltip) {
+    this.filesTooltip_ = filesTooltip;
+
+    this.filesTooltip_.addTargets(
+        this.breadcrumbs_.querySelectorAll('[has-tooltip]'));
   }
 
   /**
@@ -184,10 +197,17 @@ class LocationLine extends cr.EventTarget {
       button.id = 'breadcrumb-path-' + i;
       button.classList.add(
           'breadcrumb-path', 'entry-name', 'imitate-paper-button');
+      button.setAttribute('aria-label', component.name);
+      button.setAttribute('has-tooltip', '');
+      if (this.filesTooltip_) {
+        this.filesTooltip_.addTarget(button);
+      }
+
       const nameElement = document.createElement('div');
       nameElement.classList.add('name');
       nameElement.textContent = component.name;
       button.appendChild(nameElement);
+
       button.addEventListener('click', this.onClick_.bind(this, i));
       newBreadcrumbs.appendChild(button);
 

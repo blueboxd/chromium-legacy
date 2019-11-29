@@ -162,6 +162,72 @@ remains intact.
 wait a few releases (if possible) and then drop support for them. Make sure you
 put the deprecated flag if you deprecate a policy.
 
+### Presubmit Checks when Modifying Existing Policies
+
+To enforce the above rules concerning policy modification and ensure no
+backwards incompatible changes are introduced, there will be presubmit checks
+performed on every change to policy_templates.json.
+
+The presubmit checks perform the following verifications:
+
+1.  It verifies if a policy is considered **un-released** before allowing a
+    change. A policy is considered un-released if **any** of the following
+    conditions are true:
+
+    1.  Is the unchanged policy marked as “future: true”.
+    2.  All the supported_versions of the policy satisfy **any** of the
+        following conditions
+        1.  The unchanged supported major version is >= the current major
+            version stored in the VERSION file at tip of tree. This covers the
+            case of a policy that was just recently been added but has not yet
+            been released to a stable branch.
+        2.  The changed supported version == unchanged supported version + 1 and
+            the changed supported version is equal to the version stored in the
+            VERSION file at tip of tree. This check covers the case of
+            “un-releasing” a policy after a new stable branch has been cut but
+            before a new stable release has rolled out. Normally such a change
+            should eventually be merged into the stable branch before the
+            release.
+
+2.  If the policy is considered **un-released**, all changes to it are allowed.
+
+3.  However if the policy is not un-released then the following verifications
+    are performed on the delta between the original policy and the changed
+    policy.
+
+    1.  Released policies cannot be removed.
+    2.  Released policies cannot have their type changed (e.g. from bool ->
+        Enum).
+    3.  Released policies cannot have the “future: true” flag added to it. This
+        flag can only be set on a new policy.
+    4.  Released policies can only add additional supported_on versions. They
+        cannot remove or modify existing values for this field except for the
+        special case above for determining if a policy is released. Policy
+        support end version (adding “-xx”) can however be added to the
+        supported_on version to specify that a policy will no longer be
+        supported going forward (as long as the initial supported_on version is
+        not changed).
+    5.  Released policies cannot be renamed (this is the equivalent of a
+        delete + add). 1
+    6.  Released policies cannot change their device_only flag. This flag can
+        only be set on a new policy.
+    7.  Released policies with non dict types cannot have their schema changed.
+        1.  For enum types this means values cannot be renamed or removed (these
+            should be marked as deprecated instead).
+        2.  For int types, we will allow making the minimum and maximum values
+            less restrictive than the existing values.
+        3.  For string types, we will allow the removal of the ‘pattern’
+            property to allow the validation to be less restrictive.
+        4.  We will allow addition to any list type values only at the end of
+            the list of values and not in the middle or at the beginning (this
+            restriction will cover the list of valid enum values as well).
+        5.  These same restrictions will apply recursively to all property
+            schema definitions listed in a dictionary type policy.
+    8.  Released dict policies cannot remove and modify any existing key in
+        their schema. They can only add new keys to the schema.
+        1.  Dictionary policies can have some of their ‘required’ fields removed
+            in order to be less restrictive.
+
 ## Updating Policy List in this Wiki
 
 Steps for updating the policy list on

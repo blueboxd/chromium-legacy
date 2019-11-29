@@ -26,8 +26,9 @@ class WatcherManager {
  public:
   enum ChangeType { CHANGED, DELETED };
 
-  using StatusCallback = base::Callback<void(base::File::Error result)>;
-  using NotificationCallback = base::Callback<void(ChangeType change_type)>;
+  using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
+  using NotificationCallback =
+      base::RepeatingCallback<void(ChangeType change_type)>;
 
   virtual ~WatcherManager() {}
 
@@ -42,16 +43,15 @@ class WatcherManager {
   // In case of a success |callback| must be called with the FILE_OK error code.
   // |notification_callback| is called for every change related to the watched
   // directory.
-  virtual void AddWatcher(
-      const FileSystemURL& url,
-      bool recursive,
-      const StatusCallback& callback,
-      const NotificationCallback& notification_callback) = 0;
+  virtual void AddWatcher(const FileSystemURL& url,
+                          bool recursive,
+                          StatusCallback callback,
+                          NotificationCallback notification_callback) = 0;
 
   // Removes a watcher represented by |url| in |recursive| mode.
   virtual void RemoveWatcher(const FileSystemURL& url,
                              bool recursive,
-                             const StatusCallback& callback) = 0;
+                             StatusCallback callback) = 0;
 };
 
 }  // namespace storage

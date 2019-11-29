@@ -957,8 +957,8 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
 }
 
 void PushMessagingServiceImpl::SetServiceWorkerUnregisteredCallbackForTesting(
-    const base::Closure& callback) {
-  service_worker_unregistered_callback_for_testing_ = callback;
+    base::RepeatingClosure callback) {
+  service_worker_unregistered_callback_for_testing_ = std::move(callback);
 }
 
 // DidDeleteServiceWorkerDatabase methods --------------------------------------
@@ -987,8 +987,8 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerDatabase() {
 }
 
 void PushMessagingServiceImpl::SetServiceWorkerDatabaseWipedCallbackForTesting(
-    const base::Closure& callback) {
-  service_worker_database_wiped_callback_for_testing_ = callback;
+    base::RepeatingClosure callback) {
+  service_worker_database_wiped_callback_for_testing_ = std::move(callback);
 }
 
 // OnContentSettingChanged methods ---------------------------------------------
@@ -1004,7 +1004,7 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
   std::vector<PushMessagingAppIdentifier> all_app_identifiers =
       PushMessagingAppIdentifier::GetAll(profile_);
 
-  base::Closure barrier_closure = base::BarrierClosure(
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
       all_app_identifiers.size(),
       content_setting_changed_callback_for_testing_.is_null()
           ? base::DoNothing()
@@ -1036,17 +1036,17 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
       GetSenderId(
           profile_, app_identifier.origin(),
           app_identifier.service_worker_registration_id(),
-          base::Bind(
+          base::BindOnce(
               &PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked,
               weak_factory_.GetWeakPtr(), app_identifier,
-              base::Bind(&UnregisterCallbackToClosure, barrier_closure)));
+              base::BindOnce(&UnregisterCallbackToClosure, barrier_closure)));
     } else {
       UnsubscribeInternal(
           blink::mojom::PushUnregistrationReason::PERMISSION_REVOKED,
           app_identifier.origin(),
           app_identifier.service_worker_registration_id(),
           app_identifier.app_id(), std::string() /* sender_id */,
-          base::Bind(&UnregisterCallbackToClosure, barrier_closure));
+          base::BindOnce(&UnregisterCallbackToClosure, barrier_closure));
     }
   }
 }
@@ -1071,8 +1071,8 @@ void PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked(
 }
 
 void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
-    const base::Closure& callback) {
-  content_setting_changed_callback_for_testing_ = callback;
+    base::RepeatingClosure callback) {
+  content_setting_changed_callback_for_testing_ = std::move(callback);
 }
 
 // KeyedService methods -------------------------------------------------------

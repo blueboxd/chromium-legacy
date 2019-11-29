@@ -70,11 +70,11 @@ namespace download {
 namespace {
 
 void DeleteDownloadedFileDone(base::WeakPtr<DownloadItemImpl> item,
-                              const base::Callback<void(bool)>& callback,
+                              base::OnceCallback<void(bool)> callback,
                               bool success) {
   if (success && item.get())
     item->OnDownloadedFileRemoved();
-  callback.Run(success);
+  std::move(callback).Run(success);
 }
 
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
@@ -916,29 +916,29 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
   return file_externally_removed_;
 }
 
-void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
+void DownloadItemImpl::DeleteFile(base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (GetState() != DownloadItem::COMPLETE) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DeleteDownloadedFileDone,
-                       base::WeakPtr<DownloadItemImpl>(), callback, false));
+        FROM_HERE, base::BindOnce(&DeleteDownloadedFileDone,
+                                  base::WeakPtr<DownloadItemImpl>(),
+                                  std::move(callback), false));
     return;
   }
   if (GetFullPath().empty() || file_externally_removed_) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DeleteDownloadedFileDone,
-                       base::WeakPtr<DownloadItemImpl>(), callback, true));
+        FROM_HERE, base::BindOnce(&DeleteDownloadedFileDone,
+                                  base::WeakPtr<DownloadItemImpl>(),
+                                  std::move(callback), true));
     return;
   }
   base::PostTaskAndReplyWithResult(
       GetDownloadTaskRunner().get(), FROM_HERE,
-      base::Bind(&DeleteDownloadedFile, GetFullPath()),
-      base::Bind(&DeleteDownloadedFileDone, weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      base::BindOnce(&DeleteDownloadedFile, GetFullPath()),
+      base::BindOnce(&DeleteDownloadedFileDone, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 DownloadFile* DownloadItemImpl::GetDownloadFile() {

@@ -184,6 +184,7 @@ void RTCDTMFSender::ContextDestroyed(ExecutionContext*) {
 
 void RTCDTMFSender::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
+  RtcDtmfSenderHandler::Client::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 

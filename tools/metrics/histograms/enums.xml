@@ -18845,6 +18845,8 @@ Called by update_net_error_codes.py.-->
       label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
   <int value="647" label="PrinterTypeDenyList"/>
   <int value="648" label="ForceLegacyDefaultReferrerPolicy"/>
+  <int value="649" label="DisabledSyncTypesList"/>
+  <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

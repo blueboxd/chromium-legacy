@@ -14,7 +14,6 @@ namespace guest_view {
 IframeGuestViewContainer::IframeGuestViewContainer(
     content::RenderFrame* render_frame)
     : GuestViewContainer(render_frame) {
-  CHECK(base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
   // There is no BrowserPluginDelegate to wait for.
   ready_ = true;
 }

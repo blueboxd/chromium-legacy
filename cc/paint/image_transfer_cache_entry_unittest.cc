@@ -204,6 +204,7 @@ class ImageTransferCacheEntryTest
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLContext> gl_context_;
   sk_sp<GrContext> gr_context_;
+  gl::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
 TEST_P(ImageTransferCacheEntryTest, Deserialize) {

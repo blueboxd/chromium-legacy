@@ -1,7 +1,9 @@
-<html> 
+<html>
     <head>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
+        <script src="../../resources/testdriver.js"></script>
+        <script src="../../resources/testdriver-vendor.js"></script>
     </head>
     <body>
         <button id="button1" onclick="testButton1()">Click Here</button>
@@ -20,12 +22,16 @@
 
             function testButton1() {
                 document.getElementById("test").click();
+                ++testNum;
+                closeWindowAndRunNextTest();
             }
 
             function testButton2() {
                 var clickEvent = document.createEvent("MouseEvents");
                 clickEvent.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                 document.getElementById("test").dispatchEvent(clickEvent);
+                ++testNum;
+                closeWindowAndRunNextTest();
             }
 
             function closeWindowAndRunNextTest() {
@@ -47,23 +53,15 @@
             function nextTest() {
                 if (testNum == 0) {
                   test(() => {
-                    var button1 = document.getElementById("button1");
-                    eventSender.mouseMoveTo(button1.offsetLeft + button1.offsetWidth / 2, button1.offsetTop + button1.offsetHeight / 2);
-                    eventSender.mouseDown();
-                    eventSender.mouseUp();
+                    test_driver.click(button1);
                   }, 'Click button1');
                 } else if (testNum == 1) {
                   test(() => {
-                    var button2 = document.getElementById("button2");
-                    eventSender.mouseMoveTo(button2.offsetLeft + button2.offsetWidth / 2, button2.offsetTop + button2.offsetHeight / 2);
-                    eventSender.mouseDown();
-                    eventSender.mouseUp();
+                    test_driver.click(button2);
                   }, 'Click button2');
                 } else {
                     done();
                 }
-                ++testNum;
-                closeWindowAndRunNextTest();
             }
 
             if (window.testRunner) {
@@ -73,6 +71,6 @@
 
                 nextTest();
             }
-        </script> 
-    </body> 
+        </script>
+    </body>
 </html>

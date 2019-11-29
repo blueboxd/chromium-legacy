@@ -4,13 +4,8 @@
 
 #include "chrome/browser/guest_view/chrome_guest_view_manager_delegate.h"
 
-#include "base/feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
-#include "components/guest_view/browser/guest_view_base.h"
-#include "content/public/browser/guest_mode.h"
-#include "content/public/common/content_features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/app_session.h"
@@ -43,38 +38,6 @@ void ChromeGuestViewManagerDelegate::OnGuestAdded(
   if (app_session)
     app_session->OnGuestAdded(guest_web_contents);
 #endif
-
-  RegisterSyntheticFieldTrial(guest_web_contents);
-}
-
-void ChromeGuestViewManagerDelegate::RegisterSyntheticFieldTrial(
-    content::WebContents* guest_web_contents) const {
-  if (!guest_view::GuestViewBase::FromWebContents(guest_web_contents)
-           ->CanUseCrossProcessFrames()) {
-    return;
-  }
-
-  if (content::GuestMode::IsCrossProcessFrameGuest(guest_web_contents)) {
-    if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-            ::features::kGuestViewCrossProcessFrames.name,
-            base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "CrossProcessFramesGuestActive", "ForceEnabled");
-    } else {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "CrossProcessFramesGuestActive", "Enabled");
-    }
-  } else {
-    if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-            ::features::kGuestViewCrossProcessFrames.name,
-            base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "CrossProcessFramesGuestActive", "ForceDisabled");
-    } else {
-      ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-          "CrossProcessFramesGuestActive", "Disabled");
-    }
-  }
 }
 
 }  // namespace extensions

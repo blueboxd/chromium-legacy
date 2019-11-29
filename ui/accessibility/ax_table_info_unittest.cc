@@ -21,6 +21,11 @@ void MakeTable(AXNodeData* table, int id, int row_count, int col_count) {
   table->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, col_count);
 }
 
+void MakeRowGroup(AXNodeData* row_group, int id) {
+  row_group->id = id;
+  row_group->role = ax::mojom::Role::kRowGroup;
+}
+
 void MakeRow(AXNodeData* row, int id, int row_index) {
   row->id = id;
   row->role = ax::mojom::Role::kRow;
@@ -91,20 +96,25 @@ class AXTableInfoTest : public testing::Test {
 
 TEST_F(AXTableInfoTest, SimpleTable) {
   // Simple 2 x 2 table with 2 column headers in first row, 2 cells in second
-  // row.
+  // row. The first row is parented by a rowgroup.
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
-  initial_state.nodes.resize(7);
+  initial_state.nodes.resize(8);
   MakeTable(&initial_state.nodes[0], 1, 0, 0);
-  initial_state.nodes[0].child_ids = {2, 3};
-  MakeRow(&initial_state.nodes[1], 2, 0);
-  initial_state.nodes[1].child_ids = {4, 5};
-  MakeRow(&initial_state.nodes[2], 3, 1);
-  initial_state.nodes[2].child_ids = {6, 7};
-  MakeColumnHeader(&initial_state.nodes[3], 4, 0, 0);
-  MakeColumnHeader(&initial_state.nodes[4], 5, 0, 1);
-  MakeCell(&initial_state.nodes[5], 6, 1, 0);
-  MakeCell(&initial_state.nodes[6], 7, 1, 1);
+  initial_state.nodes[0].child_ids = {888, 3};
+
+  MakeRowGroup(&initial_state.nodes[1], 888);
+  initial_state.nodes[1].child_ids = {2};
+
+  MakeRow(&initial_state.nodes[2], 2, 0);
+  initial_state.nodes[2].child_ids = {4, 5};
+
+  MakeRow(&initial_state.nodes[3], 3, 1);
+  initial_state.nodes[3].child_ids = {6, 7};
+  MakeColumnHeader(&initial_state.nodes[4], 4, 0, 0);
+  MakeColumnHeader(&initial_state.nodes[5], 5, 0, 1);
+  MakeCell(&initial_state.nodes[6], 6, 1, 0);
+  MakeCell(&initial_state.nodes[7], 7, 1, 1);
   AXTree tree(initial_state);
 
   //

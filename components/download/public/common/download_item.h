@@ -389,7 +389,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // GetFileExternallyRemoved() was already true. The callback will be passed
   // false if the DownloadItem was not yet complete or if the file could not be
   // deleted for any reason.
-  virtual void DeleteFile(const base::Callback<void(bool)>& callback) = 0;
+  virtual void DeleteFile(base::OnceCallback<void(bool)> callback) = 0;
 
   // True if the file that will be written by the download is dangerous
   // and we will require a call to ValidateDangerousDownload() to complete.

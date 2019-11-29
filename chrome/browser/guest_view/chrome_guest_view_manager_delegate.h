@@ -24,9 +24,6 @@ class ChromeGuestViewManagerDelegate
   void OnGuestAdded(content::WebContents* guest_web_contents) const override;
 
  private:
-  void RegisterSyntheticFieldTrial(
-      content::WebContents* guest_web_contents) const;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeGuestViewManagerDelegate);
 };
 

@@ -2628,6 +2628,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_DOCUMENT_WEB;
     case ax::mojom::Role::kRow:
       return ATK_ROLE_TABLE_ROW;
+    case ax::mojom::Role::kRowGroup:
+      return ATK_ROLE_PANEL;
     case ax::mojom::Role::kRowHeader:
       return ATK_ROLE_ROW_HEADER;
     case ax::mojom::Role::kRuby:

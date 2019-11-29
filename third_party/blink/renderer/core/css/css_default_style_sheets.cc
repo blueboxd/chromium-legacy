@@ -225,7 +225,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   }
 
   if (!media_controls_style_sheet_ && HasMediaControlsStyleSheetLoader() &&
-      (IsHTMLVideoElement(element) || IsA<HTMLAudioElement>(element))) {
+      (IsA<HTMLVideoElement>(element) || IsA<HTMLAudioElement>(element))) {
     // FIXME: We should assert that this sheet only contains rules for <video>
     // and <audio>.
     media_controls_style_sheet_ =
@@ -238,7 +238,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     changed_default_style = true;
   }
 
-  if (!text_track_style_sheet_ && IsHTMLVideoElement(element)) {
+  if (!text_track_style_sheet_ && IsA<HTMLVideoElement>(element)) {
     Settings* settings = element.GetDocument().GetSettings();
     if (settings) {
       StringBuilder builder;

@@ -413,9 +413,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // from the inspected webcontents, see InterceptPageBeforeUnload for details.
   bool intercepted_page_beforeunload_;
   base::Closure load_completed_callback_;
-  base::Closure close_callback_;
+  base::OnceClosure close_callback_;
   bool ready_for_test_;
-  base::Closure ready_for_test_callback_;
+  base::OnceClosure ready_for_test_callback_;
 
   base::TimeTicks inspect_element_start_time_;
   std::unique_ptr<DevToolsEventForwarder> event_forwarder_;

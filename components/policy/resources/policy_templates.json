@@ -2980,6 +2980,27 @@
       'arc_support': 'Disabling Google Sync will cause Android Backup and Restore to not function properly.',
     },
     {
+      'name': 'SyncTypesListDisabled',
+      'owners': ['pastarmovj@chromium.org', 'mastiz@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'supported_on': ['chrome.*:79-','android:79-','chrome_os:79-'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': False,
+      },
+      'example_value': ['bookmarks'],
+      'id': 649,
+      'caption': '''List of types that should be excluded from synchronization''',
+      'tags': ['system-security'],
+      'desc': '''If this policy is set all specified data types will be excluded from syncronzation both for Google Sync as well as for roaming profile synchronization. This can be beneficial to reduce the size of the roaming profile or limit the type of data uploaded to the Google Sync Servers.
+
+      The current data types for this policy are: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfiguration". Those names are case sensitive!''',
+    },
+    {
       'name': 'RoamingProfileSupportEnabled',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18888,7 +18909,9 @@
 
       Specifically, if a URL matches one of the patterns provided through this policy, it will be allowed to receive a HTTP header containing a response to a remote attestation challenge, attesting device identity and device state.
 
-      If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.'''
+      If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.
+
+      URLs must have HTTPS scheme, e.g. "https://example.com".'''
     },
     {
       'name': 'DeviceShowNumericKeyboardForPassword',
@@ -19140,6 +19163,61 @@
       Extension printers are also known as print provider destinations, and include any destination that belongs to a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension.
 
       Local printers are also known as native printing destinations, and include destinations available to the local machine and shared network printers.'''
+    },
+    {
+      'name': 'AmbientAuthenticationInPrivateModesEnabled',
+      'owners': ['rhalavati@chromium.org', 'roagarwal@chromium.org', 'chrome-privacy-core@google.com'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [0,1,2,3],
+      },
+      'items': [
+        {
+          'name': 'RegularOnly',
+          'value': 0,
+          'caption': '''Enable ambient authentication in regular sessions only.''',
+        },
+        {
+          'name': 'IncognitoAndRegular',
+          'value': 1,
+          'caption': '''Enable ambient authentication in incognito and regular sessions.''',
+        },
+        {
+          'name': 'GuestAndRegular',
+          'value': 2,
+          'caption': '''Enable ambient authentication in guest and regular sessions.''',
+        },
+        {
+          'name': 'All',
+          'value': 3,
+          'caption': '''Enable ambient authentication in regular, incognito and guest sessions.''',
+        },
+      ],
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 650,
+      'caption': '''Enable Ambient Authentication for profile types.''',
+      'tags': [],
+      'desc': '''Configuring this policy will allow/disallow ambient authenticaiton for Incognito and Guest profiles in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Ambient Authentication is http authentication with default credentials if explicit credentials are not provided via NTLM/Kerberos/Negotiate challenge/response schemes.
+
+      Setting the <ph name="REGULAR_ONLY_OPTION_NAME">RegularOnly</ph> (value 0), allows ambient authentication for Regular sessions only. Incognito and Guest sessions wouldn't be allowed to ambiently authenticate.
+
+      Setting the <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME">IncognitoAndRegular</ph> (value 1), allows ambient authentication for Incognito and Regular sessions. Guest sessions wouldn't be allowed to ambiently authenticate.
+
+      Setting the <ph name="GUEST_AND_REGULAR_OPTION_NAME">GuestAndRegular</ph> (value 2), allows ambient authentication for Guest and Regular sessions. Incognito sessions wouldn't be allowed to ambiently authenticate.
+
+      Setting the  <ph name="ALL_OPTION_NAME">All</ph> (value 3), allows ambient authentication for all sessions.
+
+      Note that, ambient authentication is always allowed on regular profiles.
+
+      If the policy is left not set, then the Incognito and Guest sessions will not be able to ambiently authenticate in the future releases of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, as they will be disallowed.'''
     },
   ],
 
@@ -19965,6 +20043,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 648,
+  'highest_id_currently_used': 650,
   'highest_atomic_group_id_currently_used': 38
 }

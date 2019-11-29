@@ -47,9 +47,9 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  DCHECK(IsHTMLVideoElement(picture_in_picture_element));
+  DCHECK(IsA<HTMLVideoElement>(picture_in_picture_element));
   controller.ExitPictureInPicture(
-      ToHTMLVideoElement(picture_in_picture_element), resolver);
+      To<HTMLVideoElement>(picture_in_picture_element), resolver);
   return promise;
 }
 

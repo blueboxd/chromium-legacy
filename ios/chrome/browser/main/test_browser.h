@@ -27,6 +27,7 @@ class TestBrowser : public Browser {
   ios::ChromeBrowserState* GetBrowserState() const override;
   TabModel* GetTabModel() const override;
   WebStateList* GetWebStateList() const override;
+  CommandDispatcher* GetCommandDispatcher() const override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
 
@@ -34,6 +35,7 @@ class TestBrowser : public Browser {
   ios::ChromeBrowserState* browser_state_ = nullptr;
   TabModel* tab_model_ = nil;
   WebStateList* web_state_list_ = nullptr;
+  __strong CommandDispatcher* command_dispatcher_ = nil;
   base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowser);

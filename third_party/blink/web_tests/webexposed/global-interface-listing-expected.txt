@@ -2368,6 +2368,13 @@ interface FaceDetector
     attribute @@toStringTag
     method constructor
     method detect
+interface FeaturePolicy
+    attribute @@toStringTag
+    method allowedFeatures
+    method allowsFeature
+    method constructor
+    method features
+    method getAllowlistForFeature
 interface FederatedCredential : Credential
     attribute @@toStringTag
     getter iconURL

@@ -246,14 +246,6 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   guest_created_ = true;
 }
 
-void MimeHandlerViewContainerBase::DidLoadInternal() {
-  RecordInteraction(UMAType::kDidLoadExtension);
-  if (!GetEmbedderRenderFrame())
-    return;
-  guest_loaded_ = true;
-  post_message_support()->SetActive();
-}
-
 void MimeHandlerViewContainerBase::SendResourceRequest() {
   blink::WebLocalFrame* frame = GetEmbedderRenderFrame()->GetWebFrame();
 

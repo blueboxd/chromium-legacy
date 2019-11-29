@@ -60,13 +60,12 @@ namespace {
 // 200ms/frame.
 constexpr int kNumQuitDeferrals = 10;
 
-void DeferredQuitRunLoop(const base::Closure& quit_task,
-                         int num_quit_deferrals) {
+void DeferredQuitRunLoop(base::OnceClosure quit_task, int num_quit_deferrals) {
   if (num_quit_deferrals <= 0) {
-    quit_task.Run();
+    std::move(quit_task).Run();
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&DeferredQuitRunLoop, quit_task,
+        FROM_HERE, base::BindOnce(&DeferredQuitRunLoop, std::move(quit_task),
                                   num_quit_deferrals - 1));
   }
 }
@@ -95,11 +94,11 @@ class TaskObserver : public base::TaskObserver {
 // a WindowedNotificationObserver::ConditionTestCallbackWithoutSourceAndDetails
 // by ignoring the notification source and details.
 bool IgnoreSourceAndDetails(
-    const WindowedNotificationObserver::
-        ConditionTestCallbackWithoutSourceAndDetails& callback,
+    WindowedNotificationObserver::ConditionTestCallbackWithoutSourceAndDetails
+        callback,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  return callback.Run();
+  return std::move(callback).Run();
 }
 
 }  // namespace
@@ -161,9 +160,9 @@ void RunAllTasksUntilIdle() {
   }
 }
 
-base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop) {
-  return base::Bind(&DeferredQuitRunLoop, run_loop->QuitClosure(),
-                    kNumQuitDeferrals);
+base::OnceClosure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop) {
+  return base::BindOnce(&DeferredQuitRunLoop, run_loop->QuitClosure(),
+                        kNumQuitDeferrals);
 }
 
 base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
@@ -233,8 +232,7 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
 }
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
-    : quit_mode_(quit_mode), loop_running_(false), quit_closure_called_(false) {
-}
+    : quit_mode_(quit_mode) {}
 
 MessageLoopRunner::~MessageLoopRunner() = default;
 
@@ -251,8 +249,8 @@ void MessageLoopRunner::Run() {
   RunThisRunLoop(&run_loop_);
 }
 
-base::Closure MessageLoopRunner::QuitClosure() {
-  return base::Bind(&MessageLoopRunner::Quit, this);
+base::RepeatingClosure MessageLoopRunner::QuitClosure() {
+  return base::BindRepeating(&MessageLoopRunner::Quit, this);
 }
 
 void MessageLoopRunner::Quit() {
@@ -264,7 +262,7 @@ void MessageLoopRunner::Quit() {
   if (loop_running_) {
     switch (quit_mode_) {
       case QuitMode::DEFERRED:
-        GetDeferredQuitTaskForRunLoop(&run_loop_).Run();
+        DeferredQuitRunLoop(run_loop_.QuitClosure(), kNumQuitDeferrals);
         break;
       case QuitMode::IMMEDIATE:
         run_loop_.Quit();
@@ -283,15 +281,17 @@ WindowedNotificationObserver::WindowedNotificationObserver(
 
 WindowedNotificationObserver::WindowedNotificationObserver(
     int notification_type,
-    const ConditionTestCallback& callback)
-    : callback_(callback), source_(NotificationService::AllSources()) {
+    ConditionTestCallback callback)
+    : callback_(std::move(callback)),
+      source_(NotificationService::AllSources()) {
   AddNotificationType(notification_type, source_);
 }
 
 WindowedNotificationObserver::WindowedNotificationObserver(
     int notification_type,
-    const ConditionTestCallbackWithoutSourceAndDetails& callback)
-    : callback_(base::Bind(&IgnoreSourceAndDetails, callback)),
+    ConditionTestCallbackWithoutSourceAndDetails callback)
+    : callback_(
+          base::BindRepeating(&IgnoreSourceAndDetails, std::move(callback))),
       source_(NotificationService::AllSources()) {
   registrar_.Add(this, notification_type, source_);
 }
@@ -343,24 +343,20 @@ void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
 }
 
 void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
+  auto check_has_running_child_process_on_io =
+      [](base::WeakPtr<InProcessUtilityThreadHelper> weak_ptr,
+         base::OnceClosure* quit_closure) {
+        BrowserChildProcessHostIterator it;
+        // If not Done(), we have some running child processes and need to wait.
+        // The |quit_closure| is valid while |weak_ptr| is alive.
+        if (it.Done() && weak_ptr)
+          std::move(*quit_closure).Run();
+      };
+
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO,
-          quit_closure_));
-}
-
-// static
-void InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO(
-    const base::RepeatingClosure& quit_closure) {
-  BrowserChildProcessHostIterator it;
-  if (!it.Done()) {
-    // Have some running child processes -> need to wait.
-    return;
-  }
-
-  DCHECK(quit_closure);
-  quit_closure.Run();
+      base::BindOnce(check_has_running_child_process_on_io,
+                     weak_ptr_factory_.GetWeakPtr(), &quit_closure_));
 }
 
 void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(

@@ -190,7 +190,7 @@ class MediaControlsOrientationLockDelegateTest
         RuntimeEnabledFeatures::OrientationEventEnabled();
 
     GetDocument().write("<body><video></body>");
-    video_ = ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
+    video_ = To<HTMLVideoElement>(*GetDocument().QuerySelector("video"));
   }
 
   void TearDown() override {

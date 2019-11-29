@@ -2041,8 +2041,11 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
 
 String ResourceFetcher::GetCacheIdentifier() const {
   if (properties_->GetControllerServiceWorkerMode() !=
-      mojom::ControllerServiceWorkerMode::kNoController)
+      mojom::ControllerServiceWorkerMode::kNoController) {
     return String::Number(properties_->ServiceWorkerId());
+  }
+  if (properties_->WebBundlePhysicalUrl().IsValid())
+    return properties_->WebBundlePhysicalUrl().GetString();
   return MemoryCache::DefaultCacheIdentifier();
 }
 

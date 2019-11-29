@@ -386,27 +386,27 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
   controls->Reset();
 
   if (RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the orientation lock when going fullscreen feature.
     controls->orientation_lock_delegate_ =
         MakeGarbageCollected<MediaControlsOrientationLockDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   if (MediaControlsDisplayCutoutDelegate::IsEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the pinch gesture to expand into the display cutout feature.
     controls->display_cutout_delegate_ =
         MakeGarbageCollected<MediaControlsDisplayCutoutDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   if (RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the rotate-to-fullscreen feature.
     controls->rotate_to_fullscreen_delegate_ =
         MakeGarbageCollected<MediaControlsRotateToFullscreenDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
@@ -531,7 +531,7 @@ void MediaControlsImpl::InitializeControls() {
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
       GetDocument().GetSettings() &&
       GetDocument().GetSettings()->GetPictureInPictureEnabled() &&
-      MediaElement().IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(MediaElement())) {
     picture_in_picture_button_ =
         MakeGarbageCollected<MediaControlPictureInPictureButtonElement>(*this);
     picture_in_picture_button_->SetIsWanted(
@@ -539,7 +539,7 @@ void MediaControlsImpl::InitializeControls() {
   }
 
   if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled() &&
-      MediaElement().IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(MediaElement())) {
     display_cutout_fullscreen_button_ =
         MakeGarbageCollected<MediaControlDisplayCutoutFullscreenButtonElement>(
             *this);
@@ -1008,8 +1008,9 @@ void MediaControlsImpl::MakeTransparent() {
 
 bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   // Never hide for a media element without visual representation.
-  if (!MediaElement().IsHTMLVideoElement() || !MediaElement().HasVideo() ||
-      ToHTMLVideoElement(MediaElement()).IsRemotingInterstitialVisible()) {
+  auto* video_element = DynamicTo<HTMLVideoElement>(MediaElement());
+  if (!video_element || !MediaElement().HasVideo() ||
+      video_element->IsRemotingInterstitialVisible()) {
     return false;
   }
 
@@ -1059,7 +1060,7 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 }
 
 bool MediaControlsImpl::AreVideoControlsHovered() const {
-  DCHECK(MediaElement().IsHTMLVideoElement());
+  DCHECK(IsA<HTMLVideoElement>(MediaElement()));
 
   return media_button_panel_->IsHovered() || timeline_->IsHovered();
 }
@@ -1976,7 +1977,7 @@ bool MediaControlsImpl::ShouldActAsAudioControls() const {
   // A video element should act like an audio element when it has an audio track
   // but no video track.
   return MediaElement().ShouldShowControls() &&
-         MediaElement().IsHTMLVideoElement() && MediaElement().HasAudio() &&
+         IsA<HTMLVideoElement>(MediaElement()) && MediaElement().HasAudio() &&
          !MediaElement().HasVideo();
 }
 
@@ -2014,7 +2015,7 @@ bool MediaControlsImpl::ShouldShowAudioControls() const {
 }
 
 bool MediaControlsImpl::ShouldShowVideoControls() const {
-  return MediaElement().IsHTMLVideoElement() && !ShouldShowAudioControls();
+  return IsA<HTMLVideoElement>(MediaElement()) && !ShouldShowAudioControls();
 }
 
 void MediaControlsImpl::NetworkStateChanged() {
@@ -2119,8 +2120,7 @@ void MediaControlsImpl::OnLoadedData() {
 }
 
 HTMLVideoElement& MediaControlsImpl::VideoElement() {
-  DCHECK(MediaElement().IsHTMLVideoElement());
-  return *ToHTMLVideoElement(&MediaElement());
+  return *To<HTMLVideoElement>(&MediaElement());
 }
 
 void MediaControlsImpl::Trace(blink::Visitor* visitor) {

@@ -127,6 +127,14 @@ imageset("popup_menu_translate") {
   ]
 }
 
+imageset("popup_menu_downloads") {
+  sources = [
+    "popup_menu_downloads.imageset/Contents.json",
+    "popup_menu_downloads.imageset/popup_menu_downloads@2x.png",
+    "popup_menu_downloads.imageset/popup_menu_downloads@3x.png",
+  ]
+}
+
 imageset("popup_menu_find_in_page") {
   sources = [
     "popup_menu_find_in_page.imageset/Contents.json",

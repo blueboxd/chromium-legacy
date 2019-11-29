@@ -23,6 +23,7 @@ class HitTestRequest;
 class HitTestResult;
 class NGFragmentItems;
 class NGInlineCursor;
+class NGInlineBackwardCursor;
 class NGPhysicalFragment;
 class ScopedPaintState;
 struct PaintInfo;
@@ -37,6 +38,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const NGPaintFragment* = nullptr,
                        NGInlineCursor* descendants = nullptr);
   NGBoxFragmentPainter(const NGPaintFragment&);
+  NGBoxFragmentPainter(const NGPhysicalBoxFragment& fragment,
+                       NGInlineCursor* descendants)
+      : NGBoxFragmentPainter(fragment, nullptr, descendants) {}
 
   void Paint(const PaintInfo&);
   void PaintObject(const PaintInfo&,
@@ -153,17 +157,32 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // box in paint layer. Note that this includes scrolling offset when the
   // container has 'overflow: scroll'.
   bool HitTestChildren(HitTestResult&,
-                       NGPaintFragment::ChildList,
                        const HitTestLocation& hit_test_location,
                        const PhysicalOffset& physical_offset,
                        HitTestAction);
+  bool HitTestChildren(HitTestResult&,
+                       const NGInlineCursor& children,
+                       const HitTestLocation& hit_test_location,
+                       const PhysicalOffset& physical_offset,
+                       HitTestAction);
+  bool HitTestPaintFragmentChildren(HitTestResult&,
+                                    const NGInlineCursor& children,
+                                    const HitTestLocation& hit_test_location,
+                                    const PhysicalOffset& physical_offset,
+                                    HitTestAction);
+  bool HitTestItemsChildren(HitTestResult&,
+                            const NGInlineCursor& children,
+                            const HitTestLocation& hit_test_location,
+                            const PhysicalOffset& physical_offset,
+                            HitTestAction);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
   // one of its child line box fragments.
   // @param physical_offset Physical offset of the given box fragment in the
   // paint layer.
   bool HitTestChildBoxFragment(HitTestResult&,
-                               const NGPaintFragment&,
+                               const NGPhysicalBoxFragment& fragment,
+                               const NGInlineBackwardCursor& cursor,
                                const HitTestLocation& hit_test_location,
                                const PhysicalOffset& physical_offset,
                                HitTestAction);
@@ -171,7 +190,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // Hit tests the given text fragment.
   // @param physical_offset Physical offset of the text fragment in paint layer.
   bool HitTestTextFragment(HitTestResult&,
-                           const NGPaintFragment&,
+                           const NGInlineBackwardCursor& cursor,
                            const HitTestLocation& hit_test_location,
                            const PhysicalOffset& physical_offset,
                            HitTestAction);
@@ -180,7 +199,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // @param physical_offset Physical offset of the line box fragment in paint
   // layer.
   bool HitTestLineBoxFragment(HitTestResult&,
-                              const NGPaintFragment&,
+                              const NGPhysicalLineBoxFragment& fragment,
+                              const NGInlineBackwardCursor& cursor,
                               const HitTestLocation& hit_test_location,
                               const PhysicalOffset& physical_offset,
                               HitTestAction);
@@ -221,6 +241,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       items_(box.Items()),
       descendants_(descendants) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
+  DCHECK(!paint_fragment || !descendants);
 #if DCHECK_IS_ON()
   if (box.IsInlineBox()) {
     if (paint_fragment)

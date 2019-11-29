@@ -208,11 +208,22 @@ void Portal::Navigate(const GURL& url,
   // https://github.com/WICG/portals/issues/150
   NavigationDownloadPolicy download_policy;
 
+  // Navigations in portals do not affect the host's session history. Upon
+  // activation, only the portal's last committed entry is merged with the
+  // host's session history. Hence, a portal maintaining multiple session
+  // history entries is not useful and would introduce unnecessary complexity.
+  // We therefore have portal navigations done with replacement, so that we only
+  // have one entry at a time.
+  // TODO(mcnee): A portal can still self-navigate without replacement. Fix this
+  // so that we can enforce this as an invariant.
+  constexpr bool should_replace_entry = true;
+
   portal_root->navigator()->NavigateFromFrameProxy(
       portal_frame, url, owner_render_frame_host_->GetLastCommittedOrigin(),
       owner_render_frame_host_->GetSiteInstance(),
-      mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK, false,
-      download_policy, "GET", nullptr, "", nullptr, false);
+      mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK,
+      should_replace_entry, download_policy, "GET", nullptr, "", nullptr,
+      false);
 
   std::move(callback).Run();
 }
@@ -224,6 +235,61 @@ void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
       host->GetEmbeddedRenderWidgetHosts();
   while (RenderWidgetHost* child_widget = child_widgets->GetNextHost())
     FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
+}
+
+// Copies |predecessor_contents|'s navigation entries to
+// |activated_contents|. |activated_contents| will have its last committed entry
+// combined with the entries in |predecessor_contents|. |predecessor_contents|
+// will only keep its last committed entry.
+// TODO(914108): This currently only covers the basic cases for history
+// traversal across portal activations. The design is still being discussed.
+void TakeHistoryForActivation(WebContentsImpl* activated_contents,
+                              WebContentsImpl* predecessor_contents) {
+  NavigationControllerImpl& activated_controller =
+      activated_contents->GetController();
+  NavigationControllerImpl& predecessor_controller =
+      predecessor_contents->GetController();
+
+  // Activation would have discarded any pending entry in the host contents.
+  DCHECK(!predecessor_controller.GetPendingEntry());
+
+  // TODO(mcnee): Don't allow activation of an empty contents (see
+  // https://crbug.com/942198).
+  if (!activated_controller.GetLastCommittedEntry()) {
+    DLOG(WARNING) << "An empty portal WebContents was activated.";
+    return;
+  }
+
+  // If the predecessor has no committed entries (e.g. by using window.open()
+  // and then activating a portal from about:blank), there's nothing to do here.
+  // TODO(mcnee): This should also be disallowed.
+  if (!predecessor_controller.GetLastCommittedEntry()) {
+    return;
+  }
+
+  // TODO(mcnee): Determine how to deal with a transient entry.
+  if (predecessor_controller.GetTransientEntry() ||
+      activated_controller.GetTransientEntry()) {
+    return;
+  }
+
+  // TODO(mcnee): Once we enforce that a portal contents does not build up its
+  // own history, make this DCHECK that we only have a single committed entry,
+  // possibly with a new pending entry.
+  if (activated_controller.GetPendingEntryIndex() != -1) {
+    return;
+  }
+  DCHECK(activated_controller.CanPruneAllButLastCommitted());
+
+  // TODO(mcnee): Allow for portal activations to replace history entries and to
+  // traverse existing history entries.
+  activated_controller.CopyStateFromAndPrune(&predecessor_controller,
+                                             false /* replace_entry */);
+
+  // The predecessor may be adopted as a portal, so it should now only have a
+  // single committed entry.
+  DCHECK(predecessor_controller.CanPruneAllButLastCommitted());
+  predecessor_controller.PruneAllButLastCommitted();
 }
 }  // namespace
 
@@ -305,6 +371,9 @@ void Portal::Activate(blink::TransferableMessage data,
         outer_contents_main_frame_view->ExtractAndCancelActiveTouches();
     FlushTouchEventQueues(outer_contents_main_frame_view->host());
   }
+
+  TakeHistoryForActivation(static_cast<WebContentsImpl*>(portal_contents.get()),
+                           outer_contents);
 
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->SwapWebContents(outer_contents, std::move(portal_contents),

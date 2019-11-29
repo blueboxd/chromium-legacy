@@ -43,8 +43,7 @@ namespace extensions {
 const char kExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
 // Counts the number of URL requests made for a given URL.
-class MimeHandlerViewTest : public ExtensionApiTest,
-                            public testing::WithParamInterface<bool> {
+class MimeHandlerViewTest : public ExtensionApiTest {
  public:
   MimeHandlerViewTest() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -58,24 +57,6 @@ class MimeHandlerViewTest : public ExtensionApiTest,
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir_.AppendASCII("mime_handler_view"));
     ASSERT_TRUE(StartEmbeddedTestServer());
-  }
-
-  // TODO(ekaramad): These tests run for OOPIF guests too, except that they
-  // still use BrowserPlugin code path. They are activated to make sure we can
-  // still show PDF when the rest of the guests migrate to OOPIF. Eventually,
-  // MimeHandlerViewGuest will be based on OOPIF and we can remove this comment
-  // (https://crbug.com/642826).
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kMimeHandlerViewInCrossProcessFrame);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kMimeHandlerViewInCrossProcessFrame);
-    }
   }
 
   // TODO(paulmeyer): This function is implemented over and over by the
@@ -134,17 +115,13 @@ class MimeHandlerViewTest : public ExtensionApiTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(MimeHandlerViewTests,
-                         MimeHandlerViewTest,
-                         testing::Bool());
-
 // Test is flaky on Linux.  https://crbug.com/877627
 #if defined(OS_LINUX)
 #define MAYBE_Fullscreen DISABLED_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen
 #endif
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, MAYBE_Fullscreen) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_Fullscreen) {
   RunTest("testFullscreen.csv");
 }
 
@@ -166,11 +143,7 @@ void WaitForFullscreenAnimation() {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EscapeExitsFullscreen) {
-  // Only run this test in cross-process mode.
-  if (!GetParam())
-    return;
-
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EscapeExitsFullscreen) {
   // Use the testing subclass of MimeHandlerViewGuest.
   GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
       base::BindRepeating(&TestMimeHandlerViewGuest::Create));

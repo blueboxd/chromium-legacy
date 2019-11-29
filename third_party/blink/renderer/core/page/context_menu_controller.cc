@@ -279,7 +279,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // We know that if absoluteMediaURL() is not empty or element has a media
     // stream descriptor, then this is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(result.InnerNode());
-    if (IsHTMLVideoElement(*media_element)) {
+    if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
       // audio track but no video track.
       if (media_element->HasAudio() && !media_element->HasVideo())
@@ -315,7 +315,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // controls for audio then the player disappears, and there is no way to
     // return it back. Don't set this bit for fullscreen video, since
     // toggling is ignored in that case.
-    if (media_element->IsHTMLVideoElement() && media_element->HasVideo() &&
+    if (IsA<HTMLVideoElement>(media_element) && media_element->HasVideo() &&
         !media_element->IsFullscreen())
       data.media_flags |= WebContextMenuData::kMediaCanToggleControls;
     if (media_element->ShouldShowControls())

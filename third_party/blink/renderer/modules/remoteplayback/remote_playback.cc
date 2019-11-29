@@ -357,20 +357,21 @@ void RemotePlayback::StateChanged(
   state_ = state;
   if (state_ == mojom::blink::PresentationConnectionState::CONNECTING) {
     DispatchEvent(*Event::Create(event_type_names::kConnecting));
-    if (media_element_->IsHTMLVideoElement()) {
+    if (auto* video_element =
+            DynamicTo<HTMLVideoElement>(media_element_.Get())) {
       // TODO(xjz): Pass the remote device name.
-      ToHTMLVideoElement(media_element_.Get())
-          ->MediaRemotingStarted(WebString());
+
+      video_element->MediaRemotingStarted(WebString());
     }
     media_element_->FlingingStarted();
   } else if (state_ == mojom::blink::PresentationConnectionState::CONNECTED) {
     DispatchEvent(*Event::Create(event_type_names::kConnect));
   } else if (state_ == mojom::blink::PresentationConnectionState::CLOSED) {
     DispatchEvent(*Event::Create(event_type_names::kDisconnect));
-    if (media_element_->IsHTMLVideoElement()) {
-      ToHTMLVideoElement(media_element_.Get())
-          ->MediaRemotingStopped(
-              WebMediaPlayerClient::kMediaRemotingStopNoText);
+    if (auto* video_element =
+            DynamicTo<HTMLVideoElement>(media_element_.Get())) {
+      video_element->MediaRemotingStopped(
+          WebMediaPlayerClient::kMediaRemotingStopNoText);
     }
     CleanupConnections();
     presentation_id_ = "";

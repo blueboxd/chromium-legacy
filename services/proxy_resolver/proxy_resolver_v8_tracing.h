@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_
-#define SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_
+#ifndef SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_TRACING_H_
+#define SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_TRACING_H_
 
 #include <memory>
 
@@ -92,4 +92,4 @@ class ProxyResolverV8TracingFactory {
 
 }  // namespace proxy_resolver
 
-#endif  // SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_
+#endif  // SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_V8_TRACING_H_

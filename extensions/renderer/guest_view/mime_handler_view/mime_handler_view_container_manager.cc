@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
@@ -44,7 +43,6 @@ void MimeHandlerViewContainerManager::BindReceiver(
     int32_t routing_id,
     mojo::PendingAssociatedReceiver<mojom::MimeHandlerViewContainerManager>
         receiver) {
-  CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   auto* render_frame = content::RenderFrame::FromRoutingID(routing_id);
   if (!render_frame)
     return;

@@ -33,7 +33,6 @@ bool ResultCatcher::GetNextResult() {
     base::RunLoop run_loop;
     quit_closure_ = content::GetDeferredQuitTaskForRunLoop(&run_loop);
     content::RunThisRunLoop(&run_loop);
-    quit_closure_ = base::Closure();
   }
 
   if (!results_.empty()) {
@@ -62,18 +61,16 @@ void ResultCatcher::Observe(int type,
       VLOG(1) << "Got EXTENSION_TEST_PASSED notification.";
       results_.push_back(true);
       messages_.push_back(std::string());
-      if (!quit_closure_.is_null()) {
-        quit_closure_.Run();
-      }
+      if (!quit_closure_.is_null())
+        std::move(quit_closure_).Run();
       break;
 
     case extensions::NOTIFICATION_EXTENSION_TEST_FAILED:
       VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
       messages_.push_back(*(content::Details<std::string>(details).ptr()));
-      if (!quit_closure_.is_null()) {
-        quit_closure_.Run();
-      }
+      if (!quit_closure_.is_null())
+        std::move(quit_closure_).Run();
       break;
 
     default:

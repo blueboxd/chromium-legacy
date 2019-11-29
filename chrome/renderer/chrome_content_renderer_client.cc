@@ -100,7 +100,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -567,11 +566,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    associated_interfaces->AddInterface(base::BindRepeating(
-        &extensions::MimeHandlerViewContainerManager::BindReceiver,
-        render_frame->GetRoutingID()));
-  }
+  associated_interfaces->AddInterface(base::BindRepeating(
+      &extensions::MimeHandlerViewContainerManager::BindReceiver,
+      render_frame->GetRoutingID()));
 #endif
 
   // Owned by |render_frame|.
@@ -640,8 +637,6 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(plugin_element.HasHTMLTagName("object") ||
          plugin_element.HasHTMLTagName("embed"));
-  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return false;
   // Blink will next try to load a WebPlugin which would end up in
   // OverrideCreatePlugin, sending another IPC only to find out the plugin is
   // not supported. Here it suffices to return false but there should perhaps be

@@ -14,19 +14,19 @@ namespace web_app {
 const base::FilePath::StringPieceType kLastBrowserFile(
     FILE_PATH_LITERAL("Last Browser"));
 
-bool OsSupportsWebAppFileHandling() {
+bool ShouldRegisterFileHandlersWithOs() {
   return true;
 }
 
-void RegisterFileHandlersForWebApp(const AppId& app_id,
-                                   const std::string& app_name,
-                                   Profile* profile,
-                                   const std::set<std::string>& file_extensions,
-                                   const std::set<std::string>& mime_types) {
+void RegisterFileHandlersWithOs(const AppId& app_id,
+                                const std::string& app_name,
+                                Profile* profile,
+                                const std::set<std::string>& file_extensions,
+                                const std::set<std::string>& mime_types) {
   // TODO(davidbienvenu): Setup shim app and windows registry for this |app_id|.
 }
 
-void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile) {
+void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
   // TODO(davidbienvenu): Cleanup windows registry entries for this |app_id|.
 }
 

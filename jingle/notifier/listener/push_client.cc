@@ -26,9 +26,9 @@ std::unique_ptr<PushClient> CreateXmppPushClient(
 
 std::unique_ptr<PushClient> PushClient::CreateDefault(
     const NotifierOptions& notifier_options) {
-  return std::unique_ptr<PushClient>(new NonBlockingPushClient(
+  return std::make_unique<NonBlockingPushClient>(
       notifier_options.network_config.task_runner,
-      base::Bind(&CreateXmppPushClient, notifier_options)));
+      base::BindOnce(&CreateXmppPushClient, notifier_options));
 }
 
 std::unique_ptr<PushClient> PushClient::CreateDefaultOnIOThread(

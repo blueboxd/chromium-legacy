@@ -34,6 +34,14 @@ public class PaymentHandlerCoordinator {
         assert isEnabled();
     }
 
+    /** Observes the state changes of the payment-handler UI. */
+    public interface PaymentHandlerUiObserver {
+        /** Called when Payment Handler UI is closed. */
+        void onPaymentHandlerUiClosed();
+        /** Called when Payment Handler UI is shown. */
+        void onPaymentHandlerUiShown();
+    }
+
     /**
      * Shows the payment-handler UI.
      *
@@ -41,9 +49,11 @@ public class PaymentHandlerCoordinator {
      * @param url The url of the payment handler app, i.e., that of
      *         "PaymentRequestEvent.openWindow(url)".
      * @param isIncognito Whether the tab is in incognito mode.
+     * @param observer The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
      * @return Whether the payment-handler UI was shown. Can be false if the UI was suppressed.
      */
-    public boolean show(ChromeActivity activity, URI url, boolean isIncognito) {
+    public boolean show(ChromeActivity activity, URI url, boolean isIncognito,
+            PaymentHandlerUiObserver observer) {
         assert mHider == null : "Already showing payment-handler UI";
 
         WebContents webContents =
@@ -56,7 +66,7 @@ public class PaymentHandlerCoordinator {
 
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator =
-                new PaymentHandlerMediator(model, this::hide, webContents);
+                new PaymentHandlerMediator(model, this::hide, webContents, observer);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
         webContents.addObserver(mediator);
@@ -73,10 +83,9 @@ public class PaymentHandlerCoordinator {
             bottomSheetController.removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
             webContents.destroy();
+            observer.onPaymentHandlerUiClosed();
         };
-        boolean result = bottomSheetController.requestShowContent(view, /*animate=*/true);
-        if (result) bottomSheetController.expandSheet();
-        return result;
+        return bottomSheetController.requestShowContent(view, /*animate=*/true);
     }
 
     /** Hides the payment-handler UI. */

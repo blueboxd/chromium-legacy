@@ -93,7 +93,10 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetHash, const std::string&());
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
-  MOCK_METHOD1(DeleteFile, void(const base::Callback<void(bool)>&));
+  virtual void DeleteFile(base::OnceCallback<void(bool)> cb) override {
+    DeleteFile_(cb);
+  }
+  MOCK_METHOD1(DeleteFile_, void(base::OnceCallback<void(bool)>& cb));
   MOCK_METHOD0(GetDownloadFile, DownloadFile*());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());

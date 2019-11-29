@@ -652,6 +652,9 @@ below:
         <message name="IDS_AX_ROLE_RADIO_GROUP" desc="Accessibility role description for a group of related radio buttons">
           radio group
         </message>
+        <message name="IDS_AX_ROLE_ROW_GROUP" desc="Accessibility role description for a row group in a table">
+          row group
+        </message>
         <message name="IDS_AX_ROLE_ROW_HEADER" desc="Accessibility role description for a row header in a table">
           row header
         </message>

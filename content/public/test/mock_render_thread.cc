@@ -198,7 +198,7 @@ void MockRenderThread::RegisterExtension(
   blink::WebScriptController::RegisterExtension(std::move(extension));
 }
 
-int MockRenderThread::PostTaskToAllWebWorkers(const base::Closure& closure) {
+int MockRenderThread::PostTaskToAllWebWorkers(base::RepeatingClosure closure) {
   return 0;
 }
 

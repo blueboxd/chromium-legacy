@@ -15234,12 +15234,6 @@ class InnerWebContentsAttachTest
     DISALLOW_COPY_AND_ASSIGN(PrepareFrameJob);
   };
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(
-        features::kMimeHandlerViewInCrossProcessFrame);
-  }
-
  private:
   base::test::ScopedFeatureList feature_list_;
 

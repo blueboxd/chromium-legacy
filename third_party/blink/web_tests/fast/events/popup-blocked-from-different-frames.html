@@ -2,6 +2,8 @@
 <html>
     <head>
         <script src="../../resources/js-test.js"></script>
+        <script src="../../resources/testdriver.js"></script>
+        <script src="../../resources/testdriver-vendor.js"></script>
         <style>
             iframe {
                 position: absolute;
@@ -35,6 +37,7 @@
             {
                 win = window.open("about:blank");
                 shouldBeNull("win");
+                testRunner.notifyDone();
             }
 
             document.querySelector("#test").addEventListener("mousedown", clickHandler1);
@@ -43,15 +46,13 @@
 
             if (window.testRunner) {
                 testRunner.dumpAsText();
+                testRunner.waitUntilDone();
                 testRunner.setCanOpenWindows();
                 testRunner.setPopupBlockingEnabled(true);
                 testRunner.setCloseRemainingWindowsWhenComplete(true);
 
                 var button = document.querySelector("#test");
-
-                eventSender.mouseMoveTo(button.offsetLeft + button.offsetWidth / 2, button.offsetTop + button.offsetHeight / 2);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
+                test_driver.click(button);
             }
         </script>
     </body>

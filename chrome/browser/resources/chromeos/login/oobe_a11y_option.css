@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  background-color: white;
   display: flex;
   min-height: 0;
   width: 100%;

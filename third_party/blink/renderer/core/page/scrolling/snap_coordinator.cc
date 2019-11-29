@@ -186,6 +186,11 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
   }
 }
 
+void SnapCoordinator::ReSnapAllContainers() {
+  for (const auto* container : snap_containers_)
+    ScrollableArea::GetForScrolling(container)->SnapAfterLayout();
+}
+
 void SnapCoordinator::UpdateAllSnapContainerData() {
   for (auto* container : snap_containers_)
     UpdateSnapContainerData(*container);

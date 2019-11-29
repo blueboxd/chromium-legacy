@@ -77,8 +77,12 @@ void PushClientChannel::UpdateCredentials(const CoreAccountId& account_id,
           }
         }
     )");
-  // TODO(https://crbug.com/1010544): Possibly pass an account id instead of
-  // string here.
+
+  // PushClient::UpdateCredentials() expects an email as the first argument.
+  // The current code below is passing the account_id which is created from
+  // a Gaia ID or an email.
+  // TODO(crbug.com/939039): Remove this code once the migration tracked in
+  // this bug is complete.
   push_client_->UpdateCredentials(account_id.ToString(), token,
                                   traffic_annotation);
 }

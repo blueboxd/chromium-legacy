@@ -38,6 +38,8 @@ void PaymentRequestTestController::SetUpOnMainThread() {
       base::BindRepeating(&PaymentRequestTestController::OnConnectionTerminated,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnAbortCalled,
+                          base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::OnCompleteCalled,
                           base::Unretained(this)));
 
   SetUseDelegateOnPaymentRequestForTesting(
@@ -113,6 +115,11 @@ void PaymentRequestTestController::OnConnectionTerminated() {
 void PaymentRequestTestController::OnAbortCalled() {
   if (observer_)
     observer_->OnAbortCalled();
+}
+
+void PaymentRequestTestController::OnCompleteCalled() {
+  if (observer_)
+    observer_->OnCompleteCalled();
 }
 
 }  // namespace payments

@@ -2556,11 +2556,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "mime-handler-view-in-cross-process-frame",
-    "owners": [ "ekaramad" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "mirroring-service",
     "owners": [ "mfoltz", "takumif" ],
     "expiry_milestone": 83

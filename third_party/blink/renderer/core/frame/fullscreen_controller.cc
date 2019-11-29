@@ -182,13 +182,14 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
 
   // We only override the WebView's background color for overlay fullscreen
   // video elements, so have to restore the override when the element changes.
-  if (IsHTMLVideoElement(old_element))
+  auto* old_video_element = DynamicTo<HTMLVideoElement>(old_element);
+  if (old_video_element)
     RestoreBackgroundColorOverride();
 
   if (new_element) {
     DCHECK(Fullscreen::IsFullscreenElement(*new_element));
 
-    if (auto* video_element = ToHTMLVideoElementOrNull(*new_element)) {
+    if (auto* video_element = DynamicTo<HTMLVideoElement>(*new_element)) {
       video_element->DidEnterFullscreen();
 
       // If the video uses overlay fullscreen mode, make the background
@@ -201,8 +202,8 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
   if (old_element) {
     DCHECK(!Fullscreen::IsFullscreenElement(*old_element));
 
-    if (auto* video_element = ToHTMLVideoElementOrNull(*old_element))
-      video_element->DidExitFullscreen();
+    if (old_video_element)
+      old_video_element->DidExitFullscreen();
   }
 
   // Tell the browser the fullscreen state has changed.

@@ -118,7 +118,7 @@ class TestSessionRestorePolicy : public SessionRestorePolicy {
 
   float GetTabScore(content::WebContents* contents) const {
     auto it = tab_data_.find(contents);
-    return it->second.score;
+    return it->second->score;
   }
 
  private:
@@ -381,7 +381,9 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadBackgroundData) {
 
   // Mark the tab as using background communication mechanisms, and expect the
   // site engagement policy to no longer be applied.
-  TabData* tab_data = &policy_->tab_data_[contents1_.get()];
+  auto iter = policy_->tab_data_.insert(
+      std::make_pair(contents1_.get(), std::make_unique<TabData>()));
+  TabData* tab_data = iter.first->second.get();
   tab_data->used_in_bg = true;
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
 }
@@ -404,58 +406,62 @@ TEST_F(SessionRestorePolicyTest, CalculateAgeScore) {
   constexpr int kMonthInSeconds = 60 * 60 * 24 * 31;
 
   // Generate a bunch of random tab ages.
-  std::vector<TabData> tab_data;
-  tab_data.resize(1000);
+  std::vector<std::unique_ptr<TabData>> tab_data;
+  tab_data.reserve(1000);
+
+  for (size_t i = 0; i < 1000; ++i)
+    tab_data.push_back(std::make_unique<TabData>());
 
   // Generate some known edge cases.
   size_t i = 0;
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(-1001);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(-1000);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(-999);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(-500);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(0);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(500);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(999);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(1000);
-  tab_data[i++].last_active = base::TimeDelta::FromMilliseconds(1001);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(-1001);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(-1000);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(-999);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(-500);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(0);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(500);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(999);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(1000);
+  tab_data[i++]->last_active = base::TimeDelta::FromMilliseconds(1001);
 
   // Generate a logarithmic selection of ages to test the whole range.
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-1000000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-100000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-10000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-1000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-100);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(-10);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(10);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(100);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(1000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(10000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(100000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(1000000);
-  tab_data[i++].last_active = base::TimeDelta::FromSeconds(10000000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-1000000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-100000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-10000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-1000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-100);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(-10);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(10);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(100);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(1000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(10000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(100000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(1000000);
+  tab_data[i++]->last_active = base::TimeDelta::FromSeconds(10000000);
 
   // Generate a bunch more random ages.
   for (; i < tab_data.size(); ++i) {
-    tab_data[i].last_active = base::TimeDelta::FromSeconds(
+    tab_data[i]->last_active = base::TimeDelta::FromSeconds(
         base::RandInt(-kMonthInSeconds, kMonthInSeconds));
   }
 
   // Calculate the tab scores.
   for (i = 0; i < tab_data.size(); ++i) {
-    tab_data[i].score =
-        TestSessionRestorePolicy::CalculateAgeScore(&tab_data[i]);
+    tab_data[i]->score =
+        TestSessionRestorePolicy::CalculateAgeScore(tab_data[i].get());
   }
 
   // Sort tabs by increasing last active time.
   std::sort(tab_data.begin(), tab_data.end(),
-            [](const TabData& td1, const TabData& td2) {
-              return td1.last_active < td2.last_active;
+            [](const std::unique_ptr<TabData>& td1,
+               const std::unique_ptr<TabData>& td2) {
+              return td1->last_active < td2->last_active;
             });
 
   // The scores should be in decreasing order (>= is necessary because some
   // last active times collapse to the same score).
   for (i = 1; i < tab_data.size(); ++i)
-    ASSERT_GE(tab_data[i - 1].score, tab_data[i].score);
+    ASSERT_GE(tab_data[i - 1]->score, tab_data[i]->score);
 }
 
 TEST_F(SessionRestorePolicyTest, ScoreTab) {

@@ -414,37 +414,6 @@ bool WindowsMatch(const SessionWindowMap& win1, const ScopedWindowMap& win2) {
   return WindowsMatchImpl(win1, win2);
 }
 
-bool CheckForeignSessionsAgainst(int browser_index,
-                                 const std::vector<ScopedWindowMap>& windows) {
-  SyncedSessionVector sessions;
-
-  if (!GetSessionData(browser_index, &sessions)) {
-    LOG(ERROR) << "Cannot get session data";
-    return false;
-  }
-
-  for (size_t w_index = 0; w_index < windows.size(); ++w_index) {
-    // Skip the client's local window
-    if (static_cast<int>(w_index) == browser_index) {
-      continue;
-    }
-
-    size_t s_index = 0;
-
-    for (; s_index < sessions.size(); ++s_index) {
-      if (WindowsMatch(sessions[s_index]->windows, windows[w_index]))
-        break;
-    }
-
-    if (s_index == sessions.size()) {
-      LOG(ERROR) << "Cannot find window #" << w_index;
-      return false;
-    }
-  }
-
-  return true;
-}
-
 void DeleteForeignSession(int browser_index, std::string session_tag) {
   SessionSyncServiceFactory::GetInstance()
       ->GetForProfile(test()->GetProfile(browser_index))
@@ -452,17 +421,40 @@ void DeleteForeignSession(int browser_index, std::string session_tag) {
       ->DeleteForeignSession(session_tag);
 }
 
-}  // namespace sessions_helper
-
 ForeignSessionsMatchChecker::ForeignSessionsMatchChecker(
-    int browser_index,
-    const std::vector<sessions_helper::ScopedWindowMap>& windows)
+    int profile_index,
+    int foreign_profile_index)
     : MultiClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncServices()),
-      browser_index_(browser_index),
-      windows_(windows) {}
+      profile_index_(profile_index),
+      foreign_profile_index_(foreign_profile_index) {}
 
 bool ForeignSessionsMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for matching foreign sessions";
-  return sessions_helper::CheckForeignSessionsAgainst(browser_index_, windows_);
+
+  const sync_sessions::SyncedSession* foreign_local_sessions;
+  if (!GetLocalSession(foreign_profile_index_, &foreign_local_sessions)) {
+    *os << "Cannot get local sessions from profile " << foreign_profile_index_
+        << ".";
+    return false;
+  }
+  DCHECK(foreign_local_sessions);
+
+  SyncedSessionVector sessions;
+  if (!GetSessionData(profile_index_, &sessions)) {
+    *os << "Cannot get foreign sessions on profile " << profile_index_ << ".";
+    return false;
+  }
+
+  for (const sync_sessions::SyncedSession* remote_session : sessions) {
+    if (WindowsMatch(remote_session->windows,
+                     foreign_local_sessions->windows)) {
+      return true;
+    }
+  }
+
+  *os << "Can't match sessions for profile " << foreign_profile_index_ << ".";
+  return false;
 }
+
+}  // namespace sessions_helper

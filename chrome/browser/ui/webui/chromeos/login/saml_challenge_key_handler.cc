@@ -39,6 +39,10 @@ bool IsDeviceWebBasedAttestationEnabledForUrl(const GURL& url,
     return false;
   }
 
+  if (!url.SchemeIs(url::kHttpsScheme)) {
+    return false;
+  }
+
   if (patterns->GetSize() >= kPatternsSizeWarningLevel) {
     LOG(WARNING) << "Allowed urls list size is " << patterns->GetSize()
                  << ". Check may be slow.";

@@ -118,6 +118,20 @@ class SkiaOutputDevice {
   bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
  protected:
+  // Only valid between StartSwapBuffers and FinishSwapBuffers.
+  class SwapInfo {
+   public:
+    SwapInfo(uint64_t swap_id, BufferPresentedCallback feedback);
+    SwapInfo(SwapInfo&& other);
+    ~SwapInfo();
+    const gpu::SwapBuffersCompleteParams& Complete(gfx::SwapResult result);
+    void CallFeedback();
+
+   private:
+    BufferPresentedCallback feedback_;
+    gpu::SwapBuffersCompleteParams params_;
+  };
+
   // Begin paint the back buffer.
   virtual SkSurface* BeginPaint() = 0;
 
@@ -126,7 +140,7 @@ class SkiaOutputDevice {
 
   // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
   // at the beginning of SwapBuffers() and PostSubBuffer() implementations
-  void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
+  void StartSwapBuffers(BufferPresentedCallback feedback);
 
   // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
   // at the end of SwapBuffers() and PostSubBuffer() implementations
@@ -139,21 +153,6 @@ class SkiaOutputDevice {
   const bool need_swap_semaphore_;
   uint64_t swap_id_ = 0;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
-
-  // Only valid between StartSwapBuffers and FinishSwapBuffers.
-  class SwapInfo {
-   public:
-    SwapInfo(uint64_t swap_id,
-             base::Optional<BufferPresentedCallback> feedback);
-    SwapInfo(SwapInfo&& other);
-    ~SwapInfo();
-    const gpu::SwapBuffersCompleteParams& Complete(gfx::SwapResult result);
-    void CallFeedback();
-
-   private:
-    base::Optional<BufferPresentedCallback> feedback_;
-    gpu::SwapBuffersCompleteParams params_;
-  };
 
   base::queue<SwapInfo> pending_swaps_;
 

@@ -33,6 +33,7 @@ js_type_check("closure_compile") {
     ":oobe_a11y_option",
     ":oobe_buttons",
     ":oobe_dialog",
+    ":oobe_enable_kiosk",
     ":oobe_eula",
     ":oobe_i18n_dropdown",
     ":oobe_network",
@@ -251,6 +252,17 @@ js_library("oobe_buttons") {
 }
 
 js_library("oobe_dialog") {
+  deps = [
+    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
+  ]
+}
+
+js_library("oobe_enable_kiosk") {
+  deps = [
+    ":login_screen_behavior",
+    ":oobe_dialog_host_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("oobe_eula") {

@@ -320,7 +320,7 @@ class AutoRoller(object):
     dep_revision = '%s@%s' % (dep_name, commit_info.git_commit)
     self._RunCommand(
         ['gclient', 'setdep', '-r', dep_revision],
-        cwd=os.path.dirname(deps_filename))
+        working_dir=os.path.dirname(deps_filename))
 
   def _UpdateWebGLRevTextFile(self, txt_filename, commit_info):
     # Rolling the WebGL conformance tests must cause at least all of

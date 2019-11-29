@@ -25,6 +25,7 @@ rootWebArea
 ++++++columnHeader expanded
 ++++++cell expanded
 ++++++row expanded
+++++++rowGroup
 ++++++rowHeader expanded
 ++++group
 ++++heading

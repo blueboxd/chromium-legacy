@@ -89,7 +89,7 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   std::string grammar_;
   bool did_cancel_all_;
   bool should_send_fake_response_;
-  base::Closure recognition_started_closure_;
+  base::OnceClosure recognition_started_closure_;
   SpeechRecognitionManagerDelegate* delegate_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(FakeSpeechRecognitionManager);

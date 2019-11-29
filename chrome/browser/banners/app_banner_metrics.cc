@@ -19,7 +19,7 @@ const char kUserResponseHistogram[] = "AppBanners.UserResponse";
 const char kBeforeInstallEventHistogram[] = "AppBanners.BeforeInstallEvent";
 const char kInstallableStatusCodeHistogram[] =
     "AppBanners.InstallableStatusCode";
-const char kInstallDisplayModeHistogram[] = "Webapp.Install.DisplayMode";
+const char kInstallDisplayModeHistogram[] = "Webapp.Install.DisplayMode2";
 
 void TrackDismissEvent(int event) {
   DCHECK_LT(DISMISS_EVENT_MIN, event);

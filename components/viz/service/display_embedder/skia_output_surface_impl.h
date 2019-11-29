@@ -161,7 +161,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
  private:
   bool Initialize();
-  void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);
+  void InitializeOnGpuThread(GpuVSyncCallback vsync_callback_runner,
+                             base::WaitableEvent* event,
+                             bool* result);
   SkSurfaceCharacterization CreateSkSurfaceCharacterization(
       const gfx::Size& surface_size,
       ResourceFormat format,

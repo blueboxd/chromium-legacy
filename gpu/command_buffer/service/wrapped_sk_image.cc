@@ -204,9 +204,9 @@ class WrappedSkImage : public SharedImageBacking {
       }
 #if BUILDFLAG(SKIA_USE_DAWN)
       case GrBackendApi::kDawn: {
-        GrDawnImageInfo image_info;
-        if (backend_texture.getDawnImageInfo(&image_info))
-          tracing_id_ = reinterpret_cast<uint64_t>(image_info.fTexture.Get());
+        GrDawnTextureInfo tex_info;
+        if (backend_texture.getDawnTextureInfo(&tex_info))
+          tracing_id_ = reinterpret_cast<uint64_t>(tex_info.fTexture.Get());
         break;
       }
 #endif

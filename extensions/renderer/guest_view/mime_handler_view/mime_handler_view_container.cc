@@ -51,12 +51,7 @@ void MimeHandlerViewContainer::OnReady() {
 bool MimeHandlerViewContainer::OnMessage(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
-    IPC_MESSAGE_HANDLER(ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK,
-                        OnCreateMimeHandlerViewGuestACK)
     IPC_MESSAGE_HANDLER(GuestViewMsg_GuestAttached, OnGuestAttached)
-    IPC_MESSAGE_HANDLER(
-        ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
-        OnMimeHandlerViewGuestOnLoadCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -97,27 +92,11 @@ v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
   return GetScriptableObjectInternal(isolate);
 }
 
-void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
-    int element_instance_id) {
-  DCHECK_NE(this->element_instance_id(), guest_view::kInstanceIDNone);
-  DCHECK_EQ(this->element_instance_id(), element_instance_id);
-
-  if (!render_frame())
-    return;
-
-  render_frame()->AttachGuest(element_instance_id);
-}
-
 void MimeHandlerViewContainer::OnGuestAttached(int /* unused */,
                                                int guest_proxy_routing_id) {
   // Save the RenderView routing ID of the guest here so it can be used to route
   // PostMessage calls.
   guest_proxy_routing_id_ = guest_proxy_routing_id;
-}
-
-void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
-    int32_t element_instance_id) {
-  DidLoadInternal();
 }
 
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {

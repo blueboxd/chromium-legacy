@@ -1517,7 +1517,7 @@ CommandHandler.COMMANDS_['search'] = new class extends Command {
 
     // Focus and unhide the search box.
     const element = fileManager.document.querySelector('#search-box cr-input');
-    element.hidden = false;
+    element.disabled = false;
     (/** @type {!CrInputElement} */ (element)).select();
   }
 
@@ -2443,6 +2443,26 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new class extends Command {
 CommandHandler.COMMANDS_['volume-storage'] = new class extends Command {
   execute(event, fileManager) {
     chrome.fileManagerPrivate.openSettingsSubpage('storage');
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    event.canExecute = false;
+    const currentVolumeInfo = fileManager.directoryModel.getCurrentVolumeInfo();
+    if (!currentVolumeInfo) {
+      return;
+    }
+    // Can execute only for local file systems.
+    if (currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.MY_FILES ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.DOWNLOADS ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.ANDROID_FILES) {
+      event.canExecute = true;
+    }
   }
 };
 

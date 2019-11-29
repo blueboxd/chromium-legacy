@@ -395,6 +395,7 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
 void ServiceWorkerContextCore::RegisterContainerHostByClientID(
     const std::string& client_uuid,
     ServiceWorkerContainerHost* container_host) {
+  DCHECK(container_host->IsContainerForClient());
   DCHECK(!base::Contains(*container_host_by_uuid_, client_uuid));
   (*container_host_by_uuid_)[client_uuid] = container_host;
 }
@@ -411,6 +412,7 @@ ServiceWorkerContextCore::GetContainerHostByClientID(
   auto found = container_host_by_uuid_->find(client_uuid);
   if (found == container_host_by_uuid_->end())
     return nullptr;
+  DCHECK(found->second->IsContainerForClient());
   return found->second;
 }
 

@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,11 +16,14 @@ TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
                          TabModel* tab_model)
     : browser_state_(browser_state),
       tab_model_(tab_model),
-      web_state_list_(tab_model_.webStateList) {}
+      web_state_list_(tab_model_.webStateList),
+      command_dispatcher_([[CommandDispatcher alloc] init]) {}
 
 TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
                          WebStateList* web_state_list)
-    : browser_state_(browser_state), web_state_list_(web_state_list) {}
+    : browser_state_(browser_state),
+      web_state_list_(web_state_list),
+      command_dispatcher_([[CommandDispatcher alloc] init]) {}
 
 TestBrowser::~TestBrowser() {
   for (auto& observer : observers_) {
@@ -37,6 +41,10 @@ TabModel* TestBrowser::GetTabModel() const {
 
 WebStateList* TestBrowser::GetWebStateList() const {
   return web_state_list_;
+}
+
+CommandDispatcher* TestBrowser::GetCommandDispatcher() const {
+  return command_dispatcher_;
 }
 
 void TestBrowser::AddObserver(BrowserObserver* observer) {

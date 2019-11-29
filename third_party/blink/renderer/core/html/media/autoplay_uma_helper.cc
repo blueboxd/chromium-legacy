@@ -80,7 +80,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   sources_.insert(source);
 
   // Record the source.
-  if (element_->IsHTMLVideoElement()) {
+  if (IsA<HTMLVideoElement>(element_.Get())) {
     video_histogram.Count(static_cast<int>(source));
     if (element_->muted())
       muted_video_histogram.Count(static_cast<int>(source));
@@ -91,7 +91,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   // Record dual source.
   if (sources_.size() ==
       static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
-    if (element_->IsHTMLVideoElement()) {
+    if (IsA<HTMLVideoElement>(element_.Get())) {
       video_histogram.Count(static_cast<int>(AutoplaySource::kDualSource));
       if (element_->muted())
         muted_video_histogram.Count(
@@ -102,7 +102,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   }
 
   // Record if it will be blocked by the Autoplay setting.
-  if (element_->IsHTMLVideoElement() && element_->muted() &&
+  if (IsA<HTMLVideoElement>(element_.Get()) && element_->muted() &&
       AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
           element_->GetDocument()) &&
       !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings()) {
@@ -234,7 +234,7 @@ void AutoplayUmaHelper::HandleContextDestroyed() {
 
 void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
   if (!sources_.Contains(AutoplaySource::kMethod) ||
-      !element_->IsHTMLVideoElement() || !element_->muted())
+      !IsA<HTMLVideoElement>(element_.Get()) || !element_->muted())
     return;
 
   muted_video_play_method_intersection_observer_ = IntersectionObserver::Create(
@@ -262,7 +262,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
 }
 
 void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
-  if (!element_->IsHTMLVideoElement() || !element_->muted() ||
+  if (!IsA<HTMLVideoElement>(element_.Get()) || !element_->muted() ||
       !sources_.Contains(AutoplaySource::kMethod))
     return;
 

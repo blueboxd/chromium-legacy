@@ -49,7 +49,6 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
                                    gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  DiscardBackbuffer();
   size_ = size;
   sk_color_space_ = color_space.ToSkColorSpace();
 
@@ -61,8 +60,6 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
     return false;
   swap_chain_.Configure(kSwapChainFormat, kUsage, size_.width(),
                         size_.height());
-
-  EnsureBackbuffer();
   return true;
 }
 
@@ -70,26 +67,25 @@ void SkiaOutputDeviceDawn::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers(std::move(feedback));
-  swap_chain_.Present(texture_);
-  texture_ = swap_chain_.GetNextTexture();
+  swap_chain_.Present();
   FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
                     gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
 }
 
 SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
-  GrDawnImageInfo info;
-  info.fTexture = texture_;
+  GrDawnRenderTargetInfo info;
+  info.fTextureView = swap_chain_.GetCurrentTextureView();
   info.fFormat = kSwapChainFormat;
   info.fLevelCount = 1;
-  GrBackendTexture backend_texture(size_.width(), size_.height(), info);
-  DCHECK(backend_texture.isValid());
-  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      context_provider_->GetGrContext(), backend_texture,
+  GrBackendRenderTarget backend_target(
+      size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
+  DCHECK(backend_target.isValid());
+  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
+      context_provider_->GetGrContext(), backend_target,
       !capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
                                             : kBottomLeft_GrSurfaceOrigin,
-      /*sampleCount=*/0, kSurfaceColorType, sk_color_space_,
-      /*surfaceProps=*/nullptr);
+      kSurfaceColorType, sk_color_space_, /*surfaceProps=*/nullptr);
   return sk_surface_.get();
 }
 
@@ -97,15 +93,6 @@ void SkiaOutputDeviceDawn::EndPaint(const GrBackendSemaphore& semaphore) {
   GrFlushInfo flush_info;
   sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
   sk_surface_.reset();
-}
-
-void SkiaOutputDeviceDawn::EnsureBackbuffer() {
-  if (swap_chain_)
-    texture_ = swap_chain_.GetNextTexture();
-}
-
-void SkiaOutputDeviceDawn::DiscardBackbuffer() {
-  texture_ = nullptr;
 }
 
 void SkiaOutputDeviceDawn::CreateSwapChainImplementation() {

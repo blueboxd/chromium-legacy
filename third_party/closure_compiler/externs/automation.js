@@ -234,6 +234,7 @@ chrome.automation.RoleType = {
   REVISION: 'revision',
   ROOT_WEB_AREA: 'rootWebArea',
   ROW: 'row',
+  ROW_GROUP: 'rowGroup',
   ROW_HEADER: 'rowHeader',
   RUBY: 'ruby',
   RUBY_ANNOTATION: 'rubyAnnotation',

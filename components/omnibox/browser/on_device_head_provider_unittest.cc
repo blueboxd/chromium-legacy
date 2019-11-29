@@ -29,6 +29,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     client_.reset(new FakeAutocompleteProviderClient());
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
+    provider_->AddModelUpdateCallback();
     task_environment_.RunUntilIdle();
   }
 
@@ -55,10 +56,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
     task_environment_.RunUntilIdle();
   }
 
-  void ResetServingInstance() {
+  void ResetModelInstance() {
     if (provider_) {
-      provider_->serving_.reset();
-      provider_->current_model_filename_.clear();
+      provider_->model_.reset();
     }
   }
 
@@ -73,12 +73,12 @@ class OnDeviceHeadProviderTest : public testing::Test,
   scoped_refptr<OnDeviceHeadProvider> provider_;
 };
 
-TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
+TEST_F(OnDeviceHeadProviderTest, ModelInstanceNotCreated) {
   AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
-  ResetServingInstance();
+  ResetModelInstance();
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
@@ -87,8 +87,7 @@ TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
   ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input, ""));
 
   provider_->Start(input, false);
-  if (!provider_->done())
-    task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -149,8 +148,7 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
   ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input, ""));
 
   provider_->Start(input, false);
-  if (!provider_->done())
-    task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -169,8 +167,7 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
   ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input, ""));
 
   provider_->Start(input, false);
-  if (!provider_->done())
-    task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
@@ -197,11 +194,8 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input2, ""));
 
   provider_->Start(input1, false);
-  EXPECT_FALSE(provider_->done());
   provider_->Start(input2, false);
-
-  if (!provider_->done())
-    task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());

@@ -690,12 +690,14 @@ body.check-select #search-box {
 }
 
 #search-box.has-cursor,
-#search-box.has-text {
+#search-box.has-text,
+#search-box.hide-pending {
   margin-inline-end: 12px;
 }
 
 #search-box.has-cursor cr-input,
-#search-box.has-text cr-input {
+#search-box.has-text cr-input,
+#search-box.hide-pending cr-input {
   width: 202px;
 }
 
@@ -1437,6 +1439,11 @@ html[dir='rtl'] .badge {
   padding: 1px 0;
 }
 
+#default-tasks-list li {
+  height: 32px;
+  line-height: 32px;
+}
+
 #default-tasks-list > li > * {
   background-position: 5px center;
   background-repeat: no-repeat;
@@ -1447,16 +1454,20 @@ html[dir='rtl'] .badge {
 #list-container list > li[selected],
 #list-container list > li:active,
 #list-container list > li.accepts,
-#list-container list:focus > li[lead],
-#default-tasks-list > li[selected] {
+#list-container list:focus > li[lead] {
   background-color: rgb(232, 234, 237);
 }
 
 #list-container list:focus > li[selected],
 #list-container list:focus > li.accepts[selected],
-#list-container list:focus > li[lead],
-#default-tasks-list:focus > li[selected] {
+#list-container list:focus > li[lead] {
   background-color: rgb(216, 223, 240);
+}
+
+#default-tasks-list:focus > li[selected],
+#default-tasks-list > li[selected] {
+  background-color: rgb(216, 223, 240);
+  outline: none;
 }
 
 body.check-select #list-container list > li[lead]:not([selected]),
@@ -1647,11 +1658,6 @@ li[renaming=''] .badge {
 
 .table-row-cell {
   align-items: center;
-}
-
-#default-tasks-list li {
-  height: 32px;
-  line-height: 32px;
 }
 
 #list-container li.table-row {

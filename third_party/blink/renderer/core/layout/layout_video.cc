@@ -135,7 +135,7 @@ void LayoutVideo::UpdateLayout() {
 }
 
 HTMLVideoElement* LayoutVideo::VideoElement() const {
-  return ToHTMLVideoElement(GetNode());
+  return To<HTMLVideoElement>(GetNode());
 }
 
 void LayoutVideo::UpdateFromElement() {
@@ -202,7 +202,7 @@ CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
 void LayoutVideo::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   // Report violation of unsized-media policy.
-  if (auto* video_element = ToHTMLVideoElementOrNull(GetNode())) {
+  if (auto* video_element = DynamicTo<HTMLVideoElement>(GetNode())) {
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, video_element->IsDefaultIntrinsicSize());
   }

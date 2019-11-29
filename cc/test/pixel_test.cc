@@ -253,6 +253,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 
 void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
                                   bool enable_vulkan) {
+  enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
   if (enable_vulkan) {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);

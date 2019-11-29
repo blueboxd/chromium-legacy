@@ -97,8 +97,8 @@ class WebSocketStream::UnderlyingSink final : public UnderlyingSinkBase {
                base::OnceClosure callback);
   void SendArrayBuffer(ScriptState*,
                        DOMArrayBuffer*,
-                       int offset,
-                       int length,
+                       size_t offset,
+                       size_t length,
                        ScriptPromiseResolver*,
                        base::OnceClosure callback);
   void SendString(ScriptState*,
@@ -290,8 +290,7 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
   auto* isolate = script_state->GetIsolate();
   if (v8chunk->IsArrayBuffer()) {
     DOMArrayBuffer* data = V8ArrayBuffer::ToImpl(v8chunk.As<v8::ArrayBuffer>());
-    SendArrayBuffer(script_state, data, 0,
-                    data->DeprecatedByteLengthAsUnsigned(), resolver,
+    SendArrayBuffer(script_state, data, 0, data->ByteLengthAsSizeT(), resolver,
                     std::move(callback));
     return;
   }
@@ -309,10 +308,9 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
       return;
     }
 
-    SendArrayBuffer(script_state, data.View()->buffer(),
-                    data.View()->deprecatedByteOffsetAsUnsigned(),
-                    data.View()->deprecatedByteLengthAsUnsigned(), resolver,
-                    std::move(callback));
+    SendArrayBuffer(
+        script_state, data.View()->buffer(), data.View()->byteOffsetAsSizeT(),
+        data.View()->byteLengthAsSizeT(), resolver, std::move(callback));
     return;
   }
 
@@ -322,8 +320,8 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
 void WebSocketStream::UnderlyingSink::SendArrayBuffer(
     ScriptState* script_state,
     DOMArrayBuffer* buffer,
-    int offset,
-    int length,
+    size_t offset,
+    size_t length,
     ScriptPromiseResolver* resolver,
     base::OnceClosure callback) {
   DVLOG(1) << "WebSocketStream::UnderlyingSink " << this

@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state.h"

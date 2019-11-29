@@ -23,11 +23,11 @@ class WatcherManager : public storage::WatcherManager {
   // storage::WatcherManager overrides.
   void AddWatcher(const storage::FileSystemURL& url,
                   bool recursive,
-                  const StatusCallback& callback,
-                  const NotificationCallback& notification_callback) override;
+                  StatusCallback callback,
+                  NotificationCallback notification_callback) override;
   void RemoveWatcher(const storage::FileSystemURL& url,
                      bool recursive,
-                     const StatusCallback& callback) override;
+                     StatusCallback callback) override;
 };
 
 }  // namespace file_system_provider

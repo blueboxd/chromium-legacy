@@ -27,8 +27,6 @@ std::unique_ptr<GpuBlocklist> GpuBlocklist::Create(
   std::unique_ptr<GpuBlocklist> list(new GpuBlocklist(data));
   list->AddSupportedFeature("accelerated_2d_canvas",
                             GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
-  list->AddSupportedFeature("gpu_compositing",
-                            GPU_FEATURE_TYPE_GPU_COMPOSITING);
   list->AddSupportedFeature("accelerated_webgl",
                             GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
   list->AddSupportedFeature("flash3d", GPU_FEATURE_TYPE_FLASH3D);
@@ -47,6 +45,7 @@ std::unique_ptr<GpuBlocklist> GpuBlocklist::Create(
                             GPU_FEATURE_TYPE_OOP_RASTERIZATION);
   list->AddSupportedFeature("android_surface_control",
                             GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL);
+  list->AddSupportedFeature("accelerated_gl", GPU_FEATURE_TYPE_ACCELERATED_GL);
   list->AddSupportedFeature("metal", GPU_FEATURE_TYPE_METAL);
   list->AddSupportedFeature("vulkan", GPU_FEATURE_TYPE_VULKAN);
   return list;

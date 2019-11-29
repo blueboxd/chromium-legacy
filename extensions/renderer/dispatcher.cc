@@ -755,13 +755,11 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
 
       // Platform app sources that are not API-specific..
       {"platformApp", IDR_PLATFORM_APP_JS},
-  };
 
-  if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
-    resources.push_back({"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS});
-    resources.push_back(
-        {"guestViewIframeContainer", IDR_GUEST_VIEW_IFRAME_CONTAINER_JS});
-  }
+      // GuestView.
+      {"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS},
+      {"guestViewIframeContainer", IDR_GUEST_VIEW_IFRAME_CONTAINER_JS},
+  };
 
   return resources;
 }
@@ -1432,8 +1430,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     module_system->Require("webViewDeny");
   }
 
-  if (requires_guest_view_module &&
-      base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
+  if (requires_guest_view_module) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
   }

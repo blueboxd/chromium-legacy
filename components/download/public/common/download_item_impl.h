@@ -267,7 +267,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   TargetDisposition GetTargetDisposition() const override;
   const std::string& GetHash() const override;
   bool GetFileExternallyRemoved() const override;
-  void DeleteFile(const base::Callback<void(bool)>& callback) override;
+  void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
   DownloadDangerType GetDangerType() const override;

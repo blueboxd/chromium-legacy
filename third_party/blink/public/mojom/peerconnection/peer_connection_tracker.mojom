@@ -79,7 +79,7 @@ interface PeerConnectionTrackerHost {
                audio_constraints, string video_constraints);
 
   // Logs WebRtc log for the connection id.
-  WebRtcEventLogWrite(int32 lid, string output);
+  WebRtcEventLogWrite(int32 lid, array<uint8> output);
 
   // Adds standard PeerConnection stats for webrtc-internals.
   // |lid| is the renderer local id,

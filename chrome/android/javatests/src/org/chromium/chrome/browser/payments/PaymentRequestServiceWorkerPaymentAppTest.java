@@ -57,8 +57,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
      */
     private void installMockServiceWorkerPaymentApp(final String[] supportedMethodNames,
             final ServiceWorkerPaymentApp.Capabilities[] capabilities, final String name,
-            final boolean withIcon,
-            ServiceWorkerPaymentApp.SupportedDelegations supportedDelegations) {
+            final boolean withIcon, SupportedDelegations supportedDelegations) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
                 (webContents, methodNames, mayCrawlUnused, callback) -> {
                     ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
@@ -91,8 +90,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
             final ServiceWorkerPaymentApp.Capabilities[] capabilities, final boolean withName,
             final boolean withIcon) {
         installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities,
-                withName ? "BobPay" : null, withIcon,
-                new ServiceWorkerPaymentApp.SupportedDelegations());
+                withName ? "BobPay" : null, withIcon, new SupportedDelegations());
     }
 
     /**
@@ -111,8 +109,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         String[] supportedMethodNames = {"https://bobpay.xyz"};
         installMockServiceWorkerPaymentApp(supportedMethodNames,
                 new ServiceWorkerPaymentApp.Capabilities[0], name, true /*withIcon*/,
-                new ServiceWorkerPaymentApp.SupportedDelegations(
-                        shippingAddress, payerName, payerPhone, payerEmail));
+                new SupportedDelegations(shippingAddress, payerName, payerPhone, payerEmail));
     }
 
     @Test

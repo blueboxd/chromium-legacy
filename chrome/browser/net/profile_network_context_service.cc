@@ -174,6 +174,13 @@ void InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
   }
 }
 
+enum class AmbientAuthAllowedProfileTypes {
+  REGULAR_ONLY = 0,
+  INCOGNITO_AND_REGULAR = 1,
+  GUEST_AND_REGULAR = 2,
+  ALL = 3,
+};
+
 }  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
@@ -305,6 +312,9 @@ void ProfileNetworkContextService::RegisterProfilePrefs(
 void ProfileNetworkContextService::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
+  registry->RegisterIntegerPref(
+      prefs::kAmbientAuthenticationInPrivateModesEnabled,
+      static_cast<int>(AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {

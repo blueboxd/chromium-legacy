@@ -31,7 +31,7 @@ DevToolsWindowTesting::DevToolsWindowTesting(DevToolsWindow* window)
     : devtools_window_(window) {
   DCHECK(window);
   window->close_callback_ =
-      base::Bind(&DevToolsWindowTesting::WindowClosed, window);
+      base::BindOnce(&DevToolsWindowTesting::WindowClosed, window);
   g_devtools_window_testing_instances.Get().push_back(this);
 }
 
@@ -41,10 +41,8 @@ DevToolsWindowTesting::~DevToolsWindowTesting() {
   auto it(std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
-  if (!close_callback_.is_null()) {
-    close_callback_.Run();
-    close_callback_ = base::Closure();
-  }
+  if (!close_callback_.is_null())
+    std::move(close_callback_).Run();
 
   // Needed for Chrome_DevToolsADBThread to shut down gracefully in tests.
   ChromeDevToolsManagerDelegate::GetInstance()
@@ -88,8 +86,8 @@ void DevToolsWindowTesting::SetInspectedPageBounds(const gfx::Rect& bounds) {
   devtools_window_->SetInspectedPageBounds(bounds);
 }
 
-void DevToolsWindowTesting::SetCloseCallback(const base::Closure& closure) {
-  close_callback_ = closure;
+void DevToolsWindowTesting::SetCloseCallback(base::OnceClosure closure) {
+  close_callback_ = std::move(closure);
 }
 
 void DevToolsWindowTesting::SetOpenNewWindowForPopups(bool value) {

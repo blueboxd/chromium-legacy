@@ -281,7 +281,10 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
     on_device_head_provider_ =
         OnDeviceHeadProvider::Create(provider_client_.get(), this);
-    providers_.push_back(on_device_head_provider_);
+    if (on_device_head_provider_) {
+      providers_.push_back(on_device_head_provider_);
+      on_device_head_provider_->AddModelUpdateCallback();
+    }
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
 #if !defined(OS_IOS)

@@ -557,10 +557,12 @@ const char* ToString(ax::mojom::Role role) {
       return "revision";
     case ax::mojom::Role::kRootWebArea:
       return "rootWebArea";
-    case ax::mojom::Role::kRowHeader:
-      return "rowHeader";
     case ax::mojom::Role::kRow:
       return "row";
+    case ax::mojom::Role::kRowGroup:
+      return "rowGroup";
+    case ax::mojom::Role::kRowHeader:
+      return "rowHeader";
     case ax::mojom::Role::kRuby:
       return "ruby";
     case ax::mojom::Role::kRubyAnnotation:
@@ -937,10 +939,12 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRevision;
   if (0 == strcmp(role, "rootWebArea"))
     return ax::mojom::Role::kRootWebArea;
-  if (0 == strcmp(role, "rowHeader"))
-    return ax::mojom::Role::kRowHeader;
   if (0 == strcmp(role, "row"))
     return ax::mojom::Role::kRow;
+  if (0 == strcmp(role, "rowGroup"))
+    return ax::mojom::Role::kRowGroup;
+  if (0 == strcmp(role, "rowHeader"))
+    return ax::mojom::Role::kRowHeader;
   if (0 == strcmp(role, "ruby"))
     return ax::mojom::Role::kRuby;
   if (0 == strcmp(role, "rubyAnnotation"))

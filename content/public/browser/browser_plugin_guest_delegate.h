@@ -68,11 +68,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // content module.
   virtual void SetGuestHost(GuestHost* guest_host) {}
 
-  // TODO(ekaramad): A short workaround to force some types of guests to use
-  // a BrowserPlugin even when we are using cross process frames for guests. It
-  // should be removed after resolving https://crbug.com/642826).
-  virtual bool CanUseCrossProcessFrames();
-
   // Returns the RenderWidgetHost corresponding to the owner frame.
   virtual RenderWidgetHost* GetOwnerRenderWidgetHost();
 

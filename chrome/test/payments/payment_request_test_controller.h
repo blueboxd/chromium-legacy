@@ -29,6 +29,7 @@ class PaymentRequestTestObserver {
   virtual void OnNotSupportedError() {}
   virtual void OnConnectionTerminated() {}
   virtual void OnAbortCalled() {}
+  virtual void OnCompleteCalled() {}
 
  protected:
   virtual ~PaymentRequestTestObserver() {}
@@ -62,6 +63,7 @@ class PaymentRequestTestController {
   void OnNotSupportedError();
   void OnConnectionTerminated();
   void OnAbortCalled();
+  void OnCompleteCalled();
 
   PaymentRequestTestObserver* observer_ = nullptr;
 

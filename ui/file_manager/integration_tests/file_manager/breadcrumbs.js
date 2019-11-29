@@ -72,7 +72,7 @@
     // Check the breadcrumbs for Downloads:
     // Os meu ficheiros => My files.
     // Transferências => Downloads (as in Transfers).
-    let path =
+    const path =
         await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
     chrome.test.assertEq('/Os meus ficheiros/Transferências', path);
 
@@ -83,5 +83,64 @@
     // Wait and check breadcrumb translation.
     await remoteCall.waitUntilCurrentDirectoryIsChanged(
         appId, '/Os meus ficheiros/Transferências/photos');
+  };
+
+  /**
+   * Tests that breadcrumbs has to tooltip. crbug.com/951305
+   */
+  testcase.breadcrumbsTooltip = async () => {
+    /**
+     * Helper to create a test folder from a full |path|.
+     * @param {string} path The folder path.
+     * @return {TestEntryInfo}
+     */
+    function createTestFolder(path) {
+      const name = path.split('/').pop();
+      return new TestEntryInfo({
+        targetPath: path,
+        nameText: name,
+        type: EntryType.DIRECTORY,
+        lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+        sizeText: '--',
+        typeText: 'Folder',
+      });
+    }
+
+    // Build an array of nested folder test entries.
+    const nestedFolderTestEntries = [];
+    for (let path = 'nested-folder0', i = 0; i < 8; ++i) {
+      nestedFolderTestEntries.push(createTestFolder(path));
+      path += `/nested-folder${i + 1}`;
+    }
+
+    // Open FilesApp on Downloads containing the test entries.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, nestedFolderTestEntries, []);
+
+    // Navigate to deepest folder.
+    const breadcrumb = '/My files/Downloads/' +
+        nestedFolderTestEntries.map(e => e.nameText).join('/');
+    await navigateWithDirectoryTree(appId, breadcrumb);
+
+    // Get breadcrumb that is "collapsed" in the default window size.
+    const collapsedBreadcrumb =
+        await remoteCall.waitForElement(appId, '#breadcrumb-path-8');
+
+    // Check: Should have aria-label so screenreader announces the folder name.
+    chrome.test.assertEq(
+        'nested-folder6', collapsedBreadcrumb.attributes['aria-label']);
+    // Check: Should have collapsed attribute so it shows as "...".
+    chrome.test.assertEq('', collapsedBreadcrumb.attributes['collapsed']);
+
+    // Focus the search box.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, ['#breadcrumb-path-8', 'focus']));
+
+    // Check: The tooltip should be visible and its content is the folder name.
+    const tooltipQueryVisible = 'files-tooltip[visible=true]';
+    const tooltip = await remoteCall.waitForElement(appId, tooltipQueryVisible);
+    const label =
+        await remoteCall.waitForElement(appId, [tooltipQueryVisible, '#label']);
+    chrome.test.assertEq('nested-folder6', label.text);
   };
 })();

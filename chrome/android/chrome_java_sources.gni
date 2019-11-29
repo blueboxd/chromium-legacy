@@ -1239,6 +1239,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/SettingsAutofillAndPaymentsObserver.java",
   "java/src/org/chromium/chrome/browser/payments/ShippingStrings.java",
   "java/src/org/chromium/chrome/browser/payments/SslValidityChecker.java",
+  "java/src/org/chromium/chrome/browser/payments/SupportedDelegations.java",
   "java/src/org/chromium/chrome/browser/payments/UriUtils.java",
   "java/src/org/chromium/chrome/browser/payments/ui/ContactDetailsSection.java",
   "java/src/org/chromium/chrome/browser/payments/ui/DimmingDialog.java",

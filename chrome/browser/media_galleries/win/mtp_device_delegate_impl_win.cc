@@ -510,20 +510,19 @@ void MTPDeviceDelegateImplWin::AddWatcher(
     const GURL& origin,
     const base::FilePath& file_path,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::StatusCallback callback,
+    storage::WatcherManager::NotificationCallback notification_callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+  std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void MTPDeviceDelegateImplWin::RemoveWatcher(
     const GURL& origin,
     const base::FilePath& file_path,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback) {
+    storage::WatcherManager::StatusCallback callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+  std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {

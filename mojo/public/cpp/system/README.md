@@ -243,7 +243,8 @@ class PipeReader {
     // NOTE: base::Unretained is safe because the callback can never be run
     // after SimpleWatcher destruction.
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                   base::Bind(&PipeReader::OnReadable, base::Unretained(this)));
+                   base::BindRepeating(&PipeReader::OnReadable,
+				                       base::Unretained(this)));
   }
 
   ~PipeReader() {}

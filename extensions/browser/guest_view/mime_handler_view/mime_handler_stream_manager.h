@@ -21,7 +21,7 @@ namespace content {
 class BrowserContext;
 }
 
-FORWARD_DECLARE_TEST(MimeHandlerViewCrossProcessTest, Basic);
+FORWARD_DECLARE_TEST(MimeHandlerViewTest, Basic);
 
 namespace extensions {
 class Extension;
@@ -58,7 +58,7 @@ class MimeHandlerStreamManager : public KeyedService,
                            UnloadedExtensionReason reason) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(::MimeHandlerViewCrossProcessTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(::MimeHandlerViewTest, Basic);
 
   class EmbedderObserver;
 

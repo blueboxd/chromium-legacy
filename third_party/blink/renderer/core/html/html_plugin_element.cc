@@ -518,8 +518,7 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
   bool plugin_supports_mime_type =
       plugin_data && plugin_data->SupportsMimeType(mime_type);
   if (plugin_supports_mime_type &&
-      plugin_data->IsExternalPluginMimeType(mime_type) &&
-      RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+      plugin_data->IsExternalPluginMimeType(mime_type)) {
     return ObjectContentType::kExternalPlugin;
   }
 

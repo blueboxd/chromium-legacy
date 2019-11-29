@@ -201,12 +201,6 @@ const base::Feature kFtpProtocol{"FtpProtocol",
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Causes the implementations of guests (inner WebContents) to use
-// out-of-process iframes.
-// TODO(533069): Remove once BrowserPlugin is removed.
-const base::Feature kGuestViewCrossProcessFrames{
-    "GuestViewCrossProcessFrames", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If a page does a client side redirect or adds to the history without a user
 // gesture, then skip it on back/forward UI.
 const base::Feature kHistoryManipulationIntervention{
@@ -297,11 +291,6 @@ const base::Feature kMediaDevicesSystemMonitorCache {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Instead of BrowserPlugin or GuestViews, MimeHandlerView will use a cross
-// process frame to render its handler.
-const base::Feature kMimeHandlerViewInCrossProcessFrame{
-    "MimeHandlerViewInCrossProcessFrame", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables/disables the video capture service.
 const base::Feature kMojoVideoCapture{"MojoVideoCapture",

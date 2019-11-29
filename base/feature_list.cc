@@ -86,19 +86,6 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
   return IsStringASCII(name) && name.find_first_of(",<*") == std::string::npos;
 }
 
-// TODO(crbug.com/1018667): Remove this function once the DCHECK has been turned
-// into an equality check.
-bool MatchesSelfOrAncestor(const FieldTrialList* expected,
-                           const FieldTrialList* actual) {
-  if (expected == actual)
-    return true;
-
-  if (actual == nullptr)
-    return false;
-
-  return MatchesSelfOrAncestor(expected, actual->GetPreviousGlobal());
-}
-
 }  // namespace
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -452,11 +439,8 @@ void FeatureList::GetFeatureOverridesImpl(std::string* enable_overrides,
   // active one. If not, it likely indicates that this FeatureList has override
   // entries from a freed FieldTrial, which may be caused by an incorrect test
   // set up.
-  // TODO(crbug.com/1018667): Turn the DCHECK below into a equality check.
-  if (field_trial_list_) {
-    DCHECK(MatchesSelfOrAncestor(field_trial_list_,
-                                 FieldTrialList::GetInstance()));
-  }
+  if (field_trial_list_)
+    DCHECK_EQ(field_trial_list_, FieldTrialList::GetInstance());
 
   enable_overrides->clear();
   disable_overrides->clear();

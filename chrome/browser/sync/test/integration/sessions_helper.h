@@ -142,22 +142,20 @@ bool GetLocalSession(int browser_index,
 // to the session tag within the SyncedSession we plan to delete.
 void DeleteForeignSession(int browser_index, std::string session_tag);
 
-}  // namespace sessions_helper
-
 // Checker to block until the foreign sessions for a particular profile matches
-// the reference windows.
+// the local sessions from another profile.
 class ForeignSessionsMatchChecker : public MultiClientStatusChangeChecker {
  public:
-  ForeignSessionsMatchChecker(
-      int browser_index,
-      const std::vector<sessions_helper::ScopedWindowMap>& windows);
+  ForeignSessionsMatchChecker(int profile_index, int foreign_profile_index);
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
-  int browser_index_;
-  const std::vector<sessions_helper::ScopedWindowMap>& windows_;
+  int profile_index_;
+  int foreign_profile_index_;
 };
+
+}  // namespace sessions_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SESSIONS_HELPER_H_

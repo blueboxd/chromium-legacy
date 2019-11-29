@@ -168,7 +168,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   if (app_id.has_value() && *app_id == installed_app_id &&
       registrar().GetAppUserDisplayMode(*app_id) ==
           blink::mojom::DisplayMode::kStandalone) {
-    OnInstall(blink::mojom::DisplayMode::kStandalone);
+    OnInstall(registrar().GetAppDisplayMode(*app_id));
   }
 }
 

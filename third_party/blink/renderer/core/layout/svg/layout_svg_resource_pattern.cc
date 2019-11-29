@@ -145,7 +145,7 @@ SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
   // no side-effects though.
   if (should_collect_pattern_attributes_) {
     attributes_wrapper_->Set(PatternAttributes());
-    SVGPatternElement* pattern_element = ToSVGPatternElement(GetElement());
+    auto* pattern_element = To<SVGPatternElement>(GetElement());
     pattern_element->CollectPatternAttributes(MutableAttributes());
     should_collect_pattern_attributes_ = false;
   }

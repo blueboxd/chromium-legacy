@@ -232,7 +232,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
     }
   }
 
-  if (auto* pattern = ToSVGPatternElementOrNull(element)) {
+  if (auto* pattern = DynamicTo<SVGPatternElement>(element)) {
     const SVGPatternElement* directly_referenced_pattern =
         pattern->ReferencedElement();
     if (directly_referenced_pattern) {

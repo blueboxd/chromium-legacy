@@ -593,7 +593,7 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     // patterns using xlink:href, we need to build the full inheritance chain,
     // aka. collectPatternProperties()
     PatternAttributes attributes;
-    ToSVGPatternElement(pattern->GetElement())
+    To<SVGPatternElement>(pattern->GetElement())
         ->CollectPatternAttributes(attributes);
 
     WriteNameValuePair(ts, "patternUnits", attributes.PatternUnits());

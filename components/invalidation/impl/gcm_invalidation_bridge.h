@@ -35,6 +35,8 @@ class IdentityProvider;
 // Core lives on IO thread. Core implements GCMNetworkChannelDelegate and posts
 // all function calls to GCMInvalidationBridge which does actual work to perform
 // them.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class GCMInvalidationBridge : public gcm::GCMAppHandler,
                               public gcm::GCMConnectionObserver {
  public:

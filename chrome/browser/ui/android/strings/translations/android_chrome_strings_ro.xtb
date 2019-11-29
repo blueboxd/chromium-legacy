@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">Afișează parola</translation>
 <translation id="363596933471559332">Te conectezi automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita verificarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="3658159451045945436">Prin resetare se șterge istoricul economisirii de date, inclusiv lista site-urilor vizitate.</translation>
-<translation id="3682730288090679318">Activează ca să blochezi automat site-urile care vor te întrebe dacă îți pot afișa notificări. Dacă un site solicită notificări, va apărea o bară de informații în partea de jos a paginii.</translation>
+<translation id="3682730288090679318">Activează pentru a se bloca automat solicitările site-urilor de a-ți afișa notificări. Dacă un site solicită notificări, va apărea o bară de informații în partea de jos a paginii.</translation>
 <translation id="3692944402865947621">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit, deoarece nu se poate contacta locația de stocare.</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
 <translation id="3716182511346448902">Această pagină folosește prea multă memorie, prin urmare Chrome a întrerupt-o.</translation>
@@ -689,7 +689,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="6108923351542677676">Configurare în curs...</translation>
 <translation id="6111020039983847643">date utilizate</translation>
 <translation id="6112702117600201073">Se actualizează pagina</translation>
-<translation id="6113400363611269907">Afișează solicitările în liniște</translation>
+<translation id="6113400363611269907">Afișează solicitări discrete</translation>
 <translation id="6127379762771434464">Elementul a fost eliminat</translation>
 <translation id="6140912465461743537">Țară/Regiune</translation>
 <translation id="614940544461990577">Încearcă:</translation>
@@ -1021,7 +1021,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8503813439785031346">Nume utilizator</translation>
 <translation id="8514477925623180633">Exportă parolele stocate în Chrome</translation>
 <translation id="8514577642972634246">Intră în modul incognito</translation>
-<translation id="8516012719330875537">Editor imagini</translation>
+<translation id="8516012719330875537">Editor de imagini</translation>
 <translation id="851751545965956758">Blochează conectarea site-urilor la dispozitive</translation>
 <translation id="8523928698583292556">Șterge parola stocată</translation>
 <translation id="854522910157234410">Deschide această pagină</translation>

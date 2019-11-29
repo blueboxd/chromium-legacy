@@ -42,6 +42,8 @@ class GCMNetworkChannelDelegate;
 using NetworkChannelCreator =
     base::Callback<std::unique_ptr<SyncNetworkChannel>(void)>;
 
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT NonBlockingInvalidator
     : public Invalidator,
       public InvalidationStateTracker {

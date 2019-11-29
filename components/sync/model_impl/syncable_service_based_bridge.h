@@ -96,7 +96,6 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       const base::Optional<ModelError>& error,
       std::unique_ptr<ModelTypeStore::RecordList> record_list);
   void ReportErrorIfSet(const base::Optional<ModelError>& error);
-  void RecordAssociationTime(base::TimeDelta time) const;
 
   const ModelType type_;
   SyncableService* const syncable_service_;

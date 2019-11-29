@@ -101,13 +101,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 // Tests that find in page allows iteration between search results and displays
 // correct number of results.
-#if defined(CHROME_EARL_GREY_2)
-// TODO(crbug.com/1026579): Enable the tests once the bug is fixed
-- (void)FLAKY_testFindInPage {
-#else
 - (void)testFindInPage {
-#endif
-
   // Type "find".
   [self typeFindInPageText:@"find"];
   // Should be highlighting result 1 of 2.
@@ -124,12 +118,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // Tests that Find In Page search term retention is working as expected, e.g.
 // the search term is persisted between FIP runs, but in incognito search term
 // is not retained and not autofilled.
-#if defined(CHROME_EARL_GREY_2)
-// TODO(crbug.com/1026579): Enable the tests once the bug is fixed
-- (void)FLAKY_testFindInPageRetainsSearchTerm {
-#else
 - (void)testFindInPageRetainsSearchTerm {
-#endif
   // Type "find".
   [self typeFindInPageText:@"find"];
   [self assertResultStringIsResult:1 outOfTotal:2];
@@ -169,12 +158,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 // Tests accessibility of the Find in Page screen.
-#if defined(CHROME_EARL_GREY_2)
-// TODO(crbug.com/1026579): Enable the tests once the bug is fixed
-- (void)FLAKY_testAccessibilityOnFindInPage {
-#else
 - (void)testAccessibilityOnFindInPage {
-#endif
   [self typeFindInPageText:@"find"];
 
   // Wait for UI to finish loading screen, before programatically verifying

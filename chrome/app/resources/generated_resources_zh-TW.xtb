@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">按下 |<ph name="ACCELERATOR" />| 即可結束全螢幕模式</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1039337018183941703">檔案無效或毀損</translation>
-<translation id="1039850285407663109">所選檔案不明，其中可能含有危險內容。建議你在開啟這個檔案前先進行掃描。</translation>
+<translation id="1039850285407663109">你選取了一個來路不明的檔案，其中可能含有危險內容。建議你在開啟這個檔案前先進行掃描。</translation>
 <translation id="1041175011127912238">這個網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">你的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -619,7 +619,7 @@
 <translation id="1858585891038687145">信任這個用於識別軟體製造商的憑證</translation>
 <translation id="1861262398884155592">這個資料夾是空的</translation>
 <translation id="1863182668524159459">找不到序列埠</translation>
-<translation id="1863552924692672565">「<ph name="FILE_NAME" />」是不明檔案。建議你掃描檔案，盡可能降低風險。</translation>
+<translation id="1863552924692672565">「<ph name="FILE_NAME" />」是不明檔案。建議你掃描這個檔案，盡可能降低風險。</translation>
 <translation id="1864111464094315414">登入</translation>
 <translation id="1864400682872660285">冷色調</translation>
 <translation id="1864454756846565995">USB-C 裝置 (背面連接埠)</translation>
@@ -1120,7 +1120,7 @@
 <translation id="2585724835339714757">這個分頁正在共用你的畫面。</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2586672484245266891">請輸入較短的網址</translation>
-<translation id="2587922766792651800">已逾時</translation>
+<translation id="2587922766792651800">作業逾時</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
 <translation id="2603115962224169880">清理電腦</translation>
@@ -3523,7 +3523,6 @@
 <translation id="6112727384379533756">新增票證</translation>
 <translation id="6112931163620622315">請查看你的手機</translation>
 <translation id="6112952769866305444">編輯使用者，<ph name="PROFILE_NAME" />，<ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">以無聲模式顯示提示</translation>
 <translation id="6113942107547980621">如要使用 Smart Lock，請在手機上切換到主要使用者設定檔</translation>
 <translation id="6116338172782435947">讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="6116921718742659598">變更語言和輸入設定</translation>

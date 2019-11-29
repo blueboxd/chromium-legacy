@@ -763,6 +763,14 @@ class V4L2BufferRefFactory {
   }
 };
 
+// Helper macros that print the queue type with logs.
+#define VPQLOGF(level) \
+  VPLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+#define VQLOGF(level) \
+  VLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+#define DVQLOGF(level) \
+  DVLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+
 V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
                      base::OnceClosure destroy_cb)
@@ -777,7 +785,7 @@ V4L2Queue::~V4L2Queue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (is_streaming_) {
-    VLOGF(1) << "Queue is still streaming, trying to stop it...";
+    VQLOGF(1) << "Queue is still streaming, trying to stop it...";
     Streamoff();
   }
 
@@ -785,7 +793,7 @@ V4L2Queue::~V4L2Queue() {
   DCHECK(!free_buffers_);
 
   if (!buffers_.empty()) {
-    VLOGF(1) << "Buffers are still allocated, trying to deallocate them...";
+    VQLOGF(1) << "Buffers are still allocated, trying to deallocate them...";
     DeallocateBuffers();
   }
 
@@ -804,8 +812,8 @@ base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPLOGF(2) << "Failed to set format on queue " << type_
-              << ". format_fourcc=0x" << std::hex << fourcc;
+    VPQLOGF(2) << "Failed to set format on queue " << type_
+               << ". format_fourcc=0x" << std::hex << fourcc;
     return base::nullopt;
   }
 
@@ -819,17 +827,18 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   DCHECK_EQ(queued_buffers_.size(), 0u);
 
   if (IsStreaming()) {
-    VLOGF(1) << "Cannot allocate buffers while streaming.";
+    VQLOGF(1) << "Cannot allocate buffers while streaming.";
     return 0;
   }
 
   if (buffers_.size() != 0) {
-    VLOGF(1) << "Cannot allocate new buffers while others are still allocated.";
+    VQLOGF(1)
+        << "Cannot allocate new buffers while others are still allocated.";
     return 0;
   }
 
   if (count == 0) {
-    VLOGF(1) << "Attempting to allocate 0 buffers.";
+    VQLOGF(1) << "Attempting to allocate 0 buffers.";
     return 0;
   }
 
@@ -840,7 +849,7 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   struct v4l2_format format = {.type = type_};
   int ret = device_->Ioctl(VIDIOC_G_FMT, &format);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_G_FMT failed: ";
+    VPQLOGF(1) << "VIDIOC_G_FMT failed";
     return 0;
   }
   planes_count_ = format.fmt.pix_mp.num_planes;
@@ -850,14 +859,14 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   reqbufs.count = count;
   reqbufs.type = type_;
   reqbufs.memory = memory;
-  DVLOGF(3) << "queue " << type_ << ": requesting " << count << " buffers.";
+  DVQLOGF(3) << "Requesting " << count << " buffers.";
 
   ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_REQBUFS failed: ";
+    VPQLOGF(1) << "VIDIOC_REQBUFS failed";
     return 0;
   }
-  DVLOGF(3) << "queue " << type_ << ": got " << reqbufs.count << " buffers.";
+  DVQLOGF(3) << "queue " << type_ << ": got " << reqbufs.count << " buffers.";
 
   memory_ = memory;
 
@@ -888,7 +897,7 @@ bool V4L2Queue::DeallocateBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsStreaming()) {
-    VLOGF(1) << "Cannot deallocate buffers while streaming.";
+    VQLOGF(1) << "Cannot deallocate buffers while streaming.";
     return false;
   }
 
@@ -907,7 +916,7 @@ bool V4L2Queue::DeallocateBuffers() {
 
   int ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_REQBUFS failed: ";
+    VPQLOGF(1) << "VIDIOC_REQBUFS failed";
     return false;
   }
 
@@ -952,7 +961,7 @@ bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
 
   int ret = device_->Ioctl(VIDIOC_QBUF, v4l2_buffer);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_QBUF failed: ";
+    VPQLOGF(1) << "VIDIOC_QBUF failed";
     return false;
   }
 
@@ -972,7 +981,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
     return std::make_pair(true, nullptr);
 
   if (!IsStreaming()) {
-    VLOGF(1) << "Attempting to dequeue a buffer while not streaming.";
+    VQLOGF(1) << "Attempting to dequeue a buffer while not streaming.";
     return std::make_pair(true, nullptr);
   }
 
@@ -995,7 +1004,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
         // This is not an error but won't provide a buffer either.
         return std::make_pair(true, nullptr);
       default:
-        VPLOGF(1) << "VIDIOC_DQBUF failed: ";
+        VPQLOGF(1) << "VIDIOC_DQBUF failed";
         return std::make_pair(false, nullptr);
     }
   }
@@ -1028,7 +1037,7 @@ bool V4L2Queue::Streamon() {
   int arg = static_cast<int>(type_);
   int ret = device_->Ioctl(VIDIOC_STREAMON, &arg);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_STREAMON failed: ";
+    VPQLOGF(1) << "VIDIOC_STREAMON failed";
     return false;
   }
 
@@ -1047,7 +1056,7 @@ bool V4L2Queue::Streamoff() {
   int arg = static_cast<int>(type_);
   int ret = device_->Ioctl(VIDIOC_STREAMOFF, &arg);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_STREAMOFF failed: ";
+    VPQLOGF(1) << "VIDIOC_STREAMOFF failed";
     return false;
   }
 
@@ -1080,6 +1089,10 @@ size_t V4L2Queue::QueuedBuffersCount() const {
 
   return queued_buffers_.size();
 }
+
+#undef VDQLOGF
+#undef VPQLOGF
+#undef VQLOGF
 
 // This class is used to expose V4L2Queue's constructor to this module. This is
 // to ensure that nobody else can create instances of it.
@@ -1480,6 +1493,23 @@ const char* V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
       return "V4L2_MEMORY_DMABUF";
     case V4L2_MEMORY_OVERLAY:
       return "V4L2_MEMORY_OVERLAY";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+// static
+const char* V4L2Device::V4L2BufferTypeToString(
+    const enum v4l2_buf_type buf_type) {
+  switch (buf_type) {
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
+      return "OUTPUT";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+      return "CAPTURE";
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+      return "OUTPUT_MPLANE";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+      return "CAPTURE_MPLANE";
     default:
       return "UNKNOWN";
   }

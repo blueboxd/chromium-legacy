@@ -19,7 +19,9 @@ js_type_check("compile_resources") {
   deps = [
     ":background",
     ":chrome_util",
+    ":gallerybutton",
     ":intent",
+    ":main",
     ":metrics",
     ":nav",
     ":sound",
@@ -40,6 +42,17 @@ js_library("intent") {
   ]
 }
 
+js_library("gallerybutton") {
+  deps = [
+    ":chrome_util",
+    "models:gallery",
+  ]
+  externs_list = [
+    "$externs_path/file_manager_private.js",
+    "$externs_path/file_system_provider.js",
+  ]
+}
+
 js_library("metrics") {
   deps = [
     "externs:chrome_platform_analytics",
@@ -50,6 +63,23 @@ js_library("sound") {
 }
 
 js_library("type") {
+}
+
+js_library("main") {
+  deps = [
+    ":chrome_util",
+    ":gallerybutton",
+    ":intent",
+    ":state",
+    "device:constraints_preferrer",
+    "device:device_info_updater",
+    "models:gallery",
+    "views:camera",
+    "views:camera_intent",
+    "views:dialog",
+    "views:settings",
+    "views:warning",
+  ]
 }
 
 js_library("nav") {

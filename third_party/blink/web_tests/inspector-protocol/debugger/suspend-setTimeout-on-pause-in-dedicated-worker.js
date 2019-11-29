@@ -3,6 +3,7 @@
 
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
                            flatten: true});
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-suspend-setTimeout.js')}');
     window.worker.onmessage = function(event) { };
@@ -10,7 +11,7 @@
   `);
   testRunner.log('Started worker');
 
-  const event = await dp.Target.onceAttachedToTarget();
+  const event = await attachedPromise;
   const childSession = session.createChild(event.params.sessionId);
   testRunner.log('Worker created');
 

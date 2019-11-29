@@ -94,8 +94,6 @@ crbug.com/762529 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 # ====== Browserside navigation until here ======
 
-crbug.com/915472 inspector-protocol/worker/worker-autoattach-order.js [ Failure Pass ]
-
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -4416,7 +4414,6 @@ crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-wit
 crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
-crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
@@ -5897,3 +5894,6 @@ crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 # Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
 crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
+
+# Temporary suppression to allow devtools-frontend changes
+crbug.com/1016772 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]

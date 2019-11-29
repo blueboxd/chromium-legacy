@@ -26,6 +26,8 @@ class InvalidationLogger;
 
 // This InvalidationService is used to deliver invalidations on Android.  The
 // Android operating system has its own mechanisms for delivering invalidations.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class InvalidationServiceAndroid : public InvalidationService {
  public:
   explicit InvalidationServiceAndroid();

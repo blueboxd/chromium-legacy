@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_callback_function.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_2.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/testing/internal_dictionary.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -37,6 +36,7 @@
 namespace blink {
 
 class EventTarget;
+class InternalDictionary;
 class TestObject;
 class TestInterfaceImplementation;
 class Element;

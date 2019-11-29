@@ -24,7 +24,6 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     Profile* profile,
     BubbleSyncPromoDelegate* delegate,
     signin_metrics::AccessPoint access_point,
-    int no_accounts_promo_message_resource_id,
     int accounts_promo_message_resource_id,
     bool signin_button_prominent,
     int text_style)

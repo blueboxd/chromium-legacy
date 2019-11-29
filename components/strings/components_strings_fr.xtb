@@ -750,7 +750,7 @@
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4597348597567598915">Taille 8</translation>
 <translation id="4600854749408232102">C6/C5 (enveloppe)</translation>
-<translation id="4613966523036881546">Le certificat pour cette connexion n'est pas jugé fiable par Google Chrome, car il est connu pour être utilisé à des fins d'interception et de surveillance du réseau.</translation>
+<translation id="4613966523036881546">Le certificat pour cette connexion n'est pas jugé fiable par Google Chrome, car il est connu pour être utilisé pour intercepter le trafic et surveiller le réseau.</translation>
 <translation id="4635654612248442824">Le site <ph name="ORIGIN" /> a exigé qu'une règle relative à l'origine soit appliquée à toutes ses demandes, mais cette règle ne peut pas être appliquée actuellement.</translation>
 <translation id="464342062220857295">Rechercher des fonctionnalités</translation>
 <translation id="4646534391647090355">Accéder</translation>
@@ -1459,7 +1459,7 @@ Informations supplémentaires :
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8105368624971345109">Désactiver</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
-<translation id="8124023448510659215">Le certificat pour cette connexion n'est pas jugé fiable par Chromium, car il est connu pour être utilisé à des fins d'interception et de surveillance du réseau.</translation>
+<translation id="8124023448510659215">Le certificat de cette connexion n'est pas jugé fiable par Chromium, car il est connu pour être utilisé pour intercepter le trafic et surveiller le réseau.</translation>
 <translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>

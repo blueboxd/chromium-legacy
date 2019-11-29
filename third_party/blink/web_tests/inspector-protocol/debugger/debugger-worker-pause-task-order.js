@@ -4,6 +4,7 @@
   await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
                            flatten: true});
 
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
       const workerScript = \`
         self.count = 0;
@@ -22,7 +23,7 @@
       worker.postMessage(1);
     `);
 
-  const event = await dp.Target.onceAttachedToTarget();
+  const event = await attachedPromise;
   const childSession = session.createChild(event.params.sessionId);
   testRunner.log('Worker created');
 

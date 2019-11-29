@@ -615,7 +615,7 @@
 <translation id="1858585891038687145">ସଫ୍ଟୱେୟାର୍ ନିର୍ମାତା ଚିହ୍ନଟ କରିବା ପାଇଁ ଏହି ସାର୍ଟିଫିକେଟ୍ ଉପରେ ବିଶ୍ଵାସ ରଖନ୍ତୁ</translation>
 <translation id="1861262398884155592">ଏହି ଫୋଲ୍ଡର୍‌ ଖାଲି ଅଟେ</translation>
 <translation id="1863182668524159459">କୌଣସି କ୍ରମିକ ପୋର୍ଟଗୁଡ଼ିକ ମିଳିଲା ନାହିଁ</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ଅଜଣା ଅଟେ। ବିପଦ କମାଇବା ପାଇଁ ଫାଇଲ୍‌କୁ ସ୍କାନ୍ କରନ୍ତୁ।</translation>
+<translation id="1863552924692672565"><ph name="FILE_NAME" /> ଅଜଣା ଅଟେ। ବିପଦ ହ୍ରାସ କରିବା ପାଇଁ ଫାଇଲ୍‌କୁ ସ୍କାନ୍ କରନ୍ତୁ।</translation>
 <translation id="1864111464094315414">ଲଗ୍ଇନ୍</translation>
 <translation id="1864400682872660285">ଶୀତଳ</translation>
 <translation id="1864454756846565995">USB-C ଡିଭାଇସ୍ (ପଛ ପୋର୍ଟ)</translation>
@@ -3519,7 +3519,6 @@
 <translation id="6112727384379533756">ଏକ ଟିକେଟ୍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="6112931163620622315">ଆପଣଙ୍କର ଫୋନ୍ ଦେଖନ୍ତୁ</translation>
 <translation id="6112952769866305444">ବ୍ୟକ୍ତିର, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /> ଏଡ଼ିଟ୍‍ କରନ୍ତୁ</translation>
-<translation id="6113400363611269907">ନୀରବ ଭାବରେ ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ଦେଖାଏ</translation>
 <translation id="6113942107547980621">ସ୍ମାର୍ଟ ଲକ୍ ବ୍ୟବହାର କରିବାକୁ, ଆପଣଙ୍କ ଫୋନ୍‍‍ରେ ପ୍ରାଥମିକ ଉପଯୋଗକର୍ତ୍ତା ପ୍ରୋଫାଇଲ୍‍କୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="6116338172782435947">କ୍ଲିପ୍‌ବୋର୍ଡକୁ କପି ହୋ‍ଇଥିବା ଟେକ୍ସଟ୍‍ ଏବଂ ଛବିଗୁଡ଼ିକୁ ଦେଖନ୍ତୁ</translation>
 <translation id="6116921718742659598">ଭାଷା ଓ ଇନ୍‌ପୁଟ୍ ସେଟିଂସ୍ ବଦଳାନ୍ତୁ</translation>
@@ -4880,7 +4879,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8076835018653442223">ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ଆପଣଙ୍କ ଡିଭାଇସ୍‌ରେ ଥିବା ସ୍ଥାନୀୟ ଫାଇଲ୍‌ଗୁଡ଼ିକୁ ଆକ୍ସେସ୍‍ ଅକ୍ଷମ କରାଯାଇଛି</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081989000209387414">ADB ଡିବଗିଂ ଅକ୍ଷମ କରିବେ?</translation>
-<translation id="8082390128630131497">ADB ଡିବଗିଂ ଅକ୍ଷମ କରିବା ଦ୍ୱାରା ଏହି <ph name="DEVICE_TYPE" /> ଫ୍ୟାକ୍ଟୋରୀ ସେଟିଂସ୍‌କୁ ରିସେଟ୍ ହୋଇଯିବ। ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତା ଆକାଉଣ୍ଟ ଏବଂ ସ୍ଥାନୀୟ ଡାଟା ଲିଭିଯିବ।</translation>
+<translation id="8082390128630131497">ADB ଡିବଗିଂ ଅକ୍ଷମ କରିବା ଦ୍ୱାରା ଏହି <ph name="DEVICE_TYPE" /> ଫ୍ୟାକ୍ଟୋରୀ ସେଟିଂସ୍‌ରେ ରିସେଟ୍ ହୋଇଯିବ। ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତା ଆକାଉଣ୍ଟ ଏବଂ ସ୍ଥାନୀୟ ଡାଟା ଲିଭିଯିବ।</translation>
 <translation id="8084114998886531721">ସେଭ୍‌ ହୋ‍ଇଥିବା ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> କନ୍‍ଫିଗର୍ କରାଯାଉଛି ...</translation>
 <translation id="8086442853986205778"><ph name="PRINTER_NAME" /> ସେଟ୍ ଅପ୍ କରନ୍ତୁ</translation>

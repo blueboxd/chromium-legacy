@@ -108,6 +108,9 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Failure ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 
+# Sheriff 2019-11-29
+crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Failure ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #

@@ -16,7 +16,7 @@ PASS Property font-variant-numeric value 'slashed-zero' computes to 'slashed-zer
 FAIL Property font-variant-position value 'sub' computes to 'sub' in ::marker assert_true: font-variant-position doesn't seem to be supported in the computed style expected true got false
 PASS Property font-weight value '900' computes to '900' in ::marker
 PASS Property color value 'rgb(0, 100, 200)' computes to 'rgb(0, 100, 200)' in ::marker
-PASS Property text-combine-upright value 'none' computes to 'none' in ::marker
+PASS Property text-combine-upright value 'all' computes to 'all' in ::marker
 PASS Property unicode-bidi value 'plaintext' computes to 'plaintext' in ::marker
 PASS Property direction value 'rtl' computes to 'rtl' in ::marker
 PASS Property content value '"foo"' computes to '"foo"' in ::marker

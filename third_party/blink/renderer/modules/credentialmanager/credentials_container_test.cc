@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_creation_options.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_parameters.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_user_entity.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

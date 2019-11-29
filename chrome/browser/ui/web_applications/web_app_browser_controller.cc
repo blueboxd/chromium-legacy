@@ -49,10 +49,12 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
     return *app_icon_;
   app_icon_ = GetFallbackAppIcon();
 
-  provider_.icon_manager().ReadSmallestIcon(
-      GetAppId(), gfx::kFaviconSize,
-      base::BindOnce(&WebAppBrowserController::OnReadIcon,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (provider_.icon_manager().HasSmallestIcon(GetAppId(), gfx::kFaviconSize)) {
+    provider_.icon_manager().ReadSmallestIcon(
+        GetAppId(), gfx::kFaviconSize,
+        base::BindOnce(&WebAppBrowserController::OnReadIcon,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 
   return *app_icon_;
 }

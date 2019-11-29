@@ -71,6 +71,29 @@ ArrayBufferContents::ArrayBufferContents(
   }
 }
 
+ArrayBufferContents::ArrayBufferContents(
+    std::shared_ptr<v8::BackingStore> backing_store) {
+  if (!backing_store || backing_store->Data()) {
+    backing_store_ = std::move(backing_store);
+    return;
+  }
+  // ArrayBufferContents has to guarantee that Data() provides a valid pointer,
+  // even when DataSize() is '0'. That's why we create a new BackingStore here.
+  // TODO(ahaas): Remove this code here once nullptr is a valid result for
+  // Data().
+  CHECK_EQ(backing_store->ByteLength(), 0u);
+  void* data = AllocateMemoryOrNull(0, kDontInitialize);
+  CHECK_NE(data, nullptr);
+  DataDeleter deleter = [](void* data, size_t, void*) { FreeMemory(data); };
+  if (!backing_store->IsShared()) {
+    backing_store_ =
+        v8::ArrayBuffer::NewBackingStore(data, 0, deleter, nullptr);
+  } else {
+    backing_store_ =
+        v8::SharedArrayBuffer::NewBackingStore(data, 0, deleter, nullptr);
+  }
+}
+
 ArrayBufferContents::~ArrayBufferContents() = default;
 
 void ArrayBufferContents::Detach() {

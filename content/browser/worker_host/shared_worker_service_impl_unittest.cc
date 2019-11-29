@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/worker_host/mock_shared_worker.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
@@ -291,7 +292,13 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
 // Tests that the shared worker will not be started if the hosting web contents
 // is destroyed while the script is being fetched.
-TEST_F(SharedWorkerServiceImplTest, WebContentsDestroyed) {
+// Disabled on Fuchsia because this unittest is flaky.
+#if defined(OS_FUCHSIA)
+#define MAYBE_WebContentsDestroyed DISABLED_WebContentsDestroyed
+#else
+#define MAYBE_WebContentsDestroyed WebContentsDestroyed
+#endif
+TEST_F(SharedWorkerServiceImplTest, MAYBE_WebContentsDestroyed) {
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("http://example.com/"));
   TestRenderFrameHost* render_frame_host = web_contents->GetMainFrame();

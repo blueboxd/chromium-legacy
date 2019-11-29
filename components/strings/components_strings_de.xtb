@@ -754,7 +754,7 @@
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4597348597567598915">Größe 8</translation>
 <translation id="4600854749408232102">C6/C5 (Umschlag)</translation>
-<translation id="4613966523036881546">Google Chrome vertraut dem Zertifikat dieser Verbindung nicht, da diese Netzwerke unterbrechen und überwachen kann.</translation>
+<translation id="4613966523036881546">Google Chrome vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="4635654612248442824">Die Website <ph name="ORIGIN" /> verlangt, dass für alle ihre Anfragen eine Ursprungsrichtlinie gilt.
     Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="464342062220857295">Suchfunktionen</translation>
@@ -1464,7 +1464,7 @@ Weitere Details:
 <translation id="8103161714697287722">Zahlungsmethode</translation>
 <translation id="8105368624971345109">Deaktivieren</translation>
 <translation id="8118489163946903409">Zahlungsmethode</translation>
-<translation id="8124023448510659215">Chromium vertraut dem Zertifikat dieser Verbindung nicht, da diese Netzwerke unterbrechen und überwachen kann.</translation>
+<translation id="8124023448510659215">Chromium vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" war nicht ordnungsgemäß auf Ihrem Computer oder im Netzwerk installiert. Bitten Sie Ihren IT-Administrator, das Problem zu lösen.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>

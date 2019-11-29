@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -252,19 +253,17 @@ IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest,
 
 // Tests that initialization of the AutocompleteHistoryManager sets the
 // retention policy last version ran preference when the flag is enabled.
-// Disable due to flaky on Mac and ChromeOS. https://crbug.com/1028765
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_RetentionPolicy_Init_SavesVersionPref \
-  DISABLED_RetentionPolicy_Init_SavesVersionPref
-#else
-#define MAYBE_RetentionPolicy_Init_SavesVersionPref \
-  RetentionPolicy_Init_SavesVersionPref
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest,
-                       MAYBE_RetentionPolicy_Init_SavesVersionPref) {
+                       RetentionPolicy_Init_SavesVersionPref) {
   // Navigate to a file and wait, this will make sure we instantiate
   // AutocompleteHistoryManager.
   NavigateToFile(kSimpleFormFileName);
+
+  // The checkup is executed asynchronsouly on startup and may not have
+  // finished, yet.
+  WaitForPrefValue(pref_service(),
+                   prefs::kAutocompleteLastVersionRetentionPolicy,
+                   base::Value(CHROME_VERSION_MAJOR));
 
   int saved_version = pref_service()->GetInteger(
       prefs::kAutocompleteLastVersionRetentionPolicy);

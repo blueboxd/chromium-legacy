@@ -4,10 +4,17 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -198,4 +205,36 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, WebBluetooth) {
   content::RenderFrameDeletedObserver delete_observer(current_frame_host());
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
   delete_observer.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       PermissionContextBase) {
+  // HTTPS needed for GEOLOCATION permission
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  GURL url_a(https_server.GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server.GetURL("b.com", "/title1.html"));
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                 ContentSetting::CONTENT_SETTING_ASK);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHost* rfh_a = current_frame_host();
+  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url_b));
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  base::MockOnceCallback<void(ContentSetting)> callback;
+  EXPECT_CALL(callback, Run(ContentSetting::CONTENT_SETTING_ASK));
+  PermissionManager::Get(browser()->profile())
+      ->RequestPermission(ContentSettingsType::GEOLOCATION, rfh_a, url_a,
+                          /* user_gesture = */ true, callback.Get());
+
+  delete_observer_rfh_a.WaitUntilDeleted();
 }

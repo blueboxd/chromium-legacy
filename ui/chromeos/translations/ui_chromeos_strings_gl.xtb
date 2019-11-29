@@ -220,7 +220,7 @@
 <translation id="3620292326130836921">Todos os ficheiros teñen unha copia de seguranza</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3644896802912593514">Largura</translation>
-<translation id="3645531960514756307">Soltar cartafol</translation>
+<translation id="3645531960514756307">Deixar de fixar cartafol</translation>
 <translation id="3678559383040232393">Teclado maltés</translation>
 <translation id="3685122418104378273">A sincronización con Google Drive está desactivada de xeito predeterminado cando se utilizan os datos móbiles.</translation>
 <translation id="3689865792480713551">Cancelar esta actividade: <ph name="ACTIVITY_DESCRIPTION" />.</translation>
@@ -576,7 +576,7 @@
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7774365994322694683">Paxaro</translation>
 <translation id="7788080748068240085">Para gardar "<ph name="FILE_NAME" />" sen conexión, debes liberar <ph name="TOTAL_FILE_SIZE" /> adicionais de espazo:<ph name="MARKUP_1" />
-    <ph name="MARKUP_2" />solta ficheiros que xa non precises para acceder a eles sen conexión<ph name="MARKUP_3" />
+    <ph name="MARKUP_2" />deixa de fixar ficheiros que xa non precises para acceder a eles sen conexión<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />elimina ficheiros do cartafol Descargas<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">Formatar dispositivo</translation>
 <translation id="7799329977874311193">Documento HTML</translation>

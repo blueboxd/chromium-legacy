@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">Αζούρ</translation>
 <translation id="4204864733111726379">Φλοράλ λευκό</translation>
 <translation id="4206289001967551965">Μέσα στον πίνακα</translation>
+<translation id="4207770814752775793">Επαναφορά των ρυθμίσεων κειμένου σε ομιλία στις προεπιλεγμένες τιμές.</translation>
 <translation id="4209770650650780359">Πατήστε το πάνω ή το κάτω βέλος για αυτόματες συμπληρώσεις.</translation>
 <translation id="4215733775853809057">Επόμενο ρυθμιστικό</translation>
 <translation id="42164919740161077">Ανοιχτό μπλε γκρι</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">Δεν υπάρχει επόμενο σύνθετο πλαίσιο.</translation>
 <translation id="6305702903308659374">Αναπαραγωγή σε κανονική ένταση ακόμα και κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="6307969636681130414">Έχει πατηθεί</translation>
+<translation id="6315652249189065725">Άνοιγμα μενού συντομεύσεων πληκτρολογίου</translation>
 <translation id="6322856989298155004">Ήχοι</translation>
 <translation id="6324551002951139333">Έχει εντοπιστεί γραμματικό λάθος</translation>
 <translation id="6325241889020214828">αντιγραφή <ph name="TEXT" />.</translation>
@@ -960,6 +962,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{ώρα}other{ώρες}}</translation>
 <translation id="7674576868851035240">Επόμενος σύνδεσμος</translation>
 <translation id="7674768236845044097">Ετικέτα mark</translation>
+<translation id="7676847077928500578">Επαναφορά ρυθμίσεων κειμένου σε ομιλία</translation>
 <translation id="7684431668231950609">Επεξεργασία κειμένου, καταχώριση διεύθυνσης URL</translation>
 <translation id="7685589220304187312">γραμμή εργαλείων</translation>
 <translation id="7693840228159394336">Προηγούμενο κουμπί επιλογής</translation>

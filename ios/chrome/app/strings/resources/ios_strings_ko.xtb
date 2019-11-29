@@ -60,7 +60,7 @@
 <translation id="1650222530560417226">모든 탭에서 앞으로 자바스크립트 콘솔 로그 및 오류를 수집하려면 '로그 기록 시작' 버튼을 탭하세요. 이 페이지가 닫히거나 '로그 기록 중지'를 탭할 때까지 로그가 수집됩니다(메모리에만 저장됨).</translation>
 <translation id="1657011748321897393">네트워크에 연결되어 있지 않아 공유하지 못했습니다.</translation>
 <translation id="165877110639533037">열린 탭 없음</translation>
-<translation id="1674504678466460478">도착어: <ph name="SOURCE_LANGUAGE" />, 출발어: <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="1674504678466460478">출발어: <ph name="SOURCE_LANGUAGE" />, 도착어: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">어느 기기에서나 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="1687475363370981210">모두 읽음으로 표시</translation>
 <translation id="1690731385917361335">항목 없음</translation>

@@ -48,12 +48,16 @@ class CrowdDenySafeBrowsingRequest::SafeBrowsingClient
 
   void CheckOrigin(const url::Origin& origin) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    // Start the timer before the call to CheckApiBlacklistUrl(), as it may
+    // call back into OnCheckApiBlacklistUrlResult() synchronously.
+    timeout_.Start(FROM_HERE, kSafeBrowsingCheckTimeout, this,
+                   &SafeBrowsingClient::OnTimeout);
+
     if (!database_manager_->IsSupported() ||
         database_manager_->CheckApiBlacklistUrl(origin.GetURL(), this)) {
+      timeout_.AbandonAndStop();
       SendResultToHandler(Verdict::kAcceptable);
-    } else {
-      timeout_.Start(FROM_HERE, kSafeBrowsingCheckTimeout, this,
-                     &SafeBrowsingClient::OnTimeout);
     }
   }
 
@@ -102,15 +106,18 @@ CrowdDenySafeBrowsingRequest::CrowdDenySafeBrowsingRequest(
     const url::Origin& origin,
     VerdictCallback callback)
     : callback_(std::move(callback)) {
-  client_.reset(new SafeBrowsingClient(database_manager,
-                                       weak_factory_.GetWeakPtr(),
-                                       base::SequencedTaskRunnerHandle::Get()));
+  client_ = std::make_unique<SafeBrowsingClient>(
+      database_manager, weak_factory_.GetWeakPtr(),
+      base::SequencedTaskRunnerHandle::Get());
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                  base::BindOnce(&SafeBrowsingClient::CheckOrigin,
                                 base::Unretained(client_.get()), origin));
 }
 
-CrowdDenySafeBrowsingRequest::~CrowdDenySafeBrowsingRequest() = default;
+CrowdDenySafeBrowsingRequest::~CrowdDenySafeBrowsingRequest() {
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     client_.release());
+}
 
 void CrowdDenySafeBrowsingRequest::OnReceivedResult(Verdict verdict) {
   DCHECK(callback_);

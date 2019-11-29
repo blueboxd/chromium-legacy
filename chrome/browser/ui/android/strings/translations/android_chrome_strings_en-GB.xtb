@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Icons</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1113597929977215864">Show simplified view</translation>
+<translation id="1122278879166832009">Tap here to quickly access your homepage from anywhere</translation>
 <translation id="1124772482545689468">User</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pending.}other{# downloads pending.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>
+<translation id="388596076286380598">Get articles, videos and other content from sites that you like, even if you’re offline or your connection is poor.</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
 <translation id="3912508018559818924">Finding the best from the web…</translation>
@@ -490,6 +492,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4719927025381752090">Offer to translate</translation>
 <translation id="4720023427747327413">Open in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Help improve Chrome. <ph name="BEGIN_LINK" />Take survey<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack unwinder</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4738836084190194332">Last synced: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Open a new tab</translation>
@@ -636,6 +639,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5689516760719285838">Location</translation>
+<translation id="5694049548840660018">Get back home easily</translation>
 <translation id="569536719314091526">Translate this page to any language from the More options button</translation>
 <translation id="5710871682236653961">Ask before allowing sites to send and receive info when you tap NFC devices (recommended)</translation>
 <translation id="572328651809341494">Recent tabs</translation>
@@ -798,6 +802,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabs closed</translation>
 <translation id="6864459304226931083">Download image</translation>
 <translation id="6865313869410766144">Auto-fill form data</translation>
+<translation id="6884306546558072722">Keep exploring offline</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Unlock to copy your password</translation>
 <translation id="6896758677409633944">Copy</translation>
@@ -1039,6 +1044,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8641930654639604085">Try to block mature sites</translation>
 <translation id="8655129584991699539">You can clear the data in Chrome Settings</translation>
+<translation id="8655599981421006542">Tap here to create new tabs and go back to previous ones</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
 <translation id="8664979001105139458">File name already exists</translation>
 <translation id="8676374126336081632">Clear input</translation>
@@ -1051,6 +1057,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8730621377337864115">Done</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
 <translation id="8751914237388039244">Select an image</translation>
+<translation id="8758557275681689734">See all your open tabs</translation>
 <translation id="8788265440806329501">Navigation history is closed</translation>
 <translation id="8788968922598763114">Reopen the last closed tab</translation>
 <translation id="8801436777607969138">Block JavaScript for a specific site.</translation>

@@ -35,36 +35,30 @@ To update the order files:
     [Process Explorer](https://docs.microsoft.com/en-us/sysinternals/downloads/process-explorer)
     to be able to see the Process IDs of running programs.
 
-    Run Chrome with the sandbox disabled (otherwise the render process
-    instrumentation doesn't get written to disk) and with a startup dialog
-    for each renderer:
+    Run Chrome:
 
     ```shell
-    out\instrument\chrome --no-sandbox --renderer-startup-dialog
+    out\instrument\chrome
     ```
 
-    Note the Process IDs of the browser and render process (there is sometimes
-    more than one; you want the one that loads the New Tab Page).
+    Note the Process ID of the browser process.
 
-    Check in `\src\tmp\` for instrumentation output from those processes, for
-    example `cygprofile_14652.txt` and `cygprofile_23592.txt`. The files are
+    Check in `\src\tmp\` for instrumentation output from the process, for
+    example `cygprofile_14652.txt`.txt`. The files are
     only written once a certain number of function calls have been made, so
-    sometimes the renderer needs to be reloaded in order for the file to be
-    produced.
+    sometimes you need to browse a bit for the file to be produced.
 
-
-1.  If the files appear to have sensible contents (a long list of function names
-    that eventually seem related to what the browser and render process should
-    do), copy them into `chrome\build\`:
+1.  If the file appears to have sensible contents (a long list of function names
+    that eventually seem related to what the browser should
+    do), copy it into `chrome\build\`:
 
     ```shell
     copy \src\tmp\cygprofile_25392.txt chrome\build\chrome.x64.orderfile
-    copy \src\tmp\cygprofile_14652.txt chrome\build\chrome_child.x64.orderfile
     ```
 
-1.  Re-build the `chrome` target. This will re-link `chrome.dll` and
-    `chrome_child.dll` using the new order files and surface any link errors if
-    the files are broken.
+1.  Re-build the `chrome` target. This will re-link `chrome.dll`
+    using the new order file and surface any link errors if
+    the order file is broken.
 
     ```shell
     ninja -C out\instrument chrome
@@ -72,7 +66,7 @@ To update the order files:
 
 
 1.  Repeat the previous steps with a 32-bit build, i.e. passing
-    `target_cpu="x86"` to gn and storing the files as `.x86.orderfile`.
+    `target_cpu="x86"` to gn and storing the file as `.x86.orderfile`.
 
 
 1.  Upload the order files to Google Cloud Storage. They will get downloaded
@@ -83,7 +77,7 @@ To update the order files:
 
     ```shell
     cd chrome\build\
-    upload_to_google_storage.py -b chromium-browser-clang/orderfiles -z orderfile chrome.x64.orderfile chrome.x86.orderfile chrome_child.x64.orderfile chrome_child.x86.orderfile
+    upload_to_google_storage.py -b chromium-browser-clang/orderfiles -z orderfile chrome.x64.orderfile chrome.x86.orderfile
     gsutil.py setacl public-read gs://chromium-browser-clang/orderfiles/*
     ```
 

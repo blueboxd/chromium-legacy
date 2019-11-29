@@ -123,9 +123,6 @@ class SharedChangeProcessor
   virtual ~SharedChangeProcessor();
 
  private:
-  // Record association time.
-  virtual void RecordAssociationTime(base::TimeDelta time);
-
   // Monitor lock for this object. All methods that interact with the change
   // processor must aquire this lock and check whether we're disconnected or
   // not. Once disconnected, all attempted changes to or loads from the change

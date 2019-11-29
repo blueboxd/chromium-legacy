@@ -454,4 +454,14 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   password_save_manager()->Save(observed_form_, saved_match_);
 }
 
+TEST_F(MultiStorePasswordSaveManagerTest, UnblacklistInBothStores) {
+  SetAccountStoreActive(/*is_active=*/true);
+  const PasswordStore::FormDigest form_digest(saved_match_);
+
+  EXPECT_CALL(*mock_profile_form_saver(), Unblacklist(form_digest));
+  EXPECT_CALL(*mock_account_form_saver(), Unblacklist(form_digest));
+
+  password_save_manager()->Unblacklist(form_digest);
+}
+
 }  // namespace password_manager

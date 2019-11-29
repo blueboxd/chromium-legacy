@@ -124,17 +124,57 @@ html[class*='col-resize'] #directory-tree {
   overflow-y: hidden;
 }
 
-#directory-tree .tree-item[section-start] {
+#directory-tree:not([files-ng]) .tree-item[section-start] {
   border-top: 1px solid rgba(0, 0, 0, 0.10);
 }
 
-#directory-tree .tree-row {
+#directory-tree[files-ng] .tree-item[section-start]::before {
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  content: '';
+  display: block;
+  margin: 8px 0;
+  width: 100%;
+}
+
+#directory-tree:not([files-ng]) .tree-row {
   align-items: center;
   color: rgb(90, 90, 90);
   cursor: pointer;
   display: flex;
   height: 40px;
   padding: 0 3px;
+}
+
+#directory-tree[files-ng] .tree-row {
+  cursor: pointer;
+  height: auto;
+  padding: 4px 0;
+}
+
+#directory-tree .tree-row > .file-row {
+  align-items: center;
+  border-inline-start-width: 0;
+  border-radius: 0 20px 20px 0;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  color: var(--google-grey-700);
+  display: flex;
+  height: 32px;
+  margin-inline-end: 6px;
+}
+
+html[dir='rtl'] #directory-tree .tree-row > .file-row {
+  border-radius: 20px 0 0 20px;
+}
+
+html[class*='col-resize'] #directory-tree[files-ng]
+    .tree-item .tree-item .tree-row > .file-row {
+  transition: all 500ms;
+}
+
+#directory-tree[files-ng][clipped]
+    .tree-item .tree-item .tree-row > .file-row {
+  padding-inline-start: 0 !important;
 }
 
 #directory-tree .tree-row > .expand-icon {
@@ -147,13 +187,41 @@ html[class*='col-resize'] #directory-tree {
   width: 36px;
 }
 
-#directory-tree .tree-row .item-icon {
+#directory-tree .tree-row > .file-row > .expand-icon {
+  box-sizing: border-box;
+  flex: none;
+  height: 32px;
+  padding: 6px;
+  width: 32px;
+}
+
+#directory-tree .tree-row > .item-icon {
   flex: none;
   height: 16px;
   width: 16px;
 }
 
-#directory-tree .tree-row .label {
+#directory-tree .tree-row > .file-row > .item-icon {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  background-image: none;
+  flex: none;
+  height: 20px;
+  left: -4px;
+  position: relative;
+  right: -4px;
+  width: 20px;
+}
+
+#directory-tree .tree-row > .file-row > .item-icon[style*='background-image'] {
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+
+#directory-tree .tree-row > .label {
   display: block;
   flex: auto;
   font-weight: 500;
@@ -162,10 +230,22 @@ html[class*='col-resize'] #directory-tree {
   text-overflow: ellipsis;
 }
 
-#directory-tree .tree-row .rename-placeholder {
+#directory-tree .tree-row > .file-row > .label {
   display: block;
   flex: auto;
   font-weight: 500;
+  margin: 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#directory-tree .tree-row .rename-placeholder {
+  flex: auto;
+  font-weight: 500;
+}
+
+#directory-tree .tree-row > .rename-placeholder {
+  display: block;
   margin: 0 6px;
 }
 
@@ -177,7 +257,8 @@ html[class*='col-resize'] #directory-tree {
   display: none;
 }
 
-#directory-tree [renaming] > .tree-row > .label {
+#directory-tree [renaming] > .tree-row > .label,
+#directory-tree [renaming] > .tree-row > .file-row > .label {
   display: none;
 }
 
@@ -187,32 +268,53 @@ html[class*='col-resize'] #directory-tree {
   overflow: hidden;
 }
 
-#directory-tree [renaming] > .tree-row > input {
+#directory-tree .tree-row > .file-row > input {
+  display: none;
+  margin: 0 10px;
+  overflow: hidden;
+}
+
+#directory-tree [renaming] > .tree-row > input,
+#directory-tree [renaming] > .tree-row > .file-row > input {
   display: block;
 }
 
-#directory-tree .tree-row > paper-ripple {
+#directory-tree:not([files-ng]) .tree-row > paper-ripple {
   color: rgb(51, 103, 214);
 }
 
-#directory-tree [renaming] > .tree-row > paper-ripple {
+#directory-tree:not([files-ng]) [renaming] > .tree-row > paper-ripple {
   display: none;
 }
 
-#directory-tree .tree-item.accepts > .tree-row,
-#directory-tree .tree-row[selected] {
+#directory-tree:not([files-ng]) .tree-item.accepts > .tree-row,
+#directory-tree:not([files-ng]) .tree-row[selected] {
   color: rgb(51, 103, 214);
 }
 
-#directory-tree:focus .tree-row[selected] {
+#directory-tree:not([files-ng]):focus .tree-row[selected] {
   background-color: rgb(216, 223, 240);
+}
+
+html:not([class*='col-resize']) #directory-tree
+    .tree-row:not([active]):not([selected]):hover > .file-row {
+  background-color: var(--google-grey-200);
+}
+
+#directory-tree:focus .tree-row[selected] > .file-row {
+  border: 1px solid var(--google-blue-600);
+  border-inline-start-width: 0;
+}
+
+#directory-tree .tree-row[active] > .file-row {
+  background-color: var(--google-blue-100);
+  color: var(--google-blue-600);
 }
 
 #directory-tree .tree-row > .align-right-icon {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
   border-style: none;
-  cursor: pointer;
   flex: none;
   height: 40px;
   position: relative;
@@ -220,8 +322,27 @@ html[class*='col-resize'] #directory-tree {
   z-index: 1;
 }
 
+#directory-tree .tree-row > .file-row > .align-right-icon {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+  border-radius: 16px;
+  border-style: none;
+  box-sizing: border-box;
+  flex: none;
+  height: 32px;
+  left: 1px;
+  position: relative;
+  right: 1px;
+  width: 32px;
+  z-index: 1;
+}
+
 #directory-tree .tree-row > .external-link-icon iron-icon {
   padding: 12px;
+}
+
+#directory-tree .tree-row > .file-row > .external-link-icon iron-icon {
+  padding: 6px;
 }
 
 #directory-tree .tree-row > .root-eject {
@@ -232,7 +353,20 @@ html[class*='col-resize'] #directory-tree {
   padding: 12px;
 }
 
+#directory-tree .tree-row > .file-row > .root-eject {
+  --active-bg: none;  /* prevent dark-mode activation color */
+  --text-color: currentColor;
+  --hover-bg-color: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+  min-width: 32px;
+  padding: 0;
+}
+
 html[class*='col-resize'] #directory-tree .tree-row > .root-eject:hover {
+  --hover-bg-color: none;
+}
+
+html[class*='col-resize'] #directory-tree .tree-row > .file-row > .root-eject:hover {
   --hover-bg-color: none;
 }
 
@@ -240,9 +374,18 @@ html[class*='col-resize'] #directory-tree .tree-row > .root-eject:hover {
   outline: 1px auto rgb(77, 144, 254);
 }
 
+#directory-tree .tree-row > .file-row > .root-eject:focus {
+  border: 1px solid var(--google-blue-600);
+}
+
 #directory-tree .tree-row > .root-eject:active {
   border-radius: 20px;
   outline-width: 0;
+}
+
+#directory-tree .tree-row > .file-row > .root-eject:active {
+  --ink-color: rgba(0, 0, 0, 0.88);
+  border-width: 0;
 }
 
 #directory-tree .root-item[disabled] {
@@ -1517,7 +1660,9 @@ body.check-select #list-container list:focus > li[lead]:not([selected]),
 
 input.rename:focus,
 #directory-tree .tree-row .rename-placeholder > input:focus,
-#directory-tree .tree-row > input:focus {
+#directory-tree .tree-row > .file-row .rename-placeholder > input:focus,
+#directory-tree .tree-row > input:focus,
+#directory-tree .tree-row > .file-row > input:focus {
   outline-color: rgb(77, 144, 254);
 }
 

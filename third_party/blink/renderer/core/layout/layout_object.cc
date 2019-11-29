@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -3342,6 +3343,11 @@ Node* LayoutObject::NodeForHitTest() const {
         if (Node* node = parent->GetNode())
           return node;
       }
+    } else if (const LayoutNGListItem* list_item =
+                   LayoutNGListItem::FromMarkerOrMarkerContent(*this)) {
+      // If this is a list marker, or is inside of a list marker, return the
+      // list item.
+      return list_item->GetNode();
     }
   }
 

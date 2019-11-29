@@ -278,7 +278,6 @@ the next client restart.
     [GetUserSelectableTypeInfo].
 *   Add to the `SyncModelTypes` enum in [`enums.xml`][enums] and to the
     `SyncModelType` suffix in [`histograms.xml`][histograms].
-*   Add to the [`SYNC_DATA_TYPE_HISTOGRAM`][DataTypeHistogram] macro.
 
 [protocol]: https://cs.chromium.org/chromium/src/components/sync/protocol/
 [ModelType]: https://cs.chromium.org/chromium/src/components/sync/base/model_type.h

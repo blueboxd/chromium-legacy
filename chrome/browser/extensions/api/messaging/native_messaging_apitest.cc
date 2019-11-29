@@ -8,6 +8,8 @@
 #include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -88,6 +90,7 @@ base::CommandLine CreateNativeMessagingConnectCommandLine(
           kSupportsNativeInitiatedConnectionsHostName);
   command_line.AppendSwitchASCII(switches::kNativeMessagingConnectId,
                                  connect_id);
+  command_line.AppendSwitch(switches::kNoStartupWindow);
   return command_line;
 }
 
@@ -120,9 +123,15 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, MAYBE_Success) {
 
   ResultCatcher catcher;
 
+  EXPECT_FALSE(
+      g_browser_process->background_mode_manager()->IsBackgroundModeActive());
+
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("test-connect-id"), {},
       profile()->GetPath());
+
+  EXPECT_TRUE(
+      g_browser_process->background_mode_manager()->IsBackgroundModeActive());
 
   if (!catcher.GetNextResult()) {
     FAIL() << catcher.message();
@@ -156,6 +165,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, UnsupportedByNativeHost) {
                                  extension->id());
   command_line.AppendSwitchASCII(switches::kNativeMessagingConnectHost,
                                  ScopedTestNativeMessagingHost::kHostName);
+  command_line.AppendSwitch(switches::kNoStartupWindow);
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(command_line, {},
                                                           profile()->GetPath());
@@ -308,6 +318,75 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, InvalidExtensionId) {
       base::PathExists(test_host_.temp_dir().AppendASCII("connect_id.txt")));
   EXPECT_FALSE(base::PathExists(
       test_host_.temp_dir().AppendASCII("invalid_connect_id.txt")));
+}
+
+constexpr char kExtensionId[] = "knldjmfmopnpolahpmmgbagdohdnhkik";
+
+class NativeMessagingLaunchBackgroundModeApiTest
+    : public NativeMessagingLaunchApiTest {
+ public:
+  NativeMessagingLaunchBackgroundModeApiTest() {
+    ProcessManager::SetEventPageIdleTimeForTesting(1);
+    ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+    test_host_.RegisterTestHost(true);
+  }
+
+  NativeMessagingLaunchBackgroundModeApiTest(
+      const NativeMessagingLaunchBackgroundModeApiTest&) = delete;
+  NativeMessagingLaunchBackgroundModeApiTest& operator=(
+      const NativeMessagingLaunchBackgroundModeApiTest&) = delete;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NativeMessagingLaunchApiTest::SetUpCommandLine(command_line);
+
+    if (base::StringPiece(
+            ::testing::UnitTest::GetInstance()->current_test_info()->name())
+            .starts_with("PRE")) {
+      return;
+    }
+    set_exit_when_last_browser_closes(false);
+    command_line->AppendSwitchASCII(switches::kNativeMessagingConnectExtension,
+                                    kExtensionId);
+    command_line->AppendSwitchASCII(
+        switches::kNativeMessagingConnectHost,
+        ScopedTestNativeMessagingHost::
+            kSupportsNativeInitiatedConnectionsHostName);
+    command_line->AppendSwitchASCII(switches::kNativeMessagingConnectId,
+                                    "test-connect-id");
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+  }
+
+  void SetUpOnMainThread() override {
+    NativeMessagingLaunchApiTest::SetUpOnMainThread();
+
+    catcher_ = std::make_unique<ResultCatcher>();
+  }
+
+  std::unique_ptr<ResultCatcher> catcher_;
+};
+
+IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchBackgroundModeApiTest,
+                       PRE_Success) {
+  auto* extension =
+      LoadExtension(test_data_dir_.AppendASCII("native_messaging_launch"));
+  EXPECT_EQ(kExtensionId, extension->id());
+}
+
+IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchBackgroundModeApiTest, Success) {
+  EXPECT_TRUE(
+      g_browser_process->background_mode_manager()->IsBackgroundModeActive());
+
+  if (!catcher_->GetNextResult()) {
+    FAIL() << catcher_->message();
+  }
+  size_t tabs = 0;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    tabs += browser->tab_strip_model()->count();
+  }
+  EXPECT_EQ(0u, tabs);
+
+  ASSERT_NO_FATAL_FAILURE(TestKeepAliveStateObserver().WaitForNoKeepAlive());
 }
 
 #endif  // !defined(OS_CHROMEOS)

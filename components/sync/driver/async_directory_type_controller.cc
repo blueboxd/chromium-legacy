@@ -209,14 +209,8 @@ void AsyncDirectoryTypeController::StartDone(
 
 void AsyncDirectoryTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(CalledOnValidThread());
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeHistogramValue(type()));
-#define PER_DATA_TYPE_MACRO(type_str)                                    \
-  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
-                            MAX_CONFIGURE_RESULT);
-  SYNC_DATA_TYPE_HISTOGRAM(type());
-#undef PER_DATA_TYPE_MACRO
 }
 
 void AsyncDirectoryTypeController::DisableImpl(const SyncError& error) {

@@ -64,12 +64,6 @@ NSString* GetPageScript(NSString* script_file_name) {
 }
 }  // namespace
 
-const char kDesktopUserAgent[] =
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
-    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-    "Version/11.1.1 "
-    "Safari/605.1.15";
-
 ChromeWebClient::ChromeWebClient() {}
 
 ChromeWebClient::~ChromeWebClient() {}
@@ -131,11 +125,9 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
 
   // Using desktop user agent overrides a command-line user agent, so that
   // request desktop site can still work when using an overridden UA.
-  if (type == web::UserAgentType::DESKTOP)
-    return kDesktopUserAgent;
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent)) {
+  if (type != web::UserAgentType::DESKTOP &&
+      command_line->HasSwitch(switches::kUserAgent)) {
     std::string user_agent =
         command_line->GetSwitchValueASCII(switches::kUserAgent);
     if (net::HttpUtil::IsValidHeaderValue(user_agent))
@@ -143,7 +135,7 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
     LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
   }
 
-  return web::BuildUserAgentFromProduct(GetProduct());
+  return web::BuildUserAgentFromProduct(type, GetProduct());
 }
 
 base::string16 ChromeWebClient::GetLocalizedString(int message_id) const {

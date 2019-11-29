@@ -9,7 +9,7 @@
 
 namespace syncer {
 
-// Handlers registration and message recieving events.
+// Handlers registration and message receiving events.
 class InvalidationListener {
  public:
   virtual ~InvalidationListener() {}

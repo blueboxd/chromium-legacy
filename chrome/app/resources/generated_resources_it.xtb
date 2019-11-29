@@ -4,7 +4,7 @@
 <translation id="1003088604756913841">Apri link in nuova finestra di <ph name="APP" /></translation>
 <translation id="1004218526896219317">Accesso al sito</translation>
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
-<translation id="1005333234656240382">Attivare debug ADB?</translation>
+<translation id="1005333234656240382">Attivare il debug ADB?</translation>
 <translation id="1006873397406093306">Questa estensione può leggere e modificare i tuoi dati sui siti. Sei tu controllare a quali siti può accedere l'estensione.</translation>
 <translation id="1007408791287232274">Impossibile caricare i dispositivi.</translation>
 <translation id="1008186147501209563">Esporta preferiti</translation>
@@ -523,7 +523,7 @@
 <translation id="1733383495376208985">Cripta i dati sincronizzati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" />. Non sono inclusi i metodi di pagamento e gli indirizzi di Google Pay.</translation>
 <translation id="1734212868489994726">Azzurro</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> potrebbe non essere in grado di aggiornarsi automaticamente</translation>
-<translation id="173628468822554835">Ok. Per impostazioni predefinita, i nuovi siti che visiti non ti invieranno notifiche.</translation>
+<translation id="173628468822554835">Ok. Per impostazione predefinita, i nuovi siti che visiti non ti invieranno notifiche.</translation>
 <translation id="1736419249208073774">Esplora</translation>
 <translation id="1737968601308870607">Segnala bug</translation>
 <translation id="1741314857973421784">Continua</translation>
@@ -1142,7 +1142,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="26224892172169984">Non consentire ad alcun sito di gestire i protocolli</translation>
 <translation id="2624142942574147739">Questa pagina sta accedendo alla webcam e al microfono.</translation>
 <translation id="2626799779920242286">Riprova più tardi.</translation>
-<translation id="2628770867680720336">Per attivare il dubug ADB è necessario eseguire un ripristino dei dati di fabbrica di questo Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="2628770867680720336">Per attivare il debug ADB è necessario eseguire un ripristino dei dati di fabbrica di questo Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Sviluppo di app Android</translation>
 <translation id="2630681426381349926">Per iniziare, collegati alla rete Wi-Fi</translation>
 <translation id="2631120081682787498">Vuoi chiudere questa scheda?</translation>
@@ -1745,7 +1745,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="351152300840026870">Carattere a larghezza fissa</translation>
 <translation id="3511528412952710609">Breve</translation>
 <translation id="3514373592552233661">Le reti preferite avranno precedenza su altre reti note se ne sono disponibili più di una</translation>
-<translation id="3515983984924808886">Tocca nuovamente il token di sicurezza per confermare la reimpostazione. Tutte le credenziali memorizzate sul token di sicurezza, nonché il suo PIN, verranno eliminate.</translation>
+<translation id="3515983984924808886">Tocca nuovamente il token di sicurezza per confermare la reimpostazione. Tutte le informazioni memorizzate sul token di sicurezza, nonché il suo PIN, verranno eliminate.</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="351952459507671940">Aggiungi a nuovo gruppo</translation>
 <translation id="3523642406908660543">Chiedi conferma quando un sito vuole utilizzare un plug-in per accedere al tuo computer (opzione consigliata)</translation>
@@ -1765,7 +1765,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3544879808695557954">Nome utente (facoltativo)</translation>
 <translation id="354602065659584722">Software dannoso rimosso</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
-<translation id="3548162552723420559">Regola il colore dello schermo per adattarlo all'ambiente circostante</translation>
+<translation id="3548162552723420559">Consente di regolare il colore dello schermo per adattarlo all'ambiente circostante</translation>
 <translation id="3550915441744863158">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
 <translation id="3552780134252864554">Cancellato all'uscita</translation>
@@ -1883,7 +1883,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3699624789011381381">Indirizzo email</translation>
 <translation id="3699920817649120894">Disattivare la sincronizzazione e la personalizzazione?</translation>
 <translation id="3700888195348409686">Presentazione di (<ph name="PAGE_ORIGIN" />)</translation>
-<translation id="3701167022068948696">Sistema subito</translation>
+<translation id="3701167022068948696">Correggi subito</translation>
 <translation id="3702500414347826004">Le pagine iniziali sono state modificate per includere <ph name="URL" />.</translation>
 <translation id="3703699162703116302">Richiesta aggiornata</translation>
 <translation id="370415077757856453">JavaScript bloccato</translation>
@@ -2942,7 +2942,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="52912272896845572">Il file della chiave privata non è valido.</translation>
 <translation id="529175790091471945">Formatta questo dispositivo</translation>
 <translation id="5293170712604732402">Ripristina le impostazioni predefinite originali</translation>
-<translation id="5296471962619441686">Risolvi il problema per riprendere la sincronizzazione</translation>
+<translation id="5296471962619441686">Correggi l'errore per riprendere la sincronizzazione</translation>
 <translation id="5297082477358294722">Password salvata. Visualizza e gestisci le password salvate in <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creato da</translation>
 <translation id="5299109548848736476">Non tenere traccia</translation>
@@ -3524,7 +3524,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6112727384379533756">Aggiungi una richiesta</translation>
 <translation id="6112931163620622315">Controlla il tuo telefono</translation>
 <translation id="6112952769866305444">Modifica persona, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Mostra messaggi di autorizzazione in modalità silenziosa</translation>
 <translation id="6113942107547980621">Per usare Smart Lock, passa al profilo utente principale del telefono</translation>
 <translation id="6116338172782435947">Leggere testi e immagini copiati negli appunti</translation>
 <translation id="6116921718742659598">Modifica impostazioni della lingua e di immissione</translation>
@@ -5247,7 +5246,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8627795981664801467">Solo connessioni protette</translation>
 <translation id="8630903300770275248">Importa utente controllato</translation>
 <translation id="8631032106121706562">Petalo</translation>
-<translation id="863109444997383731">Ai siti verrà impedito di chiederti di mostrarti le notifiche. Se un sito chiede le notifiche verrà mostrato un indicatore bloccato nella barra degli indirizzi.</translation>
+<translation id="863109444997383731">Ai siti verrà impedito di chiederti di mostrarti le notifiche. Se un sito chiede di inviarti le notifiche, verrà mostrato un indicatore bloccato nella barra degli indirizzi.</translation>
 <translation id="8635628933471165173">Nuovo caricamento in corso...</translation>
 <translation id="8637542770513281060">Il computer contiene un modulo per la sicurezza che viene utilizzato per implementare in Chrome OS molte funzionalità di sicurezza fondamentali. Per ulteriori informazioni, visita il Centro assistenza Chromebook all'indirizzo: https://support.google.com/chromebook/?p=sm.</translation>
 <translation id="8637688295594795546">Aggiornamento del sistema disponibile. Preparazione per il download in corso…</translation>

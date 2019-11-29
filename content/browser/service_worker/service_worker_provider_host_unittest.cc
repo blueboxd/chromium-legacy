@@ -290,8 +290,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     EXPECT_FALSE(version->update_timer_.IsRunning());
   }
 
-  bool HasVersionToUpdate(ServiceWorkerProviderHost* host) {
-    return !host->versions_to_update_.empty();
+  bool HasVersionToUpdate(ServiceWorkerContainerHost* container_host) {
+    return !container_host->versions_to_update_.empty();
   }
 
   void TestReservedClientsAreNotExposed(
@@ -1171,6 +1171,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   // Make a window.
   ServiceWorkerProviderHost* host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
+  ServiceWorkerContainerHost* container_host = host->container_host();
 
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
@@ -1191,8 +1192,8 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   version2->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration2_->SetActiveVersion(version1);
 
-  host->AddServiceWorkerToUpdate(version1);
-  host->AddServiceWorkerToUpdate(version2);
+  container_host->AddServiceWorkerToUpdate(version1);
+  container_host->AddServiceWorkerToUpdate(version2);
   ExpectUpdateIsNotScheduled(version1.get());
   ExpectUpdateIsNotScheduled(version2.get());
 
@@ -1222,12 +1223,13 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   // Make a window.
   ServiceWorkerProviderHost* host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
+  ServiceWorkerContainerHost* container_host = host->container_host();
 
   // Mark the service worker as needing update. Update should not be scheduled
   // yet.
-  host->AddServiceWorkerToUpdate(version1);
+  container_host->AddServiceWorkerToUpdate(version1);
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_TRUE(HasVersionToUpdate(host));
+  EXPECT_TRUE(HasVersionToUpdate(container_host));
 
   // Send the hint from the renderer. Update should be scheduled.
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>*
@@ -1235,7 +1237,7 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   (*host_remote)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsScheduled(version1.get());
-  EXPECT_FALSE(HasVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(container_host));
 }
 
 // Tests that the host receives a HintToUpdateServiceWorker message but
@@ -1246,6 +1248,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   // Make a window.
   ServiceWorkerProviderHost* host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
+  ServiceWorkerContainerHost* container_host = host->container_host();
 
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
@@ -1261,7 +1264,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   // resource request, so AddServiceWorkerToUpdate() is not called.
 
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_FALSE(HasVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(container_host));
 
   // Send the hint from the renderer. Update should not be scheduled, since
   // AddServiceWorkerToUpdate() was not called.
@@ -1270,7 +1273,7 @@ TEST_F(ServiceWorkerProviderHostTest,
   (*host_remote)->HintToUpdateServiceWorker();
   base::RunLoop().RunUntilIdle();
   ExpectUpdateIsNotScheduled(version1.get());
-  EXPECT_FALSE(HasVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(container_host));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
@@ -1305,16 +1308,17 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   // Make a window.
   ServiceWorkerProviderHost* host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
+  ServiceWorkerContainerHost* container_host = host->container_host();
 
   // Mark the service worker as needing update. Update should not be scheduled
   // yet.
-  host->AddServiceWorkerToUpdate(version1);
-  host->AddServiceWorkerToUpdate(version2);
-  host->AddServiceWorkerToUpdate(version3);
+  container_host->AddServiceWorkerToUpdate(version1);
+  container_host->AddServiceWorkerToUpdate(version2);
+  container_host->AddServiceWorkerToUpdate(version3);
   ExpectUpdateIsNotScheduled(version1.get());
   ExpectUpdateIsNotScheduled(version2.get());
   ExpectUpdateIsNotScheduled(version3.get());
-  EXPECT_TRUE(HasVersionToUpdate(host));
+  EXPECT_TRUE(HasVersionToUpdate(container_host));
 
   // Pretend another page also used version3.
   version3->IncrementPendingUpdateHintCount();
@@ -1328,7 +1332,7 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   ExpectUpdateIsScheduled(version1.get());
   ExpectUpdateIsScheduled(version2.get());
   ExpectUpdateIsNotScheduled(version3.get());
-  EXPECT_FALSE(HasVersionToUpdate(host));
+  EXPECT_FALSE(HasVersionToUpdate(container_host));
 
   // Pretend the other page also finished for version3.
   version3->DecrementPendingUpdateHintCount();

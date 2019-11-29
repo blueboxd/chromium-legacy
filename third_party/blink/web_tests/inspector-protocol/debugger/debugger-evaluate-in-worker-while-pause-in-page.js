@@ -9,15 +9,17 @@
   `);
   testRunner.log('Started worker');
 
-  dp.Debugger.enable();
+  await dp.Debugger.enable();
+  const pausedPromise = dp.Debugger.oncePaused();
   dp.Runtime.evaluate({expression: 'debugger;' });
-  await dp.Debugger.oncePaused();
+  await pausedPromise;
   testRunner.log(`Paused on 'debugger;'`);
 
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
+  const attachedPromise = dp.Target.onceAttachedToTarget();
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
                            flatten: true});
 
-  const messageObject = await dp.Target.onceAttachedToTarget();
+  const messageObject = await attachedPromise;
   testRunner.log('Worker created');
   testRunner.log('didConnectToWorker');
 

@@ -23,54 +23,28 @@
 
 namespace {
 
+const char kDesktopUserAgent[] =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+    "Version/11.1.1 "
+    "Safari/605.1.15";
+
 // UserAgentType description strings.
 const char kUserAgentTypeNoneDescription[] = "NONE";
 const char kUserAgentTypeMobileDescription[] = "MOBILE";
 const char kUserAgentTypeDesktopDescription[] = "DESKTOP";
 
-struct UAVersions {
-  const char* safari_version_string;
-  const char* webkit_version_string;
-};
-
-struct OSVersionMap {
-  int32_t major_os_version;
-  int32_t minor_os_version;
-  UAVersions ua_versions;
-};
-
-const UAVersions& GetUAVersionsForCurrentOS() {
-  // The WebKit version can be extracted dynamically from UIWebView, but the
-  // Safari version can't be, so a lookup table is used instead (for both, since
-  // the reported versions should stay in sync).
-  static const OSVersionMap version_map[] = {
-      {13, 0, {"604.1", "605.1.15"}},
-      {12, 0, {"605.1", "605.1.15"}},
-  };
-
+std::string OSVersion(web::UserAgentType type) {
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(
       &os_major_version, &os_minor_version, &os_bugfix_version);
 
-  // Return the versions corresponding to the first (and thus highest) OS
-  // version less than or equal to the given OS version.
-  for (unsigned int i = 0; i < base::size(version_map); ++i) {
-    if (os_major_version > version_map[i].major_os_version ||
-        (os_major_version == version_map[i].major_os_version &&
-         os_minor_version >= version_map[i].minor_os_version))
-      return version_map[i].ua_versions;
-  }
-  NOTREACHED();
-  return version_map[base::size(version_map) - 1].ua_versions;
-}
-
-std::string BuildKernelVersion() {
-  // Freeze the kernel version for iOS 11.3 and later (as Safari does).
-  if (@available(iOS 11.3, *))
-    return "15E148";
-  return base::SysInfo::GetIOSBuildNumber();
+  DCHECK_EQ(web::UserAgentType::MOBILE, type);
+  std::string os_version;
+  base::StringAppendF(&os_version, "%d_%d", os_major_version, os_minor_version);
+  return os_version;
 }
 
 }  // namespace
@@ -98,26 +72,9 @@ UserAgentType GetUserAgentTypeWithDescription(const std::string& description) {
   return UserAgentType::NONE;
 }
 
-std::string BuildOSCpuInfo() {
-  int32_t os_major_version = 0;
-  int32_t os_minor_version = 0;
-  int32_t os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &os_major_version, &os_minor_version, &os_bugfix_version);
-
-  // Drop bugfix version for iOS 11.3 and later (as Safari does).
-  if (@available(iOS 11.3, *))
-    os_bugfix_version = 0;
-
-  std::string os_version;
-  if (os_bugfix_version == 0) {
-    base::StringAppendF(&os_version, "%d_%d", os_major_version,
-                        os_minor_version);
-  } else {
-    base::StringAppendF(&os_version, "%d_%d_%d", os_major_version,
-                        os_minor_version, os_bugfix_version);
-  }
-
+std::string BuildOSCpuInfo(web::UserAgentType type) {
+  std::string os_cpu;
+  DCHECK_EQ(web::UserAgentType::MOBILE, type);
   // Remove the end of the platform name. For example "iPod touch" becomes
   // "iPod".
   std::string platform =
@@ -126,25 +83,32 @@ std::string BuildOSCpuInfo() {
   if (position != std::string::npos)
     platform = platform.substr(0, position);
 
-  std::string os_cpu;
   base::StringAppendF(&os_cpu, "%s; CPU %s %s like Mac OS X", platform.c_str(),
                       (platform == "iPad") ? "OS" : "iPhone OS",
-                      os_version.c_str());
+                      OSVersion(type).c_str());
 
   return os_cpu;
 }
 
-std::string BuildUserAgentFromProduct(const std::string& product) {
-  UAVersions ua_versions = GetUAVersionsForCurrentOS();
+std::string BuildUserAgentFromProduct(UserAgentType type,
+                                      const std::string& product) {
+  if (type == web::UserAgentType::DESKTOP)
+    return kDesktopUserAgent;
 
+  std::string safari_version;
+  if (@available(iOS 13, *)) {
+    safari_version = "604.1";
+  } else {
+    safari_version = "605.1";
+  }
+
+  DCHECK_EQ(web::UserAgentType::MOBILE, type);
   std::string user_agent;
   base::StringAppendF(&user_agent,
-                      "Mozilla/5.0 (%s) AppleWebKit/%s"
-                      " (KHTML, like Gecko) %s Mobile/%s Safari/%s",
-                      BuildOSCpuInfo().c_str(),
-                      ua_versions.webkit_version_string, product.c_str(),
-                      BuildKernelVersion().c_str(),
-                      ua_versions.safari_version_string);
+                      "Mozilla/5.0 (%s) AppleWebKit/605.1.15"
+                      " (KHTML, like Gecko) %s Mobile/15E148 Safari/%s",
+                      BuildOSCpuInfo(type).c_str(), product.c_str(),
+                      safari_version.c_str());
 
   return user_agent;
 }

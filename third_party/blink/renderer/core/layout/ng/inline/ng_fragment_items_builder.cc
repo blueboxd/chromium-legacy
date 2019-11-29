@@ -198,7 +198,10 @@ void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
 }
 
 void NGFragmentItemsBuilder::AssociateNextForSameLayoutObject() {
-  DCHECK(items_.IsEmpty() || items_[0]->Type() == NGFragmentItem::kLine);
+  // items_[0] can be:
+  //  - kBox  for list marker, e.g. <li>abc</li>
+  //  - kLine for line, e.g. <div>abc</div>
+  DCHECK(items_.IsEmpty() || items_[0]->IsContainer()) << items_[0];
   HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
   for (wtf_size_t index = 1u; index < items_.size(); ++index) {
     const NGFragmentItem& item = *items_[index];

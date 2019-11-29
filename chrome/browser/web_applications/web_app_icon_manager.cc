@@ -258,55 +258,64 @@ void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
       std::move(callback));
 }
 
-bool WebAppIconManager::ReadIcon(const AppId& app_id,
-                                 int icon_size_in_px,
-                                 ReadIconCallback callback) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+bool WebAppIconManager::HasIcon(const AppId& app_id,
+                                int icon_size_in_px) const {
   const WebApp* web_app = registrar_.GetAppById(app_id);
   if (!web_app)
     return false;
 
   for (const WebApp::IconInfo& icon_info : web_app->icons()) {
-    if (icon_info.size_in_px == icon_size_in_px) {
-      ReadIconInternal(app_id, icon_size_in_px, std::move(callback));
+    if (icon_info.size_in_px == icon_size_in_px)
       return true;
-    }
   }
 
   return false;
 }
 
-bool WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
+bool WebAppIconManager::HasSmallestIcon(const AppId& app_id,
+                                        int icon_size_in_px) const {
+  int best_size_in_px = 0;
+  return FindBestSizeInPx(app_id, icon_size_in_px, &best_size_in_px);
+}
+
+void WebAppIconManager::ReadIcon(const AppId& app_id,
+                                 int icon_size_in_px,
+                                 ReadIconCallback callback) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(HasIcon(app_id, icon_size_in_px));
+
+  ReadIconInternal(app_id, icon_size_in_px, std::move(callback));
+}
+
+void WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
                                          int icon_size_in_px,
                                          ReadIconCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   int best_size_in_px = 0;
-  if (!FindBestSizeInPx(app_id, icon_size_in_px, &best_size_in_px))
-    return false;
+  bool has_smallest_icon =
+      FindBestSizeInPx(app_id, icon_size_in_px, &best_size_in_px);
+  DCHECK(has_smallest_icon);
 
   ReadIconInternal(app_id, best_size_in_px, std::move(callback));
-  return true;
 }
 
-bool WebAppIconManager::ReadSmallestCompressedIcon(
+void WebAppIconManager::ReadSmallestCompressedIcon(
     const AppId& app_id,
     int icon_size_in_px,
     ReadCompressedIconCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   int best_size_in_px = 0;
-  if (!FindBestSizeInPx(app_id, icon_size_in_px, &best_size_in_px))
-    return false;
+  bool has_smallest_icon =
+      FindBestSizeInPx(app_id, icon_size_in_px, &best_size_in_px);
+  DCHECK(has_smallest_icon);
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadCompressedIconBlocking, utils_->Clone(),
                      web_apps_directory_, app_id, best_size_in_px),
       std::move(callback));
-
-  return true;
 }
 
 bool WebAppIconManager::FindBestSizeInPx(const AppId& app_id,

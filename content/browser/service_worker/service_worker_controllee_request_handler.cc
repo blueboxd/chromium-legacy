@@ -446,7 +446,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
       resource_type_ == ResourceType::kMainFrame);
 
   if (IsResourceTypeFrame(resource_type_))
-    provider_host_->AddServiceWorkerToUpdate(active_version);
+    provider_host_->container_host()->AddServiceWorkerToUpdate(active_version);
 
   if (active_version->fetch_handler_existence() !=
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {

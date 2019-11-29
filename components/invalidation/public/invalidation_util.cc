@@ -15,7 +15,6 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_object_id.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/types.pb.h"
 
 namespace {
 

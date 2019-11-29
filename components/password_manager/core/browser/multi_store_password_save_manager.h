@@ -39,6 +39,10 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
                       const std::vector<const autofill::PasswordForm*>& matches,
                       const base::string16& old_password) override;
 
+  void PermanentlyBlacklist(
+      const PasswordStore::FormDigest& form_digest) override;
+  void Unblacklist(const PasswordStore::FormDigest& form_digest) override;
+
  protected:
   FormSaver* GetFormSaverForGeneration() override;
 

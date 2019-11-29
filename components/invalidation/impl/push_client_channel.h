@@ -24,6 +24,8 @@ namespace syncer {
 
 // A PushClientChannel is an implementation of NetworkChannel that
 // routes messages through a PushClient.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT PushClientChannel
     : public SyncNetworkChannel,
       public notifier::PushClientObserver {

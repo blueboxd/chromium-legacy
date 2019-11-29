@@ -22,26 +22,30 @@ class AppIconManager {
   AppIconManager();
   virtual ~AppIconManager();
 
-  // Reads icon's bitmap for an app. Returns false if no IconInfo for
-  // |icon_size_in_px|. Returns empty SkBitmap in |callback| if IO error.
+  // Returns false if no downloaded icon with precise |icon_size_in_px|.
+  virtual bool HasIcon(const AppId& app_id, int icon_size_in_px) const = 0;
+  // Returns false if no downloaded icon matching |icon_size_in_px|.
+  virtual bool HasSmallestIcon(const AppId& app_id,
+                               int icon_size_in_px) const = 0;
+
+  // Reads icon's bitmap for an app. Returns empty SkBitmap in |callback| if IO
+  // error.
   using ReadIconCallback = base::OnceCallback<void(const SkBitmap&)>;
-  virtual bool ReadIcon(const AppId& app_id,
+  virtual void ReadIcon(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) const = 0;
 
-  // Reads smallest icon with size at least |icon_size_in_px|.
-  // Returns false if there is no such icon.
-  // Returns empty SkBitmap in |callback| if IO error.
-  virtual bool ReadSmallestIcon(const AppId& app_id,
+  // Reads smallest icon with size at least |icon_size_in_px|. Returns empty
+  // SkBitmap in |callback| if IO error.
+  virtual void ReadSmallestIcon(const AppId& app_id,
                                 int icon_size_in_px,
                                 ReadIconCallback callback) const = 0;
 
   // Reads smallest icon, compressed as PNG with size at least
-  // |icon_size_in_px|. Returns false if there is no such icon. Returns empty
-  // |data| in |callback| if IO error.
+  // |icon_size_in_px|. Returns empty |data| in |callback| if IO error.
   using ReadCompressedIconCallback =
       base::OnceCallback<void(std::vector<uint8_t> data)>;
-  virtual bool ReadSmallestCompressedIcon(
+  virtual void ReadSmallestCompressedIcon(
       const AppId& app_id,
       int icon_size_in_px,
       ReadCompressedIconCallback callback) const = 0;

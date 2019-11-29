@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">Толық экран режимінен шығу үшін |<ph name="ACCELERATOR" />| пернесін басыңыз</translation>
 <translation id="1038168778161626396">Тек шифрдан шығару</translation>
 <translation id="1039337018183941703">Файл жарамсыз немесе бүлінген</translation>
-<translation id="1039850285407663109">Таңдалған файл белгісіз, сондықтан қауіпті болуы мүмкін. Осы файлды ашпас бұрын, оны сканерлегеніңіз жөн.</translation>
+<translation id="1039850285407663109">Таңдалған файл белгісіз, сондықтан қауіпті болуы мүмкін. Осы файлды ашпас бұрын, оны тексергеніңіз жөн.</translation>
 <translation id="1041175011127912238">Бұл бет жауап бермей жатыр.</translation>
 <translation id="1041263367839475438">Қолжетімді құрылғылар</translation>
 <translation id="1042174272890264476">Сонымен қатар компьютеріңізге <ph name="SHORT_PRODUCT_NAME" /> RLZ кітапханасы ендірілген. RLZ кітапханасы белгілі бір науқан арқылы жүргізілген іздеулер мен <ph name="SHORT_PRODUCT_NAME" /> пайдалану мүмкіндігін өлшеу үшін бірегей емес, жеке анықталмайтын тегті тағайындайды. Бұл белгілер кейде <ph name="PRODUCT_NAME" /> өніміндегі Google Search сұрауларында пайда болады.</translation>
@@ -616,7 +616,7 @@
 <translation id="1858585891038687145">Бағдарламалық жасақтама авторларын анықтауда осы сертификатқа сену</translation>
 <translation id="1861262398884155592">Бұл қалта бос</translation>
 <translation id="1863182668524159459">Сериялық порттар табылмады.</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> – белгісіз файл. Қатерді азайту үшін файлды сканерлеңіз.</translation>
+<translation id="1863552924692672565"><ph name="FILE_NAME" /> – белгісіз файл. Қатерді азайту үшін файлды тексеріңіз.</translation>
 <translation id="1864111464094315414">Кіру</translation>
 <translation id="1864400682872660285">Салқындатқыш</translation>
 <translation id="1864454756846565995">USB-C құрылғысы (артқы ұяшық)</translation>
@@ -3522,7 +3522,6 @@
 <translation id="6112727384379533756">Билет қосу</translation>
 <translation id="6112931163620622315">Телефонды тексеріңіз</translation>
 <translation id="6112952769866305444">Адамды, <ph name="PROFILE_NAME" /> және <ph name="USERNAME" /> атын өзгерту</translation>
-<translation id="6113400363611269907">Сұрауларды тыныш режимде көрсету</translation>
 <translation id="6113942107547980621">Smart Lock функциясын пайдалану үшін телефоныңыздағы негізгі пайдаланушы профиліне ауысыңыз.</translation>
 <translation id="6116338172782435947">Буферге көшірілетін мәтіндер мен кескіндерді көру</translation>
 <translation id="6116921718742659598">Тіл және енгізу параметрлерін өзгерту</translation>
@@ -4499,7 +4498,7 @@
 <translation id="7581462281756524039">Тазалау құралы</translation>
 <translation id="7582582252461552277">Осы желіні таңдау</translation>
 <translation id="7583948862126372804">Саны</translation>
-<translation id="7584578941316704630">Ашпас бұрын сканерлеу қажет пе?</translation>
+<translation id="7584578941316704630">Ашпас бұрын тексеру қажет пе?</translation>
 <translation id="7586498138629385861">Chrome қолданбалары ашық болғанда, Chrome жұмысын жалғастырады.</translation>
 <translation id="7589461650300748890">Байқаңыз!</translation>
 <translation id="7591957897535945411">Бет аударылды.</translation>
@@ -4899,7 +4898,7 @@
 <translation id="8101987792947961127">Келесі қайта жүктеу кезінде Powerwash қажет</translation>
 <translation id="8102159139658438129">Жалғанған телефонның опцияларын көру үшін <ph name="LINK_BEGIN" />Параметрлер<ph name="LINK_END" /> бөліміне өтіңіз</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> құрылғыңызда Powerwash операциясын жасап, алдыңғы нұсқаға қайтыңыз.</translation>
-<translation id="8106661353233173262">Бірдеңе дұрыс болмады. Сканерленген файлдың уақыты өтіп кетті.</translation>
+<translation id="8106661353233173262">Бірдеңе дұрыс болмады. Тексерілген файлдың уақыты өтіп кетті.</translation>
 <translation id="8107015733319732394">Google Play Store дүкені <ph name="DEVICE_TYPE" /> құрылғысына орнатылуда. Бұл бірнеше минут алады.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Үшінші тараптың cookie файлдары жоқ}=1{Үшінші тараптың 1 cookie файлы бөгелді}other{Үшінші тараптың # cookie файлы бөгелді}}</translation>
 <translation id="810875025413331850">Маңайдан құрылғы табылған жоқ.</translation>

@@ -81,7 +81,8 @@ std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
 // Creates default User-Agent request value, combining optional
 // |partial_user_agent| with system-dependent values.
 std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {
-  return web::BuildUserAgentFromProduct(partial_user_agent);
+  return web::BuildUserAgentFromProduct(web::UserAgentType::MOBILE,
+                                        partial_user_agent);
 }
 
 void SetNetworkThreadPriorityOnNetworkThread(double priority) {

@@ -4152,14 +4152,8 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
           Manage shortcuts
         </message>
-        <message name="IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW" desc="Text of the sync promo at the bottom of the extension installed bubble, prompting the user to sign in in order to sync extensions.">
-          To get your extensions on all your computers, <ph name="SIGN_IN_LINK">$1<ex>sign in to Chrome</ex></ph>.
-        </message>
 
         <!-- Begin of Sync Promo strings for Desktop Identity Consistency. -->
-        <message name="IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE" desc="Text of the sync promo displayed at the bottom of the extension installed bubble asking the user to sign in and enable sync.">
-          To get your extensions on all your computers, sign in and turn on sync
-        </message>
         <message name="IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE" desc="Text of the sync promo displayed at the bottom of the extension installed bubble asking the user to enable sync.">
           To get your extensions on all your computers, turn on sync
         </message>

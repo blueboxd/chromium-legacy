@@ -98,10 +98,11 @@
     // an event that we're attached; which we receive below to create the
     // childSession instance.
     clientLog.push('Starting autoattach');
-    dp.Target.setAutoAttach({
+    const attachedPromise = dp.Target.onceAttachedToTarget();
+    await dp.Target.setAutoAttach({
       autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
     const childSession = session.createChild(
-        (await dp.Target.onceAttachedToTarget()).params.sessionId);
+        (await attachedPromise).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
       consoleLog.push(event.params.args[0].value);
     });
@@ -139,13 +140,14 @@
     // This time we start the worker only after Target.setAutoAttach, so
     // we may await the autoattach response.
     clientLog.push('Starting autoattach');
+    const attachedPromise = dp.Target.onceAttachedToTarget();
     await dp.Target.setAutoAttach({
       autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
 
     clientLog.push('Starting worker');
     session.evaluate('startWorker()');
     const childSession = session.createChild(
-        (await dp.Target.onceAttachedToTarget()).params.sessionId);
+        (await attachedPromise).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
       consoleLog.push(event.params.args[0].value);
     });
@@ -172,9 +174,10 @@
     clientLog.push(
         '\n=== New worker, with auto-attach still enabled. ===');
     clientLog.push('Starting worker');
+    const attachedPromise = dp.Target.onceAttachedToTarget();
     session.evaluate('startWorker()');
     const childSession = session.createChild(
-        (await dp.Target.onceAttachedToTarget()).params.sessionId);
+        (await attachedPromise).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
       consoleLog.push(event.params.args[0].value);
     });

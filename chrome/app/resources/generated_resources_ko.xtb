@@ -235,7 +235,7 @@
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1327074568633507428">Google 클라우드 프린트의 프린터</translation>
 <translation id="1327272175893960498">Kerberos 티켓</translation>
-<translation id="1327495825214193325">ADB 디버깅을 사용 설정하려면 이 <ph name="DEVICE_TYPE" />을(를) 다시 시작해야 합니다. ADB를 사용 중지하려면 초기화해야 합니다.</translation>
+<translation id="1327495825214193325">ADB 디버깅을 사용 설정하려면 이 <ph name="DEVICE_TYPE" /> 기기를 다시 시작해야 합니다. ADB 디버깅을 사용 중지하려면 초기화해야 합니다.</translation>
 <translation id="1327977588028644528">게이트웨이</translation>
 <translation id="1329584516321524826">조금 전 업데이트됨</translation>
 <translation id="1330145147221172764">터치 키보드 사용</translation>
@@ -2743,7 +2743,7 @@
 <translation id="4977942889532008999">액세스 확인</translation>
 <translation id="4980805016576257426">확장 프로그램에 멀웨어가 포함되어 있습니다.</translation>
 <translation id="4981449534399733132">동기화된 모든 기기 및 Google 계정에서 인터넷 사용 기록을 삭제하려면 <ph name="BEGIN_LINK" />로그인<ph name="END_LINK" />하세요.</translation>
-<translation id="4986728572522335985">PIN을 포함하여 보안 키에 저장된 모든 데이터가 삭제됩니다.</translation>
+<translation id="4986728572522335985">PIN을 비롯하여 보안 키에 저장된 모든 데이터가 삭제됩니다</translation>
 <translation id="4988526792673242964">페이지</translation>
 <translation id="49896407730300355">반시계 방향으로 회전(&amp;O)</translation>
 <translation id="4989966318180235467">백그라운드 페이지 검사(&amp;B)</translation>
@@ -2941,7 +2941,7 @@
 <translation id="52912272896845572">비공개 키 파일이 잘못되었습니다.</translation>
 <translation id="529175790091471945">이 기기 포맷</translation>
 <translation id="5293170712604732402">설정을 기본값으로 복원</translation>
-<translation id="5296471962619441686">동기화를 계속하려면 오류 해결</translation>
+<translation id="5296471962619441686">동기화를 계속하려면 오류를 해결하세요</translation>
 <translation id="5297082477358294722">비밀번호가 저장되었습니다. <ph name="SAVED_PASSWORDS_STORE" />에서 저장된 비밀번호를 보고 관리하세요.</translation>
 <translation id="5298219193514155779">테마 제작자</translation>
 <translation id="5299109548848736476">추적 안함</translation>
@@ -3523,7 +3523,6 @@
 <translation id="6112727384379533756">티켓 추가</translation>
 <translation id="6112931163620622315">휴대전화 확인</translation>
 <translation id="6112952769866305444">사용자 수정, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">무음으로 메시지 표시</translation>
 <translation id="6113942107547980621">Smart Lock을 사용하려면 휴대전화의 기본 사용자 프로필로 전환하세요.</translation>
 <translation id="6116338172782435947">클립보드에 복사된 텍스트 및 이미지를 확인합니다.</translation>
 <translation id="6116921718742659598">언어 및 입력 설정 변경</translation>
@@ -4148,7 +4147,7 @@
 <translation id="7065534935986314333">시스템 정보</translation>
 <translation id="706626672220389329">공유를 마운트하는 중에 오류가 발생했습니다. 지정된 공유가 이미 마운트되었습니다.</translation>
 <translation id="7066944511817949584">'<ph name="DEVICE_NAME" />'에 연결하지 못했습니다.</translation>
-<translation id="7067396782363924830">주변 색상에 맞춤</translation>
+<translation id="7067396782363924830">주변 색상</translation>
 <translation id="7067725467529581407">다시 표시하지 않음</translation>
 <translation id="7069811530847688087"><ph name="WEBSITE" />에서 새로운 또는 다른 유형의 보안 키를 요구할 수 있습니다.</translation>
 <translation id="7070484045139057854">사이트 데이터를 읽고 변경할 수 있음</translation>
@@ -4194,7 +4193,7 @@
 <translation id="7121728544325372695">스마트 대시</translation>
 <translation id="7123360114020465152">프린터가 더 이상 지원되지 않습니다.</translation>
 <translation id="7127980134843952133">다운로드 기록</translation>
-<translation id="7128151990937044829">알림이 차단되면 주소 표시줄에 표시기 나타내기</translation>
+<translation id="7128151990937044829">알림이 차단되면 주소 표시줄에 표시 아이콘 나타내기</translation>
 <translation id="7128239828194367697">이 페이지의 QR 코드 생성</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />에서 데이터 읽기</translation>
 <translation id="713122686776214250">페이지 추가(&amp;G)...</translation>
@@ -4885,7 +4884,7 @@
 <translation id="8076835018653442223">관리자가 내 기기의 로컬 파일 액세스를 차단했습니다</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081989000209387414">ADB 디버깅을 사용 중지하시겠습니까?</translation>
-<translation id="8082390128630131497">ADB 디버깅을 사용 중지하면 이 <ph name="DEVICE_TYPE" />이(가) 초기화됩니다. 모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
+<translation id="8082390128630131497">ADB 디버깅을 사용 중지하면 이 <ph name="DEVICE_TYPE" /> 기기가 초기화됩니다. 모든 사용자 계정과 로컬 데이터가 삭제됩니다.</translation>
 <translation id="8084114998886531721">저장된 비밀번호</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> 구성 중...</translation>
 <translation id="8086442853986205778"><ph name="PRINTER_NAME" /> 설정</translation>
@@ -4977,7 +4976,7 @@
 <translation id="8214489666383623925">파일 열기...</translation>
 <translation id="8214962590150211830">이 사용자 삭제</translation>
 <translation id="8217399928341212914">여러 파일을 다운로드하지 못하도록 계속 차단</translation>
-<translation id="8221491193165283816">대부분의 알림을 차단하는 중입니다. 이 사이트의 알림을 허용하려면 여기를 클릭하세요.</translation>
+<translation id="8221491193165283816">기본적으로 알림을 차단하는 중입니다. 이 사이트의 알림을 허용하려면 여기를 클릭하세요.</translation>
 <translation id="8225265270453771718">애플리케이션 창 공유</translation>
 <translation id="8225753906568652947">혜택 사용하기</translation>
 <translation id="8226222018808695353">금지됨</translation>
@@ -5247,7 +5246,7 @@
 <translation id="8627795981664801467">보안 연결만</translation>
 <translation id="8630903300770275248">관리 대상 사용자 가져오기</translation>
 <translation id="8631032106121706562">꽃잎</translation>
-<translation id="863109444997383731">사이트가 알림 표시를 요청하지 못하도록 차단됩니다. 사이트에서 알림을 요청하면 차단 표시기가 주소 표시줄에 나타납니다.</translation>
+<translation id="863109444997383731">사이트가 알림 표시를 요청하지 못하도록 차단됩니다. 사이트에서 알림을 요청하면 차단 표시 아이콘이 주소 표시줄에 나타납니다.</translation>
 <translation id="8635628933471165173">새로 고치는 중...</translation>
 <translation id="8637542770513281060">컴퓨터에 보안 모듈이 있습니다. 보안 모듈은 Chrome OS에서 여러 중요한 보안 기능을 구현하는 데 사용됩니다. 자세히 알아보려면 Chromebook 고객센터의 다음 페이지를 방문하세요. https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">시스템 업데이트 사용가능. 다운로드 준비 중…</translation>

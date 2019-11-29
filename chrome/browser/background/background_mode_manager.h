@@ -168,8 +168,13 @@ class BackgroundModeManager : public content::NotificationObserver,
     // Browser window.
     Browser* GetBrowserWindow();
 
-    // Returns if this profile has background clients. A client is an extension.
-    bool HasBackgroundClient() const;
+    // Returns if this profile has persistent background clients. A client is an
+    // extension.
+    bool HasPersistentBackgroundClient() const;
+
+    // Returns if this profile has any background clients. A client is an
+    // extension.
+    bool HasAnyBackgroundClient() const;
 
     // Builds the profile specific parts of the menu. The menu passed in may
     // be a submenu in the case of multi-profiles or the main menu in the case
@@ -257,6 +262,10 @@ class BackgroundModeManager : public content::NotificationObserver,
   // launch-on-startup is enabled if appropriate.
   void OnBackgroundClientInstalled(const base::string16& name);
 
+  // Update whether Chrome should be launched on startup, depending on whether
+  // |this| has any persistent background clients.
+  void UpdateEnableLaunchOnStartup();
+
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so it can be mocked in tests).
   virtual void EnableLaunchOnStartup(bool should_launch);
@@ -321,13 +330,18 @@ class BackgroundModeManager : public content::NotificationObserver,
   // Turns on background mode if it's currently disabled.
   void EnableBackgroundMode();
 
-  // Returns if any profile on the system has a background client.
+  // Returns if any profile on the system has a persistent background client.
   // A client is an extension. (virtual to allow overriding in unit tests)
-  virtual bool HasBackgroundClient() const;
+  virtual bool HasPersistentBackgroundClient() const;
 
-  // Returns if there are background clients for a profile. A client is an
-  // extension.
-  virtual bool HasBackgroundClientForProfile(const Profile* profile) const;
+  // Returns if any profile on the system has any background client.
+  // A client is an extension. (virtual to allow overriding in unit tests)
+  virtual bool HasAnyBackgroundClient() const;
+
+  // Returns if there are persistent background clients for a profile. A client
+  // is an extension.
+  virtual bool HasPersistentBackgroundClientForProfile(
+      const Profile* profile) const;
 
   // Returns true if we should be in background mode.
   bool ShouldBeInBackgroundMode() const;
@@ -405,6 +419,8 @@ class BackgroundModeManager : public content::NotificationObserver,
 
   // Set to true when background mode is suspended.
   bool background_mode_suspended_ = false;
+
+  base::Optional<bool> launch_on_startup_enabled_;
 
   // Task runner for making startup/login configuration changes that may
   // require file system or registry access.

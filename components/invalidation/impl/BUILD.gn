@@ -48,8 +48,6 @@ static_library("impl") {
     "invalidator_registrar_with_memory.h",
     "invalidator_storage.cc",
     "invalidator_storage.h",
-    "logger.cc",
-    "logger.h",
     "mock_ack_handler.cc",
     "mock_ack_handler.h",
     "per_user_topic_registration_manager.cc",

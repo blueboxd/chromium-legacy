@@ -57,9 +57,8 @@ class CrowdDenySafeBrowsingRequest {
   void OnReceivedResult(Verdict verdict);
 
   // The client interfacing with Safe Browsing. Created on |this| thread, but
-  // used on the IO thread for the rest of its life.
-  std::unique_ptr<SafeBrowsingClient, content::BrowserThread::DeleteOnIOThread>
-      client_;
+  // used on the IO thread for the rest of its life and destroyed there.
+  std::unique_ptr<SafeBrowsingClient> client_;
 
   VerdictCallback callback_;
   base::WeakPtrFactory<CrowdDenySafeBrowsingRequest> weak_factory_{this};

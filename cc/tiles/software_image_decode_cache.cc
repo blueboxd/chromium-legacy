@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -267,7 +271,6 @@ void SoftwareImageDecodeCache::AddBudgetForImage(const CacheKey& key,
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::AddBudgetForImage", "key",
                key.ToString());
-  lock_.AssertAcquired();
 
   DCHECK(!entry->is_budgeted);
   DCHECK_GE(locked_images_budget_.AvailableMemoryBytes(), key.locked_bytes());
@@ -280,7 +283,6 @@ void SoftwareImageDecodeCache::RemoveBudgetForImage(const CacheKey& key,
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::RemoveBudgetForImage", "key",
                key.ToString());
-  lock_.AssertAcquired();
 
   DCHECK(entry->is_budgeted);
   locked_images_budget_.SubtractUsage(key.locked_bytes());
@@ -297,7 +299,6 @@ void SoftwareImageDecodeCache::UnrefImage(const DrawImage& image) {
 }
 
 void SoftwareImageDecodeCache::UnrefImage(const CacheKey& key) {
-  lock_.AssertAcquired();
   auto decoded_image_it = decoded_images_.Peek(key);
   DCHECK(decoded_image_it != decoded_images_.end());
   auto* entry = decoded_image_it->second.get();
@@ -340,7 +341,6 @@ SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DecodeImageIfNecessary", "key",
                key.ToString());
-  lock_.AssertAcquired();
   DCHECK_GT(entry->ref_count, 0);
 
   if (key.target_size().IsEmpty())
@@ -550,7 +550,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
                "SoftwareImageDecodeCache::GetDecodedImageForDrawInternal",
                "key", key.ToString());
 
-  lock_.AssertAcquired();
   auto decoded_it = decoded_images_.Get(key);
   CacheEntry* cache_entry = nullptr;
   if (decoded_it == decoded_images_.end())
@@ -695,11 +694,15 @@ void SoftwareImageDecodeCache::OnMemoryPressure(
 
 SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
     const CacheKey& key) {
-  lock_.AssertAcquired();
   frame_key_to_image_keys_[key.frame_key()].push_back(key);
   auto it = decoded_images_.Put(key, std::make_unique<CacheEntry>());
   it->second.get()->mark_cached();
   return it->second.get();
+}
+
+size_t SoftwareImageDecodeCache::GetNumCacheEntriesForTesting() {
+  base::AutoLock lock(lock_);
+  return decoded_images_.size();
 }
 
 // MemoryBudget ----------------------------------------------------------------

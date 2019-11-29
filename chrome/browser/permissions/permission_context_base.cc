@@ -32,7 +32,9 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -187,6 +189,15 @@ void PermissionContextBase::RequestPermission(
     NotifyPermissionSet(id, requesting_origin, embedding_origin,
                         std::move(callback), false /* persist */,
                         result.content_setting);
+    return;
+  }
+
+  // Make sure we do not show a UI for cached documents
+  if (content::BackForwardCache::EvictIfCached(
+          content::GlobalFrameRoutingId(id.render_process_id(),
+                                        id.render_frame_id()),
+          "PermissionContextBase::RequestPermission")) {
+    std::move(callback).Run(result.content_setting);
     return;
   }
 

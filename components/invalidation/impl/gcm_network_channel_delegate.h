@@ -22,6 +22,8 @@ namespace syncer {
 // in HTTP message to server.
 // GCMNetworkChannel lives on IO thread therefore calls will be made on IO
 // thread and callbacks should be invoked there as well.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class GCMNetworkChannelDelegate {
  public:
   typedef base::Callback<void(const GoogleServiceAuthError& error,

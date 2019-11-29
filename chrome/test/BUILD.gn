@@ -3164,6 +3164,7 @@ test("unit_tests") {
     "../browser/permissions/chooser_context_base_mock_permission_observer.cc",
     "../browser/permissions/chooser_context_base_mock_permission_observer.h",
     "../browser/permissions/chooser_context_base_unittest.cc",
+    "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
     "../browser/permissions/permission_context_base_feature_policy_unittest.cc",
     "../browser/permissions/permission_context_base_unittest.cc",
     "../browser/permissions/permission_decision_auto_blocker_unittest.cc",
@@ -5142,7 +5143,6 @@ test("unit_tests") {
     if (!is_chromeos) {
       sources += [
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
-        "../browser/ui/views/sync/bubble_sync_promo_view_unittest.cc",
         "../browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc",
       ]
     }

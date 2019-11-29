@@ -350,6 +350,11 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!computed_byte_length.IsValid() ||
           computed_byte_length.ValueOrDie() != byte_length)
         return nullptr;
+      if (!origin_clean) {
+        // Non-origin-clean ImageBitmap serialization/deserialization have
+        // been deprecated.
+        return nullptr;
+      }
       return ImageBitmap::Create(pixels, width, height, is_premultiplied,
                                  origin_clean, color_params);
     }

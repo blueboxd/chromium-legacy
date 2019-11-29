@@ -76,7 +76,6 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
   MOCK_CONST_METHOD1(GetDataTypeContext, bool(std::string*));
-  MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
 
   void SetConnectReturn(base::WeakPtr<SyncableService> service) {
     connect_return_ = service;
@@ -221,7 +220,6 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
     EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
         .WillOnce(Return(SyncError()));
     EXPECT_CALL(*change_processor_, GetSyncCount()).WillOnce(Return(0));
-    EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   }
 
   void SetActivateExpectations(DataTypeController::ConfigureResult result) {
@@ -284,7 +282,6 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartFirstRun) {
       .WillOnce(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
-  EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -319,7 +316,6 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationFailed) {
       .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
   EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
-  EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());

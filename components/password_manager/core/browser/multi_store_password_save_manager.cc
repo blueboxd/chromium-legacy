@@ -62,6 +62,24 @@ void MultiStorePasswordSaveManager::UpdateInternal(
   }
 }
 
+void MultiStorePasswordSaveManager::PermanentlyBlacklist(
+    const PasswordStore::FormDigest& form_digest) {
+  DCHECK(!client_->IsIncognito());
+  PasswordSaveManagerImpl::PermanentlyBlacklist(form_digest);
+  // TODO(crbug.com/1012203): Implement this using the the stored pref
+  // indicating the default store selected by the user.
+}
+
+void MultiStorePasswordSaveManager::Unblacklist(
+    const PasswordStore::FormDigest& form_digest) {
+  // Try to unblacklist in both stores anyway because if credentials don't
+  // exist, the unblacklist operation is no-op.
+  form_saver_->Unblacklist(form_digest);
+  if (account_store_form_saver_ && IsAccountStoreActive()) {
+    account_store_form_saver_->Unblacklist(form_digest);
+  }
+}
+
 bool MultiStorePasswordSaveManager::IsAccountStoreActive() {
   return client_->GetPasswordSyncState() ==
          password_manager::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;

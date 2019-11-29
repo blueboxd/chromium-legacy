@@ -164,6 +164,7 @@
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
 <translation id="1160479894929412407">Cho phép giao thức kết nối Internet nhanh UDP (QUIC)</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
+<translation id="1163080558183062209">Vô hiệu hóa các loại máy in trong danh sách từ chối</translation>
 <translation id="117059611145966538">Máy chủ máy in bên ngoài</translation>
 <translation id="1189817621108632689">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web không được phép hiển thị hình ảnh.
 
@@ -883,6 +884,13 @@
 
       Các mẫu không đúng định dạng sẽ bị bỏ qua.</translation>
 <translation id="2345547870894930157">Bật chế độ DNS qua HTTPS không có phương án dự phòng cho truy vấn không an toàn</translation>
+<translation id="2347264058558503729">Cho phép <ph name="PRODUCT_NAME" /> gửi tài liệu đến <ph name="CLOUD_PRINT_NAME" /> để in.  LƯU Ý: Chính sách này chỉ ảnh hưởng đến sự hỗ trợ của <ph name="CLOUD_PRINT_NAME" /> trong <ph name="PRODUCT_NAME" />,  chứ không ngăn người dùng gửi lệnh in trên các trang web.
+
+      Nếu bạn bật hoặc chưa định cấu hình tùy chọn cài đặt này, thì người dùng có thể in từ hộp thoại in <ph name="PRODUCT_NAME" /> bằng <ph name="CLOUD_PRINT_NAME" />.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì người dùng không thể in từ hộp thoại in <ph name="PRODUCT_NAME" /> bằng <ph name="CLOUD_PRINT_NAME" />.
+
+      Để mọi người luôn tìm thấy đích <ph name="CLOUD_PRINT_NAME" />, bạn phải đặt chính sách này thành true và xóa 'cloud' khỏi chính sách 'PrinterTypeDenyList'.</translation>
 <translation id="237494535617297575">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -992,6 +1000,7 @@
           Nếu bạn bật hoặc không đặt chính sách này, thì các cảnh báo bảo mật sẽ hiện ra khi một số cờ dòng lệnh được dùng để chạy Chrome.
 
           Trên Windows, chính sách này chỉ có trên các phiên bản liên kết với một miền <ph name="MS_AD_NAME" /> hoặc các phiên bản Windows 10 Pro hoặc Enterprise đã đăng ký quản lý thiết bị.</translation>
+<translation id="247658312644322296">Đích 'Lưu dưới dạng PDF'</translation>
 <translation id="2480971699591919564">Bật tính năng Nhấp để gọi. Tính năng này cho phép người dùng gửi số điện thoại từ Máy tính đang mở Chrome sang thiết bị Android khi người dùng đã đăng nhập. Để biết thêm thông tin, hãy xem bài viết trong trung tâm trợ giúp: https://support.google.com/chrome/answer/9430554?hl=vi.
 
       Nếu bạn đặt chính sách này thành bật, thì người dùng Chrome có thể gửi số điện thoại tới thiết bị Android.
@@ -2395,7 +2404,19 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Các yêu cầu cài đặt tiện ích sẽ được tạo khi người dùng cố gắng cài đặt một tiện ích mà <ph name="EXTENSION_INSTALL_WHITELIST" /> hoặc <ph name="EXTENSION_SETTINGS" /> không đưa vào danh sách cho phép.
 
       Chính sách này chỉ có hiệu lực khi <ph name="CLOUD_REPORTING_ENABLED" /> ở trạng thái bật và máy được đăng ký bằng <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.</translation>
+<translation id="4638162097046412832">Mọi người sẽ không thể tìm cũng như sử dụng các loại máy in có trong danh sách từ chối.
+
+      Nếu bạn đưa tất cả các loại máy in vào danh sách từ chối, thì chức năng in sẽ bị vô hiệu hóa một cách hiệu quả vì không có đích để gửi tài liệu cần in.
+
+      Việc đưa 'cloud' vào danh sách từ chối cũng có tác dụng tương tự như việc đặt chính sách 'CloudPrintSubmitEnabled' thành false. Để mọi người luôn tìm thấy đích <ph name="CLOUD_PRINT_NAME" />, bạn phải đặt chính sách 'CloudPrintSubmitEnabled' thành true và xóa 'cloud' khỏi danh sách từ chối.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách trống, thì tất cả các loại máy in đều được tìm thấy.
+
+      Máy in kết nối qua tiện ích còn gọi là đích cung cấp dịch vụ in và bao gồm mọi đích thuộc tiện ích của <ph name="PRODUCT_NAME" />.
+
+      Máy in cục bộ (hay còn gọi là đích in gốc) bao gồm các đích dùng được cho thiết bị cục bộ và máy in dùng chung qua mạng.</translation>
 <translation id="4639407427807680016">Tên của các máy chủ nhắn tin gốc cần xóa khỏi danh sách cấm</translation>
+<translation id="4649395978608361979">Đích máy in cục bộ</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
 <translation id="465099050592230505">URL cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
 <translation id="4661889655253181651">Tùy chọn cài đặt nội dung cho phép bạn chỉ định cách xử lý nội dung thuộc một loại cụ thể (chẳng hạn như Cookie, Hình ảnh hoặc JavaScript).</translation>
@@ -2422,6 +2443,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã bật chính sách này, thì các trang web sẽ được phép chuyển tới và mở các cửa sổ/tab mới cùng một lúc.
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
+<translation id="4693779768620889402">Đích dựa trên tiện ích</translation>
 <translation id="4703402283970867140">Bật mô hình giảm độ sáng thông minh để kéo dài thời gian cho đến khi màn hình tối đi</translation>
 <translation id="4722122254122249791">Bật chính sách Cô lập trang web cho các nguồn gốc đã xác định</translation>
 <translation id="4722399051042571387">Nếu đặt thành false, người dùng sẽ không thể đặt các mã PIN yếu và dễ đoán.
@@ -3075,6 +3097,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5645779841392247734">Cho phép cookie trên các trang web này</translation>
 <translation id="5656177735561364047">Bật tính năng Khay nhớ tạm dùng chung</translation>
 <translation id="5666457529647159548">Cho phép người dùng quản lý các chứng chỉ ứng dụng khách đã cài đặt.</translation>
+<translation id="5676740747107495269">Hiển thị tùy chọn hỗ trợ tiếp cận trong trình đơn của khay hệ thống trên màn hình đăng nhập</translation>
 <translation id="5689430183304951538">Kích thước trang in mặc định</translation>
 <translation id="5693469654327063861">Cho phép di chuyển dữ liệu</translation>
 <translation id="5694594914843889579">Khi chính sách này được đặt thành true, bộ nhớ ngoài sẽ không khả dụng trong trình duyệt tệp.
@@ -3518,9 +3541,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6544897973797372144">Nếu chính sách này được đặt thành Đúng và chính sách ChromeOsReleaseChannel không được chỉ định thì người dùng của miền đăng ký sẽ được phép thay đổi kênh phát hành của thiết bị. Nếu chính sách này được đặt thành sai, thiết bị sẽ bị khóa bất kể kênh mà thiết bị được đặt lần cuối.
 
       Kênh do người dùng đã chọn sẽ bị ghi đè bởi chính sách ChromeOsReleaseChannel nhưng nếu kênh của chính sách ổn định hơn kênh được cài đặt trên thiết bị thì kênh sẽ chỉ chuyển đổi sau khi phiên bản của kênh ổn định hơn đạt tới số phiên bản cao hơn phiên bản được cài đặt trên thiết bị.</translation>
-<translation id="6549567350270907557">Nếu bạn bật tùy chọn cài đặt này, người dùng có thể dùng <ph name="PRODUCT_NAME" /> để kiểm tra xem các thông tin đăng nhập đã nhập có bị rò rỉ hay không.
-
-              Nếu bạn bật hoặc tắt chính sách này, người dùng sẽ không thể thay đổi hoặc ghi đè chính sách này trong <ph name="PRODUCT_NAME" />. Nếu bạn không đặt chính sách này, thì hệ thống sẽ cho phép dùng tình năng kiểm tra rò rỉ (nhưng người dùng có thể tắt tính năng này).</translation>
 <translation id="6553143066970470539">Phần trăm độ sáng màn hình</translation>
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
 <translation id="6561396069801924653">Hiển thị tùy chọn trợ năng trong menu của khay hệ thống</translation>
@@ -3628,6 +3648,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="6813263547126514821">Bật và tắt nguồn</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
+<translation id="6821268164692776674">Đích <ph name="CLOUD_PRINT_NAME" /> và 'Lưu vào Google Drive'</translation>
 <translation id="6833988859168635883">Trang Khởi động, Trang chủ và trang Tab mới</translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="683688607121170501">Tùy chọn cài đặt này cho phép người dùng chuyển đổi giữa các Tài khoản Google trong vùng nội dung của cửa sổ trình duyệt và trong các ứng dụng Android sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" />.
@@ -4066,6 +4087,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
 <translation id="747275827471712187">Quay lại về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ đối với cookie trên các trang web này</translation>
 <translation id="7477231245051133709">Bật tính năng hỗ trợ tiếp cận về đơn âm</translation>
+<translation id="7477239290070847560">Đích giao thức dựa trên máy in tự động định cấu hình (mDNS + DNS-SD)</translation>
 <translation id="7485481791539008776">Quy tắc chọn máy in mặc định</translation>
 <translation id="7485730741952775732">Nếu bạn đặt chính sách này, máy chủ truy cập từ xa sẽ dùng URL này để xác thực mã xác thực từ các ứng dụng truy cập từ xa để chấp nhận kết nối. Phải sử dụng chính sách này cùng với RemoteAccessHostTokenUrl.
 

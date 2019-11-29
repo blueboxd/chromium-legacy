@@ -63,6 +63,7 @@ std::unique_ptr<web::WebMainParts> WebViewWebClient::CreateWebMainParts() {
 
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
   return web::BuildUserAgentFromProduct(
+      web::UserAgentType::MOBILE,
       base::SysNSStringToUTF8([CWVWebView userAgentProduct]));
 }
 

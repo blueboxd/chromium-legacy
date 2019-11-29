@@ -29,12 +29,13 @@ std::string GetUserAgentTypeDescription(UserAgentType type);
 UserAgentType GetUserAgentTypeWithDescription(const std::string& description);
 
 // Returns the os cpu info portion for a user agent.
-std::string BuildOSCpuInfo();
+std::string BuildOSCpuInfo(UserAgentType type);
 
 // Returns the user agent to use for the given product name.
 // The returned user agent is very similar to that used by Mobile Safari, for
 // web page compatibility.
-std::string BuildUserAgentFromProduct(const std::string& product);
+std::string BuildUserAgentFromProduct(UserAgentType type,
+                                      const std::string& product);
 
 }  // namespace web
 

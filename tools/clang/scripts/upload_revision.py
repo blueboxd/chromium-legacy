@@ -100,7 +100,7 @@ def main():
       old_rev_string, rev_string, commit_message)])
 
   Git(["cl", "upload", "-f", "--bypass-hooks"])
-  Git(["cl", "try", "-B", "luci.chromium.try",
+  Git(["cl", "try", "-B", "chromium/try",
        "-b", "linux_upload_clang",
        "-b", "mac_upload_clang",
        "-b", "win_upload_clang",

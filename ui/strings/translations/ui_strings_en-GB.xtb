@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1201402288615127009">Next</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store app</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="1266864766717917324">Couldn't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">Maximise</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, installed app</translation>
 <translation id="1450753235335490080">Can't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">You searched for this before. Deleting '<ph name="QUERY" />' from your history will permanently remove it from your account across all your devices.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 month}other{# months}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hour and }other{# hours and }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> was un-pinned</translation>
 <translation id="1842960171412779397">select</translation>
 <translation id="1859234291848436338">Writing Direction</translation>
 <translation id="1860796786778352021">Notification close</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Top</translation>
 <translation id="2701330563083355633">Shared from <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copy to clipboard</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Open folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 year ago}other{# years ago}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{in 1 d}other{in # d}}</translation>
 <translation id="2931838996092594335">click</translation>
+<translation id="2981684127883932071">Displaying suggestions</translation>
 <translation id="3036649622769666520">Open Files</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Shelf on left</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Text is too large</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="348799646910989694">Shelf auto hidden</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> was pinned</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 day left}other{# days left}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> File</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 month ago}other{# months ago}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> moved to folder <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALL APPS</translation>
 <translation id="4588090240171750605">Scroll Right</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, star rating <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, app recommendation</translation>
 <translation id="4690510401873698237">Shelf on bottom</translation>
 <translation id="4724120544754982507">Notification Centre, <ph name="UNREAD_NOTIFICATION_COUNT" /> unread notifications</translation>
 <translation id="4730374152663651037">FREQUENTLY USED</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Media Previous Track</translation>
 <translation id="5046499563572181734">Tap here</translation>
 <translation id="5076340679995252485">&amp;Paste</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> combined with <ph name="IN_PLACE_APP" /> to create new folder.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Disclosure triangle</translation>
 <translation id="5278860589123563674">Failed to send</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> system</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Left Arrow</translation>
+<translation id="5675363643668471212">Shelf item</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# mins}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Active today}=1{Active 1 day ago}other{Active # days ago}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 day and }other{# days and }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Hex colour value</translation>
 <translation id="8328145009876646418">Left Edge</translation>
 <translation id="8331626408530291785">Scroll Up</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">SUGGESTED APPS</translation>
 <translation id="9170848237812810038">&amp;Undo</translation>
+<translation id="9178475906033259337">Displaying one result for <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="944069440740578670">Unread notifications</translation>
+<translation id="974545358917229949">Displaying <ph name="RESULT_COUNT" /> results for <ph name="QUERY" /></translation>
 </translationbundle>

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_binding.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"

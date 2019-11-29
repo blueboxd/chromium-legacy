@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -28,7 +29,8 @@ namespace extensions {
 // Used to track installation of force-installed extensions for the profile
 // and report stats to UMA.
 // ExtensionService owns this class and outlives it.
-class InstallationTracker : public ExtensionRegistryObserver {
+class InstallationTracker : public ExtensionRegistryObserver,
+                            public InstallationReporter::Observer {
  public:
   InstallationTracker(ExtensionRegistry* registry,
                       Profile* profile,
@@ -43,6 +45,11 @@ class InstallationTracker : public ExtensionRegistryObserver {
 
   void OnShutdown(ExtensionRegistry*) override;
 
+  // InstallationReporter::Observer overrides:
+  void OnExtensionInstallationFailed(
+      const ExtensionId& extension_id,
+      InstallationReporter::FailureReason reason) override;
+
  private:
   // Loads list of force-installed extensions if available.
   void OnForcedExtensionsPrefChanged();
@@ -50,7 +57,7 @@ class InstallationTracker : public ExtensionRegistryObserver {
   // If |succeeded| report time elapsed for extensions load,
   // otherwise amount of not yet loaded extensions and reasons
   // why they were not installed.
-  void ReportResults(bool succeeded);
+  void ReportResults();
 
   // Unowned, but guaranteed to outlive this object.
   ExtensionRegistry* registry_;
@@ -65,8 +72,11 @@ class InstallationTracker : public ExtensionRegistryObserver {
   // Set of all extensions requested to be force installed.
   std::set<std::string> forced_extensions_;
 
-  // Set of not yet loaded force installed extensions.
+  // Set of extension, which are neither yet loaded not yet failed permanently.
   std::set<std::string> pending_forced_extensions_;
+
+  // Set of extensions, which are not loaded (both not loaded yet and failed).
+  std::set<std::string> failed_forced_extensions_;
 
   // Tracks whether non-empty forcelist policy was received at least once.
   bool loaded_ = false;

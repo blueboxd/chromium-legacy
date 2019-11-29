@@ -23,14 +23,14 @@ class QuirksManager;
 
 // See declaration in quirks_manager.h.
 using RequestFinishedCallback =
-    base::Callback<void(const base::FilePath&, bool)>;
+    base::OnceCallback<void(const base::FilePath&, bool)>;
 
 // Handles downloading icc and other display data files from Quirks Server.
 class QuirksClient {
  public:
   QuirksClient(int64_t product_id,
                const std::string& display_name,
-               const RequestFinishedCallback& on_request_finished,
+               RequestFinishedCallback on_request_finished,
                QuirksManager* manager);
   ~QuirksClient();
 
@@ -57,7 +57,7 @@ class QuirksClient {
   const std::string display_name_;
 
   // Callback supplied by caller.
-  const RequestFinishedCallback on_request_finished_;
+  RequestFinishedCallback on_request_finished_;
 
   // Weak pointer owned by manager, guaranteed to outlive this client object.
   QuirksManager* manager_;

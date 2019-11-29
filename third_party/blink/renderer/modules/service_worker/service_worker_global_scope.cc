@@ -1437,9 +1437,6 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
                "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
                "url", params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
-  // TODO(https://crbug.com/999049): Retrieve the COEP value from
-  // controller_receivers_.current_context() and respect it on the corresponding
-  // respondWith().
   network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep =
       controller_receivers_.current_context();
   if (RequestedTermination()) {

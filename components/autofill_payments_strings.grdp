@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sign in.">
-    To use your cards on all devices, sign in and turn on sync.
-  </message>
   <message name="IDS_AUTOFILL_SYNC_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sync.">
     To use your cards on all devices, turn on sync.
-  </message>
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED" desc="Text of the sign in promo bubble and manage cards footnote.">
-    To use your cards on all your devices, <ph name="SIGN_IN_LINK">$1<ex>sign in</ex></ph>.
-  </message>
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED" desc="Text of the link to sign in from the save card sync promo.">
-    sign in to Chrome
   </message>
 
   <if expr="not use_titlecase">

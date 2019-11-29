@@ -1143,7 +1143,7 @@
 <translation id="26224892172169984">Не дазваляць ніякім сайтам кіраваць пратаколамі</translation>
 <translation id="2624142942574147739">Гэта старонка мае доступ да вашай камеры і мікрафона.</translation>
 <translation id="2626799779920242286">Паўтарыце спробу пазней.</translation>
-<translation id="2628770867680720336">Уключэнне адладкі ADB патрабуе скіду налад Chromebook заводскіх значэнняў. <ph name="BEGIN_LINK_LEARN_MORE" />Даведацца больш<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="2628770867680720336">Уключэнне адладкі ADB патрабуе скіду налад Chromebook да заводскіх значэнняў. <ph name="BEGIN_LINK_LEARN_MORE" />Даведацца больш<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Распрацоўка праграм для Android</translation>
 <translation id="2630681426381349926">Каб пачаць, падключыцеся да Wi-Fi</translation>
 <translation id="2631120081682787498">Сапраўды закрыць гэту ўкладку?</translation>
@@ -3525,7 +3525,6 @@
 <translation id="6112727384379533756">Дадаць білет</translation>
 <translation id="6112931163620622315">Праверце свой тэлефон</translation>
 <translation id="6112952769866305444">Змяніць профіль карыстальніка: <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Паказваць запыты бязгучна</translation>
 <translation id="6113942107547980621">Каб выкарыстоўваць Smart Lock, пераключыцеся на асноўны карыстальніцкі профіль на тэлефоне</translation>
 <translation id="6116338172782435947">Праглядаць тэкст і відарысы, скапіраваныя ў буфер абмену</translation>
 <translation id="6116921718742659598">Змяніць налады мовы і ўводу</translation>

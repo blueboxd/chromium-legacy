@@ -5,6 +5,7 @@
   await dp.Target.setAutoAttach({autoAttach: true,
                                  waitForDebuggerOnStart: false,
                                  flatten: true});
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-loop.js')}');
     var resolve;
@@ -16,7 +17,7 @@
   `);
   testRunner.log('Started worker');
 
-  const sessionId = (await dp.Target.onceAttachedToTarget()).params.sessionId;
+  const sessionId = (await attachedPromise).params.sessionId;
   testRunner.log('Worker created');
   testRunner.log('didConnectToWorker');
 

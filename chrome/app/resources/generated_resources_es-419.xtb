@@ -4,7 +4,7 @@
 <translation id="1003088604756913841">Abrir vínculo en una ventana nueva de <ph name="APP" /></translation>
 <translation id="1004218526896219317">Acceso al sitio</translation>
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
-<translation id="1005333234656240382">¿Quieres habilita la depuración por adb?</translation>
+<translation id="1005333234656240382">¿Quieres habilitar la depuración de adb?</translation>
 <translation id="1006873397406093306">Esta extensión puede leer y cambiar tus datos en los sitios. Puedes controlar los sitios a los que la extensión puede acceder.</translation>
 <translation id="1007408791287232274">No se pueden cargar los dispositivos.</translation>
 <translation id="1008186147501209563">Exportar favoritos</translation>
@@ -235,7 +235,7 @@
 <translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="1327074568633507428">Impresora en Google Cloud Print</translation>
 <translation id="1327272175893960498">Tickets de Kerberos</translation>
-<translation id="1327495825214193325">Para habilitar la depuración por adb, es necesario restablecer este dispositivo <ph name="DEVICE_TYPE" />. Si quieres inhabilitarla, deberás restablecer la configuración de fábrica.</translation>
+<translation id="1327495825214193325">Para habilitar la depuración de adb, es necesario restablecer este dispositivo <ph name="DEVICE_TYPE" />. Si quieres inhabilitarla, deberás restablecer la configuración de fábrica.</translation>
 <translation id="1327977588028644528">Puerta de enlace</translation>
 <translation id="1329584516321524826">Recién actualizada</translation>
 <translation id="1330145147221172764">Habilitar el teclado en pantalla</translation>
@@ -1140,7 +1140,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="26224892172169984">No permitir que los sitios web procesen protocolos</translation>
 <translation id="2624142942574147739">Esta página está accediendo a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
-<translation id="2628770867680720336">Para habilitar la depuración por adb, es necesario restablecer la configuración de fábrica de esta Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Más información<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="2628770867680720336">Para habilitar la depuración de adb, es necesario restablecer la configuración de fábrica de esta Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Más información<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Desarrollar apps de Android</translation>
 <translation id="2630681426381349926">Conéctate a una red Wi-Fi para comenzar</translation>
 <translation id="2631120081682787498">¿Realmente quieres cerrar esta pestaña?</translation>
@@ -2516,7 +2516,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4634771451598206121">Volver a acceder...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> no está disponible para los usuarios invitados.</translation>
 <translation id="4637083375689622795">Más acciones, <ph name="EMAIL" /></translation>
-<translation id="4638930039313743000">Habilitar la depuración por adb</translation>
+<translation id="4638930039313743000">Habilitar la depuración de adb</translation>
 <translation id="4641539339823703554">Chrome no pudo establecer la hora del sistema. Comprueba la hora más abajo y corrígela si es necesario.</translation>
 <translation id="4643612240819915418">Abrir vide&amp;o en una nueva pestaña</translation>
 <translation id="4645676300727003670">&amp;Conservar</translation>
@@ -2612,7 +2612,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4798236378408895261">Adjuntar <ph name="BEGIN_LINK" />registros de Bluetooth<ph name="END_LINK" /> (para uso interno de Google)</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir itinerancia de datos móviles</translation>
-<translation id="4804756772600045300">Si continúas, se habilitará la depuración por adb a fin de crear y probar apps para Android. Ten en cuenta que la depuración por adb permite la instalación de apps de prueba que Google no verificó.</translation>
+<translation id="4804756772600045300">Si continúas, se habilitará la depuración de adb a fin de crear y probar apps para Android. Ten en cuenta que la depuración de adb permite la instalación de apps de prueba que Google no verificó.</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4807098396393229769">Nombre en la tarjeta</translation>
@@ -3522,7 +3522,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6112727384379533756">Agregar un ticket</translation>
 <translation id="6112931163620622315">Revisa el teléfono</translation>
 <translation id="6112952769866305444">Editar persona, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Mostrar mensajes de forma silenciosa</translation>
 <translation id="6113942107547980621">Para usar Smart Lock, cambia al perfil del usuario principal en tu teléfono</translation>
 <translation id="6116338172782435947">Ver el texto y las imágenes copiados en el portapapeles</translation>
 <translation id="6116921718742659598">Cambiar la configuración de idioma y de entrada de texto</translation>
@@ -3565,7 +3564,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6169040057125497443">Comprueba el micrófono.</translation>
 <translation id="6169666352732958425">No se puede transmitir el escritorio</translation>
 <translation id="6170470584681422115">Sándwich</translation>
-<translation id="6170498031581934115">No se pudo habilitar la depuración por adb. Ve a Configuración y vuelve a intentarlo.</translation>
+<translation id="6170498031581934115">No se pudo habilitar la depuración de adb. Ve a Configuración y vuelve a intentarlo.</translation>
 <translation id="6173623053897475761">Vuelve a escribir tu PIN</translation>
 <translation id="6175314957787328458">GUID de dominio de Microsoft</translation>
 <translation id="6176043333338857209">Se activará la conexión Bluetooth de forma temporal para establecer la comunicación con la llave de seguridad</translation>
@@ -4883,8 +4882,8 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8076492880354921740">Pestañas</translation>
 <translation id="8076835018653442223">El administrador inhabilitó el acceso a los archivos locales de tu dispositivo</translation>
 <translation id="808089508890593134">Google</translation>
-<translation id="8081989000209387414">¿Quieres inhabilitar la depuración por adb?</translation>
-<translation id="8082390128630131497">Si inhabilitas la depuración por adb, se restablecerá el dispositivo <ph name="DEVICE_TYPE" /> a la configuración de fábrica. Se borrarán todas las cuentas de usuario y los datos locales.</translation>
+<translation id="8081989000209387414">¿Quieres inhabilitar la depuración de adb?</translation>
+<translation id="8082390128630131497">Si inhabilitas la depuración de adb, se restablecerá el dispositivo <ph name="DEVICE_TYPE" /> a la configuración de fábrica. Se borrarán todas las cuentas de usuario y los datos locales.</translation>
 <translation id="8084114998886531721">Se guardó la contraseña</translation>
 <translation id="8086015605808120405">Configurando <ph name="PRINTER_NAME" />…</translation>
 <translation id="8086442853986205778">Configurar <ph name="PRINTER_NAME" /></translation>

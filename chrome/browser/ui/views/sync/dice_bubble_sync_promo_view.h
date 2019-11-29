@@ -31,8 +31,6 @@ class DiceBubbleSyncPromoView : public views::View,
  public:
   // Creates a personalized sync promo view.
   // |delegate| is not owned by DiceBubbleSyncPromoView.
-  // The promo message is set to |no_accounts_promo_message_resource_id| when
-  // Chrome has no accounts. If no value is given, then no message is shown.
   // The promo message is set to |accounts_promo_message_resource_id| when
   // Chrome has at least one account.
   // If |signin_button_prominent| is false and a non-personalized signin button
@@ -43,7 +41,6 @@ class DiceBubbleSyncPromoView : public views::View,
   DiceBubbleSyncPromoView(Profile* profile,
                           BubbleSyncPromoDelegate* delegate,
                           signin_metrics::AccessPoint access_point,
-                          int no_accounts_promo_message_resource_id = 0,
                           int accounts_promo_message_resource_id = 0,
                           bool signin_button_prominent = true,
                           int text_style = views::style::STYLE_PRIMARY);

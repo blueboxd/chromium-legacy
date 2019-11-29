@@ -688,17 +688,25 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 
 #if !defined(OS_CHROMEOS)
-  if (!process_startup &&
-      base::FeatureList::IsEnabled(features::kOnConnectNative) &&
+  if (base::FeatureList::IsEnabled(features::kOnConnectNative) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectHost) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectExtension)) {
-    silent_launch = true;
     extensions::LaunchNativeMessageHostFromNativeApp(
         command_line.GetSwitchValueASCII(
             switches::kNativeMessagingConnectExtension),
         command_line.GetSwitchValueASCII(switches::kNativeMessagingConnectHost),
         command_line.GetSwitchValueASCII(switches::kNativeMessagingConnectId),
         last_used_profile);
+
+    // Chrome's lifetime, if the specified extension and native messaging host
+    // are both valid and a connection is established, is prolonged by
+    // BackgroundModeManager. If |process_startup| is true, --no-startup-window
+    // must be set or a browser window must be created for BackgroundModeManager
+    // to start background mode. Without this, nothing will take the first
+    // keep-alive and the browser process will not terminate. To avoid this
+    // situation, don't set |silent_launch| in response to the native messaging
+    // connect switches; require the client to pass --no-startup-window if
+    // suppressing the creation of a window is desired.
   }
 #endif
 

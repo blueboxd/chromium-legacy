@@ -431,6 +431,13 @@ TEST_P(NGInlineCursorTest, NextWithEllipsis) {
   EXPECT_THAT(list, ElementsAre("#linebox", "abcdefghi", "abcd", u"#'\u2026'"));
 }
 
+TEST_P(NGInlineCursorTest, NextWithListItem) {
+  NGInlineCursor cursor = SetupCursor("<ul><li id=root>abc</li></ul>");
+  Vector<String> list = ToDebugStringList(cursor);
+  EXPECT_THAT(list,
+              ElementsAre("LayoutNGListMarker (anonymous)", "#linebox", "abc"));
+}
+
 TEST_P(NGInlineCursorTest, NextWithSoftHyphens) {
   // Use "Ahem" font to get U+2010 as soft hyphen instead of U+002D
   LoadAhem();

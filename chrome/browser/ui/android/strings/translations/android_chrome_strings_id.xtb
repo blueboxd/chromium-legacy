@@ -105,7 +105,7 @@
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1779089405699405702">Pendekode gambar</translation>
 <translation id="1782483593938241562">Tanggal akhir <ph name="DATE" /></translation>
-<translation id="1791662854739702043">Terpasang</translation>
+<translation id="1791662854739702043">Terinstal</translation>
 <translation id="1792959175193046959">Ubah lokasi download default kapan saja</translation>
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1810845389119482123">Penyiapan sinkronisasi awal belum selesai</translation>
@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">Tampilkan sandi</translation>
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
 <translation id="3658159451045945436">Penyetalan ulang akan menghapus histori penyimpanan data, termasuk daftar situs yang dibuka.</translation>
-<translation id="3682730288090679318">Aktifkan untuk memblokir situs secara otomatis agar tidak meminta Anda untuk menampilkan notifikasi. Jika situs meminta notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
+<translation id="3682730288090679318">Aktifkan untuk memblokir situs secara otomatis agar tidak meminta Anda untuk menampilkan notifikasi. Jika situs meminta untuk menampilkan notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
@@ -542,7 +542,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5048398596102334565">Mengizinkan situs mengakses sensor gerakan (disarankan)</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5087580092889165836">Tambahkan kartu</translation>
-<translation id="5096950519211870196">Situs akan diblokir agar tidak meminta untuk menampilkan notifikasi kepada Anda. Jika situs meminta notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
+<translation id="5096950519211870196">Situs akan diblokir agar tidak meminta untuk menampilkan notifikasi kepada Anda. Jika situs meminta untuk menampilkan notifikasi, infobar akan muncul di bagian bawah halaman.</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5123685120097942451">Tab samaran</translation>

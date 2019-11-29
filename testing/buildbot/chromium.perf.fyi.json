@@ -146,14 +146,15 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--benchmarks=blink_perf.layout_ng,blink_perf.paint_layout_ng,loading.desktop_layout_ng",
-          "--output-format=histograms"
+          "--benchmarks=power.desktop",
+          "--output-format=histograms",
+          "--experimental-proto-trace-format"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "blink_perf.layout_ng",
+        "name": "power.desktop",
         "override_compile_targets": [
           "performance_test_suite"
         ],

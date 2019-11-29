@@ -65,8 +65,7 @@ class CORE_EXPORT ArrayBufferContents {
                       InitializationPolicy);
   ArrayBufferContents(void* data, size_t length, DataDeleter deleter);
   ArrayBufferContents(ArrayBufferContents&&) = default;
-  explicit ArrayBufferContents(std::shared_ptr<v8::BackingStore> backing_store)
-      : backing_store_(std::move(backing_store)) {}
+  explicit ArrayBufferContents(std::shared_ptr<v8::BackingStore> backing_store);
 
   ~ArrayBufferContents();
 

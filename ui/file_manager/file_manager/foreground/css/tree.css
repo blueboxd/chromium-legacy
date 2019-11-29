@@ -36,24 +36,46 @@ tree {
       url(../images/files/ui/2x/expand_more_active.png) 2x);
 }
 
-html[dir=rtl] .tree-row > .expand-icon {
+/* All .tree-row > .file-row > ... rules are files-ng specific. */
+.tree-row > .file-row > .expand-icon {
+  -webkit-mask-image: url(../images/files/ui/sort_desc.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  position: relative;
+  transform: rotate(-90deg);
+  transition: all 150ms;
+  vertical-align: top;
+}
+
+html[dir=rtl] .tree-row > .expand-icon,
+html[dir=rtl] .tree-row > .file-row > .expand-icon {
   transform: rotate(90deg);
 }
 
-.tree-item[expanded] > .tree-row > .expand-icon {
+.tree-item[expanded] > .tree-row > .expand-icon,
+.tree-item[expanded] > .tree-row > .file-row > .expand-icon {
   transform: rotate(0);
 }
 
-.tree-row > .expand-icon {
+.tree-row > .expand-icon,
+.tree-row > .file-row > .expand-icon {
   visibility: hidden;
 }
 
-.tree-row[may-have-children] > .expand-icon {
+.tree-row[may-have-children] > .expand-icon,
+.tree-row[may-have-children] > .file-row > .expand-icon {
   visibility: visible;
 }
 
-.tree-row[has-children=false] > .expand-icon {
+.tree-row[has-children=false] > .expand-icon,
+.tree-row[has-children=false] > .file-row > .expand-icon {
   visibility: hidden;
+}
+
+.tree-row > .file-row > .item-icon[use-generic-provided-icon] {
+  -webkit-mask-image: url(../images/files/ui/filetype_placeholder_generic.svg);
+  filter: none !important;
 }
 
 .tree-row[selected] {
@@ -68,7 +90,9 @@ html[dir=rtl] .tree-row > .expand-icon {
   display: none;
 }
 
-.tree-item > .tree-row > * {
+/* Not used in files-ng: restrict by #directory-tree:not([files-ng]) to block
+   the trailing > * matching the files-ng .tree-row > .file-row structure. */
+#directory-tree:not([files-ng]) .tree-item > .tree-row > * {
   display: inline-block;
 }
 
@@ -82,7 +106,8 @@ html[dir=rtl] .tree-row > .expand-icon {
   white-space: pre;
 }
 
-.tree-rename > .tree-row > .tree-label {
+.tree-rename > .tree-row > .tree-label,
+.tree-rename > .tree-row > .file-row > .tree-label {
   -webkit-user-modify: read-write-plaintext-only;
   user-select: auto;
 }

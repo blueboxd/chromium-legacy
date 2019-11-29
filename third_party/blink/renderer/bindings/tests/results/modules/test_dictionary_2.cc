@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/modules/test_dictionary_2.h"
 
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_dictionary.h"
+
 namespace blink {
 
 TestDictionary2::TestDictionary2() {

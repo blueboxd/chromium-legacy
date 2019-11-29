@@ -121,11 +121,11 @@ struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 scoped_refptr<ComputedStyle> ComputedStyle::Create() {
-  return base::AdoptRef(new ComputedStyle(InitialStyle()));
+  return base::AdoptRef(new ComputedStyle(PassKey(), InitialStyle()));
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
-  return base::AdoptRef(new ComputedStyle());
+  return base::AdoptRef(new ComputedStyle(PassKey()));
 }
 
 ComputedStyle& ComputedStyle::MutableInitialStyle() {
@@ -161,7 +161,7 @@ ComputedStyle::CreateInheritedDisplayContentsStyleIfNeeded(
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
-  return base::AdoptRef(new ComputedStyle(other));
+  return base::AdoptRef(new ComputedStyle(PassKey(), other));
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
@@ -173,6 +173,11 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : ComputedStyleBase(o),
       RefCounted<ComputedStyle>(),
       svg_style_(o.svg_style_) {}
+
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
+
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key, const ComputedStyle& o)
+    : ComputedStyle(o) {}
 
 static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
                                      const ComputedStyle& new_style) {

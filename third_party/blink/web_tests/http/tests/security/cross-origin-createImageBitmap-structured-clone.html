@@ -18,20 +18,15 @@ async_test(function(t) {
     var returnedBitmap;
 
     var image = new Image();
-    image.onload = function() {
+    image.onload = t.step_func(() => {
         shouldBeTainted(image);
-        createImageBitmap(image).then(imageBitmap => {
-            worker.postMessage({data:imageBitmap}, [imageBitmap]);
-            worker.onmessage = t.step_func(onMessage);
-        });
-    }
+        createImageBitmap(image).then(t.step_func((imageBitmap) => {
+            assert_throws('DataCloneError',
+                          () => worker.postMessage({data:imageBitmap}, [imageBitmap]));
+            t.done();
+        }));
+    });
     image.src = 'http://localhost:8080/security/resources/abe.png';
-
-    function onMessage(e) {
-        returnedBitmap = e.data.data;
-        shouldBeTainted(returnedBitmap);
-        t.done();
-    }
 
     function shouldBeTainted(imageBitmap) {
         var canvas = document.createElement("canvas");

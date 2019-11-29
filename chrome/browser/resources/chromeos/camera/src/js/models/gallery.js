@@ -21,7 +21,7 @@ cca.models = cca.models || {};
  */
 cca.models.Gallery = function() {
   /**
-   * @type {Array<cca.models.Gallery.Observer>}
+   * @type {!Array<!cca.models.Gallery.Observer>}
    * @private
    */
   this.observers_ = [];
@@ -126,28 +126,25 @@ cca.models.Gallery.Picture.prototype.pictureURL = function() {
 
 /**
  * Observer interface for the pictures' model changes.
- * @constructor
+ * @interface
  */
-cca.models.Gallery.Observer = function() {
-};
+cca.models.Gallery.Observer = class {
+  /**
+   * Notifies about a deleted picture.
+   * @param {cca.models.Gallery.Picture} picture Picture deleted.
+   */
+  onPictureDeleted(picture) {}
 
-/**
- * Notifies about a deleted picture.
- * @param {cca.models.Gallery.Picture} picture Picture deleted.
- */
-cca.models.Gallery.Observer.prototype.onPictureDeleted = function(picture) {
-};
-
-/**
- * Notifies about an added picture.
- * @param {cca.models.Gallery.Picture} picture Picture added.
- */
-cca.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
+  /**
+   * Notifies about an added picture.
+   * @param {cca.models.Gallery.Picture} picture Picture added.
+   */
+  onPictureAdded(picture) {}
 };
 
 /**
  * Adds an observer.
- * @param {cca.models.Gallery.Observer} observer Observer to be added.
+ * @param {!cca.models.Gallery.Observer} observer Observer to be added.
  */
 cca.models.Gallery.prototype.addObserver = function(observer) {
   this.observers_.push(observer);
@@ -160,7 +157,7 @@ cca.models.Gallery.prototype.addObserver = function(observer) {
  * @private
  */
 cca.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
-  this.observers_.forEach((observer) => observer[fn](picture));
+  this.observers_.forEach((/** !Object */ observer) => observer[fn](picture));
 };
 
 /**

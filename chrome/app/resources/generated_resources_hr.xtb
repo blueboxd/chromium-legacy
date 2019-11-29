@@ -3525,7 +3525,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6112727384379533756">Dodajte tiket</translation>
 <translation id="6112931163620622315">Provjerite telefon</translation>
 <translation id="6112952769866305444">Uređivanje osobe, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Prikaži upite nenametljivo</translation>
 <translation id="6113942107547980621">Da biste upotrebljavali Smart Lock, prebacite se na primarni korisnički profil na telefonu.</translation>
 <translation id="6116338172782435947">vidjeti tekst i slike koje kopirate u međuspremnik</translation>
 <translation id="6116921718742659598">Promijenite postavke jezika i unosa</translation>
@@ -5249,7 +5248,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8627795981664801467">Samo sigurne veze</translation>
 <translation id="8630903300770275248">Uvezi zaštićenog korisnika</translation>
 <translation id="8631032106121706562">Latica</translation>
-<translation id="863109444997383731">Web-lokacijama će biti blokirano postavljanje upita za prikazivanje obavijesti. Ako web-lokacija zahtijeva obavijesti, na adresnoj traci prikazivat će se pokazivač blokiranosti.</translation>
+<translation id="863109444997383731">Web-lokacije neće moći postavljati upite za prikazivanje obavijesti. Ako web-lokacija zatraži prikaz obavijesti, pri dnu stranice prikazat će se indikator blokirane obavijesti.</translation>
 <translation id="8635628933471165173">Ponovno učitavanje...</translation>
 <translation id="8637542770513281060">Vaše računalo sadrži sigurni modul koji se upotrebljava za primjenu mnogih važnih sigurnosnih značajki u OS-u Chrome. Posjetite Chromebookov centar za pomoć da biste saznali više: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Dostupno ažuriranje sustava. Priprema za preuzimanje…</translation>

@@ -7,7 +7,6 @@ import datetime
 import logging
 import multiprocessing
 from multiprocessing.dummy import Pool as ThreadPool
-import urllib
 
 
 TELEMETRY_TEST_PATH_FORMAT = 'telemetry'
@@ -70,9 +69,7 @@ def SplitTestPath(test_result, test_path_format):
   else:
     raise ValueError('Unknown test path format: %s' % test_path_format)
 
-  # TODO(crbug.com/981349): Remove this after test paths are no longer
-  # url-quoted.
-  test_path = urllib.unquote(test_result['testPath'])
+  test_path = test_result['testPath']
   if separator not in test_path:
     raise ValueError('Invalid test path: %s' % test_path)
 

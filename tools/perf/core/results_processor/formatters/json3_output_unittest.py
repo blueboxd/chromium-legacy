@@ -57,7 +57,7 @@ class Json3OutputTest(unittest.TestCase):
   # url-friendly names without special characters.
   def testUrlAsStoryName(self):
     results = self.Convert([
-        testing.TestResult('benchmark/http%3A%2F%2Fexample.com')
+        testing.TestResult('benchmark/http://example.com')
     ])
 
     test_result = self.FindTestResult(

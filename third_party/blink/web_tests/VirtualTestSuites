@@ -29,6 +29,7 @@
               "external/wpt/feature-policy/experimental-features",
               "external/wpt/offscreen-canvas/convert-to-blob",
               "external/wpt/requestidlecallback",
+              "external/wpt/web-animations/timing-model/animations",
               "fast/events/pointerevents/pinch",
               "lifecycle",
               "http/tests/devtools/tracing",

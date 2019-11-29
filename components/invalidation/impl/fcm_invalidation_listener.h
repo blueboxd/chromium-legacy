@@ -13,7 +13,6 @@
 #include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/invalidation/impl/invalidation_listener.h"
-#include "components/invalidation/impl/logger.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/ack_handler.h"
@@ -122,7 +121,6 @@ class FCMInvalidationListener : public InvalidationListener,
   std::unique_ptr<FCMSyncNetworkChannel> network_channel_;
   UnackedInvalidationsMap unacked_invalidations_map_;
   Delegate* delegate_;
-  Logger logger_;
 
   // Stored to pass to |per_user_topic_registration_manager_| on start.
   Topics registered_topics_;

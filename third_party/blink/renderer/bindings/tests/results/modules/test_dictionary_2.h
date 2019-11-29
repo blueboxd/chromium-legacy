@@ -19,6 +19,8 @@
 
 namespace blink {
 
+class TestDictionary;
+
 class MODULES_EXPORT TestDictionary2 : public IDLDictionaryBase {
  public:
   static TestDictionary2* Create() { return MakeGarbageCollected<TestDictionary2>(); }

@@ -9,11 +9,13 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "base/containers/mru_cache.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
+#include "base/thread_annotations.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/paint/draw_image.h"
@@ -72,7 +74,7 @@ class CC_EXPORT SoftwareImageDecodeCache
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  size_t GetNumCacheEntriesForTesting() const { return decoded_images_.size(); }
+  size_t GetNumCacheEntriesForTesting();
 
  private:
   using CacheEntry = Utils::CacheEntry;
@@ -98,69 +100,67 @@ class CC_EXPORT SoftwareImageDecodeCache
   using ImageMRUCache = base::
       HashingMRUCache<CacheKey, std::unique_ptr<CacheEntry>, CacheKeyHash>;
 
-  // Actually decode the image. Note that this function can (and should) be
-  // called with no lock acquired, since it can do a lot of work. Note that it
-  // can also return nullptr to indicate the decode failed.
-  std::unique_ptr<CacheEntry> DecodeImageInternal(const CacheKey& key,
-                                                  const DrawImage& draw_image);
-
   // Get the decoded draw image for the given key and paint_image. Note that
-  // this function has to be called with no lock acquired, since it will acquire
-  // its own locks and might call DecodeImageInternal above. Note that
   // when used internally, we still require that DrawWithImageFinished() is
   // called afterwards.
-  DecodedDrawImage GetDecodedImageForDrawInternal(
-      const CacheKey& key,
-      const PaintImage& paint_image);
+  DecodedDrawImage GetDecodedImageForDrawInternal(const CacheKey& key,
+                                                  const PaintImage& paint_image)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Removes unlocked decoded images until the number of decoded images is
   // reduced within the given limit.
-  void ReduceCacheUsageUntilWithinLimit(size_t limit);
+  void ReduceCacheUsageUntilWithinLimit(size_t limit)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel level);
+  void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel level)
+      LOCKS_EXCLUDED(lock_);
 
   // Helper method to get the different tasks. Note that this should be used as
   // if it was public (ie, all of the locks need to be properly acquired).
   TaskResult GetTaskForImageAndRefInternal(const DrawImage& image,
                                            const TracingInfo& tracing_info,
-                                           DecodeTaskType type);
+                                           DecodeTaskType type)
+      LOCKS_EXCLUDED(lock_);
 
-  CacheEntry* AddCacheEntry(const CacheKey& key);
+  CacheEntry* AddCacheEntry(const CacheKey& key)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   TaskProcessingResult DecodeImageIfNecessary(const CacheKey& key,
                                               const PaintImage& paint_image,
-                                              CacheEntry* cache_entry);
-  void AddBudgetForImage(const CacheKey& key, CacheEntry* entry);
-  void RemoveBudgetForImage(const CacheKey& key, CacheEntry* entry);
-  base::Optional<CacheKey> FindCachedCandidate(const CacheKey& key);
+                                              CacheEntry* cache_entry)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void AddBudgetForImage(const CacheKey& key, CacheEntry* entry)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void RemoveBudgetForImage(const CacheKey& key, CacheEntry* entry)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  base::Optional<CacheKey> FindCachedCandidate(const CacheKey& key)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  void UnrefImage(const CacheKey& key);
+  void UnrefImage(const CacheKey& key) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // The members below this comment can only be accessed if the lock is held to
-  // ensure that they are safe to access on multiple threads.
-  // The exception is accessing |locked_images_budget_.total_limit_bytes()|,
-  // which is const and thread safe.
   base::Lock lock_;
-
   // Decoded images and ref counts (predecode path).
-  ImageMRUCache decoded_images_;
+  ImageMRUCache decoded_images_ GUARDED_BY(lock_);
 
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_
+      GUARDED_BY(lock_);
 
   // A map of PaintImage::FrameKey to the ImageKeys for cached decodes of this
   // PaintImage.
   std::unordered_map<PaintImage::FrameKey,
                      std::vector<CacheKey>,
                      PaintImage::FrameKeyHash>
-      frame_key_to_image_keys_;
+      frame_key_to_image_keys_ GUARDED_BY(lock_);
 
+  // Should be GUARDED_BY(lock_), except that accessing
+  // |locked_images_budget_.total_limit_bytes()| is fine without the lock, as
+  // it is const and thread safe.
   MemoryBudget locked_images_budget_;
 
   const SkColorType color_type_;
   const PaintImage::GeneratorClientId generator_client_id_;
 
-  size_t max_items_in_cache_;
+  const size_t max_items_in_cache_;
 };
 
 }  // namespace cc

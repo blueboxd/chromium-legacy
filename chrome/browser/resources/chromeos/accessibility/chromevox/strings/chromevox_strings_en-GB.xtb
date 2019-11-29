@@ -463,6 +463,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4204126831294769023">Azure</translation>
 <translation id="4204864733111726379">Floral White</translation>
 <translation id="4206289001967551965">Inside table</translation>
+<translation id="4207770814752775793">Reset text to speech settings to default values.</translation>
 <translation id="4209770650650780359">Press up or down arrow for auto completions.</translation>
 <translation id="4215733775853809057">Next slider</translation>
 <translation id="42164919740161077">Cadet Blue</translation>
@@ -766,6 +767,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6290434000785343030">No next combo box.</translation>
 <translation id="6305702903308659374">Play at normal volume even if ChromeVox is speaking</translation>
 <translation id="6307969636681130414">Pressed</translation>
+<translation id="6315652249189065725">Open keyboard shortcuts menu</translation>
 <translation id="6322856989298155004">Sounds</translation>
 <translation id="6324551002951139333">Grammatical mistake detected</translation>
 <translation id="6325241889020214828">copy <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{hour}other{hours}}</translation>
 <translation id="7674576868851035240">Next link</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">Reset text to speech settings</translation>
 <translation id="7684431668231950609">Edit text, URL entry</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Previous radio button</translation>

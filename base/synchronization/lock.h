@@ -26,8 +26,8 @@ class LOCKABLE BASE_EXPORT Lock {
   ~Lock() {}
 
   // TODO(lukasza): https://crbug.com/831825: Add EXCLUSIVE_LOCK_FUNCTION
-  // annotation to Acquire method and similar annotations to Release, Try and
-  // AssertAcquired methods (here and in the #else branch).
+  // annotation to Acquire method and similar annotations to Release and Try
+  // methods (here and in the #else branch).
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
 
@@ -38,7 +38,7 @@ class LOCKABLE BASE_EXPORT Lock {
   bool Try() { return lock_.Try(); }
 
   // Null implementation if not debug.
-  void AssertAcquired() const {}
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {}
 #else
   Lock();
   ~Lock();
@@ -63,7 +63,7 @@ class LOCKABLE BASE_EXPORT Lock {
     return rv;
   }
 
-  void AssertAcquired() const;
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK();
 #endif  // DCHECK_IS_ON()
 
   // Whether Lock mitigates priority inversion when used from different thread

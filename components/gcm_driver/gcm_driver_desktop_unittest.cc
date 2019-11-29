@@ -213,6 +213,7 @@ void GCMDriverTest::TearDown() {
 
   io_thread_.Stop();
   task_environment_.RunUntilIdle();
+  ASSERT_TRUE(temp_dir_.Delete());
 }
 
 void GCMDriverTest::PumpIOLoop() {

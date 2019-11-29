@@ -632,7 +632,7 @@ class ExtensionRequestInterceptor {
 };
 
 class MockedInstallationReporterObserver
-    : public extensions::InstallationReporter::TestObserver {
+    : public extensions::InstallationReporter::Observer {
  public:
   explicit MockedInstallationReporterObserver(
       const content::BrowserContext* context)
@@ -642,7 +642,7 @@ class MockedInstallationReporterObserver
   MOCK_METHOD1(ExtensionStageChanged,
                void(extensions::InstallationReporter::Stage));
 
-  void OnExtensionDataChanged(
+  void OnExtensionDataChangedForTesting(
       const extensions::ExtensionId& id,
       const content::BrowserContext* context,
       const extensions::InstallationReporter::InstallationData& data) override {
@@ -727,10 +727,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
       reporter_observer,
       ExtensionStageChanged(extensions::InstallationReporter::Stage::COMPLETE))
       .InSequence(sequence);
-  extensions::InstallationReporter::SetTestObserver(&reporter_observer);
+
+  extensions::InstallationReporter* installation_reporter =
+      extensions::InstallationReporter::Get(browser()->profile());
+  installation_reporter->AddObserver(&reporter_observer);
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionWillBeInstalled();
-  extensions::InstallationReporter::SetTestObserver(nullptr);
+  installation_reporter->RemoveObserver(&reporter_observer);
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
   // the completion of observer.WaitForExtensionWillBeInstalled().

@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3658159451045945436">재설정하면 방문한 사이트 목록을 비롯한 데이터 절약 기록이 삭제됩니다.</translation>
-<translation id="3682730288090679318">알림 표시를 요청하지 못하도록 사이트를 자동으로 차단합니다. 사이트에서 알림을 요청하면 페이지 하단에 정보 표시줄이 나타납니다.</translation>
+<translation id="3682730288090679318">사이트가 알림 표시를 요청하지 못하도록 자동으로 차단합니다. 사이트에서 알림을 요청하면 페이지 하단에 정보 표시줄이 나타납니다.</translation>
 <translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
@@ -590,7 +590,7 @@
 <translation id="5414836363063783498">확인 중...</translation>
 <translation id="5423934151118863508">자주 방문한 페이지가 여기에 표시됩니다.</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB 사용 가능</translation>
-<translation id="5427766642345310212">알겠습니다. 새로운 알림 요청을 기본적으로 여기에 표시합니다.</translation>
+<translation id="5427766642345310212">알겠습니다. 기본적으로 새로운 알림 요청을 여기에 표시합니다.</translation>
 <translation id="543338862236136125">비밀번호 수정</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
 <translation id="543509235395288790">파일 <ph name="COUNT" />개(<ph name="MEGABYTES" />) 다운로드 중</translation>

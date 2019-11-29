@@ -13,6 +13,7 @@
   testRunner.log('Set breakpoint before postMessage');
   await dp.Debugger.setBreakpointByUrl(
       {url: 'test.js', lineNumber: 3, columnNumber: 7});
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   session.evaluate(`
 var blob = new Blob(['onmessage = (e) => console.log(e.data);//# sourceURL=worker.js'], {type: 'application/javascript'});
 var worker = new Worker(URL.createObjectURL(blob));
@@ -25,7 +26,7 @@ worker.postMessage(42);
 
   testRunner.log('Setup worker session');
   const childSession = session.createChild(
-      (await dp.Target.onceAttachedToTarget()).params.sessionId);
+      (await attachedPromise).params.sessionId);
 
   const workerDebuggerId =
         (await childSession.protocol.Debugger.enable()).result.debuggerId;

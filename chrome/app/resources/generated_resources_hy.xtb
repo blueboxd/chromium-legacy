@@ -1064,7 +1064,7 @@
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Էկրան #}one{Screen #}other{Էկրան #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> / <ph name="TOTAL_SIZE" /></translation>
 <translation id="2507253002925770350">Տոմսը հեռացվել է</translation>
-<translation id="2507397597949272797"><ph name="NAME" /> հավելվածի աշատանքը դադարեցված է</translation>
+<translation id="2507397597949272797"><ph name="NAME" /> հավելվածի աշխատանքը դադարեցված է</translation>
 <translation id="2508428939232952663">Google Play Խանութի հաշիվ</translation>
 <translation id="2509495747794740764">Մասշտաբի արժեքը պետք է լինի թիվ՝ 10-ից 200 միջակայքում։</translation>
 <translation id="2509566264613697683">8x</translation>
@@ -3528,7 +3528,6 @@
 <translation id="6112727384379533756">Ավելացնել տոմս</translation>
 <translation id="6112931163620622315">Ստուգեք հեռախոսը</translation>
 <translation id="6112952769866305444">Փոփոխել պրոֆիլը <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Ցույց տալ հուշումներն առանց ձայնի</translation>
 <translation id="6113942107547980621">Smart Lock-ն օգտագործելու համար ձեր հեռախոսում անցեք հիմնական օգտատիրոջ պրոֆիլ</translation>
 <translation id="6116338172782435947">Տեսնել սեղմատախտակին պատճենված տեքստը և պատկերները</translation>
 <translation id="6116921718742659598">Փոխել լեզուն և ներածման կարգավորումները</translation>
@@ -4059,7 +4058,7 @@
 <translation id="6923132443355966645">Ոլորել/սեղմել</translation>
 <translation id="6923633482430812883">Ընդհանուր միացման սխալ կա։ Ստուգեք՝ արդյոք SMB 2 կամ ավելի նոր տարբերակով հաղորդակարգն աջակցվում է սերվերում, որին դուք փորձում եք միանալ։</translation>
 <translation id="6930036377490597025">Անվտանգության արտաքին բանալի կամ ներկառուցված սկաներ</translation>
-<translation id="6935286146439255109">Թղթի համար պնակը բացակայում է</translation>
+<translation id="6935286146439255109">Թղթի պնակը բացակայում է</translation>
 <translation id="693807610556624488">Գրելու գործողությունը հետևյալ սարքում գերազանցում է ատրիբուտի թույլատրելի առավելագույն երկարությունը՝ «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="6941937518557314510">Մուտք գործեք, <ph name="TOKEN_NAME" />, որպեսզի իսկորոշվեք <ph name="HOST_NAME" />-ում ձեր վկայագրի միջոցով:</translation>
 <translation id="6943176775188458830">Չեղարկել տպումը</translation>
@@ -4199,7 +4198,7 @@
 <translation id="7121728544325372695">Խելացի գծիկներ</translation>
 <translation id="7123360114020465152">Այլևս չի աջակցվում</translation>
 <translation id="7127980134843952133">Ներբեռնումների պատմությունը</translation>
-<translation id="7128151990937044829">Ցույց տալ ցուցիչը հասցեագոտում ծանուցումների արգելափակման ժամանակ։</translation>
+<translation id="7128151990937044829">Ցույց տալ արգելափակման ցուցիչը հասցեագոտում, երբ ծանուցումներն արգելափակված են</translation>
 <translation id="7128239828194367697">Ստեղծել QR կոդ այս էջի համար</translation>
 <translation id="7131040479572660648">Կարդալ ձեր տվյալները <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> և <ph name="WEBSITE_3" /> կայքերում</translation>
 <translation id="713122686776214250">Հավելել է&amp;ջ...</translation>
@@ -4391,7 +4390,7 @@
 <translation id="7401778920660465883">Փակել այս հաղորդագրությունը</translation>
 <translation id="740624631517654988">Ելնող պատուհանն արգելափակված է</translation>
 <translation id="7407430846095439694">Ներմուծել և կապակցել</translation>
-<translation id="7407504355934009739">Մարդկանց մեծամասնությունն արգելում է այս կայքի ծանուցումները</translation>
+<translation id="7407504355934009739">Մարդկանց մեծամասնությունն արգելափակում է այս կայքի ծանուցումները</translation>
 <translation id="7409549334477097887">Շատ մեծ</translation>
 <translation id="7409836189476010449">Flash աշխատեցնել</translation>
 <translation id="7410344089573941623">Հարցնել, արդյոք <ph name="HOST" />-ն ուզում է օգտագործել ձեր տեսախցիկը և խոսափողը</translation>
@@ -4838,7 +4837,7 @@
 <translation id="8013993649590906847">Եթե պատկերն օգտակար նկարագրություն չունի, Chrome-ը կփորձի նոր նկարագրություն տրամադրել: Պատկերներն ուղարկվում են Google-ին՝ նկարագրություններ ստեղծելու համար։</translation>
 <translation id="8014154204619229810">Թարմացումների գործարկիչն այժմ աշխատում է: Էջը թարմացրեք մեկ րոպեից:</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />-ը չի կարող վերադառնալ նախկինում տեղադրված տարբերակին: Կրկին փորձեք օգտվել Powerwash գործառույթից:</translation>
-<translation id="8015163965024115122">Ծնողի սահմանված ժամանակը՝ <ph name="IDS_SHORT_PRODUCT_NAME" /> կամ <ph name="IDS_SHORT_PRODUCT_NAME" /> հավելվածից օգտվելու համար։</translation>
+<translation id="8015163965024115122">Ծնողի սահմանած ժամանակը՝ <ph name="IDS_SHORT_PRODUCT_NAME" /> կամ <ph name="IDS_SHORT_PRODUCT_NAME" /> հավելվածից օգտվելու համար։</translation>
 <translation id="8016266267177410919">Ժամանակավոր հիշողություն</translation>
 <translation id="8017679124341497925">Դյուրանցումը փոխվեց</translation>
 <translation id="8018313076035239964">Վերահսկեք, թե ձեր մասին ինչ տեղեկություններ հասանելի կլինեն կայքերին և ինչ են ցուցադրելու ձեզ կայքերը։</translation>
@@ -5617,7 +5616,7 @@
 <translation id="9116799625073598554">Նշումների ստեղծման հավելված</translation>
 <translation id="9117030152748022724">Հավելվածների կառավարում</translation>
 <translation id="9121814364785106365">Բացել որպես ամրացված ներդիր</translation>
-<translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> հավելվածի աշատանքը դադարեցված է</translation>
+<translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> հավելվածի աշխատանքը դադարեցված է</translation>
 <translation id="9124003689441359348">Պահված գաղտնաբառերը կցուցադրվեն այստեղ</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (մնացել է <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Կարգավորումը չհաջողվեց ավարտել</translation>

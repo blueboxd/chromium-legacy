@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/driver/shared_change_processor_ref.h"
@@ -98,7 +97,6 @@ void SharedChangeProcessor::StartAssociation(
   {
     SyncDataList initial_sync_data;
 
-    base::TimeTicks start_time = base::TimeTicks::Now();
     SyncError error = GetAllSyncDataReturnError(type_, &initial_sync_data);
     if (error.IsSet()) {
       local_merge_result.set_error(error);
@@ -114,7 +112,6 @@ void SharedChangeProcessor::StartAssociation(
         type_, initial_sync_data, std::unique_ptr<SyncChangeProcessor>(
                                       new SharedChangeProcessorRef(this)),
         std::unique_ptr<SyncErrorFactory>(new SharedChangeProcessorRef(this)));
-    RecordAssociationTime(base::TimeTicks::Now() - start_time);
     if (local_merge_result.error().IsSet()) {
       start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
                      syncer_merge_result);
@@ -295,13 +292,6 @@ SyncError SharedChangeProcessor::CreateAndUploadError(
   } else {
     return SyncError(location, SyncError::DATATYPE_ERROR, message, type_);
   }
-}
-
-void SharedChangeProcessor::RecordAssociationTime(base::TimeDelta time) {
-#define PER_DATA_TYPE_MACRO(type_str) \
-  UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
-  SYNC_DATA_TYPE_HISTOGRAM(type_);
-#undef PER_DATA_TYPE_MACRO
 }
 
 void SharedChangeProcessor::StopLocalService() {

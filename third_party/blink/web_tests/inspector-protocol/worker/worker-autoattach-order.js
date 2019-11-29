@@ -1,9 +1,11 @@
 (async function(testRunner) {
   const {page, session, dp} =
       await testRunner.startBlank(
-          'Target.setAutoAttach should report all workers before returning.');
+          'Target.setAutoAttach should report all existing workers before returning.');
 
-  await session.evaluate(`
+  // Create two workers and wait until they are initialized. We wait until we
+  // can receive onmessage events although this might not be totally necessary.
+  await session.evaluateAsync(`
     const w1 = new Worker('${testRunner.url('../resources/worker-console-worker.js')}');
     const promise1 = new Promise(x => w1.onmessage = x);
     const w2 = new Worker('${testRunner.url('../resources/worker-console-worker.js')}');
@@ -11,22 +13,14 @@
     Promise.all([promise1, promise2]);
   `);
 
-  let autoAttachPromiseResolved = false;
+  dp.Target.onAttachedToTarget((event) => {
+    testRunner.log(event.params.targetInfo.type);
+  });
 
-  const autoAttachPromise = dp.Target.setAutoAttach({
-    autoAttach: true, waitForDebuggerOnStart: false, flatten: true}).then(
-        () => { autoAttachPromiseResolved = true; });
-
-  testRunner.log((await dp.Target.onceAttachedToTarget()).params.targetInfo.type);
-  testRunner.log((await dp.Target.onceAttachedToTarget()).params.targetInfo.type);
-
-  // Up to here, the promise from Target.setAutoAttach is still not resolved,
-  // meaning that we've received the attachedToTarget events before
-  // setAutoAttach has returned. We log this fact, and then show that our
-  // mechanism for testing (the autoAttachPromiseResolved variable) is
-  // working by awaiting and logging again.
-  testRunner.log('Before await. Resolved: ' + autoAttachPromiseResolved);
-  await autoAttachPromise;
-  testRunner.log('After await. Resolved: ' + autoAttachPromiseResolved);
+  // setAutoAttach should fire AttachedToTarget events for all existing workers
+  // before resolving. We check this in the ordering of the log output.
+  await dp.Target.setAutoAttach({
+    autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
+  testRunner.log('setAutoAttach resolved');
   testRunner.completeTest();
 })

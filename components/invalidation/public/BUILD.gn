@@ -36,16 +36,3 @@ static_library("public") {
     "//base:i18n",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "invalidation_util_unittest.cc",
-  ]
-  deps = [
-    ":public",
-    "//base",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
-}

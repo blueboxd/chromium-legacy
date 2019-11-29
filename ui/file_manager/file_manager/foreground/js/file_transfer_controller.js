@@ -749,7 +749,13 @@ class FileTransferController {
     }
 
     const dragThumbnail = this.renderThumbnail_();
-    dt.setDragImage(dragThumbnail, 0, 0);
+    let yOffset = 0;
+    // Position the drag image above the start point for touch intiated drag.
+    if (this.touching_) {
+      const thumbNailExtent = dragThumbnail.getBoundingClientRect();
+      yOffset = thumbNailExtent.height;
+    }
+    dt.setDragImage(dragThumbnail, 0, yOffset);
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
       sourceRootURL: dt.getData('fs/sourceRootURL'),

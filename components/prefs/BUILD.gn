@@ -63,6 +63,8 @@ static_library("test_support") {
     "mock_pref_change_callback.h",
     "pref_store_observer_mock.cc",
     "pref_store_observer_mock.h",
+    "pref_test_utils.cc",
+    "pref_test_utils.h",
     "testing_pref_service.cc",
     "testing_pref_service.h",
     "testing_pref_store.cc",
@@ -74,6 +76,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

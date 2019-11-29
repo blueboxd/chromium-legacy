@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -181,12 +183,19 @@ class InstallationReporter : public KeyedService {
     base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
   };
 
-  class TestObserver {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~TestObserver();
-    virtual void OnExtensionDataChanged(const ExtensionId& id,
-                                        const content::BrowserContext* context,
-                                        const InstallationData& data) = 0;
+    ~Observer() override;
+
+    virtual void OnExtensionInstallationFailed(const ExtensionId& id,
+                                               FailureReason reason) {}
+
+    // Called when any change happens. For production please use more specific
+    // methods (create one if necessary).
+    virtual void OnExtensionDataChangedForTesting(
+        const ExtensionId& id,
+        const content::BrowserContext* context,
+        const InstallationData& data) {}
   };
 
   explicit InstallationReporter(const content::BrowserContext* context);
@@ -216,13 +225,16 @@ class InstallationReporter : public KeyedService {
   // Clears all collected failures and stages.
   void Clear();
 
-  static void SetTestObserver(TestObserver* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   const content::BrowserContext* browser_context_;
 
   std::map<ExtensionId, InstallationReporter::InstallationData>
       installation_data_map_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallationReporter);
 };

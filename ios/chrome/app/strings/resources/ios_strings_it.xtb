@@ -379,7 +379,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6219688215832490856">Non tradurre mai</translation>
 <translation id="6254066287920239840">Apri i link all'interno dell'app invece che nel browser.</translation>
 <translation id="6255097610484507482">Modifica carta di credito</translation>
-<translation id="6284652193729350524">Proponi di tradurre <ph name="LANGUAGE" /></translation>
+<translation id="6284652193729350524">Proponi di tradurre dalla lingua <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Esci e disattiva la sincronizzazione</translation>
 <translation id="6308436439357671616">In questo modo puoi scattare e caricare foto.</translation>
 <translation id="6324528485781869530">Cambia account di sincronizzazione</translation>
@@ -465,7 +465,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7293171162284876153">Per iniziare la sincronizzazione, attiva "Sincronizza i tuoi dati di Chrome".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
-<translation id="734758817008927353">Opzioni per Salva carta</translation>
+<translation id="734758817008927353">Opzioni per salvare la carta</translation>
 <translation id="7348502496356775519">Aggiungi ai preferiti</translation>
 <translation id="7383797227493018512">Elenco di lettura</translation>
 <translation id="7400418766976504921">URL</translation>

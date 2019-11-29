@@ -33,7 +33,7 @@
 #include "ui/views/widget/widget.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
+#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
 using base::UserMetricsAction;
@@ -309,17 +309,10 @@ std::unique_ptr<views::View> BookmarkBubbleView::CreateSigninPromoView() {
   if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
     return nullptr;
 
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_LINK;
-  params.message_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_MESSAGE;
-  params.dice_no_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE;
-  params.dice_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
-  params.dice_signin_button_prominent = false;
-
-  return CreateBubbleSyncPromoView(
+  return std::make_unique<DiceBubbleSyncPromoView>(
       profile_, delegate_.get(),
-      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE,
+      /*dice_signin_button_prominent=*/false);
 #endif
 }

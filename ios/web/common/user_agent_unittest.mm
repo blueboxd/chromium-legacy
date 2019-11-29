@@ -14,6 +14,14 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const char kDesktopUserAgent[] =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+    "Version/11.1.1 "
+    "Safari/605.1.15";
+}  // namespace
+
 namespace web {
 
 using UserAgentTest = PlatformTest;
@@ -40,8 +48,8 @@ TEST_F(UserAgentTest, UserAgentTypeDescription) {
             GetUserAgentTypeWithDescription(kInvalidDescription));
 }
 
-// Tests the user agent returned for a specific product.
-TEST_F(UserAgentTest, UserAgentForProduct) {
+// Tests the mobile user agent returned for a specific product.
+TEST_F(UserAgentTest, MobileUserAgentForProduct) {
   std::string product = "my_product_name";
 
   std::string platform;
@@ -77,9 +85,18 @@ TEST_F(UserAgentTest, UserAgentForProduct) {
       platform.c_str(), cpu.c_str(), os_version.c_str(), product.c_str(),
       safari_version.c_str());
 
-  std::string result = BuildUserAgentFromProduct(product);
+  std::string result =
+      BuildUserAgentFromProduct(web::UserAgentType::MOBILE, product);
 
   EXPECT_EQ(expected_user_agent, result);
+}
+
+// Tests the desktop user agent, checking that the product isn't taken into
+// account.
+TEST_F(UserAgentTest, DesktopUserAgentForProduct) {
+  EXPECT_EQ(kDesktopUserAgent,
+            BuildUserAgentFromProduct(web::UserAgentType::DESKTOP,
+                                      "my_product_name"));
 }
 
 }  // namespace web

@@ -250,17 +250,6 @@ void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
                                            const ModelError& error) {
   DCHECK(CalledOnValidThread());
 
-  // TODO(crbug.com/890729): This is obviously misplaced/misnamed as we report
-  // run-time failures as well. Rename the histogram to ConfigureResult and
-  // report it only after startup (also for success).
-  if (state_ != NOT_RUNNING) {
-#define PER_DATA_TYPE_MACRO(type_str)                            \
-  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", \
-                            UNRECOVERABLE_ERROR, MAX_CONFIGURE_RESULT);
-    SYNC_DATA_TYPE_HISTOGRAM(type());
-#undef PER_DATA_TYPE_MACRO
-  }
-
   switch (state_) {
     case MODEL_LOADED:
     // Fall through. Before state_ is flipped to RUNNING, we treat it as a

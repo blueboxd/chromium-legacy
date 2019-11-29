@@ -560,7 +560,6 @@ source_set("unit_tests") {
     "base/bind_to_task_runner_unittest.cc",
     "base/cancelation_signal_unittest.cc",
     "base/client_tag_hash_unittest.cc",
-    "base/data_type_histogram_unittest.cc",
     "base/enum_set_unittest.cc",
     "base/immutable_unittest.cc",
     "base/model_type_unittest.cc",

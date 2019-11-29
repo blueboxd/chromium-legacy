@@ -12593,6 +12593,11 @@ should be able to be added at any place in this file.
   <description>User pressed the stop option in the app menu.</description>
 </action>
 
+<action name="MobileMenuTextZoom">
+  <owner>rkgibson@google.com</owner>
+  <description>User pressed 'Zoom Text' in the app menu</description>
+</action>
+
 <action name="MobileMenuTranslate">
   <owner>frechette@chromium.org</owner>
   <description>User pressed the 'Translate' in the app menu.</description>

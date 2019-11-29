@@ -40,9 +40,7 @@ promise_test(async (t) => {
 
   assert_false(internals.isUseCounted(document, FEATURE));
 
-  postMessage(bitmap, '*');
-
-  assert_true(internals.isUseCounted(document, FEATURE));
+  assert_throws('DataCloneError', () => postMessage(bitmap, '*'));
 }, 'non-origin-clean, serialization');
 
 promise_test(async (t) => {
@@ -64,9 +62,7 @@ promise_test(async (t) => {
 
   assert_false(internals.isUseCounted(document, FEATURE));
 
-  postMessage(bitmap, '*', [bitmap]);
-
-  assert_true(internals.isUseCounted(document, FEATURE));
+  assert_throws('DataCloneError', () => postMessage(bitmap, '*', [bitmap]));
 }, 'non-origin-clean, transfer');
 </script>
 </body>

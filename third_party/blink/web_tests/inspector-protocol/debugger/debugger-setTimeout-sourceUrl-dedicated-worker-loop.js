@@ -2,9 +2,10 @@
   const {page, session, dp} = await testRunner.startBlank(
       'Tests sourceURL in setTimeout from worker.');
 
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
                            flatten: true});
 
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-string-setTimeout.js')}');
     window.worker.onmessage = function(event) { };
@@ -12,7 +13,7 @@
   `);
   testRunner.log('Started worker');
 
-  const messageObject = await dp.Target.onceAttachedToTarget();
+  const messageObject = await attachedPromise;
   const childSession = session.createChild(messageObject.params.sessionId);
 
   testRunner.log('Worker created');

@@ -194,9 +194,6 @@ chromium_strings.grd. -->
           New window
         </message>
       </if>
-      <message name="IDS_BOOKMARK_SYNC_PROMO_LINK" desc="Text of the link to sign in from the bookmark sync promo.">
-        sign in to Chrome
-      </message>
       <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
         Task Manager - Google Chrome
       </message>
@@ -500,9 +497,6 @@ Google Chrome is unable to recover your settings.
         <!-- Extension installed bubble -->
         <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="Title of the extension-installed bubble. Instructs that the extension was installed.">
           <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chrome
-        </message>
-        <message name="IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW" desc="Text of the link to sign in to Chrome from the extension installed bubble. This will be converted to a link, with additional text around it.">
-          sign in to Chrome
         </message>
 
         <!-- Extension uninstall prompt -->

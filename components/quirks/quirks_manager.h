@@ -33,7 +33,7 @@ class QuirksClient;
 // First parameter - path found, or empty if no file.
 // Second parameter - true if file was just downloaded.
 using RequestFinishedCallback =
-    base::Callback<void(const base::FilePath&, bool)>;
+    base::OnceCallback<void(const base::FilePath&, bool)>;
 
 // Format int as hex string for filename.
 QUIRKS_EXPORT std::string IdToHexString(int64_t product_id);
@@ -80,10 +80,9 @@ class QUIRKS_EXPORT QuirksManager {
   void OnLoginCompleted();
 
   // Entry point into manager.  Finds or downloads icc file.
-  void RequestIccProfilePath(
-      int64_t product_id,
-      const std::string& display_name,
-      const RequestFinishedCallback& on_request_finished);
+  void RequestIccProfilePath(int64_t product_id,
+                             const std::string& display_name,
+                             RequestFinishedCallback on_request_finished);
 
   void ClientFinished(QuirksClient* client);
 
@@ -112,7 +111,7 @@ class QUIRKS_EXPORT QuirksManager {
   void OnIccFilePathRequestCompleted(
       int64_t product_id,
       const std::string& display_name,
-      const RequestFinishedCallback& on_request_finished,
+      RequestFinishedCallback on_request_finished,
       base::FilePath path);
 
   // Whether downloads allowed by cmd line flag and device policy.

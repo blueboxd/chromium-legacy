@@ -44,6 +44,8 @@ class GCMInvalidationBridge;
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class TiclInvalidationService : public InvalidationService,
                                 public IdentityProvider::Observer,
                                 public syncer::InvalidationHandler {

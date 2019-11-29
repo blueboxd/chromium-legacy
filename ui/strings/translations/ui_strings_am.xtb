@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ደ}one{#ደ}other{#ደ}}</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />፣ የPlay መደብር መተግበሪያ</translation>
 <translation id="1243314992276662751">ስቀል</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ን ማጋራት አልተቻለም።</translation>
 <translation id="1269641567813814718">ማሸነፍ</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">ከግራ ወደ ቀኝ</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1398853756734560583">አስፋ</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />፣ የተጫነ መተግበሪያ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ን ማጋራት አይቻልም</translation>
 <translation id="1498028757988366001">እርስዎ ይህን ከዚህ በፊት ፍለጋ አድርገውለታል። «<ph name="QUERY" />»ን ከታሪክዎ መሰረዝ በሁሉም መሣሪያዎችዎ ላይ እስከመጨረሻው ከመለያዎ ያስወግደዋል።</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ደቂቃ እና }one{# ደቂቃዎች እና }other{# ደቂቃዎች እና }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ወር}one{# ወሮች}other{# ወሮች}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ሜባ/ሰ</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ሰዓት እና }one{# ሰዓቶች እና }other{# ሰዓቶች እና }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> ተላቋል</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
 <translation id="1859234291848436338">የአፃፃፍ አቅጣጫ</translation>
 <translation id="1860796786778352021">ማሳወቂያ ዝጋ</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">ላይ</translation>
 <translation id="2701330563083355633">በ <ph name="DEVICE_NAME" /> የተጋራ</translation>
 <translation id="2743387203779672305">ወደ ቅንጥብ ሰሌዳ ገልብጥ</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />፣ <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">አቃፊ ክፈት</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{ከ1 ዓመት በፊት}one{ከ# ዓመቶች በፊት}other{ከ# ዓመቶች በፊት}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{በ 1ቀ ውስጥ}one{በ #ቀ ውስጥ}other{በ #ቀ ውስጥ}}</translation>
 <translation id="2931838996092594335">ጠቅ ያድርጉ</translation>
+<translation id="2981684127883932071">ጥቆማ ሐሳቦችን በማሳየት ላይ</translation>
 <translation id="3036649622769666520">ፋይሎች ክፈት</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ሜባ</translation>
 <translation id="3068711042108640621">መደርደሪያ በስተግራ</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">ጽሑፍ ከልክ በላይ ግዙፍ ነው</translation>
 <translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="348799646910989694">መደርደሪያ በራስ-ሰር ተደብቋል</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ተያይዟል</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ቀን ቀርቷል}one{# ቀኖች ቀርቷል}other{# ቀኖች ቀርተዋል}}</translation>
 <translation id="3600969208114796418">የ<ph name="SAVEAS_EXTENSION_TYPE" /> ፋይል</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{ከ1 ወር በፊት}one{ከ# ወሮች በፊት}other{ከ# ወሮች በፊት}}</translation>
 <translation id="4289300219472526559">መናገር ይጀምሩ</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ወደ <ph name="FOLDER_NAME" /> አቃፊ ተንቀሳቅሷል።</translation>
 <translation id="4316910396681052118">ሁሉም መተግበሪያዎች</translation>
 <translation id="4588090240171750605">ወደ ቀኝ ሸብልል</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />፣ ኮከብ ደረጃ አሰጣጥ <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />፣ የመተግበሪያ ምክር</translation>
 <translation id="4690510401873698237">መደርደሪያ ከታች</translation>
 <translation id="4724120544754982507">የማሳወቂያ ማዕከል፣ <ph name="UNREAD_NOTIFICATION_COUNT" /> ያልተነበቡ ማሳወቂያዎች</translation>
 <translation id="4730374152663651037">በብዛት ጥቅም ላይ የዋለ</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">የሚዲያ ቀዳሚ ትራክ</translation>
 <translation id="5046499563572181734">እዚህ መታ ያድርጉ</translation>
 <translation id="5076340679995252485">&amp;ለጥፍ</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> ከ<ph name="IN_PLACE_APP" /> ጋር አዲስ አቃፊ ለመፍጠር ተጣምሯል።</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ፔታ</translation>
 <translation id="5266161281976477809">ይፋ ማሳወቂያ ሦስት ማዕዘን</translation>
 <translation id="5278860589123563674">መላክ አልተሳካም</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">የ<ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ሥርዓት</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ግራ ቀስት</translation>
+<translation id="5675363643668471212">የመደርደሪያ ንጥል</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ደቂቃ}one{# ደቂቃዎች}other{# ደቂቃዎች}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ዛሬ ንቁ}=1{ከ1 ቀን በፊት ንቁ ነበር}one{ከ# ቀኖች በፊት ንቁ ነበር}other{ከ# ቀኖች በፊት ንቁ ነበር}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ቀን እና }one{# ቀኖች እና }other{# ቀኖች እና }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">አስገባ</translation>
 <translation id="8210608804940886430">ወደታች አንቀሳቅስ</translation>
 <translation id="8245914219290430011">ትር</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />፣ መተግበሪያ</translation>
 <translation id="8259556432390118667">የአስራስድስትዮሽ ቀለም እሴት</translation>
 <translation id="8328145009876646418">የግራ ጠርዝ</translation>
 <translation id="8331626408530291785">ወደ ላይ ሸብልል</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">ትር</translation>
 <translation id="9161053988251441839">በአስተያየት የተጠቆሙ መተግበሪያዎች</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
+<translation id="9178475906033259337">1 ውጤት ለ <ph name="QUERY" /> በማሳየት ላይ</translation>
 <translation id="932327136139879170">መነሻ</translation>
 <translation id="944069440740578670">ያልተነበቡ ማሳወቂያዎች</translation>
+<translation id="974545358917229949">ለ<ph name="RESULT_COUNT" /> ውጤቶችን ለ<ph name="QUERY" /> በማሳየት ላይ</translation>
 </translationbundle>

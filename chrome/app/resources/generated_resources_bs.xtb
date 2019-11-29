@@ -235,7 +235,7 @@
 <translation id="1326317727527857210">Da bi se prikazale kartice s vaših ostalih uređaja, prijavite se na Chrome.</translation>
 <translation id="1327074568633507428">Štampač na usluzi Google štampanje u oblaku</translation>
 <translation id="1327272175893960498">Kerberos tiketi</translation>
-<translation id="1327495825214193325">Da omogućite otklanjanje grešaka putem ADB-a, potrebno je ponovo pokrenuti ovaj uređaj<ph name="DEVICE_TYPE" />. Onemogućavanje zahtijeva vraćanje na fabričke postavke.</translation>
+<translation id="1327495825214193325">Da omogućite otklanjanje grešaka putem ADB-a, potrebno je ponovo pokrenuti ovaj uređaj <ph name="DEVICE_TYPE" />. Onemogućavanje zahtijeva vraćanje na fabričke postavke.</translation>
 <translation id="1327977588028644528">Pristupnik</translation>
 <translation id="1329584516321524826">Upravo ažurirano</translation>
 <translation id="1330145147221172764">Omogući tastaturu na ekranu</translation>
@@ -1516,7 +1516,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3151786313568798007">Orijentacija</translation>
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledanja.</translation>
 <translation id="3154429428035006212">Van mreže duže od mjesec dana</translation>
-<translation id="3154736273843608862">Isteklo je ograničenje za aplikaciju <ph name="IDS_SHORT_PRODUCT_NAME" /> koje je roditelj postavio.</translation>
+<translation id="3154736273843608862">Isteklo je ograničenje koje je roditelj postavio za aplikaciju<ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="3156531245809797194">Prijavite se za korištenje Chromea</translation>
 <translation id="3157931365184549694">Vrati</translation>
 <translation id="3158033540161634471">Postavljanje otiska prsta</translation>
@@ -2745,7 +2745,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4977942889532008999">Potvrdite pristup</translation>
 <translation id="4980805016576257426">Ova ekstenzija sadrži zlonamjeran softver.</translation>
 <translation id="4981449534399733132"><ph name="BEGIN_LINK" />Prijavite se<ph name="END_LINK" /> da obrišete podatke o pregledanju sa svih svojih sinhroniziranih uređaja i Google računa.</translation>
-<translation id="4986728572522335985">Ovim će se izbrisati svi podaci na sigurnosnom ključu uključujući njegov PIN</translation>
+<translation id="4986728572522335985">Ovim će se izbrisati svi podaci na sigurnosnom ključu, uključujući njegov PIN</translation>
 <translation id="4988526792673242964">Stranice</translation>
 <translation id="49896407730300355">Rotiraj u smjeru suprotnom od k&amp;azaljke na satu</translation>
 <translation id="4989966318180235467">Pregledaj stranicu u &amp;pozadini</translation>
@@ -2943,7 +2943,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="52912272896845572">Fajl s privatnim ključem je nevažeći.</translation>
 <translation id="529175790091471945">Formatiraj ovaj uređaj</translation>
 <translation id="5293170712604732402">Vratite postavke na zadane vrijednosti</translation>
-<translation id="5296471962619441686">Ispravite grešku da nastavite sinhroniziranje</translation>
+<translation id="5296471962619441686">Ispravite grešku da nastavite sinhronizaciju</translation>
 <translation id="5297082477358294722">Lozinka je sačuvana. Prikažite i upravljajte lozinkama koje čuva <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Temu je stvorio autor</translation>
 <translation id="5299109548848736476">Nemoj pratiti</translation>
@@ -3525,7 +3525,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6112727384379533756">Dodaj tiket</translation>
 <translation id="6112931163620622315">Provjerite telefon</translation>
 <translation id="6112952769866305444">Uređivanje osobe, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Prikazuj upite neupadljivo</translation>
 <translation id="6113942107547980621">Za korištenje Pametnog zaključavanja, na telefonu prebacite na profil primarnog korisnika</translation>
 <translation id="6116338172782435947">Pogledajte tekst i slike kopirane u međumemoriju</translation>
 <translation id="6116921718742659598">Promijenite postavke jezika i unosa</translation>
@@ -4196,7 +4195,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7121728544325372695">Pametne crtice</translation>
 <translation id="7123360114020465152">Nije više podržan</translation>
 <translation id="7127980134843952133">Historija preuzimanja</translation>
-<translation id="7128151990937044829">Prikazuj indikator na traci za adresu kada je obavještenje blokirano</translation>
+<translation id="7128151990937044829">Prikazuj pokazatelj na traci za adresu kada je obavještenje blokirano</translation>
 <translation id="7128239828194367697">Generiraj QR kôd za ovu stranicu</translation>
 <translation id="7131040479572660648">Čitanje vaših podataka na web lokacijama <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Dodaj stran&amp;icu...</translation>
@@ -4903,7 +4902,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8101987792947961127">Powerwash je obavezan prilikom sljedećeg pokretanja</translation>
 <translation id="8102159139658438129">Idite na <ph name="LINK_BEGIN" />Postavke<ph name="LINK_END" /> da vidite opcije za povezani telefon.</translation>
 <translation id="8104696615244072556">Uradite Powerwash na svom <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaju i vratite ga na prethodnu verziju.</translation>
-<translation id="8106661353233173262">Nešto nije uredu. Isteklo je vrijeme skeniranog fajla.</translation>
+<translation id="8106661353233173262">Nešto nije uredu. Isteklo je vrijeme za skeniranje fajla.</translation>
 <translation id="8107015733319732394">Instaliranje Google Play trgovine na vašem uređaju <ph name="DEVICE_TYPE" />. To može potrajati nekoliko minuta.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Nema kolačića treće strane}=1{Blokiran je 1 kolačić treće strane}one{Blokiran je # kolačić treće strane}few{Blokirana su # kolačića treće strane}other{Blokirano je # kolačića treće strane}}</translation>
 <translation id="810875025413331850">Nije pronađen nijedan uređaj u blizini.</translation>
@@ -5249,7 +5248,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8627795981664801467">Samo sigurne veze</translation>
 <translation id="8630903300770275248">Uvezi korisnika pod nadzorom</translation>
 <translation id="8631032106121706562">Latice</translation>
-<translation id="863109444997383731">Web lokacijama će biti blokirano slanje upita za prikazivanje obavještenja. Ako web lokacija zatraži prikazivanje obavještenja, na traci za adresu će se prikazati indikator blokiranja.</translation>
+<translation id="863109444997383731">Web lokacijama će biti blokirano slanje upita za prikazivanje obavještenja. Ako web lokacija zatraži prikazivanje obavještenja, na traci za adresu će se prikazati pokazatelj blokiranog obavještenja.</translation>
 <translation id="8635628933471165173">Ponovno učitavanje...</translation>
 <translation id="8637542770513281060">Vaš računar sadrži sigurnosni modul koji se koristi za primjenu mnogih ključnih sigurnosnih funkcija u Chrome OS-u. Posjetite Chromebookov centar za pomoć da saznate više: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Dostupno je ažuriranje sistema. Priprema za preuzimanje…</translation>

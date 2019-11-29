@@ -85,3 +85,31 @@
   }
   return value;
 }
+
+/**
+ * @param {*} value The value to check.
+ * @param {string=} opt_message A message to show when this is hit.
+ * @return {string}
+ */
+/* #export */ function assertString(value, opt_message) {
+  // We don't use assert immediately here so that we avoid constructing an error
+  // message if we don't have to.
+  if (typeof value !== 'string') {
+    assertNotReached(opt_message || 'Value ' + value + ' is not a string');
+  }
+  return /** @type {string} */ (value);
+}
+
+/**
+ * @param {*} value The value to check.
+ * @param {string=} opt_message A message to show when this is hit.
+ * @return {boolean}
+ */
+/* #export */ function assertBoolean(value, opt_message) {
+  // We don't use assert immediately here so that we avoid constructing an error
+  // message if we don't have to.
+  if (typeof value !== 'boolean') {
+    assertNotReached(opt_message || 'Value ' + value + ' is not a boolean');
+  }
+  return /** @type {boolean} */ (value);
+}

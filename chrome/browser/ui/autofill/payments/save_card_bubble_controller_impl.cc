@@ -39,6 +39,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -359,6 +360,9 @@ bool SaveCardBubbleControllerImpl::ShouldRequestExpirationDateFromUser() const {
 
 bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
   if (is_upload_save_)
+    return false;
+
+  if (!GetProfile()->GetPrefs()->GetBoolean(::prefs::kSigninAllowed))
     return false;
 
   const syncer::SyncService* sync_service =

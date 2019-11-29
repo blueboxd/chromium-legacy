@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3658159451045945436">Durch das Zurücksetzen wird der Verlauf gelöscht. Dazu gehört auch die Liste der besuchten Websites.</translation>
-<translation id="3682730288090679318">Anfragen von Websites zum Anzeigen von Benachrichtigungen automatisch blockieren. Wenn eine Website Benachrichtigungen anfragt, erscheint unten auf der Seite eine Infoleiste.</translation>
+<translation id="3682730288090679318">Anfragen von Websites zum Anzeigen von Benachrichtigungen automatisch blockieren. Wenn eine Website fragt, erscheint unten auf der Seite eine Infoleiste.</translation>
 <translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
@@ -542,7 +542,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5048398596102334565">Websites den Zugriff auf Bewegungssensoren erlauben (empfohlen)</translation>
 <translation id="5063480226653192405">Verwendung</translation>
 <translation id="5087580092889165836">Karte hinzufügen</translation>
-<translation id="5096950519211870196">Websites können Sie nicht mehr darum bitten, Benachrichtigungen anzeigen zu dürfen. Wenn eine Website Benachrichtigungen anfragt, erscheint unten auf der Seite eine Infoleiste.</translation>
+<translation id="5096950519211870196">Websites können Sie nicht mehr darum bitten, Benachrichtigungen anzeigen zu dürfen. Wenn eine Website fragt, erscheint unten auf der Seite eine Infoleiste.</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="510275257476243843">1 Stunde übrig</translation>
 <translation id="5123685120097942451">Inkognito-Tab</translation>

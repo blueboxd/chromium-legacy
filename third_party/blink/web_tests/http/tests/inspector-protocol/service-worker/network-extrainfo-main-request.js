@@ -8,8 +8,9 @@
 
   await session.navigate('resources/repeat-fetch-service-worker.html');
 
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   swHelper.installSWAndWaitForActivated('/inspector-protocol/service-worker/resources/repeat-fetch-service-worker.js');
-  const attachedToTarget = await dp.Target.onceAttachedToTarget();
+  const attachedToTarget = await attachedPromise;
 
   const swdp = session.createChild(attachedToTarget.params.sessionId).protocol;
   await swdp.Network.enable();

@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -38,7 +40,8 @@ class ExtensionRegistry;
 class BackgroundApplicationListModel
     : public content::NotificationObserver,
       public extensions::ExtensionRegistryObserver,
-      public BackgroundContentsServiceObserver {
+      public BackgroundContentsServiceObserver,
+      public extensions::ProcessManagerObserver {
  public:
   // Observer is informed of changes to the model.  Users of the
   // BackgroundApplicationListModel should anticipate that associated data,
@@ -83,7 +86,20 @@ class BackgroundApplicationListModel
 
   // Returns true if the passed extension is a background app.
   static bool IsBackgroundApp(const extensions::Extension& extension,
-                              Profile* profile);
+                              Profile* profile) {
+    return IsPersistentBackgroundApp(extension, profile) ||
+           IsTransientBackgroundApp(extension, profile);
+  }
+
+  // Returns true if the passed extension is a persistent background app.
+  static bool IsPersistentBackgroundApp(const extensions::Extension& extension,
+                                        Profile* profile);
+
+  // Returns true if the passed extension is a transient background app.
+  // Transient background apps should only be treated as background apps while
+  // their background page is active.
+  static bool IsTransientBackgroundApp(const extensions::Extension& extension,
+                                       Profile* profile);
 
   // Dissociate observer from this model.
   void RemoveObserver(Observer* observer);
@@ -102,6 +118,8 @@ class BackgroundApplicationListModel
 
   // Returns true if all startup notifications have already been issued.
   bool startup_done() const { return startup_done_; }
+
+  bool HasPersistentBackgroundApps() const;
 
  private:
   // Contains data associated with a background application that is not
@@ -145,10 +163,6 @@ class BackgroundApplicationListModel
   // application, e.g. the Icon, has changed.
   void SendApplicationDataChangedNotifications();
 
-  // Notifies observers that at least one background application has been added
-  // or removed.
-  void SendApplicationListChangedNotifications();
-
   // Invoked by Observe for NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED.
   void OnExtensionPermissionsUpdated(
       const extensions::Extension* extension,
@@ -157,6 +171,10 @@ class BackgroundApplicationListModel
 
   // Refresh the list of background applications and generate notifications.
   void Update();
+
+  // ProcessManagerObserver:
+  void OnBackgroundHostCreated(extensions::ExtensionHost* host) override;
+  void OnBackgroundHostClose(const std::string& extension_id) override;
 
   // Associates extension id strings with Application objects.
   std::map<std::string, std::unique_ptr<Application>> applications_;
@@ -174,6 +192,9 @@ class BackgroundApplicationListModel
 
   ScopedObserver<BackgroundContentsService, BackgroundContentsServiceObserver>
       background_contents_service_observer_{this};
+
+  ScopedObserver<extensions::ProcessManager, extensions::ProcessManagerObserver>
+      process_manager_observer_{this};
 
   base::WeakPtrFactory<BackgroundApplicationListModel> weak_ptr_factory_{this};
 

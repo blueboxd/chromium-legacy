@@ -55,11 +55,11 @@ bool WriteIccFile(const base::FilePath file_path, const std::string& data) {
 
 QuirksClient::QuirksClient(int64_t product_id,
                            const std::string& display_name,
-                           const RequestFinishedCallback& on_request_finished,
+                           RequestFinishedCallback on_request_finished,
                            QuirksManager* manager)
     : product_id_(product_id),
       display_name_(display_name),
-      on_request_finished_(on_request_finished),
+      on_request_finished_(std::move(on_request_finished)),
       manager_(manager),
       icc_path_(manager->delegate()->GetDisplayProfileDirectory().Append(
           IdToFileName(product_id))),
@@ -164,13 +164,14 @@ void QuirksClient::OnDownloadComplete(
 
   base::PostTaskAndReplyWithResult(
       manager_->task_runner(), FROM_HERE,
-      base::Bind(&WriteIccFile, icc_path_, data),
-      base::Bind(&QuirksClient::Shutdown, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&WriteIccFile, icc_path_, data),
+      base::BindOnce(&QuirksClient::Shutdown, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void QuirksClient::Shutdown(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  on_request_finished_.Run(success ? icc_path_ : base::FilePath(), true);
+  std::move(on_request_finished_)
+      .Run(success ? icc_path_ : base::FilePath(), true);
   manager_->ClientFinished(this);
 }
 

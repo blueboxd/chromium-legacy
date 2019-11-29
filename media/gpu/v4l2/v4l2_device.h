@@ -402,6 +402,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Converts v4l2_memory to a string.
   static const char* V4L2MemoryToString(const v4l2_memory memory);
 
+  // Returns the printable name of a v4l2_buf_type.
+  static const char* V4L2BufferTypeToString(const enum v4l2_buf_type buf_type);
+
   // Composes human readable string of v4l2_format.
   static std::string V4L2FormatToString(const struct v4l2_format& format);
 

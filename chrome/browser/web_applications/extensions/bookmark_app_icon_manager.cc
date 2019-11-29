@@ -23,17 +23,21 @@ void OnExtensionIconLoaded(BookmarkAppIconManager::ReadIconCallback callback,
   std::move(callback).Run(image.IsEmpty() ? SkBitmap() : *image.ToSkBitmap());
 }
 
-bool ReadExtensionIcon(Profile* profile,
+const Extension* GetBookmarkApp(Profile* profile,
+                                const web_app::AppId& app_id) {
+  const Extension* extension =
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
+  return (extension && extension->from_bookmark()) ? extension : nullptr;
+}
+
+void ReadExtensionIcon(Profile* profile,
                        const web_app::AppId& app_id,
                        int icon_size_in_px,
                        ExtensionIconSet::MatchType match_type,
                        BookmarkAppIconManager::ReadIconCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const Extension* extension =
-      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
-  if (!extension)
-    return false;
-  DCHECK(extension->from_bookmark());
+  const Extension* extension = GetBookmarkApp(profile, app_id);
+  DCHECK(extension);
 
   ImageLoader* loader = ImageLoader::Get(profile);
   loader->LoadImageAsync(
@@ -41,7 +45,6 @@ bool ReadExtensionIcon(Profile* profile,
       IconsInfo::GetIconResource(extension, icon_size_in_px, match_type),
       gfx::Size(icon_size_in_px, icon_size_in_px),
       base::BindOnce(&OnExtensionIconLoaded, std::move(callback)));
-  return true;
 }
 
 }  // anonymous namespace
@@ -51,27 +54,39 @@ BookmarkAppIconManager::BookmarkAppIconManager(Profile* profile)
 
 BookmarkAppIconManager::~BookmarkAppIconManager() = default;
 
-bool BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
+bool BookmarkAppIconManager::HasIcon(const web_app::AppId& app_id,
+                                     int icon_size_in_px) const {
+  return GetBookmarkApp(profile_, app_id);
+}
+
+bool BookmarkAppIconManager::HasSmallestIcon(const web_app::AppId& app_id,
+                                             int icon_size_in_px) const {
+  return GetBookmarkApp(profile_, app_id);
+}
+
+void BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
                                       int icon_size_in_px,
                                       ReadIconCallback callback) const {
-  return ReadExtensionIcon(profile_, app_id, icon_size_in_px,
-                           ExtensionIconSet::MATCH_EXACTLY,
-                           std::move(callback));
+  DCHECK(HasIcon(app_id, icon_size_in_px));
+  ReadExtensionIcon(profile_, app_id, icon_size_in_px,
+                    ExtensionIconSet::MATCH_EXACTLY, std::move(callback));
 }
 
-bool BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
+void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
                                               int icon_size_in_px,
                                               ReadIconCallback callback) const {
-  return ReadExtensionIcon(profile_, app_id, icon_size_in_px,
-                           ExtensionIconSet::MATCH_BIGGER, std::move(callback));
+  DCHECK(HasSmallestIcon(app_id, icon_size_in_px));
+  ReadExtensionIcon(profile_, app_id, icon_size_in_px,
+                    ExtensionIconSet::MATCH_BIGGER, std::move(callback));
 }
 
-bool BookmarkAppIconManager::ReadSmallestCompressedIcon(
+void BookmarkAppIconManager::ReadSmallestCompressedIcon(
     const web_app::AppId& app_id,
     int icon_size_in_px,
     ReadCompressedIconCallback callback) const {
   NOTIMPLEMENTED();
-  return false;
+  DCHECK(HasSmallestIcon(app_id, icon_size_in_px));
+  std::move(callback).Run(std::vector<uint8_t>());
 }
 
 }  // namespace extensions

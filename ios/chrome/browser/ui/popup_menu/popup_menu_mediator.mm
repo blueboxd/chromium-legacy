@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -126,6 +127,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
 @property(nonatomic, strong) PopupMenuToolsItem* translateItem;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPageItem;
+@property(nonatomic, strong) PopupMenuToolsItem* textZoomItem;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformationItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestDesktopSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestMobileSiteItem;
@@ -450,6 +452,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [specificItems addObject:self.translateItem];
     if (self.findInPageItem)
       [specificItems addObject:self.findInPageItem];
+    if (self.textZoomItem)
+      [specificItems addObject:self.textZoomItem];
     if (self.siteInformationItem)
       [specificItems addObject:self.siteInformationItem];
     if (self.requestDesktopSiteItem)
@@ -539,6 +543,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self updateBookmarkItem];
   self.translateItem.enabled = [self isTranslateEnabled];
   self.findInPageItem.enabled = [self isFindInPageEnabled];
+  self.textZoomItem.enabled =
+      !self.webContentAreaShowingOverlay && [self isCurrentURLWebURL];
   self.siteInformationItem.enabled = [self currentWebPageSupportsSiteInfo];
   self.requestDesktopSiteItem.enabled =
       [self userAgentType] == web::UserAgentType::MOBILE;
@@ -820,11 +826,19 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
   [actionsArray addObject:self.translateItem];
 
-  // Find in Pad.
+  // Find in Page.
   self.findInPageItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_FIND_IN_PAGE, PopupMenuActionFindInPage,
       @"popup_menu_find_in_page", kToolsMenuFindInPageId);
   [actionsArray addObject:self.findInPageItem];
+
+  // Text Zoom
+  if (base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
+    self.textZoomItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_TEXT_ZOOM, PopupMenuActionTextZoom,
+        @"popup_menu_text_zoom", kToolsMenuTextZoom);
+    [actionsArray addObject:self.textZoomItem];
+  }
 
   if ([self userAgentType] != web::UserAgentType::DESKTOP) {
     // Request Desktop Site.

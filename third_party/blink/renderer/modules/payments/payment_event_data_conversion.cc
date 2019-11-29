@@ -11,7 +11,9 @@
 #include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/modules/payments/payment_options.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

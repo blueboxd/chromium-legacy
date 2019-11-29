@@ -173,14 +173,6 @@ void DidShowPaymentHandlerWindow(
   }
 }
 
-void DidGetClients(
-    blink::mojom::ServiceWorkerHost::GetClientsCallback callback,
-    std::unique_ptr<service_worker_client_utils::ServiceWorkerClientPtrs>
-        clients) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  std::move(callback).Run(std::move(*clients));
-}
-
 void DidNavigateClient(
     blink::mojom::ServiceWorkerHost::NavigateClientCallback callback,
     const GURL& url,
@@ -1193,8 +1185,7 @@ void ServiceWorkerVersion::GetClients(
     blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
     GetClientsCallback callback) {
   service_worker_client_utils::GetClients(
-      weak_factory_.GetWeakPtr(), std::move(options),
-      base::BindOnce(&DidGetClients, std::move(callback)));
+      weak_factory_.GetWeakPtr(), std::move(options), std::move(callback));
 }
 
 void ServiceWorkerVersion::GetClient(const std::string& client_uuid,

@@ -36,13 +36,15 @@ class WebAppIconManager : public AppIconManager {
   void DeleteData(AppId app_id, WriteDataCallback callback);
 
   // AppIconManager:
-  bool ReadIcon(const AppId& app_id,
+  bool HasIcon(const AppId& app_id, int icon_size_in_px) const override;
+  bool HasSmallestIcon(const AppId& app_id, int icon_size_in_px) const override;
+  void ReadIcon(const AppId& app_id,
                 int icon_size_in_px,
                 ReadIconCallback callback) const override;
-  bool ReadSmallestIcon(const AppId& app_id,
+  void ReadSmallestIcon(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) const override;
-  bool ReadSmallestCompressedIcon(
+  void ReadSmallestCompressedIcon(
       const AppId& app_id,
       int icon_size_in_px,
       ReadCompressedIconCallback callback) const override;

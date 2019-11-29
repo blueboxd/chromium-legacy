@@ -50,6 +50,8 @@ struct GCMNetworkChannelDiagnostic {
 
 // GCMNetworkChannel is an implementation of SyncNetworkChannel that routes
 // messages through GCMService.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT GCMNetworkChannel
     : public SyncNetworkChannel,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {

@@ -140,14 +140,11 @@ FYI_BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-            '--benchmarks=%s' % ','.join((
-                'blink_perf.layout_ng',
-                'blink_perf.paint_layout_ng',
-                'loading.desktop_layout_ng',
-            )),
+            '--benchmarks=%s' % 'power.desktop',
             '--output-format=histograms',
+            '--experimental-proto-trace-format',
         ],
-        'name': 'blink_perf.layout_ng',
+        'name': 'power.desktop',
       }
     ],
     'platform': 'linux',

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_object.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/testing/internal_dictionary.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

@@ -9,10 +9,11 @@
   `);
   testRunner.log('Started worker');
 
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
+  const attachedPromise = dp.Target.onceAttachedToTarget();
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
                            flatten: true});
 
-  const event = await dp.Target.onceAttachedToTarget();
+  const event = await attachedPromise;
   const childSession = session.createChild(event.params.sessionId);
   testRunner.log('Worker created');
   testRunner.log('didConnectToWorker');

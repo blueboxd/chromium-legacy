@@ -204,7 +204,7 @@
 <translation id="1274997165432133392">Файлы cookie и другие данные сайтов</translation>
 <translation id="127668050356036882">Закрыть все окна</translation>
 <translation id="1280820357415527819">Поиск мобильных сетей...</translation>
-<translation id="1282420830958964167">Время, установленное вашим родителем для работы приложения "<ph name="APP_NAME" />", истекло. Вы сможете использовать его завтра в течение <ph name="TIME_LIMIT" />.</translation>
+<translation id="1282420830958964167">Установленное родителями время работы приложения "<ph name="APP_NAME" />" истекло. Лимит на завтра: <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1285484354230578868">Сохранение данных на вашем Google Диске</translation>
 <translation id="1288037062697528143">Ночной режим включится автоматически на закате</translation>
@@ -618,7 +618,7 @@
 <translation id="1858585891038687145">Доверять этому сертификату при идентификации производителей ПО</translation>
 <translation id="1861262398884155592">Папка пуста</translation>
 <translation id="1863182668524159459">Последовательные порты не найдены.</translation>
-<translation id="1863552924692672565">Файл <ph name="FILE_NAME" /> неизвестен. Проверьте его, чтобы свести риск к минимуму.</translation>
+<translation id="1863552924692672565">Файл "<ph name="FILE_NAME" />" неизвестен. Проверьте его, чтобы свести риск к минимуму.</translation>
 <translation id="1864111464094315414">Вход</translation>
 <translation id="1864400682872660285">Холоднее</translation>
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
@@ -1514,7 +1514,7 @@
 <translation id="3151786313568798007">Ориентация</translation>
 <translation id="3154351730702813399">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="3154429428035006212">Не в Сети больше месяца</translation>
-<translation id="3154736273843608862">Время, установленное вашим родителем для работы приложения "<ph name="IDS_SHORT_PRODUCT_NAME" />", истекло.</translation>
+<translation id="3154736273843608862">Установленное родителями время работы приложения "<ph name="IDS_SHORT_PRODUCT_NAME" />" истекло.</translation>
 <translation id="3156531245809797194">Чтобы использовать Chrome, выполните вход.</translation>
 <translation id="3157931365184549694">Восстановить</translation>
 <translation id="3158033540161634471">Добавьте отпечаток пальца</translation>
@@ -2774,7 +2774,7 @@
 <translation id="503498442187459473">Сайт <ph name="HOST" /> запрашивает доступ к камере и микрофону.</translation>
 <translation id="5036662165765606524">Запретить сайтам автоматически скачивать более одного файла</translation>
 <translation id="5037676449506322593">Выделить все</translation>
-<translation id="5038022729081036555">Вы сможете использовать его завтра в течение <ph name="TIME_LIMIT" />.</translation>
+<translation id="5038022729081036555">Лимит на завтра: <ph name="TIME_LIMIT" />.</translation>
 <translation id="5038863510258510803">Активация...</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5042282098504489593">Откройте настройки, чтобы подключить устройство <ph name="USB_DEVICE_NAME" /> к Linux</translation>
@@ -3523,7 +3523,6 @@
 <translation id="6112727384379533756">Добавить билет</translation>
 <translation id="6112931163620622315">Проверьте телефон</translation>
 <translation id="6112952769866305444">Изменить профиль пользователя <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Включить тихий режим для запросов с сайтов</translation>
 <translation id="6113942107547980621">Чтобы использовать Smart Lock, включите основной профиль</translation>
 <translation id="6116338172782435947">Просмотр текста и изображений, скопированных в буфер обмена</translation>
 <translation id="6116921718742659598">Изменение настроек языка и метода ввода</translation>
@@ -4834,7 +4833,7 @@
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="8014154204619229810">Работает программа обновлений. Повторите попытку через пару минут.</translation>
 <translation id="8014206674403687691">Невозможно вернуться к предыдущей установленной версии <ph name="IDS_SHORT_PRODUCT_NAME" />. Воспользуйтесь функцией Powerwash.</translation>
-<translation id="8015163965024115122">Время, установленное вашим родителем для работы приложения "<ph name="IDS_SHORT_PRODUCT_NAME" />" или "<ph name="IDS_SHORT_PRODUCT_NAME" />", истекло.</translation>
+<translation id="8015163965024115122">Установленное родителями время работы приложения "<ph name="IDS_SHORT_PRODUCT_NAME" />" или "<ph name="IDS_SHORT_PRODUCT_NAME" />" истекло.</translation>
 <translation id="8016266267177410919">Папка для временного хранения</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Ярлык изменен</translation>
@@ -4885,7 +4884,7 @@
 <translation id="8076835018653442223">Доступ к локальным файлам на вашем устройстве отключен администратором.</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081989000209387414">Отключить отладку с ADB?</translation>
-<translation id="8082390128630131497">Если вы отключите отладку с ADB, настройки этого устройства <ph name="DEVICE_TYPE" /> будут сброшены до заводских. Все аккаунты пользователя и локальные данные будут удалены.</translation>
+<translation id="8082390128630131497">Если вы отключите отладку с ADB, настройки этого устройства <ph name="DEVICE_TYPE" /> будут сброшены до заводских. Все аккаунты пользователей и локальные данные будут удалены.</translation>
 <translation id="8084114998886531721">Сохраненный пароль</translation>
 <translation id="8086015605808120405">Настройка принтера "<ph name="PRINTER_NAME" />"...</translation>
 <translation id="8086442853986205778">Настроить принтер "<ph name="PRINTER_NAME" />"</translation>

@@ -18,7 +18,7 @@
 #include "ui/views/layout/box_layout.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
+#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
 namespace autofill {
@@ -49,16 +49,12 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
       std::make_unique<SaveCardSignInPromoBubbleViews::SyncPromoDelegate>(
           controller(),
           signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE);
-
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED;
-  params.message_text_resource_id =
-      IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED;
-
-  std::unique_ptr<views::View> signin_view = CreateBubbleSyncPromoView(
-      controller()->GetProfile(), sync_promo_delegate_.get(),
-      signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE, params);
-
+  std::unique_ptr<views::View> signin_view =
+      std::make_unique<DiceBubbleSyncPromoView>(
+          controller()->GetProfile(), sync_promo_delegate_.get(),
+          signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+          /*dice_accounts_promo_message_resource_id=*/0,
+          /*dice_signin_button_prominent=*/true);
   signin_view->SetID(DialogViewId::SIGN_IN_VIEW);
   view->AddChildView(signin_view.release());
 #endif

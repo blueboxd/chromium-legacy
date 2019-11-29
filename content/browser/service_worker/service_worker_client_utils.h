@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
 class GURL;
@@ -32,10 +33,6 @@ using NavigationCallback = base::OnceCallback<void(
     blink::mojom::ServiceWorkerClientInfoPtr client_info)>;
 using ClientCallback = base::OnceCallback<void(
     blink::mojom::ServiceWorkerClientInfoPtr client_info)>;
-using ServiceWorkerClientPtrs =
-    std::vector<blink::mojom::ServiceWorkerClientInfoPtr>;
-using ClientsCallback =
-    base::OnceCallback<void(std::unique_ptr<ServiceWorkerClientPtrs> clients)>;
 
 // The type of an opened window.
 enum class WindowType {
@@ -80,7 +77,7 @@ void GetClient(ServiceWorkerContainerHost* container_host,
 // information sorted in MRU order (most recently focused order) on completion.
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                 blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
-                ClientsCallback callback);
+                blink::mojom::ServiceWorkerHost::GetClientsCallback callback);
 
 // Finds the provider host for |origin| in |context| then uses
 // |render_process_id| and |render_process_host| to create a relevant

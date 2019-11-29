@@ -14,6 +14,31 @@ var cca = cca || {};
  */
 cca.views = cca.views || {};
 
+/* eslint-disable no-unused-vars */
+
+/**
+ * message for message of the dialog view, cancellable for whether the dialog
+ * view is cancellable.
+ * @typedef {{
+ *   message: string,
+ *   cancellable: (boolean|undefined),
+ * }}
+ */
+cca.views.DialogEnterOptions;
+
+/**
+ * Warning message name.
+ * @typedef {string}
+ */
+cca.views.WarningEnterOptions;
+
+/**
+ * @typedef {!cca.views.DialogEnterOptions|!cca.views.WarningEnterOptions}
+ */
+cca.views.EnterOptions;
+
+/* eslint-enable no-unused-vars */
+
 /**
  * Base controller of a view for views' navigation sessions (cca.nav).
  * @param {string} selector Selector text of the view's root element.
@@ -87,28 +112,27 @@ cca.views.View.prototype.onKeyPressed = function(key) {
 /**
  * Focuses the default element on the view if applicable.
  */
-cca.views.View.prototype.focus = function() {
-};
+cca.views.View.prototype.focus = function() {};
 
 /**
  * Layouts the view.
  */
-cca.views.View.prototype.layout = function() {
-};
+cca.views.View.prototype.layout = function() {};
 
 /**
  * Hook of the subclass for entering the view.
- * @param {...*} args Optional rest parameters for entering the view.
+ * @param {cca.views.EnterOptions=} options Optional rest parameters for
+ *     entering the view.
  */
-cca.views.View.prototype.entering = function(...args) {
-};
+cca.views.View.prototype.entering = function(options) {};
 
 /**
  * Enters the view.
- * @param {...*} args Optional rest parameters for entering the view.
+ * @param {cca.views.EnterOptions=} options Optional rest parameters for
+ *     entering the view.
  * @return {!Promise<*>} Promise for the navigation session.
  */
-cca.views.View.prototype.enter = function(...args) {
+cca.views.View.prototype.enter = function(options) {
   // The session is started by entering the view and ended by leaving the view.
   if (!this.session_) {
     var end;
@@ -119,7 +143,7 @@ cca.views.View.prototype.enter = function(...args) {
       end(result);
     };
   }
-  this.entering(...args);
+  this.entering(options);
   return this.session_;
 };
 

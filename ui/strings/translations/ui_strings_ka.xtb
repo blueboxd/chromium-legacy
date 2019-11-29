@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 წთ}other{# წთ}}</translation>
 <translation id="1181037720776840403">ამოშლა</translation>
 <translation id="1201402288615127009">შემდეგი</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store აპი</translation>
 <translation id="1243314992276662751">ატვირთვა</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ვერ გაზიარდა</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">მარცხნიდან მარჯვნივ</translation>
 <translation id="1383876407941801731">ძიება</translation>
 <translation id="1398853756734560583">გაშლა</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, დაინსტალირებული აპი</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ვერ ზიარდება</translation>
 <translation id="1498028757988366001">თქვენ უკვე ეძებდით ამას. ისტორიიდან „<ph name="QUERY" />“-ის წაშლის შემთხვევაში, ის ამოიშლება თქვენი ანგარიშიდან თქვენს ყველა მოწყობილობაზე.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 წუთი და }other{# წუთი და }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 თვე}other{# თვე}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> მბაიტი/წმ</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 საათი და }other{# საათი და }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> აღარ არის ჩამაგრებული</translation>
 <translation id="1842960171412779397">არჩევა</translation>
 <translation id="1859234291848436338">წერის მიმართულება</translation>
 <translation id="1860796786778352021">შეტყობინების დახურვა</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">ზედა</translation>
 <translation id="2701330563083355633">გაზიარებულია <ph name="DEVICE_NAME" />-დან</translation>
 <translation id="2743387203779672305">კოპირება გაცვლის ბუფერში</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">გახსენით საქაღალდე</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 წლის წინ}other{# წლის წინ}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 დღეში}other{# დღეში}}</translation>
 <translation id="2931838996092594335">დაწკაპუნება</translation>
+<translation id="2981684127883932071">ნაჩვენებია შემოთავაზებები</translation>
 <translation id="3036649622769666520">გახსენით ფაილები</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> მბაიტი</translation>
 <translation id="3068711042108640621">თარო მდებარეობს მარცხენა ნაწილში</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">ტექსტი მეტისმეტად დიდია</translation>
 <translation id="3479552764303398839">ახლა არა</translation>
 <translation id="348799646910989694">თარო ავტომატურად დამალულია</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ჩამაგრებულია</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{დარჩენილია 1 დღე}other{დარჩენილია # დღე}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ფაილი</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">ეკრანის ანაბეჭდი</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 თვის წინ}other{# თვის წინ}}</translation>
 <translation id="4289300219472526559">დაიწყეთ ლაპარაკი</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> გადატანილია საქაღალდეში <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
 <translation id="4588090240171750605">გადაადგილება მარჯვნივ</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, შეფასებულია <ph name="RATING_SCORE" /> ვარსკვლავით</translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, აპის რეკომენდაცია</translation>
 <translation id="4690510401873698237">თარო მდებარეობს ქვედა ნაწილში</translation>
 <translation id="4724120544754982507">შეტყობინებათა ცენტრი, <ph name="UNREAD_NOTIFICATION_COUNT" /> წაუკითხავი შეტყობინება</translation>
 <translation id="4730374152663651037">ხშირად გამოყენებული</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">მედია წინა ჩანაწერი</translation>
 <translation id="5046499563572181734">შეეხეთ აქ</translation>
 <translation id="5076340679995252485">&amp;ჩასმა</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> დაჯგუფდა <ph name="IN_PLACE_APP" />-თან ახალი საქაღალდის შესაქმნელად.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> პბაიტი</translation>
 <translation id="5266161281976477809">გაშლის სამკუთხედი</translation>
 <translation id="5278860589123563674">გაგზავნა ვერ მოხერხდა</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> სისტემა</translation>
 <translation id="5583640892426849032">უკუშლა</translation>
 <translation id="5613020302032141669">მარცხენა ისარი</translation>
+<translation id="5675363643668471212">თაროს ელემენტი</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 წთ}other{# წთ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{აქტიური იყო დღეს}=1{აქტიური იყო 1 დღის წინ}other{აქტიური იყო # დღის წინ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 დღე და }other{# დღე და }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">ერთი გვერდით ქვემოთ</translation>
 <translation id="8245914219290430011">ჩანართი</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, აპი</translation>
 <translation id="8259556432390118667">ფერის თექვსმეტობითი მნიშვნელობა</translation>
 <translation id="8328145009876646418">მარცხენა კიდე</translation>
 <translation id="8331626408530291785">გადაადგილება ზევით</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">ჩანართი</translation>
 <translation id="9161053988251441839">შემოთავაზებული აპები</translation>
 <translation id="9170848237812810038">მოქმედების დაბრ&amp;უნება</translation>
+<translation id="9178475906033259337">ნაჩვენებია 1 შედეგი მოთხოვნაზე <ph name="QUERY" /></translation>
 <translation id="932327136139879170">საწყისი გვერდი</translation>
 <translation id="944069440740578670">წაუკითხავი შეტყობინებები</translation>
+<translation id="974545358917229949">ნაჩვენებია <ph name="QUERY" /> შედეგი მოთხოვნაზე <ph name="RESULT_COUNT" /></translation>
 </translationbundle>

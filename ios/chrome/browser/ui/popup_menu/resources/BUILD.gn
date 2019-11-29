@@ -224,3 +224,11 @@ imageset("popup_menu_help") {
     "popup_menu_help.imageset/popup_menu_help@3x.png",
   ]
 }
+
+imageset("popup_menu_text_zoom") {
+  sources = [
+    "popup_menu_text_zoom.imageset/Contents.json",
+    "popup_menu_text_zoom.imageset/popup_menu_text_zoom@2x.png",
+    "popup_menu_text_zoom.imageset/popup_menu_text_zoom@3x.png",
+  ]
+}

@@ -38,10 +38,9 @@ InstallationTracker::InstallationTracker(
       base::BindRepeating(&InstallationTracker::OnForcedExtensionsPrefChanged,
                           base::Unretained(this)));
 
-  timer_->Start(
-      FROM_HERE, kInstallationTimeout,
-      base::BindRepeating(&InstallationTracker::ReportResults,
-                          base::Unretained(this), false /* succeeded */));
+  timer_->Start(FROM_HERE, kInstallationTimeout,
+                base::BindRepeating(&InstallationTracker::ReportResults,
+                                    base::Unretained(this)));
 
   // Try to load list now.
   OnForcedExtensionsPrefChanged();
@@ -64,11 +63,12 @@ void InstallationTracker::OnForcedExtensionsPrefChanged() {
   for (const auto& extension_id : extensions_to_remove) {
     forced_extensions_.erase(extension_id);
     pending_forced_extensions_.erase(extension_id);
+    failed_forced_extensions_.erase(extension_id);
   }
 
   // Report if all remaining extensions were removed from policy.
   if (loaded_ && pending_forced_extensions_.empty())
-    ReportResults(true /* succeeded */);
+    ReportResults();
 
   // Load forced extensions list only once.
   if (value->empty() || loaded_) {
@@ -79,11 +79,14 @@ void InstallationTracker::OnForcedExtensionsPrefChanged() {
 
   for (const auto& entry : *value) {
     forced_extensions_.insert(entry.first);
-    if (!registry_->enabled_extensions().Contains(entry.first))
+    if (!registry_->enabled_extensions().Contains(entry.first)) {
       pending_forced_extensions_.insert(entry.first);
+      // Think of the extension as of failed one, unless we'll receive disproof.
+      failed_forced_extensions_.insert(entry.first);
+    }
   }
   if (pending_forced_extensions_.empty())
-    ReportResults(true /* succeeded */);
+    ReportResults();
 }
 
 void InstallationTracker::OnShutdown(ExtensionRegistry*) {
@@ -95,19 +98,29 @@ void InstallationTracker::OnShutdown(ExtensionRegistry*) {
 void InstallationTracker::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
+  failed_forced_extensions_.erase(extension->id());
   if (pending_forced_extensions_.erase(extension->id()) &&
       pending_forced_extensions_.empty()) {
-    ReportResults(true /* succeeded */);
+    ReportResults();
   }
 }
 
-void InstallationTracker::ReportResults(bool succeeded) {
+void InstallationTracker::OnExtensionInstallationFailed(
+    const ExtensionId& extension_id,
+    InstallationReporter::FailureReason reason) {
+  if (pending_forced_extensions_.erase(extension_id) &&
+      pending_forced_extensions_.empty()) {
+    ReportResults();
+  }
+}
+
+void InstallationTracker::ReportResults() {
   DCHECK(!reported_);
   // Report only if there was non-empty list of force-installed extensions.
   if (!forced_extensions_.empty()) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ForceInstalledTotalCandidateCount",
                              forced_extensions_.size());
-    if (succeeded) {
+    if (failed_forced_extensions_.empty()) {
       UMA_HISTOGRAM_LONG_TIMES("Extensions.ForceInstalledLoadTime",
                                base::Time::Now() - start_time_);
       // TODO(burunduk): Remove VLOGs after resolving crbug/917700 and
@@ -116,11 +129,11 @@ void InstallationTracker::ReportResults(bool succeeded) {
     } else {
       InstallationReporter* installation_reporter =
           InstallationReporter::Get(profile_);
-      size_t enabled_missing_count = pending_forced_extensions_.size();
+      size_t enabled_missing_count = failed_forced_extensions_.size();
       auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
       for (const auto& entry : *installed_extensions)
-        pending_forced_extensions_.erase(entry->id());
-      size_t installed_missing_count = pending_forced_extensions_.size();
+        failed_forced_extensions_.erase(entry->id());
+      size_t installed_missing_count = failed_forced_extensions_.size();
 
       UMA_HISTOGRAM_COUNTS_100("Extensions.ForceInstalledTimedOutCount",
                                enabled_missing_count);
@@ -129,7 +142,7 @@ void InstallationTracker::ReportResults(bool succeeded) {
           installed_missing_count);
       VLOG(2) << "Failed to install " << installed_missing_count
               << " forced extensions.";
-      for (const auto& extension_id : pending_forced_extensions_) {
+      for (const auto& extension_id : failed_forced_extensions_) {
         InstallationReporter::InstallationData installation =
             installation_reporter->Get(extension_id);
         UMA_HISTOGRAM_ENUMERATION(

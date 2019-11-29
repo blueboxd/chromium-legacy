@@ -605,8 +605,9 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
     std::string product = base::StringPrintf("Version/%d.%d", major, minor);
 
-    command_line->AppendSwitchASCII(switches::kUserAgent,
-                                    web::BuildUserAgentFromProduct(product));
+    command_line->AppendSwitchASCII(
+        switches::kUserAgent,
+        web::BuildUserAgentFromProduct(web::UserAgentType::MOBILE, product));
   }
 
   // Freeform commandline flags.  These are added last, so that any flags added

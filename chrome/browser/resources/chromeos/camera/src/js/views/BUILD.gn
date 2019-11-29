@@ -15,8 +15,10 @@ js_type_check("compile_resources") {
   deps = [
     ":camera",
     ":camera_intent",
+    ":dialog",
     ":settings",
     ":view",
+    ":warning",
   ]
 }
 
@@ -32,6 +34,9 @@ js_library("camera") {
     "camera:preview",
     "camera:timertick",
   ]
+}
+
+js_library("dialog") {
 }
 
 js_library("camera_intent") {
@@ -59,4 +64,7 @@ js_library("view") {
   ]
 
   externs_list = [ "../externs/chrome.js" ]
+}
+
+js_library("warning") {
 }

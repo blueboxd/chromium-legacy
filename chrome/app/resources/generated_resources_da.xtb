@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">Tryk på |<ph name="ACCELERATOR" />| for at afslutte fuld skærm</translation>
 <translation id="1038168778161626396">Kun omsætning til kode</translation>
 <translation id="1039337018183941703">Ugyldig eller beskadiget fil</translation>
-<translation id="1039850285407663109">Den valgte fil kan ikke genkendes og er muligvis skadelig. Overvej at scanne filen, før du åbner den.</translation>
+<translation id="1039850285407663109">Den valgte fil er ukendt og er muligvis skadelig. Du bør scanne filen, før du åbner den.</translation>
 <translation id="1041175011127912238">Denne side svarer ikke</translation>
 <translation id="1041263367839475438">Tilgængelige enheder</translation>
 <translation id="1042174272890264476">Computeren leveres også med <ph name="SHORT_PRODUCT_NAME" />s RLZ-samling indbygget. RLZ tildeler et ikke-unikt, ikke-personligt identificerbart tag til at måle søgninger og <ph name="SHORT_PRODUCT_NAME" />-brug, der er drevet af en bestemt kampagne. Disse etiketter vises nogle gange i Googles søgeforespørgsler i <ph name="PRODUCT_NAME" />.</translation>
@@ -446,7 +446,7 @@
 <translation id="1627276047960621195">Filbeskrivelser</translation>
 <translation id="1627408615528139100">Er allerede downloadet</translation>
 <translation id="1629314197035607094">Adgangskoden er udløbet</translation>
-<translation id="1630768113285622200">Genstart, og fortsæt</translation>
+<translation id="1630768113285622200">Genstart og fortsæt</translation>
 <translation id="1632803087685957583">Giver dig mulighed for at justere gentagelseshastighed, ordforslag og meget mere for tastaturet</translation>
 <translation id="1635033183663317347">Installeret af din tilsynsførende.</translation>
 <translation id="1637224376458524414">Få dette bogmærke på din iPhone</translation>
@@ -619,7 +619,7 @@
 <translation id="1858585891038687145">Hav tillid til dette certifikat i forbindelse med identifikation af softwareproducenter</translation>
 <translation id="1861262398884155592">Denne mappe er tom</translation>
 <translation id="1863182668524159459">Der blev ikke fundet nogen serieporte</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> kan ikke genkendes. Scan filen for at minimere risikoen.</translation>
+<translation id="1863552924692672565"><ph name="FILE_NAME" /> er ukendt. Scan filen for at minimere risikoen.</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Kølig</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
@@ -2615,7 +2615,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4798236378408895261">Vedhæft <ph name="BEGIN_LINK" />Bluetooth-logfiler<ph name="END_LINK" /> (internt hos Google)</translation>
 <translation id="4801448226354548035">Skjul konti</translation>
 <translation id="4801512016965057443">Tillad dataroaming for mobil</translation>
-<translation id="4804756772600045300">Hvis du fortsætter, aktiveres ADB-fejlretning, så der kan oprettes og testes Android-apps. Bemærk! ADB-fejlretning giver mulighed for at installere testapps, der ikke er blevet bekræftet af Google.</translation>
+<translation id="4804756772600045300">Hvis du fortsætter, aktiveres ADB-fejlretning til oprettelse og test af Android-apps. Bemærk! ADB-fejlretning giver mulighed for at installere testapps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4807098396393229769">Navn på kort</translation>
@@ -3525,7 +3525,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6112727384379533756">Tilføj en billet</translation>
 <translation id="6112931163620622315">Tjek din telefon</translation>
 <translation id="6112952769866305444">Rediger person, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
-<translation id="6113400363611269907">Vis prompts uden lyd</translation>
 <translation id="6113942107547980621">Skift til den primære brugerprofil på din telefon for at bruge Smart Lock</translation>
 <translation id="6116338172782435947">Se tekst og billeder, der er kopieret til udklipsholderen</translation>
 <translation id="6116921718742659598">Rediger indstillingerne for sprog og indtastning</translation>
@@ -4836,7 +4835,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8013993649590906847">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser.</translation>
 <translation id="8014154204619229810">Opdateringsprogrammet kører i øjeblikket. Opdater om et minut for at kontrollere igen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kan ikke vende tilbage til den tidligere version. Prøv Powerwash i stedet.</translation>
-<translation id="8015163965024115122">Begrænsningen på <ph name="IDS_SHORT_PRODUCT_NAME" /> eller <ph name="IDS_SHORT_PRODUCT_NAME" /> apps, som din forælder har indstillet, er udløbet.</translation>
+<translation id="8015163965024115122">Begrænsningen på <ph name="IDS_SHORT_PRODUCT_NAME" />- eller <ph name="IDS_SHORT_PRODUCT_NAME" />-apps, som din forælder har indstillet, er udløbet.</translation>
 <translation id="8016266267177410919">Midlertidig lagring</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Genvejen blev redigeret</translation>
@@ -5249,7 +5248,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8627795981664801467">Kun sikre forbindelser</translation>
 <translation id="8630903300770275248">Importér administreret bruger</translation>
 <translation id="8631032106121706562">Marguerit</translation>
-<translation id="863109444997383731">Websites forhindres i at spørge dig, om de må vise dig notifikationer. Hvis et website anmoder om notifikationer, vises der en indikator for blokering i adresselinjen.</translation>
+<translation id="863109444997383731">Websites kan ikke spørge dig, om de må vise dig notifikationer. Hvis et website anmoder om notifikationer, vises der en indikator for blokering i adresselinjen.</translation>
 <translation id="8635628933471165173">Genindlæser…</translation>
 <translation id="8637542770513281060">Computeren indeholder et sikkerhedsmodul, som bruges til at implementere flere vigtige sikkerhedsfunktioner i Chrome OS. Du kan få flere oplysninger i Hjælp til Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Der findes en tilgængelig opdatering til systemet. Forbereder download...</translation>

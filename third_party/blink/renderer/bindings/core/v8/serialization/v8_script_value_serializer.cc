@@ -271,8 +271,10 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
         execution_context->CountUse(
             mojom::WebFeature::kOriginCleanImageBitmapTransfer);
       } else {
-        execution_context->CountUse(
-            mojom::WebFeature::kNonOriginCleanImageBitmapTransfer);
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "Non-origin-clean ImageBitmap cannot be transferred.");
+        return false;
       }
 
       DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
@@ -286,8 +288,10 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       execution_context->CountUse(
           mojom::WebFeature::kOriginCleanImageBitmapSerialization);
     } else {
-      execution_context->CountUse(
-          mojom::WebFeature::kNonOriginCleanImageBitmapSerialization);
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "Non-origin-clean ImageBitmap cannot be cloned.");
+      return false;
     }
     WriteTag(kImageBitmapTag);
     SerializedColorParams color_params(image_bitmap->GetCanvasColorParams());

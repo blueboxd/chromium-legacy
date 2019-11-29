@@ -762,7 +762,7 @@
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
 <translation id="4597348597567598915">Dimensione 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4613966523036881546">Il certificato di questa connessione non è considerato attendibile da Chrome in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
+<translation id="4613966523036881546">Il certificato di questa connessione non è considerato attendibile da Google Chrome, in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
 <translation id="4635654612248442824">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di una norma di partenza
     a tutte le sue richieste, ma questa norma al momento non può essere applicata.</translation>
 <translation id="464342062220857295">Funzionalità di ricerca</translation>
@@ -1471,7 +1471,7 @@ Ulteriori dettagli:
 <translation id="8103161714697287722">Metodo di pagamento</translation>
 <translation id="8105368624971345109">Disattiva</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
-<translation id="8124023448510659215">Il certificato di questa connessione non è considerato attendibile da Chromium in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
+<translation id="8124023448510659215">Il certificato di questa connessione non è considerato attendibile da Chromium, in quanto è noto che sia usato per intercettazione e monitoraggio della rete.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
@@ -1614,7 +1614,7 @@ Ulteriori dettagli:
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8962950042226115166">Sito sospetto</translation>
 <translation id="8968766641738584599">Salva carta</translation>
-<translation id="8969267497192857913">Tutto ciò che digiti, tutte le pagine che visualizzi e ogni altra attività che svolgi sul Web viene monitorato e i contenuti sul sito potrebbero essere modificati a tua insaputa.
+<translation id="8969267497192857913">Tutto ciò che digiti, tutte le pagine che visualizzi e ogni altra attività che svolgi sul Web vengono monitorati e i contenuti sul sito potrebbero essere modificati a tua insaputa.
     <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8975012916872825179">Include informazioni come numeri di telefono, indirizzi email e indirizzi di spedizione</translation>

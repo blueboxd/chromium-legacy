@@ -22,6 +22,8 @@ namespace invalidation {
 // Wraps PrefService in an InvalidationStateTracker to allow SyncNotifiers
 // to use PrefService as persistence for invalidation state. It is not thread
 // safe, and lives on the UI thread.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class InvalidatorStorage : public syncer::InvalidationStateTracker {
  public:
   // |pref_service| may not be NULL and must outlive |this|.

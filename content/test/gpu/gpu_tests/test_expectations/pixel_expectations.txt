@@ -135,6 +135,7 @@ crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 crbug.com/883500 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/1029389 [ android qualcomm-adreno-(tm)-330 ] Pixel_PrecisionRoundedCorner [ Skip ]
 
 # Flakes on Nexus 5X.
 crbug.com/883500 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
@@ -241,3 +242,8 @@ crbug.com/681341 [ mac ] Pixel_WebGLLowToHighPower [ Skip ]
 
 # Flakes on Mac Retine NVIDIA producing a blank image.
 crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+
+# Flakes on Linux, Mac and Windows
+crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+crbug.com/1028975 [ mac ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]

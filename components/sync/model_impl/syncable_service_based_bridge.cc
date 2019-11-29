@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
@@ -533,8 +532,6 @@ base::Optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
   DCHECK(!syncable_service_started_);
   DCHECK(change_processor()->IsTrackingMetadata());
 
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-
   // Sync enabled, so exercise MergeDataAndStartSyncing() immediately, since
   // this function is reached only if sync is starting already.
   SyncDataList initial_sync_data;
@@ -559,8 +556,6 @@ base::Optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
               type_, initial_sync_data, std::move(local_change_processor),
               std::make_unique<SyncErrorFactoryImpl>(type_))
           .error());
-
-  RecordAssociationTime(base::TimeTicks::Now() - start_time);
 
   if (!merge_error) {
     syncable_service_started_ = true;
@@ -678,15 +673,6 @@ void SyncableServiceBasedBridge::ReportErrorIfSet(
   if (error) {
     change_processor()->ReportError(*error);
   }
-}
-
-void SyncableServiceBasedBridge::RecordAssociationTime(
-    base::TimeDelta time) const {
-// This mimics the implementation in SharedChangeProcessor.
-#define PER_DATA_TYPE_MACRO(type_str) \
-  UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
-  SYNC_DATA_TYPE_HISTOGRAM(type_);
-#undef PER_DATA_TYPE_MACRO
 }
 
 }  // namespace syncer

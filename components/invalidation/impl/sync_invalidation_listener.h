@@ -32,6 +32,8 @@ class RegistrationManager;
 
 // SyncInvalidationListener is not thread-safe and lives on the sync
 // thread.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT SyncInvalidationListener
     : public invalidation::InvalidationListener,
       public StateWriter,

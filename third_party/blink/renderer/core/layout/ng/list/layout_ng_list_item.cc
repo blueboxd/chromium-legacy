@@ -232,6 +232,22 @@ LayoutNGListItem* LayoutNGListItem::FromMarker(const LayoutObject& marker) {
   return nullptr;
 }
 
+LayoutNGListItem* LayoutNGListItem::FromMarkerOrMarkerContent(
+    const LayoutObject& object) {
+  DCHECK(object.IsAnonymous());
+
+  if (object.IsLayoutNGListMarkerIncludingInside())
+    return FromMarker(object);
+
+  // Check if this is a marker content.
+  if (const LayoutObject* parent = object.Parent()) {
+    if (parent->IsLayoutNGListMarkerIncludingInside())
+      return FromMarker(*parent);
+  }
+
+  return nullptr;
+}
+
 int LayoutNGListItem::Value() const {
   DCHECK(GetNode());
   return ordinal_.Value(*GetNode());

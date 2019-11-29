@@ -31,8 +31,11 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_configuration.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_media_capability.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
+#include "third_party/blink/renderer/modules/media_capabilities/audio_configuration.h"
+#include "third_party/blink/renderer/modules/media_capabilities/key_system_track_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_key_system_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
@@ -50,8 +53,6 @@
 #include "third_party/blink/renderer/platform/peerconnection/transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-
-#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access_initializer_base.h"
 
 namespace blink {
 

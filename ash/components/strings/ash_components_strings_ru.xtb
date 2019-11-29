@@ -100,7 +100,7 @@
 <translation id="4382340674111381977">Перейти на предыдущую страницу</translation>
 <translation id="4458670250301149821">Переместить значок приложения в папку или из папки в сетке приложений</translation>
 <translation id="4472417192667361414">Настройки экрана и системы</translation>
-<translation id="449214506787633354"><ph name="CTRL" />, затем <ph name="LEFT" />, или <ph name="RIGHT" />, или <ph name="UP" />, или <ph name="DOWN" /></translation>
+<translation id="449214506787633354"><ph name="CTRL" />, затем <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> или <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Открыть страницу справки по быстрым клавишам</translation>
 <translation id="4628718545549558538">Открыть панель состояния (на которой расположено изображение профиля)</translation>
 <translation id="4642092649622328492">Сделать скриншот части экрана</translation>
@@ -207,7 +207,7 @@
 <translation id="9041599225465145264">Вставить содержимое из буфера обмена</translation>
 <translation id="9052808072970550123">Переключиться на следующего пользователя</translation>
 <translation id="906458777597946297">Развернуть окно</translation>
-<translation id="9072882242928138086"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="SHIFT" />, затем <ph name="LEFT" />, или <ph name="RIGHT" />, или <ph name="UP" />, или <ph name="DOWN" /></translation>
+<translation id="9072882242928138086"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="SHIFT" />, затем <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> или <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Перейти к началу строки</translation>
 <translation id="9106898733795143799">Страница и браузер</translation>
 <translation id="9162942292291287644">По запросу "<ph name="QUERY" />" ничего не найдено</translation>

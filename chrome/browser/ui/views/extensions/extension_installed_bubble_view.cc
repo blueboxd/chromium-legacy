@@ -51,7 +51,7 @@
 #include "ui/views/layout/box_layout.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
+#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
 using extensions::Extension;
@@ -124,18 +124,11 @@ std::unique_ptr<views::View> CreateSigninPromoView(
   if (!(bubble_options & ExtensionInstalledBubble::SIGN_IN_PROMO))
     return nullptr;
 
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW;
-  params.message_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW;
-  params.dice_no_accounts_promo_message_resource_id =
-      IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE;
-  params.dice_accounts_promo_message_resource_id =
-      IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE;
-
-  return CreateBubbleSyncPromoView(
+  return std::make_unique<DiceBubbleSyncPromoView>(
       profile, delegate,
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
-      params);
+      IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE,
+      /*dice_signin_button_prominent=*/true);
 #endif
 }
 

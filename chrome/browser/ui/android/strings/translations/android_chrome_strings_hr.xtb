@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">Prikaži zaporku</translation>
 <translation id="363596933471559332">Automatski se prijavite na web-lokacije pomoću spremljenih vjerodajnica. Kada je ta značajka isključena, tražit će se potvrda prije svakog prijavljivanja na web-lokaciju.</translation>
 <translation id="3658159451045945436">Vraćanjem na zadano briše se povijest uštede podataka, uključujući popis posjećenih web-lokacija.</translation>
-<translation id="3682730288090679318">Omogućite tu postavku kako bi se web-lokacijama automatski blokiralo postavljanje upita za prikazivanje obavijesti. Ako web-lokacija zahtijeva obavijesti, pri dnu stranice prikazivat će se traka s informacijama.</translation>
+<translation id="3682730288090679318">Omogućite tu postavku kako bi se automatski blokirao upit za prikaz obavijesti web-lokacije. Ako web-lokacija zatraži prikaz obavijesti, pri dnu stranice prikazat će se traka s informacijama.</translation>
 <translation id="3692944402865947621">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo jer lokacija pohrane nije dostupna.</translation>
 <translation id="3714981814255182093">Otvaranje Trake za traženje</translation>
 <translation id="3716182511346448902">Ova stranica upotrebljava previše memorije, pa ju je Chrome pauzirao.</translation>
@@ -542,7 +542,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5048398596102334565">Dopuštanje pristupa senzorima kretanja za web-lokacije (preporučeno)</translation>
 <translation id="5063480226653192405">Upotreba</translation>
 <translation id="5087580092889165836">Dodaj karticu</translation>
-<translation id="5096950519211870196">Web-lokacijama će biti blokirano postavljanje upita za prikazivanje obavijesti. Ako web-lokacija zahtijeva obavijesti, pri dnu stranice prikazivat će se traka s informacijama.</translation>
+<translation id="5096950519211870196">Web-lokacije neće moći postavljati upite za prikazivanje obavijesti. Ako web-lokacija zatraži prikaz obavijesti, pri dnu stranice prikazat će se traka s informacijama.</translation>
 <translation id="5100237604440890931">Sažeto – kliknite za proširivanje.</translation>
 <translation id="510275257476243843">Još 1 sat</translation>
 <translation id="5123685120097942451">Anonimna kartica</translation>

@@ -5,13 +5,14 @@
   dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false,
                            flatten: true});
 
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker.js')}');
     window.worker.onmessage = function(event) { };
     window.worker.postMessage(1);
   `);
   testRunner.log('Started worker');
-  const sessionId = (await dp.Target.onceAttachedToTarget()).params.sessionId;
+  const sessionId = (await attachedPromise).params.sessionId;
   const childSession = session.createChild(sessionId);
   testRunner.log('Worker created');
   testRunner.log('didConnectToWorker');

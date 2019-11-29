@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
+#include "third_party/blink/renderer/modules/payments/payment_address_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_response.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"

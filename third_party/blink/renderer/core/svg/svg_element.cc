@@ -112,7 +112,7 @@ SVGElementRareData* SVGElement::EnsureSVGRareData() {
 }
 
 bool SVGElement::IsOutermostSVGSVGElement() const {
-  if (!IsSVGSVGElement(*this))
+  if (!IsA<SVGSVGElement>(*this))
     return false;
 
   // Element may not be in the document, pretend we're outermost for viewport(),
@@ -155,7 +155,7 @@ String SVGElement::title() const {
   // According to spec, we should not return titles when hovering over root
   // <svg> elements imported as a standalone document(those <title> elements
   // are the title of the document, not a tooltip) so we instantly return.
-  if (IsSVGSVGElement(*this) && this == GetDocument().documentElement())
+  if (IsA<SVGSVGElement>(*this) && this == GetDocument().documentElement())
     return String();
 
   if (InUseShadowTree()) {
@@ -479,7 +479,7 @@ void SVGElement::UpdateRelativeLengthsInformation(
   }
 
   // Register root SVG elements for top level viewport change notifications.
-  if (auto* svg = ToSVGSVGElementOrNull(*client_element)) {
+  if (auto* svg = DynamicTo<SVGSVGElement>(*client_element)) {
     SVGDocumentExtensions& svg_extensions = GetDocument().AccessSVGExtensions();
     if (client_element->HasRelativeLengths())
       svg_extensions.AddSVGRootWithRelativeLengthDescendents(svg);
@@ -520,8 +520,8 @@ void SVGElement::InvalidateRelativeLengthClients(
 SVGSVGElement* SVGElement::ownerSVGElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (IsSVGSVGElement(*n))
-      return ToSVGSVGElement(n);
+    if (auto* svg_svg_element = DynamicTo<SVGSVGElement>(n))
+      return svg_svg_element;
 
     n = n->ParentOrShadowHostNode();
   }
@@ -535,7 +535,8 @@ SVGElement* SVGElement::viewportElement() const {
   // work otherwhise.
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (IsSVGSVGElement(*n) || IsSVGImageElement(*n) || IsSVGSymbolElement(*n))
+    if (IsA<SVGSVGElement>(*n) || IsSVGImageElement(*n) ||
+        IsSVGSymbolElement(*n))
       return To<SVGElement>(n);
 
     n = n->ParentOrShadowHostNode();
@@ -825,7 +826,7 @@ static bool HasLoadListener(Element* element) {
 bool SVGElement::SendSVGLoadEventIfPossible() {
   if (!HaveLoadedRequiredResources())
     return false;
-  if ((IsStructurallyExternal() || IsSVGSVGElement(*this)) &&
+  if ((IsStructurallyExternal() || IsA<SVGSVGElement>(*this)) &&
       HasLoadListener(this))
     DispatchEvent(*Event::Create(event_type_names::kLoad));
   return true;

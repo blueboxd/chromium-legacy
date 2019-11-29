@@ -1080,7 +1080,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                       if (host) {
                         host->container_host()->SetControllerRegistration(
                             nullptr, false /* notify_controllerchange */);
-                        host->UpdateUrls(GURL(), GURL(), base::nullopt);
+                        host->container_host()->UpdateUrls(GURL(), GURL(),
+                                                           base::nullopt);
                       }
                     },
                     // Unretained() is safe because the handle owns the core,

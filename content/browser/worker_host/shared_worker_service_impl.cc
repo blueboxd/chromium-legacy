@@ -165,6 +165,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     DestroyHost(host);
   }
 
+  // Could not find an existing SharedWorkerHost to reuse. Create a new one.
+
   // Get a storage domain.
   SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance) {
@@ -183,13 +185,15 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       constructor_origin, info->content_security_policy,
       info->content_security_policy_type, info->creation_address_space,
       creation_context_type);
-  CreateWorker(instance, std::move(outside_fetch_client_settings_object),
-               std::move(client), client_process_id, frame_id, storage_domain,
-               message_port, std::move(blob_url_loader_factory));
+  host = CreateWorker(instance, std::move(outside_fetch_client_settings_object),
+                      client_process_id, frame_id, storage_domain, message_port,
+                      std::move(blob_url_loader_factory));
+  host->AddClient(std::move(client), client_process_id, frame_id, message_port);
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(host);
 
   worker_hosts_.erase(worker_hosts_.find(host));
 }
@@ -247,39 +251,38 @@ void SharedWorkerServiceImpl::NotifyClientRemoved(
   }
 }
 
-void SharedWorkerServiceImpl::CreateWorker(
+SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
     const SharedWorkerInstance& instance,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-    int client_process_id,
-    int frame_id,
+    int creator_process_id,
+    int creator_frame_id,
     const std::string& storage_domain,
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!IsShuttingDown(RenderProcessHost::FromID(client_process_id)));
+  DCHECK(!IsShuttingDown(RenderProcessHost::FromID(creator_process_id)));
   DCHECK(!blob_url_loader_factory || instance.url().SchemeIsBlob());
 
   // Create the host. We need to do this even before starting the worker,
   // because we are about to bounce to the IO thread. If another ConnectToWorker
   // request arrives in the meantime, it finds and reuses the host instead of
   // creating a new host and therefore new SharedWorker thread.
-  auto host =
-      std::make_unique<SharedWorkerHost>(this, instance, client_process_id);
-  auto weak_host = host->AsWeakPtr();
-  worker_hosts_.insert(std::move(host));
+  auto insertion_result = worker_hosts_.insert(
+      std::make_unique<SharedWorkerHost>(this, instance, creator_process_id));
+  DCHECK(insertion_result.second);
+  SharedWorkerHost* host = insertion_result.first->get();
 
   auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
-      appcache_service_.get(), weak_host->worker_process_id());
+      appcache_service_.get(), host->worker_process_id());
   base::WeakPtr<AppCacheHost> appcache_host =
       appcache_handle->host()->GetWeakPtr();
-  weak_host->SetAppCacheHandle(std::move(appcache_handle));
+  host->SetAppCacheHandle(std::move(appcache_handle));
 
   auto service_worker_handle = std::make_unique<ServiceWorkerNavigationHandle>(
       storage_partition_->GetServiceWorkerContext());
   auto* service_worker_handle_raw = service_worker_handle.get();
-  weak_host->SetServiceWorkerHandle(std::move(service_worker_handle));
+  host->SetServiceWorkerHandle(std::move(service_worker_handle));
 
   // Fetch classic shared worker script with "same-origin" credentials mode.
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
@@ -288,31 +291,35 @@ void SharedWorkerServiceImpl::CreateWorker(
   // credentials mode specified by WorkerOptions for module script.
   const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
 
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(weak_host->worker_process_id(), frame_id);
-  url::Origin origin(render_frame_host->frame_tree_node()->current_origin());
+  RenderFrameHostImpl* creator_render_frame_host =
+      RenderFrameHostImpl::FromID(creator_process_id, creator_frame_id);
+  url::Origin origin(
+      creator_render_frame_host->frame_tree_node()->current_origin());
 
+  base::WeakPtr<SharedWorkerHost> weak_host = host->AsWeakPtr();
   WorkerScriptFetchInitiator::Start(
-      weak_host->worker_process_id(), weak_host->instance().url(),
-      render_frame_host, weak_host->instance().constructor_origin(),
+      host->worker_process_id(), host->instance().url(),
+      creator_render_frame_host, host->instance().constructor_origin(),
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, std::move(appcache_host),
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain,
-      base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
+      base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                      weak_factory_.GetWeakPtr(), instance, weak_host,
-                     std::move(client), client_process_id, frame_id,
                      message_port));
+
+  // Ensures that WorkerScriptFetchInitiator::Start() doesn't synchronously
+  // destroy the SharedWorkerHost.
+  DCHECK(weak_host);
+
+  return host;
 }
 
-void SharedWorkerServiceImpl::DidCreateScriptLoader(
+void SharedWorkerServiceImpl::StartWorker(
     const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
-    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-    int process_id,
-    int frame_id,
     const blink::MessagePortChannel& message_port,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -320,38 +327,7 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host,
-    bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // If the script fetcher fails to load shared worker's main script, notify the
-  // client of the failure and abort shared worker startup.
-  if (!success) {
-    ScriptLoadFailed(std::move(client));
-    return;
-  }
-
-  // TODO(https://crbug.com/986188): Check if the main script's final response
-  // URL is commitable.
-
-  StartWorker(instance, std::move(host), std::move(client), process_id,
-              frame_id, message_port, std::move(subresource_loader_factories),
-              std::move(main_script_load_params), std::move(controller),
-              std::move(controller_service_worker_object_host));
-}
-
-void SharedWorkerServiceImpl::StartWorker(
-    const SharedWorkerInstance& instance,
-    base::WeakPtr<SharedWorkerHost> host,
-    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-    int client_process_id,
-    int frame_id,
-    const blink::MessagePortChannel& message_port,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories,
-    blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    blink::mojom::ControllerServiceWorkerInfoPtr controller,
-    base::WeakPtr<ServiceWorkerObjectHost>
-        controller_service_worker_object_host) {
+    bool did_fetch_worker_script) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The host may already be gone if something forcibly terminated the worker
@@ -359,27 +335,35 @@ void SharedWorkerServiceImpl::StartWorker(
   if (!host)
     return;
 
-  RenderProcessHost* worker_process_host =
-      RenderProcessHost::FromID(host->worker_process_id());
+  // If the script fetcher failed to load the shared worker's main script,
+  // terminate the worker.
+  if (!did_fetch_worker_script) {
+    DestroyHost(host.get());
+    return;
+  }
+
   // If the target process is shutting down, then just drop this request and
   // terminate the worker. This also means clients that were still waiting for
   // the shared worker to start will fail.
+  RenderProcessHost* worker_process_host =
+      RenderProcessHost::FromID(host->worker_process_id());
   if (!worker_process_host || IsShuttingDown(worker_process_host)) {
     DestroyHost(host.get());
     return;
   }
 
-  // Also drop this request if |client|'s render frame host no longer exists and
-  // the worker has no other clients. This is possible if the frame was deleted
-  // between the CreateWorker() and DidCreateScriptLoader() calls. This avoids
-  // starting a shared worker and immediately stopping it because its sole
-  // client is already being torn down and avoids sending a OnClientAdded()
-  // notification for a frame that is already destroyed.
-  if (!RenderFrameHost::FromID(client_process_id, frame_id) &&
-      !host->HasClients()) {
+  // Also drop this request if the worker has no clients. This is possible if
+  // the frame that caused this worker to be created was deleted between the
+  // CreateWorker() and StartWorker() calls. Doing so avoids starting a shared
+  // worker and immediately stopping it because its sole client is already being
+  // torn down.
+  if (!host->HasClients()) {
     DestroyHost(host.get());
     return;
   }
+
+  // TODO(https://crbug.com/986188): Check if the main script's final response
+  // URL is committable.
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
@@ -389,7 +373,6 @@ void SharedWorkerServiceImpl::StartWorker(
   host->Start(std::move(factory), std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),
               std::move(controller_service_worker_object_host));
-  host->AddClient(std::move(client), client_process_id, frame_id, message_port);
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(

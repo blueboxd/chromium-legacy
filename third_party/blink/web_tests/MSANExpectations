@@ -354,3 +354,5 @@ crbug.com/856601 [ Linux ] virtual/controls-refresh/color/color-picker-manual-co
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.html [ Pass Timeout ]
 
 # Note to sheriffs: Timeouts about "idlharness" or "interfaces" are usually crbug.com/856601.
+crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/compression/compression-stream.tentative.any.serviceworker.html [ Pass Timeout ]

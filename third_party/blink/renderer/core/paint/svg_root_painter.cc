@@ -46,7 +46,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
 
   // An empty viewBox also disables rendering.
   // (http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute)
-  SVGSVGElement* svg = ToSVGSVGElement(layout_svg_root_.GetNode());
+  auto* svg = To<SVGSVGElement>(layout_svg_root_.GetNode());
   DCHECK(svg);
   if (svg->HasEmptyViewBox())
     return;

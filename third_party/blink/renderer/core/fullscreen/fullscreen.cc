@@ -296,7 +296,7 @@ bool FullscreenElementReady(const Element& element,
 bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
   // |pending|'s namespace is the HTML namespace or |pending| is an SVG svg or
   // MathML math element. Note: MathML is not supported.
-  if (!pending.IsHTMLElement() && !IsSVGSVGElement(pending))
+  if (!pending.IsHTMLElement() && !IsA<SVGSVGElement>(pending))
     return false;
 
   // |pending| is not a dialog element.

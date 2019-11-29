@@ -353,7 +353,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
   EXPECT_FALSE(provider_host_->container_host()->controller());
-  EXPECT_EQ(registration_.get(), provider_host_->MatchRegistration());
+  EXPECT_EQ(registration_.get(),
+            provider_host_->container_host()->MatchRegistration());
 }
 
 // Test to not regress crbug/414118.

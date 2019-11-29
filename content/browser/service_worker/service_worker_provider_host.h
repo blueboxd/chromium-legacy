@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -110,8 +109,7 @@ class ServiceWorkerVersion;
 //
 // TODO(https://crbug.com/931087): Rename this to ServiceWorkerHost.
 class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public ServiceWorkerRegistration::Listener,
-      public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
+    : public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
       public blink::mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
@@ -173,13 +171,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const;
 
-  // For service worker clients. Sets |url_|, |site_for_cookies_| and
-  // |top_frame_origin_| and updates the client uuid if it's a cross-origin
-  // transition.
-  void UpdateUrls(const GURL& url,
-                  const GURL& site_for_cookies,
-                  const base::Optional<url::Origin>& top_frame_origin);
-
   // TODO(https://crbug.com/931087): Remove these functions in favor of the
   // equivalent functions on ServiceWorkerContainerHost.
   blink::mojom::ServiceWorkerProviderType provider_type() const;
@@ -198,23 +189,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
-
-  // For service worker clients. The host keeps track of all the prospective
-  // longest-matching registrations, in order to resolve .ready or respond to
-  // claim() attempts.
-  //
-  // This is subtle: it doesn't keep all registrations (e.g., from storage) in
-  // memory, but just the ones that are possibly the longest-matching one. The
-  // best match from storage is added at load time. That match can't uninstall
-  // while this host is a controllee, so all the other stored registrations can
-  // be ignored. Only a newly installed registration can claim it, and new
-  // installing registrations are added as matches.
-  void AddMatchingRegistration(ServiceWorkerRegistration* registration);
-  void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
-
-  // An optimized implementation of [[Match Service Worker Registration]]
-  // for current document.
-  ServiceWorkerRegistration* MatchRegistration() const;
 
   // For service worker clients. Called when |version| is the active worker upon
   // the main resource request for this client. Remembers |version| as needing
@@ -259,30 +233,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           container_remote,
       scoped_refptr<ServiceWorkerVersion> running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
-
-  // ServiceWorkerRegistration::Listener overrides.
-  // TODO(https://crbug.com/931087): Move these overrides to
-  // ServiceWorkerContainerHost.
-  void OnVersionAttributesChanged(
-      ServiceWorkerRegistration* registration,
-      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-      const ServiceWorkerRegistrationInfo& info) override;
-  void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
-  void OnRegistrationFinishedUninstalling(
-      ServiceWorkerRegistration* registration) override;
-  void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
-
-  // Syncs matching registrations with live registrations.
-  void SyncMatchingRegistrations();
-
-#if DCHECK_IS_ON()
-  bool IsMatchingRegistration(ServiceWorkerRegistration* registration) const;
-#endif  // DCHECK_IS_ON()
-
-  // Discards all references to matching registrations.
-  void RemoveAllMatchingRegistrations();
-
-  void ReturnRegistrationForReadyIfNeeded();
 
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
@@ -330,7 +280,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsValidGetRegistrationMessage(const GURL& client_url,
                                      std::string* out_error) const;
   bool IsValidGetRegistrationsMessage(std::string* out_error) const;
-  bool IsValidGetRegistrationForReadyMessage(std::string* out_error) const;
 
   // service_manager::mojom::InterfaceProvider:
   // For service worker execution contexts.
@@ -360,24 +309,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int provider_id_;
 
   int worker_process_id_ = ChildProcessHost::kInvalidUniqueID;
-
-  // Keyed by registration scope URL length.
-  using ServiceWorkerRegistrationMap =
-      std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // Contains all living registrations whose scope this document's URL
-  // starts with, used for .ready and claim(). It is empty if
-  // IsContextSecureForServiceWorker() is false. See also
-  // AddMatchingRegistration().
-  ServiceWorkerRegistrationMap matching_registrations_;
-
-  // The ready() promise is only allowed to be created once.
-  // |get_ready_callback_| has three states:
-  // 1. |get_ready_callback_| is null when ready() has not yet been called.
-  // 2. |*get_ready_callback_| is a valid OnceCallback after ready() has been
-  //    called and the callback has not yet been run.
-  // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
-  //    been run.
-  std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.

@@ -125,7 +125,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 
   void CommitChange() override {
     DCHECK(ContextElement());
-    ToSVGSVGElement(ContextElement())->UpdateUserTransform();
+    To<SVGSVGElement>(ContextElement())->UpdateUserTransform();
   }
 };
 

@@ -391,10 +391,12 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
       provider_host_ = CreateProviderHostForWindow(
           helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
           helper_->context()->AsWeakPtr(), &provider_endpoints_);
-      provider_host_->UpdateUrls(request->url, request->url,
+      ServiceWorkerContainerHost* container_host =
+          provider_host_->container_host();
+      container_host->UpdateUrls(request->url, request->url,
                                  url::Origin::Create(request->url));
-      provider_host_->AddMatchingRegistration(registration_.get());
-      provider_host_->container_host()->SetControllerRegistration(
+      container_host->AddMatchingRegistration(registration_.get());
+      container_host->SetControllerRegistration(
           registration_, /*notify_controllerchange=*/false);
     }
 
@@ -514,9 +516,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   provider_host_ = CreateProviderHostForWindow(
       helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
       helper_->context()->AsWeakPtr(), &provider_endpoints_);
-  provider_host_->UpdateUrls(GURL("https://example.com/"),
-                             GURL("https://example.com/"),
-                             url::Origin::Create(GURL("https://example.com/")));
+  provider_host_->container_host()->UpdateUrls(
+      GURL("https://example.com/"), GURL("https://example.com/"),
+      url::Origin::Create(GURL("https://example.com/")));
 
   // Perform the request.
   StartRequest(CreateRequest());

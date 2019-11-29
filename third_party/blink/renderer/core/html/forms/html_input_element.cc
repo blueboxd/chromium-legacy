@@ -1199,6 +1199,7 @@ void HTMLInputElement::UpdateView() {
 }
 
 ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
+  UseCounter::Count(GetDocument(), WebFeature::kInputElementValueAsDateGetter);
   // TODO(crbug.com/988343): InputType::ValueAsDate() should return
   // base::Optional<base::Time>.
   double date = input_type_->ValueAsDate();
@@ -1211,6 +1212,7 @@ ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
 void HTMLInputElement::setValueAsDate(ScriptState* script_state,
                                       const ScriptValue& value,
                                       ExceptionState& exception_state) {
+  UseCounter::Count(GetDocument(), WebFeature::kInputElementValueAsDateSetter);
   base::Optional<base::Time> date =
       NativeValueTraits<IDLDateOrNull>::NativeValue(
           script_state->GetIsolate(), value.V8Value(), exception_state);

@@ -82,10 +82,20 @@ Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 
 ## Goma
 
-For now, one needs to use the rbe backend, not the (default) borg backend:
+For now, one needs to use the rbe backend, not the borg backend
+(default for Googlers).
+Use cloud backend instead.
 
+```shell
     goma_auth.py login
-    GOMA_SERVER_HOST=rbe-staging1.endpoints.cxx-compiler-service.cloud.goog goma_ctl.py ensure_start
+
+    # GOMA_* are needed for Googlers only
+    export GOMA_SERVER_HOST=goma.chromium.org
+    export GOMA_RPC_EXTRA_PARAMS=?rbe
+
+    goma_ctl.py ensure_start
+```
+
 
 ## Copying and running chrome
 

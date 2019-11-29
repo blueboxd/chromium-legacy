@@ -177,8 +177,9 @@ class ServiceWorkerVersionTest : public testing::Test {
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         controllee_process_id, true /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoint);
-    host->UpdateUrls(registration_->scope(), registration_->scope(),
-                     url::Origin::Create(registration_->scope()));
+    host->container_host()->UpdateUrls(
+        registration_->scope(), registration_->scope(),
+        url::Origin::Create(registration_->scope()));
     host->container_host()->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
     EXPECT_TRUE(version_->HasControllee());
@@ -427,8 +428,9 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       helper_->context()->AsWeakPtr(), &remote_endpoint);
-  host->UpdateUrls(registration_->scope(), registration_->scope(),
-                   url::Origin::Create(registration_->scope()));
+  host->container_host()->UpdateUrls(
+      registration_->scope(), registration_->scope(),
+      url::Origin::Create(registration_->scope()));
   host->container_host()->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_TRUE(host->container_host()->controller());
@@ -1194,8 +1196,9 @@ TEST_F(ServiceWorkerVersionTest,
   base::WeakPtr<ServiceWorkerProviderHost> host =
       std::move(host_and_info->host);
   remote_endpoint.BindForWindow(std::move(host_and_info->info));
-  host->UpdateUrls(registration_->scope(), registration_->scope(),
-                   url::Origin::Create(registration_->scope()));
+  host->container_host()->UpdateUrls(
+      registration_->scope(), registration_->scope(),
+      url::Origin::Create(registration_->scope()));
   host->container_host()->SetControllerRegistration(
       registration_, false /* notify_controllerchange */);
   EXPECT_TRUE(version_->HasControllee());

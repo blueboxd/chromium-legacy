@@ -27,8 +27,9 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
 
   // Spec: An empty viewBox on the <svg> element disables rendering.
   DCHECK(layout_svg_container_.GetElement());
-  if (IsSVGSVGElement(*layout_svg_container_.GetElement()) &&
-      ToSVGSVGElement(*layout_svg_container_.GetElement()).HasEmptyViewBox())
+  auto* svg_svg_element =
+      DynamicTo<SVGSVGElement>(*layout_svg_container_.GetElement());
+  if (svg_svg_element && svg_svg_element->HasEmptyViewBox())
     return;
 
   PaintInfo paint_info_before_filtering(paint_info);

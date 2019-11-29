@@ -186,16 +186,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         helper_->mock_render_process_id(), false /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
     ServiceWorkerProviderHost* host_raw = host.get();
-    host->UpdateUrls(document_url, document_url,
-                     url::Origin::Create(document_url));
+    host->container_host()->UpdateUrls(document_url, document_url,
+                                       url::Origin::Create(document_url));
     return host_raw;
   }
 
   void FinishNavigation(ServiceWorkerContainerHost* container_host) {
     // In production code, the loader/request handler does this.
     const GURL url("https://www.example.com/page");
-    container_host->provider_host()->UpdateUrls(url, url,
-                                                url::Origin::Create(url));
+    container_host->UpdateUrls(url, url, url::Origin::Create(url));
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
@@ -329,7 +328,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), remote_endpoint);
-    host->UpdateUrls(document_url, site_for_cookies, top_frame_origin);
+    host->container_host()->UpdateUrls(document_url, site_for_cookies,
+                                       top_frame_origin);
     return host.get();
   }
 
@@ -354,35 +354,36 @@ class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
 };
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
-  ServiceWorkerProviderHost* provider_host1 =
+  ServiceWorkerProviderHost* provider_host =
       CreateProviderHost(GURL("https://www.example.com/example1.html"));
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
 
   // Match registration should return the longest matching one.
-  ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
-  provider_host1->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
+  ASSERT_EQ(registration2_, container_host->MatchRegistration());
+  container_host->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(registration1_, container_host->MatchRegistration());
 
   // Should return nullptr after removing all matching registrations.
-  provider_host1->RemoveMatchingRegistration(registration1_.get());
-  ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
+  container_host->RemoveMatchingRegistration(registration1_.get());
+  ASSERT_EQ(nullptr, container_host->MatchRegistration());
 
   // SetDocumentUrl sets all of matching registrations
-  provider_host1->UpdateUrls(
+  container_host->UpdateUrls(
       GURL("https://www.example.com/example1"),
       GURL("https://www.example.com/example1"),
       url::Origin::Create(GURL("https://www.example.com/example1")));
-  ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
-  provider_host1->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
+  ASSERT_EQ(registration2_, container_host->MatchRegistration());
+  container_host->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(registration1_, container_host->MatchRegistration());
 
   // SetDocumentUrl with another origin also updates matching registrations
-  provider_host1->UpdateUrls(
+  container_host->UpdateUrls(
       GURL("https://other.example.com/example"),
       GURL("https://other.example.com/example"),
       url::Origin::Create(GURL("https://other.example.com/example")));
-  ASSERT_EQ(registration3_, provider_host1->MatchRegistration());
-  provider_host1->RemoveMatchingRegistration(registration3_.get());
-  ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
+  ASSERT_EQ(registration3_, container_host->MatchRegistration());
+  container_host->RemoveMatchingRegistration(registration3_.get());
+  ASSERT_EQ(nullptr, container_host->MatchRegistration());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
@@ -393,21 +394,21 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
           GURL("https://www.example.com/example1.html"));
 
   // Insecure document URL.
-  provider_host_secure_parent->UpdateUrls(
+  provider_host_secure_parent->container_host()->UpdateUrls(
       GURL("http://host"), GURL("http://host"),
       url::Origin::Create(GURL("http://host")));
   EXPECT_FALSE(provider_host_secure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
-  provider_host_insecure_parent->UpdateUrls(
+  provider_host_insecure_parent->container_host()->UpdateUrls(
       GURL("https://host"), GURL("https://host"),
       url::Origin::Create(GURL("https://host")));
   EXPECT_FALSE(provider_host_insecure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
-  provider_host_secure_parent->UpdateUrls(
+  provider_host_secure_parent->container_host()->UpdateUrls(
       GURL("https://host"), GURL("https://host"),
       url::Origin::Create(GURL("https://host")));
   EXPECT_TRUE(provider_host_secure_parent->container_host()
@@ -419,12 +420,12 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   EXPECT_TRUE(url.is_valid());
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  provider_host_secure_parent->UpdateUrls(url, url, origin);
+  provider_host_secure_parent->container_host()->UpdateUrls(url, url, origin);
   EXPECT_TRUE(provider_host_secure_parent->container_host()
                   ->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
-  provider_host_insecure_parent->UpdateUrls(url, url, origin);
+  provider_host_insecure_parent->container_host()->UpdateUrls(url, url, origin);
   EXPECT_FALSE(provider_host_insecure_parent->container_host()
                    ->IsContextSecureForServiceWorker());
 }
@@ -439,7 +440,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
-  host->UpdateUrls(url2, url2, url::Origin::Create(url2));
+  container_host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_EQ(uuid1, container_host->client_uuid());
@@ -458,7 +459,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
-  host->UpdateUrls(url2, url2, url::Origin::Create(url2));
+  container_host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_NE(uuid1, container_host->client_uuid());
@@ -569,7 +570,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // time navigation started. The SetController IPC should have been sent.
   EXPECT_TRUE(container_host->controller());
   EXPECT_TRUE(container->was_set_controller_called());
-  EXPECT_EQ(registration1_.get(), host->MatchRegistration());
+  EXPECT_EQ(registration1_.get(), container_host->MatchRegistration());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
@@ -606,7 +607,7 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   EXPECT_FALSE(container->was_set_controller_called());
   // However, the host should know the registration is its best match, for
   // .ready and claim().
-  EXPECT_EQ(registration1_.get(), host->MatchRegistration());
+  EXPECT_EQ(registration1_.get(), container_host->MatchRegistration());
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
@@ -974,7 +975,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
         ServiceWorkerProviderHost::CreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
-    host->UpdateUrls(url, url, url::Origin::Create(url));
+    host->container_host()->UpdateUrls(url, url, url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->container_host()->CompleteWebWorkerPreparation(
         network::mojom::CrossOriginEmbedderPolicy::kNone);
@@ -1063,8 +1064,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   EXPECT_FALSE(container_host->is_response_committed());
   EXPECT_FALSE(container_host->is_execution_ready());
 
-  container_host->provider_host()->UpdateUrls(url, url,
-                                              url::Origin::Create(url));
+  container_host->UpdateUrls(url, url, url::Origin::Create(url));
   container_host->CompleteWebWorkerPreparation(
       network::mojom::CrossOriginEmbedderPolicy::kNone);
 

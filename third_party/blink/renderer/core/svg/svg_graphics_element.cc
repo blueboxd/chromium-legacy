@@ -53,7 +53,7 @@ void SVGGraphicsElement::Trace(blink::Visitor* visitor) {
 }
 
 static bool IsViewportElement(const Element& element) {
-  return (IsSVGSVGElement(element) || IsSVGSymbolElement(element) ||
+  return (IsA<SVGSVGElement>(element) || IsSVGSymbolElement(element) ||
           IsSVGForeignObjectElement(element) || IsSVGImageElement(element));
 }
 

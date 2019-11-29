@@ -5,13 +5,14 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 
 #include "base/guid.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 
@@ -97,6 +98,28 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
 
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
+
+  RemoveAllMatchingRegistrations();
+}
+
+void ServiceWorkerContainerHost::GetRegistrationForReady(
+    GetRegistrationForReadyCallback callback) {
+  std::string error_message;
+  if (!IsValidGetRegistrationForReadyMessage(&error_message)) {
+    mojo::ReportBadMessage(error_message);
+    // ReportBadMessage() will kill the renderer process, but Mojo complains if
+    // the callback is not run. Just run it with nonsense arguments.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerContainerHost::GetRegistrationForReady",
+      this);
+  DCHECK(!get_ready_callback_);
+  get_ready_callback_ =
+      std::make_unique<GetRegistrationForReadyCallback>(std::move(callback));
+  ReturnRegistrationForReadyIfNeeded();
 }
 
 void ServiceWorkerContainerHost::EnsureControllerServiceWorker(
@@ -110,6 +133,31 @@ void ServiceWorkerContainerHost::EnsureControllerServiceWorker(
       PurposeToEventType(purpose),
       base::BindOnce(&ServiceWorkerContainerHost::StartControllerComplete,
                      weak_factory_.GetWeakPtr(), std::move(receiver)));
+}
+
+void ServiceWorkerContainerHost::OnVersionAttributesChanged(
+    ServiceWorkerRegistration* registration,
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
+    const ServiceWorkerRegistrationInfo& /* info */) {
+  if (!get_ready_callback_ || get_ready_callback_->is_null())
+    return;
+  if (changed_mask->active && registration->active_version()) {
+    // Wait until the state change so we don't send the get for ready
+    // registration complete message before set version attributes message.
+    registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(
+        &ServiceWorkerContainerHost::ReturnRegistrationForReadyIfNeeded,
+        weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ServiceWorkerContainerHost::OnRegistrationFailed(
+    ServiceWorkerRegistration* registration) {
+  RemoveMatchingRegistration(registration);
+}
+
+void ServiceWorkerContainerHost::OnRegistrationFinishedUninstalling(
+    ServiceWorkerRegistration* registration) {
+  RemoveMatchingRegistration(registration);
 }
 
 void ServiceWorkerContainerHost::OnSkippedWaiting(
@@ -138,6 +186,44 @@ void ServiceWorkerContainerHost::OnSkippedWaiting(
   }
 
   UpdateController(true /* notify_controllerchange */);
+}
+
+void ServiceWorkerContainerHost::AddMatchingRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(ServiceWorkerUtils::ScopeMatches(registration->scope(), url_));
+  if (!IsContextSecureForServiceWorker())
+    return;
+  size_t key = registration->scope().spec().size();
+  if (base::Contains(matching_registrations_, key))
+    return;
+  registration->AddListener(this);
+  matching_registrations_[key] = registration;
+  ReturnRegistrationForReadyIfNeeded();
+}
+
+void ServiceWorkerContainerHost::RemoveMatchingRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK_NE(controller_registration_, registration);
+#if DCHECK_IS_ON()
+  DCHECK(IsMatchingRegistration(registration));
+#endif  // DCHECK_IS_ON()
+
+  registration->RemoveListener(this);
+  size_t key = registration->scope().spec().size();
+  matching_registrations_.erase(key);
+}
+
+ServiceWorkerRegistration* ServiceWorkerContainerHost::MatchRegistration()
+    const {
+  auto it = matching_registrations_.rbegin();
+  for (; it != matching_registrations_.rend(); ++it) {
+    if (it->second->is_uninstalled())
+      continue;
+    if (it->second->is_uninstalling())
+      return nullptr;
+    return it->second.get();
+  }
+  return nullptr;
 }
 
 void ServiceWorkerContainerHost::PostMessageToClient(
@@ -394,6 +480,11 @@ void ServiceWorkerContainerHost::UpdateUrls(
   site_for_cookies_ = site_for_cookies;
   top_frame_origin_ = top_frame_origin;
 
+  // The remaining parts of this function don't make sense for service worker
+  // execution contexts. Return early.
+  if (IsContainerForServiceWorker())
+    return;
+
   if (previous_url != url) {
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
@@ -431,6 +522,8 @@ void ServiceWorkerContainerHost::UpdateUrls(
     if (context_)
       context_->RegisterContainerHostByClientID(client_uuid(), this);
   }
+
+  SyncMatchingRegistrations();
 }
 
 void ServiceWorkerContainerHost::SetControllerRegistration(
@@ -442,10 +535,7 @@ void ServiceWorkerContainerHost::SetControllerRegistration(
     CHECK(IsContextSecureForServiceWorker());
     DCHECK(controller_registration->active_version());
 #if DCHECK_IS_ON()
-    // TODO(https://crbug.com/931087): Enable this check again after
-    // IsMatchingRegistration() is moved from ServiceWorkerProviderHost to
-    // ServiceWorkerContainerHost.
-    // DCHECK(IsMatchingRegistration(controller_registration.get()));
+    DCHECK(IsMatchingRegistration(controller_registration.get()));
 #endif  // DCHECK_IS_ON()
   }
 
@@ -676,6 +766,66 @@ void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
   is_in_back_forward_cache_ = false;
 }
 
+void ServiceWorkerContainerHost::SyncMatchingRegistrations() {
+  DCHECK(!controller_registration_);
+
+  RemoveAllMatchingRegistrations();
+  if (!context_)
+    return;
+  const auto& registrations = context_->GetLiveRegistrations();
+  for (const auto& key_registration : registrations) {
+    ServiceWorkerRegistration* registration = key_registration.second;
+    if (!registration->is_uninstalled() &&
+        ServiceWorkerUtils::ScopeMatches(registration->scope(), url_)) {
+      AddMatchingRegistration(registration);
+    }
+  }
+}
+
+#if DCHECK_IS_ON()
+bool ServiceWorkerContainerHost::IsMatchingRegistration(
+    ServiceWorkerRegistration* registration) const {
+  std::string spec = registration->scope().spec();
+  size_t key = spec.size();
+
+  auto iter = matching_registrations_.find(key);
+  if (iter == matching_registrations_.end())
+    return false;
+  if (iter->second.get() != registration)
+    return false;
+  return true;
+}
+#endif  // DCHECK_IS_ON()
+
+void ServiceWorkerContainerHost::RemoveAllMatchingRegistrations() {
+  DCHECK(!controller_registration_);
+  for (const auto& it : matching_registrations_) {
+    ServiceWorkerRegistration* registration = it.second.get();
+    registration->RemoveListener(this);
+  }
+  matching_registrations_.clear();
+}
+
+void ServiceWorkerContainerHost::ReturnRegistrationForReadyIfNeeded() {
+  if (!get_ready_callback_ || get_ready_callback_->is_null())
+    return;
+  ServiceWorkerRegistration* registration = MatchRegistration();
+  if (!registration || !registration->active_version())
+    return;
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerContainerHost::GetRegistrationForReady",
+                         this, "Registration ID", registration->id());
+  if (!context_) {
+    // Here no need to run or destroy |get_ready_callback_|, which will destroy
+    // together with |receiver_| when |this| destroys.
+    return;
+  }
+
+  std::move(*get_ready_callback_)
+      .Run(CreateServiceWorkerRegistrationObjectInfo(
+          scoped_refptr<ServiceWorkerRegistration>(registration)));
+}
+
 void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
   std::vector<ExecutionReadyCallback> callbacks;
   execution_ready_callbacks_.swap(callbacks);
@@ -757,6 +907,22 @@ void ServiceWorkerContainerHost::StartControllerComplete(
     controller_->controller()->Clone(std::move(receiver),
                                      cross_origin_embedder_policy_.value());
   }
+}
+
+bool ServiceWorkerContainerHost::IsValidGetRegistrationForReadyMessage(
+    std::string* out_error) const {
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+    *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
+    return false;
+  }
+
+  if (get_ready_callback_) {
+    *out_error =
+        ServiceWorkerConsts::kBadMessageGetRegistrationForReadyDuplicated;
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

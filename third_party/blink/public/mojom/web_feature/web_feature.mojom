@@ -2486,6 +2486,10 @@ enum WebFeature {
   kMessageEventSharedArrayBufferSameAgentCluster = 3105,
   kMessageEventSharedArrayBufferDifferentAgentCluster = 3106,
   kCacheStorageCodeCacheHint = 3107,
+  kV8Metadata_ModificationTime_AttributeGetter = 3108,
+  kV8RTCLegacyStatsReport_Timestamp_AttributeGetter = 3109,
+  kInputElementValueAsDateGetter = 3110,
+  kInputElementValueAsDateSetter = 3111,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

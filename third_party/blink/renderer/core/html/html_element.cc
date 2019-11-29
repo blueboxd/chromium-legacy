@@ -122,7 +122,7 @@ bool IsEditable(const Node& node) {
     return false;
   if (html_element)
     return true;
-  if (IsSVGSVGElement(node))
+  if (IsA<SVGSVGElement>(node))
     return true;
   auto* element = DynamicTo<Element>(node);
   if (element && element->HasTagName(mathml_names::kMathTag))

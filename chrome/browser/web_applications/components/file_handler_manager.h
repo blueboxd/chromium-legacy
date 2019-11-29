@@ -33,6 +33,16 @@ class FileHandlerManager : public AppRegistrarObserver,
                      AppShortcutManager* shortcut_manager);
   void Start();
 
+  // Enables and registers OS specific file handlers for OSs that need them.
+  // Currently on Chrome OS, file handlers are enabled and registered as long as
+  // the app is installed.
+  void EnableAndRegisterOsFileHandlers(const AppId& app_id);
+
+  // Disables file handlers for all OSs and unregisters OS specific file
+  // handlers for OSs that need them. Currently on Chrome OS, file handlers are
+  // enabled and registered as long as the app is installed.
+  void DisableAndUnregisterOsFileHandlers(const AppId& app_id);
+
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
   // handlers.
   // Note: The lifetime of the file handlers are tied to the app they belong to.

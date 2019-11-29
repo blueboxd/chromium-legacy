@@ -310,15 +310,17 @@ TEST_F(SharedWorkerServiceImplTest, WebContentsDestroyed) {
                         kUrl, "name", &client, &local_port);
 
   // Now asynchronously destroy |web_contents| so that the startup sequence at
-  // least reaches SharedWorkerServiceImpl::DidCreateScriptLoader().
-  // reaches at least the DidCreateScriptLoader()
+  // least reaches SharedWorkerServiceImpl::StartWorker().
   base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                      std::move(web_contents));
 
   base::RunLoop().RunUntilIdle();
 
-  // The shared worker creation request was dropped.
-  EXPECT_TRUE(!client.CheckReceivedOnCreated());
+  // The shared worker creation failed, which means the client never connects
+  // and receives OnScriptLoadFailed().
+  EXPECT_TRUE(client.CheckReceivedOnCreated());
+  EXPECT_FALSE(client.CheckReceivedOnConnected({}));
+  EXPECT_TRUE(client.CheckReceivedOnScriptLoadFailed());
 }
 
 TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {

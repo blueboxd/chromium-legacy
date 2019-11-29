@@ -281,7 +281,7 @@ void ServiceWorkerRegistration::ClaimClients() {
     //     Registration algorithm passing client’s creation URL as the argument.
     //  4. If registration is not the service worker's containing service worker
     //     registration, continue."
-    if (host->MatchRegistration() != this)
+    if (host->container_host()->MatchRegistration() != this)
       continue;
 
     // The remaining steps are performed here:

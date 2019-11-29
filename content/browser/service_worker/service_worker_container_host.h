@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
+#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -31,10 +32,10 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerObjectHost;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 class WebContents;
+struct ServiceWorkerRegistrationInfo;
 
 // ServiceWorkerContainerHost has a 1:1 correspondence to
 // blink::ServiceWorkerContainer (i.e., navigator.serviceWorker) in the renderer
@@ -57,10 +58,17 @@ class WebContents;
 //
 // TODO(https://crbug.com/931087): Add comments about the thread where this
 // class lives, and add sequence checkers to ensure it.
-class CONTENT_EXPORT ServiceWorkerContainerHost {
+class CONTENT_EXPORT ServiceWorkerContainerHost final
+    : public ServiceWorkerRegistration::Listener {
  public:
   using ExecutionReadyCallback = base::OnceClosure;
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
+
+  // TODO(https://crbug.com/931087): Remove this alias after
+  // ServiceWorkerContainerHost inherits
+  // blink::mojom::ServiceWorkerContainerHost.
+  using GetRegistrationForReadyCallback =
+      blink::mojom::ServiceWorkerContainerHost::GetRegistrationForReadyCallback;
 
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
@@ -72,7 +80,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
           container_remote,
       ServiceWorkerProviderHost* provider_host,
       base::WeakPtr<ServiceWorkerContextCore> context);
-  ~ServiceWorkerContainerHost();
+  virtual ~ServiceWorkerContainerHost();
 
   ServiceWorkerContainerHost(const ServiceWorkerContainerHost& other) = delete;
   ServiceWorkerContainerHost& operator=(
@@ -81,15 +89,39 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   ServiceWorkerContainerHost& operator=(ServiceWorkerContainerHost&& other) =
       delete;
 
-  // TODO(https://crbug.com/931087): EnsureControllerServiceWorker should be
-  // implemented as blink::mojom::ServiceWorkerContainerHost override.
+  // TODO(https://crbug.com/931087): These should be implemented as
+  // blink::mojom::ServiceWorkerContainerHost override.
+  void GetRegistrationForReady(GetRegistrationForReadyCallback callback);
   void EnsureControllerServiceWorker(
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose);
 
-  // TODO(https://crbug.com/931087): OnSkippedWaiting should be implemented as
-  // ServiceWorkerRegistration::Listener override.
-  void OnSkippedWaiting(ServiceWorkerRegistration* registration);
+  // ServiceWorkerRegistration::Listener overrides.
+  void OnVersionAttributesChanged(
+      ServiceWorkerRegistration* registration,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
+      const ServiceWorkerRegistrationInfo& info) override;
+  void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
+  void OnRegistrationFinishedUninstalling(
+      ServiceWorkerRegistration* registration) override;
+  void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
+
+  // For service worker clients. The host keeps track of all the prospective
+  // longest-matching registrations, in order to resolve .ready or respond to
+  // claim() attempts.
+  //
+  // This is subtle: it doesn't keep all registrations (e.g., from storage) in
+  // memory, but just the ones that are possibly the longest-matching one. The
+  // best match from storage is added at load time. That match can't uninstall
+  // while this host is a controllee, so all the other stored registrations can
+  // be ignored. Only a newly installed registration can claim it, and new
+  // installing registrations are added as matches.
+  void AddMatchingRegistration(ServiceWorkerRegistration* registration);
+  void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
+
+  // An optimized implementation of [[Match Service Worker Registration]]
+  // for the current client.
+  ServiceWorkerRegistration* MatchRegistration() const;
 
   // Dispatches message event to the client (document, dedicated worker when
   // PlzDedicatedWorker is enabled, or shared worker).
@@ -171,8 +203,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   void CompleteWebWorkerPreparation(
       network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
-  // For service worker clients. Sets |url_|, |site_for_cookies_| and
-  // |top_frame_origin_|.
+  // Sets |url_|, |site_for_cookies_| and |top_frame_origin_|. For service
+  // worker clients, updates the client uuid if it's a cross-origin transition.
   void UpdateUrls(const GURL& url,
                   const GURL& site_for_cookies,
                   const base::Optional<url::Origin>& top_frame_origin);
@@ -373,6 +405,18 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
+  // Syncs matching registrations with live registrations.
+  void SyncMatchingRegistrations();
+
+#if DCHECK_IS_ON()
+  bool IsMatchingRegistration(ServiceWorkerRegistration* registration) const;
+#endif  // DCHECK_IS_ON()
+
+  // Discards all references to matching registrations.
+  void RemoveAllMatchingRegistrations();
+
+  void ReturnRegistrationForReadyIfNeeded();
+
   void RunExecutionReadyCallbacks();
 
   // Sets the controller to |controller_registration_->active_version()| or null
@@ -390,6 +434,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   void StartControllerComplete(
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::ServiceWorkerStatusCode status);
+
+  bool IsValidGetRegistrationForReadyMessage(std::string* out_error) const;
 
   const blink::mojom::ServiceWorkerProviderType type_;
 
@@ -455,6 +501,15 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // kExecutionReady.
   std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
+  // The ready() promise is only allowed to be created once.
+  // |get_ready_callback_| has three states:
+  // 1. |get_ready_callback_| is null when ready() has not yet been called.
+  // 2. |*get_ready_callback_| is a valid OnceCallback after ready() has been
+  //    called and the callback has not yet been run.
+  // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
+  //    been run.
+  std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
+
   // For service worker clients. The controller service worker (i.e.,
   // ServiceWorkerContainer#controller) and its registration. The controller is
   // typically the same as the registration's active version, but during
@@ -464,6 +519,15 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // the container host's controller is updated to match it.
   scoped_refptr<ServiceWorkerVersion> controller_;
   scoped_refptr<ServiceWorkerRegistration> controller_registration_;
+
+  // Keyed by registration scope URL length.
+  using ServiceWorkerRegistrationMap =
+      std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
+  // Contains all living registrations whose scope this client's URL starts
+  // with, used for .ready and claim(). It is empty if
+  // IsContextSecureForServiceWorker() is false. See also
+  // AddMatchingRegistration().
+  ServiceWorkerRegistrationMap matching_registrations_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

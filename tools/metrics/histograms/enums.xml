@@ -25604,6 +25604,10 @@ Called by update_net_error_codes.py.-->
   <int value="3105" label="MessageEventSharedArrayBufferSameAgentCluster"/>
   <int value="3106" label="MessageEventSharedArrayBufferDifferentAgentCluster"/>
   <int value="3107" label="CacheStorageCodeCacheHint"/>
+  <int value="3108" label="V8Metadata_ModificationTime_AttributeGetter"/>
+  <int value="3109" label="V8RTCLegacyStatsReport_Timestamp_AttributeGetter"/>
+  <int value="3110" label="InputElementValueAsDateGetter"/>
+  <int value="3111" label="InputElementValueAsDateSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

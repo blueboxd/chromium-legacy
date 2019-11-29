@@ -29,41 +29,49 @@ void FileHandlerManager::Start() {
   shortcut_observer_.Add(shortcut_manager_);
 }
 
-void FileHandlerManager::OnWebAppUninstalled(const AppId& installed_app_id) {
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
-      ShouldRegisterFileHandlersWithOs()) {
-    UnregisterFileHandlersWithOs(installed_app_id, profile_);
-  }
-}
-
-void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
-      ShouldRegisterFileHandlersWithOs()) {
-    UnregisterFileHandlersWithOs(app_id, profile_);
-  }
-}
-
-void FileHandlerManager::OnAppRegistrarDestroyed() {
-  registrar_observer_.RemoveAll();
-}
-
-void FileHandlerManager::OnShortcutsCreated(const AppId& installed_app_id) {
+void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
   if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
       !ShouldRegisterFileHandlersWithOs()) {
     return;
   }
 
-  std::string app_name = registrar_->GetAppShortName(installed_app_id);
+  std::string app_name = registrar_->GetAppShortName(app_id);
   const std::vector<apps::FileHandlerInfo>* file_handlers =
-      GetFileHandlers(installed_app_id);
+      GetFileHandlers(app_id);
   if (!file_handlers)
     return;
   std::set<std::string> file_extensions =
       GetFileExtensionsFromFileHandlers(*file_handlers);
   std::set<std::string> mime_types =
       GetMimeTypesFromFileHandlers(*file_handlers);
-  RegisterFileHandlersWithOs(installed_app_id, app_name, profile_,
-                             file_extensions, mime_types);
+  RegisterFileHandlersWithOs(app_id, app_name, profile(), file_extensions,
+                             mime_types);
+}
+
+void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
+    const AppId& app_id) {
+  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
+      !ShouldRegisterFileHandlersWithOs()) {
+    return;
+  }
+
+  UnregisterFileHandlersWithOs(app_id, profile());
+}
+
+void FileHandlerManager::OnWebAppUninstalled(const AppId& app_id) {
+  DisableAndUnregisterOsFileHandlers(app_id);
+}
+
+void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
+  DisableAndUnregisterOsFileHandlers(app_id);
+}
+
+void FileHandlerManager::OnAppRegistrarDestroyed() {
+  registrar_observer_.RemoveAll();
+}
+
+void FileHandlerManager::OnShortcutsCreated(const AppId& app_id) {
+  EnableAndRegisterOsFileHandlers(app_id);
 }
 
 void FileHandlerManager::OnShortcutManagerDestroyed() {

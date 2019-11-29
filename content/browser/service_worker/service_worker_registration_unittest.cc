@@ -430,7 +430,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         context()->AsWeakPtr(), &remote_endpoint_);
     DCHECK(remote_endpoint_.client_receiver()->is_valid());
     DCHECK(remote_endpoint_.host_remote()->is_bound());
-    host_->UpdateUrls(kUrl, kUrl, url::Origin::Create(kUrl));
+    host_->container_host()->UpdateUrls(kUrl, kUrl, url::Origin::Create(kUrl));
     host_->container_host()->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
 
@@ -938,8 +938,8 @@ class ServiceWorkerRegistrationObjectHostTest
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         context()->AsWeakPtr(), &remote_endpoint);
-    host->UpdateUrls(document_url, document_url,
-                     url::Origin::Create(document_url));
+    host->container_host()->UpdateUrls(document_url, document_url,
+                                       url::Origin::Create(document_url));
     if (out_host)
       *out_host = host;
     return remote_endpoint;
@@ -1059,7 +1059,8 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
 
   ASSERT_TRUE(bad_messages_.empty());
   GURL url("https://does.not.exist/");
-  provider_host->UpdateUrls(url, url, url::Origin::Create(url));
+  provider_host->container_host()->UpdateUrls(url, url,
+                                              url::Origin::Create(url));
   CallUpdate(registration_host.get(), /*out_error_msg=*/nullptr);
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -1167,7 +1168,8 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  host->UpdateUrls(kScope, kScope, url::Origin::Create(kScope));
+  host->container_host()->UpdateUrls(kScope, kScope,
+                                     url::Origin::Create(kScope));
   version->AddControllee(host->container_host());
 
   // Initially set |self_update_delay| to zero.
@@ -1231,7 +1233,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   registration_host.Bind(std::move(info->host_remote));
 
   ASSERT_TRUE(bad_messages_.empty());
-  provider_host->UpdateUrls(
+  provider_host->container_host()->UpdateUrls(
       GURL("https://does.not.exist/"), GURL("https://does.not.exist/"),
       url::Origin::Create(GURL("https://does.not.exist/")));
   CallUnregister(registration_host.get());

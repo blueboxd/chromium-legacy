@@ -230,7 +230,7 @@ bool ServiceWorkerControlleeRequestHandler::InitializeProvider(
       nullptr,
       /*notify_controllerchange=*/false);
   stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  provider_host_->UpdateUrls(
+  provider_host_->container_host()->UpdateUrls(
       stripped_url_, tentative_resource_request.site_for_cookies,
       tentative_resource_request.trusted_params
           ? tentative_resource_request.trusted_params->network_isolation_key
@@ -267,7 +267,8 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     CompleteWithoutLoader();
     return;
   }
-  provider_host_->AddMatchingRegistration(registration.get());
+  ServiceWorkerContainerHost* container_host = provider_host_->container_host();
+  container_host->AddMatchingRegistration(registration.get());
 
   if (!context_) {
     TRACE_EVENT_WITH_FLOW1(
@@ -281,7 +282,6 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   bool allow_service_worker = false;
-  ServiceWorkerContainerHost* container_host = provider_host_->container_host();
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(

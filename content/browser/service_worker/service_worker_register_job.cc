@@ -804,7 +804,7 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
                                           host->container_host()->url())) {
       continue;
     }
-    host->AddMatchingRegistration(registration);
+    host->container_host()->AddMatchingRegistration(registration);
   }
 }
 

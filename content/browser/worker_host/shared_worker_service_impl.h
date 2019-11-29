@@ -95,23 +95,19 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class TestSharedWorkerServiceImpl;
   FRIEND_TEST_ALL_PREFIXES(NetworkServiceRestartBrowserTest, SharedWorker);
 
-  // Creates a new worker in the client's renderer process.
-  void CreateWorker(
+  // Creates a new worker in the creator's renderer process.
+  SharedWorkerHost* CreateWorker(
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-      int client_process_id,
-      int frame_id,
+      int creator_process_id,
+      int creator_frame_id,
       const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
-  void DidCreateScriptLoader(
+  void StartWorker(
       const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
-      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-      int client_process_id,
-      int frame_id,
       const blink::MessagePortChannel& message_port,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
@@ -120,19 +116,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       base::WeakPtr<ServiceWorkerObjectHost>
           controller_service_worker_object_host,
       bool success);
-  void StartWorker(
-      const SharedWorkerInstance& instance,
-      base::WeakPtr<SharedWorkerHost> host,
-      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-      int client_process_id,
-      int frame_id,
-      const blink::MessagePortChannel& message_port,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
-      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      blink::mojom::ControllerServiceWorkerInfoPtr controller,
-      base::WeakPtr<ServiceWorkerObjectHost>
-          controller_service_worker_object_host);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindMatchingSharedWorkerHost(

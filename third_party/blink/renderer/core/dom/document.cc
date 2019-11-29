@@ -2155,7 +2155,7 @@ void Document::DispatchDidReceiveTitle() {
 void Document::setTitle(const String& title) {
   // Title set by JavaScript -- overrides any title elements.
   Element* element = documentElement();
-  if (IsSVGSVGElement(element)) {
+  if (IsA<SVGSVGElement>(element)) {
     if (!title_element_) {
       title_element_ = MakeGarbageCollected<SVGTitleElement>(*this);
       element->InsertBefore(title_element_.Get(), element->firstChild());
@@ -2179,7 +2179,7 @@ void Document::SetTitleElement(Element* title_element) {
   // If the root element is an svg element in the SVG namespace, then let value
   // be the child text content of the first title element in the SVG namespace
   // that is a child of the root element.
-  if (IsSVGSVGElement(documentElement())) {
+  if (IsA<SVGSVGElement>(documentElement())) {
     title_element_ = Traversal<SVGTitleElement>::FirstChild(*documentElement());
   } else {
     if (title_element_ && title_element_ != title_element)
@@ -6554,7 +6554,7 @@ SVGDocumentExtensions& Document::AccessSVGExtensions() {
 }
 
 bool Document::HasSVGRootNode() const {
-  return IsSVGSVGElement(documentElement());
+  return IsA<SVGSVGElement>(documentElement());
 }
 
 HTMLCollection* Document::images() {
@@ -6737,7 +6737,7 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
   HTMLLinkElement* first_element = nullptr;
   if (head()) {
     first_element = Traversal<HTMLLinkElement>::FirstChild(*head());
-  } else if (IsSVGDocument() && IsSVGSVGElement(documentElement())) {
+  } else if (IsSVGDocument() && IsA<SVGSVGElement>(documentElement())) {
     first_element = Traversal<HTMLLinkElement>::FirstWithin(*documentElement());
     find_next_candidate = &Traversal<HTMLLinkElement>::Next;
   }

@@ -23,8 +23,6 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
   USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 
  public:
-  static FetchManager* Create(ExecutionContext*);
-
   explicit FetchManager(ExecutionContext*);
 
   ScriptPromise Fetch(ScriptState*,

@@ -6,10 +6,10 @@
 <translation id="1015730422737071372">Veita frekari upplýsingar</translation>
 <translation id="1021110881106174305">Gild greiðslukort</translation>
 <translation id="1032854598605920125">Snúa réttsælis</translation>
-<translation id="1035334672863811645">skrá þig inn á Chrome</translation>
 <translation id="1036348656032585052">Slökkva</translation>
 <translation id="1038842779957582377">óþekkt heiti</translation>
 <translation id="1039626062703039346">Chrome getur hjálpað þér að vernda Google reikninginn þinn og breyta aðgangsorðinu. Þetta lætur Google vita af þessu svæði.</translation>
+<translation id="1044897699341250361">Það sem þetta þýðir</translation>
 <translation id="1050038467049342496">Lokaðu öðrum forritum</translation>
 <translation id="1055184225775184556">Aft&amp;urkalla nýtt bókamerki</translation>
 <translation id="1056898198331236512">Viðvörun</translation>
@@ -185,6 +185,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="1745880797583122200">Vafranum þínum er stjórnað</translation>
 <translation id="17513872634828108">Opnir flipar</translation>
 <translation id="1753706481035618306">Síðunúmer</translation>
+<translation id="175838129965056221">Chrome greindi að verið er að fylgjast með tengingunni þinni</translation>
 <translation id="1763864636252898013">Þessi þjónn gat ekki sannað að hann væri <ph name="DOMAIN" />; stýrikerfi tækisins treystir ekki öryggisvottorðinu hans. Þetta kann að orsakast af vanstillingu eða tölvuþrjóti sem komist hefur inn í tenginguna.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prófaðu að keyra Windows-netgreiningu<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,6 +254,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2119867082804433120">Gat neðst til hægri</translation>
 <translation id="2129079103035905234">Hreyfiskynjarar</translation>
 <translation id="2130448033692577677">Hugsanlega er ekki hægt að nota sniðmátin sem þú tilgreindir vegna þess að reglan DnsOverHttpsMode hefur ekki verið valin.</translation>
+<translation id="2131277894177304644">Chromium greindi að verið er að fylgjast með tengingunni þinni</translation>
 <translation id="213826338245044447">Bókamerki fartækis</translation>
 <translation id="214556005048008348">Hætta við greiðslu</translation>
 <translation id="2147827593068025794">Samstilling í bakgrunni</translation>
@@ -300,6 +302,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2354001756790975382">Önnur bókamerki</translation>
 <translation id="2354430244986887761">Örugg vefnotkun Google <ph name="BEGIN_LINK" />fann skaðleg forrit<ph name="END_LINK" /> á <ph name="SITE" /> nýlega.</translation>
 <translation id="2355395290879513365">Tölvuþrjótar gætu séð myndirnar sem þú skoðar á þessu vefsvæði og gabbað þig með því að breyta þeim.</translation>
+<translation id="2355474962185559967">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chromium mælir með því að þú farir á <ph name="WEBSITE_1" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="2356070529366658676">Spyrja</translation>
 <translation id="2359629602545592467">Margir</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
@@ -403,6 +406,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2799020568854403057">Vefsvæðið framundan inniheldur skaðleg forrit</translation>
 <translation id="2799223571221894425">Endurræsa</translation>
 <translation id="2803306138276472711">Örugg vefnotkun Google <ph name="BEGIN_LINK" />greindi nýlega spilliforrit<ph name="END_LINK" /> á <ph name="SITE" />. Vefsvæði sem allajafna eru örugg smitast stundum af spilliforritum.</translation>
+<translation id="281585763351939989">Chromium greindi að verið er að fylgjast með tengingunni þinni.</translation>
 <translation id="2824775600643448204">Veffanga- og leitarstika</translation>
 <translation id="2826760142808435982">Tengingin er dulkóðuð og sannvottuð með <ph name="CIPHER" /> og <ph name="KX" /> er notað sem aðferð til að skiptast á lyklum.</translation>
 <translation id="2835170189407361413">Hreinsa eyðublað</translation>
@@ -447,6 +451,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3024663005179499861">Röng gerð stefnu</translation>
 <translation id="3037605927509011580">Rækallinn!</translation>
 <translation id="3041612393474885105">Upplýsingar um vottorð</translation>
+<translation id="304755864151473094">Hvers vegna þetta gerist</translation>
 <translation id="3057676462092457419">DnsOverHttps-stillingin <ph name="SECURE_DNS_MODE_SECURE" /> er ekki studd enn sem komið er. Stillt var á <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (umslag)</translation>
 <translation id="3061707000357573562">Plástraþjónusta</translation>
@@ -486,6 +491,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3228969707346345236">Þýðing mistókst vegna þess að síðan er nú þegar á <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Upplýsingar um útgáfu tækisins þíns og vafrans</translation>
 <translation id="323107829343500871">Sláðu inn CVC-númerið fyrir <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chromium mælir með því að þú farir á <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="3234666976984236645">Greina alltaf mikilvægt efni á þessu vefsvæði</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> lítur svipað út og <ph name="SUGGESTED_DOMAIN" />. Stundum herma tölvuþrjótar eftir vefsvæðum með því að nota svipaðar vefslóðir.</translation>
 <translation id="3270847123878663523">Aft&amp;urkalla nýja röðun</translation>
@@ -518,6 +524,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="342781501876943858">Chromium mælir með því að þú endurstillir aðgangsorðið þitt ef þú notaðir það einnig á öðrum síðum.</translation>
 <translation id="3428151540071562330">Eitt eða fleiri af URI sniðmátum netþjóns DnsOverHttpsTemplates eru ógild og verða ekki notuð.</translation>
 <translation id="3431636764301398940">Vista kortið á þessu tæki</translation>
+<translation id="3438790640050632698">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chrome mælir með því að þú farir á <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Eigandi þessa tækis hefur slökkt á risaeðluleiknum.</translation>
 <translation id="3447884698081792621">Sýna vottorð (gefið út af <ph name="ISSUER" />)</translation>
@@ -532,6 +539,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3495081129428749620">Finna á síðunni
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Þessi regla er hunsuð vegna þess að önnur regla úr sama regluhópi hefur meiri forgang.</translation>
+<translation id="3525469219100414032">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chrome mælir með því að þú farir á <ph name="WEBSITE_1" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="3528171143076753409">Vottorði þjónsins er ekki treyst.</translation>
 <translation id="3528485271872257980">Dökkbrúnn</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Að minnsta kosti eitt atriði í samstilltum tækjum}=1{Eitt atriði (og fleiri í samstilltum tækjum)}one{# atriði (og fleiri í samstilltum tækjum)}other{# atriði (og fleiri í samstilltum tækjum)}}</translation>
@@ -610,6 +618,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3858027520442213535">Uppfæra dagsetningu og tíma</translation>
 <translation id="3884278016824448484">Ósamræmi í auðkenni tækis</translation>
 <translation id="3885155851504623709">Sókn</translation>
+<translation id="388632593194507180">Eftirlit greindist</translation>
 <translation id="3890664840433101773">Bæta við netfangi</translation>
 <translation id="3897092660631435901">Valmynd</translation>
 <translation id="3901925938762663762">Kortið er útrunnið</translation>
@@ -711,6 +720,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="4305817255990598646">Skipta</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Útiloka (sjálfgefið)</translation>
+<translation id="4318312030194671742">Samsetningarþjónusta málunarforskoðunar</translation>
 <translation id="4318566738941496689">Heiti tækisins og vistfang netkerfis</translation>
 <translation id="4325863107915753736">Mistókst að finna greinina</translation>
 <translation id="4326324639298822553">Athugaðu gildistímann og reyndu aftur</translation>
@@ -727,6 +737,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="4372948949327679948">Búist var við <ph name="VALUE_TYPE" /> gildi.</translation>
 <translation id="4377125064752653719">Þú reyndir að ná í <ph name="DOMAIN" /> en vottorðið sem þjónninn gaf upp hefur verið afturkallað af útgefandanum. Þetta merkir að alls ekki skuli treysta öryggisskilríkjum þjónsins. Þú gætir verið að eiga samskipti við tölvuþrjót.</translation>
 <translation id="4378154925671717803">Sími</translation>
+<translation id="437847259914972036">Verið er að fylgjast með aðgerðum þínum á vefnum og upplýsingum sem þú slærð inn og efni gæti breyst án vitundar þinnar.</translation>
 <translation id="4398334096870680409">Því miður er þessi eiginleiki ekki í boði í tækinu þínu.</translation>
 <translation id="4406896451731180161">leitarniðurstöður</translation>
 <translation id="4408413947728134509">Fótspor <ph name="NUM_COOKIES" /></translation>
@@ -925,7 +936,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="536296301121032821">Mistókst að vista reglustillingar</translation>
 <translation id="5371425731340848620">Uppfæra kort</translation>
 <translation id="5377026284221673050">„Klukkan er á eftir“, „Klukkan þín er á undan“ eða „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
-<translation id="5384855140246857529">Skráðu þig inn og kveiktu á samstillingu til að nota kortin þín í öllum tækjum.</translation>
 <translation id="5386426401304769735">Vottorðskeðja þessa vefsvæðis inniheldur vottorð sem var undirritað með SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Saumur hægra megin</translation>
@@ -963,6 +973,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="5565735124758917034">Virkt</translation>
 <translation id="5570825185877910964">Vernda reikning</translation>
 <translation id="5571083550517324815">Ekki er hægt að sækja frá þessu heimilisfangi. Veldu annað heimilisfang.</translation>
+<translation id="5572009199897554128">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chromium mælir með því að þú farir á <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="5580958916614886209">Athugaðu mánuð gildistímans og reyndu aftur</translation>
 <translation id="5586446728396275693">Engin vistuð vistföng</translation>
 <translation id="5595485650161345191">Breyta heimilisfangi</translation>
@@ -1145,6 +1156,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="6446163441502663861">Kahu (umslag)</translation>
 <translation id="6446608382365791566">Bæta við fleiri upplýsingum</translation>
 <translation id="6447842834002726250">Fótspor</translation>
+<translation id="644931407731409778">PDF-skjalið inniheldur {COUNT,plural, =1{1 síðu}one{# síða}other{# síður}}</translation>
 <translation id="6451458296329894277">Staðfesta endursendingu eyðublaðs</translation>
 <translation id="6457206614190510200">Kjalhefting</translation>
 <translation id="6465306955648956876">Stjórna aðgangsorðum...</translation>
@@ -1163,6 +1175,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="6547208576736763147">Tvö göt vinstra megin</translation>
 <translation id="6554795675067793129">Reikningnum þínum er stjórnað af <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Endurgera</translation>
+<translation id="6559565319173126218">Chrome treystir ekki vottorði þessarar tengingar vegna þess að það er þekkt fyrir að vera notað til inngrips og eftirlits á netkerfum.</translation>
 <translation id="6569060085658103619">Þú ert að skoða viðbótarsíðu</translation>
 <translation id="6573200754375280815">Tvö göt hægra megin</translation>
 <translation id="6578796323535178455">C2 (umslag)</translation>
@@ -1196,6 +1209,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="6710594484020273272">&lt;Sláðu inn leitarorð&gt;</translation>
 <translation id="671076103358959139">Skráningarlykill:</translation>
 <translation id="6711464428925977395">Eitthvað amar að staðgengilsþjóninum, eða þá að slóðin er röng.</translation>
+<translation id="6721811549156553509">Eftirlitsaðili netkerfisins getur þóst vera vefsvæði sem þú ferð á og séð aðgerðir þínar og allar upplýsingar sem þú slærð inn (til dæmis aðgangsorð, skilaboð eða greiðslukortanúmer). Gættu varúðar þegar þú gerir eitthvað sem er viðkvæms eðlis á netinu, þar sem það verður sýnilegt þeim sem fylgist með, sem getur einnig breytt innihaldi síðna sem þú ferð á. Þetta felur einnig í sér aðgerðir í öðrum vöfrum og forritum sem nota internetið.</translation>
 <translation id="6738516213925468394">Gögnin þín voru dulkóðuð með <ph name="BEGIN_LINK" />aðgangsorði samstillingar<ph name="END_LINK" /> <ph name="TIME" />. Sláðu það inn til að hefja samstillingu.</translation>
 <translation id="674375294223700098">Óþekkt villa í vottorði þjóns.</translation>
 <translation id="6744009308914054259">Á meðan þú bíður eftir tengingu geturðu skoðað „Niðurhal“ til að lesa greinar án nettengingar.</translation>
@@ -1280,6 +1294,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /> um þetta vandamál.</translation>
 <translation id="7219179957768738017">Tengingin notar <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Í vinnslu</translation>
+<translation id="7239736667463137521">Chrome greindi að verið er að fylgjast með tengingunni þinni.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Vefsvæðið framundan inniheldur spilliforrit</translation>
 <translation id="724975217298816891">Sláðu inn gildistíma og CVC-númerið fyrir <ph name="CREDIT_CARD" /> til að uppfæra kortaupplýsingar. Greiðslukortaupplýsingum verður deilt með vefsvæðinu eftir að þú hefur staðfest.</translation>
@@ -1306,6 +1321,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7346048084945669753">Tengist:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Skipanalína</translation>
+<translation id="7353776484425559055">Chromium treystir ekki vottorði þessarar tengingar vegna þess að það er þekkt fyrir að vera notað til inngrips og eftirlits á netkerfum. Hugsanlega sérðu þessa villu vegna vottorðs sem þú settir upp í tækinu þínu. Þegar öruggum tengingum er komið á treystir Chromium vottorðum sem hafa verið sett upp staðbundið í tölvu eða fartæki notanda. Með því geta notendur keyrt verkfæri til að kanna og leita að vandamálum í tengingum við vefþróun eða til að grípa inn í og fylgjast með innri umferð innan fyrirtækja. Þegar þessi virkni er misnotuð til þess að grípa inn í umferð á hinu almenna interneti birtir Chromium viðvörun.</translation>
 <translation id="7372973238305370288">leitarniðurstaða</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Spilunarstýringar</translation>
@@ -1367,6 +1383,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7592362899630581445">Vottorð þjónsins brýtur heitistakmarkanir.</translation>
 <translation id="7598391785903975535">Minna en <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> getur ekki unnið úr þessari beiðni eins og er.</translation>
+<translation id="7599841999395223597">Chrome treystir ekki vottorði þessarar tengingar vegna þess að það er þekkt fyrir að vera notað til inngrips og eftirlits á netkerfum. Hugsanlega sérðu þessa villu vegna vottorðs sem þú settir upp í tækinu þínu. Þegar öruggum tengingum er komið á treystir Chrome vottorðum sem hafa verið sett upp staðbundið í tölvu eða fartæki notanda. Með því geta notendur keyrt verkfæri til að kanna og leita að vandamálum í tengingum við vefþróun eða til að grípa inn í og fylgjast með innri umferð innan fyrirtækja. Þegar þessi virkni er misnotuð til þess að grípa inn í umferð á hinu almenna interneti birtir Chrome viðvörun.</translation>
 <translation id="7600965453749440009">Þýða aldrei <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Gildið er utan sviðs <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Rennur út: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1586,7 +1603,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="8759274551635299824">Kortið er útrunnið</translation>
 <translation id="8761567432415473239">Örugg vefskoðun Google <ph name="BEGIN_LINK" />fann skaðleg forrit<ph name="END_LINK" /> á <ph name="SITE" /> nýlega.</translation>
 <translation id="8763927697961133303">USB-tæki</translation>
-<translation id="8768895707659403558">Til að nota kortin þín í öllum tækjum skaltu <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Endu&amp;rtaka eyðingu</translation>
 <translation id="8792621596287649091">Þú gætir glatað aðganginum að <ph name="ORG_NAME" /> reikningnum þínum eða orðið fyrir auðkennisstuldi. Chromium mælir með því að þú skiptir um aðgangsorð núna.</translation>
@@ -1684,6 +1700,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Þú gætir glatað aðganginum að Google reikningnum þínum. Chromium mælir með því að þú skiptir um aðgangsorð núna. Þú verður beðin(n) um að skrá þig inn.</translation>
 <translation id="939736085109172342">Ný mappa</translation>
+<translation id="940786960229275114">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chrome mælir með því að þú farir á <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og <ph name="WEBSITE_3" /> og breytir aðgangsorðinu þínu núna.</translation>
 <translation id="945855313015696284">Kannaðu upplýsingarnar hér að neðan og eyddu öllum ógildum kortum</translation>
 <translation id="950736567201356821">Þrjú göt efst</translation>
 <translation id="951104842009476243">Debetkort og fyrirframgreidd kort sem tekið er við</translation>

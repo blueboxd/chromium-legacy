@@ -497,8 +497,7 @@ AbortCallback SmbFileSystem::AddWatcher(
     bool recursive,
     bool persistent,
     storage::AsyncFileUtil::StatusCallback callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::NotificationCallback notification_callback) {
   // Watchers are not supported.
   NOTREACHED();
   std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);

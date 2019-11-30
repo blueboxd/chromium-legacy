@@ -1091,6 +1091,7 @@ test("content_browsertests") {
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
+    "//content/browser/resources/media:media_internals_resources_grit",
     "//content/child:for_content_tests",
     "//content/gpu",
     "//content/public/browser",

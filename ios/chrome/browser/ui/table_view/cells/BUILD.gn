@@ -61,7 +61,7 @@ source_set("cells") {
     "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
-    "//ios/third_party/material_components_ios:material_components_ios",
+    "//ios/third_party/material_components_ios",
     "//net",
     "//ui/base",
     "//url:url",

@@ -478,12 +478,12 @@ int CastBrowserMainParts::PreCreateThreads() {
           ->TakePrefService());
 
 #if defined(USE_AURA)
-  cast_browser_process_->SetCastScreen(std::make_unique<CastScreen>());
+  cast_screen_ = std::make_unique<CastScreen>();
+  cast_browser_process_->SetCastScreen(cast_screen_.get());
   DCHECK(!display::Screen::GetScreen());
-  display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
+  display::Screen::SetScreenInstance(cast_screen_.get());
   cast_browser_process_->SetDisplayConfigurator(
-      std::make_unique<CastDisplayConfigurator>(
-          cast_browser_process_->cast_screen()));
+      std::make_unique<CastDisplayConfigurator>(cast_screen_.get()));
 #endif  // defined(USE_AURA)
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
@@ -724,11 +724,15 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   // Android does not use native main MessageLoop.
   NOTREACHED();
 #else
-  window_manager_.reset();
-
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->cast_browser_metrics()->Finalize();
   cast_browser_process_.reset();
+
+  window_manager_.reset();
+#if defined(USE_AURA)
+  display::Screen::SetScreenInstance(nullptr);
+  cast_screen_.reset();
+#endif
 
 #if !defined(OS_FUCHSIA)
   DeregisterKillOnAlarm();

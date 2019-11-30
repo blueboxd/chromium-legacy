@@ -7,10 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,8 +24,25 @@
 namespace chromeos {
 namespace settings {
 
-KerberosAccountsHandler::KerberosAccountsHandler() = default;
+// static
+std::unique_ptr<KerberosAccountsHandler>
+KerberosAccountsHandler::CreateIfKerberosEnabled(Profile* profile) {
+  KerberosCredentialsManager* kerberos_credentials_manager =
+      KerberosCredentialsManagerFactory::GetExisting(profile);
+  if (!kerberos_credentials_manager ||
+      !kerberos_credentials_manager->IsKerberosEnabled())
+    return nullptr;
+  return base::WrapUnique(
+      new KerberosAccountsHandler(kerberos_credentials_manager));
+}
+
 KerberosAccountsHandler::~KerberosAccountsHandler() = default;
+
+KerberosAccountsHandler::KerberosAccountsHandler(
+    KerberosCredentialsManager* kerberos_credentials_manager)
+    : kerberos_credentials_manager_(kerberos_credentials_manager) {
+  DCHECK(kerberos_credentials_manager_);
+}
 
 void KerberosAccountsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -56,12 +76,12 @@ void KerberosAccountsHandler::HandleGetKerberosAccounts(
   CHECK_EQ(1U, args->GetSize());
   const std::string& callback_id = args->GetList()[0].GetString();
 
-  if (!KerberosCredentialsManager::Get().IsKerberosEnabled()) {
+  if (!kerberos_credentials_manager_->IsKerberosEnabled()) {
     ResolveJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
 
-  KerberosCredentialsManager::Get().ListAccounts(
+  kerberos_credentials_manager_->ListAccounts(
       base::BindOnce(&KerberosAccountsHandler::OnListAccounts,
                      weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -79,7 +99,7 @@ void KerberosAccountsHandler::OnListAccounts(
       skia_ticket_icon.GetRepresentation(1.0f).GetBitmap());
 
   const std::string& active_principal =
-      KerberosCredentialsManager::Get().GetActiveAccount();
+      kerberos_credentials_manager_->GetActiveAccount();
 
   for (int n = 0; n < response.accounts_size(); ++n) {
     const kerberos::Account& account = response.accounts(n);
@@ -125,13 +145,13 @@ void KerberosAccountsHandler::HandleAddKerberosAccount(
   const std::string& config = args->GetList()[4].GetString();
   const bool allow_existing = args->GetList()[5].GetBool();
 
-  if (!KerberosCredentialsManager::Get().IsKerberosEnabled()) {
+  if (!kerberos_credentials_manager_->IsKerberosEnabled()) {
     ResolveJavascriptCallback(base::Value(callback_id),
                               base::Value(kerberos::ERROR_KERBEROS_DISABLED));
     return;
   }
 
-  KerberosCredentialsManager::Get().AddAccountAndAuthenticate(
+  kerberos_credentials_manager_->AddAccountAndAuthenticate(
       principal_name, false /* is_managed */, password, remember_password,
       config, allow_existing,
       base::BindOnce(&KerberosAccountsHandler::OnAddAccountAndAuthenticate,
@@ -153,13 +173,13 @@ void KerberosAccountsHandler::HandleRemoveKerberosAccount(
   const std::string& callback_id = args->GetList()[0].GetString();
   const std::string& principal_name = args->GetList()[1].GetString();
 
-  if (!KerberosCredentialsManager::Get().IsKerberosEnabled()) {
+  if (!kerberos_credentials_manager_->IsKerberosEnabled()) {
     ResolveJavascriptCallback(base::Value(callback_id),
                               base::Value(kerberos::ERROR_KERBEROS_DISABLED));
     return;
   }
 
-  KerberosCredentialsManager::Get().RemoveAccount(
+  kerberos_credentials_manager_->RemoveAccount(
       principal_name, base::BindOnce(&KerberosAccountsHandler::OnRemoveAccount,
                                      weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -178,13 +198,13 @@ void KerberosAccountsHandler::HandleValidateKerberosConfig(
   const std::string& callback_id = args->GetList()[0].GetString();
   const std::string& krb5conf = args->GetList()[1].GetString();
 
-  if (!KerberosCredentialsManager::Get().IsKerberosEnabled()) {
+  if (!kerberos_credentials_manager_->IsKerberosEnabled()) {
     ResolveJavascriptCallback(base::Value(callback_id),
                               base::Value(kerberos::ERROR_KERBEROS_DISABLED));
     return;
   }
 
-  KerberosCredentialsManager::Get().ValidateConfig(
+  kerberos_credentials_manager_->ValidateConfig(
       krb5conf, base::BindOnce(&KerberosAccountsHandler::OnValidateConfig,
                                weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -212,11 +232,11 @@ void KerberosAccountsHandler::HandleSetAsActiveKerberosAccount(
   CHECK_EQ(1U, args->GetSize());
   const std::string& principal_name = args->GetList()[0].GetString();
 
-  KerberosCredentialsManager::Get().SetActiveAccount(principal_name);
+  kerberos_credentials_manager_->SetActiveAccount(principal_name);
 }
 
 void KerberosAccountsHandler::OnJavascriptAllowed() {
-  credentials_manager_observer_.Add(&KerberosCredentialsManager::Get());
+  credentials_manager_observer_.Add(kerberos_credentials_manager_);
 }
 
 void KerberosAccountsHandler::OnJavascriptDisallowed() {

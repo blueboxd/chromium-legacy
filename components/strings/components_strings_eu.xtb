@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Eman xehetasun gehiago</translation>
 <translation id="1021110881106174305">Onartzen diren txartelak</translation>
 <translation id="1032854598605920125">Biratu eskuinera</translation>
-<translation id="1035334672863811645">hasi saioa Chrome-n</translation>
 <translation id="1036348656032585052">Desaktibatu</translation>
 <translation id="1038842779957582377">izen ezezaguna</translation>
 <translation id="1039626062703039346">Google-ko kontua babesten eta pasahitza aldatzen lagun diezazuke Chrome-k. Webgune honen berri izango du Google-k.</translation>
@@ -755,7 +754,7 @@
 <translation id="4594403342090139922">&amp;Desegin ezabatzea</translation>
 <translation id="4597348597567598915">Tamaina: 8</translation>
 <translation id="4600854749408232102">C6/C5 (gutun-azala)</translation>
-<translation id="4613966523036881546">Google Chrome-k ez ditu jotzen fidagarritzat konexio honen ziurtagiriak, jakina baita sareak atzeman eta gainbegiratzeko erabiltzen direla.</translation>
+<translation id="4613966523036881546">Google Chrome-k ez du jotzen fidagarritzat konexio honen ziurtagiria, jakina baita sareak atzeman eta gainbegiratzeko erabiltzen dela.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> webguneak bere eskaera guztiei jatorri-gidalerro bat
     aplikatzeko eskatu du, baina ezin da aplikatu gidalerro hori une honetan.</translation>
 <translation id="464342062220857295">Bilaketa-eginbideak</translation>
@@ -914,7 +913,6 @@
 <translation id="536296301121032821">Ezin izan dira gorde gidalerroaren ezarpenak</translation>
 <translation id="5371425731340848620">Eguneratu txartela</translation>
 <translation id="5377026284221673050">"Erlojua atzeratuta duzu", "Erlojua aurreratuta duzu" edo "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Txartelak gailu guztietan erabiltzeko, hasi saioa eta aktibatu sinkronizazioa.</translation>
 <translation id="5386426401304769735">Webgune honen ziurtagiri-kateak SHA-1 bidez sinatutako ziurtagiri bat dauka.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Eskuineko ertza josita</translation>
@@ -1464,7 +1462,7 @@ Xehetasun gehiago:
 <translation id="8103161714697287722">Ordainketa-metodoa</translation>
 <translation id="8105368624971345109">Desaktibatu</translation>
 <translation id="8118489163946903409">Ordainketa-metodoa</translation>
-<translation id="8124023448510659215">Chromium-ek ez ditu jotzen fidagarritzat konexio honen ziurtagiriak, jakina baita sareak atzeman eta gainbegiratzeko erabiltzen direla.</translation>
+<translation id="8124023448510659215">Chromium-ek ez du jotzen fidagarritzat konexio honen ziurtagiria, jakina baita sareak atzeman eta gainbegiratzeko erabiltzen dela.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ez dago behar bezala instalatuta ordenagailuan edo sarean. Eskatu arazoa konpontzeko IKT saileko administratzaileari.</translation>
 <translation id="8131740175452115882">Berretsi</translation>
 <translation id="8149426793427495338">Inaktibo geratu da ordenagailua.</translation>
@@ -1574,7 +1572,6 @@ Xehetasun gehiago:
 <translation id="8759274551635299824">Iraungita dago txartela</translation>
 <translation id="8761567432415473239">Google-ren arakatze seguruak <ph name="BEGIN_LINK" />programa kaltegarriak aurkitu ditu<ph name="END_LINK" /> <ph name="SITE" /> webgunean.</translation>
 <translation id="8763927697961133303">USB bidezko gailua</translation>
-<translation id="8768895707659403558">Txartelak gailu guztietan erabiltzeko, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Berregin ezabatzea</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> konturako sarbidea gal zenezake, edo kontua lapur liezazukete. Pasahitza aldatzea gomendatzen dizu Chromium-ek.</translation>

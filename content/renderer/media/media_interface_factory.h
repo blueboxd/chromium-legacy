@@ -20,8 +20,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
-namespace service_manager {
-class InterfaceProvider;
+namespace blink {
+class BrowserInterfaceBrokerProxy;
 }
 
 namespace content {
@@ -33,7 +33,7 @@ class CONTENT_EXPORT MediaInterfaceFactory
     : public media::mojom::InterfaceFactory {
  public:
   explicit MediaInterfaceFactory(
-      service_manager::InterfaceProvider* remote_interfaces);
+      blink::BrowserInterfaceBrokerProxy* interface_broker);
   ~MediaInterfaceFactory() final;
 
   // media::mojom::InterfaceFactory implementation.
@@ -78,7 +78,7 @@ class CONTENT_EXPORT MediaInterfaceFactory
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
   void OnConnectionError();
 
-  service_manager::InterfaceProvider* remote_interfaces_;
+  blink::BrowserInterfaceBrokerProxy* interface_broker_;
   mojo::Remote<media::mojom::InterfaceFactory> media_interface_factory_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

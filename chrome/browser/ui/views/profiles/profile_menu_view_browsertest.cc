@@ -155,6 +155,7 @@ Profile* SetupProfilesForLock(Profile* signed_in) {
 
 }  // namespace
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 class ProfileMenuViewExtensionsTest
     : public SupportsTestDialog<extensions::ExtensionBrowserTest> {
  public:
@@ -266,6 +267,7 @@ class ProfileMenuViewExtensionsTest
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuViewExtensionsTest);
 };
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 // TODO(crbug.com/932818): Remove this class after
 // |kAutofillEnableToolbarStatusChip| is cleaned up. Otherwise we need it
 // because the toolbar is init-ed before each test is set up. Thus need to

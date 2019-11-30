@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
+#include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -43,14 +44,15 @@ class MODULES_EXPORT VideoTrackAdapter
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<MediaStreamVideoSource> media_stream_video_source);
 
-  // Register |track| to receive video frames in |frame_callback| with
-  // a resolution within the boundaries of the arguments, and settings
-  // updates in |settings_callback|.
-  // Must be called on the main render thread.
-  // |source_frame_rate| is used to calculate a prudent interval to check for
-  // passing frames and inform of the result via |on_muted_state_callback|.
+  // Register |track| to receive video frames in and |encoded_frame_callback|
+  // and in |frame_callback| with a resolution within the boundaries of the
+  // arguments, and settings updates in |settings_callback|. Must be called on
+  // the main render thread. |source_frame_rate| is used to calculate a prudent
+  // interval to check for passing frames and inform of the result via
+  // |on_muted_state_callback|.
   void AddTrack(const MediaStreamVideoTrack* track,
                 VideoCaptureDeliverFrameCB frame_callback,
+                EncodedVideoFrameCB encoded_frame_callback,
                 VideoTrackSettingsCallback settings_callback,
                 VideoTrackFormatCallback track_callback,
                 const VideoTrackAdapterSettings& settings);
@@ -62,6 +64,11 @@ class MODULES_EXPORT VideoTrackAdapter
   // Must be called on the IO-thread.
   void DeliverFrameOnIO(scoped_refptr<media::VideoFrame> frame,
                         base::TimeTicks estimated_capture_time);
+
+  // Delivers |encoded_frame| to all tracks that have registered a callback.
+  // Must be called on the IO-thread.
+  void DeliverEncodedVideoFrameOnIO(scoped_refptr<EncodedVideoFrame> frame,
+                                    base::TimeTicks estimated_capture_time);
 
   base::SingleThreadTaskRunner* io_task_runner() const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -98,15 +105,21 @@ class MODULES_EXPORT VideoTrackAdapter
       WTF::CrossThreadFunction<void(
           scoped_refptr<media::VideoFrame> video_frame,
           base::TimeTicks estimated_capture_time)>;
+  using DeliverEncodedVideoFrameInternalCallback =
+      WTF::CrossThreadFunction<void(
+          scoped_refptr<EncodedVideoFrame> video_frame,
+          base::TimeTicks estimated_capture_time)>;
   using VideoTrackSettingsInternalCallback =
       WTF::CrossThreadFunction<void(gfx::Size frame_size, double frame_rate)>;
   using VideoTrackFormatInternalCallback =
       WTF::CrossThreadFunction<void(const media::VideoCaptureFormat&)>;
-  void AddTrackOnIO(const MediaStreamVideoTrack* track,
-                    VideoCaptureDeliverFrameInternalCallback frame_callback,
-                    VideoTrackSettingsInternalCallback settings_callback,
-                    VideoTrackFormatInternalCallback track_callback,
-                    const VideoTrackAdapterSettings& settings);
+  void AddTrackOnIO(
+      const MediaStreamVideoTrack* track,
+      VideoCaptureDeliverFrameInternalCallback frame_callback,
+      DeliverEncodedVideoFrameInternalCallback encoded_frame_callback,
+      VideoTrackSettingsInternalCallback settings_callback,
+      VideoTrackFormatInternalCallback track_callback,
+      const VideoTrackAdapterSettings& settings);
 
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
   void ReconfigureTrackOnIO(const MediaStreamVideoTrack* track,

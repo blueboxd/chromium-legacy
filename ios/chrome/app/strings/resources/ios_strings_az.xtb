@@ -268,7 +268,6 @@ Datanız sinxronizasiya parol sözü ilə şifrələnib. Sinxronizasiyanı başl
 <translation id="4689564913179979534">Ödəniş Metodlarını İdarə Edin...</translation>
 <translation id="473775607612524610">Güncəlləşdirin</translation>
 <translation id="4747097190499141774">Google Pay'dəki ödəniş metodları və ünvanlar parol şifrələməsinə daxil deyil. Yanlız parolunuzu bilən şəxs şifrələnmiş datanı oxuya bilər. Google parolu əldə etmir və ya saxlamır. Parolu unutsanız və ya bu ayarı dəyişmək istəsəniz, sinxronizasiyanı sıfırlamalısınız. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Səhifədə axtarın...</translation>
 <translation id="4751645464639803239">Yeni Anonim Tab</translation>
 <translation id="4758977202923349869">Kredit Kartını çərçivəyə yerləşdirin</translation>
 <translation id="4802417911091824046">Google Pay'dəki ödəniş metodları və ünvanlar parol şifrələməsinə daxil deyil.
@@ -455,7 +454,6 @@ Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrəl
 <translation id="7136892417564438900">Kamera əlçatan deyil</translation>
 <translation id="7159472599653637159">Mobil Sayt Tələb edin</translation>
 <translation id="7173114856073700355">Ayarları Açın</translation>
-<translation id="7189598951263744875">Paylaşın...</translation>
 <translation id="7192050974311852563">Qeydiyyata Başlayın</translation>
 <translation id="7203585745079012652">Geri Cavab</translation>
 <translation id="7265758999917665941">Bu sayt üçün heç vaxt yadda saxlamayın</translation>
@@ -559,6 +557,7 @@ Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrəl
 <translation id="8840513115188359703">Google Hesabınızdan çıxmayacaqsınız.</translation>
 <translation id="8870413625673593573">Son Qapadılan</translation>
 <translation id="8881801611828450202">Bu Şəkil üçün <ph name="SEARCH_ENGINE" /> Axtarışı Edin</translation>
+<translation id="8909135823018751308">Paylaşın...</translation>
 <translation id="895541991026785598">Problemi Xəbər verin</translation>
 <translation id="8976382372951310360">Yardım</translation>
 <translation id="8981454092730389528">Google Fəaliyyət Nəzarəti</translation>

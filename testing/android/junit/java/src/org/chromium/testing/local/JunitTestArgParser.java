@@ -47,9 +47,6 @@ public class JunitTestArgParser {
                     } else if ("json-results-file".equals(argName)) {
                         // Read the command line argument after the flag.
                         parsed.setJsonOutputFile(args[++i]);
-                    } else if ("test-jars".equals(argName)) {
-                        // Read the command line argument after the flag.
-                        parsed.setTestJars(args[++i]);
                     } else {
                         System.out.println("Ignoring flag: \"" + argName + "\"");
                     }
@@ -91,10 +88,6 @@ public class JunitTestArgParser {
         return mJsonOutput;
     }
 
-    public String[] getTestJars() {
-        return mTestJars;
-    }
-
     private void addPackageFilter(String packageFilter) {
         mPackageFilters.add(packageFilter);
     }
@@ -109,9 +102,5 @@ public class JunitTestArgParser {
 
     private void setJsonOutputFile(String path) {
         mJsonOutput = new File(path);
-    }
-
-    private void setTestJars(String jars) {
-        mTestJars = COLON.split(jars);
     }
 }

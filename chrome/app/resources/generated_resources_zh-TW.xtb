@@ -32,7 +32,7 @@
 <translation id="1036982837258183574">按下 |<ph name="ACCELERATOR" />| 即可結束全螢幕模式</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1039337018183941703">檔案無效或毀損</translation>
-<translation id="1039850285407663109">你選取了一個來路不明的檔案，其中可能含有危險內容。建議你在開啟這個檔案前先進行掃描。</translation>
+<translation id="1039850285407663109">你選取了一個不明檔案，其中可能含有危險內容。建議你在開啟這個檔案前先進行掃描。</translation>
 <translation id="1041175011127912238">這個網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">你的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取你的藍牙和序列裝置</translation>
 <translation id="114036956334641753">音訊和字幕</translation>
-<translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="1140746652461896221">封鎖你造訪的任何網頁所含內容</translation>
 <translation id="1143142264369994168">憑證簽署者</translation>
 <translation id="1145292499998999162">已封鎖外掛程式</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">複製音訊位址(&amp;O)</translation>
 <translation id="1465827627707997754">披薩切片</translation>
 <translation id="1468571364034902819">無法使用這個設定檔</translation>
-<translation id="1470811252759861213">如要在所有電腦上使用您的擴充功能，請<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1472675084647422956">顯示更多</translation>
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
 <translation id="1476088332184200792">複製到你的裝置</translation>
@@ -1044,7 +1042,6 @@
 <translation id="2489829450872380594">手機之後會解鎖這部 <ph name="DEVICE_TYPE" />。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="2489918096470125693">新增資料夾(&amp;F)...</translation>
 <translation id="2490481887078769936">已從清單中移除「<ph name="FILE_NAME" />」</translation>
-<translation id="2490782392574942205">如要在所有電腦上使用你的擴充功能，請登入並開啟同步功能</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
 <translation id="2495777824269688114">探索其他功能或者獲得問題解答。選取 [？] 即可取得相關說明。</translation>
@@ -1754,7 +1751,6 @@
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3528033729920178817">這個網頁正在追蹤你的位置。</translation>
 <translation id="3528498924003805721">捷徑目標</translation>
-<translation id="3530305684079447434"><ph name="SIGN_IN_LINK" />之後即可在你的所有裝置上使用自己的書籤。</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> 要求使用麥克風</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 靜音</translation>
 <translation id="3538066758857505094">解除安裝 Linux 時發生錯誤，請再試一次。</translation>

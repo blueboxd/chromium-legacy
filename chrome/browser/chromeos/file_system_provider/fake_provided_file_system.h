@@ -141,7 +141,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
                            bool recursive,
                            bool persistent,
                            storage::AsyncFileUtil::StatusCallback callback,
-                           const storage::WatcherManager::NotificationCallback&
+                           storage::WatcherManager::NotificationCallback
                                notification_callback) override;
   void RemoveWatcher(const GURL& origin,
                      const base::FilePath& entry_path,

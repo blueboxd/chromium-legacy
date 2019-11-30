@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Открыть ссылку в приложении "<ph name="APP" />"</translation>
 <translation id="1140351953533677694">Доступ к Bluetooth- и последовательным устройствам</translation>
 <translation id="114036956334641753">Звук и субтитры</translation>
-<translation id="1140610710803014750">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в систему и включите синхронизацию.</translation>
 <translation id="1140746652461896221">Блокировать контент на всех страницах</translation>
 <translation id="1143142264369994168">Подписчик сертификата</translation>
 <translation id="1145292499998999162">Плагин заблокирован</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">&amp;Копировать URL аудио</translation>
 <translation id="1465827627707997754">Кусок пиццы</translation>
 <translation id="1468571364034902819">Нельзя использовать этот профиль</translation>
-<translation id="1470811252759861213">Чтобы получить доступ к расширениям на всех ваших устройствах, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Показать больше...</translation>
 <translation id="1475502736924165259">У вас имеются сертификаты, которые не попадают ни в одну из других категорий</translation>
 <translation id="1476088332184200792">Копировать на мое устройство</translation>
@@ -1043,7 +1041,6 @@
 <translation id="2489829450872380594">После этого вы сможете разблокировать устройство <ph name="DEVICE_TYPE" /> с помощью телефона. Выключить Smart Lock можно в настройках.</translation>
 <translation id="2489918096470125693">Добавить &amp;папку</translation>
 <translation id="2490481887078769936">Файл "<ph name="FILE_NAME" />" удален из списка.</translation>
-<translation id="2490782392574942205">Чтобы автоматически установить расширения на всех своих компьютерах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="249113932447298600">Устройство <ph name="DEVICE_LABEL" /> не поддерживается.</translation>
 <translation id="249303669840926644">Не удалось завершить регистрацию</translation>
 <translation id="2495777824269688114">Нажмите кнопку "?", чтобы узнать о других функциях или найти ответ на вопрос.</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3528033729920178817">Эта страница отслеживает ваше местоположение.</translation>
 <translation id="3528498924003805721">Ярлыки</translation>
-<translation id="3530305684079447434">Чтобы получить доступ к закладкам на всех ваших устройствах, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774">Сайт <ph name="HOST" /> запрашивает доступ к микрофону.</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" />: звук отключен</translation>
 <translation id="3538066758857505094">Не удалось удалить Linux. Повторите попытку.</translation>

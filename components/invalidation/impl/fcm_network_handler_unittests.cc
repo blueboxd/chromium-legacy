@@ -77,11 +77,17 @@ class MockInstanceID : public InstanceID {
                     const std::map<std::string, std::string>& options,
                     std::set<Flags> flags,
                     GetTokenCallback& callback));
-  MOCK_METHOD4(ValidateToken,
+  void ValidateToken(const std::string& authorized_entity,
+                     const std::string& scope,
+                     const std::string& token,
+                     ValidateTokenCallback callback) override {
+    ValidateToken_(authorized_entity, scope, token, callback);
+  }
+  MOCK_METHOD4(ValidateToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::string& token,
-                    const ValidateTokenCallback& callback));
+                    ValidateTokenCallback& callback));
 
  protected:
   void DeleteTokenImpl(const std::string& authorized_entity,
@@ -112,11 +118,17 @@ class MockGCMDriver : public gcm::GCMDriver {
                 &test_url_loader_factory_)) {}
   ~MockGCMDriver() override = default;
 
-  MOCK_METHOD4(ValidateRegistration,
+  void ValidateRegistration(const std::string& app_id,
+                            const std::vector<std::string>& sender_ids,
+                            const std::string& registration_id,
+                            ValidateRegistrationCallback callback) override {
+    ValidateRegistration_(app_id, sender_ids, registration_id, callback);
+  }
+  MOCK_METHOD4(ValidateRegistration_,
                void(const std::string& app_id,
                     const std::vector<std::string>& sender_ids,
                     const std::string& registration_id,
-                    const ValidateRegistrationCallback& callback));
+                    ValidateRegistrationCallback& callback));
   MOCK_METHOD0(OnSignedIn, void());
   MOCK_METHOD0(OnSignedOut, void());
   MOCK_METHOD1(AddConnectionObserver,
@@ -438,7 +450,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
   EXPECT_CALL(*mock_instance_id(), GetToken_(_, _, _, _, _))
       .WillOnce(
           InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
-  EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), ValidateToken_(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
   testing::Mock::VerifyAndClearExpectations(mock_instance_id());
@@ -469,7 +481,7 @@ TEST_F(FCMNetworkHandlerTest,
   EXPECT_CALL(*mock_instance_id(), GetToken_(_, _, _, _, _))
       .WillOnce(
           InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
-  EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), ValidateToken_(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
   testing::Mock::VerifyAndClearExpectations(mock_instance_id());

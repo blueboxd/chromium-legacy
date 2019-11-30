@@ -95,6 +95,7 @@ jumbo_source_set("browser") {
     "//content/browser/notifications:notification_proto",
     "//content/browser/payments:payment_app_proto",
     "//content/browser/process_internals:mojo_bindings",
+    "//content/browser/resources/media:media_internals_resources",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/browser/webrtc/resources",

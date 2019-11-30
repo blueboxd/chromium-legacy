@@ -12,8 +12,8 @@ source_set("test") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    "//ios/chrome/browser/ui/alert_view_controller",
-    "//ios/chrome/browser/ui/alert_view_controller/test",
+    "//ios/chrome/browser/ui/alert_view",
+    "//ios/chrome/browser/ui/alert_view/test",
     "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ios/chrome/browser/ui/overlays/test",
     "//testing/gtest",

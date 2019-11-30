@@ -662,7 +662,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         [17] : P
         [18] : class
         [19] : c1
-        [20] : <pseudo:first-letter>
+        [20] : ::first-letter
         [21] : 100
         [22] : rgb(0, 128, 0)
         [23] : I
@@ -676,7 +676,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         [31] : 700
         [32] : rgb(0, 0, 255)
         [33] : s
-        [34] : <pseudo:before>
+        [34] : ::before
         [35] : quare: 
         [36] : 1
         [37] : ! 

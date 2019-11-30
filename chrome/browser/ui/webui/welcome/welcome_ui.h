@@ -26,7 +26,7 @@ class WelcomeUI : public content::WebUIController {
 
   void CreateBackgroundFetcher(
       size_t background_index,
-      const content::WebUIDataSource::GotDataCallback& callback);
+      content::WebUIDataSource::GotDataCallback callback);
 
  protected:
   // Visible for testing.

@@ -188,7 +188,7 @@ DrawingBuffer::DrawingBuffer(
       storage_color_space_(color_params.GetStorageGfxColorSpace()),
       sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
       use_half_float_storage_(color_params.PixelFormat() ==
-                              kF16CanvasPixelFormat),
+                              CanvasPixelFormat::kF16),
       chromium_image_usage_(chromium_image_usage),
       opengl_flip_y_extension_(
           ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y),

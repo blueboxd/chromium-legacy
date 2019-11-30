@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Ikonas</translation>
 <translation id="1111673857033749125">Šeit būs redzamas grāmatzīmes, kuras esat saglabājis citās ierīcēs.</translation>
 <translation id="1113597929977215864">Rādīt vienkāršoto skatu</translation>
+<translation id="1122278879166832009">Pieskarieties šeit, lai ātri piekļūtu savai sākumlapai no jebkuras vietas</translation>
 <translation id="1124772482545689468">Lietotājs</translation>
 <translation id="1129510026454351943">Informācija: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 neapstiprināta lejupielāde.}zero{# neapstiprinātu lejupielāžu.}one{# neapstiprināta lejupielāde.}other{# neapstiprinātas lejupielādes.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3859306556332390985">Pārtīt uz priekšu</translation>
+<translation id="388596076286380598">Saņemiet rakstus, videoklipus un citu saturu no vietnēm, kuras jums patīk, pat ja esat bezsaistē vai ir vājš savienojums.</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
 <translation id="3895926599014793903">Tālummaiņas piespiedu iespējošana</translation>
 <translation id="3912508018559818924">Notiek vislabākā tīmekļa satura meklēšana</translation>
@@ -490,6 +492,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4719927025381752090">Piedāvāt tulkot</translation>
 <translation id="4720023427747327413">Atvērt, izmantojot <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Palīdziet uzlabot pārlūku Chrome. <ph name="BEGIN_LINK" />Atbildiet uz aptaujas jautājumiem<ph name="END_LINK" />.</translation>
+<translation id="4732120983431207637">Steka atbrīvotājs</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4738836084190194332">Pēdējoreiz sinhronizēts: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Atvērt jaunu cilni</translation>
@@ -636,6 +639,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5684874026226664614">Hmm... Šo lapu nevarēja iztulkot.</translation>
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5689516760719285838">Atrašanās vieta</translation>
+<translation id="5694049548840660018">Ātra atgriešanās sākumlapā</translation>
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
 <translation id="5710871682236653961">Vaicāt, pirms atļaut vietnēm sūtīt un saņemt informāciju, kad ar ierīci pieskaraties citai NFC ierīcei (ieteicams)</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
@@ -798,6 +802,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6850830437481525139">Aizvērtas <ph name="TAB_COUNT" /> cilnes</translation>
 <translation id="6864459304226931083">Lejupielādēt attēlu</translation>
 <translation id="6865313869410766144">Automātiskās aizpildes veidlapas dati</translation>
+<translation id="6884306546558072722">Turpiniet izpēti tiešsaistē</translation>
 <translation id="688738109438487280">Pievienot esošos datus kontam <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Atbloķējiet, lai kopētu paroli</translation>
 <translation id="6896758677409633944">Kopēt</translation>
@@ -1039,6 +1044,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8636825310635137004">Ieslēdziet sinhronizāciju, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="8641930654639604085">Pēc iespējas bloķēt vietnes ar pieaugušajiem paredzētu saturu</translation>
 <translation id="8655129584991699539">Varat notīrīt datus Chrome iestatījumos</translation>
+<translation id="8655599981421006542">Pieskarieties šeit, lai izveidotu jaunas cilnes un atgrieztos iepriekšējās cilnēs</translation>
 <translation id="8662811608048051533">Jūs tiksiet izrakstīts no lielākās daļas vietņu.</translation>
 <translation id="8664979001105139458">Faila nosaukums jau pastāv</translation>
 <translation id="8676374126336081632">Notīrīt ievadi</translation>
@@ -1051,6 +1057,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8748850008226585750">Saturs paslēpts</translation>
 <translation id="8751914237388039244">Attēla atlase</translation>
+<translation id="8758557275681689734">Visu atvērto ciļņu skatīšana</translation>
 <translation id="8788265440806329501">Navigācijas vēsture ir aizvērta</translation>
 <translation id="8788968922598763114">Atkārtoti atvērt pēdējo aizvērto cilni</translation>
 <translation id="8801436777607969138">Bloķēt JavaScript konkrētai vietnei.</translation>

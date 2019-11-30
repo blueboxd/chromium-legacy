@@ -268,7 +268,6 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 <translation id="4689564913179979534">Makseviiside haldamine …</translation>
 <translation id="473775607612524610">Värskenda</translation>
 <translation id="4747097190499141774">Parooli krüpteerimine ei hõlma Google Pay makseviise ega aadresse. Teie krüpteeritud andmeid saavad lugeda vaid need, kes teavad teie parooli – seda ei saadeta Google'ile ja Google ei talleta seda. Kui unustate parooli või soovite seda seadet muuta, tuleb teil sünkroonimine lähtestada. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Otsi lehelt ...</translation>
 <translation id="4751645464639803239">Uus inkognito vaheleht</translation>
 <translation id="4758977202923349869">Paigutage krediitkaart sellesse kaadrisse</translation>
 <translation id="4802417911091824046">Parooli krüpteerimine ei hõlma Google Pay makseviise ja aadresse.
@@ -455,7 +454,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7136892417564438900">Kaamera pole saadaval</translation>
 <translation id="7159472599653637159">Taotle mobiilisaiti</translation>
 <translation id="7173114856073700355">Ava seaded</translation>
-<translation id="7189598951263744875">Jaga ...</translation>
 <translation id="7192050974311852563">Alusta logimist</translation>
 <translation id="7203585745079012652">Vastuste esitamine</translation>
 <translation id="7265758999917665941">Selle saidi puhul mitte kunagi</translation>
@@ -559,6 +557,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8840513115188359703">Teid ei logita teie Google'i kontolt välja.</translation>
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8881801611828450202">Otsi pilti teenusest <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Jaga ...</translation>
 <translation id="895541991026785598">Teavitage probleemist</translation>
 <translation id="8976382372951310360">Abi</translation>
 <translation id="8981454092730389528">Google'i kontotegevuste haldus</translation>

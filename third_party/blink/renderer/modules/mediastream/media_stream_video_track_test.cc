@@ -9,11 +9,13 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
@@ -25,6 +27,11 @@ namespace blink {
 // To avoid symbol collisions in jumbo builds.
 namespace media_stream_video_track_test {
 
+using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::Mock;
+using ::testing::Return;
+
 const uint8_t kBlackValue = 0x00;
 const uint8_t kColorValue = 0xAB;
 const int kMockSourceWidth = 640;
@@ -34,7 +41,7 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-class MediaStreamVideoTrackTest : public ::testing::Test {
+class MediaStreamVideoTrackTest : public testing::Test {
  public:
   MediaStreamVideoTrackTest() : mock_source_(nullptr), source_started_(false) {}
 
@@ -56,6 +63,17 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void DeliverEncodedVideoFrameAndWait(scoped_refptr<EncodedVideoFrame> frame,
+                                       MockMediaStreamVideoSink* sink) {
+    base::RunLoop run_loop;
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*sink, OnEncodedVideoFrame).WillOnce(Invoke([&] {
+      std::move(quit_closure).Run();
+    }));
+    mock_source()->DeliverEncodedVideoFrame(frame);
+    run_loop.Run();
+  }
+
   void DeliverDefaultSizeVideoFrameAndWaitForRenderer(
       MockMediaStreamVideoSink* sink) {
     const scoped_refptr<media::VideoFrame> frame =
@@ -67,7 +85,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
  protected:
-  void InitializeSource() {
+  virtual void InitializeSource() {
     blink_source_.Reset();
     mock_source_ = new MockMediaStreamVideoSource(
         media::VideoCaptureFormat(
@@ -121,6 +139,15 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
                              WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
+  }
+
+  void DepleteIOCallbacks() {
+    base::RunLoop run_loop;
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+    mock_source()->io_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindLambdaForTesting([&] { std::move(quit_closure).Run(); }));
+    run_loop.Run();
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
@@ -356,6 +383,111 @@ TEST_F(MediaStreamVideoTrackTest, DeliverFramesAndGetSettings) {
   EXPECT_EQ(300, settings.height);
 
   sink.DisconnectFromTrack();
+}
+
+class MediaStreamVideoTrackEncodedTest : public MediaStreamVideoTrackTest {
+ public:
+  void InitializeSource() override {
+    MediaStreamVideoTrackTest::InitializeSource();
+    ON_CALL(*mock_source(), SupportsEncodedOutput).WillByDefault(Return(true));
+  }
+};
+
+TEST_F(MediaStreamVideoTrackEncodedTest, ConnectEncodedSink) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  EXPECT_CALL(*mock_source(), OnEncodedSinkEnabled);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true)).Times(0);
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled).Times(0);
+  sink.ConnectEncodedToTrack(track);
+  Mock::VerifyAndClearExpectations(mock_source());
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoTrackEncodedTest, DisconnectEncodedSink) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectEncodedToTrack(track);
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoTrackEncodedTest,
+       CapturingLinkSecuredWithEncodedAndNormalTracks) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink1;
+  WebMediaStreamTrack track1 = CreateTrack();
+  InSequence s;
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  sink1.ConnectToTrack(track1);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  MockMediaStreamVideoSink sink2;
+  WebMediaStreamTrack track2 = CreateTrack();
+  sink2.ConnectEncodedToTrack(track2);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  sink1.DisconnectFromTrack();
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  sink2.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoTrackEncodedTest, TransferOneEncodedVideoFrame) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectEncodedToTrack(track);
+  base::RunLoop run_loop;
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(sink, OnEncodedVideoFrame).WillOnce(Invoke([&] {
+    std::move(quit_closure).Run();
+  }));
+  mock_source()->DeliverEncodedVideoFrame(
+      base::MakeRefCounted<MockEncodedVideoFrame>());
+  run_loop.Run();
+  Mock::VerifyAndClearExpectations(mock_source());
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoTrackEncodedTest, SupportsEncodedDisableEnable) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectEncodedToTrack(track);
+
+  auto key_frame = base::MakeRefCounted<MockEncodedVideoFrame>();
+  EXPECT_CALL(*key_frame, IsKeyFrame).WillRepeatedly(Return(true));
+  auto delta_frame = base::MakeRefCounted<MockEncodedVideoFrame>();
+  EXPECT_CALL(*delta_frame, IsKeyFrame).WillRepeatedly(Return(false));
+
+  DeliverEncodedVideoFrameAndWait(key_frame, &sink);
+
+  // Key frame when disabled -> shouldn't get dispatched
+  MediaStreamVideoTrack::GetVideoTrack(track)->SetEnabled(false);
+  {
+    EXPECT_CALL(sink, OnEncodedVideoFrame).Times(0);
+    mock_source()->DeliverEncodedVideoFrame(key_frame);
+    DepleteIOCallbacks();
+  }
+
+  // Delta frame when disabled -> shouldn't get dispatched until key frame
+  // appears.
+  EXPECT_CALL(*mock_source(), OnRequestRefreshFrame);
+  MediaStreamVideoTrack::GetVideoTrack(track)->SetEnabled(true);
+  {
+    EXPECT_CALL(sink, OnEncodedVideoFrame).Times(0);
+    mock_source()->DeliverEncodedVideoFrame(delta_frame);
+    DepleteIOCallbacks();
+  }
+
+  // After a key frame things should be flowing again.
+  DeliverEncodedVideoFrameAndWait(key_frame, &sink);
+  DeliverEncodedVideoFrameAndWait(delta_frame, &sink);
+
+  Mock::VerifyAndClearExpectations(mock_source());
+  sink.DisconnectEncodedFromTrack();
 }
 
 }  // namespace media_stream_video_track_test

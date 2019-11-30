@@ -20,8 +20,6 @@ component("ozone") {
     "device/device_manager.h",
     "device/device_manager_manual.cc",
     "device/device_manager_manual.h",
-    "device/udev/device_manager_udev.cc",
-    "device/udev/device_manager_udev.h",
     "features.cc",
     "features.h",
     "gamepad/gamepad_event.cc",
@@ -44,14 +42,11 @@ component("ozone") {
 
   defines = [ "IS_EVENTS_OZONE_IMPL" ]
 
-  if (!use_udev) {
-    sources -= [
+  if (use_udev) {
+    sources += [
       "device/udev/device_manager_udev.cc",
       "device/udev/device_manager_udev.h",
     ]
-  }
-
-  if (use_udev) {
     deps += [ "//device/udev_linux" ]
   }
 }

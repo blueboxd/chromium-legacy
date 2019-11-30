@@ -462,6 +462,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4204126831294769023">Azúrová</translation>
 <translation id="4204864733111726379">Kvetinová biela</translation>
 <translation id="4206289001967551965">V tabuľke</translation>
+<translation id="4207770814752775793">Nastavenia prevodu textu na reč boli resetované na predvolené hodnoty.</translation>
 <translation id="4209770650650780359">Automatické dopĺňanie aktivujete pomocou šípky nahor alebo nadol.</translation>
 <translation id="4215733775853809057">Ďalší posúvač</translation>
 <translation id="42164919740161077">Námornícka modrá</translation>
@@ -765,6 +766,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6290434000785343030">Žiadne ďalšie rozbaľovacie pole</translation>
 <translation id="6305702903308659374">Pri hlasovej odozve ChromeVox zachovať normálnu hlasitosť prehrávania</translation>
 <translation id="6307969636681130414">Stlačené</translation>
+<translation id="6315652249189065725">Otvoriť ponuku klávesových skratiek</translation>
 <translation id="6322856989298155004">Zvuky</translation>
 <translation id="6324551002951139333">Našla sa gramatická chyba</translation>
 <translation id="6325241889020214828">kopírovať <ph name="TEXT" />.</translation>
@@ -958,6 +960,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7668307052366682650">{COUNT,plural, =1{hodina}few{hodiny}many{hodiny}other{hodín}}</translation>
 <translation id="7674576868851035240">Ďalší odkaz</translation>
 <translation id="7674768236845044097">značka</translation>
+<translation id="7676847077928500578">Resetovať nastavenia prevodu textu na reč</translation>
 <translation id="7684431668231950609">Upraviť text, vstup webovej adresy</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Predchádzajúci prepínač</translation>

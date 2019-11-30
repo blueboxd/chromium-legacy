@@ -47,6 +47,12 @@ void MakeSymbol(SizeInfo* info,
   sym.size_info_ = info;
   info->raw_symbols.push_back(sym);
 }
+
+std::string ShortName(const Json::Value& node) {
+  const std::string id_path = node["idPath"].asString();
+  const int short_name_index = node["shortNameIndex"].asInt();
+  return id_path.substr(short_name_index);
+}
 }  // namespace
 
 std::unique_ptr<SizeInfo> CreateSizeInfo() {
@@ -150,6 +156,7 @@ TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
       "Mobile/chrome/android/features/start_surface/public/java/src/"
       "org/chromium/chrome/features/start_surface/StartSurface.java"))
       ["children"][0];
+  EXPECT_EQ("StartSurface$OverviewModeObserver", ShortName(class_symbol));
 
   EXPECT_EQ(
       "Mobile/chrome/android/features/start_surface/public/java/src/"
@@ -162,8 +169,6 @@ TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
   Json::Value dex_symbol = class_symbol["children"][0];
   EXPECT_EQ(0u, dex_symbol["children"].size());
 
-  const std::string id_path = dex_symbol["idPath"].asString();
-  const int short_name_index = dex_symbol["shortNameIndex"].asInt();
-  EXPECT_EQ("android.graphics.Bitmap a()", id_path.substr(short_name_index));
+  EXPECT_EQ("android.graphics.Bitmap a()", ShortName(dex_symbol));
 }
 }  // namespace caspian

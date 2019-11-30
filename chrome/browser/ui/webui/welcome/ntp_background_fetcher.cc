@@ -21,9 +21,9 @@ namespace welcome {
 
 NtpBackgroundFetcher::NtpBackgroundFetcher(
     size_t index,
-    const content::WebUIDataSource::GotDataCallback& callback)
-    : index_(index), callback_(callback) {
-  DCHECK(callback_ && !callback_.is_null());
+    content::WebUIDataSource::GotDataCallback callback)
+    : index_(index), callback_(std::move(callback)) {
+  DCHECK(callback_);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("nux_ntp_background_preview", R"(
         semantics {
@@ -74,9 +74,10 @@ NtpBackgroundFetcher::~NtpBackgroundFetcher() = default;
 void NtpBackgroundFetcher::OnFetchCompleted(
     std::unique_ptr<std::string> response_body) {
   if (response_body) {
-    callback_.Run(base::RefCountedString::TakeString(response_body.release()));
+    std::move(callback_).Run(
+        base::RefCountedString::TakeString(response_body.release()));
   } else {
-    callback_.Run(base::MakeRefCounted<base::RefCountedBytes>());
+    std::move(callback_).Run(base::MakeRefCounted<base::RefCountedBytes>());
   }
 }
 

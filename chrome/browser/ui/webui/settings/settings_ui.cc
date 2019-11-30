@@ -388,11 +388,16 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
-  if (g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled)) {
-    // Note that UI is also dependent on this pref.
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::KerberosAccountsHandler>());
+
+  std::unique_ptr<chromeos::settings::KerberosAccountsHandler>
+      kerberos_accounts_handler =
+          chromeos::settings::KerberosAccountsHandler::CreateIfKerberosEnabled(
+              profile);
+  if (kerberos_accounts_handler) {
+    // Note that the UI is enabled only if Kerberos is enabled.
+    web_ui->AddMessageHandler(std::move(kerberos_accounts_handler));
   }
+
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
 

@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">চিহ্নসমূহ</translation>
 <translation id="1111673857033749125">আপোনাৰ ডিভাইচত ছেভ কৰা বুকমাৰ্কবোৰ ইয়াত দেখা পোৱা যাব।</translation>
 <translation id="1113597929977215864">সৰলীকৃত ভিউ প্ৰদর্শন কৰক</translation>
+<translation id="1122278879166832009">যিকোনো ঠাইৰ পৰা ক্ষিপ্ৰভাৱে নিজৰ গৃহপৃষ্ঠা এক্সেছ কৰিবলৈ ইয়াত টিপক</translation>
 <translation id="1124772482545689468">ব্যৱহাৰকাৰী</translation>
 <translation id="1129510026454351943">সবিশেষ: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{১টা ডাউনল’ড বাকী আছে।}one{#টা ডাউনল’ড বাকী আছে।}other{#টা ডাউনল’ড বাকী আছে।}}</translation>
@@ -378,6 +379,7 @@
 <translation id="3822502789641063741">ছাইটৰ ষ্ট’ৰেজ মচিবনে?</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3859306556332390985">আগলৈ যাওক</translation>
+<translation id="388596076286380598">আপুনি অফলাইন হৈ থাকিলে অথবা আপোনাৰ সংযোগটো বেয়া হৈ থাকিলেও আপুনি পচন্দ কৰা ছাইটসমূহৰ পৰা প্ৰবন্ধ, ভিডিঅ’ আৰু অন্য সমল পাওক।</translation>
 <translation id="3894427358181296146">ফ’ল্ডাৰ যোগ কৰক</translation>
 <translation id="3895926599014793903">বলেৰে জুম সক্ষম কৰক</translation>
 <translation id="3912508018559818924">ৱেবৰ পৰা উৎকৃষ্টসমূহ বিচাৰি উলিয়াই থকা হৈছে…</translation>
@@ -489,6 +491,7 @@
 <translation id="4719927025381752090">অনুবাদ কৰাৰ প্ৰস্তাৱ দিয়ক</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />ত খোলক</translation>
 <translation id="4720982865791209136">Chromeক উন্নত কৰাত সহায় কৰক। <ph name="BEGIN_LINK" />সমীক্ষাত ভাগ লওক<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">ষ্টেক আনৱিণ্ডাৰ</translation>
 <translation id="473775607612524610">আপডে'ট কৰক</translation>
 <translation id="4738836084190194332">অন্তিমবাৰ ছিংক কৰা সময়: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">এটা নতুন টেব খোলক</translation>
@@ -635,6 +638,7 @@
 <translation id="5684874026226664614">ওঁহ এই পৃষ্ঠাটো অনুবাদ কৰিব পৰা নগ’ল।</translation>
 <translation id="5686790454216892815">ফাইলৰ নামটো বহুত দীঘল</translation>
 <translation id="5689516760719285838">অৱস্থান</translation>
+<translation id="5694049548840660018">সহজে গৃহপৃষ্ঠালৈ উভতি যাওক</translation>
 <translation id="569536719314091526">অধিক বিকল্প-ৰ বুটামটো ব্যৱহাৰ কৰি এই পৃষ্ঠাটো যিকোনো ভাষালৈ অনুবাদ কৰক</translation>
 <translation id="5710871682236653961">আপুনি NFC ডিভাইচসমূহত টিপিলে ছাইটসমূহক তথ্য পঠিওৱা আৰু লাভ কৰাৰ অনুমতি দিয়াৰ আগতে সোধক (চুপাৰিছ কৰা হয়)</translation>
 <translation id="572328651809341494">শেহতীয়াকৈ বন্ধ কৰা টেব</translation>
@@ -796,6 +800,7 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" />টা টেব বন্ধ কৰা হ’ল</translation>
 <translation id="6864459304226931083">প্ৰতিচ্ছবি ডাউনল'ড কৰক</translation>
 <translation id="6865313869410766144">স্বয়ংক্ৰিয়ভাৱে পূৰ কৰা ফৰ্মৰ ডেটা</translation>
+<translation id="6884306546558072722">অফলাইনত অন্বেষণ কৰি থাকক</translation>
 <translation id="688738109438487280">আগৰেপৰা থকা ডেটাবোৰ <ph name="TO_ACCOUNT" />ত যোগ কৰক।</translation>
 <translation id="6891726759199484455">আপোনাৰ পাছৱৰ্ড প্ৰতিলিপি কৰিবলৈ আনলক কৰক</translation>
 <translation id="6896758677409633944">প্ৰতিলিপি কৰক</translation>
@@ -1035,6 +1040,7 @@
 <translation id="8636825310635137004">আপোনাৰ অন্য ডিভাইচৰ টেবসমূহ পাবলৈ ছিংক অন কৰক।</translation>
 <translation id="8641930654639604085">প্ৰাপ্তবয়স্কসকলে চাব পৰা ছাইটসমূহ অৱৰোধ কৰিবলৈ চেষ্টা কৰে</translation>
 <translation id="8655129584991699539">আাপুনি Chrome ছেটিংসমূহত এই ডেটা মচিব পাৰে</translation>
+<translation id="8655599981421006542">নতুন টেব সৃষ্টি কৰিবলৈ আৰু পূৰ্বৱৰ্তীসমূহলৈ উভতি যাবলৈ ইয়াত টিপক</translation>
 <translation id="8662811608048051533">অধিকাংশ ছাইটৰ পৰা আপোনাক ছাইন আউট কৰায়।</translation>
 <translation id="8664979001105139458">এই ফাইলৰ নামটো ইতিমধ্যে আছে</translation>
 <translation id="8676374126336081632">ইনপুট মচক</translation>
@@ -1047,6 +1053,7 @@
 <translation id="8730621377337864115">হ’ল</translation>
 <translation id="8748850008226585750">সমল লুকাই ৰখা হৈছে</translation>
 <translation id="8751914237388039244">কোনো প্ৰতিচ্ছবি বাছনি কৰক</translation>
+<translation id="8758557275681689734">আপোনাৰ সকলো খোলা থকা টেব চাওক</translation>
 <translation id="8788265440806329501">নেভিগেশ্বন ইতিহাস বন্ধ কৰা আছে</translation>
 <translation id="8788968922598763114">অন্তিমবাৰ খোলা টেবটো পুনৰ খোলক</translation>
 <translation id="8801436777607969138">কোনো নির্দিষ্ট ছাইটৰ বাবে JavaScript অৱৰোধ কৰক।</translation>

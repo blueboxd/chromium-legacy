@@ -154,7 +154,7 @@ class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
   //   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   //   kick_off_some_api(runner->QuitClosure());
   //   runner->Run();
-  base::RepeatingClosure QuitClosure();
+  base::OnceClosure QuitClosure();
 
   bool loop_running() const { return loop_running_; }
 

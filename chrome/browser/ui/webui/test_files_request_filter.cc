@@ -29,7 +29,7 @@ bool ShouldHandleTestFileRequestCallback(const std::string& path) {
 
 void HandleTestFileRequestCallback(
     const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+    content::WebUIDataSource::GotDataCallback callback) {
   DCHECK(ShouldHandleTestFileRequestCallback(path));
   base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -44,7 +44,7 @@ void HandleTestFileRequestCallback(
 
   base::RefCountedString* ref_contents = new base::RefCountedString();
   ref_contents->data() = contents;
-  callback.Run(ref_contents);
+  std::move(callback).Run(ref_contents);
 }
 
 }  // namespace

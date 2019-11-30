@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">เปิดลิงก์ใน <ph name="APP" /></translation>
 <translation id="1140351953533677694">เข้าถึงอุปกรณ์บลูทูธและอุปกรณ์ซีเรียล</translation>
 <translation id="114036956334641753">เสียงและคำบรรยายวิดีโอ</translation>
-<translation id="1140610710803014750">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="1140746652461896221">บล็อกเนื้อหาในหน้าเว็บที่คุณเข้าชม</translation>
 <translation id="1143142264369994168">ผู้เซ็นชื่อในใบรับรอง</translation>
 <translation id="1145292499998999162">ปลั๊กอินถูกบล็อก</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">คัด&amp;ลอกที่อยู่เสียง</translation>
 <translation id="1465827627707997754">พิซซ่า 1 ชิ้น</translation>
 <translation id="1468571364034902819">ใช้โปรไฟล์นี้ไม่ได้</translation>
-<translation id="1470811252759861213">หากต้องการรับส่วนขยายในคอมพิวเตอร์ทุกเครื่องของคุณ ให้<ph name="SIGN_IN_LINK" /></translation>
 <translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="1475502736924165259">คุณมีใบรับรองของไฟล์ที่ไม่เข้ากับหมวดหมู่อื่นๆ</translation>
 <translation id="1476088332184200792">คัดลอกไปยังอุปกรณ์ของคุณ</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">โทรศัพท์เครื่องใหม่จะปลดล็อก <ph name="DEVICE_TYPE" /> เครื่องนี้ในครั้งถัดไป คุณปิด Smart Lock ได้ในการตั้งค่า</translation>
 <translation id="2489918096470125693">เพิ่ม&amp;โฟลเดอร์...</translation>
 <translation id="2490481887078769936">นำ "<ph name="FILE_NAME" />" ออกจากรายการแล้ว</translation>
-<translation id="2490782392574942205">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับส่วนขยายในคอมพิวเตอร์ทุกเครื่อง</translation>
 <translation id="249113932447298600">ขออภัย อุปกรณ์ <ph name="DEVICE_LABEL" /> ไม่ได้รับการสนับสนุนในขณะนี้</translation>
 <translation id="249303669840926644">ไม่สามารถลงทะเบียนให้เสร็จสมบูรณ์ได้</translation>
 <translation id="2495777824269688114">ค้นพบฟีเจอร์เพิ่มเติมหรือรับคำตอบที่ต้องการ เลือก “?” เพื่อรับความช่วยเหลือ</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3528033729920178817">หน้าเว็บนี้กำลังติดตามตำแหน่งของคุณอยู่</translation>
 <translation id="3528498924003805721">เป้าหมายทางลัด</translation>
-<translation id="3530305684079447434">หากต้องการรับบุ๊กมาร์กบนอุปกรณ์ทั้งหมด <ph name="SIGN_IN_LINK" /></translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ต้องการใช้ไมโครโฟนของคุณ</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ปิดเสียงอยู่</translation>
 <translation id="3538066758857505094">เกิดข้อผิดพลาดขณะถอนการติดตั้ง Linux โปรดลองอีกครั้ง</translation>

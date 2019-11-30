@@ -59,10 +59,10 @@ class LocalNtpSource : public content::URLDataSource,
   class DesktopLogoObserver;
 
   struct NtpBackgroundRequest {
-    NtpBackgroundRequest(
-        base::TimeTicks start_time,
-        const content::URLDataSource::GotDataCallback& callback);
-    NtpBackgroundRequest(const NtpBackgroundRequest&);
+    NtpBackgroundRequest(base::TimeTicks start_time,
+                         content::URLDataSource::GotDataCallback callback);
+    NtpBackgroundRequest(NtpBackgroundRequest&&);
+    NtpBackgroundRequest& operator=(NtpBackgroundRequest&&);
     ~NtpBackgroundRequest();
 
     base::TimeTicks start_time;
@@ -74,7 +74,7 @@ class LocalNtpSource : public content::URLDataSource,
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool AllowCaching() override;
   bool ShouldServiceRequest(const GURL& url,
@@ -110,7 +110,7 @@ class LocalNtpSource : public content::URLDataSource,
   // is returned immediately, otherwise it is returned when it becomes available
   // in ServeOneGoogleBar.
   void ServeOneGoogleBarWhenAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // Called when the promo data is available and serves |data| to any pending
   // requests from the NTP.
@@ -119,12 +119,12 @@ class LocalNtpSource : public content::URLDataSource,
   // is returned immediately, otherwise it is returned when it becomes
   // available in ServePromo.
   void ServePromoWhenAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // If suggestion data is available return it immediately, otherwise no search
   // suggestions will be shown on this NTP load.
   void ServeSearchSuggestionsIfAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // Start requests for the promo and OGB.
   void InitiatePromoAndOGBRequests();

@@ -37,7 +37,6 @@ class CORE_EXPORT FetchRequestData final
   enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
-  static FetchRequestData* Create();
   static FetchRequestData* Create(ScriptState*,
                                   const mojom::blink::FetchAPIRequest&,
                                   ForServiceWorkerFetchEvent);

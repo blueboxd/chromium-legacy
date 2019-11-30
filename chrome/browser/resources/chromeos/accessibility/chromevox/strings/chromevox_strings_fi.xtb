@@ -463,6 +463,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4204126831294769023">Atsuriitti</translation>
 <translation id="4204864733111726379">Valkokukka</translation>
 <translation id="4206289001967551965">Taulukossa</translation>
+<translation id="4207770814752775793">Palauta Tekstistä puheeksi ‑asetukset oletuksiin.</translation>
 <translation id="4209770650650780359">Valitse automaattinen täydennys painamalla ala- tai ylänuolta.</translation>
 <translation id="4215733775853809057">Seuraava liukusäädin</translation>
 <translation id="42164919740161077">Harmaa turkoosi</translation>
@@ -766,6 +767,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="6290434000785343030">Ei seuraavia yhdistelmäruutuja.</translation>
 <translation id="6305702903308659374">Käytä normaalia äänenvoimakkuutta, vaikka ChromeVox puhuu.</translation>
 <translation id="6307969636681130414">Painettu</translation>
+<translation id="6315652249189065725">Avaa pikanäppäinvalikko</translation>
 <translation id="6322856989298155004">Äänet</translation>
 <translation id="6324551002951139333">Kielioppivirhe havaittu</translation>
 <translation id="6325241889020214828">kopioi <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{tunti}other{tuntia}}</translation>
 <translation id="7674576868851035240">Seuraava linkki</translation>
 <translation id="7674768236845044097">merkintä</translation>
+<translation id="7676847077928500578">Palauta Tekstistä puheeksi ‑asetukset</translation>
 <translation id="7684431668231950609">Muokkaa tekstiä, URL-osoite</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Edellinen valintanappi</translation>

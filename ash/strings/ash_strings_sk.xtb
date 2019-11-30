@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Zmeňte nastavenia upozornení na uzamknutej obrazovke</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Zobraziť nastavenia Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Vždy zobrazovať poličku</translation>
 <translation id="1341651618736211726">Rozšírené</translation>
 <translation id="1346748346194534595">Doprava</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1761222317188459878">Prepnúť sieťové pripojenie. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Posunúť doprava</translation>
+<translation id="181103072419391116">Sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané správcom</translation>
 <translation id="1812997170047690955">Čo je na obrazovke?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítava sa...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Stlačením klávesov <ph name="KEYBOARD_SHORTCUT" /> zmeníte rozloženie klávesnice.</translation>
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
+<translation id="2517825809102302935">Vypnúť na dnešnú noc</translation>
 <translation id="2542089167727451762">Klepnite na svoj profilový obrázok</translation>
 <translation id="255671100581129685">Asistent Google nie je k dispozícii vo verejnej relácii.</translation>
 <translation id="256712445991462162">ukotvená lupa</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">V rámci viacnásobného prihlásenia môžete mať maximálne nasledujúci počet účtov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
+<translation id="3217205077783620295">Zvuk je zapnutý. Ak ho chcete vypnúť, prepnite tlačidlo.</translation>
 <translation id="3226991577105957773">a ďalšie (<ph name="COUNT" />)</translation>
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
 <translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> bolo presunuté z plochy <ph name="ACTIVE_DESK" /> na plochu <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3454224730401036106">Vaše pripojenie bolo prepnuté na bezpečnejšiu sieť</translation>
 <translation id="3465223694362104965">Od vášho posledného prihlásenia bola k tomuto zariadeniu pripojená ďalšia klávesnica. Skôr ako ju použijete, uistite sa, že je dôveryhodná.</translation>
+<translation id="3465356146291925647">Ovládané správcom</translation>
 <translation id="3477079411857374384">Ctrl-Shift-medzerník</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Zvýrazniť ukazovateľ myši</translation>
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Reštartovať a resetovať</translation>
 <translation id="495046168593986294">Posunúť nahor</translation>
 <translation id="4961318399572185831">Prenášanie obrazovky</translation>
+<translation id="5018302031617932556">Vďaka nočnému režimu bude vaša obrazovka pri tlmenom osvetlení menej rušivá aj čitateľnejšia. Túto funkciu zmeníte klepnutím.</translation>
 <translation id="5030687792513154421">Čas vypršal</translation>
 <translation id="5035236842988137213">Zariadenie <ph name="DEVICE_NAME" /> bolo pripojené k novému telefónu</translation>
 <translation id="5083553833479578423">Odblokujte ďalšie funkcie Asistenta.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">Toto zariadenie nedokázalo podporovať všetky vaše obrazovky, takže jedna bola odpojená</translation>
 <translation id="574392208103952083">Stredné</translation>
 <translation id="5744083938413354016">Presunutie klepnutím</translation>
+<translation id="5745612484876805746">Nočný režim sa automaticky zapína pri západe slnka</translation>
 <translation id="5750765938512549687">Rozhranie Bluetooth je vypnuté</translation>
 <translation id="576453121877257266">Nočný režim je zapnutý.</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Režim vysokého kontrastu je aktívny. Vypnete ho opätovným stlačením kombinácie klávesov Ctrl+Hľadať+H.</translation>
 <translation id="6018164090099858612">Ukončuje sa režim zrkadlenia</translation>
 <translation id="602001110135236999">Posunúť doľava</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané správcom</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6043212731627905357">Tento monitor nie je kompatibilný s vaším zariadením <ph name="DEVICE_TYPE" /> (monitor nie je podporovaný).</translation>
 <translation id="6043994281159824495">Odhlásiť sa</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Rozhranie Bluetooth je zapnuté</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Vymazanie všetkých upozornení</translation>
 <translation id="643147933154517414">Všetko je hotové</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Vstup ručného písania</translation>
 <translation id="6528179044667508675">Nerušiť</translation>
 <translation id="6537270692134705506">Nasnímať obrazovku</translation>
+<translation id="6537924328260219877">Sila signálu <ph name="SIGNAL_STRENGTH" />, batéria telefónu <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Prebieha prenášanie do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Požiadajte o to správcu</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané správcom</translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6637729079642709226">Zmena času</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Vráťte sa späť o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Pripojte zariadenie <ph name="DEVICE_NAME" /> k svojmu telefónu</translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Asistent Google</translation>
 <translation id="7042322267639375032">Zbaliť stavovú oblasť</translation>
 <translation id="7066646422045619941">Táto sieť je zakázaná správcom.</translation>
 <translation id="7067196344162293536">Automatické otáčanie</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">Upozornenia sú skryté.</translation>
 <translation id="8203795194971602413">Kliknutie pravým tlačidlom myši</translation>
 <translation id="8236042855478648955">Čas na prestávku</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, batéria telefónu <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Stlačením tlačidla Enter odomknite pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8297006494302853456">Slabé</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8627191004499078455">Pripojené k zariadeniu <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané správcom</translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Počúvanie vybraného textu</translation>
 <translation id="8652175077544655965">Zatvoriť nastavenia</translation>
 <translation id="8653151467777939995">Zobraziť nastavenia upozornení. Upozornenia sú zapnuté</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Zobraziť zoznam sietí. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270 °</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">Je možné, že sa pokúša ukradnúť vaše stlačenia klávesov</translation>
 <translation id="8735953464173050365">Zobraziť nastavenia klávesnice. Vybraná klávesnica: <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Zobraziť nastavenia VPN</translation>
+<translation id="8785070478575117577">Pripojiť k sieti <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi‑Fi</translation>
 <translation id="8828714802988429505">90 °</translation>
 <translation id="8843682306134542540">Prepnúť uzamknutie otočenia. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">Ak chcete vykonať akciu s upozornením, odomknite zariadenie ako <ph name="LOGIN_ID" /></translation>
 <translation id="9017320285115481645">Zadajte prístupový kód rodiča Family Link.</translation>
 <translation id="9029474291399787231">K dispozícii je aktualizácia prehrávača Adobe Flash Player</translation>
+<translation id="9047624247355796468">Otvoriť nastavenia siete <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Zariadenie sa obnoví</translation>
 <translation id="9070640332319875144">Nastavenia Asistenta</translation>
 <translation id="9072519059834302790">Zostávajúci čas do vybitia batérie: <ph name="TIME_LEFT" />.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">Lupa na celú obrazovku</translation>
 <translation id="9193626018745640770">Prebieha prenášanie do neznámeho prijímača</translation>
 <translation id="9194617393863864469">Prihlásiť ďalšieho používateľa...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, ovládané správcom</translation>
 <translation id="9205817095063786319">Zariadenie spravuje doména <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Ukončuje sa režim jednotnej pracovnej plochy</translation>
 <translation id="9211681782751733685">Zostávajúci čas do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>

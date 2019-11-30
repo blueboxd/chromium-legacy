@@ -113,7 +113,7 @@ class SyncTest : public InProcessBrowserTest {
     void ValidateToken(const std::string& authorized_entity,
                        const std::string& scope,
                        const std::string& token,
-                       const ValidateTokenCallback& callback) override {}
+                       ValidateTokenCallback callback) override {}
 
     void DeleteToken(const std::string& authorized_entity,
                      const std::string& scope,

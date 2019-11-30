@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise_reporting/browser_report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -36,11 +37,7 @@ const char kActiveProfileName2[] = "active_profile2";
 
 class ReportRequestQueueGeneratorTest : public ::testing::Test {
  public:
-#if defined(OS_CHROMEOS)
-  using Request = em::ChromeOsUserReportRequest;
-#else
-  using Request = em::ChromeDesktopReportRequest;
-#endif
+  using ReportRequest = definition::ReportRequest;
 
   ReportRequestQueueGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
@@ -97,8 +94,8 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
             .Build());
   }
 
-  std::unique_ptr<Request> GenerateBasicRequest() {
-    auto request = std::make_unique<Request>();
+  std::unique_ptr<ReportRequest> GenerateBasicRequest() {
+    auto request = std::make_unique<ReportRequest>();
     base::RunLoop run_loop;
 
     browser_report_generator_.Generate(base::BindLambdaForTesting(
@@ -111,12 +108,12 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
     return request;
   }
 
-  std::vector<std::unique_ptr<Request>> GenerateRequests(
-      const Request& request) {
+  std::vector<std::unique_ptr<ReportRequest>> GenerateRequests(
+      const ReportRequest& request) {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
-    std::queue<std::unique_ptr<Request>> requests =
+    std::queue<std::unique_ptr<ReportRequest>> requests =
         report_request_queue_generator_.Generate(request);
-    std::vector<std::unique_ptr<Request>> result;
+    std::vector<std::unique_ptr<ReportRequest>> result;
     while (!requests.empty()) {
       result.push_back(std::move(requests.front()));
       requests.pop();
@@ -160,7 +157,8 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
     EXPECT_TRUE(mutable_active_profile_names.empty());
   }
 
-  void VerifyMetrics(const std::vector<std::unique_ptr<Request>>& requests) {
+  void VerifyMetrics(
+      const std::vector<std::unique_ptr<ReportRequest>>& requests) {
     histogram_tester_->ExpectUniqueSample(
         "Enterprise.CloudReportingRequestCount", requests.size(), 1);
     histogram_tester_->ExpectUniqueSample(

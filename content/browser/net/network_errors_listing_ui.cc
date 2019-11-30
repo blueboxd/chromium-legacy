@@ -61,17 +61,16 @@ bool ShouldHandleWebUIRequestCallback(const std::string& path) {
   return path == kNetworkErrorDataFile;
 }
 
-void HandleWebUIRequestCallback(
-    BrowserContext* current_context,
-    const std::string& path,
-    const WebUIDataSource::GotDataCallback& callback) {
+void HandleWebUIRequestCallback(BrowserContext* current_context,
+                                const std::string& path,
+                                WebUIDataSource::GotDataCallback callback) {
   DCHECK(ShouldHandleWebUIRequestCallback(path));
 
   base::DictionaryValue data;
   data.Set(kErrorCodesDataName, GetNetworkErrorData());
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
-  callback.Run(base::RefCountedString::TakeString(&json_string));
+  std::move(callback).Run(base::RefCountedString::TakeString(&json_string));
 }
 
 } // namespace

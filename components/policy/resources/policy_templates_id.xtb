@@ -374,11 +374,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini dinonaktifkan atau tidak disetel, Setelan akun Kerberos akan dinonaktifkan. Tidak ada akun Kerberos yang dapat ditambahkan dan autentikasi Kerberos tidak dapat digunakan. Semua akun Kerberos yang ada dan sandi yang disimpan telah dihapus.</translation>
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
-<translation id="1566329065312331399">
-      Kebijakan ini, saat disetel ke False, tidak mengizinkan perangkat memicu powerwash.
-      Saat disetel ke True, kebijakan akan mengizinkan perangkat memicu powerwash.
-      Jika tidak disetel, defaultnya adalah False, yang berarti kebijakan tidak mengizinkan perangkat melakukan powerwash.
-      </translation>
 <translation id="1574554504290354326">Setelan ini tidak digunakan lagi, gunakan SafeBrowsingExtendedReportingEnabled. Mengaktifkan atau menonaktifkan SafeBrowsingExtendedReportingEnabled sama dengan menyetel SafeBrowsingExtendedReportingOptInAllowed ke False.
 
       Menyetel kebijakan ini ke false akan mencegah pengguna agar tidak memilih untuk mengirimkan beberapa informasi sistem dan konten halaman ke server Google. Jika setelan ini adalah true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirimkan beberapa informasi sistem dan konten halaman ke Safe Browsing guna membantu mendeteksi aplikasi dan situs yang berbahaya.
@@ -4233,11 +4228,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7937491150792971922">Gabungkan kebijakan daftar instal ekstensi dari beberapa sumber</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
-<translation id="7944213656414105292">Kebijakan ini mengonfigurasi URL yang akan diberi akses untuk menggunakan pengesahan identitas perangkat dari jarak jauh selama alur SAML berlangsung pada layar login.
-
-      Khususnya, jika URL cocok dengan salah satu pola yang diberikan melalui kebijakan ini, URL akan diizinkan menerima header HTTP yang berisi respons untuk verifikasi pengesahan jarak jauh, yang mengesahkan identitas dan status perangkat.
-
-      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, tidak ada URL yang diizinkan untuk menggunakan pengesahan jarak jauh pada layar login.</translation>
 <translation id="7952007677054834789">Mengonfigurasi halaman yang akan dimuat saat permulaan, halaman beranda default, dan halaman tab baru default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
 
       Setelan halaman beranda pengguna hanya terkunci sepenuhnya jika Anda memilih halaman beranda untuk menjadi halaman tab baru, atau menetapkannya menjadi URL dan menentukan URL halaman beranda. Jika Anda tidak menentukan URL halaman beranda, maka pengguna masih dapat menetapkan halaman beranda ke halaman tab baru dengan menentukan 'chrome://newtab'.

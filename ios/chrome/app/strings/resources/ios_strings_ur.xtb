@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">ادائیگی کے طریقوں کا نظم کریں...</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4747097190499141774">‏پاس فریز کی مرموز کاری میں Google Pay کے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔ آپ کے پاس فریز کا حامل شخص ہی آپ کے مرموز کردہ ڈیٹا کو پڑھ سکتا ہے۔ پاس فریز Google کو نہیں بھیجا جاتا ہے اور نہ ہی Google اسے اسٹور کرتا ہے۔ اگر آپ اپنا پاس فریز بھول جاتے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو آپ کو مطابقت پذیری کو دوبارہ ترتیب دینے کی ضرورت ہوگی۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">صفحہ میں تلاش کریں...</translation>
 <translation id="4751645464639803239">نیا پوشیدگی ٹیب</translation>
 <translation id="4758977202923349869">کریڈٹ کارڈ کو اس فریم میں رکھیں</translation>
 <translation id="4802417911091824046">‏پاس فریز کی مرموز کاری میں Google Pay سے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔
@@ -455,7 +454,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7136892417564438900">کیمرا دستیاب نہیں ہے</translation>
 <translation id="7159472599653637159">موبائل سائٹ کی درخواست کریں</translation>
 <translation id="7173114856073700355">ترتیبات کھولیں</translation>
-<translation id="7189598951263744875">اشتراک کریں…</translation>
 <translation id="7192050974311852563">لاگ کرنا شروع کریں</translation>
 <translation id="7203585745079012652">جوابات دوبارہ بولیں</translation>
 <translation id="7265758999917665941">اس سائٹ کیلئے کبھی نہیں</translation>
@@ -559,6 +557,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8840513115188359703">‏آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے۔</translation>
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
 <translation id="8881801611828450202">اس تصویر کیلئے <ph name="SEARCH_ENGINE" /> پر تلاش کریں</translation>
+<translation id="8909135823018751308">اشتراک کریں…</translation>
 <translation id="895541991026785598">ایک مسئلہ کی اطلاع دیں</translation>
 <translation id="8976382372951310360">مدد</translation>
 <translation id="8981454092730389528">‏Google سرگرمی کنٹرولز</translation>

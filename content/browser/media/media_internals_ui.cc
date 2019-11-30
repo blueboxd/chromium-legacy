@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/media_internals_handler.h"
-#include "content/grit/content_resources.h"
+#include "content/browser/resources/media/grit/media_internals_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"

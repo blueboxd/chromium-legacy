@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Piktogramos</translation>
 <translation id="1111673857033749125">Čia bus rodomos kituose įrenginiuose išsaugotos žymės.</translation>
 <translation id="1113597929977215864">Rodyti supaprastintą rodinį</translation>
+<translation id="1122278879166832009">Palieskite čia, kad greitai pasiektumėte pagrindinį puslapį iš bet kurios vietos</translation>
 <translation id="1124772482545689468">Naudotojas</translation>
 <translation id="1129510026454351943">Išsami informacija: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Laukiama 1 atsisiuntimo.}one{Laukiama # atsisiuntimo.}few{Laukiama # atsisiuntimų.}many{Laukiama # atsisiuntimo.}other{Laukiama # atsisiuntimų.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Išvalyti svet. saugyklą?</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3859306556332390985">Eiti pirmyn</translation>
+<translation id="388596076286380598">Gaukite straipsnių, vaizdo įrašų ir kito turinio iš jums patinkančių svetainių, net jei esate neprisijungę arba prastas jūsų ryšys.</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
 <translation id="3912508018559818924">Ieškoma geriausio žiniatinklio turinio…</translation>
@@ -490,6 +492,7 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4719927025381752090">Siūlyti versti</translation>
 <translation id="4720023427747327413">Atidaryti naudojant „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="4720982865791209136">Padėkite tobulinti „Chrome“. <ph name="BEGIN_LINK" />Dalyvaukite apklausoje<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
 <translation id="4738836084190194332">Paskutinį kartą sinchronizuota: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Atidaryti naują skirtuką</translation>
@@ -636,6 +639,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
 <translation id="5689516760719285838">Vieta</translation>
+<translation id="5694049548840660018">Lengvai grįžkite į pagrindinį ekraną</translation>
 <translation id="569536719314091526">Išverskite šį puslapį į bet kokią kalbą spustelėję mygtuką „Daugiau parinkčių“</translation>
 <translation id="5710871682236653961">Klausti prieš leidžiant svetainėms siųsti ir gauti informaciją palietus ALR įrenginius (rekomenduojama)</translation>
 <translation id="572328651809341494">Naujausi skirtukai</translation>
@@ -798,6 +802,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6850830437481525139">Uždaryta skirtukų lapų: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Atsisiųsti vaizdą</translation>
 <translation id="6865313869410766144">Automatinio pildymo formos duomenys</translation>
+<translation id="6884306546558072722">Tolesnis naršymas neprisijungus</translation>
 <translation id="688738109438487280">Pridėti esamus duomenis prie <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Atrakinkite, kad galėtumėte kopijuoti slaptažodį</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
@@ -1039,6 +1044,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8636825310635137004">Jei norite pasiekti skirtukus iš kitų įrenginių, įjunkite sinchronizavimą.</translation>
 <translation id="8641930654639604085">Bandyti užblokuoti suaugusiesiems skirtas svetaines</translation>
 <translation id="8655129584991699539">Duomenis galite išvalyti „Chrome“ nustatymų“ skiltyje</translation>
+<translation id="8655599981421006542">Palieskite čia, kad sukurtumėte naujų skirtukų ir grįžtumėte į ankstesnius</translation>
 <translation id="8662811608048051533">Būsite atjungti nuo daugelio svetainių.</translation>
 <translation id="8664979001105139458">Failas pavadinimas jau yra</translation>
 <translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
@@ -1051,6 +1057,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8730621377337864115">Atlikta</translation>
 <translation id="8748850008226585750">Turinys paslėptas</translation>
 <translation id="8751914237388039244">Pasirinkti vaizdą</translation>
+<translation id="8758557275681689734">ŽR. visus atidarytus skirtukus</translation>
 <translation id="8788265440806329501">Naršymo istorija uždaryta</translation>
 <translation id="8788968922598763114">Iš naujo atidaryti paskutinį uždarytą skirtuką</translation>
 <translation id="8801436777607969138">Blokuoti „JavaScript“ konkrečioje svetainėje.</translation>

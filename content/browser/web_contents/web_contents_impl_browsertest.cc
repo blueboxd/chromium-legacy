@@ -2015,7 +2015,7 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
 
   void DidFirstVisuallyNonEmptyPaint() override {
     did_fist_visually_non_empty_paint_ = true;
-    on_did_first_visually_non_empty_paint_.Run();
+    std::move(on_did_first_visually_non_empty_paint_).Run();
   }
 
   void WaitForDidFirstVisuallyNonEmptyPaint() {
@@ -2026,7 +2026,7 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
     run_loop.Run();
   }
 
-  base::Closure on_did_first_visually_non_empty_paint_;
+  base::OnceClosure on_did_first_visually_non_empty_paint_;
   bool did_fist_visually_non_empty_paint_;
 };
 
@@ -2127,10 +2127,10 @@ class MockPageScaleObserver : public WebContentsObserver {
  private:
   void GotPageScaleUpdate() {
     got_page_scale_update_ = true;
-    on_page_scale_update_.Run();
+    std::move(on_page_scale_update_).Run();
   }
 
-  base::Closure on_page_scale_update_;
+  base::OnceClosure on_page_scale_update_;
   bool got_page_scale_update_;
 };
 
@@ -2844,7 +2844,7 @@ void DownloadImageTestInternal(Shell* shell,
   loop_runner->Run();
 }
 
-void ExpectNoValidImageCallback(const base::Closure& quit_closure,
+void ExpectNoValidImageCallback(base::OnceClosure quit_closure,
                                 int id,
                                 int status_code,
                                 const GURL& image_url,
@@ -2853,7 +2853,7 @@ void ExpectNoValidImageCallback(const base::Closure& quit_closure,
   EXPECT_EQ(200, status_code);
   EXPECT_TRUE(bitmap.empty());
   EXPECT_TRUE(sizes.empty());
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void ExpectSingleValidImageCallback(base::OnceClosure quit_closure,

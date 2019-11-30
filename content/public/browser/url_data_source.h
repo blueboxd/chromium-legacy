@@ -61,8 +61,8 @@ class CONTENT_EXPORT URLDataSource {
 
   // Used by StartDataRequest so that the child class can return the data when
   // it's available.
-  typedef base::Callback<void(scoped_refptr<base::RefCountedMemory>)>
-      GotDataCallback;
+  using GotDataCallback =
+      base::OnceCallback<void(scoped_refptr<base::RefCountedMemory>)>;
 
   // Must be called on the task runner specified by TaskRunnerForRequestPath,
   // or the IO thread if TaskRunnerForRequestPath returns nullptr.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT URLDataSource {
   // null.
   virtual void StartDataRequest(const GURL& url,
                                 const WebContents::Getter& wc_getter,
-                                const GotDataCallback& callback) = 0;
+                                GotDataCallback callback) = 0;
 
   // The following methods are all called on the IO thread.
 

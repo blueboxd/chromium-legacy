@@ -140,14 +140,15 @@ void Animation::UpdatePrefersReducedMotion() {
 
 // static
 bool Animation::PrefersReducedMotion() {
-  if (!prefers_reduced_motion_.has_value()) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kForcePrefersReducedMotion)) {
-      prefers_reduced_motion_ = true;
-    } else {
-      UpdatePrefersReducedMotion();
-    }
+  // --force-prefers-reduced-motion must always override
+  // |prefers_reduced_motion_|, so check it first.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForcePrefersReducedMotion)) {
+    return true;
   }
+
+  if (!prefers_reduced_motion_.has_value())
+    UpdatePrefersReducedMotion();
   return prefers_reduced_motion_.value();
 }
 

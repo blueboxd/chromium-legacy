@@ -1105,8 +1105,6 @@ if (enable_java_templates) {
   # Variables
   #   main_class: The class containing the program entry point.
   #   build_config: Path to .build_config for the jar (contains classpath).
-  #   jar_path: Optional. First classpath entry to be inserted before
-  #     the classpath extracted from the build_config.
   #   script_name: Name of the script to generate.
   #   wrapper_script_args: List of extra arguments to pass to the executable.
   #
@@ -1137,10 +1135,6 @@ if (enable_java_templates) {
         "--main-class",
         _main_class,
       ]
-      if (defined(invoker.jar_path)) {
-        _jar_path_list = [ rebase_path(invoker.jar_path, root_build_dir) ]
-        args += [ "--classpath=$_jar_path_list" ]
-      }
       args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
 
       if (use_jacoco_coverage) {
@@ -3563,9 +3557,6 @@ if (enable_java_templates) {
                                  "wrapper_script_args",
                                ])
         build_config = _build_config
-        if (defined(_final_jar_path)) {
-          jar_path = _final_jar_path
-        }
         script_name = _main_target_name
         if (defined(invoker.wrapper_script_name)) {
           script_name = invoker.wrapper_script_name

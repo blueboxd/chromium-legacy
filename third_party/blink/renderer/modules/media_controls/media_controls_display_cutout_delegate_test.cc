@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -131,13 +132,13 @@ class MediaControlsDisplayCutoutDelegateTest
   }
 
   TouchList* CreateTouchListWithOnePoint(int x, int y) {
-    TouchList* list = TouchList::Create();
+    auto* list = MakeGarbageCollected<TouchList>();
     list->Append(CreateTouchAtPoint(x, y));
     return list;
   }
 
   TouchList* CreateTouchListWithTwoPoints(int x1, int y1, int x2, int y2) {
-    TouchList* list = TouchList::Create();
+    auto* list = MakeGarbageCollected<TouchList>();
     list->Append(CreateTouchAtPoint(x1, y1));
     list->Append(CreateTouchAtPoint(x2, y2));
     return list;
@@ -152,9 +153,9 @@ class MediaControlsDisplayCutoutDelegateTest
   }
 
   Touch* CreateTouchAtPoint(int x, int y) {
-    return Touch::Create(GetDocument().GetFrame(), &GetVideoElement(),
-                         1 /* identifier */, FloatPoint(x, y), FloatPoint(x, y),
-                         FloatSize(1, 1), 90, 0, "test");
+    return MakeGarbageCollected<Touch>(
+        GetDocument().GetFrame(), &GetVideoElement(), 1 /* identifier */,
+        FloatPoint(x, y), FloatPoint(x, y), FloatSize(1, 1), 90, 0, "test");
   }
 
   mojom::ViewportFit CurrentViewportFit() const {

@@ -79,14 +79,13 @@ class TestWebUIDataSource : public URLDataSource {
 
   std::string GetSource() override { return "webui"; }
 
-  void StartDataRequest(
-      const GURL& url,
-      const WebContents::Getter& wc_getter,
-      const URLDataSource::GotDataCallback& callback) override {
+  void StartDataRequest(const GURL& url,
+                        const WebContents::Getter& wc_getter,
+                        URLDataSource::GotDataCallback callback) override {
     std::string dummy_html = "<html><body>Foo</body></html>";
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&dummy_html);
-    callback.Run(response.get());
+    std::move(callback).Run(response.get());
   }
 
   std::string GetMimeType(const std::string& path) override {

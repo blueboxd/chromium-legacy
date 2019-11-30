@@ -67,7 +67,8 @@ void AddWatcherOnUIThread(
 
   root->AddWatcher(
       path,
-      base::BindRepeating(&OnNotificationOnUIThread, notification_callback),
+      base::BindRepeating(&OnNotificationOnUIThread,
+                          std::move(notification_callback)),
       base::BindOnce(&OnAddWatcherOnUIThread, std::move(callback)));
 }
 
@@ -125,7 +126,8 @@ void ArcDocumentsProviderWatcherManager::AddWatcher(
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
           base::BindRepeating(
               &ArcDocumentsProviderWatcherManager::OnNotification,
-              weak_ptr_factory_.GetWeakPtr(), notification_callback)));
+              weak_ptr_factory_.GetWeakPtr(),
+              std::move(notification_callback))));
 }
 
 void ArcDocumentsProviderWatcherManager::RemoveWatcher(

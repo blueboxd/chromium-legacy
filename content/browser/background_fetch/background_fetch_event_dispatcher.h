@@ -59,7 +59,8 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
 
  private:
   using ServiceWorkerLoadedCallback =
-      base::Callback<void(scoped_refptr<ServiceWorkerVersion>, int request_id)>;
+      base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion>,
+                              int request_id)>;
 
   // Dispatches the `backgroundfetchabort` event, which indicates that an active
   // background fetch was aborted by the user or another external event.

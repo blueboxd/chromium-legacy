@@ -50,7 +50,7 @@ class URLDataSourceIOS {
   // data is available or if the request could not be satisfied. This can be
   // called either in this callback or asynchronously with the response.
   virtual void StartDataRequest(const std::string& path,
-                                const GotDataCallback& callback) = 0;
+                                GotDataCallback callback) = 0;
 
   // Return the mimetype that should be sent with this response, or empty
   // string to specify no mime type.

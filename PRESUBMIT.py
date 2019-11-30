@@ -415,7 +415,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^remoting/signaling/',
   '^remoting/test/',
   '^services/',
-  '^storage/browser/',
   '^third_party/blink/',
   '^third_party/crashpad/crashpad/test/gtest_main.cc',
   '^third_party/leveldatabase/leveldb_chrome.cc',

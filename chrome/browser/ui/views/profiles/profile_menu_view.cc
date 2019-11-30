@@ -66,6 +66,7 @@ namespace {
 
 constexpr float kShortcutIconToImageRatio = 9.0 / 16.0;
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 // Number of times the Dice sign-in promo illustration should be shown.
 constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
 
@@ -77,6 +78,7 @@ ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   return entry;
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   if (profile->IsSupervised()) {
     return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
@@ -114,6 +116,7 @@ bool AreSigninCookiesClearedOnExit(Profile* profile) {
   return client->AreSigninCookiesDeletedOnExit();
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Returns the Google G icon in grey and with a padding of 2. The padding is
 // needed to make the icon look smaller, otherwise it looks too big compared to
@@ -182,11 +185,13 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
 ProfileMenuView::~ProfileMenuView() = default;
 
 void ProfileMenuView::BuildMenu() {
+  // TODO(crbug.com/993752): Remove after ProfileMenuRevamp.
   avatar_menu_ = std::make_unique<AvatarMenu>(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       this, browser());
   avatar_menu_->RebuildMenu();
 
+  // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
     if (dice_enabled_) {
       // Fetch DICE accounts. Note: This always includes the primary account if
@@ -215,16 +220,18 @@ void ProfileMenuView::BuildMenu() {
   BuildProfileManagementFeatureButtons();
 }
 
+// TODO(crbug.com/993752): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
-  // TODO(crbug.com/993752): Remove AvatarMenu observer.
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::FocusButtonOnKeyboardOpen() {
   if (first_profile_button_)
     first_profile_button_->RequestFocus();
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
@@ -294,6 +301,7 @@ void ProfileMenuView::OnManageProfilesButtonClicked() {
   PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnLockButtonClicked() {
   RecordClick(ActionableItem::kLockButton);
   profiles::LockProfile(browser()->profile());
@@ -362,6 +370,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
   }
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnCurrentProfileCardClicked() {
   RecordClick(ActionableItem::kCurrentProfileCard);
   if (dice_enabled_ &&
@@ -697,6 +706,7 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
   }
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
   // Separate items into active and alternatives.
   const AvatarMenu::Item* active_item = nullptr;
@@ -735,6 +745,7 @@ void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
   AddOptionsView(display_lock, avatar_menu);
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 bool ProfileMenuView::AddSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
@@ -754,6 +765,7 @@ bool ProfileMenuView::AddSyncErrorViewIfNeeded(
   return true;
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddPreDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
@@ -780,6 +792,7 @@ void ProfileMenuView::AddPreDiceSyncErrorView(
   }
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
@@ -832,6 +845,7 @@ void ProfileMenuView::AddDiceSyncErrorView(
   }
 }
 
+// TODO(crbug.com/1021587): Incorporate into ProfileMenuRevamp.
 void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
   base::string16 link_text = l10n_util::GetStringUTF16(
       IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT);
@@ -845,6 +859,7 @@ void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
                           base::Unretained(this)));
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {

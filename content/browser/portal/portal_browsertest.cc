@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -572,8 +573,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
   PortalActivatedObserver activated_observer(portal);
   std::unique_ptr<SyntheticTapGesture> gesture =
       std::make_unique<SyntheticTapGesture>(params);
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::BindOnce([](SyntheticGesture::Result) {}));
+  render_widget_host->QueueSyntheticGesture(std::move(gesture),
+                                            base::DoNothing());
   activated_observer.WaitForActivate();
   EXPECT_EQ(portal_contents, shell()->web_contents());
 
@@ -627,8 +628,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndAdopt) {
   {
     PortalActivatedObserver activated_observer(portal);
     PortalCreatedObserver adoption_observer(portal_frame);
-    render_widget_host->QueueSyntheticGesture(
-        std::move(gesture), base::BindOnce([](SyntheticGesture::Result) {}));
+    render_widget_host->QueueSyntheticGesture(std::move(gesture),
+                                              base::DoNothing());
     activated_observer.WaitForActivate();
     EXPECT_EQ(portal_contents, shell()->web_contents());
     // Wait for predecessor to be adopted.
@@ -688,8 +689,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
         [&](Portal* portal) { predecessor_activated.emplace(portal); }));
 
     PortalActivatedObserver activated_observer(portal);
-    render_widget_host->QueueSyntheticGesture(
-        std::move(gesture), base::BindOnce([](SyntheticGesture::Result) {}));
+    render_widget_host->QueueSyntheticGesture(std::move(gesture),
+                                              base::DoNothing());
     activated_observer.WaitForActivate();
     EXPECT_EQ(portal_contents, shell()->web_contents());
 
@@ -766,8 +767,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
       render_widget_host, blink::WebInputEvent::Type::kTouchStart);
   std::unique_ptr<SyntheticTapGesture> gesture =
       std::make_unique<SyntheticTapGesture>(params);
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::BindOnce([](SyntheticGesture::Result) {}));
+  render_widget_host->QueueSyntheticGesture(std::move(gesture),
+                                            base::DoNothing());
   // Waits for touch to be acked. If touch state wasn't cleared before initial
   // activation, a DCHECK will be hit before the ack is sent.
   input_event_ack_waiter.Wait();
@@ -833,8 +834,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
   InputEventAckWaiter input_event_ack_waiter(
       render_widget_host, blink::WebInputEvent::Type::kGestureTap);
   auto gesture = std::make_unique<SyntheticTapGesture>(params);
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::BindOnce([](SyntheticGesture::Result) {}));
+  render_widget_host->QueueSyntheticGesture(std::move(gesture),
+                                            base::DoNothing());
   // Wait for the tap gesture ack. If the initial gesture wasn't cleaned up, the
   // new gesture created will cause an error in the gesture validator.
   input_event_ack_waiter.Wait();

@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Iconos</translation>
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
+<translation id="1122278879166832009">Toca aquí para acceder rápidamente a tu página principal desde cualquier lugar</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Hay 1 descarga pendiente.}other{Hay # descargas pendientes.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
+<translation id="388596076286380598">Consulta artículos, vídeos y otros contenidos de los sitios web que te gusten incluso sin conexión a Internet o con una conexión inestable.</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
 <translation id="3912508018559818924">Buscando lo mejor de la Web…</translation>
@@ -490,6 +492,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4719927025381752090">Ofrecer la traducción</translation>
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136"><ph name="BEGIN_LINK" />Realiza la encuesta<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
+<translation id="4732120983431207637">Desenredo de pila</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4738836084190194332">Última sincronización: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Abre una pestaña nueva</translation>
@@ -636,6 +639,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5684874026226664614">¡Vaya! No se ha podido traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
+<translation id="5694049548840660018">Vuelve fácilmente a la página principal</translation>
 <translation id="569536719314091526">Traduce esta página a cualquier idioma con el botón Más opciones</translation>
 <translation id="5710871682236653961">Pregunta antes de permitir que los sitios web envíen y reciban información cuando toques dispositivos NFC (recomendado)</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
@@ -798,6 +802,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestañas cerradas</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos de Autocompletar formulario</translation>
+<translation id="6884306546558072722">Sigue explorando sin conexión</translation>
 <translation id="688738109438487280">Añade los datos actuales a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea la pantalla para copiar tu contraseña</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -1039,6 +1044,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8636825310635137004">Activa la sincronización para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="8641930654639604085">Intentar bloquear sitios web para adultos</translation>
 <translation id="8655129584991699539">Puedes borrar los datos en la configuración de Chrome</translation>
+<translation id="8655599981421006542">Toca aquí para crear pestañas nuevas y volver a las anteriores</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
 <translation id="8664979001105139458">El nombre del archivo ya existe</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
@@ -1051,6 +1057,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8748850008226585750">Contenidos ocultos</translation>
 <translation id="8751914237388039244">Selecciona una imagen</translation>
+<translation id="8758557275681689734">Consulta todas las pestañas abiertas</translation>
 <translation id="8788265440806329501">El historial de navegación está cerrado</translation>
 <translation id="8788968922598763114">Vuelve a abrir la última pestaña cerrada</translation>
 <translation id="8801436777607969138">Bloquear JavaScript en un sitio web específico.</translation>

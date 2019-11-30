@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="1140351953533677694">Truy cập thiết bị tuần tự và Bluetooth của bạn</translation>
 <translation id="114036956334641753">Âm thanh và phụ đề</translation>
-<translation id="1140610710803014750">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập và bật đồng bộ hóa.</translation>
 <translation id="1140746652461896221">Chặn nội dung trên bất cứ trang nào mà bạn truy cập</translation>
 <translation id="1143142264369994168">Người ký Chứng chỉ</translation>
 <translation id="1145292499998999162">Plugin bị chặn</translation>
@@ -235,7 +234,7 @@
 <translation id="1326317727527857210">Để có các tab từ các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="1327074568633507428">Máy in trên Google Cloud Print</translation>
 <translation id="1327272175893960498">Phiếu Kerberos</translation>
-<translation id="1327495825214193325">Để bật tùy chọn gỡ lỗi ADB, bạn cần phải khởi động lại <ph name="DEVICE_TYPE" /> này. Khi tắt tùy chọn này, bạn phải đặt lại thiết bị về trạng thái ban đầu.</translation>
+<translation id="1327495825214193325">Để bật tùy chọn gỡ lỗi ADB, bạn cần phải khởi động lại <ph name="DEVICE_TYPE" /> này. Để tắt tùy chọn này, bạn phải đặt lại thiết bị về trạng thái ban đầu.</translation>
 <translation id="1327977588028644528">Cổng vào</translation>
 <translation id="1329584516321524826">Vừa cập nhật xong</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">S&amp;ao chép địa chỉ âm thanh</translation>
 <translation id="1465827627707997754">Lát pizza</translation>
 <translation id="1468571364034902819">Không thể dùng hồ sơ này</translation>
-<translation id="1470811252759861213">Để nhận tiện ích trên tất cả các máy tính của bạn, hãy <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Hiển thị thêm</translation>
 <translation id="1475502736924165259">Bạn có các chứng chỉ trên tệp không phù hợp với bất kỳ danh mục nào khác</translation>
 <translation id="1476088332184200792">Sao chép vào Thiết bị của bạn</translation>
@@ -1045,7 +1043,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2489829450872380594">Vào lần tới, một điện thoại mới sẽ mở khóa <ph name="DEVICE_TYPE" /> này. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="2489918096470125693">Thêm &amp;thư mục...</translation>
 <translation id="2490481887078769936">Đã xóa '<ph name="FILE_NAME" />' khỏi danh sách</translation>
-<translation id="2490782392574942205">Để có các tiện ích trên tất cả các máy tính, hãy đăng nhập rồi bật chế độ đồng bộ hóa</translation>
 <translation id="249113932447298600">Rất tiếc, thiết bị <ph name="DEVICE_LABEL" /> không được hỗ trợ vào thời điểm này.</translation>
 <translation id="249303669840926644">Không thể hoàn tất đăng ký</translation>
 <translation id="2495777824269688114">Khám phá các tính năng khác hoặc nhận câu trả lời. Hãy chọn “?” để được trợ giúp.</translation>
@@ -1755,7 +1752,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3528033729920178817">Trang này đang theo dõi vị trí của bạn.</translation>
 <translation id="3528498924003805721">Lối tắt</translation>
-<translation id="3530305684079447434">Để nhận dấu trang trên tất cả các thiết bị của bạn, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> muốn sử dụng micrô của bạn</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Đã tắt âm thanh</translation>
 <translation id="3538066758857505094">Lỗi khi gỡ cài đặt Linux. Vui lòng thử lại.</translation>

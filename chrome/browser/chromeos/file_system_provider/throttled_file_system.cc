@@ -154,10 +154,10 @@ AbortCallback ThrottledFileSystem::AddWatcher(
     bool recursive,
     bool persistent,
     storage::AsyncFileUtil::StatusCallback callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::NotificationCallback notification_callback) {
   return file_system_->AddWatcher(origin, entry_path, recursive, persistent,
-                                  std::move(callback), notification_callback);
+                                  std::move(callback),
+                                  std::move(notification_callback));
 }
 
 void ThrottledFileSystem::RemoveWatcher(

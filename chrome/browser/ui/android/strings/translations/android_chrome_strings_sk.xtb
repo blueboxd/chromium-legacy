@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Ikony</translation>
 <translation id="1111673857033749125">Tu sa zobrazia záložky, ktoré ste uložili na iných zariadeniach.</translation>
 <translation id="1113597929977215864">Aktivovať zjednodušené zobrazenie</translation>
+<translation id="1122278879166832009">Klepnutím tu rýchlo prejdete na svoju domovskú stránku odkiaľkoľvek</translation>
 <translation id="1124772482545689468">Používateľ</translation>
 <translation id="1129510026454351943">Podrobnosti: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Na stiahnutie čaká 1 položka.}few{Na stiahnutie čakajú # položky.}many{# downloads pending.}other{Na stiahnutie čaká # položiek.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Vymazať úložisko webov?</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
+<translation id="388596076286380598">Dostávajte články, videá a ďalší obsah z webov, ktoré sa vám páčia, aj keď ste offline alebo máte slabé pripojenie.</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
 <translation id="3912508018559818924">Vyhľadáva sa to najlepšie z internetu…</translation>
@@ -490,6 +492,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4719927025381752090">Ponúkať preklad</translation>
 <translation id="4720023427747327413">Otvoriť v aplikácii <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomôžte zlepšiť Chrome. <ph name="BEGIN_LINK" />Zúčastniť sa prieskumu<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Modul na rozvinutie zásobníka</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4738836084190194332">Synchronizované <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otvorenie novej karty</translation>
@@ -636,6 +639,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
+<translation id="5694049548840660018">Prechádzajte ľahko na domovskú stránku</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
 <translation id="5710871682236653961">Pýtať sa, či chcete povoliť webom odosielať a prijímať informácie, keď priložíte zariadenia NFC (odporúčané)</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
@@ -798,6 +802,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6850830437481525139">Zatvorené karty: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Stiahnuť obrázok</translation>
 <translation id="6865313869410766144">Dáta automatického dopĺňania formulárov</translation>
+<translation id="6884306546558072722">Pokračovať v prieskume offline</translation>
 <translation id="688738109438487280">Pridať existujúce dáta do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Heslo môžete kopírovať po odomknutí</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
@@ -1039,6 +1044,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8636825310635137004">Ak chcete získať karty zo svojich ostatných zariadení, zapnite synchronizáciu.</translation>
 <translation id="8641930654639604085">Pokúsiť sa blokovať weby pre dospelých</translation>
 <translation id="8655129584991699539">Môžete vymazať údaje v Nastaveniach Chromu</translation>
+<translation id="8655599981421006542">Klepnutím tu vytvorte nové karty a vráťte sa na predchádzajúce</translation>
 <translation id="8662811608048051533">Odhlási vás z väčšiny webov.</translation>
 <translation id="8664979001105139458">Súbor s takým názvom už existuje</translation>
 <translation id="8676374126336081632">Vymazať vstup</translation>
@@ -1051,6 +1057,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8748850008226585750">Obsah je skrytý</translation>
 <translation id="8751914237388039244">Vyberte obrázok</translation>
+<translation id="8758557275681689734">Zobrazenie všetkých vašich otvorených kariet</translation>
 <translation id="8788265440806329501">História navigácie je zatvorená</translation>
 <translation id="8788968922598763114">Opätovné otvorenie poslednej zavretej karty</translation>
 <translation id="8801436777607969138">Zablokujte JavaScript pre konkrétny web.</translation>

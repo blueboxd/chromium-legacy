@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Відкрити посилання в додатку <ph name="APP" /></translation>
 <translation id="1140351953533677694">Отримувати доступ до пристроїв Bluetooth і серійних пристроїв</translation>
 <translation id="114036956334641753">Аудіо та субтитри</translation>
-<translation id="1140610710803014750">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію.</translation>
 <translation id="1140746652461896221">Блокувати вміст на всіх сторінках</translation>
 <translation id="1143142264369994168">Підписувач сертифіката</translation>
 <translation id="1145292499998999162">Плагін заблоковано</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">Копіювати адресу аудіо</translation>
 <translation id="1465827627707997754">Шматок піци</translation>
 <translation id="1468571364034902819">Цей профіль вимкнено</translation>
-<translation id="1470811252759861213">Щоб користуватися розширеннями на всіх своїх комп’ютерах, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Показати більше</translation>
 <translation id="1475502736924165259">У вас є сертифікати, які не відповідають іншим категоріям</translation>
 <translation id="1476088332184200792">Скопіювати на пристрій</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">Наступного разу цей пристрій <ph name="DEVICE_TYPE" /> можна буде розблокувати за допомогою нового телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="2489918096470125693">Додати &amp;папку...</translation>
 <translation id="2490481887078769936">Файл <ph name="FILE_NAME" /> видалено зі списку</translation>
-<translation id="2490782392574942205">Щоб користуватися розширеннями на всіх комп’ютерах, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="249113932447298600">На жаль, зараз пристрій <ph name="DEVICE_LABEL" /> не підтримується.</translation>
 <translation id="249303669840926644">Не вдалося закінчити реєстрацію</translation>
 <translation id="2495777824269688114">Відкрийте для себе нові функції або отримайте відповіді. Виберіть "?", щоб переглянути довідку.</translation>
@@ -1143,7 +1140,7 @@
 <translation id="26224892172169984">Заборонити всім сайтам обробляти протоколи</translation>
 <translation id="2624142942574147739">Ця сторінка має доступ до ваших камери та мікрофона.</translation>
 <translation id="2626799779920242286">Повторіть спробу пізніше.</translation>
-<translation id="2628770867680720336">Щоб увімкнути налагодження ADB, потрібно скинути заводські налаштування цього пристрою Chromebook. <ph name="BEGIN_LINK_LEARN_MORE" />Докладніше<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="2628770867680720336">Щоб увімкнути налагодження ADB, потрібно скинути цей пристрій Chromebook до заводських налаштувань. <ph name="BEGIN_LINK_LEARN_MORE" />Докладніше<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Розробка додатків для Android</translation>
 <translation id="2630681426381349926">Під’єднайтеся до Wi-Fi, щоб почати</translation>
 <translation id="2631120081682787498">Закрити цю вкладку?</translation>
@@ -1156,7 +1153,7 @@
 <translation id="2636625531157955190">Chrome не може отримати доступ до зображення.</translation>
 <translation id="2637400434494156704">Неправильний PIN-код. У вас залишилася одна спроба.</translation>
 <translation id="2638087589890736295">Введіть парольну фразу, щоб почати синхронізацію</translation>
-<translation id="264083724974021997">Підключіться до телефона –діалогове вікно</translation>
+<translation id="264083724974021997">Підключіться до телефона – діалогове вікно</translation>
 <translation id="2642111877055905627">Футбольний м’яч</translation>
 <translation id="2643698698624765890">Керуйте своїми розширеннями, натиснувши вкладку "Розширення" в меню Window (Вікно).</translation>
 <translation id="264810637653812429">Сумісних пристроїв не знайдено.</translation>
@@ -1543,7 +1540,7 @@
 <translation id="3202131003361292969">Шлях</translation>
 <translation id="3202173864863109533">Звук на цій вкладці вимкнено.</translation>
 <translation id="3208703785962634733">Не підтверджено</translation>
-<translation id="32101887417650595">Не вдається підключитися до мережі</translation>
+<translation id="32101887417650595">Не вдається підключитися до принтера</translation>
 <translation id="321084946921799184">Жовто-білий</translation>
 <translation id="321356136776075234">Організаційний підрозділ пристрою (напр., OU=Chromebooks,DC=приклад,DC=com)</translation>
 <translation id="3217843140356091325">Створити комбінацію клавіш?</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3528033729920178817">Ця сторінка відстежує ваше місцезнаходження.</translation>
 <translation id="3528498924003805721">Цілі ярликів</translation>
-<translation id="3530305684079447434">Щоб мати доступ до закладок на всіх своїх пристроях, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774">Сайт <ph name="HOST" /> хоче отримати доступ до вашого мікрофона</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – звук вимкнено</translation>
 <translation id="3538066758857505094">Не вдалося встановити Linux. Повторіть спробу.</translation>
@@ -5248,7 +5244,7 @@
 <translation id="8627795981664801467">Лише захищені з’єднання</translation>
 <translation id="8630903300770275248">Імпортувати контрольованого користувача</translation>
 <translation id="8631032106121706562">Ромашка</translation>
-<translation id="863109444997383731">Сайти не зможуть запитувати, чи показувати сповіщення. Якщо сайт надсилає запит на показ сповіщень, заблокований індикатор з'явиться в адресному рядку.</translation>
+<translation id="863109444997383731">Сайти не зможуть запитувати, чи показувати сповіщення. Якщо сайт надішле запит на показ сповіщень, в адресному рядку з'явиться значок блокування.</translation>
 <translation id="8635628933471165173">Оновлення…</translation>
 <translation id="8637542770513281060">Ваш комп’ютер містить модуль безпеки, який виконує багато важливих функцій захисту в ОС Chrome. Щоб дізнатися більше, відвідайте Довідковий центр Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Доступне оновлення системи. Підготовка до завантаження…</translation>

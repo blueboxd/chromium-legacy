@@ -51,7 +51,7 @@ class CORE_EXPORT PseudoElement : public Element {
   scoped_refptr<ComputedStyle> LayoutStyleForDisplayContents(
       const ComputedStyle&);
 
-  static String PseudoElementNameForEvents(PseudoId);
+  static const AtomicString& PseudoElementNameForEvents(PseudoId);
 
   // Pseudo element are not allowed to be the inner node for hit testing. Find
   // the closest ancestor which is a real dom node.
@@ -75,7 +75,7 @@ class CORE_EXPORT PseudoElement : public Element {
   PseudoId pseudo_id_;
 };
 
-const QualifiedName& PseudoElementTagName();
+const QualifiedName& PseudoElementTagName(PseudoId);
 
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle*);
 

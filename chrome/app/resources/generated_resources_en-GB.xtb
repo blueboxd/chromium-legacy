@@ -100,7 +100,6 @@
 <translation id="1137673463384776352">Open link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Access your Bluetooth and Serial devices</translation>
 <translation id="114036956334641753">Audio and captions</translation>
-<translation id="1140610710803014750">To get your bookmarks on all your devices, sign in and turn on sync.</translation>
 <translation id="1140746652461896221">Block content on any page that you visit</translation>
 <translation id="1143142264369994168">Certificate Signer</translation>
 <translation id="1145292499998999162">Plug-in blocked</translation>
@@ -334,7 +333,6 @@
 <translation id="1465176863081977902">C&amp;opy Audio Address</translation>
 <translation id="1465827627707997754">Pizza slice</translation>
 <translation id="1468571364034902819">Can't use this profile</translation>
-<translation id="1470811252759861213">To get your extensions on all your computers, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Show more</translation>
 <translation id="1475502736924165259">You have certificates on file that do not fit into any of the other categories</translation>
 <translation id="1476088332184200792">Copy to Your Device</translation>
@@ -1056,7 +1054,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2489829450872380594">Next time, a new phone will unlock this <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="2489918096470125693">Add &amp;Folder...</translation>
 <translation id="2490481887078769936">Removed '<ph name="FILE_NAME" />' from list</translation>
-<translation id="2490782392574942205">To get your extensions on all your computers, sign in and turn on sync</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL" /> is not supported at this time.</translation>
 <translation id="249303669840926644">Could not complete registration</translation>
 <translation id="2495777824269688114">Discover more features or get answers. Select '?' for help.</translation>
@@ -1774,7 +1771,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528033729920178817">This page is tracking your location.</translation>
 <translation id="3528498924003805721">Shortcut targets</translation>
-<translation id="3530305684079447434">To get your bookmarks on all your devices, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> wants to use your microphone</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – Audio muted</translation>
 <translation id="3538066758857505094">Error uninstalling Linux. Please try again.</translation>

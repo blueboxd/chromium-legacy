@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">Վճարման եղանակների կառավարում…</translation>
 <translation id="473775607612524610">Թարմացնել</translation>
 <translation id="4747097190499141774">Անցաբառով գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։ Միայն ձեր անցաբառն ունեցող օգտատերը կարող է կարդալ ձեր գաղտնագրված տվյալները: Անցաբառը չի ուղարկվում Google-ին, և Google-ը չի պահում այն: Անցաբառը մոռանալու դեպքում ձեզ անհրաժեշտ կլինի վերակայել համաժամացումը: <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Գտնել էջում…</translation>
 <translation id="4751645464639803239">Նոր ինկոգնիտո ներդիր</translation>
 <translation id="4758977202923349869">Վարկային քարտը տեղադրեք այս շրջանակում</translation>
 <translation id="4802417911091824046">Անցաբառով գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։
@@ -455,7 +454,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7136892417564438900">Ֆոտոխցիկն անհասանելի է</translation>
 <translation id="7159472599653637159">Բջջային տարբերակ</translation>
 <translation id="7173114856073700355">Բացել կարգավորումները</translation>
-<translation id="7189598951263744875">Կիսվել…</translation>
 <translation id="7192050974311852563">Սկսել գրանցումը</translation>
 <translation id="7203585745079012652">Կարդալ պատասխանները</translation>
 <translation id="7265758999917665941">Երբեք չպահել այս կայքի համար</translation>
@@ -559,6 +557,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8840513115188359703">Դուք դուրս չեք գա ձեր Google հաշվից:</translation>
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
 <translation id="8881801611828450202">Որոնել այս պատկերը <ph name="SEARCH_ENGINE" />-ում</translation>
+<translation id="8909135823018751308">Կիսվել…</translation>
 <translation id="895541991026785598">Հաղորդել խնդրի մասին</translation>
 <translation id="8976382372951310360">Օգնություն</translation>
 <translation id="8981454092730389528">Google-ի գործունեության կառավարներ</translation>

@@ -58,13 +58,13 @@
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">പ്രതീക, പദ എക്കോ</translation>
 <translation id="1334570596456017464">സബ്‌സ്‌ക്രി‌പ്‌റ്റ്</translation>
-<translation id="1339428534620983148">മുമ്പത്തേ പട്ടിക നിര</translation>
+<translation id="1339428534620983148">മുൻ പട്ടിക കോളം</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1346059596910821859">നുറുങ്ങ്</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="135978014023467274">നിങ്ങൾ ChromeVox 63-ലേക്ക് അപ്‌ഡേറ്റ് ചെയ്‌തിരിക്കുന്നു!</translation>
 <translation id="1360699455582016846"><ph name="ROUTING_KEY_NUMBER" /> റൂട്ടിംഗ് കീയ്ക്ക് ചുവടെയുള്ള ഇനം ക്ലിക്ക് ചെയ്യുക</translation>
-<translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
+<translation id="136718599399906424">അടുത്ത പട്ടിക വരി</translation>
 <translation id="1377925789329510816">ഇത് അവസാനത്തെ തലക്കെട്ടാണ്. ഈ പേജിലെ ആദ്യ തലക്കെട്ട് റാപ്പ് ചെയ്യാൻ തിരയൽ+H അമർത്തുക അല്ലെങ്കിൽ രണ്ടാമത്തെ തലക്കെട്ടിലേക്ക് പോകാൻ തിരയൽ+Shift+H അമർത്തുക.</translation>
 <translation id="138218114945450791">ഇളം നീല</translation>
 <translation id="1383876407941801731">തിരയുക</translation>
@@ -118,7 +118,7 @@
 <translation id="1756785467854861272">കടും മജന്ത</translation>
 <translation id="1765245556747822181">ഒരു വിരൽ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈ‌പ്പ് ചെയ്യുക</translation>
 <translation id="1781173782405573156">പാസ് ത്രൂ കീ</translation>
-<translation id="1787176709638001873">പാസ്‌വേഡിനായി ടെക്സ്റ്റ് എഡിറ്റ് ചെയ്യുക</translation>
+<translation id="1787176709638001873">പാസ്‌വേഡിനായി വാചകം എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="1802710350767629429">അപ്‌ഡേറ്റ് കുറിപ്പുകൾ കാണിക്കുക</translation>
 <translation id="1810107444790159527">പട്ടിക ബോക്സ്</translation>
 <translation id="1812527064848182527">ലാൻഡ്‌സ്‌കേപ്പ്</translation>
@@ -273,7 +273,7 @@
 <translation id="2968634799764242930">കടൽപച്ച</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ടാബ്}other{# ടാബുകൾ}}</translation>
 <translation id="2972078295414139404">സന്ദർശിച്ച മുമ്പത്തെ ലിങ്കൊന്നുമില്ല.</translation>
-<translation id="2972205263822847197">ഉപകരണ സൂചന</translation>
+<translation id="2972205263822847197">ഉപകരണ നുറുങ്ങ്</translation>
 <translation id="297825089465017871">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ഇടത്തോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="2998131015536248178">മുമ്പത്തെ പ്രതീകം</translation>
 <translation id="2999559350546931576">പിച്ച് കുറയ്ക്കുക</translation>
@@ -691,7 +691,7 @@
 <translation id="5703716265115423771">വോളിയം കുറയ്‌ക്കുക</translation>
 <translation id="5709192780268610569">ദൈർഘ്യമേറിയ വിവരണങ്ങളൊന്നുമില്ല</translation>
 <translation id="5712244464475377681">popbtn</translation>
-<translation id="5712338278108304766">അടുത്ത പട്ടിക നിര</translation>
+<translation id="5712338278108304766">അടുത്ത പട്ടിക കോളം</translation>
 <translation id="571866080859340309">പര്യവേക്ഷണ ഗ്രൂപ്പുകൾ</translation>
 <translation id="5725079927589231571">ഇളം സ്‌റ്റീൽ ബ്ലൂ</translation>
 <translation id="5728409797179002635">പട്ടികയൊന്നും കണ്ടെത്തിയില്ല.</translation>

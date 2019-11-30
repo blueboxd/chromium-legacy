@@ -13,7 +13,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"

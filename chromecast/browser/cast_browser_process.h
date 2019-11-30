@@ -63,7 +63,7 @@ class CastBrowserProcess {
   void AccessibilityStateChanged(bool enabled);
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
-  void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
+  void SetCastScreen(CastScreen* cast_screen);
   void SetDisplayConfigurator(
       std::unique_ptr<CastDisplayConfigurator> display_configurator);
 #endif  // defined(USE_AURA)
@@ -85,7 +85,7 @@ class CastBrowserProcess {
   CastBrowserContext* browser_context() const { return browser_context_.get(); }
   CastService* cast_service() const { return cast_service_.get(); }
 #if defined(USE_AURA)
-  CastScreen* cast_screen() const { return cast_screen_.get(); }
+  CastScreen* cast_screen() const { return cast_screen_; }
   CastDisplayConfigurator* display_configurator() const {
     return display_configurator_.get();
   }
@@ -115,7 +115,7 @@ class CastBrowserProcess {
   // Note: The following order should match the order they are set in
   // CastBrowserMainParts.
 #if defined(USE_AURA)
-  std::unique_ptr<CastScreen> cast_screen_;
+  CastScreen* cast_screen_;
   std::unique_ptr<CastDisplayConfigurator> display_configurator_;
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -129,7 +129,7 @@ class CastBrowserProcess {
   std::unique_ptr<metrics::CastBrowserMetrics> cast_browser_metrics_;
   std::unique_ptr<RemoteDebuggingServer> remote_debugging_server_;
 
-  CastWebViewFactory* web_view_factory_ = nullptr;
+  CastWebViewFactory* web_view_factory_;
   CastContentBrowserClient* cast_content_browser_client_;
   net::NetLog* net_log_;
   std::unique_ptr<TtsController> tts_controller_;

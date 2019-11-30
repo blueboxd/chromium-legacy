@@ -755,12 +755,12 @@ class RequestDataBrowserTest : public ContentBrowserTest {
     base::AutoLock auto_lock(requests_lock_);
     requests_.push_back(data);
     if (requests_closure_)
-      requests_closure_.Run();
+      std::move(requests_closure_).Run();
   }
 
   base::Lock requests_lock_;
   std::vector<RequestData> requests_;
-  base::Closure requests_closure_;
+  base::OnceClosure requests_closure_;
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
 };
 

@@ -391,11 +391,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si cette règle est désactivée ou si elle n'est pas définie, les paramètres de comptes Kerberos sont désactivés. Aucun compte Kerberos ne peut être ajouté et l'authentification Kerberos ne peut pas être utilisée. Les comptes Kerberos déjà créés et les mots de passe enregistrés sont tous supprimés.</translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
-<translation id="1566329065312331399">
-      Lorsque cette règle est définie sur "False", l'appareil ne peut pas lancer Powerwash.
-      Lorsque cette règle est définie sur "True", l'appareil peut lancer Powerwash.
-      Si cette règle n'est pas configurée, elle est définie par défaut sur "False" : l'appareil ne peut pas lancer Powerwash.
-      </translation>
 <translation id="1574554504290354326">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. En revanche, si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs sont autorisés à envoyer des informations système et le contenu de pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.
@@ -4358,11 +4353,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7937491150792971922">Fusionner les règles relatives aux listes d'installation d'extensions à partir de différentes sources</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
-<translation id="7944213656414105292">Cette règle permet de déterminer quelles URL sont autorisées à procéder à une attestation à distance de l'identité de l'appareil concerné pendant le flux SAML sur l'écran de connexion.
-
-      Plus précisément, si une URL correspond à l'un des formats spécifiés dans cette règle, elle pourra recevoir un en-tête HTTP contenant une réponse à une attestation à distance (qui certifie l'identité et l'état de l'appareil concerné).
-
-      Si cette règle n'est pas configurée ou si aucun format d'URL n'est indiqué dans la liste, aucune URL n'est autorisée à procéder à une attestation à distance sur l'écran de connexion.</translation>
 <translation id="7952007677054834789">Permet de configurer les pages à charger au démarrage, la page d'accueil par défaut et la page Nouvel onglet par défaut dans <ph name="PRODUCT_NAME" />, tout en empêchant les utilisateurs de les modifier.
 
       Les paramètres de page d'accueil de l'utilisateur ne sont verrouillés complètement que si vous définissez la page Nouvel onglet ou une URL spécifique comme page d'accueil. Si vous ne précisez pas l'URL de la page d'accueil, l'utilisateur est toujours en mesure de définir la page d'accueil sur la page Nouvel onglet en spécifiant "chrome://newtab".

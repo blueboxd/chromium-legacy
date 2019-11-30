@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
 
-#import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/alert_view/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

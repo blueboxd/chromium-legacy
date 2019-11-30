@@ -85,7 +85,7 @@ class FakeInstanceID : public instance_id::InstanceID {
   void ValidateToken(const std::string& authorized_entity,
                      const std::string& scope,
                      const std::string& token,
-                     const ValidateTokenCallback& callback) override {
+                     ValidateTokenCallback callback) override {
     NOTIMPLEMENTED();
   }
 

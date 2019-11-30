@@ -97,7 +97,6 @@
 <translation id="1137673463384776352">Linki <ph name="APP" /> tətbiqində açın</translation>
 <translation id="1140351953533677694">Bluetooth və Dövri cihazlarınıza daxil olun</translation>
 <translation id="114036956334641753">Audio və subtitrlar</translation>
-<translation id="1140610710803014750">Bütün cihazlarda əlfəcinləri əldə etmək üçün daxil olun və sinxronizasiyanı aktiv edin.</translation>
 <translation id="1140746652461896221">Daxil olduğunuz istənilən səhifədə məzmunu blok edin</translation>
 <translation id="1143142264369994168">Sertifikat İmzaçısı</translation>
 <translation id="1145292499998999162">Plaqin bloklandı</translation>
@@ -327,7 +326,6 @@
 <translation id="1465176863081977902">Audio ünvanını kopyalayın</translation>
 <translation id="1465827627707997754">Pizza dilimi</translation>
 <translation id="1468571364034902819">Bu profildən istifadə etmək mümkün deyil</translation>
-<translation id="1470811252759861213">Artırmalarınızı bütün kompüterlərdən əldə etmək üçün, <ph name="SIGN_IN_LINK" /> .</translation>
 <translation id="1472675084647422956">Daha çox göstərin</translation>
 <translation id="1475502736924165259">Digər kateqoriyalardan heç birinə uyğun olmayan faylda sertifikatlarınız var</translation>
 <translation id="1476088332184200792">Cihazınıza Kopyalayın</translation>
@@ -1040,7 +1038,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2489829450872380594">Növbəti dəfə yeni telefon <ph name="DEVICE_TYPE" /> cihazını kiliddən çıxaracaq. Ayarlardan Smart Lock'u deaktiv edə bilərsiniz.</translation>
 <translation id="2489918096470125693">Qovluq əlavə edin...</translation>
 <translation id="2490481887078769936">"<ph name="FILE_NAME" />" siyahıdan silindi</translation>
-<translation id="2490782392574942205">Artırmaları bütün kompüterlərdə əldə etmək üçün hesaba daxil olub sinxronizasiyanı aktiv edin</translation>
 <translation id="249113932447298600">Üzr istəyirik, <ph name="DEVICE_LABEL" /> cihazı hazırda dəstəklənmir.</translation>
 <translation id="249303669840926644">Qeydiyyatı tamamlamaq olmadı</translation>
 <translation id="2495777824269688114">Daha çox funksiya kəşf edin və ya cavablar alın. Kömək üçün “?” seçimini edin.</translation>
@@ -1750,7 +1747,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3527085408025491307">Qovluq</translation>
 <translation id="3528033729920178817">Bu səhifə məkanınızı izləyir.</translation>
 <translation id="3528498924003805721">Qısayol hədəfləri</translation>
-<translation id="3530305684079447434">Bütün cihazlarınızda əlfəcinləri əldə etmək üçün, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> mikrofonunuzu istifadə etmək istəyir</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio səssiz edildi</translation>
 <translation id="3538066758857505094">Linux sistemdən silinərkən xəta baş verdi. Yenidən cəhd edin.</translation>

@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Само на Wi-Fi-ју</translation>
 <translation id="2747003861858887689">Претходно поље</translation>
 <translation id="2773292004659987824">Претрага без архивирања</translation>
+<translation id="277771892408211951">Изаберите језик</translation>
 <translation id="2780046210906776326">Нема налога е-поште</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Изађи из пребацивача картица</translation>
@@ -268,7 +269,6 @@
 <translation id="4689564913179979534">Управљајте начинима плаћања...</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4747097190499141774">Шифровање помоћу приступне фразе не обухвата начине плаћања и адресе из Google Pay-а. Само неко ко има приступну фразу може да чита шифроване податке. Приступна фраза се не шаље Google-у нити је он чува. Ако заборавите приступну фразу или пожелите да промените ово подешавање, треба да ресетујете синхронизацију. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Пронађи на страници...</translation>
 <translation id="4751645464639803239">Нова картица без архивирањa</translation>
 <translation id="4758977202923349869">Поставите кредитну картицу у овај оквир</translation>
 <translation id="4802417911091824046">Шифровање помоћу приступне фразе не обухвата начине плаћања и адресе из Google Pay-а.
@@ -455,7 +455,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7136892417564438900">Камера је недоступна</translation>
 <translation id="7159472599653637159">Захтевај мобилни сајт</translation>
 <translation id="7173114856073700355">Отвори Подешавања</translation>
-<translation id="7189598951263744875">Дели...</translation>
 <translation id="7192050974311852563">Покрени евидентирање</translation>
 <translation id="7203585745079012652">Изговарај одговоре</translation>
 <translation id="7265758999917665941">Никада за овај сајт</translation>
@@ -559,6 +558,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8840513115188359703">Нећемо вас одјавити са Google налога.</translation>
 <translation id="8870413625673593573">Недавно затворено</translation>
 <translation id="8881801611828450202">Претражи ову слику у <ph name="SEARCH_ENGINE" />-у</translation>
+<translation id="8909135823018751308">Дели...</translation>
 <translation id="895541991026785598">Пријавите проблем</translation>
 <translation id="8976382372951310360">Помоћ</translation>
 <translation id="8981454092730389528">Google контроле активности</translation>

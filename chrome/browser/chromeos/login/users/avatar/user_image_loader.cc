@@ -32,17 +32,21 @@ struct ImageInfo {
   ImageInfo(const base::FilePath& file_path,
             int pixels_per_side,
             ImageDecoder::ImageCodec image_codec,
-            const LoadedCallback& loaded_cb)
+            LoadedCallback loaded_cb)
       : file_path(file_path),
         pixels_per_side(pixels_per_side),
         image_codec(image_codec),
-        loaded_cb(loaded_cb) {}
+        loaded_cb(std::move(loaded_cb)) {}
+
+  ImageInfo(ImageInfo&&) = default;
+  ImageInfo& operator=(ImageInfo&&) = default;
+
   ~ImageInfo() {}
 
-  const base::FilePath file_path;
-  const int pixels_per_side;
-  const ImageDecoder::ImageCodec image_codec;
-  const LoadedCallback loaded_cb;
+  base::FilePath file_path;
+  int pixels_per_side;
+  ImageDecoder::ImageCodec image_codec;
+  LoadedCallback loaded_cb;
 };
 
 // Crops |image| to the square format and downsizes the image to
@@ -106,10 +110,10 @@ user_manager::UserImage::ImageFormat ChooseImageFormatFromCodec(
 class UserImageRequest : public ImageDecoder::ImageRequest {
  public:
   UserImageRequest(
-      const ImageInfo& image_info,
+      ImageInfo image_info,
       const std::string& image_data,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-      : image_info_(image_info),
+      : image_info_(std::move(image_info)),
         // TODO(crbug.com/593251): Remove the data copy here.
         image_data_(new base::RefCountedBytes(
             reinterpret_cast<const unsigned char*>(image_data.data()),
@@ -134,7 +138,7 @@ class UserImageRequest : public ImageDecoder::ImageRequest {
                         bool image_bytes_regenerated);
 
  private:
-  const ImageInfo image_info_;
+  ImageInfo image_info_;
   scoped_refptr<base::RefCountedBytes> image_data_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
@@ -200,19 +204,20 @@ void UserImageRequest::OnImageFinalized(
       image_info_.image_codec == ImageDecoder::ROBUST_PNG_CODEC ||
       image_bytes_regenerated)
     user_image->MarkAsSafe();
-  image_info_.loaded_cb.Run(std::move(user_image));
+  std::move(image_info_.loaded_cb).Run(std::move(user_image));
   delete this;
 }
 
 void UserImageRequest::OnDecodeImageFailed() {
-  image_info_.loaded_cb.Run(base::WrapUnique(new user_manager::UserImage));
+  std::move(image_info_.loaded_cb)
+      .Run(base::WrapUnique(new user_manager::UserImage));
   delete this;
 }
 
 // Starts decoding the image with ImageDecoder for the image |data| if
 // |data_is_ready| is true.
 void DecodeImage(
-    const ImageInfo& image_info,
+    ImageInfo image_info,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string* data,
     bool data_is_ready) {
@@ -220,15 +225,15 @@ void DecodeImage(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            image_info.loaded_cb,
+            std::move(image_info.loaded_cb),
             base::Passed(base::WrapUnique(new user_manager::UserImage))));
     return;
   }
 
-  UserImageRequest* image_request =
-      new UserImageRequest(image_info, *data, background_task_runner);
-  ImageDecoder::StartWithOptions(image_request, *data, image_info.image_codec,
-                                 false);
+  ImageDecoder::ImageCodec codec = image_info.image_codec;
+  UserImageRequest* image_request = new UserImageRequest(
+      std::move(image_info), *data, background_task_runner);
+  ImageDecoder::StartWithOptions(image_request, *data, codec, false);
 }
 
 }  // namespace
@@ -238,14 +243,15 @@ void StartWithFilePath(
     const base::FilePath& file_path,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
-    const LoadedCallback& loaded_cb) {
+    LoadedCallback loaded_cb) {
   std::string* data = new std::string;
   base::PostTaskAndReplyWithResult(
       background_task_runner.get(), FROM_HERE,
-      base::Bind(&base::ReadFileToString, file_path, data),
-      base::Bind(&DecodeImage,
-                 ImageInfo(file_path, pixels_per_side, image_codec, loaded_cb),
-                 background_task_runner, base::Owned(data)));
+      base::BindOnce(&base::ReadFileToString, file_path, data),
+      base::BindOnce(&DecodeImage,
+                     ImageInfo(file_path, pixels_per_side, image_codec,
+                               std::move(loaded_cb)),
+                     background_task_runner, base::Owned(data)));
 }
 
 void StartWithData(
@@ -253,10 +259,10 @@ void StartWithData(
     std::unique_ptr<std::string> data,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
-    const LoadedCallback& loaded_cb) {
-  DecodeImage(
-      ImageInfo(base::FilePath(), pixels_per_side, image_codec, loaded_cb),
-      background_task_runner, data.get(), true /* data_is_ready */);
+    LoadedCallback loaded_cb) {
+  DecodeImage(ImageInfo(base::FilePath(), pixels_per_side, image_codec,
+                        std::move(loaded_cb)),
+              background_task_runner, data.get(), true /* data_is_ready */);
 }
 
 }  // namespace user_image_loader

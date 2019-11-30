@@ -246,9 +246,10 @@ class HistogramRule : public BackgroundTracingRule,
   void Install() override {
     base::StatisticsRecorder::SetCallback(
         histogram_name_,
-        base::Bind(&HistogramRule::OnHistogramChangedCallback,
-                   base::Unretained(this), histogram_name_,
-                   histogram_lower_value_, histogram_upper_value_, repeat_));
+        base::BindRepeating(&HistogramRule::OnHistogramChangedCallback,
+                            base::Unretained(this), histogram_name_,
+                            histogram_lower_value_, histogram_upper_value_,
+                            repeat_));
 
     BackgroundTracingManagerImpl::GetInstance()->AddAgentObserver(this);
     installed_ = true;
@@ -447,8 +448,9 @@ class TraceAtRandomIntervalsRule : public BackgroundTracingRule {
 
   void OnTriggerTimer() {
     BackgroundTracingManagerImpl::GetInstance()->TriggerNamedEvent(
-        handle_, base::Bind(&TraceAtRandomIntervalsRule::OnStartedFinalizing,
-                            base::Unretained(this)));
+        handle_,
+        base::BindOnce(&TraceAtRandomIntervalsRule::OnStartedFinalizing,
+                       base::Unretained(this)));
   }
 
   void StartTimer() {

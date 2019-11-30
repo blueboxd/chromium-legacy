@@ -55,6 +55,7 @@ void LevelDBScopesTestBase::TearDown() {
     CloseScopesAndDestroyLevelDBState();
     if (temp_directory_.IsValid()) {
       leveldb_factory_->DestroyLevelDB(temp_directory_.GetPath());
+      task_env_.RunUntilIdle();
       ASSERT_TRUE(temp_directory_.Delete());
     }
   }

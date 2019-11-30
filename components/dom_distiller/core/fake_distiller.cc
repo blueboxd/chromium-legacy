@@ -24,12 +24,12 @@ FakeDistiller::FakeDistiller(bool execute_callback)
   EXPECT_CALL(*this, Die()).Times(testing::AnyNumber());
 }
 
-FakeDistiller::FakeDistiller(
-    bool execute_callback,
-    const base::Closure& distillation_initiated_callback)
+FakeDistiller::FakeDistiller(bool execute_callback,
+                             base::OnceClosure distillation_initiated_callback)
     : execute_callback_(execute_callback),
       destruction_allowed_(true),
-      distillation_initiated_callback_(distillation_initiated_callback) {
+      distillation_initiated_callback_(
+          std::move(distillation_initiated_callback)) {
   EXPECT_CALL(*this, Die()).Times(testing::AnyNumber());
 }
 
@@ -46,7 +46,7 @@ void FakeDistiller::DistillPage(
   url_ = url;
   article_callback_ = article_callback;
   page_callback_ = page_callback;
-  if (!distillation_initiated_callback_.is_null()) {
+  if (distillation_initiated_callback_) {
     std::move(distillation_initiated_callback_).Run();
   }
   if (execute_callback_) {

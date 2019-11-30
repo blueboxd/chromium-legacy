@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
+#import "ios/chrome/browser/ui/alert_view/alert_consumer.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

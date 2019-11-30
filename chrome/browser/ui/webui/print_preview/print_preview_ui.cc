@@ -146,9 +146,8 @@ bool ShouldHandleRequestCallback(const std::string& path) {
 }
 
 // Get markup or other resources for the print preview page.
-void HandleRequestCallback(
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+void HandleRequestCallback(const std::string& path,
+                           content::WebUIDataSource::GotDataCallback callback) {
   // ChromeWebUIDataSource handles most requests except for the print preview
   // data.
   int preview_ui_id;
@@ -159,12 +158,12 @@ void HandleRequestCallback(
   PrintPreviewDataService::GetInstance()->GetDataEntry(preview_ui_id,
                                                        page_index, &data);
   if (data.get()) {
-    callback.Run(data.get());
+    std::move(callback).Run(data.get());
     return;
   }
   // Invalid request.
   auto empty_bytes = base::MakeRefCounted<base::RefCountedBytes>();
-  callback.Run(empty_bytes.get());
+  std::move(callback).Run(empty_bytes.get());
 }
 
 void AddPrintPreviewStrings(content::WebUIDataSource* source) {

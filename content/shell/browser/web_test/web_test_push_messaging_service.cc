@@ -101,14 +101,14 @@ void WebTestPushMessagingService::GetSubscriptionInfo(
     int64_t service_worker_registration_id,
     const std::string& sender_id,
     const std::string& subscription_id,
-    const SubscriptionInfoCallback& callback) {
+    SubscriptionInfoCallback callback) {
   std::vector<uint8_t> p256dh(kTestP256Key,
                               kTestP256Key + base::size(kTestP256Key));
   std::vector<uint8_t> auth(kAuthentication,
                             kAuthentication + base::size(kAuthentication));
 
   const GURL endpoint = CreateEndpoint(subscription_id);
-  callback.Run(true /* is_valid */, endpoint, p256dh, auth);
+  std::move(callback).Run(true /* is_valid */, endpoint, p256dh, auth);
 }
 
 bool WebTestPushMessagingService::SupportNonVisibleMessages() {

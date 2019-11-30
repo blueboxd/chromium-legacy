@@ -223,25 +223,25 @@ const char kTestAppScope[] = "https://www.googleapis.com/auth/userinfo.profile";
 // Helper function for GetConsumerKioskAutoLaunchStatusCallback.
 void ConsumerKioskAutoLaunchStatusCheck(
     KioskAppManager::ConsumerKioskAutoLaunchStatus* out_status,
-    const base::Closure& runner_quit_task,
+    base::OnceClosure runner_quit_task,
     KioskAppManager::ConsumerKioskAutoLaunchStatus in_status) {
   LOG(INFO) << "KioskAppManager::ConsumerKioskModeStatus = " << in_status;
   *out_status = in_status;
-  runner_quit_task.Run();
+  std::move(runner_quit_task).Run();
 }
 
 // Helper KioskAppManager::EnableKioskModeCallback implementation.
 void ConsumerKioskModeAutoStartLockCheck(bool* out_locked,
-                                         const base::Closure& runner_quit_task,
+                                         base::OnceClosure runner_quit_task,
                                          bool in_locked) {
   LOG(INFO) << "kiosk locked  = " << in_locked;
   *out_locked = in_locked;
-  runner_quit_task.Run();
+  std::move(runner_quit_task).Run();
 }
 
 // Helper function for WaitForNetworkTimeOut.
-void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
-  runner_quit_task.Run();
+void OnNetworkWaitTimedOut(base::OnceClosure runner_quit_task) {
+  std::move(runner_quit_task).Run();
 }
 
 bool IsAppInstalled(const std::string& app_id, const std::string& version) {
@@ -684,21 +684,20 @@ class KioskTest : public OobeBaseTest {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
 
-    base::Closure callback =
-        base::Bind(&OnNetworkWaitTimedOut, runner->QuitClosure());
+    base::OnceClosure callback =
+        base::BindOnce(&OnNetworkWaitTimedOut, runner->QuitClosure());
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(&callback);
 
     runner->Run();
 
     CHECK(GetAppLaunchController()->network_wait_timedout());
-    AppLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
   }
 
   void EnableConsumerKioskMode() {
     bool locked = false;
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(base::Bind(
+    KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(base::BindOnce(
         &ConsumerKioskModeAutoStartLockCheck, &locked, runner->QuitClosure()));
     runner->Run();
     EXPECT_TRUE(locked);
@@ -709,7 +708,7 @@ class KioskTest : public OobeBaseTest {
         static_cast<KioskAppManager::ConsumerKioskAutoLaunchStatus>(-1);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::Bind(
+    KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
         &ConsumerKioskAutoLaunchStatusCheck, &status, runner->QuitClosure()));
     runner->Run();
     CHECK_NE(status,

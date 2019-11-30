@@ -34,9 +34,9 @@ void FakeGCMDriver::ValidateRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     const std::string& registration_id,
-    const ValidateRegistrationCallback& callback) {
+    ValidateRegistrationCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true /* is_valid */));
+      FROM_HERE, base::BindOnce(std::move(callback), true /* is_valid */));
 }
 
 void FakeGCMDriver::OnSignedIn() {

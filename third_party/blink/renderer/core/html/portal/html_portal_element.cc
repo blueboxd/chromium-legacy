@@ -300,6 +300,13 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
       break;
   };
 
+  // When adopting a predecessor, it is possible to insert a portal that's
+  // eligible to have a guest contents to a node that's not connected. In this
+  // case, do not create the portal frame yet.
+  if (!node.isConnected()) {
+    return result;
+  }
+
   if (portal_) {
     // The interface is already bound if the HTMLPortalElement is adopting the
     // predecessor.

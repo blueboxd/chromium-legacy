@@ -60,7 +60,7 @@ class CONTENT_EXPORT WebContentsBindingSet {
   void OnRequestForFrame(RenderFrameHost* render_frame_host,
                          mojo::ScopedInterfaceEndpointHandle handle);
 
-  const base::Closure remove_callback_;
+  base::OnceClosure remove_callback_;
   Binder* binder_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsBindingSet);

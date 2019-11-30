@@ -180,7 +180,7 @@ std::string UserImageSource::GetSource() {
 void UserImageSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   // TODO(crbug/1009127): Make sure |url| matches
   // |chrome::kChromeUIUserImageURL| now that |url| is available.
   const std::string path = content::URLDataSource::URLToRequestPath(url);
@@ -188,7 +188,7 @@ void UserImageSource::StartDataRequest(
   int frame = -1;
   ParseRequest(url, &email, &frame);
   const AccountId account_id(AccountId::FromUserEmail(email));
-  callback.Run(GetUserImageInternal(account_id, frame));
+  std::move(callback).Run(GetUserImageInternal(account_id, frame));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) {

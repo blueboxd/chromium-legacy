@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
 <translation id="2747003861858887689">Camp anterior</translation>
 <translation id="2773292004659987824">Cerca d'incògnit</translation>
+<translation id="277771892408211951">Selecciona l'idioma</translation>
 <translation id="2780046210906776326">Cap compte de correu</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Surt del selector de pestanyes</translation>
@@ -268,7 +269,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="4689564913179979534">Gestiona les formes de pagament...</translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="4747097190499141774">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay. Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les dades que encriptes. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblides o vols canviar aquesta opció, has de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Cerca a la pàgina...</translation>
 <translation id="4751645464639803239">Pestanya d'incògnit nova</translation>
 <translation id="4758977202923349869">Situa la targeta de crèdit dins d'aquest marc</translation>
 <translation id="4802417911091824046">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay.
@@ -455,7 +455,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7136892417564438900">La càmera no està disponible</translation>
 <translation id="7159472599653637159">Sol·licita lloc web per a mòbils</translation>
 <translation id="7173114856073700355">Obre Configuració</translation>
-<translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7192050974311852563">Inicia el registre</translation>
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="7265758999917665941">Mai per a aquest lloc web</translation>
@@ -559,6 +558,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8840513115188359703">No se us tancarà la sessió del compte de Google.</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8881801611828450202">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Comparteix...</translation>
 <translation id="895541991026785598">Informa d'un problema</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controls d'activitat de Google</translation>

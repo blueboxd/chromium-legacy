@@ -100,7 +100,7 @@
 <translation id="4382340674111381977">Joan aurreko orrira</translation>
 <translation id="4458670250301149821">Mugitu aplikazioaren ikonoa aplikazioen saretako karpeta batean sartzeko edo handik ateratzeko</translation>
 <translation id="4472417192667361414">Sistema- eta bistaratze-ezarpenak</translation>
-<translation id="449214506787633354"><ph name="CTRL" />; ondoren <ph name="LEFT" /> edo <ph name="RIGHT" />; bestela, <ph name="UP" /> edo <ph name="DOWN" /></translation>
+<translation id="449214506787633354"><ph name="CTRL" />; ondoren <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> edo <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Ikusi lasterbideen laguntzailea</translation>
 <translation id="4628718545549558538">Ireki egoeraren eremua (kontuko irudia agertzen den tokia)</translation>
 <translation id="4642092649622328492">Atera eremu baten pantaila-argazkia</translation>
@@ -207,7 +207,7 @@
 <translation id="9041599225465145264">Itsatsi arbeleko edukia</translation>
 <translation id="9052808072970550123">Aldatu hurrengo erabiltzailera</translation>
 <translation id="906458777597946297">Maximizatu leihoa</translation>
-<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />; ondoren, <ph name="LEFT" /> edo <ph name="RIGHT" />; bestela, <ph name="UP" /> edo <ph name="DOWN" /></translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />; ondoren, <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> edo <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Joan lerroaren hasierara</translation>
 <translation id="9106898733795143799">Orri- eta web-arakatzailea</translation>
 <translation id="9162942292291287644">Ez dago emaitzarik <ph name="QUERY" /> bilaketarako</translation>

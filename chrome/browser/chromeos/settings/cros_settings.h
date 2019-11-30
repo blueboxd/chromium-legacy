@@ -117,7 +117,7 @@ class CrosSettings {
   using ObserverSubscription = base::CallbackList<void(void)>::Subscription;
   std::unique_ptr<ObserverSubscription> AddSettingsObserver(
       const std::string& path,
-      const base::Closure& callback) WARN_UNUSED_RESULT;
+      base::RepeatingClosure callback) WARN_UNUSED_RESULT;
 
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;

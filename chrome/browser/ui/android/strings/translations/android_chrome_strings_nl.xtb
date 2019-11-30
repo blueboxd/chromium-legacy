@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Pictogrammen</translation>
 <translation id="1111673857033749125">Bladwijzers die je op andere apparaten hebt opgeslagen, worden hier weergegeven.</translation>
 <translation id="1113597929977215864">Vereenvoudigde weergave tonen</translation>
+<translation id="1122278879166832009">Tik hier om overal snel toegang tot je homepage te krijgen</translation>
 <translation id="1124772482545689468">Gebruiker</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download in behandeling.}other{# downloads in behandeling.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
+<translation id="388596076286380598">Krijg artikelen, video's en andere content van sites die je leuk vindt, ook als je offline bent of je een slechte verbinding hebt.</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
 <translation id="3912508018559818924">We zoeken naar het beste op internet…</translation>
@@ -490,6 +492,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4719927025381752090">Aanbieden om te vertalen</translation>
 <translation id="4720023427747327413">Openen in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Help bij het verbeteren van Chrome. <ph name="BEGIN_LINK" />Enquête invullen<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4738836084190194332">Laatst gesynchroniseerd: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Een nieuw tabblad openen</translation>
@@ -636,6 +639,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
 <translation id="5686790454216892815">Bestandsnaam te lang</translation>
 <translation id="5689516760719285838">Locatie</translation>
+<translation id="5694049548840660018">Makkelijk naar je homepage gaan</translation>
 <translation id="569536719314091526">Vertaal deze pagina in een andere taal via de knop 'Meer opties'</translation>
 <translation id="5710871682236653961">Vragen voordat sites informatie mogen sturen en ontvangen als je NFC-apparaten tegen elkaar houdt (aanbevolen)</translation>
 <translation id="572328651809341494">Recente tabbladen</translation>
@@ -798,6 +802,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabbladen gesloten</translation>
 <translation id="6864459304226931083">Afbeelding downloaden</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
+<translation id="6884306546558072722">Offline blijven ontdekken</translation>
 <translation id="688738109438487280">Bestaande gegevens toevoegen aan <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Ontgrendelen om je wachtwoord te kopiëren</translation>
 <translation id="6896758677409633944">Kopieer</translation>
@@ -1039,6 +1044,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
 <translation id="8641930654639604085">Sites met content voor volwassenen proberen te blokkeren</translation>
 <translation id="8655129584991699539">Je kunt de gegevens wissen in de Chrome-instellingen</translation>
+<translation id="8655599981421006542">Tik hier om nieuwe tabbladen te maken en terug te gaan naar vorige tabbladen</translation>
 <translation id="8662811608048051533">Hiermee word je uitgelogd van de meeste sites.</translation>
 <translation id="8664979001105139458">Bestandsnaam bestaat al</translation>
 <translation id="8676374126336081632">Invoer wissen</translation>
@@ -1051,6 +1057,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8748850008226585750">Content verborgen</translation>
 <translation id="8751914237388039244">Een afbeelding selecteren</translation>
+<translation id="8758557275681689734">Al je geopende tabbladen bekijken</translation>
 <translation id="8788265440806329501">Navigatiegeschiedenis is gesloten</translation>
 <translation id="8788968922598763114">Het laatst gesloten tabblad opnieuw openen</translation>
 <translation id="8801436777607969138">Blokkeer JavaScript voor een specifieke site.</translation>

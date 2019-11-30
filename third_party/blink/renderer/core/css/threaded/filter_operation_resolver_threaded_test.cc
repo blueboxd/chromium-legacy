@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/style/filter_operation.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -78,8 +79,9 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleDropShadow) {
     FilterOperations fo =
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
-    EXPECT_EQ(*fo.at(0), *DropShadowFilterOperation::Create(ShadowData(
-                             FloatPoint(10, 5), 1, 0, ShadowStyle::kNormal,
+    EXPECT_EQ(*fo.at(0),
+              *MakeGarbageCollected<DropShadowFilterOperation>(
+                  ShadowData(FloatPoint(10, 5), 1, 0, ShadowStyle::kNormal,
                              StyleColor(Color::kBlack))));
   });
 }

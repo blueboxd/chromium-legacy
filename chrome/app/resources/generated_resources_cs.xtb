@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Otevřít odkaz v aplikaci <ph name="APP" /></translation>
 <translation id="1140351953533677694">Přistupovat k zařízením připojeným přes Bluetooth a sériový port</translation>
 <translation id="114036956334641753">Zvuk a titulky</translation>
-<translation id="1140610710803014750">Chcete-li mít záložky ve všech zařízeních, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="1140746652461896221">Blokovat obsah na každé navštívené stránce</translation>
 <translation id="1143142264369994168">Autor podpisu certifikátu</translation>
 <translation id="1145292499998999162">Plugin zablokován</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">K&amp;opírovat adresu zvukového souboru</translation>
 <translation id="1465827627707997754">Kousek pizzy</translation>
 <translation id="1468571364034902819">Tento profil nelze použít</translation>
-<translation id="1470811252759861213">Chcete-li rozšíření přenést do všech počítačů, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Zobrazit více</translation>
 <translation id="1475502736924165259">Máte založené certifikáty, které se nehodí do žádné z ostatních kategorií</translation>
 <translation id="1476088332184200792">Kopírovat do zařízení</translation>
@@ -1044,7 +1042,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2489829450872380594">Příště toto zařízení <ph name="DEVICE_TYPE" /> odemkne nový telefon. Funkci Smart Lock můžete vypnout v Nastavení.</translation>
 <translation id="2489918096470125693">Přidat &amp;složku...</translation>
 <translation id="2490481887078769936">Ze seznamu byl odstraněn soubor <ph name="FILE_NAME" /></translation>
-<translation id="2490782392574942205">Chcete-li mít rozšíření na všech svých počítačích, přihlaste se a zapněte synchronizaci</translation>
 <translation id="249113932447298600">Je nám líto, zařízení <ph name="DEVICE_LABEL" /> není v současné době podporováno.</translation>
 <translation id="249303669840926644">Registraci se nepodařilo dokončit</translation>
 <translation id="2495777824269688114">Objevte další funkce a najděte odpovědi. Nápovědu otevřete tlačítkem „?“.</translation>
@@ -1754,7 +1751,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3528033729920178817">Tato stránka sleduje vaši polohu.</translation>
 <translation id="3528498924003805721">Cíle zástupců</translation>
-<translation id="3530305684079447434">Chcete-li své záložky synchronizovat do všech zařízení, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774">Stránka <ph name="HOST" /> chce použít váš mikrofon</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – zvuk je vypnutý</translation>
 <translation id="3538066758857505094">Při odinstalaci systému Linux došlo k chybě. Zkuste to znovu.</translation>

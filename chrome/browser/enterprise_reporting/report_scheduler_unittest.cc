@@ -77,9 +77,9 @@ class FakeRequestTimer : public RequestTimer {
 };
 
 ACTION_P(ScheduleGeneratorCallback, request_number) {
-  ReportGenerator::Requests requests;
+  ReportGenerator::ReportRequests requests;
   for (int i = 0; i < request_number; i++)
-    requests.push(std::make_unique<ReportGenerator::Request>());
+    requests.push(std::make_unique<ReportGenerator::ReportRequest>());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
 }
@@ -94,12 +94,12 @@ class MockReportUploader : public ReportUploader {
  public:
   MockReportUploader() : ReportUploader(nullptr, 0) {}
   ~MockReportUploader() override = default;
-  void SetRequestAndUpload(Requests requests,
+  void SetRequestAndUpload(ReportRequests requests,
                            ReportCallback callback) override {
     OnSetRequestAndUpload(requests, callback);
   }
   MOCK_METHOD2(OnSetRequestAndUpload,
-               void(Requests& requests, ReportCallback& callback));
+               void(ReportRequests& requests, ReportCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockReportUploader);
@@ -166,10 +166,10 @@ class ReportSchedulerTest : public ::testing::Test {
     }
   }
 
-  ReportGenerator::Requests CreateRequests(int number) {
-    ReportGenerator::Requests requests;
+  ReportGenerator::ReportRequests CreateRequests(int number) {
+    ReportGenerator::ReportRequests requests;
     for (int i = 0; i < number; i++)
-      requests.push(std::make_unique<ReportGenerator::Request>());
+      requests.push(std::make_unique<ReportGenerator::ReportRequest>());
     return requests;
   }
 

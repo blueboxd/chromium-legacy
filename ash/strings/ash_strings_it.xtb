@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Modifica le impostazioni per le notifiche della schermata di blocco</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Mostra impostazioni Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Mostra sempre shelf</translation>
 <translation id="1341651618736211726">Overflow</translation>
 <translation id="1346748346194534595">Destra</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scorri a destra</translation>
+<translation id="181103072419391116">Intensità del segnale <ph name="SIGNAL_STRENGTH" />, gestita dall'amministratore</translation>
 <translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Premi <ph name="KEYBOARD_SHORTCUT" /> per cambiare il layout della tastiera.</translation>
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
+<translation id="2517825809102302935">Disattiva per stanotte</translation>
 <translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="256712445991462162">la lente d'ingrandimento ancorata</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
+<translation id="3217205077783620295">Il volume è attivo. Selezionalo per disattivarlo.</translation>
 <translation id="3226991577105957773">+ altre <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> è stata spostata dal desktop <ph name="ACTIVE_DESK" /> al desktop <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">La tua connessione è passata a una rete più sicura</translation>
 <translation id="3465223694362104965">Dal tuo ultimo accesso, un'altra tastiera si è connessa a questo dispositivo. Prima di usarla, assicurati che sia attendibile.</translation>
+<translation id="3465356146291925647">Gestita dall'amministratore</translation>
 <translation id="3477079411857374384">CTRL + MAIUSC + barra spaziatrice</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
@@ -290,6 +296,7 @@
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
 <translation id="495046168593986294">Scorri verso l'alto</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
+<translation id="5018302031617932556">Con l'opzione Luminosità notturna, potrai guardare lo schermo senza sforzare la vista o leggere in condizioni di luce attenuata. Tocca per modificare.</translation>
 <translation id="5030687792513154421">Tempo scaduto</translation>
 <translation id="5035236842988137213">Il dispositivo <ph name="DEVICE_NAME" /> si è connesso a un nuovo telefono</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
@@ -329,6 +336,7 @@
 <translation id="573413375004481890">Questo dispositivo non può supportare tutti i tuoi display, pertanto uno è stato scollegato</translation>
 <translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
+<translation id="5745612484876805746">La funzione Luminosità notturna viene attivata automaticamente al tramonto</translation>
 <translation id="5750765938512549687">Bluetooth non attivo</translation>
 <translation id="576453121877257266">Luminosità notturna attiva.</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
@@ -350,6 +358,7 @@
 <translation id="5992218262414051481">Modalità ad alto contrasto attivata. Premi di nuovo CTRL + tasto per la ricerca + H per disattivarla.</translation>
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
 <translation id="602001110135236999">Scorri a sinistra</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" />, Gestita dall'amministratore</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
@@ -373,6 +382,7 @@
 <translation id="6376931439017688372">Bluetooth attivo</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Cancella tutte le notifiche</translation>
 <translation id="643147933154517414">Operazioni completate</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
@@ -386,9 +396,11 @@
 <translation id="6521655319214113338">Scrittura a mano libera</translation>
 <translation id="6528179044667508675">Non disturbare</translation>
 <translation id="6537270692134705506">Acquisisci schermata</translation>
+<translation id="6537924328260219877">Intensità del segnale <ph name="SIGNAL_STRENGTH" />, Batteria del telefono <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Trasmissione di contenuti a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="6559976592393364813">Rivolgiti all'amministratore</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" />, Gestita dall'amministratore</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6637729079642709226">Modifica tempo</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
@@ -420,6 +432,7 @@
 <translation id="7015766095477679451">Ritorna alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Connetti il tuo dispositivo <ph name="DEVICE_NAME" /> con il telefono</translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Assistente Google</translation>
 <translation id="7042322267639375032">Comprimi area di stato</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
@@ -502,6 +515,7 @@
 <translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
 <translation id="8203795194971602413">Clic con il pulsante destro</translation>
 <translation id="8236042855478648955">È ora di fare una pausa</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" />, Batteria del telefono <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Premi INVIO per sbloccare per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8297006494302853456">Debole</translation>
@@ -526,10 +540,12 @@
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8627191004499078455">Connesso a <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" />, Gestita dall'amministratore</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
 <translation id="8649101189709089199">Seleziona per ascoltare</translation>
 <translation id="8652175077544655965">Chiudi impostazioni</translation>
 <translation id="8653151467777939995">Mostra impostazioni di notifica. Le notifiche sono attive</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Intensità del segnale <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Mostra elenco di reti. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
@@ -538,6 +554,7 @@
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
 <translation id="8735953464173050365">Mostra impostazioni tastiera. La selezione attiva è <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Mostra impostazioni VPN</translation>
+<translation id="8785070478575117577">Connetti a <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Attiva/disattiva blocco rotazione. <ph name="STATE_TEXT" /></translation>
@@ -558,6 +575,7 @@
 <translation id="899350903320462459">Sblocca il dispositivo con l'account <ph name="LOGIN_ID" /> per eseguire l'azione di notifica</translation>
 <translation id="9017320285115481645">Inserisci il codice accesso genitori di Family Link.</translation>
 <translation id="9029474291399787231">Aggiornamento di Adobe Flash Player disponibile</translation>
+<translation id="9047624247355796468">Apri Impostazioni per <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Verrà eseguito il rollback del dispositivo</translation>
 <translation id="9070640332319875144">Impostazioni assistente</translation>
 <translation id="9072519059834302790">Tempo rimanente all'esaurimento completo della batteria: <ph name="TIME_LEFT" />.</translation>
@@ -572,6 +590,7 @@
 <translation id="9183456764293710005">Ingrandimento a schermo intero</translation>
 <translation id="9193626018745640770">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="9194617393863864469">Accedi con un altro account utente...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Gestita dall'amministratore</translation>
 <translation id="9205817095063786319">Dispositivo gestito da <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="9211681782751733685">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>

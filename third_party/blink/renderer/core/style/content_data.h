@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/style/counter_content.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -42,12 +43,6 @@ class PseudoElement;
 
 class ContentData : public GarbageCollected<ContentData> {
  public:
-  static ContentData* Create(StyleImage*);
-  static ContentData* Create(const String&);
-  static ContentData* Create(std::unique_ptr<CounterContent>);
-  static ContentData* CreateAltText(const String&);
-  static ContentData* Create(QuoteType);
-
   virtual ~ContentData() = default;
 
   virtual bool IsCounter() const { return false; }
@@ -79,7 +74,9 @@ class ImageContentData final : public ContentData {
   friend class ContentData;
 
  public:
-  ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }
+  explicit ImageContentData(StyleImage* image) : image_(image) {
+    DCHECK(image_);
+  }
 
   const StyleImage* GetImage() const { return image_.Get(); }
   StyleImage* GetImage() { return image_.Get(); }
@@ -105,7 +102,7 @@ class ImageContentData final : public ContentData {
  private:
   ContentData* CloneInternal() const override {
     StyleImage* image = const_cast<StyleImage*>(this->GetImage());
-    return Create(image);
+    return MakeGarbageCollected<ImageContentData>(image);
   }
 
   Member<StyleImage> image_;
@@ -122,7 +119,7 @@ class TextContentData final : public ContentData {
   friend class ContentData;
 
  public:
-  TextContentData(const String& text) : text_(text) {}
+  explicit TextContentData(const String& text) : text_(text) {}
 
   const String& GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
@@ -139,7 +136,9 @@ class TextContentData final : public ContentData {
   }
 
  private:
-  ContentData* CloneInternal() const override { return Create(GetText()); }
+  ContentData* CloneInternal() const override {
+    return MakeGarbageCollected<TextContentData>(GetText());
+  }
 
   String text_;
 };
@@ -153,7 +152,7 @@ class AltTextContentData final : public ContentData {
   friend class ContentData;
 
  public:
-  AltTextContentData(const String& text) : text_(text) {}
+  explicit AltTextContentData(const String& text) : text_(text) {}
 
   String GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
@@ -170,7 +169,9 @@ class AltTextContentData final : public ContentData {
   }
 
  private:
-  ContentData* CloneInternal() const override { return Create(GetText()); }
+  ContentData* CloneInternal() const override {
+    return MakeGarbageCollected<TextContentData>(GetText());
+  }
   String text_;
 };
 
@@ -190,7 +191,7 @@ class CounterContentData final : public ContentData {
     counter_ = std::move(counter);
   }
 
-  CounterContentData(std::unique_ptr<CounterContent> counter)
+  explicit CounterContentData(std::unique_ptr<CounterContent> counter)
       : counter_(std::move(counter)) {}
 
   bool IsCounter() const override { return true; }
@@ -202,7 +203,7 @@ class CounterContentData final : public ContentData {
   ContentData* CloneInternal() const override {
     std::unique_ptr<CounterContent> counter_data =
         std::make_unique<CounterContent>(*Counter());
-    return Create(std::move(counter_data));
+    return MakeGarbageCollected<CounterContentData>(std::move(counter_data));
   }
 
   bool Equals(const ContentData& data) const override {
@@ -226,7 +227,7 @@ class QuoteContentData final : public ContentData {
   friend class ContentData;
 
  public:
-  QuoteContentData(QuoteType quote) : quote_(quote) {}
+  explicit QuoteContentData(QuoteType quote) : quote_(quote) {}
 
   QuoteType Quote() const { return quote_; }
   void SetQuote(QuoteType quote) { quote_ = quote; }
@@ -243,7 +244,9 @@ class QuoteContentData final : public ContentData {
   }
 
  private:
-  ContentData* CloneInternal() const override { return Create(Quote()); }
+  ContentData* CloneInternal() const override {
+    return MakeGarbageCollected<QuoteContentData>(Quote());
+  }
 
   QuoteType quote_;
 };

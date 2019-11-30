@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">ಹೆಚ್ಚುವರಿ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="1021110881106174305">ಸ್ವೀಕೃತ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="1032854598605920125">ಪ್ರದಕ್ಷಿಣಾಕಾರದಲ್ಲಿ ತಿರುಗಿಸು</translation>
-<translation id="1035334672863811645">Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="1036348656032585052">ಆಫ್ ಮಾಡು</translation>
 <translation id="1038842779957582377">ಆಜ್ಞಾತ ಹೆಸರು</translation>
 <translation id="1039626062703039346">ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ಸಂರಕ್ಷಿಸಲು ಮತ್ತು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬದಲಾಯಿಸಲು Chrome ಸಹಾಯ ಮಾಡಬಲ್ಲದು. ಇದು Google ಗೆ ಈ ಸೈಟ್‌ನ ಕುರಿತು ಸೂಚನೆ ನೀಡುತ್ತದೆ.</translation>
@@ -904,7 +903,6 @@
 <translation id="536296301121032821">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಂಗ್ರಹಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5371425731340848620">ಕಾರ್ಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="5377026284221673050">"ನಿಮ್ಮ ಗಡಿಯಾರ ಹಿಂದಿದೆ" ಅಥವಾ "ನಿಮ್ಮ ಗಡಿಯಾರ ಮುಂದಿದೆ" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಬಳಸಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿ.</translation>
 <translation id="5386426401304769735">ಈ ಸೈಟ್‌ಗೆ ಪ್ರಮಾಣಪತ್ರ ಸರಣಿಯು SHA-1 ಬಳಸಿಕೊಂಡು ಸಹಿ ಮಾಡಲಾದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಒಳಗೊಂಡಿರುತ್ತದೆ.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">ಬಲಭಾಗದ ಅಂಚನ್ನು ಹೊಲಿಯಿರಿ</translation>
@@ -1564,7 +1562,6 @@
 <translation id="8759274551635299824">ಈ ಕಾರ್ಡ್‌ನ ಅವಧಿ ಮುಕ್ತಾಯವಾಗಿದೆ</translation>
 <translation id="8761567432415473239">Google ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ ಇತ್ತೀಚಿಗೆ <ph name="SITE" /> ನಲ್ಲಿ <ph name="BEGIN_LINK" />ಹಾನಿಕಾರಕ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಕಂಡುಹಿಡಿದಿದೆ<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ಸಾಧನ</translation>
-<translation id="8768895707659403558">ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಬಳಸಲು, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="8792621596287649091">ನಿಮ್ಮ <ph name="ORG_NAME" /> ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>

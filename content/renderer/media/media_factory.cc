@@ -636,9 +636,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 media::mojom::InterfaceFactory* MediaFactory::GetMediaInterfaceFactory() {
   if (!media_interface_factory_) {
-    DCHECK(remote_interfaces_);
     media_interface_factory_.reset(
-        new MediaInterfaceFactory(remote_interfaces_));
+        new MediaInterfaceFactory(render_frame_->GetBrowserInterfaceBroker()));
   }
 
   return media_interface_factory_.get();

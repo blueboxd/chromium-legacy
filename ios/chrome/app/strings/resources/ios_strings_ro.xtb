@@ -268,7 +268,6 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="4689564913179979534">Gestionează metodele de plată…</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4747097190499141774">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay. Numai un utilizator care are expresia de acces poate citi datele tale criptate. Google nu primește și nu stochează expresia ta de acces. Dacă uiți expresia de acces sau vrei să modifici această setare, va trebui să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Găsește în pagină...</translation>
 <translation id="4751645464639803239">Filă incognito nouă</translation>
 <translation id="4758977202923349869">Poziționează cardul de credit în acest cadru</translation>
 <translation id="4802417911091824046">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay.
@@ -455,7 +454,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7136892417564438900">Camera foto nu este disponibilă</translation>
 <translation id="7159472599653637159">Site mobil</translation>
 <translation id="7173114856073700355">Deschide Setările</translation>
-<translation id="7189598951263744875">Trimite...</translation>
 <translation id="7192050974311852563">Activează înregistrarea în jurnal</translation>
 <translation id="7203585745079012652">Primești răspunsuri vocale</translation>
 <translation id="7265758999917665941">Niciodată pentru acest site</translation>
@@ -559,6 +557,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8840513115188359703">Nu vei fi deconectat(ă) de la Contul Google.</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8881801611828450202">Caută această imagine cu <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Trimite…</translation>
 <translation id="895541991026785598">Raportați o problemă</translation>
 <translation id="8976382372951310360">Ajutor</translation>
 <translation id="8981454092730389528">Opțiuni privind activitatea Google</translation>

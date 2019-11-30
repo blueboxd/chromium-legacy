@@ -657,10 +657,10 @@ int WebContentsAndroid::DownloadImage(
   const uint32_t preferred_size = 0;
   return web_contents_->DownloadImage(
       url, is_fav_icon, preferred_size, max_bitmap_size, bypass_cache,
-      base::Bind(&WebContentsAndroid::OnFinishDownloadImage,
-                 weak_factory_.GetWeakPtr(),
-                 ScopedJavaGlobalRef<jobject>(env, obj),
-                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
+      base::BindOnce(&WebContentsAndroid::OnFinishDownloadImage,
+                     weak_factory_.GetWeakPtr(),
+                     ScopedJavaGlobalRef<jobject>(env, obj),
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 void WebContentsAndroid::SetHasPersistentVideo(

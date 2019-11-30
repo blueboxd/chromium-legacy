@@ -11,19 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "net/base/backoff_entry.h"
 
 namespace base {
 class OneShotTimer;
 }  // namespace base
-
-namespace enterprise_management {
-#if defined(OS_CHROMEOS)
-class ChromeOsUserReportRequest;
-#else
-class ChromeDesktopReportRequest;
-#endif
-}  // namespace enterprise_management
 
 namespace policy {
 class CloudPolicyClient;
@@ -52,13 +45,8 @@ class ReportUploader {
                        // invalid dm token.
   };
 
-#if defined(OS_CHROMEOS)
-  using Request = em::ChromeOsUserReportRequest;
-#else
-  using Request = em::ChromeDesktopReportRequest;
-#endif
-
-  using Requests = std::queue<std::unique_ptr<Request>>;
+  using ReportRequest = definition::ReportRequest;
+  using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
   // A callback to notify the upload result.
   using ReportCallback = base::OnceCallback<void(ReportStatus status)>;
 
@@ -68,7 +56,8 @@ class ReportUploader {
 
   // Sets a list of requests and upload it. Request will be uploaded one after
   // another.
-  virtual void SetRequestAndUpload(Requests requests, ReportCallback callback);
+  virtual void SetRequestAndUpload(ReportRequests requests,
+                                   ReportCallback callback);
 
  private:
   // Uploads the first request in the queue.
@@ -90,7 +79,7 @@ class ReportUploader {
 
   policy::CloudPolicyClient* client_;
   ReportCallback callback_;
-  Requests requests_;
+  ReportRequests requests_;
 
   net::BackoffEntry backoff_entry_;
   base::OneShotTimer backoff_request_timer_;

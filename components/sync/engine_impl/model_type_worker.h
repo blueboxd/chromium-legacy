@@ -205,6 +205,11 @@ class ModelTypeWorker : public UpdateHandler,
   // tag hash. It discards all of them except the last one.
   void DeduplicatePendingUpdatesBasedOnClientTagHash();
 
+  // Filters our duplicate updates from |pending_updates_| based on the
+  // originator item ID (in practice used for bookmarks only). It discards all
+  // of them except the last one.
+  void DeduplicatePendingUpdatesBasedOnOriginatorClientItemId();
+
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;
 

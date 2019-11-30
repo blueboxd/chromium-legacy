@@ -188,7 +188,6 @@ class NotificationsObserver : public content::NotificationObserver {
         new content::MessageLoopRunner;
     quit_closure_ = runner->QuitClosure();
     runner->Run();
-    quit_closure_.Reset();
   }
 
  private:
@@ -196,7 +195,7 @@ class NotificationsObserver : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     if (!quit_closure_.is_null())
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     for (size_t i = 0; i < base::size(kNotificationsObserved); ++i) {
       if (kNotificationsObserved[i] == type) {
         count_[i]++;
@@ -213,7 +212,7 @@ class NotificationsObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   size_t count_[base::size(kNotificationsObserved)];
   std::set<std::string> updated_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsObserver);
 };

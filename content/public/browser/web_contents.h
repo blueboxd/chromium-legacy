@@ -264,7 +264,10 @@ class WebContents : public PageNavigator,
   // nullptr will be returned instead.
   // The callback should only run on the UI thread and it should always be
   // non-null.
-  using Getter = base::Callback<WebContents*(void)>;
+  using Getter = base::RepeatingCallback<WebContents*(void)>;
+  // Use this variant for instances that will only run the callback a single
+  // time.
+  using OnceGetter = base::OnceCallback<WebContents*(void)>;
 
   // Sets delegate for platform specific screen orientation functionality.
   CONTENT_EXPORT static void SetScreenOrientationDelegate(

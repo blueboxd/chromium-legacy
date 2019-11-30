@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Modifier les paramètres de notification sur l'écran de verrouillage</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Afficher les paramètres Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Toujours afficher l'étagère</translation>
 <translation id="1341651618736211726">Dépassement</translation>
 <translation id="1346748346194534595">Vers la droite</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Vers la droite</translation>
+<translation id="181103072419391116">Force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Appuyez sur <ph name="KEYBOARD_SHORTCUT" /> pour changer la disposition du clavier.</translation>
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
+<translation id="2517825809102302935">Désactiver pour cette nuit</translation>
 <translation id="2542089167727451762">Appuyez sur votre image de profil</translation>
 <translation id="255671100581129685">L'Assistant Google n'est pas disponible dans une session publique.</translation>
 <translation id="256712445991462162">la loupe ancrée</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3154351730702813399">L'administrateur de cet appareil peut contrôler votre activité de navigation.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
+<translation id="3217205077783620295">Le son est activé et peut être coupé en cliquant sur le bouton de volume.</translation>
 <translation id="3226991577105957773">+ <ph name="COUNT" /> autres</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3249513730522716925">La fenêtre <ph name="WINDOW_TITLE" /> a été déplacée du Bureau <ph name="ACTIVE_DESK" /> au Bureau <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3454224730401036106">La connexion a été établie sur un réseau plus sûr</translation>
 <translation id="3465223694362104965">Un autre clavier a été connecté à cet appareil depuis votre dernière connexion. Avant d'utiliser ce clavier, assurez-vous qu'il s'agit d'un clavier de confiance.</translation>
+<translation id="3465356146291925647">Géré par votre administrateur</translation>
 <translation id="3477079411857374384">Ctrl+Maj+Espace</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
 <translation id="3513798432020909783">Compte géré par <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
 <translation id="495046168593986294">Faire défiler vers le haut</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
+<translation id="5018302031617932556">Cette fonctionnalité facilite la lecture à l'écran lorsque l'éclairage est faible. Appuyez pour modifier ce paramètre.</translation>
 <translation id="5030687792513154421">Temps écoulé</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est associé à un nouveau téléphone</translation>
 <translation id="5083553833479578423">Déverrouiller plus de fonctionnalités de l'Assistant.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">Cet appareil ne peut pas prendre en charge tous vos écrans. L'un d'eux a été déconnecté</translation>
 <translation id="574392208103952083">Moyenne</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
+<translation id="5745612484876805746">L'Éclairage nocturne est activé automatiquement au coucher du soleil</translation>
 <translation id="5750765938512549687">Bluetooth désactivé</translation>
 <translation id="576453121877257266">Éclairage nocturne activé.</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
 <translation id="602001110135236999">Vers la gauche</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Bluetooth activé</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Effacer toutes les notifications</translation>
 <translation id="643147933154517414">Terminé</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> vers <ph name="RECEIVER_NAME" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Écriture manuscrite</translation>
 <translation id="6528179044667508675">Ne pas déranger</translation>
 <translation id="6537270692134705506">Capturer l'écran</translation>
+<translation id="6537924328260219877">Force du signal : <ph name="SIGNAL_STRENGTH" />, batterie du téléphone à <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Diffusion vers <ph name="RECEIVER_NAME" />…</translation>
 <translation id="6559976592393364813">Se renseigner auprès de l'administrateur</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6637729079642709226">Changer l'heure</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Associer votre <ph name="DEVICE_NAME" /> à votre téléphone</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Assistant Google</translation>
 <translation id="7042322267639375032">Réduire la zone d'état</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">Les notifications sont masquées.</translation>
 <translation id="8203795194971602413">Clic droit</translation>
 <translation id="8236042855478648955">Il est temps de faire une pause</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, batterie du téléphone à <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Appuyez sur Entrée pour déverrouiller l'appareil pour <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8627191004499078455">Connecté à <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>
 <translation id="8649101189709089199">Sélectionner pour prononcer</translation>
 <translation id="8652175077544655965">Fermer les paramètres</translation>
 <translation id="8653151467777939995">Afficher les paramètres de notification. Les notifications sont activées</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Afficher la liste des réseaux. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">Il est possible que cet autre clavier tente d'enregistrer les touches sur lesquelles vous appuyez afin de vous soutirer des informations</translation>
 <translation id="8735953464173050365">Afficher les paramètres du clavier. <ph name="KEYBOARD_NAME" /> est sélectionné</translation>
 <translation id="875593634123171288">Afficher les paramètres de VPN</translation>
+<translation id="8785070478575117577">Se connecter à <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Activer/Désactiver le verrouillage de la rotation. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>
 <translation id="9017320285115481645">Saisissez le code d'accès parental Family Link.</translation>
 <translation id="9029474291399787231">Mise à jour Adobe Flash Player disponible</translation>
+<translation id="9047624247355796468">Ouvrir les paramètres du réseau <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">L'appareil va être rétabli</translation>
 <translation id="9070640332319875144">Paramètres de l'Assistant</translation>
 <translation id="9072519059834302790">Temps restant avant que la batterie soit déchargée : <ph name="TIME_LEFT" />.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">Loupe plein écran</translation>
 <translation id="9193626018745640770">Destinataire de la diffusion inconnu</translation>
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, géré par votre administrateur</translation>
 <translation id="9205817095063786319">Appareil géré par <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Sortie du mode Bureau unifié</translation>
 <translation id="9211681782751733685">Temps restant avant que la batterie soit entièrement rechargée : <ph name="TIME_REMAINING" />.</translation>

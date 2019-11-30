@@ -286,6 +286,9 @@ void GpuChannelManager::GetVideoMemoryUsageStats(
         .video_memory += size;
   }
 
+  if (shared_context_state_ && !shared_context_state_->context_lost())
+    total_size += shared_context_state_->GetMemoryUsage();
+
   // Assign the total across all processes in the GPU process
   video_memory_usage_stats->process_map[base::GetCurrentProcId()].video_memory =
       total_size;
@@ -484,7 +487,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
       gpu_preferences_.gr_context_type, vulkan_context_provider_,
-      metal_context_provider_, dawn_context_provider_);
+      metal_context_provider_, dawn_context_provider_, peak_memory_monitor());
 
   // OOP-R needs GrContext for raster tiles.
   bool need_gr_context =

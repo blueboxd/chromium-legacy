@@ -1552,6 +1552,7 @@ jumbo_source_set("unit_tests") {
     "style/svg_computed_style_test.cc",
     "svg/animation/priority_queue_test.cc",
     "svg/graphics/svg_image_test.cc",
+    "svg/svg_foreign_object_element_test.cc",
     "svg/svg_path_parser_test.cc",
     "svg/svg_text_content_element_test.cc",
     "svg/svg_use_element_test.cc",

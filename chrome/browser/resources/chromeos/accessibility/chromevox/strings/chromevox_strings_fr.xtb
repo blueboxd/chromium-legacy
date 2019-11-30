@@ -463,6 +463,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4204126831294769023">Azur</translation>
 <translation id="4204864733111726379">Blanc floral</translation>
 <translation id="4206289001967551965">Dans le tableau</translation>
+<translation id="4207770814752775793">Rétablissez les valeurs par défaut des paramètres de synthèse vocale.</translation>
 <translation id="4209770650650780359">Appuyez sur la flèche vers le haut ou vers le bas pour accéder aux saisies semi-automatiques.</translation>
 <translation id="4215733775853809057">Curseur suivant</translation>
 <translation id="42164919740161077">Bleu-gris</translation>
@@ -766,6 +767,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="6290434000785343030">Aucune liste déroulante suivante</translation>
 <translation id="6305702903308659374">Lire le contenu à un volume sonore normal, même pendant la diffusion des commentaires audio ChromeVox</translation>
 <translation id="6307969636681130414">Élément sur lequel vous avez appuyé</translation>
+<translation id="6315652249189065725">Ouvrir le menu des raccourcis clavier</translation>
 <translation id="6322856989298155004">Sons</translation>
 <translation id="6324551002951139333">erreur grammaticale détectée</translation>
 <translation id="6325241889020214828">copier "<ph name="TEXT" />".</translation>
@@ -959,6 +961,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{heure}one{heure}other{heures}}</translation>
 <translation id="7674576868851035240">Lien suivant</translation>
 <translation id="7674768236845044097">surlignage</translation>
+<translation id="7676847077928500578">Réinitialiser les paramètres de synthèse vocale</translation>
 <translation id="7684431668231950609">Modifier le texte de l'URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Case d'option précédente</translation>

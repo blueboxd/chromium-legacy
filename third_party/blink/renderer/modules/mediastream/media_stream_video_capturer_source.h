@@ -71,8 +71,8 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void OnLog(const std::string& message) override;
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
-  void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) override;
+  void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
+                       EncodedVideoFrameCB encoded_frame_callback) override;
   void StopSourceImpl() override;
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;

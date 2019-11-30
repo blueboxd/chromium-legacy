@@ -9,6 +9,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -96,6 +97,10 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     // Whether the image has been loaded already.
     private boolean mImageLoaded;
+
+    // The background color to use for the tile (either the special tile or for pictures, when not
+    // animating).
+    private int mBackgroundColor = Color.TRANSPARENT;
 
     // The selected state of a given picture tile.
     private boolean mSelectedState;
@@ -188,6 +193,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     @Override
     protected boolean toggleSelectionForItem(PickerBitmap item) {
         if (isGalleryTile() || isCameraTile()) return false;
+        if (mCategoryView.isZoomSwitchingInEffect()) return false;
         return super.toggleSelectionForItem(item);
     }
 
@@ -458,7 +464,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             setEnabled(!anySelection);
         }
 
-        setBackgroundColor(ApiCompatibilityUtils.getColor(resources, bgColorId));
+        mBackgroundColor = ApiCompatibilityUtils.getColor(resources, bgColorId);
+        setBackgroundColor(mCategoryView.isZoomSwitchingInEffect() && !special ? Color.TRANSPARENT
+                                                                               : mBackgroundColor);
 
         // The visibility of the unselected toggle for multi-selection mode is a little more complex
         // because we don't want to show it when nothing is selected and also not on a blank canvas.

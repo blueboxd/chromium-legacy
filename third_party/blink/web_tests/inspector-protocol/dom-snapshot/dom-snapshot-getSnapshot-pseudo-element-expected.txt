@@ -123,7 +123,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     },
     {
       "nodeType": 1,
-      "nodeName": "<pseudo:first-letter>",
+      "nodeName": "::first-letter",
       "nodeValue": "",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 5,
@@ -163,7 +163,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     },
     {
       "nodeType": 1,
-      "nodeName": "<pseudo:first-letter>",
+      "nodeName": "::first-letter",
       "nodeValue": "",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 9,
@@ -214,7 +214,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     },
     {
       "nodeType": 1,
-      "nodeName": "<pseudo:first-letter>",
+      "nodeName": "::first-letter",
       "nodeValue": "",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 14,
@@ -222,7 +222,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     },
     {
       "nodeType": 1,
-      "nodeName": "<pseudo:before>",
+      "nodeName": "::before",
       "nodeValue": "",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 19,

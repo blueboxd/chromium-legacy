@@ -73,7 +73,7 @@ const char kInitialTitle[] = "Initial Title";
 constexpr size_t kResponseSize = 42u;
 
 void DidGetInitializationData(
-    base::Closure quit_closure,
+    base::OnceClosure quit_closure,
     std::vector<BackgroundFetchInitializationData>* out_result,
     blink::mojom::BackgroundFetchError error,
     std::vector<BackgroundFetchInitializationData> result) {
@@ -115,7 +115,7 @@ void DidStoreUserData(base::OnceClosure quit_closure,
   std::move(quit_closure).Run();
 }
 
-void GetNumUserData(base::Closure quit_closure,
+void GetNumUserData(base::OnceClosure quit_closure,
                     int* out_size,
                     const std::vector<std::string>& data,
                     blink::ServiceWorkerStatusCode status) {
@@ -746,7 +746,7 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
-  void DidGetDeveloperIds(base::Closure quit_closure,
+  void DidGetDeveloperIds(base::OnceClosure quit_closure,
                           blink::mojom::BackgroundFetchError* out_error,
                           std::vector<std::string>* out_ids,
                           blink::mojom::BackgroundFetchError error,

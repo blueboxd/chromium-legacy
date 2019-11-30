@@ -64,9 +64,11 @@ class SelfDeleteInstaller
                 ->GetServiceWorkerContext());
     service_worker_watcher_ = new ServiceWorkerContextWatcher(
         service_worker_context,
-        base::Bind(&SelfDeleteInstaller::onServiceWorkerRegistration, this),
-        base::Bind(&SelfDeleteInstaller::onServiceWorkerVersionUpdate, this),
-        base::Bind(&SelfDeleteInstaller::onServiceWorkerError, this));
+        base::BindRepeating(&SelfDeleteInstaller::OnServiceWorkerRegistration,
+                            this),
+        base::BindRepeating(&SelfDeleteInstaller::OnServiceWorkerVersionUpdate,
+                            this),
+        base::BindRepeating(&SelfDeleteInstaller::OnServiceWorkerError, this));
     service_worker_watcher_->Start();
 
     blink::mojom::ServiceWorkerRegistrationOptions option;
@@ -81,7 +83,7 @@ class SelfDeleteInstaller
                        this));
   }
 
-  void onServiceWorkerRegistration(
+  void OnServiceWorkerRegistration(
       const std::vector<ServiceWorkerRegistrationInfo>& info) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -91,7 +93,7 @@ class SelfDeleteInstaller
     }
   }
 
-  void onServiceWorkerVersionUpdate(
+  void OnServiceWorkerVersionUpdate(
       const std::vector<ServiceWorkerVersionInfo>& info) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -104,7 +106,7 @@ class SelfDeleteInstaller
     }
   }
 
-  void onServiceWorkerError(
+  void OnServiceWorkerError(
       int64_t registration_id,
       int64_t version_id,
       const ServiceWorkerContextCoreObserver::ErrorInfo& error_info) {

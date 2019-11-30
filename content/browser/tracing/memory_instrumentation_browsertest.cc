@@ -65,7 +65,7 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(
           {}, base::BindOnce(
-                  [](base::Closure quit_closure,
+                  [](base::OnceClosure quit_closure,
                      std::unique_ptr<GlobalMemoryDump>* out_result,
                      bool success, std::unique_ptr<GlobalMemoryDump> result) {
                     EXPECT_TRUE(success);

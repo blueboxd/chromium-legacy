@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">ଅତିରିକ୍ତ ବିବରଣୀ ପ୍ରଦାନ କରନ୍ତୁ</translation>
 <translation id="1021110881106174305">ସ୍ୱୀକାର କରାଯାଇଥିବା କାର୍ଡଗୁଡ଼ିକ</translation>
 <translation id="1032854598605920125">ବାମରୁ ଡାହାଣକୁ ଘୂରାନ୍ତୁ</translation>
-<translation id="1035334672863811645">Chromeରେ ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ</translation>
 <translation id="1036348656032585052">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="1038842779957582377">ଅଜ୍ଞାତ ନାମ</translation>
 <translation id="1039626062703039346">Chrome ଆପଣଙ୍କୁ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟକୁ ସୁରକ୍ଷିତ ରଖିବା ଏବଂ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ ବଦଳାଇବାରେ ସାହାଯ୍ୟ କରିପାରିବ। ଏହି ସାଇଟ୍ ବିଷୟରେ ଏହା Googleକୁ ସୂଚିତ କରିବ।</translation>
@@ -905,7 +904,6 @@
 <translation id="536296301121032821">ନୀତି ସେଟିଂସ୍ ଷ୍ଟୋର୍ କରିବାରେ ବିଫଳ ହେଲା</translation>
 <translation id="5371425731340848620">କାର୍ଡ ଅପ୍‍‍ଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="5377026284221673050">"ଆପଣଙ୍କର ଘଣ୍ଟା ପଛୁଆ ଅଛି" କିମ୍ବା "ଆପଣଙ୍କର ଘଣ୍ଟା ଆଗୁଆ ଅଛି " କିମ୍ବା "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ଆପଣଙ୍କର କାର୍ଡଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବାକୁ, ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ ଏବଂ ସିଙ୍କ୍‌ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="5386426401304769735">ଏହି ସାଇଟ୍‌ ପାଇଁ ଥିବା ସାର୍ଟିଫିକେଟ୍‌ ଶୃଙ୍ଖଳାରେ SHA-1ର ବ୍ୟବହାର କରି ଦସ୍ତଖତ କରାଯାଇଥିବା ସାର୍ଟିଫିକେଟ୍‌ ଅଛି।</translation>
 <translation id="538659543871111977">A4-ଟାବ୍</translation>
 <translation id="5396631636586785122">ଡାହାଣ ପଟରେ ଏଜ୍ ଷ୍ଟିଚ୍</translation>
@@ -1565,7 +1563,6 @@
 <translation id="8759274551635299824">ଏହି କାର୍ଡର ସମୟ ସୀମା ସମାପ୍ତ ହୋଇଛି</translation>
 <translation id="8761567432415473239">ସମ୍ପ୍ରତି <ph name="SITE" />ରେ Google ନିରାପଦ ବ୍ରାଉଜିଂକୁ<ph name="BEGIN_LINK" />ହାନିକାରକ ପ୍ରୋଗ୍ରାମ୍ ମିଳିଲା<ph name="END_LINK" />।</translation>
 <translation id="8763927697961133303">USB ଡିଭାଇସ୍</translation>
-<translation id="8768895707659403558">ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ନିଜର କାର୍ଡଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପାଇଁ, <ph name="SIGN_IN_LINK" />।</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">ଡିଲିଟ୍‌ &amp;ପୁନଃବତ୍ କରନ୍ତୁ</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> ଆକାଉଣ୍ଟ ପାଇଁ ଥିବା ଆକ୍ସେସ୍ ହରାଇ ପାରନ୍ତି କିମ୍ବା ଆପଣଙ୍କର ପରିଚୟ ଚୋରି ହେବାର ଅନୁଭବ କରିପାରନ୍ତି। Chromium ବର୍ତ୍ତମାନ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ କୁ ବଦଳାଇବା ପାଇଁ ସୁପାରିଶ୍ କରୁଛି।</translation>

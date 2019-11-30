@@ -200,11 +200,8 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     report_ = serialized;
 
-    EXPECT_FALSE(threat_details_done_callback_.is_null());
-    if (!threat_details_done_callback_.is_null()) {
-      threat_details_done_callback_.Run();
-      threat_details_done_callback_ = base::Closure();
-    }
+    ASSERT_TRUE(threat_details_done_callback_);
+    std::move(threat_details_done_callback_).Run();
     threat_details_done_ = true;
   }
 
@@ -217,10 +214,10 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
 
   bool hit_report_sent() { return hit_report_sent_; }
 
-  void set_threat_details_done_callback(const base::Closure& callback) {
+  void set_threat_details_done_callback(base::OnceClosure callback) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    EXPECT_TRUE(threat_details_done_callback_.is_null());
-    threat_details_done_callback_ = callback;
+    EXPECT_FALSE(threat_details_done_callback_);
+    threat_details_done_callback_ = std::move(callback);
   }
 
   std::string GetReport() {
@@ -233,7 +230,7 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
 
  private:
   std::string report_;
-  base::Closure threat_details_done_callback_;
+  base::OnceClosure threat_details_done_callback_;
   bool threat_details_done_;
   bool hit_report_sent_;
 
@@ -607,10 +604,10 @@ class SafeBrowsingBlockingPageBrowserTest
     return InterstitialPage::GetInterstitialPage(contents) != nullptr;
   }
 
-  void SetReportSentCallback(const base::Closure& callback) {
+  void SetReportSentCallback(base::OnceClosure callback) {
     static_cast<FakeSafeBrowsingUIManager*>(
         factory_.test_safe_browsing_service()->ui_manager().get())
-        ->set_threat_details_done_callback(callback);
+        ->set_threat_details_done_callback(std::move(callback));
   }
 
   std::string GetReportSent() {

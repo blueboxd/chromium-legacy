@@ -6,10 +6,10 @@
 <translation id="1015730422737071372">Sniegt papildu informāciju</translation>
 <translation id="1021110881106174305">Pieņemtās kartes</translation>
 <translation id="1032854598605920125">Pagriezt pulksteņrādītāju kustības virzienā</translation>
-<translation id="1035334672863811645">pierakstieties pārlūkā Chrome</translation>
 <translation id="1036348656032585052">Izslēgt</translation>
 <translation id="1038842779957582377">nezināms nosaukums</translation>
 <translation id="1039626062703039346">Chrome var palīdzēt jums aizsargāt jūsu Google kontu un nomainīt paroli. Tas informēs Google par šo vietni.</translation>
+<translation id="1044897699341250361">Ko tas nozīmē</translation>
 <translation id="1050038467049342496">Aizveriet citas lietotnes</translation>
 <translation id="1055184225775184556">&amp;Pievienošanas atsaukšana</translation>
 <translation id="1056898198331236512">Brīdinājums</translation>
@@ -184,6 +184,7 @@
 <translation id="1745880797583122200">Jūsu pārlūks tiek pārvaldīts</translation>
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1753706481035618306">Lapas numurs</translation>
+<translation id="175838129965056221">Pārlūkā Chrome tika konstatēts, ka jūsu savienojums tiek uzraudzīts</translation>
 <translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Mēģiniet palaist Windows tīkla diagnostiku<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +253,7 @@
 <translation id="2119867082804433120">Caurums apakšējā labajā malā</translation>
 <translation id="2129079103035905234">Kustību sensori</translation>
 <translation id="2130448033692577677">Norādītās veidnes, iespējams, netiks lietotas, jo nav iestatīta politika DnsOverHttpsMode.</translation>
+<translation id="2131277894177304644">Pārlūkā Chromium tika konstatēts, ka jūsu savienojums tiek uzraudzīts</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
 <translation id="214556005048008348">Atcelt maksājumu</translation>
 <translation id="2147827593068025794">Sinhronizācija fonā</translation>
@@ -299,6 +301,7 @@
 <translation id="2354001756790975382">Citas grāmatzīmes</translation>
 <translation id="2354430244986887761">Izmantojot Google drošo pārlūkošanu, nesen <ph name="BEGIN_LINK" />tika atrastas kaitīgas lietotnes<ph name="END_LINK" /> vietnē <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Uzbrucēji var skatīt attēlus, kurus skatāt šajā vietnē, un apmānīt jūs, pārveidojot šos attēlus.</translation>
+<translation id="2355474962185559967">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: apmeklēt vietni <ph name="WEBSITE_1" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="2356070529366658676">Vaicāt</translation>
 <translation id="2359629602545592467">Vairākas</translation>
 <translation id="2359808026110333948">Turpināt</translation>
@@ -400,6 +403,7 @@
 <translation id="2799020568854403057">Šajā vietnē, kas tiks atvērta, ir kaitīgas lietotnes</translation>
 <translation id="2799223571221894425">Restartēt</translation>
 <translation id="2803306138276472711">Google drošās pārlūkošanas tehnoloģija vietnē <ph name="SITE" /> nesen <ph name="BEGIN_LINK" />konstatēja ļaunprātīgu programmatūru<ph name="END_LINK" />. Vietnes, kuras parasti ir drošas, dažkārt tiek inficētas ar ļaunprātīgu programmatūru.</translation>
+<translation id="281585763351939989">Pārlūkā Chromium tika konstatēts, ka jūsu savienojums tiek uzraudzīts.</translation>
 <translation id="2824775600643448204">Adreses un meklēšanas josla</translation>
 <translation id="2826760142808435982">Savienojums ir šifrēts un autentificēts, izmantojot <ph name="CIPHER" />, un tajā tiek izmantots <ph name="KX" /> kā atslēgu apmaiņas mehānisms.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
@@ -444,6 +448,7 @@
 <translation id="3024663005179499861">Politikas tips nav pareizs.</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3041612393474885105">Sertifikāta informācija</translation>
+<translation id="304755864151473094">Kāpēc tā notiek</translation>
 <translation id="3057676462092457419">DnsOverHttps režīms “<ph name="SECURE_DNS_MODE_SECURE" />” vēl netiek atbalstīts. Tika iestatīts režīms “<ph name="SECURE_DNS_MODE_OFF" />”.</translation>
 <translation id="3060227939791841287">C9 (aploksne)</translation>
 <translation id="3061707000357573562">Ielāpu pakalpojums</translation>
@@ -483,6 +488,7 @@
 <translation id="3228969707346345236">Tulkošana neizdevās, jo lapa jau ir <ph name="LANGUAGE" /> valodā.</translation>
 <translation id="3229041911291329567">Versijas informācija par ierīci un pārlūku</translation>
 <translation id="323107829343500871">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> CVC</translation>
+<translation id="3234392465377209614">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: apmeklēt vietnes <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="3234666976984236645">Vienmēr noteikt nozīmīgu saturu šajā vietnē</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> izskatās līdzīgi domēnam <ph name="SUGGESTED_DOMAIN" />. Uzbrucēji dažkārt atdarina vietnes, izmantojot līdzīgus URL.</translation>
 <translation id="3270847123878663523">&amp;Pārkārtošanas atsaukšana</translation>
@@ -515,6 +521,7 @@
 <translation id="342781501876943858">Chromium iesaka atiestatīt jūsu paroli, ja izmantojāt to citās vietnēs.</translation>
 <translation id="3428151540071562330">Viens vai vairāki DnsOverHttpsTemplates servera veidņu identifikatori URI nav derīgi un netiks izmantoti.</translation>
 <translation id="3431636764301398940">Saglabāt šo karti šajā ierīcē</translation>
+<translation id="3438790640050632698">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: apmeklēt vietni <ph name="WEBSITE_1" /> un <ph name="WEBSITE_2" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Šīs ierīces īpašnieks ir izslēdzis dinozauru spēli.</translation>
 <translation id="3447884698081792621">Parādīt sertifikātu (izsniedza <ph name="ISSUER" />)</translation>
@@ -529,6 +536,7 @@
 <translation id="3495081129428749620">Meklēt lapā
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Šī politika tiek ignorēta, jo citai tās pašas politiku grupas politikai ir augstāka prioritāte.</translation>
+<translation id="3525469219100414032">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: apmeklēt vietni <ph name="WEBSITE_1" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="3528171143076753409">Servera sertifikāts nav uzticams.</translation>
 <translation id="3528485271872257980">Tumši brūna</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Vismaz 1 vienums sinhronizētās ierīcēs}=1{1 vienums (un vēl citi sinhronizētās ierīcēs)}zero{# vienumi (un vēl citi sinhronizētās ierīcēs)}one{# vienums (un vēl citi sinhronizētās ierīcēs)}other{# vienumi (un vēl citi sinhronizētās ierīcēs)}}</translation>
@@ -606,6 +614,7 @@
 <translation id="3858027520442213535">Atjaunināt datumu un laiku</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
 <translation id="3885155851504623709">Pagasts</translation>
+<translation id="388632593194507180">Konstatēta pārraudzība</translation>
 <translation id="3890664840433101773">E-pasta adreses pievienošana</translation>
 <translation id="3897092660631435901">Izvēlne</translation>
 <translation id="3901925938762663762">Kartes derīguma termiņš ir beidzies.</translation>
@@ -707,6 +716,7 @@
 <translation id="4305817255990598646">Pāriet</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloķēt (pēc noklusējuma)</translation>
+<translation id="4318312030194671742">Paint priekšskatījuma burtliča pakalpojums</translation>
 <translation id="4318566738941496689">Jūsu ierīces nosaukums un tīkla adrese</translation>
 <translation id="4325863107915753736">Rakstu neizdevās atrast.</translation>
 <translation id="4326324639298822553">Pārbaudiet derīguma termiņa datumu un mēģiniet vēlreiz.</translation>
@@ -723,6 +733,7 @@
 <translation id="4372948949327679948">Tika gaidīta vērtība <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Jūs mēģinājāt sasniegt <ph name="DOMAIN" />, bet izdevējs atsauca servera uzrādīto sertifikātu. Tas nozīmē, ka servera uzrādītie drošības akreditācijas dati itin nemaz nav uzticami. Iespējams, jūs sazināties ar uzbrucēju.</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
+<translation id="437847259914972036">Tiek skatītas darbības, ko veicat tīmeklī, kā arī informācija, ko ievadāt, un saturs var tikt mainīts, jūs neinformējot.</translation>
 <translation id="4398334096870680409">Šī funkcija jūsu ierīcē nav pieejama.</translation>
 <translation id="4406896451731180161">meklēšanas rezultāti</translation>
 <translation id="4408413947728134509">Sīkfaili <ph name="NUM_COOKIES" /></translation>
@@ -921,7 +932,6 @@
 <translation id="536296301121032821">Neizdevās saglabāt politikas iestatījumus.</translation>
 <translation id="5371425731340848620">Kartes atjaunināšana</translation>
 <translation id="5377026284221673050">“Pulkstenis atpaliek”, “Pulkstenis steidzas” vai “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5384855140246857529">Lai kartes varētu izmantot visās ierīcēs, pierakstieties un ieslēdziet sinhronizāciju.</translation>
 <translation id="5386426401304769735">Šīs vietnes sertifikātu ķēdē ir iekļauts sertifikāts, kas ir parakstīts, izmantojot SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Malu sašuvums labajā pusē</translation>
@@ -959,6 +969,7 @@
 <translation id="5565735124758917034">Aktīvs</translation>
 <translation id="5570825185877910964">Aizsargāt kontu</translation>
 <translation id="5571083550517324815">Nevar saņemt sūtījumu šajā adresē. Atlasiet citu adresi.</translation>
+<translation id="5572009199897554128">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: apmeklēt vietni <ph name="WEBSITE_1" /> un <ph name="WEBSITE_2" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="5580958916614886209">Pārbaudiet derīguma termiņa mēnesi un mēģiniet vēlreiz.</translation>
 <translation id="5586446728396275693">Nav saglabātu adrešu.</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
@@ -1141,6 +1152,7 @@
 <translation id="6446163441502663861">Kahu (aploksne)</translation>
 <translation id="6446608382365791566">Papildu informācijas pievienošana</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
+<translation id="644931407731409778">PDF dokumentā ir {COUNT,plural, =1{1 lapa}zero{# lapu}one{# lapa}other{# lapas}}</translation>
 <translation id="6451458296329894277">Apstiprināt veidlapas atkārtotu iesniegšanu</translation>
 <translation id="6457206614190510200">Sašuvums iekšlocījumā</translation>
 <translation id="6465306955648956876">Pārvaldīt paroles...</translation>
@@ -1159,6 +1171,7 @@
 <translation id="6547208576736763147">Divi caurumi kreisajā pusē</translation>
 <translation id="6554795675067793129">Jūsu kontu pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Atcelt atsaukšanu</translation>
+<translation id="6559565319173126218">Pārlūks Chrome neuzticas šī savienojuma sertifikātam, jo ir zināms, ka tas tiek izmantots tīkla pārtveršanai un uzraudzībai.</translation>
 <translation id="6569060085658103619">Jūs skatāt paplašinājumu lapu.</translation>
 <translation id="6573200754375280815">Divi caurumi labajā pusē</translation>
 <translation id="6578796323535178455">C2 (aploksne)</translation>
@@ -1192,6 +1205,7 @@
 <translation id="6710594484020273272">&lt;Ierakstiet meklēšanas vienumu&gt;</translation>
 <translation id="671076103358959139">Reģistrācijas pilnvara:</translation>
 <translation id="6711464428925977395">Starpniekserverī radās kļūda, vai arī adrese nav pareiza.</translation>
+<translation id="6721811549156553509">Tīkla pārraugs var izlikties par vietnēm, ko apmeklējat, un redzēt jūsu veiktās darbības un visu ievadīto informāciju (piemēram, paroles, ziņojumus un kredītkartes). Esiet piesardzīgs, tiešsaistē veicot sensitīvas darbības, jo tās būs redzamas tīkla pārraugam, un tīkla pārraugs var mainīt saturu jūsu apmeklētajās lapās. Tas ietver darbības citos pārlūkos un programmās, kas piekļūst internetam.</translation>
 <translation id="6738516213925468394">Jūsu dati tika šifrēti, izmantojot jūsu <ph name="BEGIN_LINK" />sinhronizācijas ieejas frāzi<ph name="END_LINK" />šādā datumā: <ph name="TIME" />. Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="674375294223700098">Nezināma servera sertifikāta kļūda.</translation>
 <translation id="6744009308914054259">Kamēr tiek gaidīts savienojums, varat apmeklēt Lejupielādes, lai lasītu rakstu bezsaistē.</translation>
@@ -1276,6 +1290,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> par šo problēmu.</translation>
 <translation id="7219179957768738017">Savienojums izmanto <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Notiek apstrāde</translation>
+<translation id="7239736667463137521">Pārlūkā Chrome tika konstatēts, ka jūsu savienojums tiek uzraudzīts.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Vietnē ir ļaunprātīga programmatūra</translation>
 <translation id="724975217298816891">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC. Pēc apstiprināšanas kartes informācija tiks kopīgota ar šo vietni.</translation>
@@ -1302,6 +1317,7 @@ Papildu informācija:
 <translation id="7346048084945669753">Ir saistīts:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandrinda</translation>
+<translation id="7353776484425559055">Chromium neuzticas šī savienojuma sertifikātam, jo ir zināms, ka tas tiek izmantots tīkla pārtveršanai un uzraudzībai. Iespējams, šīs kļūdas rādīšanas iemesls ir jūsu ierīcē instalētais sertifikāts. Veidojot drošus savienojumus, Chromium uzticas sertifikātiem, kas ir lokāli instalēti lietotāja datorā vai mobilajā ierīcē. Tādējādi lietotāji var palaist pārbaudes rīkus un atkļūdot savus savienojumus vietnes izstrādes laikā vai attiecībā uz korporatīvajām vidēm — pārtvert un uzraudzīt iekšējās datplūsmas. Gadījumos, kad tas tiek ļaunprātīgi izmantots, lai pārtvertu datplūsmu publiskā internetā, pārlūkā Chromium tiek rādīts brīdinājums.</translation>
 <translation id="7372973238305370288">meklēšanas rezultāts</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Multivides vadīklas</translation>
@@ -1363,6 +1379,7 @@ Papildu informācija:
 <translation id="7592362899630581445">Servera sertifikātā ir pārkāpti nosaukuma ierobežojumi.</translation>
 <translation id="7598391785903975535">Mazāk nekā <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> pašlaik nevar apstrādāt šo pieprasījumu.</translation>
+<translation id="7599841999395223597">Pārlūks Chrome neuzticas šī savienojuma sertifikātam, jo ir zināms, ka tas tiek izmantots tīkla pārtveršanai un uzraudzībai. Iespējams, šīs kļūdas rādīšanas iemesls ir jūsu ierīcē instalētais sertifikāts. Veidojot drošus savienojumus, Chrome uzticas sertifikātiem, kas ir lokāli instalēti lietotāja datorā vai mobilajā ierīcē. Tādējādi lietotāji var palaist pārbaudes rīkus un atkļūdot savus savienojumus vietnes izstrādes laikā vai attiecībā uz korporatīvajām vidēm — pārtvert un uzraudzīt iekšējās datplūsmas. Gadījumos, kad tas tiek ļaunprātīgi izmantots, lai pārtvertu datplūsmu publiskā internetā, pārlūkā Chrome tiek rādīts brīdinājums.</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE" /> valodā</translation>
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Derīguma termiņš: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1583,7 +1600,6 @@ Papildu informācija:
 <translation id="8759274551635299824">Kartes derīguma termiņš ir beidzies</translation>
 <translation id="8761567432415473239">Google drošās pārlūkošanas tehnoloģija nesen vietnē <ph name="SITE" /> <ph name="BEGIN_LINK" />atklāja kaitīgas programmas<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ierīce</translation>
-<translation id="8768895707659403558">Lai kartes varētu izmantot visās ierīcēs, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
 <translation id="8792621596287649091">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chromium iesaka nekavējoties nomainīt paroli.</translation>
@@ -1681,6 +1697,7 @@ Papildu informācija:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Varat zaudēt piekļuvi savam Google kontam. Chromium iesaka nekavējoties nomainīt paroli. Jums tiks lūgts pierakstīties.</translation>
 <translation id="939736085109172342">Jauna mape</translation>
+<translation id="940786960229275114">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: apmeklēt vietnes <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" /> un pēc iespējas ātrāk nomainīt savu paroli.</translation>
 <translation id="945855313015696284">Pārbaudiet tālāk sniegto informāciju un dzēsiet visas nederīgās kartītes.</translation>
 <translation id="950736567201356821">Trīs caurumi augšdaļā</translation>
 <translation id="951104842009476243">Atbalstītās debetkartes un priekšapmaksas kartes</translation>

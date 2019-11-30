@@ -13,7 +13,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
@@ -153,11 +152,6 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     Profile* primary_profile) {
   DCHECK(primary_profile);
 
-  DCHECK(!kerberos_credentials_manager_);
-  kerberos_credentials_manager_ =
-      std::make_unique<chromeos::KerberosCredentialsManager>(
-          g_browser_process->local_state(), primary_profile);
-
   DCHECK(!in_session_password_change_manager_);
   in_session_password_change_manager_ =
       chromeos::InSessionPasswordChangeManager::CreateIfEnabled(
@@ -172,7 +166,6 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
-  kerberos_credentials_manager_.reset();
   in_session_password_change_manager_.reset();
 }
 

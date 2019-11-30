@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}one{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1201402288615127009">Próxima</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, app da Play Store</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
 <translation id="1266864766717917324">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Da esquerda para a direita</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, app instalado</translation>
 <translation id="1450753235335490080">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Você já pesquisou isso. Se você excluir "<ph name="QUERY" />" do seu histórico, essa consulta será permanentemente removida da sua conta em todos os seus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{ mês}one{# mês}other{# meses}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Uma hora e }one{# horas e }other{# horas e }}</translation>
+<translation id="1830308660060964064">O <ph name="ITEM_TITLE" /> foi liberado</translation>
 <translation id="1842960171412779397">selecione</translation>
 <translation id="1859234291848436338">Direção de Gravação</translation>
 <translation id="1860796786778352021">Fechar notificação</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2701330563083355633">Compartilhada por <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copiar para área de transferência</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Abrir pasta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ano atrás}one{# ano atrás}other{# anos atrás}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{em 1 d}one{em # d}other{em # d}}</translation>
 <translation id="2931838996092594335">clicar</translation>
+<translation id="2981684127883932071">Exibindo sugestões</translation>
 <translation id="3036649622769666520">Abrir arquivos</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Estante à esquerda</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">O texto está grande demais</translation>
 <translation id="3479552764303398839">Não agora</translation>
 <translation id="348799646910989694">Estante automaticamente oculta</translation>
+<translation id="3554637740840164787">O item <ph name="ITEM_TITLE" /> foi fixado</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Um dia restante}one{# dias restantes}other{# dias restantes}}</translation>
 <translation id="3600969208114796418">Arquivo <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">+<ph name="MAXIMUM_VALUE" /></translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
 <translation id="4289300219472526559">Comece a falar</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> movido para a pasta <ph name="FOLDER_NAME" /></translation>
 <translation id="4316910396681052118">TODOS OS APPS</translation>
 <translation id="4588090240171750605">Percorrer à direita</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, avaliado com <ph name="RATING_SCORE" /> estrelas</translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, recomendação de app</translation>
 <translation id="4690510401873698237">Estante na parte inferior</translation>
 <translation id="4724120544754982507">Central de Notificações: <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
 <translation id="4730374152663651037">USADOS FREQUENTEMENTE</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Faixa anterior da mídia</translation>
 <translation id="5046499563572181734">Toque aqui</translation>
 <translation id="5076340679995252485">&amp;Colar</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> combinado com <ph name="IN_PLACE_APP" /> para criar uma nova pasta.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triângulo de divulgação</translation>
 <translation id="5278860589123563674">Falha ao enviar</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">Sistema <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Seta para a esquerda</translation>
+<translation id="5675363643668471212">Item da estante</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minutos}other{# minutos}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Ativo hoje}=1{Ativo há um dia}one{Ativo há # dia}other{Ativo há # dias}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{Um dia e }one{# dias e }other{# dias e }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Entrar</translation>
 <translation id="8210608804940886430">Página para baixo</translation>
 <translation id="8245914219290430011">Guia</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Valor de cor hexadecimal</translation>
 <translation id="8328145009876646418">Borda esquerda</translation>
 <translation id="8331626408530291785">Percorrer para cima</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Guia</translation>
 <translation id="9161053988251441839">APPS SUGERIDOS</translation>
 <translation id="9170848237812810038">&amp;Desfazer</translation>
+<translation id="9178475906033259337">Exibindo 1 resultado para <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Início</translation>
 <translation id="944069440740578670">Notificações não lidas</translation>
+<translation id="974545358917229949">Exibindo <ph name="RESULT_COUNT" /> resultados para <ph name="QUERY" /></translation>
 </translationbundle>

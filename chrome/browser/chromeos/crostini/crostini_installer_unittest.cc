@@ -236,7 +236,7 @@ TEST_F(CrostiniInstallerTest, InstallFlowWithAnsibleInfra) {
 
   Install();
 
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   test_helper.SendSucceededApplySignal();
 
   mount_path_waiter_.WaitForMountPathCalled();
@@ -341,6 +341,32 @@ TEST_F(CrostiniInstallerTest, InstallerError) {
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstaller::SetupResult::kErrorStartingTermina),
+      1);
+
+  EXPECT_TRUE(crostini_installer_->CanInstall())
+      << "Installer should recover to installable state";
+}
+
+TEST_F(CrostiniInstallerTest, InstallerErrorWhileConfiguring) {
+  AnsibleManagementTestHelper test_helper(profile_.get());
+  test_helper.SetUpAnsibleInfra();
+  test_helper.SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+
+  Expectation expect_progresses =
+      EXPECT_CALL(mock_callbacks_, OnProgress(_, _)).Times(AnyNumber());
+  // |OnProgress()| should not happens after |OnFinished()|
+  EXPECT_CALL(mock_callbacks_,
+              OnFinished(InstallerError::kErrorConfiguringContainer))
+      .After(expect_progresses);
+
+  Install();
+
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstaller::SetupResult::kErrorConfiguringContainer),
       1);
 
   EXPECT_TRUE(crostini_installer_->CanInstall())

@@ -22,7 +22,7 @@ class TestDataSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
 
   std::string GetMimeType(const std::string& path) override;
 
@@ -37,7 +37,7 @@ class TestDataSource : public content::URLDataSource {
   GURL GetURLForPath(const std::string& path);
 
   void ReadFile(const std::string& path,
-                const content::URLDataSource::GotDataCallback& callback);
+                content::URLDataSource::GotDataCallback callback);
 
   base::FilePath src_root_;
   base::FilePath gen_root_;

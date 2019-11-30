@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -472,7 +473,7 @@ class ExistingUserControllerPublicSessionTest
       runner1 = new content::MessageLoopRunner;
       subscription1 = chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccountAutoLoginId,
-          runner1->QuitClosure());
+          base::BindLambdaForTesting([&]() { runner1->Quit(); }));
     }
     scoped_refptr<content::MessageLoopRunner> runner2;
     std::unique_ptr<CrosSettings::ObserverSubscription> subscription2;
@@ -482,7 +483,7 @@ class ExistingUserControllerPublicSessionTest
       runner2 = new content::MessageLoopRunner;
       subscription2 = chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-          runner2->QuitClosure());
+          base::BindLambdaForTesting([&]() { runner2->Quit(); }));
     }
 
     // Update the policy.

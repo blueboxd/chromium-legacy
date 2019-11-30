@@ -63,54 +63,55 @@ std::string MostVisitedIframeSource::GetSource() {
 void MostVisitedIframeSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
   const std::string path(url.path());
 
   if (path == kSingleHTMLPath) {
-    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
+    SendResource(IDR_MOST_VISITED_SINGLE_HTML, std::move(callback));
   } else if (path == kSingleCSSPath) {
-    SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
+    SendResource(IDR_MOST_VISITED_SINGLE_CSS, std::move(callback));
   } else if (path == kSingleJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, wc_getter, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_SINGLE_JS, wc_getter,
+                     std::move(callback));
   } else if (path == kTitleHTMLPath) {
-    SendResource(IDR_MOST_VISITED_TITLE_HTML, callback);
+    SendResource(IDR_MOST_VISITED_TITLE_HTML, std::move(callback));
   } else if (path == kTitleCSSPath) {
-    SendResource(IDR_MOST_VISITED_TITLE_CSS, callback);
+    SendResource(IDR_MOST_VISITED_TITLE_CSS, std::move(callback));
   } else if (path == kTitleJSPath) {
-    SendResource(IDR_MOST_VISITED_TITLE_JS, callback);
+    SendResource(IDR_MOST_VISITED_TITLE_JS, std::move(callback));
   } else if (path == kUtilJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, std::move(callback));
   } else if (path == kCommonCSSPath) {
-    SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
+    SendResource(IDR_MOST_VISITED_IFRAME_CSS, std::move(callback));
   } else if (path == kDontShowPngPath) {
-    SendResource(IDR_MOST_VISITED_DONT_SHOW_PNG, callback);
+    SendResource(IDR_MOST_VISITED_DONT_SHOW_PNG, std::move(callback));
   } else if (path == kDontShow2XPngPath) {
-    SendResource(IDR_MOST_VISITED_DONT_SHOW_2X_PNG, callback);
+    SendResource(IDR_MOST_VISITED_DONT_SHOW_2X_PNG, std::move(callback));
   } else if (path == kEditHTMLPath) {
-    SendResource(IDR_CUSTOM_LINKS_EDIT_HTML, callback);
+    SendResource(IDR_CUSTOM_LINKS_EDIT_HTML, std::move(callback));
   } else if (path == kEditCSSPath) {
-    SendResource(IDR_CUSTOM_LINKS_EDIT_CSS, callback);
+    SendResource(IDR_CUSTOM_LINKS_EDIT_CSS, std::move(callback));
   } else if (path == kEditJSPath) {
-    SendJSWithOrigin(IDR_CUSTOM_LINKS_EDIT_JS, wc_getter, callback);
+    SendJSWithOrigin(IDR_CUSTOM_LINKS_EDIT_JS, wc_getter, std::move(callback));
   } else if (path == kAddSvgPath) {
-    SendResource(IDR_CUSTOM_LINKS_ADD_SVG, callback);
+    SendResource(IDR_CUSTOM_LINKS_ADD_SVG, std::move(callback));
   } else if (path == kAddWhiteSvgPath) {
-    SendResource(IDR_CUSTOM_LINKS_ADD_WHITE_SVG, callback);
+    SendResource(IDR_CUSTOM_LINKS_ADD_WHITE_SVG, std::move(callback));
   } else if (path == kEditMenuSvgPath) {
-    SendResource(IDR_CUSTOM_LINKS_EDIT_MENU_SVG, callback);
+    SendResource(IDR_CUSTOM_LINKS_EDIT_MENU_SVG, std::move(callback));
   } else if (path == kLocalNTPCommonCSSPath) {
-    SendResource(IDR_LOCAL_NTP_COMMON_CSS, callback);
+    SendResource(IDR_LOCAL_NTP_COMMON_CSS, std::move(callback));
   } else if (path == kAnimationsCSSPath) {
-    SendResource(IDR_LOCAL_NTP_ANIMATIONS_CSS, callback);
+    SendResource(IDR_LOCAL_NTP_ANIMATIONS_CSS, std::move(callback));
   } else if (path == kAnimationsJSPath) {
-    SendResource(IDR_LOCAL_NTP_ANIMATIONS_JS, callback);
+    SendResource(IDR_LOCAL_NTP_ANIMATIONS_JS, std::move(callback));
   } else if (path == kLocalNTPUtilsJSPath) {
-    SendResource(IDR_LOCAL_NTP_UTILS_JS, callback);
+    SendResource(IDR_LOCAL_NTP_UTILS_JS, std::move(callback));
   } else if (path == kAssertJsPath) {
-    SendResource(IDR_WEBUI_JS_ASSERT, callback);
+    SendResource(IDR_WEBUI_JS_ASSERT, std::move(callback));
   } else {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
   }
 }
 
@@ -163,18 +164,19 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
 
 void MostVisitedIframeSource::SendResource(
     int resource_id,
-    const content::URLDataSource::GotDataCallback& callback) {
-  callback.Run(ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-      resource_id));
+    content::URLDataSource::GotDataCallback callback) {
+  std::move(callback).Run(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          resource_id));
 }
 
 void MostVisitedIframeSource::SendJSWithOrigin(
     int resource_id,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   std::string origin;
   if (!GetOrigin(wc_getter, &origin)) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -182,7 +184,7 @@ void MostVisitedIframeSource::SendJSWithOrigin(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   std::string response(template_js.as_string());
   base::ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
-  callback.Run(base::RefCountedString::TakeString(&response));
+  std::move(callback).Run(base::RefCountedString::TakeString(&response));
 }
 
 bool MostVisitedIframeSource::GetOrigin(

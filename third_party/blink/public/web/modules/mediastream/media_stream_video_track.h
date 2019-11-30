@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 namespace blink {
@@ -90,6 +91,18 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
                bool is_sink_secure);
   void RemoveSink(blink::WebMediaStreamSink* sink);
 
+  // Adds |callback| for encoded frame output on the IO thread. The function
+  // will cause generation of a keyframe from the source.
+  // Encoded sinks are not secure.
+  void AddEncodedSink(blink::WebMediaStreamSink* sink,
+                      EncodedVideoFrameCB callback);
+
+  // Removes encoded callbacks associated with |sink|.
+  void RemoveEncodedSink(blink::WebMediaStreamSink* sink);
+
+  // Returns the number of currently present encoded sinks.
+  size_t CountEncodedSinks() const;
+
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
 
   const base::Optional<bool>& noise_reduction() const {
@@ -146,11 +159,15 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
                            PreservesColorSpace);
   FRIEND_TEST_ALL_PREFIXES(PepperToVideoTrackAdapterTest, PutFrame);
 
+  void UpdateSourceCapturingSecure();
+  void UpdateSourceHasConsumers();
+
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
   THREAD_CHECKER(main_render_thread_checker_);
 
   std::vector<blink::WebMediaStreamSink*> sinks_;
+  std::vector<blink::WebMediaStreamSink*> encoded_sinks_;
 
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.

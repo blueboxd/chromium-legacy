@@ -184,7 +184,13 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
 
   bool CanDecodeWithHardwareAcceleration(
       const ImageHeaderMetadata* image_metadata) const override {
-    return advertise_accelerated_decoding_;
+    // Only advertise hardware accelerated decoding for the current use cases
+    // (JPEG and WebP).
+    if (image_metadata && (image_metadata->image_type == ImageType::kJPEG ||
+                           image_metadata->image_type == ImageType::kWEBP)) {
+      return advertise_accelerated_decoding_;
+    }
+    return false;
   }
 
   std::pair<TransferCacheEntryType, uint32_t> MakeEntryKey(uint32_t type,
@@ -362,10 +368,11 @@ class GpuImageDecodeCacheTest
     do_yuv_decode_ = std::get<2>(GetParam());
   }
 
-  std::unique_ptr<GpuImageDecodeCache> CreateCache() {
+  std::unique_ptr<GpuImageDecodeCache> CreateCache(
+      size_t memory_limit_bytes = kGpuMemoryLimitBytes) {
     return std::make_unique<GpuImageDecodeCache>(
         context_provider_.get(), use_transfer_cache_, color_type_,
-        kGpuMemoryLimitBytes, max_texture_size_,
+        memory_limit_bytes, max_texture_size_,
         PaintImage::kDefaultGeneratorClientId);
   }
 
@@ -2998,6 +3005,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
@@ -3032,6 +3040,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
@@ -3069,6 +3078,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
@@ -3082,6 +3092,14 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
                   _))
       .Times(1);
   TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Attempting to get another task for the image should result in no task
+  // because the decode is considered to have failed before.
+  ImageDecodeCache::TaskResult result_after_run =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_FALSE(result_after_run.need_unref);
+  EXPECT_FALSE(result_after_run.task);
+  EXPECT_TRUE(result_after_run.can_do_hardware_accelerated_decode);
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
@@ -3107,6 +3125,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetOutOfRasterDecodeTaskForImageAndRef(draw_image);
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_FALSE(result.can_do_hardware_accelerated_decode);
 
   // A non-accelerated standalone decode should produce only a decode task.
   ASSERT_TRUE(result.task->dependencies().empty());
@@ -3128,6 +3147,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_FALSE(result.can_do_hardware_accelerated_decode);
 
   // A non-accelerated normal decode should produce a decode dependency.
   ASSERT_EQ(result.task->dependencies().size(), 1u);
@@ -3151,6 +3171,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   ASSERT_TRUE(result.task);
+  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
 
   // Accelerated decodes should not produce decode tasks.
   ASSERT_TRUE(result.task->dependencies().empty());
@@ -3164,6 +3185,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(another_result.need_unref);
   ASSERT_TRUE(another_result.task);
+  EXPECT_TRUE(another_result.can_do_hardware_accelerated_decode);
   EXPECT_EQ(another_result.task->dependencies().size(), 0u);
   ASSERT_TRUE(image.GetImageHeaderMetadata());
   EXPECT_CALL(*raster_implementation(),
@@ -3181,6 +3203,37 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->UnrefImage(draw_image);
   cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
+       RequestAcceleratedDecodeSuccessfullyAtRasterTime) {
+  // We force at-raster decodes by setting the cache memory limit to 0 bytes.
+  auto cache = CreateCache(0u /* memory_limit_bytes */);
+  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+  ASSERT_TRUE(target_color_space.IsValid());
+  const PaintImage image = CreatePaintImageForDecodeAcceleration();
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
+                       PaintImage::kDefaultFrameIndex, target_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_FALSE(result.need_unref);
+  EXPECT_FALSE(result.task);
+  EXPECT_TRUE(result.is_at_raster_decode);
+  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  EXPECT_CALL(*raster_implementation(),
+              DoScheduleImageDecode(image.GetImageHeaderMetadata()->image_size,
+                                    _, gfx::ColorSpace(), _))
+      .Times(1);
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -3222,6 +3275,8 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   // task without a decode dependency since the decode will be done in the GPU
   // process. In the alternative path (software decoding), the upload task
   // depends on a decode task that runs in the renderer.
+  EXPECT_EQ(advertise_accelerated_decoding_,
+            jpeg_task.can_do_hardware_accelerated_decode);
   if (advertise_accelerated_decoding_ && allow_accelerated_jpeg_decoding_) {
     ASSERT_TRUE(jpeg_task.task->dependencies().empty());
     ASSERT_TRUE(jpeg_image.GetImageHeaderMetadata());
@@ -3235,8 +3290,31 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
     ASSERT_TRUE(jpeg_task.task->dependencies()[0]);
     TestTileTaskRunner::ProcessTask(jpeg_task.task->dependencies()[0].get());
   }
-  TestTileTaskRunner::ProcessTask(jpeg_task.task.get());
+  TestTileTaskRunner::ScheduleTask(jpeg_task.task.get());
+
+  // After scheduling the task, trying to get another task for the image should
+  // result in the original task.
+  ImageDecodeCache::TaskResult jpeg_task_again = cache->GetTaskForImageAndRef(
+      jpeg_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(jpeg_task_again.need_unref);
+  EXPECT_EQ(jpeg_task_again.task.get(), jpeg_task.task.get());
+  EXPECT_EQ(advertise_accelerated_decoding_,
+            jpeg_task_again.can_do_hardware_accelerated_decode);
+
+  TestTileTaskRunner::RunTask(jpeg_task.task.get());
+  TestTileTaskRunner::CompleteTask(jpeg_task.task.get());
   testing::Mock::VerifyAndClearExpectations(raster_implementation());
+
+  // After running the tasks, trying to get another task for the image should
+  // result in no task.
+  jpeg_task = cache->GetTaskForImageAndRef(jpeg_draw_image,
+                                           ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(jpeg_task.need_unref);
+  EXPECT_FALSE(jpeg_task.task);
+  EXPECT_EQ(advertise_accelerated_decoding_,
+            jpeg_task.can_do_hardware_accelerated_decode);
+  cache->UnrefImage(jpeg_draw_image);
+  cache->UnrefImage(jpeg_draw_image);
   cache->UnrefImage(jpeg_draw_image);
 
   // Try a WebP image.
@@ -3250,6 +3328,8 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
       webp_draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(webp_task.need_unref);
   ASSERT_TRUE(webp_task.task);
+  EXPECT_EQ(advertise_accelerated_decoding_,
+            webp_task.can_do_hardware_accelerated_decode);
   if (advertise_accelerated_decoding_ && allow_accelerated_webp_decoding_) {
     ASSERT_TRUE(webp_task.task->dependencies().empty());
     ASSERT_TRUE(webp_image.GetImageHeaderMetadata());
@@ -3265,6 +3345,15 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
   }
   TestTileTaskRunner::ProcessTask(webp_task.task.get());
   testing::Mock::VerifyAndClearExpectations(raster_implementation());
+
+  // The image should have been cached.
+  webp_task = cache->GetTaskForImageAndRef(webp_draw_image,
+                                           ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(webp_task.need_unref);
+  EXPECT_FALSE(webp_task.task);
+  EXPECT_EQ(advertise_accelerated_decoding_,
+            webp_task.can_do_hardware_accelerated_decode);
+  cache->UnrefImage(webp_draw_image);
   cache->UnrefImage(webp_draw_image);
 
   // Try a PNG image (which should not be hardware accelerated).
@@ -3278,6 +3367,7 @@ TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesFlagsTest,
       png_draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(png_task.need_unref);
   ASSERT_TRUE(png_task.task);
+  EXPECT_FALSE(png_task.can_do_hardware_accelerated_decode);
   ASSERT_EQ(png_task.task->dependencies().size(), 1u);
   ASSERT_TRUE(png_task.task->dependencies()[0]);
   TestTileTaskRunner::ProcessTask(png_task.task->dependencies()[0].get());

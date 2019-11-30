@@ -27,10 +27,10 @@ class ImageSource : public content::URLDataSource {
 
   // content::URLDataSource implementation.
   std::string GetSource() override;
-  void StartDataRequest(const GURL& url,
-                        const content::WebContents::Getter& wc_getter,
-                        const content::URLDataSource::GotDataCallback&
-                            got_data_callback) override;
+  void StartDataRequest(
+      const GURL& url,
+      const content::WebContents::Getter& wc_getter,
+      content::URLDataSource::GotDataCallback got_data_callback) override;
 
   std::string GetMimeType(const std::string& path) override;
 
@@ -38,7 +38,7 @@ class ImageSource : public content::URLDataSource {
   // Continuation from StartDataRequest().
   void StartDataRequestAfterPathExists(
       const base::FilePath& image_path,
-      const content::URLDataSource::GotDataCallback& got_data_callback,
+      content::URLDataSource::GotDataCallback got_data_callback,
       bool path_exists);
 
   // Checks whether we have allowed the image to be loaded.

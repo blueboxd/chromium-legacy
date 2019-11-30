@@ -28,7 +28,9 @@ class WebUISourcesTest : public testing::Test {
     theme_source()->StartDataRequest(
         GURL(base::StrCat({content::kChromeUIScheme, "://",
                            chrome::kChromeUIThemeHost, "/", source})),
-        content::WebContents::Getter(), callback_);
+        content::WebContents::Getter(),
+        base::BindOnce(&WebUISourcesTest::SendResponse,
+                       base::Unretained(this)));
   }
 
   size_t result_data_size_;
@@ -37,8 +39,6 @@ class WebUISourcesTest : public testing::Test {
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
     theme_source_ = std::make_unique<ThemeSource>(profile_.get());
-    callback_ = base::Bind(&WebUISourcesTest::SendResponse,
-                           base::Unretained(this));
   }
 
   void TearDown() override {
@@ -49,8 +49,6 @@ class WebUISourcesTest : public testing::Test {
   void SendResponse(scoped_refptr<base::RefCountedMemory> data) {
     result_data_size_ = data ? data->size() : 0;
   }
-
-  content::URLDataSource::GotDataCallback callback_;
 
   content::BrowserTaskEnvironment task_environment_;
 

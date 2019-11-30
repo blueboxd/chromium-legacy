@@ -99,7 +99,6 @@
 <translation id="1137673463384776352"><ph name="APP" /> でリンクを開く</translation>
 <translation id="1140351953533677694">Bluetooth デバイスとシリアル デバイスへのアクセス</translation>
 <translation id="114036956334641753">音声、字幕</translation>
-<translation id="1140610710803014750">お使いのどのデバイスでも同じブックマークを使用するには、ログインして同期を有効にします。</translation>
 <translation id="1140746652461896221">アクセスするあらゆるページのコンテンツをブロックする</translation>
 <translation id="1143142264369994168">証明書の署名者</translation>
 <translation id="1145292499998999162">プラグインをブロックしました</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">オーディオ アドレスをコピー(&amp;C)</translation>
 <translation id="1465827627707997754">ピザ</translation>
 <translation id="1468571364034902819">このプロフィールは使用できません</translation>
-<translation id="1470811252759861213">お使いのどのデバイスでも同じ拡張機能を使用するには、<ph name="SIGN_IN_LINK" />します。</translation>
 <translation id="1472675084647422956">表示項目を増やす</translation>
 <translation id="1475502736924165259">他のどのカテゴリにも適合しない証明書がファイルに格納されています</translation>
 <translation id="1476088332184200792">デバイスにコピー</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">次回から、新しいスマートフォンでこの <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="2489918096470125693">フォルダを追加(&amp;F)...</translation>
 <translation id="2490481887078769936">「<ph name="FILE_NAME" />」をリストから削除しました</translation>
-<translation id="2490782392574942205">お使いのどのパソコンでも同じ拡張機能を使用するには、ログインして同期を有効にします</translation>
 <translation id="249113932447298600">デバイス <ph name="DEVICE_LABEL" /> は現在サポートされていません。</translation>
 <translation id="249303669840926644">登録を完了できませんでした</translation>
 <translation id="2495777824269688114">新しい機能を見つけたり、疑問の答えを探したりするには、[？] を選択してヘルプを表示します。</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3528033729920178817">このページはあなたの現在地を追跡しています。</translation>
 <translation id="3528498924003805721">ショートカットの対象</translation>
-<translation id="3530305684079447434">お使いのどのデバイスでも同じブックマークを使用するには、<ph name="SIGN_IN_LINK" />します。</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> から、マイクの使用許可を求められています</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - オーディオがミュートされています</translation>
 <translation id="3538066758857505094">Linux のアンインストール中にエラーが発生しました。もう一度お試しください。</translation>

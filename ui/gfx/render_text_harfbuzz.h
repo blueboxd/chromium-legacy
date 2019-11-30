@@ -218,7 +218,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   ~RenderTextHarfBuzz() override;
 
   // RenderText:
-  std::unique_ptr<RenderText> CreateInstanceOfSameType() const override;
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;

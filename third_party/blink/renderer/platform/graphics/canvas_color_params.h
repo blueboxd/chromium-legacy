@@ -25,16 +25,16 @@ class ColorSpace;
 
 namespace blink {
 
-enum CanvasColorSpace {
-  kSRGBCanvasColorSpace,
-  kLinearRGBCanvasColorSpace,
-  kRec2020CanvasColorSpace,
-  kP3CanvasColorSpace,
+enum class CanvasColorSpace {
+  kSRGB,
+  kLinearRGB,
+  kRec2020,
+  kP3,
 };
 
-enum CanvasPixelFormat {
-  kRGBA8CanvasPixelFormat,
-  kF16CanvasPixelFormat,
+enum class CanvasPixelFormat {
+  kRGBA8,
+  kF16,
 };
 
 // todo(crbug/1021986) remove force_rgba in canvasColorParams
@@ -98,8 +98,8 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorParams(const sk_sp<SkColorSpace> color_space,
                     SkColorType color_type);
 
-  CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
-  CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
+  CanvasColorSpace color_space_ = CanvasColorSpace::kSRGB;
+  CanvasPixelFormat pixel_format_ = CanvasPixelFormat::kRGBA8;
   OpacityMode opacity_mode_ = kNonOpaque;
   CanvasForceRGBA force_rgba_ = CanvasForceRGBA::kNotForced;
 };

@@ -126,14 +126,14 @@ class TracingControllerTest : public ContentBrowserTest {
     return std::move(metadata_);
   }
 
-  void GetCategoriesDoneCallbackTest(base::Closure quit_callback,
+  void GetCategoriesDoneCallbackTest(base::OnceClosure quit_callback,
                                      const std::set<std::string>& categories) {
     get_categories_done_callback_count_++;
     EXPECT_FALSE(categories.empty());
     std::move(quit_callback).Run();
   }
 
-  void StartTracingDoneCallbackTest(base::Closure quit_callback) {
+  void StartTracingDoneCallbackTest(base::OnceClosure quit_callback) {
     enable_recording_done_callback_count_++;
     std::move(quit_callback).Run();
   }
@@ -146,7 +146,7 @@ class TracingControllerTest : public ContentBrowserTest {
     std::move(quit_callback).Run();
   }
 
-  void StopTracingFileDoneCallbackTest(base::Closure quit_callback,
+  void StopTracingFileDoneCallbackTest(base::OnceClosure quit_callback,
                                        const base::FilePath& file_path) {
     disable_recording_done_callback_count_++;
     {
@@ -243,8 +243,8 @@ class TracingControllerTest : public ContentBrowserTest {
       metadata_ = std::make_unique<base::DictionaryValue>();
       metadata_->SetString("not-whitelisted", "this_not_found");
       tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
-          base::Bind(&TracingControllerTest::GenerateMetadataDict,
-                     base::Unretained(this)));
+          base::BindRepeating(&TracingControllerTest::GenerateMetadataDict,
+                              base::Unretained(this)));
 
       bool result =
           controller->StopTracing(trace_data_endpoint, /*agent_label=*/"",

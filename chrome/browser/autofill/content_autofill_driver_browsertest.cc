@@ -116,8 +116,8 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
 
   void OnVisibilityChanged(content::Visibility visibility) override {
     if (visibility == content::Visibility::HIDDEN &&
-        !web_contents_hidden_callback_.is_null()) {
-      web_contents_hidden_callback_.Run();
+        web_contents_hidden_callback_) {
+      std::move(web_contents_hidden_callback_).Run();
     }
   }
 
@@ -126,17 +126,16 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
     if (!navigation_handle->HasCommitted())
       return;
 
-    if (!nav_entry_committed_callback_.is_null())
-      nav_entry_committed_callback_.Run();
+    if (nav_entry_committed_callback_)
+      std::move(nav_entry_committed_callback_).Run();
 
     if (navigation_handle->IsSameDocument() &&
-        !same_document_navigation_callback_.is_null()) {
-      same_document_navigation_callback_.Run();
+        same_document_navigation_callback_) {
+      std::move(same_document_navigation_callback_).Run();
     }
 
-    if (!navigation_handle->IsInMainFrame() &&
-        !subframe_navigation_callback_.is_null()) {
-      subframe_navigation_callback_.Run();
+    if (!navigation_handle->IsInMainFrame() && subframe_navigation_callback_) {
+      std::move(subframe_navigation_callback_).Run();
     }
   }
 
@@ -174,10 +173,10 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  base::Closure web_contents_hidden_callback_;
-  base::Closure nav_entry_committed_callback_;
-  base::Closure same_document_navigation_callback_;
-  base::Closure subframe_navigation_callback_;
+  base::OnceClosure web_contents_hidden_callback_;
+  base::OnceClosure nav_entry_committed_callback_;
+  base::OnceClosure same_document_navigation_callback_;
+  base::OnceClosure subframe_navigation_callback_;
 
   std::unique_ptr<testing::NiceMock<MockAutofillClient>> autofill_client_;
 };
@@ -193,7 +192,6 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                                 GURL(url::kAboutBlankURL),
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   runner->Run();
-  web_contents_hidden_callback_.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
@@ -216,7 +214,6 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
       embedded_test_server()->GetURL("/autofill/autofill_test_form.html#foo"));
   // This will block until a same document navigation is observed.
   runner->Run();
-  same_document_navigation_callback_.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
@@ -239,7 +236,6 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
       iframe_url));
   // This will block until a subframe navigation is observed.
   runner->Run();
-  subframe_navigation_callback_.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
@@ -257,7 +253,6 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
       GURL(chrome::kChromeUIAboutURL), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   runner->Run();
-  nav_entry_committed_callback_.Reset();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,

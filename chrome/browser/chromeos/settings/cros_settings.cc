@@ -287,9 +287,9 @@ std::unique_ptr<CrosSettingsProvider> CrosSettings::RemoveSettingsProvider(
 
 std::unique_ptr<CrosSettings::ObserverSubscription>
 CrosSettings::AddSettingsObserver(const std::string& path,
-                                  const base::Closure& callback) {
+                                  base::RepeatingClosure callback) {
   DCHECK(!path.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!GetProvider(path)) {
@@ -309,7 +309,7 @@ CrosSettings::AddSettingsObserver(const std::string& path,
     registry = observer_iterator->second.get();
   }
 
-  return registry->Add(callback);
+  return registry->Add(std::move(callback));
 }
 
 CrosSettingsProvider* CrosSettings::GetProvider(

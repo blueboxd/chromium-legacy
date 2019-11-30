@@ -36,8 +36,6 @@ namespace chromeos {
 
 namespace {
 
-KerberosCredentialsManager* g_instance = nullptr;
-
 // Account keys for the kerberos.accounts pref.
 constexpr char kPrincipal[] = "principal";
 constexpr char kPassword[] = "password";
@@ -281,9 +279,6 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
       kerberos_files_handler_(std::make_unique<KerberosFilesHandler>(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
                               base::Unretained(this)))) {
-  DCHECK(!g_instance);
-  g_instance = this;
-
   DCHECK(primary_profile_);
   const user_manager::User* primary_user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
@@ -355,14 +350,6 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
 
 KerberosCredentialsManager::~KerberosCredentialsManager() {
   policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
-  DCHECK(g_instance);
-  g_instance = nullptr;
-}
-
-// static
-KerberosCredentialsManager& KerberosCredentialsManager::Get() {
-  DCHECK(g_instance);
-  return *g_instance;
 }
 
 // static

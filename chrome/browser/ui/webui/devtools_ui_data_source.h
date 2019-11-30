@@ -41,7 +41,7 @@ class DevToolsDataSource : public content::URLDataSource {
 
   void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
-                        const GotDataCallback& callback) override;
+                        GotDataCallback callback) override;
 
  private:
   friend class DevToolsUIDataSourceTest;
@@ -59,23 +59,23 @@ class DevToolsDataSource : public content::URLDataSource {
 
   // Serves bundled DevTools frontend from ResourceBundle.
   void StartBundledDataRequest(const std::string& path,
-                               const GotDataCallback& callback);
+                               GotDataCallback callback);
 
   // Serves remote DevTools frontend from hard-coded App Engine domain.
-  void StartRemoteDataRequest(const GURL& url, const GotDataCallback& callback);
+  void StartRemoteDataRequest(const GURL& url, GotDataCallback callback);
 
   // Serves remote DevTools frontend from any endpoint, passed through
   // command-line flag.
-  void StartCustomDataRequest(const GURL& url, const GotDataCallback& callback);
+  void StartCustomDataRequest(const GURL& url, GotDataCallback callback);
 
   virtual void StartNetworkRequest(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
-      const GotDataCallback& callback);
+      GotDataCallback callback);
 
   virtual void StartFileRequest(const std::string& path,
-                                const GotDataCallback& callback);
+                                GotDataCallback callback);
 
   struct PendingRequest {
     PendingRequest();

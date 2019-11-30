@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Badilisha mipangilio ya arifa za kufunga skrini</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Onyesha mipangilio ya Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Onyesha rafu kila wakati</translation>
 <translation id="1341651618736211726">Menyu ya vipengee vya ziada</translation>
 <translation id="1346748346194534595">Kulia</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1761222317188459878">Washa au uzime muunganisho wa mtandao. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Sogeza kulia</translation>
+<translation id="181103072419391116">Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="1812997170047690955">Kuna nini kwenye skrini yangu?</translation>
 <translation id="1823873187264960516">Ethaneti: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Mratibu (inapakia...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Gusa <ph name="KEYBOARD_SHORTCUT" /> ili ubadilishe mpangilio wa kibodi.</translation>
 <translation id="2501920221385095727">Vitufe vya kusalia kwa muda</translation>
 <translation id="2509468283778169019">Caps Lock imewashwa.</translation>
+<translation id="2517825809102302935">Zima leo usiku</translation>
 <translation id="2542089167727451762">Gusa picha yako ya wasifu</translation>
 <translation id="255671100581129685">Programu ya Mratibu wa Google haipatikani katika kipindi cha umma.</translation>
 <translation id="256712445991462162">kikuzaji kilichoambatishwa</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Unaweza kuingia katika akaunti <ph name="MULTI_PROFILE_USER_LIMIT" /> pekee ukitumia kipengele cha uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja.</translation>
 <translation id="3154351730702813399">Msimamizi wa kifaa anaweza kufuatilia shughuli zako za kuvinjari.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Imeunganishwa kwenye kifaa kimoja}other{Imeunganishwa kwenye vifaa #}}</translation>
+<translation id="3217205077783620295">Umewasha sauti, Ukigeuza swichi utazima sauti.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> zaidi</translation>
 <translation id="3236488194889173876">Mtandao wa simu haupatikani</translation>
 <translation id="3249513730522716925">Dirisha la <ph name="WINDOW_TITLE" /> limehamishwa kutoka Kiolesura cha <ph name="ACTIVE_DESK" /> hadi Kiolesura cha <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3454224730401036106">Muunganisho wako unatumia mtandao salama zaidi</translation>
 <translation id="3465223694362104965">Kibodi nyingine imeunganishwa kwenye kifaa hiki tangu ulipoingia kwenye akaunti maya ya mwisho. Hakikisha kibodi hii ni salama kabla ya kuitumia.</translation>
+<translation id="3465356146291925647">Unadhibitiwa na Msimamizi wako</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
 <translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Zima kisha uwashe na uweke upya</translation>
 <translation id="495046168593986294">Sogeza juu</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
+<translation id="5018302031617932556">Mwanga wa Usiku hufanya uangalie skrini yako au usome katika mwangaza hafifu kwa urahisi. Gusa ili ubadilishe kipengele hiki.</translation>
 <translation id="5030687792513154421">Muda wa kutumia kifaa umeisha</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> imeunganishwa kwenye simu mpya</translation>
 <translation id="5083553833479578423">Fungua vipengele zaidi vya programu yako ya Mratibu.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">Kifaa hiki kimeshindwa kutumia skrini zako zote. Kwa hivyo, skrini moja imeondolewa</translation>
 <translation id="574392208103952083">Wastani</translation>
 <translation id="5744083938413354016">Uburutaji wa kugonga</translation>
+<translation id="5745612484876805746">Kipengele cha Mwanga wa Usiku kitawaka kiotomatiki wakati wa machweo</translation>
 <translation id="5750765938512549687">Bluetooth imezimwa</translation>
 <translation id="576453121877257266">Umewasha Mwanga wa Usiku.</translation>
 <translation id="5777841717266010279">Je,ungependa kuacha kushiriki skrini?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Hali ya Utofautishaji wa Juu imewashwa. Bonyeza Ctrl+Search+H tena ili ugeuze na kuizima.</translation>
 <translation id="6018164090099858612">Inaondoka kwenye hali ya kuakisi</translation>
 <translation id="602001110135236999">Sogeza kushoto</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6043212731627905357">Skrini hii haiingiliani na kifaa chako cha <ph name="DEVICE_TYPE" /> (Skrini haitumiki).</translation>
 <translation id="6043994281159824495">Ondoka kwenye akaunti sasa hivi</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Bluetooth imewashwa</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Futa arifa zote</translation>
 <translation id="643147933154517414">Hakuna arifa</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> kwenye <ph name="RECEIVER_NAME" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Kuingiza data kwa mwandiko wa mkono</translation>
 <translation id="6528179044667508675">Usinisumbue</translation>
 <translation id="6537270692134705506">Piga skrini picha</translation>
+<translation id="6537924328260219877">Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Betri ya Simu <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Tuma kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Mwulize Msimamizi</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6637729079642709226">Badilisha wakati</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Rejea saa <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Unganisha <ph name="DEVICE_NAME" /> na simu yako</translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Mratibu wa Google</translation>
 <translation id="7042322267639375032">Kunja eneo la hali</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7067196344162293536">Zungusha kiotomatiki</translation>
@@ -502,6 +515,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8192202700944119416">Arifa zimefichwa.</translation>
 <translation id="8203795194971602413">Mbofyo wa kulia</translation>
 <translation id="8236042855478648955">Ni wakati wa kupumzika</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Betri ya Simu <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Bonyeza Enter ili ufungue ukitumia <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8297006494302853456">Dhaifu</translation>
@@ -526,10 +540,12 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8513108775083588393">Zungusha kiotomatiki</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
 <translation id="8627191004499078455">Imeunganishwa kwenye <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="8639760480004882931">Imebaki <ph name="PERCENTAGE" />%</translation>
 <translation id="8649101189709089199">Chagua ili Izungumze</translation>
 <translation id="8652175077544655965">Funga mipangilio</translation>
 <translation id="8653151467777939995">Onyesha mipangilio ya arifa. Umewasha arifa</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Onyesha orodha ya mitandao. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
@@ -538,6 +554,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8734991477317290293">Huenda inajaribu kuiba mibofyo yako</translation>
 <translation id="8735953464173050365">Onyesha mipangilio ya kibodi. Umechagua <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Onyesha mipangilio ya VPN</translation>
+<translation id="8785070478575117577">Unganisha kwenye <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Washa au uzime hali ya kufunga kwa kuzungusha. <ph name="STATE_TEXT" /></translation>
@@ -558,6 +575,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="899350903320462459">Fungua kifaa kwa kuingia katika akaunti ukitumia <ph name="LOGIN_ID" /> ili utekeleze kitendo cha arifa</translation>
 <translation id="9017320285115481645">Weka msimbo wa kufikia wa mzazi katika Family Link.</translation>
 <translation id="9029474291399787231">Sasisho la Adobe Flash Player linapatikana</translation>
+<translation id="9047624247355796468">Fungua mipangilio ya <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Mipangilio ya awali itarejeshwa kwenye kifaa</translation>
 <translation id="9070640332319875144">Mipangilio ya Mratibu</translation>
 <translation id="9072519059834302790">Zimebaki <ph name="TIME_LEFT" /> kabla ya chaji ya betri kuisha.</translation>
@@ -572,6 +590,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="9183456764293710005">Kikuza Skrini Nzima</translation>
 <translation id="9193626018745640770">Inatuma kwenye kifaa au kwa mpokeaji usiyemjua</translation>
 <translation id="9194617393863864469">Ongeza akaunti nyingine...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="9205817095063786319">Kifaa kinadhibitiwa na <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Mfumo unaondoka kwenye hali ya eneo-kazi lililounganishwa</translation>
 <translation id="9211681782751733685">Zimebaki <ph name="TIME_REMAINING" /> kabla ya chaji ya betri kujaa.</translation>

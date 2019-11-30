@@ -63,13 +63,27 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const uint16_t kFallbackVideoFrameRates[] = {30, 60};
 
+const char* DeviceTypeToString(blink::MediaDeviceType device_type) {
+  switch (device_type) {
+    case blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
+      return "AUDIO_INPUT";
+    case blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT:
+      return "VIDEO_INPUT";
+    case blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
+      return "AUDIO_OUTPUT";
+    default:
+      NOTREACHED();
+  }
+  return "UNKNOWN";
+}
+
 // Private helper method to generate a string for the log message that lists the
 // human readable names of |devices|.
 std::string GetLogMessageString(
     blink::MediaDeviceType device_type,
     const blink::WebMediaDeviceInfoArray& device_infos) {
-  std::string output_string =
-      base::StringPrintf("Getting devices of type %d:\n", device_type);
+  std::string output_string = base::StringPrintf(
+      "Getting devices of type %s:\n", DeviceTypeToString(device_type));
   if (device_infos.empty())
     return output_string + "No devices found.";
   for (const auto& device_info : device_infos)

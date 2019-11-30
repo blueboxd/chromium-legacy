@@ -904,9 +904,11 @@ void NGBoxFragmentPainter::PaintColumnRules(
     // specified and columns are balanced).
 
     rule.Move(paint_offset);
-    ObjectPainter::DrawLineForBoxSide(paint_info.context, rule.X(), rule.Y(),
-                                      rule.Right(), rule.Bottom(), box_side,
-                                      rule_color, rule_style, 0, 0, true);
+    IntRect snapped_rule = PixelSnappedIntRect(rule);
+    ObjectPainter::DrawLineForBoxSide(paint_info.context, snapped_rule.X(),
+                                      snapped_rule.Y(), snapped_rule.MaxX(),
+                                      snapped_rule.MaxY(), box_side, rule_color,
+                                      rule_style, 0, 0, true);
 
     previous_column = current_column;
   }

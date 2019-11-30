@@ -31,18 +31,17 @@ class ServiceWorkerVersion;
 class PushMessagingRouter {
  public:
   using DeliverMessageCallback =
-      base::Callback<void(blink::mojom::PushDeliveryStatus)>;
+      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)>;
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|. Must be called on the UI
   // thread.
-  static void DeliverMessage(
-      BrowserContext* browser_context,
-      const GURL& origin,
-      int64_t service_worker_registration_id,
-      const std::string& message_id,
-      base::Optional<std::string> payload,
-      const DeliverMessageCallback& deliver_message_callback);
+  static void DeliverMessage(BrowserContext* browser_context,
+                             const GURL& origin,
+                             int64_t service_worker_registration_id,
+                             const std::string& message_id,
+                             base::Optional<std::string> payload,
+                             DeliverMessageCallback deliver_message_callback);
 
  private:
   // Attempts to find a Service Worker registration so that a push event can be
@@ -54,7 +53,7 @@ class PushMessagingRouter {
       int64_t service_worker_registration_id,
       const std::string& message_id,
       base::Optional<std::string> payload,
-      const DeliverMessageCallback& deliver_message_callback);
+      DeliverMessageCallback deliver_message_callback);
 
   // If a registration was successfully retrieved, dispatches a push event with
   // |data| on the Service Worker identified by |service_worker_registration|.
@@ -63,7 +62,7 @@ class PushMessagingRouter {
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
       const std::string& message_id,
       base::Optional<std::string> payload,
-      const DeliverMessageCallback& deliver_message_callback,
+      DeliverMessageCallback deliver_message_callback,
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
 
@@ -75,7 +74,7 @@ class PushMessagingRouter {
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
       const std::string& message_id,
       base::Optional<std::string> payload,
-      const DeliverMessageCallback& deliver_message_callback,
+      DeliverMessageCallback deliver_message_callback,
       blink::ServiceWorkerStatusCode start_worker_status);
 
   // Gets called asynchronously after the Service Worker has dispatched the push
@@ -85,7 +84,7 @@ class PushMessagingRouter {
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
       const std::string& message_id,
-      const DeliverMessageCallback& deliver_message_callback,
+      DeliverMessageCallback deliver_message_callback,
       blink::ServiceWorkerStatusCode service_worker_status);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PushMessagingRouter);

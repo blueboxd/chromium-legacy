@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Åbn linket i <ph name="APP" /></translation>
 <translation id="1140351953533677694">Få adgang til dine Bluetooth- og serieenheder</translation>
 <translation id="114036956334641753">Lyd og undertekster</translation>
-<translation id="1140610710803014750">Log ind, og aktivér synkronisering for at få dine bogmærker på alle dine enheder.</translation>
 <translation id="1140746652461896221">Bloker indhold på en hvilken som helst side, du besøger</translation>
 <translation id="1143142264369994168">Certifikatunderskriver</translation>
 <translation id="1145292499998999162">Pluginnet blev blokeret</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">K&amp;opiér webadressen til lyden</translation>
 <translation id="1465827627707997754">Pizzastykke</translation>
 <translation id="1468571364034902819">Du kan ikke bruge denne profil</translation>
-<translation id="1470811252759861213"><ph name="SIGN_IN_LINK" /> for at få dine udvidelser på alle dine computere.</translation>
 <translation id="1472675084647422956">Vis mere</translation>
 <translation id="1475502736924165259">Du har lagrede certifikater, som ikke passer i nogen af de andre kategorier</translation>
 <translation id="1476088332184200792">Kopiér til din enhed</translation>
@@ -1045,7 +1043,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2489829450872380594">Næste gang låser en ny telefon op for denne <ph name="DEVICE_TYPE" />. Du kan deaktivere Smart Lock i Indstillinger.</translation>
 <translation id="2489918096470125693">Tilføj &amp;mappe...</translation>
 <translation id="2490481887078769936">"<ph name="FILE_NAME" />" blev fjernet fra listen</translation>
-<translation id="2490782392574942205">Log ind, og aktivér synkronisering for at få dine udvidelser på alle dine computere</translation>
 <translation id="249113932447298600">Vi beklager, men enheden <ph name="DEVICE_LABEL" /> understøttes ikke på nuværende tidspunkt.</translation>
 <translation id="249303669840926644">Registreringen kunne ikke fuldføres</translation>
 <translation id="2495777824269688114">Oplev flere funktioner, og find svar. Vælg "?" for at få hjælp.</translation>
@@ -1755,7 +1752,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3528033729920178817">Denne side sporer din placering.</translation>
 <translation id="3528498924003805721">Målene for genveje</translation>
-<translation id="3530305684079447434"><ph name="SIGN_IN_LINK" /> for at få dine bogmærker på alle dine enheder.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> anmoder om at bruge din mikrofon</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – lyden er slået fra</translation>
 <translation id="3538066758857505094">Der opstod en fejl under installationen af Linux. Prøv igen.</translation>

@@ -25,8 +25,8 @@ class UserImage;
 namespace chromeos {
 namespace user_image_loader {
 
-typedef base::Callback<void(std::unique_ptr<user_manager::UserImage>)>
-    LoadedCallback;
+using LoadedCallback =
+    base::OnceCallback<void(std::unique_ptr<user_manager::UserImage>)>;
 
 // Loads an image with |image_codec| in the background and calls |loaded_cb|
 // with the resulting UserImage (which may be empty in case of error). If
@@ -41,13 +41,13 @@ void StartWithFilePath(
     const base::FilePath& file_path,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
-    const LoadedCallback& loaded_cb);
+    LoadedCallback loaded_cb);
 void StartWithData(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     std::unique_ptr<std::string> data,
     ImageDecoder::ImageCodec image_codec,
     int pixels_per_side,
-    const LoadedCallback& loaded_cb);
+    LoadedCallback loaded_cb);
 
 }  // namespace user_image_loader
 }  // namespace chromeos

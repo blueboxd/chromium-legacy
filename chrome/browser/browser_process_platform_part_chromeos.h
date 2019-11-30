@@ -21,7 +21,6 @@ namespace chromeos {
 class AccountManagerFactory;
 class ChromeSessionManager;
 class ChromeUserManager;
-class KerberosCredentialsManager;
 class InSessionPasswordChangeManager;
 class ProfileHelper;
 class TimeZoneResolver;
@@ -166,9 +165,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
       cros_component_manager_;
 
   std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;
-
-  std::unique_ptr<chromeos::KerberosCredentialsManager>
-      kerberos_credentials_manager_;
 
   std::unique_ptr<chromeos::InSessionPasswordChangeManager>
       in_session_password_change_manager_;

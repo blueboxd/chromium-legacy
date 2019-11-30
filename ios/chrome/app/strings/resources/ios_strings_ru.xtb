@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">Настроить способы оплаты</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4747097190499141774">Шифрование с помощью кодовой фразы не применяется к способам оплаты и адресам из Google Pay. Доступ к зашифрованным данным будет только у тех, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Найти на странице</translation>
 <translation id="4751645464639803239">Новая вкладка инкогнито</translation>
 <translation id="4758977202923349869">Поместите кредитную карту в эту рамку.</translation>
 <translation id="4802417911091824046">Шифрование с помощью кодовой фразы не применяется к способам оплаты и адресам из Google Pay.
@@ -455,7 +454,6 @@
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобильная версия</translation>
 <translation id="7173114856073700355">Открыть настройки</translation>
-<translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="7265758999917665941">Никогда для этого сайта</translation>
@@ -559,6 +557,7 @@
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8881801611828450202">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Поделиться...</translation>
 <translation id="895541991026785598">Сообщить о проблеме</translation>
 <translation id="8976382372951310360">Справка</translation>
 <translation id="8981454092730389528">Отслеживание действий в Google</translation>

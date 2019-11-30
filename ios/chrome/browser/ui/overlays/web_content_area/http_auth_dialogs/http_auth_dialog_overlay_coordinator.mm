@@ -6,7 +6,7 @@
 
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs/http_auth_dialog_overlay_mediator.h"
 

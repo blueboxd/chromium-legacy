@@ -1448,7 +1448,7 @@ ImageDataColorSettings*
 BaseRenderingContext2D::GetColorSettingsAsImageDataColorSettings() const {
   ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
   color_settings->setColorSpace(ColorSpaceAsString());
-  if (PixelFormat() == kF16CanvasPixelFormat)
+  if (PixelFormat() == CanvasPixelFormat::kF16)
     color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
   return color_settings;
 }
@@ -1620,7 +1620,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   }
 
   // Convert pixels to proper storage format if needed
-  if (PixelFormat() != kRGBA8CanvasPixelFormat) {
+  if (PixelFormat() != CanvasPixelFormat::kRGBA8) {
     ImageDataStorageFormat storage_format =
         ImageData::GetImageDataStorageFormat(color_settings->storageFormat());
     DOMArrayBufferView* array_buffer_view =
@@ -1744,7 +1744,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
       CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque,
                         CanvasForceRGBA::kNotForced);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
-      PixelFormat() == kF16CanvasPixelFormat) {
+      PixelFormat() == CanvasPixelFormat::kF16) {
     size_t data_length;
     if (!base::CheckMul(data->Size().Area(),
                         context_color_params.BytesPerPixel())

@@ -67,8 +67,8 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   // FirstRunActor::Delegate overrides.
   void OnActorInitialized() override {
     initialized_ = true;
-    if (!on_initialized_callback_.is_null())
-      on_initialized_callback_.Run();
+    if (on_initialized_callback_)
+      std::move(on_initialized_callback_).Run();
     controller()->OnActorInitialized();
   }
 
@@ -78,8 +78,8 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
 
   void OnStepShown(const std::string& step_name) override {
     current_step_name_ = step_name;
-    if (!on_step_shown_callback_.is_null())
-      on_step_shown_callback_.Run();
+    if (on_step_shown_callback_)
+      std::move(on_step_shown_callback_).Run();
     controller()->OnStepShown(step_name);
   }
 
@@ -91,8 +91,8 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
 
   void OnActorFinalized() override {
     finalized_ = true;
-    if (!on_finalized_callback_.is_null())
-      on_finalized_callback_.Run();
+    if (on_finalized_callback_)
+      std::move(on_finalized_callback_).Run();
     controller()->OnActorFinalized();
   }
 
@@ -133,12 +133,11 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
     }
   }
 
-  void WaitUntilCalled(base::Closure* callback) {
+  void WaitUntilCalled(base::OnceClosure* callback) {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     *callback = runner->QuitClosure();
     runner->Run();
-    callback->Reset();
   }
 
   test::JSChecker& js() { return js_; }
@@ -156,9 +155,9 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   std::string current_step_name_;
   bool initialized_;
   bool finalized_;
-  base::Closure on_initialized_callback_;
-  base::Closure on_step_shown_callback_;
-  base::Closure on_finalized_callback_;
+  base::OnceClosure on_initialized_callback_;
+  base::OnceClosure on_step_shown_callback_;
+  base::OnceClosure on_finalized_callback_;
   test::JSChecker js_;
 };
 

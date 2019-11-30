@@ -268,7 +268,6 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 <translation id="4689564913179979534">Administrer betalingsmetoder…</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Find på siden...</translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
 <translation id="4758977202923349869">Placer betalingskortet i dette felt</translation>
 <translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
@@ -455,7 +454,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
 <translation id="7159472599653637159">Anmod om mobilversion</translation>
 <translation id="7173114856073700355">Åbn Indstillinger</translation>
-<translation id="7189598951263744875">Del...</translation>
 <translation id="7192050974311852563">Start logføring</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="7265758999917665941">Aldrig for dette website</translation>
@@ -559,6 +557,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
+<translation id="8909135823018751308">Del…</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
 <translation id="8976382372951310360">Hjælp</translation>
 <translation id="8981454092730389528">Aktivitetsadministration på Google</translation>

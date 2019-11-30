@@ -206,7 +206,7 @@ std::string DomDistillerViewerSource::GetSource() {
 void DomDistillerViewerSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   // TODO(crbug/1009127): simplify path matching.
   const std::string path = URLDataSource::URLToRequestPath(url);
   content::WebContents* web_contents = wc_getter.Run();
@@ -214,12 +214,12 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
-    callback.Run(base::RefCountedString::TakeString(&css));
+    std::move(callback).Run(base::RefCountedString::TakeString(&css));
     return;
   }
   if (kViewerLoadingImagePath == path) {
     std::string image = viewer::GetLoadingImage();
-    callback.Run(base::RefCountedString::TakeString(&image));
+    std::move(callback).Run(base::RefCountedString::TakeString(&image));
     return;
   }
   if (base::StartsWith(path, kViewerSaveFontScalingPath,
@@ -267,7 +267,8 @@ void DomDistillerViewerSource::StartDataRequest(
   }
 
   // Place template on the page.
-  callback.Run(base::RefCountedString::TakeString(&unsafe_page_html));
+  std::move(callback).Run(
+      base::RefCountedString::TakeString(&unsafe_page_html));
 }
 
 std::string DomDistillerViewerSource::GetMimeType(const std::string& path) {

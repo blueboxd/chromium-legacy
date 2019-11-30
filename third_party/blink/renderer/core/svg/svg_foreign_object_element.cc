@@ -125,6 +125,21 @@ void SVGForeignObjectElement::SvgAttributeChanged(
 
 LayoutObject* SVGForeignObjectElement::CreateLayoutObject(const ComputedStyle&,
                                                           LegacyLayout) {
+  // Suppress foreignObject LayoutObjects in SVG hidden containers.
+  // LayoutSVGHiddenContainers does not allow the subtree to be rendered, but
+  // allow LayoutObject descendants to be created. That will causes crashes in
+  // the layout code if object creation is not inhibited for foreignObject
+  // subtrees (https://crbug.com/1027905).
+  // Note that we currently do not support foreignObject instantiation via
+  // <use>, and attachShadow is not allowed on SVG elements, hence it is safe to
+  // use parentElement() here.
+  for (Element* ancestor = parentElement();
+       ancestor && ancestor->IsSVGElement();
+       ancestor = ancestor->parentElement()) {
+    if (ancestor->GetLayoutObject() &&
+        ancestor->GetLayoutObject()->IsSVGHiddenContainer())
+      return nullptr;
+  }
   return new LayoutSVGForeignObject(this);
 }
 

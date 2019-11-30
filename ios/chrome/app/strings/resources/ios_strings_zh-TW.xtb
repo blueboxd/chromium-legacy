@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">管理付款方式...</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。只有知道你通關密語的人，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">在網頁中尋找...</translation>
 <translation id="4751645464639803239">新無痕式分頁</translation>
 <translation id="4758977202923349869">請將信用卡置於此方框內</translation>
 <translation id="4802417911091824046">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。
@@ -455,7 +454,6 @@
 <translation id="7136892417564438900">無法使用相機</translation>
 <translation id="7159472599653637159">切換為行動版網站</translation>
 <translation id="7173114856073700355">開啟設定</translation>
-<translation id="7189598951263744875">分享...</translation>
 <translation id="7192050974311852563">開始記錄</translation>
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="7265758999917665941">一律不儲存這個網站的密碼</translation>
@@ -559,6 +557,7 @@
 <translation id="8840513115188359703">您不會因此登出 Google 帳戶。</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8881801611828450202">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
+<translation id="8909135823018751308">分享…</translation>
 <translation id="895541991026785598">回報問題</translation>
 <translation id="8976382372951310360">說明</translation>
 <translation id="8981454092730389528">Google 活動控制項</translation>

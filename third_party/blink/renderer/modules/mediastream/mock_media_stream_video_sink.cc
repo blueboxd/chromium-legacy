@@ -24,6 +24,12 @@ MockMediaStreamVideoSink::GetDeliverFrameCB() {
                          weak_factory_.GetWeakPtr()));
 }
 
+EncodedVideoFrameCB MockMediaStreamVideoSink::GetDeliverEncodedVideoFrameCB() {
+  return media::BindToCurrentLoop(
+      WTF::BindRepeating(&MockMediaStreamVideoSink::DeliverEncodedVideoFrame,
+                         weak_factory_.GetWeakPtr()));
+}
+
 void MockMediaStreamVideoSink::DeliverVideoFrame(
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
@@ -32,6 +38,12 @@ void MockMediaStreamVideoSink::DeliverVideoFrame(
   frame_size_ = frame->natural_size();
   last_frame_ = std::move(frame);
   OnVideoFrame();
+}
+
+void MockMediaStreamVideoSink::DeliverEncodedVideoFrame(
+    scoped_refptr<EncodedVideoFrame> frame,
+    base::TimeTicks estimated_capture_time) {
+  OnEncodedVideoFrame();
 }
 
 void MockMediaStreamVideoSink::OnReadyStateChanged(

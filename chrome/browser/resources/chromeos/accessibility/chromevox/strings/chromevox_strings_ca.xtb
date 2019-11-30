@@ -462,6 +462,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4204126831294769023">Atzur</translation>
 <translation id="4204864733111726379">Blanc floral</translation>
 <translation id="4206289001967551965">Dins la taula</translation>
+<translation id="4207770814752775793">Restableix els valors predeterminats de la configuració de text a parla.</translation>
 <translation id="4209770650650780359">Prem les fletxes amunt i avall per navegar per les opcions d'emplenament automàtic.</translation>
 <translation id="4215733775853809057">Control lliscant següent</translation>
 <translation id="42164919740161077">Blau grisenc</translation>
@@ -765,6 +766,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6290434000785343030">No hi ha cap quadre combinat més.</translation>
 <translation id="6305702903308659374">Reprodueix a un volum normal encara que ChromeVox parli</translation>
 <translation id="6307969636681130414">Premut</translation>
+<translation id="6315652249189065725">Obre el menú de tecles de drecera</translation>
 <translation id="6322856989298155004">Sons</translation>
 <translation id="6324551002951139333">S'ha detectat un error gramatical.</translation>
 <translation id="6325241889020214828">copia <ph name="TEXT" />.</translation>
@@ -958,6 +960,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{hora}other{hores}}</translation>
 <translation id="7674576868851035240">Enllaç següent</translation>
 <translation id="7674768236845044097">marca</translation>
+<translation id="7676847077928500578">Restableix la configuració de text a parla</translation>
 <translation id="7684431668231950609">Edició de text, entrada d'URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Botó d'opció anterior</translation>

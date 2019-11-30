@@ -135,7 +135,8 @@ void ReportScheduler::GenerateAndUploadReport() {
       &ReportScheduler::OnReportGenerated, base::Unretained(this)));
 }
 
-void ReportScheduler::OnReportGenerated(ReportGenerator::Requests requests) {
+void ReportScheduler::OnReportGenerated(
+    ReportGenerator::ReportRequests requests) {
   if (requests.empty()) {
     SYSLOG(ERROR)
         << "No cloud report can be generated. Likely the report is too large.";

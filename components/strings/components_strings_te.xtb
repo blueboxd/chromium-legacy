@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1021110881106174305">ఆమోదించబడే కార్డ్‌లు</translation>
 <translation id="1032854598605920125">సవ్యదిశలో తిప్పు</translation>
-<translation id="1035334672863811645">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="1036348656032585052">ఆఫ్ చేయి</translation>
 <translation id="1038842779957582377">తెలియని పేరు</translation>
 <translation id="1039626062703039346">మీ Google ఖాతాను సంరక్షించుకోవడంలో, మీ పాస్‌వర్డ్‌ను మార్చడంలో Chrome మీకు సహాయపడగలదు. ఈ సైట్ గురించి ఇది Googleకు తెలియజేస్తుంది.</translation>
@@ -924,7 +923,6 @@
 <translation id="536296301121032821">విధాన సెట్టింగ్‌లను నిల్వ చేయడంలో విఫలమైంది</translation>
 <translation id="5371425731340848620">కార్డ్‌ని అప్‌డేట్ చేయండి</translation>
 <translation id="5377026284221673050">"మీ గడియారం ఆలస్యంగా నడుస్తోంది" లేదా "మీ గడియారం ముందుగా ఉంది" లేదా "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">మీ కార్డ్‌ల‌ను అన్ని పరికరాలలో ఉపయోగించాలంటే, సైన్ ఇన్ చేసి, సమకాలీకరణను ఆన్ చేయండి.</translation>
 <translation id="5386426401304769735">ఈ సైట్ సర్టిఫికెట్ గొలుసులో SHA-1 ఉపయోగించి సంతకం చేసిన సర్టిఫికెట్ ఉంది.</translation>
 <translation id="538659543871111977">A4-ట్యాబ్</translation>
 <translation id="5396631636586785122">కుడివైపు కుట్టిన అంచు</translation>
@@ -1585,7 +1583,6 @@
 <translation id="8759274551635299824">ఈ కార్డ్ గడువు ముగిసింది</translation>
 <translation id="8761567432415473239">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />హానికర ప్రోగ్రామ్‍లను కనుగొనింది<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB పరికరం</translation>
-<translation id="8768895707659403558">మీ కార్డ్‌లను మీ అన్ని పరికరాలలో ఉపయోగించాలంటే, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8792621596287649091">మీరు మీ <ph name="ORG_NAME" /> ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు. లేదా గుర్తింపు స‌మాచారం చోరీకి గురి కావచ్చు. మీ పాస్‌వర్డ్‌ను ఇప్పుడే రీసెట్ చేయాల్సిందిగా Chromium సిఫార్సు చేస్తోంది.</translation>

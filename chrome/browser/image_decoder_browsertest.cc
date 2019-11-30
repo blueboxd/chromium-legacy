@@ -61,15 +61,14 @@ std::vector<uint8_t> GetValidJpgData() {
 
 class TestImageRequest : public ImageDecoder::ImageRequest {
  public:
-  explicit TestImageRequest(const base::Closure& quit_closure)
+  explicit TestImageRequest(base::OnceClosure quit_closure)
       : decode_succeeded_(false),
-        quit_closure_(quit_closure),
-        quit_called_(false) {
-  }
+        quit_closure_(std::move(quit_closure)),
+        quit_called_(false) {}
 
   ~TestImageRequest() override {
     if (!quit_called_) {
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     }
   }
 
@@ -88,12 +87,12 @@ class TestImageRequest : public ImageDecoder::ImageRequest {
   void Quit() {
     EXPECT_FALSE(quit_called_);
     quit_called_ = true;
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   }
 
   bool decode_succeeded_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   bool quit_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageRequest);

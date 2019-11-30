@@ -34,7 +34,7 @@ namespace {
 const char kTestOrigin[] = "https://example.com/";
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
-                              base::Closure quit_closure,
+                              base::OnceClosure quit_closure,
                               blink::ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64_t service_worker_registration_id) {
@@ -48,7 +48,7 @@ void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
 
 void DidFindServiceWorkerRegistration(
     scoped_refptr<ServiceWorkerRegistration>* out_service_worker_registration,
-    base::Closure quit_closure,
+    base::OnceClosure quit_closure,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK(out_service_worker_registration);
@@ -61,7 +61,7 @@ void DidFindServiceWorkerRegistration(
 }
 
 // Callback for UnregisterServiceWorker.
-void DidUnregisterServiceWorker(base::Closure quit_closure,
+void DidUnregisterServiceWorker(base::OnceClosure quit_closure,
                                 blink::ServiceWorkerStatusCode status) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   std::move(quit_closure).Run();

@@ -60,8 +60,7 @@ bool LayoutSVGTextPath::IsChildAllowed(LayoutObject* child,
 }
 
 std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
-  const SVGTextPathElement& text_path_element =
-      ToSVGTextPathElement(*GetNode());
+  const auto& text_path_element = To<SVGTextPathElement>(*GetNode());
   Element* target_element = SVGURIReference::TargetElementFromIRIString(
       text_path_element.HrefString(),
       text_path_element.TreeScopeForIdResolution());

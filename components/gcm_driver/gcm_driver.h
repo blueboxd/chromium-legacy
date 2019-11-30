@@ -44,7 +44,7 @@ class InstanceIDHandler {
  public:
   using GetTokenCallback = base::OnceCallback<void(const std::string& token,
                                                    GCMClient::Result result)>;
-  using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
+  using ValidateTokenCallback = base::OnceCallback<void(bool is_valid)>;
   using DeleteTokenCallback =
       base::OnceCallback<void(GCMClient::Result result)>;
   using GetInstanceIDDataCallback =
@@ -64,7 +64,7 @@ class InstanceIDHandler {
                              const std::string& authorized_entity,
                              const std::string& scope,
                              const std::string& token,
-                             const ValidateTokenCallback& callback) = 0;
+                             ValidateTokenCallback callback) = 0;
   virtual void DeleteToken(const std::string& app_id,
                            const std::string& authorized_entity,
                            const std::string& scope,
@@ -95,7 +95,7 @@ class GCMDriver {
   using RegisterCallback =
       base::OnceCallback<void(const std::string& registration_id,
                               GCMClient::Result result)>;
-  using ValidateRegistrationCallback = base::Callback<void(bool is_valid)>;
+  using ValidateRegistrationCallback = base::OnceCallback<void(bool is_valid)>;
   using UnregisterCallback = base::OnceCallback<void(GCMClient::Result result)>;
   using SendCallback = base::Callback<void(const std::string& message_id,
                                            GCMClient::Result result)>;
@@ -131,11 +131,10 @@ class GCMDriver {
 
   // Checks that the provided |sender_ids| and |registration_id| matches the
   // stored registration info for |app_id|.
-  virtual void ValidateRegistration(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
-      const std::string& registration_id,
-      const ValidateRegistrationCallback& callback) = 0;
+  virtual void ValidateRegistration(const std::string& app_id,
+                                    const std::vector<std::string>& sender_ids,
+                                    const std::string& registration_id,
+                                    ValidateRegistrationCallback callback) = 0;
 
   // Unregisters all sender_ids for an app. Only works on non-Android. Will also
   // remove any encryption keys associated with the |app_id|.

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/input/touch_list.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -37,9 +38,9 @@ TouchEventContext* TouchEventContext::Create() {
 }
 
 TouchEventContext::TouchEventContext()
-    : touches_(TouchList::Create()),
-      target_touches_(TouchList::Create()),
-      changed_touches_(TouchList::Create()) {}
+    : touches_(MakeGarbageCollected<TouchList>()),
+      target_touches_(MakeGarbageCollected<TouchList>()),
+      changed_touches_(MakeGarbageCollected<TouchList>()) {}
 
 void TouchEventContext::HandleLocalEvents(Event& event) const {
   DCHECK(event.IsTouchEvent());

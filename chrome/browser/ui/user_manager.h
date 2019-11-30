@@ -43,9 +43,10 @@ class UserManager {
   // To be called once the User Manager's contents are showing.
   static void OnUserManagerShown();
 
-  // Add a callback that will be called when OnUserManagerShown is called.
+  // Add a callback that will be called the next time OnUserManagerShown is
+  // called.
   static void AddOnUserManagerShownCallbackForTesting(
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
   // Get the path of profile that is being signed in.
   static base::FilePath GetSigninProfilePath();

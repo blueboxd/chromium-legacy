@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Ikone</translation>
 <translation id="1111673857033749125">Oznake koje sačuvate na drugim uređajima će se pojaviti ovdje.</translation>
 <translation id="1113597929977215864">Prikaži pojednostavljeni prikaz</translation>
+<translation id="1122278879166832009">Dodirnite ovdje da brzo pristupite početnoj stranici s bilo kog mjesta</translation>
 <translation id="1124772482545689468">Korisnik</translation>
 <translation id="1129510026454351943">Detalji: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Čeka se jedno preuzimanje.}one{Čeka se # preuzimanje.}few{Čekaju se # preuzimanja.}other{Čeka se # preuzimanja.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Obrisati pohranu?</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3859306556332390985">Pomakni naprijed</translation>
+<translation id="388596076286380598">Preuzmite članke, videozapise i drugi sadržaj s web lokacija koje vam se sviđaju, čak i kada ste van mreže ili kada vam je veza slaba.</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Prisilno omogući zumiranje</translation>
 <translation id="3912508018559818924">Tražimo najbolje sadržaje na internetu…</translation>
@@ -490,6 +492,7 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4719927025381752090">Ponudi prijevod</translation>
 <translation id="4720023427747327413">Otvori u aplikaciji <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Pomozite nam da poboljšamo Chrome. <ph name="BEGIN_LINK" />Učestvujte u anketi<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Rastvarač grupe</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
 <translation id="4738836084190194332">Posljednji put sinhronizirano: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otvori novu karticu</translation>
@@ -636,6 +639,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5684874026226664614">Ups. Prijevod ove stranice nije uspio.</translation>
 <translation id="5686790454216892815">Naziv fajla je predugačak</translation>
 <translation id="5689516760719285838">Lokacija</translation>
+<translation id="5694049548840660018">Jednostavan povratak na početnu stranicu</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik koristeći dugme Više opcija</translation>
 <translation id="5710871682236653961">Web lokacije moraju tražiti dozvolu za slanje i primanje informacija kada dodirnete NFC uređaje (preporučeno)</translation>
 <translation id="572328651809341494">Nedavne kartice</translation>
@@ -798,6 +802,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6850830437481525139">Broj zatvorenih kartica: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Preuzmi sliku</translation>
 <translation id="6865313869410766144">Podaci za automatsko popunjavanje obrasca</translation>
+<translation id="6884306546558072722">Nastavite istraživati van mreže</translation>
 <translation id="688738109438487280">Dodavanje postojećih podataka na račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Otključajte da kopirate lozinku</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
@@ -1039,6 +1044,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8636825310635137004">Da dobijete svoje kartice s drugih uređaja, uključite sinhronizaciju.</translation>
 <translation id="8641930654639604085">Pokušaj blokirati web lokacije sa sadržajem za odrasle</translation>
 <translation id="8655129584991699539">Podatke možete obrisati u Postavkama Chromea</translation>
+<translation id="8655599981421006542">Dodirnite ovdje da kreirate nove kartice i vratite se na prethodne</translation>
 <translation id="8662811608048051533">Odjavljuje vas s većine web lokacija.</translation>
 <translation id="8664979001105139458">Naziv fajla već postoji</translation>
 <translation id="8676374126336081632">Brisanje unosa</translation>
@@ -1051,6 +1057,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8748850008226585750">Sadržaj je sakriven</translation>
 <translation id="8751914237388039244">Odaberite sliku</translation>
+<translation id="8758557275681689734">Prikaz svih otvorenih kartica</translation>
 <translation id="8788265440806329501">Historija navigacije je zatvorena</translation>
 <translation id="8788968922598763114">Ponovo otvori posljednju zatvorenu karticu</translation>
 <translation id="8801436777607969138">Blokiranje JavaScripta za određenu web lokaciju.</translation>

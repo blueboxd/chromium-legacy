@@ -362,11 +362,6 @@
           如果停用了或未设置此政策，则 Kerberos 帐号设置处于停用状态。此时无法添加任何 Kerberos 帐号，也无法使用 Kerberos 身份验证功能。系统会删除所有现有 Kerberos 帐号，以及所有已存储的密码。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1561967320164410511">用于个人认证的 U2F 和扩展程序</translation>
-<translation id="1566329065312331399">
-      当设为 False 时，此政策不允许设备触发 Powerwash。
-      当设为 True 时，此政策允许设备触发 Powerwash。
-      如果未设置此政策，它将默认等同于已设为 False，这意味着它不允许设备触发 Powerwash。
-      </translation>
 <translation id="1574554504290354326">此设置已被弃用，请改用 SafeBrowsingExtendedReportingEnabled。启用或停用 SafeBrowsingExtendedReportingEnabled 均相当于将 SafeBrowsingExtendedReportingOptInAllowed 设为 false。
 
       如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览功能发送一些系统信息和网页内容，以协助检测危险应用和网站。
@@ -4170,11 +4165,6 @@
 <translation id="7937491150792971922">合并来自多个来源的扩展程序安装列表政策</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
-<translation id="7944213656414105292">此政策用于配置有权在登录屏幕上的 SAML 流程中对设备标识执行远程认证的网址。
-
-      具体而言，如果某个网址与通过此政策提供的格式之一匹配，该网址就能接收 HTTP 标头（包含对远程认证质询的响应），以认证设备标识和设备状态。
-
-      如果此政策未设置或设为一个空列表，系统将不允许任何网址在登录屏幕上使用远程认证。</translation>
 <translation id="7952007677054834789">在 <ph name="PRODUCT_NAME" /> 中配置启动时加载的页面、默认主页和默认新标签页，并禁止用户更改它们。
 
       只有将主页设为新标签页或某个特定的主页网址，才能完全锁定用户的主页设置。如果您不指定主页网址，则用户仍可通过指定“chrome://newtab”将主页设为新标签页。

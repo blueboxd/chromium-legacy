@@ -66,6 +66,8 @@ PrefNotifierImpl::~PrefNotifierImpl() {
 
 void PrefNotifierImpl::AddPrefObserver(const std::string& path,
                                        PrefObserver* obs) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Get the pref observer list associated with the path.
   PrefObserverList* observer_list = nullptr;
   auto observer_iterator = pref_observers_.find(path);

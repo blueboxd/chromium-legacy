@@ -57,7 +57,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
-#include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -1167,6 +1167,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
 
+  void BindMediaInterfaceFactoryReceiver(
+      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void BindMediaRemoterFactoryReceiver(
       mojo::PendingReceiver<media::mojom::RemoterFactory> receiver);
@@ -1676,9 +1679,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
   void CreateAudioOutputStreamFactory(
       mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
-
-  void BindMediaInterfaceFactoryRequest(
-      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();

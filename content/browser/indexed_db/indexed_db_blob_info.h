@@ -68,8 +68,8 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   void set_file_path(const base::FilePath& file_path);
   void set_last_modified(const base::Time& time);
   void set_key(int64_t key);
-  void set_mark_used_callback(const base::RepeatingClosure& mark_used_callback);
-  void set_release_callback(const base::RepeatingClosure& release_callback);
+  void set_mark_used_callback(base::RepeatingClosure mark_used_callback);
+  void set_release_callback(base::RepeatingClosure release_callback);
 
  private:
   bool is_file_;

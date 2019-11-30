@@ -118,26 +118,27 @@ void InstanceIDImpl::DoGetToken(
 void InstanceIDImpl::ValidateToken(const std::string& authorized_entity,
                                    const std::string& scope,
                                    const std::string& token,
-                                   const ValidateTokenCallback& callback) {
+                                   ValidateTokenCallback callback) {
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
   DCHECK(!token.empty());
 
   RunWhenReady(base::BindOnce(&InstanceIDImpl::DoValidateToken,
                               weak_ptr_factory_.GetWeakPtr(), authorized_entity,
-                              scope, token, callback));
+                              scope, token, std::move(callback)));
 }
 
 void InstanceIDImpl::DoValidateToken(const std::string& authorized_entity,
                                      const std::string& scope,
                                      const std::string& token,
-                                     const ValidateTokenCallback& callback) {
+                                     ValidateTokenCallback callback) {
   if (id_.empty()) {
-    callback.Run(false /* is_valid */);
+    std::move(callback).Run(false /* is_valid */);
     return;
   }
 
-  Handler()->ValidateToken(app_id(), authorized_entity, scope, token, callback);
+  Handler()->ValidateToken(app_id(), authorized_entity, scope, token,
+                           std::move(callback));
 }
 
 void InstanceIDImpl::DeleteTokenImpl(const std::string& authorized_entity,

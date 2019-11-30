@@ -479,18 +479,18 @@ class FakeUsbManagerForCheckingTraits : public FakeAndroidUsbManager {
 class DevToolsAndroidBridgeWarmUp
     : public DevToolsAndroidBridge::DeviceCountListener {
  public:
-  DevToolsAndroidBridgeWarmUp(base::Closure closure,
+  DevToolsAndroidBridgeWarmUp(base::OnceClosure closure,
                               DevToolsAndroidBridge* adb_bridge)
-      : closure_(closure), adb_bridge_(adb_bridge) {}
+      : closure_(std::move(closure)), adb_bridge_(adb_bridge) {}
   ~DevToolsAndroidBridgeWarmUp() override = default;
 
   void DeviceCountChanged(int count) override {
     adb_bridge_->RemoveDeviceCountListener(this);
-    closure_.Run();
+    std::move(closure_).Run();
   }
 
  private:
-  base::Closure closure_;
+  base::OnceClosure closure_;
   DevToolsAndroidBridge* adb_bridge_;
 };
 
@@ -592,10 +592,8 @@ class AndroidNoConfigUsbTest : public AndroidUsbDiscoveryTest {
 class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
  public:
   MockListListener(DevToolsAndroidBridge* adb_bridge,
-                   const base::Closure& callback)
-      : adb_bridge_(adb_bridge),
-        callback_(callback) {
-  }
+                   base::OnceClosure callback)
+      : adb_bridge_(adb_bridge), callback_(std::move(callback)) {}
   ~MockListListener() override = default;
 
   void DeviceListChanged(
@@ -605,14 +603,14 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
         ASSERT_EQ(kDeviceModel, device->model());
         ASSERT_EQ(kDeviceSerial, device->serial());
         adb_bridge_->RemoveDeviceListListener(this);
-        callback_.Run();
+        std::move(callback_).Run();
         break;
       }
     }
   }
 
   DevToolsAndroidBridge* adb_bridge_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 };
 
 class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {

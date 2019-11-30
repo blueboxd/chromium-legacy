@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
 <translation id="2773292004659987824">Pesquisa anónima</translation>
+<translation id="277771892408211951">Selecionar idioma</translation>
 <translation id="2780046210906776326">Sem Contas de Email</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sair do Comutador de separadores</translation>
@@ -268,7 +269,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="4689564913179979534">Gerir métodos de pagamento</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4747097190499141774">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay. Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Localizar na página…</translation>
 <translation id="4751645464639803239">Novo separador de navegação anónima</translation>
 <translation id="4758977202923349869">Posicione o cartão de crédito nesta moldura</translation>
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
@@ -455,7 +455,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7159472599653637159">Pedir site para dispositivos móveis</translation>
 <translation id="7173114856073700355">Abrir Definições</translation>
-<translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7192050974311852563">Iniciar registo</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
@@ -559,6 +558,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8840513115188359703">A sessão na sua Conta Google não é terminada.</translation>
 <translation id="8870413625673593573">Fechadas recentemente</translation>
 <translation id="8881801611828450202">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Partilhar…</translation>
 <translation id="895541991026785598">Comunicar um problema</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>

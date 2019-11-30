@@ -1137,7 +1137,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   GlobalRequestID global_request_id_;
   net::RedirectInfo redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
-  base::Callback<WebContents*()> web_contents_getter_;
+  base::RepeatingCallback<WebContents*()> web_contents_getter_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 

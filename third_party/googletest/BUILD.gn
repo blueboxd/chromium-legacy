@@ -66,6 +66,10 @@ source_set("gtest") {
     "custom/gtest/internal/custom/gtest.h",
     "custom/gtest/internal/custom/stack_trace_getter.cc",
     "custom/gtest/internal/custom/stack_trace_getter.h",
+
+    # TODO(crbug.com/1009553): Remove this wrapper after plumbing a workable
+    #                          temporary path into googletest on Android.
+    "custom/gtest/internal/custom/gtest_port_wrapper.cc",
     "src/googletest/include/gtest/gtest-death-test.h",
     "src/googletest/include/gtest/gtest-matchers.h",
     "src/googletest/include/gtest/gtest-message.h",
@@ -95,7 +99,11 @@ source_set("gtest") {
     "src/googletest/src/gtest-filepath.cc",
     "src/googletest/src/gtest-internal-inl.h",
     "src/googletest/src/gtest-matchers.cc",
-    "src/googletest/src/gtest-port.cc",
+
+    # gtest_port_wrapper.cc is used instead of gtest-port.cc.
+    # TODO(crbug.com/1009553): Re-enable this file after plumbing a workable
+    #                          temporary path into googletest on Android.
+    #"src/googletest/src/gtest-port.cc",
     "src/googletest/src/gtest-printers.cc",
     "src/googletest/src/gtest-test-part.cc",
     "src/googletest/src/gtest-typed-test.cc",

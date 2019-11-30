@@ -51,7 +51,7 @@ class InstanceIDAndroid : public InstanceID {
   void ValidateToken(const std::string& authorized_entity,
                      const std::string& scope,
                      const std::string& token,
-                     const ValidateTokenCallback& callback) override;
+                     ValidateTokenCallback callback) override;
   void DeleteTokenImpl(const std::string& audience,
                        const std::string& scope,
                        DeleteTokenCallback callback) override;

@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Қосымша мәліметтер беру</translation>
 <translation id="1021110881106174305">Қабылданған карталар</translation>
 <translation id="1032854598605920125">Сағат тілінің бағытымен бұру</translation>
-<translation id="1035334672863811645">Chrome жүйесіне кіру</translation>
 <translation id="1036348656032585052">Өшіру</translation>
 <translation id="1038842779957582377">белгісіз ат</translation>
 <translation id="1039626062703039346">Chrome браузері Google есептік жазбаңызды қорғауға және құпия сөзіңізді өзгертуге көмектеседі. Google-ға осы сайт туралы хабарланады.</translation>
@@ -923,7 +922,6 @@
 <translation id="536296301121032821">Саясат параметрлерін сақтау сәтсіз аяқталды</translation>
 <translation id="5371425731340848620">Картаны жаңарту</translation>
 <translation id="5377026284221673050">"Сағатыңыз артта", "Сағатыңыз алда" немесе "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Карталарды барлық құрылғылардан пайдалану үшін есептік жазбаға кіріп, синхрондауды қосыңыз.</translation>
 <translation id="5386426401304769735">Осы сайтқа арналған сертификат тізбегінде SHA-1 көмегімен қолтаңба қойылған сертификат бар.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Оң жақ жиегін тігу</translation>
@@ -1584,7 +1582,6 @@
 <translation id="8759274551635299824">Картаның мерзімі біткен</translation>
 <translation id="8761567432415473239">Жақында Google Safe Browsing <ph name="SITE" /> сайтынан <ph name="BEGIN_LINK" />зиянды бағдарламаларды тапты<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB құрылғысы</translation>
-<translation id="8768895707659403558">Карталарды барлық құрылғылардан пайдалану үшін <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Жоюды қайталау</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> есептік жазбаңызға кіру мүмкіндігін жоғалтып алуыңыз немесе жеке мәліметтеріңізді беріп қоюыңыз мүмкін. Chromium құпия сөзіңізді дереу өзгертуге кеңес береді.</translation>

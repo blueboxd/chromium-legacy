@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -53,7 +54,7 @@ class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
   }
 
   explicit GlobalFetchImpl(ExecutionContext* execution_context)
-      : fetch_manager_(FetchManager::Create(execution_context)) {}
+      : fetch_manager_(MakeGarbageCollected<FetchManager>(execution_context)) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& input,

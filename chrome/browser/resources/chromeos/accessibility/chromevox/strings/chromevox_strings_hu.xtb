@@ -463,6 +463,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4204126831294769023">Azúrkék</translation>
 <translation id="4204864733111726379">Virágfehér</translation>
 <translation id="4206289001967551965">Belső táblázat</translation>
+<translation id="4207770814752775793">A szövegfelolvasó beállításainak visszaállítása az alapértelmezett értékekre.</translation>
 <translation id="4209770650650780359">Az automatikus kiegészítéseket a lefelé és a felfelé mutató nyilakkal érheti el.</translation>
 <translation id="4215733775853809057">Következő dia</translation>
 <translation id="42164919740161077">Kadétkék</translation>
@@ -766,6 +767,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6290434000785343030">Nincs következő legördülő lista.</translation>
 <translation id="6305702903308659374">Lejátszás normál hangerőn akkor is, ha a ChromeVox beszél</translation>
 <translation id="6307969636681130414">Megnyomva</translation>
+<translation id="6315652249189065725">A billentyűparancsokat tartalmazó menü megnyitása</translation>
 <translation id="6322856989298155004">Hangok</translation>
 <translation id="6324551002951139333">Észlelt nyelvtani hiba</translation>
 <translation id="6325241889020214828">A következő szöveg másolása: <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7668307052366682650">{COUNT,plural, =1{óra}other{óra}}</translation>
 <translation id="7674576868851035240">Következő link</translation>
 <translation id="7674768236845044097">kiemelés</translation>
+<translation id="7676847077928500578">A szövegfelolvasó beállításainak visszaállítása</translation>
 <translation id="7684431668231950609">Szövegszerkesztés, URL-bevitel</translation>
 <translation id="7685589220304187312">eszközsor</translation>
 <translation id="7693840228159394336">Előző választógomb</translation>

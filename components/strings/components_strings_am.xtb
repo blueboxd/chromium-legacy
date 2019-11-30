@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">ተጨማሪ ዝርዝሮችን ያቅርቡ</translation>
 <translation id="1021110881106174305">ተቀባይነት ያላቸው ካርዶች</translation>
 <translation id="1032854598605920125">በሰዓት አቅጣጫ አሽከርክር</translation>
-<translation id="1035334672863811645">ወደ Chrome ይግቡ</translation>
 <translation id="1036348656032585052">አጥፋ</translation>
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
 <translation id="1039626062703039346">Chrome የGoogle መለያዎን እንዲጠብቁ እና የይለፍ ቃልዎን እንዲቀይሩት ያግዘዎታል። ይህ ስለጣቢያው Googleን ያሳውቀዋል።</translation>
@@ -929,7 +928,6 @@
 <translation id="536296301121032821">የመምሪያ ቅንብሮችን ማከማቸት አልተሳካም</translation>
 <translation id="5371425731340848620">ካርድ ያዘምኑ</translation>
 <translation id="5377026284221673050">«የእርስዎ ሰዓት ቀርቷል» ወይም «የእርስዎ ሰዓት ቀድሟል» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
-<translation id="5384855140246857529">ካርዶችዎን በሁሉም መሣሪያዎችዎ ላይ ለመጠቀም በመለያ ይግቡና ስምረትን ያብሩ።</translation>
 <translation id="5386426401304769735">የዚህ ጣቢያ የዕውቅና ማረጋገጫ ሰንሰለቱ SHA-1 በመጠቀም የተፈረመ የዕውቅና ማረጋገጫን ያካትታል።</translation>
 <translation id="538659543871111977">A4-ትር</translation>
 <translation id="5396631636586785122">ቀኝ ጫፍን ስፋ</translation>
@@ -1598,7 +1596,6 @@
 <translation id="8759274551635299824">ይህ ካርድ የአገልግሎት ጊዜው አብቅቷል</translation>
 <translation id="8761567432415473239">Google የጥንቃቄ አሰሳ በቅርብ ጊዜ በ<ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ጎጂ ፕሮግርራሞችን አግኝቷል<ph name="END_LINK" />።</translation>
 <translation id="8763927697961133303">የዩኤስቢ መሣሪያ</translation>
-<translation id="8768895707659403558">የእርስዎን ዕልባቶችን በሁሉም መሣሪያዎችዎ ላይ ለመጠቀም <ph name="SIGN_IN_LINK" />።</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
 <translation id="8792621596287649091">የ<ph name="ORG_NAME" /> መለያዎን መዳረሻ ሊያጡ ወይም የማንነት ስርቆት ሊያጋጥመዎት ይችላሉ። Chromium የይለፍ ቃልዎን አሁን እንዲቀይሩ ይመክራል።</translation>

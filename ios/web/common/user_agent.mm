@@ -95,20 +95,12 @@ std::string BuildUserAgentFromProduct(UserAgentType type,
   if (type == web::UserAgentType::DESKTOP)
     return kDesktopUserAgent;
 
-  std::string safari_version;
-  if (@available(iOS 13, *)) {
-    safari_version = "604.1";
-  } else {
-    safari_version = "605.1";
-  }
-
   DCHECK_EQ(web::UserAgentType::MOBILE, type);
   std::string user_agent;
   base::StringAppendF(&user_agent,
                       "Mozilla/5.0 (%s) AppleWebKit/605.1.15"
-                      " (KHTML, like Gecko) %s Mobile/15E148 Safari/%s",
-                      BuildOSCpuInfo(type).c_str(), product.c_str(),
-                      safari_version.c_str());
+                      " (KHTML, like Gecko) %s Mobile/15E148 Safari/604.1",
+                      BuildOSCpuInfo(type).c_str(), product.c_str());
 
   return user_agent;
 }

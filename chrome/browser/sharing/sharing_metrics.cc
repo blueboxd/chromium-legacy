@@ -4,19 +4,9 @@
 
 #include "chrome/browser/sharing/sharing_metrics.h"
 
-#include <string.h>
-#include <algorithm>
-
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
-#include "components/cast_channel/enum_table.h"
-#include "components/ukm/content/source_url_recorder.h"
-#include "content/public/browser/web_contents.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace {
 const char* GetEnumStringValue(SharingFeatureName feature) {
@@ -33,34 +23,6 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
   }
 }
 
-// The returned values must match the values of the SharingClickToCallEntryPoint
-// suffixes defined in histograms.xml.
-const char* ClickToCallEntryPointToSuffix(
-    SharingClickToCallEntryPoint entry_point) {
-  switch (entry_point) {
-    case SharingClickToCallEntryPoint::kLeftClickLink:
-      return "LeftClickLink";
-    case SharingClickToCallEntryPoint::kRightClickLink:
-      return "RightClickLink";
-    case SharingClickToCallEntryPoint::kRightClickSelection:
-      return "RightClickSelection";
-  }
-}
-
-const char* PhoneNumberRegexVariantToSuffix(PhoneNumberRegexVariant variant) {
-  switch (variant) {
-    case PhoneNumberRegexVariant::kSimple:
-      // Keep the initial regex in the default metric.
-      return "";
-  }
-}
-
-// The returned values must match the values of the
-// SharingClickToCallSendToDevice suffixes defined in histograms.xml.
-const char* SendToDeviceToSuffix(bool send_to_device) {
-  return send_to_device ? "Sending" : "Showing";
-}
-
 const std::string& MessageTypeToMessageSuffix(
     chrome_browser_sharing::MessageType message_type) {
   // For proto3 enums unrecognized enum values are kept when parsing and their
@@ -74,18 +36,6 @@ const std::string& MessageTypeToMessageSuffix(
   return chrome_browser_sharing::MessageType_Name(message_type);
 }
 }  // namespace
-
-ScopedUmaHistogramMicrosecondsTimer::ScopedUmaHistogramMicrosecondsTimer(
-    PhoneNumberRegexVariant variant)
-    : variant_(variant) {}
-
-ScopedUmaHistogramMicrosecondsTimer::~ScopedUmaHistogramMicrosecondsTimer() {
-  base::UmaHistogramCustomMicrosecondsTimes(
-      base::StrCat({"Sharing.ClickToCallContextMenuPhoneNumberParsingDelay",
-                    PhoneNumberRegexVariantToSuffix(variant_)}),
-      timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromSeconds(1), 50);
-}
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
@@ -244,10 +194,6 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
       type);
 }
 
-void LogClickToCallHelpTextClicked(SharingDialogType type) {
-  base::UmaHistogramEnumeration("Sharing.ClickToCallHelpTextClicked", type);
-}
-
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingSendMessageResult result) {
@@ -268,51 +214,9 @@ void LogSendSharingAckMessageResult(
       result);
 }
 
-void LogClickToCallUKM(content::WebContents* web_contents,
-                       SharingClickToCallEntryPoint entry_point,
-                       bool has_devices,
-                       bool has_apps,
-                       SharingClickToCallSelection selection) {
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (!ukm_recorder)
-    return;
-
-  ukm::SourceId source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents);
-  if (source_id == ukm::kInvalidSourceId)
-    return;
-
-  ukm::builders::Sharing_ClickToCall(source_id)
-      .SetEntryPoint(static_cast<int64_t>(entry_point))
-      .SetHasDevices(has_devices)
-      .SetHasApps(has_apps)
-      .SetSelection(static_cast<int64_t>(selection))
-      .Record(ukm_recorder);
-}
-
 void LogSharedClipboardSelectedTextSize(size_t size) {
   base::UmaHistogramCounts100000("Sharing.SharedClipboardSelectedTextSize",
                                  size);
-}
-
-void LogClickToCallPhoneNumberSize(const std::string& number,
-                                   SharingClickToCallEntryPoint entry_point,
-                                   bool send_to_device) {
-  int length = number.size();
-  int digits = std::count_if(number.begin(), number.end(),
-                             [](char c) { return std::isdigit(c); });
-
-  std::string suffix =
-      base::StrCat({ClickToCallEntryPointToSuffix(entry_point), ".",
-                    SendToDeviceToSuffix(send_to_device)});
-
-  base::UmaHistogramCounts100("Sharing.ClickToCallPhoneNumberLength", length);
-  base::UmaHistogramCounts100(
-      base::StrCat({"Sharing.ClickToCallPhoneNumberLength.", suffix}), length);
-
-  base::UmaHistogramCounts100("Sharing.ClickToCallPhoneNumberDigits", digits);
-  base::UmaHistogramCounts100(
-      base::StrCat({"Sharing.ClickToCallPhoneNumberDigits.", suffix}), digits);
 }
 
 void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result) {

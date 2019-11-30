@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Mainiet bloķēšanas ekrāna paziņojumu rādīšanas iestatījumus</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Signāla stiprums: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Vienmēr rādīt plauktu</translation>
 <translation id="1341651618736211726">Pārpilde</translation>
 <translation id="1346748346194534595">Pa labi</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1761222317188459878">Pārslēgt tīkla savienojumu. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Ritināt pa labi</translation>
+<translation id="181103072419391116">Signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="1812997170047690955">Kas ir redzams ekrānā?</translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Nospiediet īsinājumtaustiņu <ph name="KEYBOARD_SHORTCUT" />, lai pārslēgtu tastatūras izkārtojumu.</translation>
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
+<translation id="2517825809102302935">Izslēgt šai naktij</translation>
 <translation id="2542089167727451762">Pieskarieties profila attēlam</translation>
 <translation id="255671100581129685">Google asistents nav pieejams publiskā sesijā.</translation>
 <translation id="256712445991462162">dokota lupa</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā <ph name="MULTI_PROFILE_USER_LIMIT" /> kontus.</translation>
 <translation id="3154351730702813399">Ierīces administrators var uzraudzīt jūsu pārlūkošanas darbības.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
+<translation id="3217205077783620295">Skaņa ir ieslēgta. Pārslēdzot tiks izslēgta skaņa.</translation>
 <translation id="3226991577105957773">vēl <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
 <translation id="3249513730522716925">Logs <ph name="WINDOW_TITLE" /> pārvietots no darbvirsmas <ph name="ACTIVE_DESK" /> uz darbvirsmu <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">USB-C ierīce</translation>
 <translation id="3454224730401036106">Savienojums ir mainīts uz drošāku tīklu.</translation>
 <translation id="3465223694362104965">Kopš pēdējoreiz pierakstījāties, šai ierīcei ir pievienota cita tastatūra. Pirms izmantojat šo tastatūru, pārliecinieties, ka tā ir uzticama.</translation>
+<translation id="3465356146291925647">Pārvalda jūsu administrators</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Izcelt peles kursoru</translation>
 <translation id="3513798432020909783">Kontu pārvalda <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Restartēt un atiestatīt</translation>
 <translation id="495046168593986294">Ritināt uz augšu</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
+<translation id="5018302031617932556">Izmantojot nakts režīmu, tiek atvieglota skatīšanās ekrānā un lasīšana blāvā apgaismojumā. Pieskarieties, lai to mainītu.</translation>
 <translation id="5030687792513154421">Izmantošanas laiks beidzies</translation>
 <translation id="5035236842988137213">Ierīce <ph name="DEVICE_NAME" /> ir savienota ar jaunu tālruni</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">Šajā ierīcē nevarēja atbalstīt visus jūsu displejus, tādējādi tika pārtraukts savienojums ar vienu no tiem.</translation>
 <translation id="574392208103952083">Vidējs</translation>
 <translation id="5744083938413354016">Vilkšana pieskaroties</translation>
+<translation id="5745612484876805746">Nakts režīms tiek automātiski ieslēgts saulrietā.</translation>
 <translation id="5750765938512549687">Bluetooth ir izslēgts</translation>
 <translation id="576453121877257266">Nakts režīms ir ieslēgts.</translation>
 <translation id="5777841717266010279">Vai apturēt ekrāna koplietošanu?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Augsta kontrasta režīms ir iespējots. Lai to izslēgtu, vēlreiz nospiediet Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Notiek iziešana no spoguļošanas režīma</translation>
 <translation id="602001110135236999">Ritināt pa kreisi</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6043212731627905357">Šis monitors nav saderīgs ar jūsu ierīci <ph name="DEVICE_TYPE" /> (monitors netiek atbalstīts).</translation>
 <translation id="6043994281159824495">Izrakstīties tagad</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Bluetooth ir ieslēgts</translation>
 <translation id="639644700271529076">Funkcija CAPS LOCK ir izslēgta.</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Visu paziņojumu notīrīšana</translation>
 <translation id="643147933154517414">Viss gatavs</translation>
 <translation id="6445835306623867477">“<ph name="ROUTE_TITLE" />” apraide ierīcē “<ph name="RECEIVER_NAME" />”</translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Rokraksta ievade</translation>
 <translation id="6528179044667508675">Netraucēt</translation>
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
+<translation id="6537924328260219877">Signāla stiprums: <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Notiek apraide uz ierīci <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Jautājiet administratoram</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6637729079642709226">Laika maiņa</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Savienojiet ierīci <ph name="DEVICE_NAME" /> ar tālruni</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Google asistents</translation>
 <translation id="7042322267639375032">Sakļaut statusa apgabalu</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">Paziņojumi ir paslēpti.</translation>
 <translation id="8203795194971602413">Noklikšķināt ar peles labo pogu</translation>
 <translation id="8236042855478648955">Laiks pārtraukumam</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Lai atbloķētu ar kontu <ph name="USER_EMAIL_ADDRESS" />, nospiediet taustiņu Enter</translation>
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8297006494302853456">Vājš</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">Automātiska pagriešana</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
 <translation id="8627191004499078455">Izveidots savienojums ar ierīci (<ph name="DEVICE_NAME" />)</translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="8639760480004882931">Atlicis: <ph name="PERCENTAGE" />%</translation>
 <translation id="8649101189709089199">Atlasīt, lai izrunātu</translation>
 <translation id="8652175077544655965">Aizvērt iestatījumus</translation>
 <translation id="8653151467777939995">Rādīt paziņojumu iestatījumus. Paziņojumi ir ieslēgti</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Rādīt tīklu sarakstu. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pievienots lādētājs ar mazu strāvas padevi</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">Tā, iespējams, mēģina piesavināties jūsu taustiņsitienus</translation>
 <translation id="8735953464173050365">Rādīt tastatūras iestatījumus. Ir atlasīta tastatūra <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Rādīt VPN iestatījumus</translation>
+<translation id="8785070478575117577">Savienošana ar ierīci <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Pārslēgt pagriešanas bloķēšanu. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">Atbloķēt ierīci kā <ph name="LOGIN_ID" />, lai veiktu paziņojuma darbību</translation>
 <translation id="9017320285115481645">Ievadiet Family Link vecāku piekļuves kodu.</translation>
 <translation id="9029474291399787231">Ir pieejams Adobe Flash Player atjauninājums</translation>
+<translation id="9047624247355796468">Atvērt tīkla <ph name="NETWORK_NAME" /> iestatījumus</translation>
 <translation id="9056839673611986238">Ierīcē tiks veikta atrite</translation>
 <translation id="9070640332319875144">Asistenta iestatījumi</translation>
 <translation id="9072519059834302790">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">Pilnekrāna lupa</translation>
 <translation id="9193626018745640770">Apraide nezināmā uztvērējā</translation>
 <translation id="9194617393863864469">Pierakstīties kā citam lietotājam...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, pārvalda jūsu administrators</translation>
 <translation id="9205817095063786319">Ierīce tiek pārvaldīta domēnā <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
 <translation id="9211681782751733685">Līdz pilnīgai akumulatora uzlādei atlikušais laiks: <ph name="TIME_REMAINING" />.</translation>

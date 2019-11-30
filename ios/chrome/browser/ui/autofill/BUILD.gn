@@ -57,7 +57,6 @@ source_set("autofill") {
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web/common",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
@@ -92,7 +91,6 @@ source_set("bridges") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ui/base",
   ]
@@ -133,7 +131,6 @@ source_set("autofill_ui") {
     "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

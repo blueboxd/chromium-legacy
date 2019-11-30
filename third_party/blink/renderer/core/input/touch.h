@@ -44,20 +44,6 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Touch* Create(LocalFrame* frame,
-                       EventTarget* target,
-                       int identifier,
-                       const FloatPoint& screen_pos,
-                       const FloatPoint& page_pos,
-                       const FloatSize& radius,
-                       float rotation_angle,
-                       float force,
-                       String region) {
-    return MakeGarbageCollected<Touch>(frame, target, identifier, screen_pos,
-                                       page_pos, radius, rotation_angle, force,
-                                       region);
-  }
-
   static Touch* Create(const Document& document, const TouchInit* initializer) {
     return MakeGarbageCollected<Touch>(document.GetFrame(), initializer);
   }

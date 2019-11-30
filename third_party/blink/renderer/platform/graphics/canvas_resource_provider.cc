@@ -98,7 +98,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
     if (!IsBitmapFormatSupported(color_params.TransferableResourceFormat())) {
       // If the rendering format is not supported, downgrate to 8-bits.
       // TODO(junov): Should we try 12-12-12-12 and 10-10-10-2?
-      color_params.SetCanvasPixelFormat(kRGBA8CanvasPixelFormat);
+      color_params.SetCanvasPixelFormat(CanvasPixelFormat::kRGBA8);
     }
 
     return CanvasResourceSharedBitmap::Create(Size(), color_params,

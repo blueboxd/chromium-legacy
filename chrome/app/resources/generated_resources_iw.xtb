@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">פתח את הקישור ב-<ph name="APP" /></translation>
 <translation id="1140351953533677694">‏גישה ל-Bluetooth ולהתקנים סיריאליים</translation>
 <translation id="114036956334641753">אודיו וכתוביות</translation>
-<translation id="1140610710803014750">כדי לקבל גישה אל הסימניות שלך בכל המכשירים יש להיכנס ולבצע סינכרון.</translation>
 <translation id="1140746652461896221">חסימת תוכן בכל דף שאליו נכנסת</translation>
 <translation id="1143142264369994168">חותם על אישור </translation>
 <translation id="1145292499998999162">הפלאגין חסום</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">העתק כתובת &amp;אודיו</translation>
 <translation id="1465827627707997754">משולש פיצה</translation>
 <translation id="1468571364034902819">לא ניתן להשתמש בפרופיל הזה</translation>
-<translation id="1470811252759861213">כדי להתקין את התוספים בכל המחשבים שלך, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">הצג יותר</translation>
 <translation id="1475502736924165259">יש לך אישורים בקובץ שאינם מתאימים לאף אחת מהקטגוריות האחרות</translation>
 <translation id="1476088332184200792">העתקה למכשיר שלך</translation>
@@ -1042,7 +1040,6 @@
 <translation id="2489829450872380594">‏בפעם הבאה, טלפון חדש יבטל את הנעילה של ה-<ph name="DEVICE_TYPE" /> הזה. אפשר להשבית את Smart Lock דרך ההגדרות.</translation>
 <translation id="2489918096470125693">הוסף &amp;תיקיה...</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />' הוסר מהרשימה</translation>
-<translation id="2490782392574942205">כדי לקבל גישה אל התוספים שלך בכל המחשבים שברשותך, יש להיכנס ולהפעיל את הסנכרון</translation>
 <translation id="249113932447298600">מצטערים, המכשיר <ph name="DEVICE_LABEL" /> אינו נתמך בשלב זה.</translation>
 <translation id="249303669840926644">לא ניתן היה להשלים את הרישום</translation>
 <translation id="2495777824269688114">הכר תכונות נוספות או קבל תשובות לשאלות. בחר '?' כדי לגשת לעזרה.</translation>
@@ -1752,7 +1749,6 @@
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3528033729920178817">דף זה עוקב אחר המיקום שלך.</translation>
 <translation id="3528498924003805721">יעדים של קיצורי דרך</translation>
-<translation id="3530305684079447434">כדי שהסימניות שלך יוצגו בכל המכשירים, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> רוצה להשתמש במיקרופון שלך</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - האודיו הושתק</translation>
 <translation id="3538066758857505094">‏קרתה שגיאה בהסרת ההתקנה של Linux. צריך לנסות שוב.</translation>

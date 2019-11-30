@@ -127,7 +127,8 @@ TEST_F(ClickToCallUtilsTest, NonTelLink_DoNotOfferForLink) {
 
 TEST_F(ClickToCallUtilsTest,
        SelectionText_ValidPhoneNumberRegex_OfferForSelection) {
-  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  scoped_feature_list_.InitWithFeatures({kClickToCallUI},
+                                        {kClickToCallDetectionV2});
 
   // Stores a mapping of selected text to expected phone number parsed.
   std::map<std::string, std::string> expectations;
@@ -151,6 +152,10 @@ TEST_F(ClickToCallUtilsTest,
   expectations.emplace("9  8 7 6 5  4 3 2 1 0", "9  8 7 6 5  4 3 2 1 0");
   // Non breaking spaces around number.
   expectations.emplace("\u00A09876543210\u00A0", "9876543210");
+  // Example for a credit card
+  expectations.emplace("4111 1111 1111 1111", "4111 1111 1111 1111");
+  // Chrome version string
+  expectations.emplace("78.0.3904.108", "78.0.3904.108");
 
   for (auto& expectation : expectations) {
     base::Optional<std::string> phone_number =
@@ -162,27 +167,71 @@ TEST_F(ClickToCallUtilsTest,
 
 TEST_F(ClickToCallUtilsTest,
        SelectionText_InvalidPhoneNumberRegex_DoNotOfferForSelection) {
-  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  scoped_feature_list_.InitWithFeatures({kClickToCallUI},
+                                        {kClickToCallDetectionV2});
   std::vector<std::string> invalid_selection_texts;
 
   // Does not contain any number.
-  invalid_selection_texts.emplace_back("Call me maybe");
+  invalid_selection_texts.push_back("Call me maybe");
   // We only parse smaller text sizes to avoid performance impact on Chromium.
-  invalid_selection_texts.emplace_back(
+  invalid_selection_texts.push_back(
       "This is a huge text. It also contains a phone number 9876543210");
   // Although this is a valid number, its not caught by the regex.
-  invalid_selection_texts.emplace_back("+44 1800-FLOWERS");
+  invalid_selection_texts.push_back("+44 1800-FLOWERS");
   // Number does not start as new word.
-  invalid_selection_texts.emplace_back("No space9876543210");
+  invalid_selection_texts.push_back("No space9876543210");
   // Minimum length for regex match not satisfied.
-  invalid_selection_texts.emplace_back("Small number 98765");
+  invalid_selection_texts.push_back("Small number 98765");
   // Number does not start as new word.
-  invalid_selection_texts.emplace_back("Buy for $9876543210");
+  invalid_selection_texts.push_back("Buy for $9876543210");
   // More than two spaces in between.
-  invalid_selection_texts.emplace_back(
-      "9   8   7   6   5   4    3   2   1     0");
+  invalid_selection_texts.push_back("9   8   7   6   5   4    3   2   1     0");
   // Space dash space formatting.
-  invalid_selection_texts.emplace_back("999 - 999 - 9999");
+  invalid_selection_texts.push_back("999 - 999 - 9999");
+
+  for (auto& text : invalid_selection_texts)
+    ExpectClickToCallDisabledForSelectionText(text);
+}
+
+TEST_F(ClickToCallUtilsTest, SelectionText_LowConfidenceModifiedRegex_Matches) {
+  scoped_feature_list_.InitWithFeatures(
+      {kClickToCallUI, kClickToCallDetectionV2}, {});
+
+  // Stores a mapping of selected text to expected phone number parsed.
+  std::map<std::string, std::string> expectations = {
+      {"+91 77997 12345", "+91 77997 12345"},
+      {"(+0091) 040 12345678", "(+0091) 040 12345678"},
+      {"+1 800 444 4444", "+1 800 444 4444"},
+      {"754-1234", "754-1234"},
+      {"+55-955-1234-1234 (landline)", "+55-955-1234-1234"},
+      {"+44(0)20-1234 1234", "+44(0)20-1234 1234"},
+      {"07700123123", "07700123123"},
+      {"Call +49 231 1234567 now!", "+49 231 1234567"},
+      {"tel:+49-89-636-12345", "+49-89-636-12345"},
+      {"Number (021) 12345678", "(021) 12345678"},
+      {"(private) +90 312 123 12 12", "+90 312 123 12 12"},
+      {"+34 913 12 12 12", "+34 913 12 12 12"},
+      {"(000)\u00A00000000", "(000)\u00A00000000"},
+  };
+
+  for (auto& expectation : expectations) {
+    base::Optional<std::string> phone_number =
+        ExtractPhoneNumberForClickToCall(&profile_, expectation.first);
+    EXPECT_EQ(expectation.second, phone_number.value_or(""));
+  }
+}
+
+TEST_F(ClickToCallUtilsTest, SelectionText_LowConfidenceModifiedRegex_NoMatch) {
+  scoped_feature_list_.InitWithFeatures(
+      {kClickToCallUI, kClickToCallDetectionV2}, {});
+  std::vector<std::string> invalid_selection_texts = {
+      // Example for a credit card
+      "4111 1111 1111 1111",
+      // Chrome version string
+      "78.0.3904.108",
+      // Too many spaces
+      "9 8 7 6 5 4 3 2 1 0",
+  };
 
   for (auto& text : invalid_selection_texts)
     ExpectClickToCallDisabledForSelectionText(text);

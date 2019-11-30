@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">आयकन</translation>
 <translation id="1111673857033749125">आपल्या इतर डिव्हाइसेेसवर सेव्ह केलेले बुकमार्क येथे दिसतील.</translation>
 <translation id="1113597929977215864">सिंप्लिफाइड व्ह्यू दाखवा</translation>
+<translation id="1122278879166832009">तुमचे होम पेज कुठूनही झटपट अ‍ॅक्सेस करण्यासाठी येथे टॅप करा</translation>
 <translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1129510026454351943">तपशील: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{एक डाउनलोड प्रलंबित आहे.}other{# डाउनलोड प्रलंबित आहेत.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">साइट स्टोरेज साफ करायचे?</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3859306556332390985">पुढे शोधा</translation>
+<translation id="388596076286380598">तुम्ही ऑफलाइन असलात किंवा तुमचे कनेक्शन खराब असले तरीही, तुमच्या आवडीच्या साइटवरून लेख, व्हिडिओ आणि इतर आशय मिळवा.</translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
 <translation id="3895926599014793903">झूम सुरू करण्याची सक्ती</translation>
 <translation id="3912508018559818924">वेबवरून सर्वोत्तम शोधत आहे…</translation>
@@ -490,6 +492,7 @@
 <translation id="4719927025381752090">भाषांतर करण्यास ऑफर करा</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> मध्‍ये उघडा</translation>
 <translation id="4720982865791209136">Chrome सुधारण्यात मदत करा. <ph name="BEGIN_LINK" />सर्वेक्षण करा<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">स्टॅक अनवाइंडर</translation>
 <translation id="473775607612524610">अपडेट करा</translation>
 <translation id="4738836084190194332">अखेरचे संकालित: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">एक नवीन टॅब उघडा</translation>
@@ -636,6 +639,7 @@
 <translation id="5684874026226664614">अरेरे. हे पृष्‍ठ भाषांतरित केले जाऊ शकले नाही.</translation>
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5689516760719285838">स्थान</translation>
+<translation id="5694049548840660018">होमवर सहजपणे परत जा</translation>
 <translation id="569536719314091526">अधिक पर्याय बटणावरून या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
 <translation id="5710871682236653961">तुम्ही NFC डिव्हाइसवर टॅप करता तेव्हा साइटना माहिती पाठवण्याची आणि मिळवण्याची अनुमती देण्यापूर्वी परवानगीची विनंती करा (शिफारस केलेले)</translation>
 <translation id="572328651809341494">अलीकडील टॅब</translation>
@@ -798,6 +802,7 @@
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टॅब बंद केले</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करा</translation>
 <translation id="6865313869410766144">ऑटोफिल फॉर्म डेटा</translation>
+<translation id="6884306546558072722">ऑफलाइन एक्सप्लोर करणे सुरू ठेवा</translation>
 <translation id="688738109438487280">विद्यमान डेटा <ph name="TO_ACCOUNT" /> मध्ये जोडा.</translation>
 <translation id="6891726759199484455">तुमचा पासवर्ड कॉपी करण्यासाठी अनलॉक करा</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
@@ -1039,6 +1044,7 @@
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून तुमचे टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
 <translation id="8641930654639604085">प्रौढ सामग्री असलेल्या साइटना अवरोधित करण्‍याचा प्रयत्न करा</translation>
 <translation id="8655129584991699539">तुम्ही Chrome सेटिंग्जमध्ये डेटा साफ करू शकता</translation>
+<translation id="8655599981421006542">नवीन टॅब तयार करण्यासाठी येथे टॅप करा आणि मागील टॅबवर परत जा</translation>
 <translation id="8662811608048051533">तुम्हाला बहुतांश साइटवरून साइन आउट करते.</translation>
 <translation id="8664979001105139458">फाइलचे नाव आधीपासून अस्तित्वात आहे</translation>
 <translation id="8676374126336081632">इनपुट साफ करा</translation>
@@ -1051,6 +1057,7 @@
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8748850008226585750">सामग्री लपविली</translation>
 <translation id="8751914237388039244">इमेज निवडा</translation>
+<translation id="8758557275681689734">तुमचे सर्व उघडे टॅब पहा</translation>
 <translation id="8788265440806329501">नेव्हिगेशन इतिहास बंद आहे</translation>
 <translation id="8788968922598763114">अखेरीस बंद केलेला टॅब पुन्हा उघडा</translation>
 <translation id="8801436777607969138">विशिष्ट साइटसाठी JavaScript ब्लॉक करा.</translation>

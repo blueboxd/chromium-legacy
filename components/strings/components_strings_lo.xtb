@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">ລະບຸລາຍລະອຽດເພີ່ມເຕີມ</translation>
 <translation id="1021110881106174305">ບັດທີ່ຍອມຮັບແລ້ວ</translation>
 <translation id="1032854598605920125">ໝຸນຕາມເຂັມໂມງ</translation>
-<translation id="1035334672863811645">ເຂົ້າສູ່ລະບົບ Chrome</translation>
 <translation id="1036348656032585052">ປິດ</translation>
 <translation id="1038842779957582377">ຊື່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="1039626062703039346">Chrome ສາມາດຊ່ວຍທ່ານປົກປ້ອງບັນຊີ Google ຂອງທ່ານ ແລະ ປ່ຽນລະຫັດຜ່ານຂອງທ່ານໄດ້. ນີ້ຈະແຈ້ງບອກ Google ກ່ຽວກັບເວັບໄຊນີ້.</translation>
@@ -923,7 +922,6 @@
 <translation id="536296301121032821">ເກັບຮັກສາການຕັ້ງຄ່ານະໂຍບາຍບໍ່ສໍາເລັດ</translation>
 <translation id="5371425731340848620">ອັບເດດບັດ</translation>
 <translation id="5377026284221673050">"ໂມງຂອງທ່ານຊ້າກວ່າ" ຫຼື "ໂມງຂອງທ່ານໄວກວ່າ" ຫຼື "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">ເພື່ອໃຊ້ບັດຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນ, ກະລຸນາເຂົ້າສູ່ລະບົບ ແລ້ວເປີດການຊິ້ງຂໍ້ມູນ.</translation>
 <translation id="5386426401304769735">ຕ່ອງໂສ້ໃບຮັບຮອງສຳລັບເວັບໄຊນີ້ປະກອບມີໃບຮັບຮອງທີ່ເຊັນຊື່ໂດຍໃຊ້ SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">ຫຍິບຂອບເບື້ອງຂວາ</translation>
@@ -1584,7 +1582,6 @@
 <translation id="8759274551635299824">ບັດນີ້ໝົດອາຍຸແລ້ວ</translation>
 <translation id="8761567432415473239">ການທ່ອງເນັດທີ່ປອດໄພຂອງ Google <ph name="BEGIN_LINK" />ພົບໂປຣແກຣມອັນຕະລາຍ<ph name="END_LINK" /> ຢູ່ໃນ <ph name="SITE" /> ແລ້ວເມື່ອບໍ່ດົນມານີ້.</translation>
 <translation id="8763927697961133303">ອຸປະກອນ USB</translation>
-<translation id="8768895707659403558">ເພື່ອໃຊ້ບັດຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">ເຮັດຄືນຄໍາສັ່ງລຶບ</translation>
 <translation id="8792621596287649091">ທ່ານສາມາດສູນເສຍການເຂົ້າເຖິງບັນຊີ <ph name="ORG_NAME" /> ຂອງທ່ານ ຫຼື ປະສົບກັບການຖືກລັກໃຊ້ຕົວຕົນ. Chromium ຂໍແນະນຳໃຫ້ປ່ຽນລະຫັດຜ່ານຂອງທ່ານດຽວນີ້.</translation>

@@ -71,7 +71,7 @@ class InstanceID {
       base::Callback<void(const base::Time& creation_time)>;
   using GetTokenCallback =
       base::OnceCallback<void(const std::string& token, Result result)>;
-  using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
+  using ValidateTokenCallback = base::OnceCallback<void(bool is_valid)>;
   using GetEncryptionInfoCallback =
       base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using DeleteTokenCallback = base::OnceCallback<void(Result result)>;
@@ -121,7 +121,7 @@ class InstanceID {
   virtual void ValidateToken(const std::string& authorized_entity,
                              const std::string& scope,
                              const std::string& token,
-                             const ValidateTokenCallback& callback) = 0;
+                             ValidateTokenCallback callback) = 0;
 
   // Get the public encryption key and authentication secret associated with a
   // GCM-scoped token. If encryption info is not yet associated, it will be

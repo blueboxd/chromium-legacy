@@ -249,6 +249,7 @@ class CC_EXPORT GpuImageDecodeCache
   // Stores the CPU-side decoded bits of an image and supporting fields.
   struct DecodedImageData : public ImageDataBase {
     explicit DecodedImageData(bool is_bitmap_backed,
+                              bool can_do_hardware_accelerated_decode,
                               bool do_hardware_accelerated_decode);
     ~DecodedImageData();
 
@@ -288,6 +289,10 @@ class CC_EXPORT GpuImageDecodeCache
 
     bool is_yuv() const { return image_yuv_planes_.has_value(); }
 
+    bool can_do_hardware_accelerated_decode() const {
+      return can_do_hardware_accelerated_decode_;
+    }
+
     bool do_hardware_accelerated_decode() const {
       return do_hardware_accelerated_decode_;
     }
@@ -318,6 +323,11 @@ class CC_EXPORT GpuImageDecodeCache
     // Otherwise it was filled out with a default "identity" value by the
     // decoder.
     base::Optional<YUVSkImages> image_yuv_planes_;
+
+    // Keeps tracks of images that could go through hardware decode acceleration
+    // though they're possibly prevented from doing so because of a disabled
+    // feature flag.
+    bool can_do_hardware_accelerated_decode_;
 
     // |do_hardware_accelerated_decode_| keeps track of images that should go
     // through hardware decode acceleration. Currently, this path is intended
@@ -493,6 +503,7 @@ class CC_EXPORT GpuImageDecodeCache
               int upload_scale_mip_level,
               bool needs_mips,
               bool is_bitmap_backed,
+              bool can_do_hardware_accelerated_decode,
               bool do_hardware_accelerated_decode,
               bool is_yuv_format,
               SkYUVColorSpace yuv_cs);

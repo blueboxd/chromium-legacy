@@ -347,9 +347,6 @@ void BaseWebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #endif
 }
 
-const std::string BaseWebUIBrowserTest::kDummyURL =
-    content::GetWebUIURLString("DummyURL");
-
 BaseWebUIBrowserTest::BaseWebUIBrowserTest()
     : libraries_preloaded_(false), override_selected_web_ui_(nullptr) {}
 
@@ -369,6 +366,11 @@ void BaseWebUIBrowserTest::set_webui_host(const std::string& webui_host) {
 
 namespace {
 
+const GURL& DummyUrl() {
+  static GURL url(content::GetWebUIURLString("DummyURL"));
+  return url;
+}
+
 // DataSource for the dummy URL.  If no data source is provided then an error
 // page is shown. While this doesn't matter for most tests, without it,
 // navigation to different anchors cannot be listened to (via the hashchange
@@ -384,11 +386,11 @@ class MockWebUIDataSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override {
+      content::URLDataSource::GotDataCallback callback) override {
     std::string dummy_html = "<html><body>Dummy</body></html>";
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&dummy_html);
-    callback.Run(response.get());
+    std::move(callback).Run(response.get());
   }
 
   std::string GetMimeType(const std::string& path) override {
@@ -450,7 +452,7 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
 
   content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
 
-  test_factory_->AddFactoryOverride(GURL(kDummyURL).host(),
+  test_factory_->AddFactoryOverride(DummyUrl().host(),
                                     mock_provider_.Pointer());
   test_factory_->AddFactoryOverride(content::kChromeUIResourcesHost,
                                     mock_provider_.Pointer());
@@ -459,7 +461,7 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
 void BaseWebUIBrowserTest::TearDownOnMainThread() {
   logging::SetLogMessageHandler(nullptr);
 
-  test_factory_->RemoveFactoryOverride(GURL(kDummyURL).host());
+  test_factory_->RemoveFactoryOverride(DummyUrl().host());
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       test_factory_.get());
 

@@ -15,6 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/resources/media/grit/media_internals_resources.h"
+#include "content/browser/resources/media/grit/media_internals_resources_map.h"
 #include "content/grit/content_resources.h"
 #include "content/grit/content_resources_map.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -257,6 +259,9 @@ const ResourcesMap* CreateResourcesMap() {
   AddResourcesToMap(result);
   AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
                            kContentResources, kContentResourcesSize, result);
+  AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
+                           kMediaInternalsResources,
+                           kMediaInternalsResourcesSize, result);
   AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
                            kMojoBindingsResources, kMojoBindingsResourcesSize,
                            result);
@@ -294,7 +299,7 @@ std::string SharedResourcesDataSource::GetSource() {
 void SharedResourcesDataSource::StartDataRequest(
     const GURL& url,
     const WebContents::Getter& wc_getter,
-    const URLDataSource::GotDataCallback& callback) {
+    URLDataSource::GotDataCallback callback) {
   const std::string path = URLDataSource::URLToRequestPath(url);
   std::string updated_path = path;
 #if defined(OS_CHROMEOS)
@@ -321,7 +326,7 @@ void SharedResourcesDataSource::StartDataRequest(
     bytes = GetContentClient()->GetDataResourceBytes(idr);
   }
 
-  callback.Run(std::move(bytes));
+  std::move(callback).Run(std::move(bytes));
 }
 
 bool SharedResourcesDataSource::AllowCaching() {

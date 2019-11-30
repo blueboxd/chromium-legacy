@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Əlavə detallar ilə təmin edin</translation>
 <translation id="1021110881106174305">Qəbul olunmuş kartlar</translation>
 <translation id="1032854598605920125">Saat əqrəbi istiqamətində fırladın</translation>
-<translation id="1035334672863811645">Chrome'a daxil olun</translation>
 <translation id="1036348656032585052">Deaktiv edin</translation>
 <translation id="1038842779957582377">bilinməyən ad</translation>
 <translation id="1039626062703039346">Chrome Google Hesabınızı qorumağa və parolu dəyişməyə kömək edə bilər. Bu, Google'a bu sayt barədə bildiriş göndərəcək.</translation>
@@ -920,7 +919,6 @@
 <translation id="536296301121032821">Siyasət ayarlarını saxlamaq uğursuz oldu</translation>
 <translation id="5371425731340848620">Kartı yeniləyin</translation>
 <translation id="5377026284221673050">"Saatınız geridədir" və ya "Saatınız qabaqdadır" və ya "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Bütün cihazlarda kartlardan istifadə etmək üçün daxil olun və sinxronizasiyanı aktiv edin.</translation>
 <translation id="5386426401304769735">Bu saytın sertifikat zənciri SHA-1 istifadə edərək imzalanmış sertifikatdan ibarətdir.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Sağdan kənarını tikin</translation>
@@ -1581,7 +1579,6 @@
 <translation id="8759274551635299824">Bu kartın vaxtı bitib</translation>
 <translation id="8761567432415473239">Google Təhlükəsiz Brauzinq yenicə <ph name="SITE" /> saytında <ph name="BEGIN_LINK" />zərərli proqram tapdı<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB cihazı</translation>
-<translation id="8768895707659403558">Bütün cihazlarda kartlarınızı əldə etmək üçün <ph name="SIGN_IN_LINK" /> ünvanına daxil olun.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Silinməni yenidən edin</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hesabına girişi itirə və ya kimlik oğurluğu ilə üzləşə bilərsiniz. Chrome parollarınızı indi dəyişməyi məsləhət görür.</translation>

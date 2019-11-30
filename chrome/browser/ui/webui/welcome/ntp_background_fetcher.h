@@ -20,9 +20,8 @@ namespace welcome {
 
 class NtpBackgroundFetcher {
  public:
-  NtpBackgroundFetcher(
-      size_t index,
-      const content::WebUIDataSource::GotDataCallback& callback);
+  NtpBackgroundFetcher(size_t index,
+                       content::WebUIDataSource::GotDataCallback callback);
   ~NtpBackgroundFetcher();
 
  private:

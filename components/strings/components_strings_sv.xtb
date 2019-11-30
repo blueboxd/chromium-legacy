@@ -6,10 +6,10 @@
 <translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1021110881106174305">Godkända kort</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
-<translation id="1035334672863811645">Logga in i Chrome</translation>
 <translation id="1036348656032585052">Inaktivera</translation>
 <translation id="1038842779957582377">okänt namn</translation>
 <translation id="1039626062703039346">Du kan skydda Google-kontot genom att byta lösenord. Google meddelas då om den här webbplatsen.</translation>
+<translation id="1044897699341250361">Vad innebär det?</translation>
 <translation id="1050038467049342496">Stäng andra appar</translation>
 <translation id="1055184225775184556">&amp;Ångra Lägg till</translation>
 <translation id="1056898198331236512">Varning</translation>
@@ -184,6 +184,7 @@
 <translation id="1745880797583122200">Din webbläsare hanteras</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1753706481035618306">Sidnummer</translation>
+<translation id="175838129965056221">Chrome har upptäckt att din anslutning övervakas</translation>
 <translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Testa att köra nätverksdiagnostik för Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +253,7 @@
 <translation id="2119867082804433120">Hål nere till höger</translation>
 <translation id="2129079103035905234">Rörelsesensorer</translation>
 <translation id="2130448033692577677">Det går inte att tillämpa de angivna mallarna eftersom principen DnsOverHttpsMode inte har ställts in.</translation>
+<translation id="2131277894177304644">Chromium har upptäckt att din anslutning övervakas</translation>
 <translation id="213826338245044447">Bokmärken i mobilen</translation>
 <translation id="214556005048008348">Avbryt betalningen</translation>
 <translation id="2147827593068025794">Bakgrundssynkronisering</translation>
@@ -299,6 +301,7 @@
 <translation id="2354001756790975382">Övriga bokmärken</translation>
 <translation id="2354430244986887761">Google Säker webbsökning <ph name="BEGIN_LINK" />hittade skadliga appar<ph name="END_LINK" /> nyligen på <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Det är möjligt att hackare kan se vilka bilder du visar på den här webbplatsen och att de försöker lura dig genom att modifiera dem.</translation>
+<translation id="2355474962185559967">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du besöker <ph name="WEBSITE_1" /> och ändrar lösenordet nu.</translation>
 <translation id="2356070529366658676">Fråga</translation>
 <translation id="2359629602545592467">Flera</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -402,6 +405,7 @@
 <translation id="2799020568854403057">Det finns skadliga appar på webbplatsen du är på väg till</translation>
 <translation id="2799223571221894425">Starta om</translation>
 <translation id="2803306138276472711">Google Säker webbsökning upptäckte nyligen <ph name="BEGIN_LINK" />skadlig programvara<ph name="END_LINK" /> på <ph name="SITE" />. Ibland förekommer det skadlig programvara på webbplatser som vanligtvis är säkra.</translation>
+<translation id="281585763351939989">Chromium har upptäckt att din anslutning övervakas.</translation>
 <translation id="2824775600643448204">Adress- och sökfält</translation>
 <translation id="2826760142808435982">Anslutningen är krypterad och verifieras med <ph name="CIPHER" /> och använder <ph name="KX" /> som nyckelutbytesmekanism.</translation>
 <translation id="2835170189407361413">Rensa formuläret</translation>
@@ -446,6 +450,7 @@
 <translation id="3024663005179499861">Felaktig policytyp</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
+<translation id="304755864151473094">Varför detta händer</translation>
 <translation id="3057676462092457419">Läget <ph name="SECURE_DNS_MODE_SECURE" /> stöds inte ännu för DnsOverHttps. Inställningen <ph name="SECURE_DNS_MODE_OFF" /> används i stället.</translation>
 <translation id="3060227939791841287">C9 (kuvert)</translation>
 <translation id="3061707000357573562">Tjänst för programkorrigering</translation>
@@ -485,6 +490,7 @@
 <translation id="3228969707346345236">Det gick inte att översätta eftersom sidan redan är på <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Versionsinformation om enhet och webbläsare</translation>
 <translation id="323107829343500871">Ange CVC-koden för <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och <ph name="WEBSITE_3" /> och ändrar lösenord nu.</translation>
 <translation id="3234666976984236645">Upptäck alltid viktigt innehåll på den här webbplatsen</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> liknar <ph name="SUGGESTED_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att använda liknande webbadresser.</translation>
 <translation id="3270847123878663523">&amp;Ångra Ändra ordning</translation>
@@ -517,6 +523,7 @@
 <translation id="342781501876943858">Du rekommenderas att återställa lösenordet om du har återanvänt det på andra webbplatser.</translation>
 <translation id="3428151540071562330">Minst en av URI:erna i servermallen för DnsOverHttpsTemplates är ogiltig och kommer inte att användas.</translation>
 <translation id="3431636764301398940">Spara kortet på enheten</translation>
+<translation id="3438790640050632698">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du besöker <ph name="WEBSITE_1" /> och <ph name="WEBSITE_2" /> och ändrar lösenord nu.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Enhetens ägare har stängt av dinosauriespelet.</translation>
 <translation id="3447884698081792621">Visa certifikat (utfärdat av <ph name="ISSUER" />)</translation>
@@ -531,6 +538,7 @@
 <translation id="3495081129428749620">Hitta på sidan
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Den här principen ignoreras eftersom en annan princip i samma principgrupp har högre prioritet.</translation>
+<translation id="3525469219100414032">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du besöker <ph name="WEBSITE_1" /> och ändrar lösenordet nu.</translation>
 <translation id="3528171143076753409">Servercertifikatet är inte tillförlitligt.</translation>
 <translation id="3528485271872257980">Mörkbrun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 objekt på synkroniserade enheter}=1{1 objekt (och fler på synkroniserade enheter)}other{# objekt (och fler på synkroniserade enheter)}}</translation>
@@ -609,6 +617,7 @@
 <translation id="3858027520442213535">Uppdatera datum och tid</translation>
 <translation id="3884278016824448484">Motstridiga enhetsidentifierare</translation>
 <translation id="3885155851504623709">Församling</translation>
+<translation id="388632593194507180">Övervakning har upptäckts</translation>
 <translation id="3890664840433101773">Lägg till e-post</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3901925938762663762">Kortet gäller inte längre</translation>
@@ -710,6 +719,7 @@
 <translation id="4305817255990598646">Byt</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
+<translation id="4318312030194671742">Sammanställningstjänst för förhandsgranskning av första innehållsrenderingen</translation>
 <translation id="4318566738941496689">Enhetens namn och nätverksadress</translation>
 <translation id="4325863107915753736">Det gick inte att hitta artikeln</translation>
 <translation id="4326324639298822553">Kontrollera utgångsdatum och försök igen</translation>
@@ -726,6 +736,7 @@
 <translation id="4372948949327679948">Ett <ph name="VALUE_TYPE" />-värde förväntades.</translation>
 <translation id="4377125064752653719">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som har återkallats av utfärdaren. Det innebär att säkerhetsuppgifterna som servern visar inte är absolut tillförlitliga. Du kanske kommunicerar med en skadlig server.</translation>
 <translation id="4378154925671717803">Mobil</translation>
+<translation id="437847259914972036">Din aktivitet på webben och alla uppgifter som du anger övervakas. Innehållet kan ändras utan din vetskap.</translation>
 <translation id="4398334096870680409">Funktionen är inte tillgänglig på din enhet.</translation>
 <translation id="4406896451731180161">sökresultat</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
@@ -924,7 +935,6 @@
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
 <translation id="5371425731340848620">Uppdatera kortet</translation>
 <translation id="5377026284221673050">Klockan går efter, Klockan går före eller &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
-<translation id="5384855140246857529">Logga in och aktivera synkronisering så kan du använda korten på alla enheter.</translation>
 <translation id="5386426401304769735">Certifikatkedjan för den här webbplatsen innehåller ett certifikat som signerades med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kanthäftning till höger</translation>
@@ -962,6 +972,7 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5570825185877910964">Skydda kontot</translation>
 <translation id="5571083550517324815">Utlämning erbjuds inte på den här adressen. Välj en annan adress.</translation>
+<translation id="5572009199897554128">Du angav just ditt lösenord på en bedräglig webbplats. Chromium rekommenderar att du besöker <ph name="WEBSITE_1" /> och <ph name="WEBSITE_2" /> och ändrar lösenord nu.</translation>
 <translation id="5580958916614886209">Kontrollera utgångsmånad och försök igen</translation>
 <translation id="5586446728396275693">Inga sparade adresser</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
@@ -1144,6 +1155,7 @@
 <translation id="6446163441502663861">Kahu (kuvert)</translation>
 <translation id="6446608382365791566">Lägg till mer information</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="644931407731409778">PDF-dokument som innehåller {COUNT,plural, =1{1 sida}other{# sidor}}</translation>
 <translation id="6451458296329894277">Bekräfta återsändning av formulär</translation>
 <translation id="6457206614190510200">Rygghäftning</translation>
 <translation id="6465306955648956876">Hantera lösenord …</translation>
@@ -1162,6 +1174,7 @@
 <translation id="6547208576736763147">Två hål till vänster</translation>
 <translation id="6554795675067793129">Kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Upprepa</translation>
+<translation id="6559565319173126218">Certifikatet för anslutningen är inte betrott i Chrome eftersom det ibland används till kapning och övervakning av nätverk.</translation>
 <translation id="6569060085658103619">Du visar en tilläggssida</translation>
 <translation id="6573200754375280815">Två hål till höger</translation>
 <translation id="6578796323535178455">C2 (kuvert)</translation>
@@ -1195,6 +1208,7 @@
 <translation id="6710594484020273272">&lt;Ange sökterm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
 <translation id="6711464428925977395">Något är fel med proxyservern eller så är adressen felaktig.</translation>
+<translation id="6721811549156553509">Nätverksövervakaren kan imitera webbplatser du besöker och se din aktivitet och alla uppgifter du anger (t.ex. lösenord, meddelanden och kreditkort). Var försiktig när du hanterar känsliga uppgifter online, eftersom de kan vara synliga för nätverksövervakaren. Nätverksövervakaren kan även ändra innehåll på de sidor du besöker. Detta gäller även aktivitet i andra webbläsare och program med åtkomst till internet.</translation>
 <translation id="6738516213925468394">Din data krypterades med din <ph name="BEGIN_LINK" />lösenfras för synkronisering<ph name="END_LINK" /> den <ph name="TIME" />. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="674375294223700098">Fel - okänt servercertifikat.</translation>
 <translation id="6744009308914054259">Du kan öppna Nedladdningar och läsa artiklar offline medan du väntar på anslutningen.</translation>
@@ -1279,6 +1293,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om problemet.</translation>
 <translation id="7219179957768738017">För anslutningen används <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Bearbetning pågår</translation>
+<translation id="7239736667463137521">Chrome har upptäckt att din anslutning övervakas.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Det förekommer skadlig programvara på följande sida</translation>
 <translation id="724975217298816891">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /> om du vill uppdatera kortinformationen. När du bekräftar delas kortinformationen med den här webbplatsen.</translation>
@@ -1305,6 +1320,7 @@ Mer information.
 <translation id="7346048084945669753">Är anknuten:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Kommandorad</translation>
+<translation id="7353776484425559055">Certifikatet för anslutningen är inte betrott i Chromium eftersom det ibland används till kapning och övervakning av nätverk. Detta fel kan visas på grund av att du har installerat ett certifikat på enheten. När säkra anslutningar upprättas litar Chromium på certifikat som har installerats på användarens dator eller mobila enhet. På så sätt kan användare köra verktyg för att granska eller felsöka sina anslutningar under webbplatsutveckling, och intern trafik kan fångas upp och övervakas i företagsmiljöer. När detta missbrukas i syfte att fånga upp offentlig trafik på internet visas en varning i Chromium.</translation>
 <translation id="7372973238305370288">sökresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediereglage</translation>
@@ -1366,6 +1382,7 @@ Mer information.
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
 <translation id="7598391785903975535">Mindre än <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan för närvarande inte hantera förfrågan.</translation>
+<translation id="7599841999395223597">Certifikatet för anslutningen är inte betrott i Chrome eftersom det ibland används till kapning och övervakning av nätverk. Detta fel kan visas på grund av att du har installerat ett certifikat på enheten. När säkra anslutningar upprättas litar Chrome på certifikat som har installerats på användarens dator eller mobila enhet. På så sätt kan användare köra verktyg för att granska eller felsöka sina anslutningar under webbplatsutveckling, och intern trafik kan fångas upp och övervakas i företagsmiljöer. När detta missbrukas i syfte att fånga upp offentlig trafik på internet visas en varning i Chrome.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1586,7 +1603,6 @@ Mer information:
 <translation id="8759274551635299824">Kortets giltighetstid har löpt ut</translation>
 <translation id="8761567432415473239">Googles tjänst Säker webbsökning <ph name="BEGIN_LINK" />hittade skadliga program<ph name="END_LINK" /> på <ph name="SITE" /> nyligen.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
-<translation id="8768895707659403558"><ph name="SIGN_IN_LINK" /> om du vill använda dina kort på alla enheter.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8792621596287649091">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
@@ -1684,6 +1700,7 @@ Mer information:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Du kan förlora tillgången till Google-kontot. Du rekommenderas att ändra lösenordet nu. Du blir uppmanad att logga in.</translation>
 <translation id="939736085109172342">Ny mapp</translation>
+<translation id="940786960229275114">Du angav just ditt lösenord på en bedräglig webbplats. Chrome rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och <ph name="WEBSITE_3" /> och ändrar lösenord nu.</translation>
 <translation id="945855313015696284">Kontrollera informationen nedan och radera alla ogiltiga kort</translation>
 <translation id="950736567201356821">Tre hål högst upp</translation>
 <translation id="951104842009476243">Godkända bankkort och förbetalda kort</translation>

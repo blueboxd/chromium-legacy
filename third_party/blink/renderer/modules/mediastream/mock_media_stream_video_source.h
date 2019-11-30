@@ -22,6 +22,12 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
 
   MOCK_METHOD1(DoSetMutedState, void(bool muted_state));
 
+  MOCK_METHOD0(OnEncodedSinkEnabled, void());
+  MOCK_METHOD0(OnEncodedSinkDisabled, void());
+  MOCK_METHOD0(OnRequestRefreshFrame, void());
+  MOCK_METHOD1(OnCapturingLinkSecured, void(bool));
+  MOCK_CONST_METHOD0(SupportsEncodedOutput, bool());
+
   // Simulate that the underlying source start successfully.
   void StartMockedSource();
 
@@ -33,9 +39,14 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   bool SourceHasAttemptedToStart() { return attempted_to_start_; }
 
   // Delivers |frame| to all registered tracks on the IO thread. Its up to the
-  // call to make sure MockMediaStreamVideoSource is not destroyed before the
+  // caller to make sure MockMediaStreamVideoSource is not destroyed before the
   // frame has been delivered.
   void DeliverVideoFrame(scoped_refptr<media::VideoFrame> frame);
+
+  // Delivers |frame| to all registered encoded sinks on the IO thread. Its up
+  // to the caller to make sure MockMediaStreamVideoSource is not destroyed
+  // before the frame has been delivered.
+  void DeliverEncodedVideoFrame(scoped_refptr<EncodedVideoFrame> frame);
 
   const media::VideoCaptureFormat& start_format() const { return format_; }
   int max_requested_height() const { return max_requested_height_; }
@@ -66,8 +77,8 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   void DoChangeSource(const blink::MediaStreamDevice& new_device) override;
 
   // Implements blink::MediaStreamVideoSource.
-  void StartSourceImpl(
-      const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
+  void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
+                       EncodedVideoFrameCB encoded_frame_callback) override;
   void StopSourceImpl() override;
   base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
   void StopSourceForRestartImpl() override;
@@ -85,6 +96,7 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   bool can_restart_ = true;
   bool is_suspended_ = false;
   blink::VideoCaptureDeliverFrameCB frame_callback_;
+  EncodedVideoFrameCB encoded_frame_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamVideoSource);
 };

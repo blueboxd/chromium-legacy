@@ -34,25 +34,25 @@ using ::payments::mojom::PaymentMethodData;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
 
-void GetAllPaymentAppsCallback(const base::Closure& done_callback,
+void GetAllPaymentAppsCallback(base::OnceClosure done_callback,
                                PaymentAppProvider::PaymentApps* out_apps,
                                PaymentAppProvider::PaymentApps apps) {
   *out_apps = std::move(apps);
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
-void PaymentEventResultCallback(const base::Closure& done_callback,
+void PaymentEventResultCallback(base::OnceClosure done_callback,
                                 bool* out_payment_event_result,
                                 bool payment_event_result) {
   *out_payment_event_result = payment_event_result;
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
-void InvokePaymentAppCallback(const base::Closure& done_callback,
+void InvokePaymentAppCallback(base::OnceClosure done_callback,
                               PaymentHandlerResponsePtr* out_response,
                               PaymentHandlerResponsePtr response) {
   *out_response = std::move(response);
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
 }  // namespace

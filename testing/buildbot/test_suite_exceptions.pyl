@@ -236,6 +236,11 @@
           'shards': 31,
         },
       },
+      'linux-trusty-rel': {
+       'args': [
+	  '--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter',
+	  ]
+      },
       # chromium.win
       'Win7 Tests (1)': {
         # This is for slow test execution that often becomes a critical path of

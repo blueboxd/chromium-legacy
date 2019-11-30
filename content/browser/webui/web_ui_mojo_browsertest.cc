@@ -62,7 +62,7 @@ base::FilePath GetFilePathForJSResource(const std::string& path) {
 // The bindings for the page are generated from a .mojom file. This code looks
 // up the generated file from disk and returns it.
 void GetResource(const std::string& id,
-                 const WebUIDataSource::GotDataCallback& callback) {
+                 WebUIDataSource::GotDataCallback callback) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   std::string contents;
@@ -78,7 +78,7 @@ void GetResource(const std::string& id,
 
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
-  callback.Run(ref_contents);
+  std::move(callback).Run(ref_contents);
 }
 
 class BrowserTargetImpl : public mojom::BrowserTarget {
@@ -124,11 +124,10 @@ class TestWebUIController : public WebUIController {
       WebUIDataSource* data_source = WebUIDataSource::Create("dummy-web-ui");
       data_source->SetRequestFilter(
           base::BindRepeating([](const std::string& path) { return true; }),
-          base::BindRepeating(
-              [](const std::string& id,
-                 const WebUIDataSource::GotDataCallback& callback) {
-                callback.Run(new base::RefCountedString);
-              }));
+          base::BindRepeating([](const std::string& id,
+                                 WebUIDataSource::GotDataCallback callback) {
+            std::move(callback).Run(new base::RefCountedString);
+          }));
       WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                            data_source);
     }

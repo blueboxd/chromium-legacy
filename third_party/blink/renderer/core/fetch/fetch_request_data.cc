@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -67,15 +68,11 @@ bool IsExcludedHeaderForServiceWorkerFetchEvent(const String& header_name) {
 
 }  // namespace
 
-FetchRequestData* FetchRequestData::Create() {
-  return MakeGarbageCollected<FetchRequestData>();
-}
-
 FetchRequestData* FetchRequestData::Create(
     ScriptState* script_state,
     const mojom::blink::FetchAPIRequest& fetch_api_request,
     ForServiceWorkerFetchEvent for_service_worker_fetch_event) {
-  FetchRequestData* request = FetchRequestData::Create();
+  FetchRequestData* request = MakeGarbageCollected<FetchRequestData>();
   request->url_ = fetch_api_request.url;
   request->method_ = AtomicString(fetch_api_request.method);
   for (const auto& pair : fetch_api_request.headers) {
@@ -128,7 +125,7 @@ FetchRequestData* FetchRequestData::Create(
 }
 
 FetchRequestData* FetchRequestData::CloneExceptBody() {
-  FetchRequestData* request = FetchRequestData::Create();
+  auto* request = MakeGarbageCollected<FetchRequestData>();
   request->url_ = url_;
   request->method_ = method_;
   request->header_list_ = header_list_->Clone();

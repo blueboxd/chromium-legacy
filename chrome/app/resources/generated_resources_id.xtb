@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Buka link di <ph name="APP" /></translation>
 <translation id="1140351953533677694">Mengakses perangkat Seri dan Bluetooth Anda</translation>
 <translation id="114036956334641753">Audio dan teks</translation>
-<translation id="1140610710803014750">Agar bookmark tersedia di semua perangkat Anda, login dan aktifkan sinkronisasi.</translation>
 <translation id="1140746652461896221">Blokir konten di halaman apa pun yang Anda kunjungi</translation>
 <translation id="1143142264369994168">Penandatangan Sertifikat</translation>
 <translation id="1145292499998999162">Plugin diblokir</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">S&amp;alin Alamat Audio</translation>
 <translation id="1465827627707997754">Irisan pizza</translation>
 <translation id="1468571364034902819">Tidak dapat menggunakan profil ini</translation>
-<translation id="1470811252759861213">Untuk mendapatkan ekstensi di semua komputer, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Tampilkan lainnya</translation>
 <translation id="1475502736924165259">Anda memiliki sertifikat pada file yang tidak sesuai dengan kategori lain mana pun</translation>
 <translation id="1476088332184200792">Salin ke Perangkat Anda</translation>
@@ -1045,7 +1043,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2489829450872380594">Saat digunakan lagi, ponsel baru akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda dapat menonaktifkan Smart Lock di Setelan.</translation>
 <translation id="2489918096470125693">Tambahkan &amp;Map...</translation>
 <translation id="2490481887078769936">Menghapus '<ph name="FILE_NAME" />' dari daftar</translation>
-<translation id="2490782392574942205">Untuk dapat mengakses ekstensi Anda di semua komputer, login dan aktifkan sinkronisasi</translation>
 <translation id="249113932447298600">Maaf, saat ini perangkat <ph name="DEVICE_LABEL" /> tidak didukung.</translation>
 <translation id="249303669840926644">Tidak dapat menyelesaikan pendaftaran</translation>
 <translation id="2495777824269688114">Temukan lebih banyak fitur atau dapatkan jawaban. Pilih "?" untuk mendapatkan bantuan.</translation>
@@ -1753,7 +1750,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528033729920178817">Halaman ini melacak lokasi Anda.</translation>
 <translation id="3528498924003805721">Target pintasan</translation>
-<translation id="3530305684079447434">Untuk dapat mengakses bookmark Anda di semua perangkat, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ingin menggunakan mikrofon Anda</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio dinonaktifkan</translation>
 <translation id="3538066758857505094">Error saat meng-uninstal Linux. Coba lagi.</translation>

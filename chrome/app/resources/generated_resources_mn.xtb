@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Холбоосыг <ph name="APP" />-д нээх</translation>
 <translation id="1140351953533677694">Bluetooth болон Цуваа төхөөрөмжүүд рүүгээ нэвтэр</translation>
 <translation id="114036956334641753">Аудио болон хадмал</translation>
-<translation id="1140610710803014750">Хавчуургаа бүх төхөөрөмждөө авахын тулд нэвтрээд синкийг асаана уу.</translation>
 <translation id="1140746652461896221">Зочлох бүх хуудасныхаа агуулгыг блоклох</translation>
 <translation id="1143142264369994168">Сертификат баталгаажуулагч</translation>
 <translation id="1145292499998999162">Нэмэлт өргөтгөлийг хориглосон байна</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">Аудио хаягийг хуулах</translation>
 <translation id="1465827627707997754">Зүсэм пицца</translation>
 <translation id="1468571364034902819">Энэ профайлыг ашиглах боломжгүй</translation>
-<translation id="1470811252759861213">Та бүх компьютертээ өргөтгөл авахын тулд <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Дэлгэрэнгүй харуулах</translation>
 <translation id="1475502736924165259">Танд бусад төрлийн алинд ч хамаарахгүй сертификат файл байна</translation>
 <translation id="1476088332184200792">Төхөөрөмж рүүгээ хуулах</translation>
@@ -1040,7 +1038,6 @@
 <translation id="2489829450872380594">Дараагийн удаа шинэ утас энэ <ph name="DEVICE_TYPE" />-н түгжээг тайлна. Та Smart Lock-г Тохиргоонд унтрааж болно.</translation>
 <translation id="2489918096470125693">Хавтас нэмэх...</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />'-г жагсаалтаас устгалаа</translation>
-<translation id="2490782392574942205">Өргөтгөлөө бүх компьютер дээрээ авахын тулд нэвтрээд синкийг асаана уу</translation>
 <translation id="249113932447298600">Уучлаарай, яг одоо энэ цагт <ph name="DEVICE_LABEL" /> төхөөрөмжийг дэмжиж ажиллаж чадахгүй байна.</translation>
 <translation id="249303669840926644">Бүртгэлийг дуусгах боломжгүй байна.</translation>
 <translation id="2495777824269688114">Бусад онцлогийг хайх эсвэл хариулт авна уу. "?"-г сонгож тусламж авна уу.</translation>
@@ -1750,7 +1747,6 @@
 <translation id="3527085408025491307">Хавтас</translation>
 <translation id="3528033729920178817">Энэ хуудас нь таны байгаа байрлалыг хянаж байна.</translation>
 <translation id="3528498924003805721">Shortcut targets</translation>
-<translation id="3530305684079447434">Бүх төхөөрөмжөөс хавчуурга авахын тулд, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> таны микрофоныг ашиглах хүсэлтэй байна</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Аудионы дууг хаасан</translation>
 <translation id="3538066758857505094">Linux-г устгахад алдаа гарлаа. Дахин оролдоно уу.</translation>

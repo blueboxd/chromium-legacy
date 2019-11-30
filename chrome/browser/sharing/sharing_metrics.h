@@ -5,26 +5,13 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 #define CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 
-#include <string>
-
-#include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 enum class SharingDeviceRegistrationResult;
-
-// Phone number regex to use to detect numbers from text selections.
-enum class PhoneNumberRegexVariant {
-  kSimple = 0,
-};
 
 // Result of VAPID key creation during Sharing registration.
 // These values are logged to UMA. Entries should not be renumbered and numeric
@@ -54,45 +41,6 @@ enum class SharingDialogType {
 // defined in histograms.xml.
 const char kSharingUiContextMenu[] = "ContextMenu";
 const char kSharingUiDialog[] = "Dialog";
-// Entry point of a Click to Call journey.
-// These values are logged to UKM. Entries should not be renumbered and numeric
-// values should never be reused. Please keep in sync with
-// "SharingClickToCallEntryPoint" in src/tools/metrics/histograms/enums.xml.
-enum class SharingClickToCallEntryPoint {
-  kLeftClickLink = 0,
-  kRightClickLink = 1,
-  kRightClickSelection = 2,
-  kMaxValue = kRightClickSelection,
-};
-
-// Selection at the end of a Click to Call journey.
-// These values are logged to UKM. Entries should not be renumbered and numeric
-// values should never be reused. Please keep in sync with
-// "SharingClickToCallSelection" in src/tools/metrics/histograms/enums.xml.
-enum class SharingClickToCallSelection {
-  kNone = 0,
-  kDevice = 1,
-  kApp = 2,
-  kMaxValue = kApp,
-};
-
-// TODO(himanshujaju): Make it generic and move to base/metrics/histogram_base.h
-// Used to Log delay in parsing phone number in highlighted text to UMA.
-struct ScopedUmaHistogramMicrosecondsTimer {
-  explicit ScopedUmaHistogramMicrosecondsTimer(PhoneNumberRegexVariant variant);
-  ~ScopedUmaHistogramMicrosecondsTimer();
-
- private:
-  const PhoneNumberRegexVariant variant_;
-  const base::ElapsedTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUmaHistogramMicrosecondsTimer);
-};
-
-// These histogram suffixes must match the ones in SharingClickToCallUi defined
-// in histograms.xml.
-const char kSharingClickToCallUiContextMenu[] = "ContextMenu";
-const char kSharingClickToCallUiDialog[] = "Dialog";
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
@@ -160,10 +108,6 @@ void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
 // Logs to UMA the |type| of dialog shown for sharing feature.
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 
-// Logs the dialog type when a user clicks on the help text in the Click to Call
-// dialog.
-void LogClickToCallHelpTextClicked(SharingDialogType type);
-
 // Logs to UMA result of sending a SharingMessage. This should not be called for
 // sending ack messages.
 void LogSendSharingMessageResult(
@@ -175,21 +119,8 @@ void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
     SharingSendMessageResult result);
 
-// Records a Click to Call selection to UKM. This is logged after a completed
-// action like selecting an app or a device to send the phone number to.
-void LogClickToCallUKM(content::WebContents* web_contents,
-                       SharingClickToCallEntryPoint entry_point,
-                       bool has_devices,
-                       bool has_apps,
-                       SharingClickToCallSelection selection);
-
 // Logs to UMA the size of the selected text for Shared Clipboard.
 void LogSharedClipboardSelectedTextSize(size_t text_size);
-
-// Logs the raw phone number length and the number of digits in it.
-void LogClickToCallPhoneNumberSize(const std::string& number,
-                                   SharingClickToCallEntryPoint entry_point,
-                                   bool send_to_device);
 
 // Logs to UMA the result of handling a Remote Copy message.
 void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result);

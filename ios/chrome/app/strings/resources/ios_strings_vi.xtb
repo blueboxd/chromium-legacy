@@ -268,7 +268,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4689564913179979534">Quản lý phương thức thanh toán...</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4747097190499141774">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay. Chỉ người có cụm mật khẩu của bạn mới đọc dữ liệu mã hóa. Cụm mật khẩu này sẽ không được gửi đến hay lưu trữ tại Google. Nếu quên cụm mật khẩu hoặc muốn thay đổi tùy chọn cài đặt này, thì bạn cần phải đặt lại tính năng đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Tìm trong trang...</translation>
 <translation id="4751645464639803239">Tab ẩn danh mới</translation>
 <translation id="4758977202923349869">Đặt Thẻ tín dụng vào khung này</translation>
 <translation id="4802417911091824046">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.
@@ -455,7 +454,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7136892417564438900">Máy ảnh không khả dụng</translation>
 <translation id="7159472599653637159">Yêu cầu trang web cho di động</translation>
 <translation id="7173114856073700355">Mở phần Cài đặt</translation>
-<translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7192050974311852563">Bắt đầu ghi nhật ký</translation>
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
 <translation id="7265758999917665941">Không bao giờ đối với trang web này</translation>
@@ -559,6 +557,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8840513115188359703">Bạn sẽ không được đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
 <translation id="8881801611828450202">Tìm hình ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="895541991026785598">Báo cáo sự cố</translation>
 <translation id="8976382372951310360">Trợ giúp</translation>
 <translation id="8981454092730389528">Kiểm soát hoạt động trên Google</translation>

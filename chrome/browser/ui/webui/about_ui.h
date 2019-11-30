@@ -27,16 +27,15 @@ class AboutUIHTMLSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool ShouldAddContentSecurityPolicy() override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;
 
   // Send the response data.
-  void FinishDataRequest(
-      const std::string& html,
-      const content::URLDataSource::GotDataCallback& callback);
+  void FinishDataRequest(const std::string& html,
+                         content::URLDataSource::GotDataCallback callback);
 
   Profile* profile() { return profile_; }
 

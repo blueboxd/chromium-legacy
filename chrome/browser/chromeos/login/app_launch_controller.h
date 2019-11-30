@@ -66,7 +66,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
 
   // Customize controller for testing purposes.
   static void SkipSplashWaitForTesting();
-  static void SetNetworkTimeoutCallbackForTesting(base::Closure* callback);
+  static void SetNetworkTimeoutCallbackForTesting(base::OnceClosure* callback);
   static void SetNetworkWaitForTesting(int wait_time_secs);
   static void SetCanConfigureNetworkCallbackForTesting(
       ReturnBoolCallback* callback);

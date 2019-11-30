@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 
 namespace blink {
 
@@ -28,10 +29,10 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
   MediaStreamVideoSink();
   ~MediaStreamVideoSink() override;
 
-  // A subclass should call ConnectToTrack when it is ready to receive data from
-  // a video track. Before destruction, DisconnectFromTrack must be called.
-  // This base class holds a reference to the WebMediaStreamTrack until
-  // DisconnectFromTrack is called.
+  // A subclass should call ConnectToTrack and/or ConnectEncodedToTrack when it
+  // is ready to receive data from a video track. Before destruction,
+  // DisconnectFromTrack must be called. This base class holds a reference to
+  // the WebMediaStreamTrack until DisconnectFromTrack is called.
   //
   // Calls to these methods must be done on the main render thread.
   // Note that |callback| for frame delivery happens on the IO thread.
@@ -43,10 +44,14 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
   // |is_sink_secure| indicates if this MediaStreamVideoSink is secure (i.e.
   // meets output protection requirement). Generally, this should be false
   // unless you know what you are doing.
+  // Encoded sinks are never secure.
   void ConnectToTrack(const WebMediaStreamTrack& track,
                       const VideoCaptureDeliverFrameCB& callback,
                       bool is_sink_secure);
+  void ConnectEncodedToTrack(const WebMediaStreamTrack& track,
+                             const EncodedVideoFrameCB& callback);
   void DisconnectFromTrack();
+  void DisconnectEncodedFromTrack();
 
   // Returns the currently-connected track, or a null instance otherwise.
   const WebMediaStreamTrack& connected_track() const {
@@ -56,6 +61,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
  private:
   // Set by ConnectToTrack() and cleared by DisconnectFromTrack().
   WebMediaStreamTrack connected_track_;
+  WebMediaStreamTrack connected_encoded_track_;
 };
 
 }  // namespace blink

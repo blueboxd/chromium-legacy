@@ -394,11 +394,6 @@
           Nếu bạn tắt hoặc không đặt chính sách này, thì các tùy chọn cài đặt của Tài khoản Kerberos sẽ tắt. Người dùng không thể thêm các tài khoản Kerberos và sử dụng tính năng xác thực Kerberos. Tất cả các tài khoản Kerberos hiện có và mọi mật khẩu đã lưu trữ sẽ bị xóa.</translation>
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
-<translation id="1566329065312331399">
-      Khi bạn đặt chính sách này thành False, thì chính sách này sẽ không cho phép thiết bị kích hoạt chức năng Powerwash.
-      Khi bạn đặt chính sách này thành True, thì chính sách này sẽ cho phép thiết bị kích hoạt chức năng Powerwash.
-      Chính sách này sẽ mặc định là False nếu bạn không đặt. Điều đó có nghĩa là chính sách này không cho phép thiết bị kích hoạt chức năng Powerwash.
-      </translation>
 <translation id="1574554504290354326">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled thay vào đó. Việc bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
 
       Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi một số thông tin hệ thống và nội dung trang đến máy chủ Google. Nếu cài đặt này là true hoặc chưa được định cấu hình, thì người dùng sẽ được phép gửi một số thông tin hệ thống và nội dung trang đến dịch vụ Duyệt web an toàn nhằm giúp phát hiện các trang web cũng như ứng dụng nguy hiểm.
@@ -4354,11 +4349,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7937491150792971922">Các chính sách hợp nhất danh sách cài đặt tiện ích từ nhiều nguồn</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
-<translation id="7944213656414105292">Chính sách này định cấu hình URL sẽ được cấp quyền truy cập để sử dụng tính năng chứng thực danh tính thiết bị từ xa trong quy trình SAML trên màn hình đăng nhập.
-
-      Cụ thể là nếu một URL khớp với một trong các mẫu được cung cấp thông qua chính sách này, thì URL đó sẽ được phép nhận tiêu đề HTTP chứa phản hồi của yêu cầu chứng thực từ xa, chứng thực danh tính thiết bị và trạng thái thiết bị.
-
-      Nếu bạn không đặt chính sách này hoặc đặt thành danh sách trống, thì sẽ không có URL nào được phép sử dụng tính năng chứng thực từ xa trên màn hình đăng nhập.</translation>
 <translation id="7952007677054834789">Định cấu hình các trang sẽ tải khi khởi động, trang chủ mặc định và trang tab mới mặc định trong <ph name="PRODUCT_NAME" />, đồng thời không cho phép người dùng thay đổi các tùy chọn đó.
 
       Các tùy chọn cài đặt trang chủ của người dùng chỉ bị khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới, hoặc đặt trang chủ là một URL và chỉ định một URL trang chủ. Nếu bạn không chỉ định URL trang chủ, thì người dùng vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.

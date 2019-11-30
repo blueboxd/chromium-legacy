@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
@@ -63,6 +64,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::VirtualKeyboardAPI::GetFactoryInstance();
   extensions::WebcamPrivateAPI::GetFactoryInstance();
   file_manager::EventRouterFactory::GetInstance();
+  KerberosCredentialsManagerFactory::GetInstance();
   OwnerSettingsServiceChromeOSFactory::GetInstance();
   plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();

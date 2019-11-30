@@ -145,7 +145,6 @@ source_set("unit_tests") {
     ":util",
     "//base",
     "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",

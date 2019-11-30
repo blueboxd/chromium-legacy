@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">مدیریت روش‌های پرداخت…</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4747097190499141774">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود. فقط افرادی که عبارت عبورتان را داشته باشند می‌توانند داده‌های رمزگذاری‌شده‌تان را بخوانند. عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید یا بخواهید این تنظیم را تغییر دهید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">یافتن در صفحه…</translation>
 <translation id="4751645464639803239">برگه ناشناس جدید</translation>
 <translation id="4758977202923349869">کارت اعتباری را در این قاب قرار دهید</translation>
 <translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
@@ -455,7 +454,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7136892417564438900">دوربین غیرقابل‌ دسترسی است</translation>
 <translation id="7159472599653637159">درخواست سایت ویژه دستگاه همراه</translation>
 <translation id="7173114856073700355">باز کردن تنظیمات</translation>
-<translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7192050974311852563">شروع گزارش‌گیری</translation>
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="7265758999917665941">هرگز برای این سایت</translation>
@@ -559,6 +557,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8840513115188359703">‏از حساب Google خود خارج نمی‌شوید.</translation>
 <translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8881801611828450202">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
+<translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="895541991026785598">گزارش یک مسئله</translation>
 <translation id="8976382372951310360">راهنما</translation>
 <translation id="8981454092730389528">‏کنترل‌های فعالیت Google</translation>

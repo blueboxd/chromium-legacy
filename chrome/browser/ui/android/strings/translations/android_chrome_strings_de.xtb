@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Symbole</translation>
 <translation id="1111673857033749125">Hier werden die Lesezeichen angezeigt, die auf Ihren anderen Geräten gespeichert sind.</translation>
 <translation id="1113597929977215864">Vereinfachte Ansicht anzeigen</translation>
+<translation id="1122278879166832009">Tippen Sie hier, um von überall aus schnell auf Ihre Startseite zuzugreifen</translation>
 <translation id="1124772482545689468">Nutzer</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 Download ausstehend.}other{# Downloads ausstehend.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
+<translation id="388596076286380598">Erhalten Sie Artikel, Videos und weitere Inhalte von Websites, die Ihnen gefallen – auch offline oder bei schlechter Internetverbindung.</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
 <translation id="3912508018559818924">Das Beste aus dem Web wird gesucht…</translation>
@@ -490,6 +492,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4719927025381752090">Übersetzung anbieten</translation>
 <translation id="4720023427747327413">In <ph name="PRODUCT_NAME" /> öffnen</translation>
 <translation id="4720982865791209136">Helfen Sie uns, Chrome zu verbessern. <ph name="BEGIN_LINK" />An Umfrage teilnehmen<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4738836084190194332">Letzte Synchronisierung: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
@@ -636,6 +639,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5689516760719285838">Ort</translation>
+<translation id="5694049548840660018">Ganz einfach zur Startseite zurückkehren</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
 <translation id="5710871682236653961">Fragen, bevor Websites erlaubt wird, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird (empfohlen)</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
@@ -798,6 +802,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> Tabs geschlossen</translation>
 <translation id="6864459304226931083">Bild herunterladen</translation>
 <translation id="6865313869410766144">AutoFill-Formulardaten</translation>
+<translation id="6884306546558072722">Offline mehr entdecken</translation>
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891726759199484455">Entsperren, um Ihr Passwort zu kopieren</translation>
 <translation id="6896758677409633944">Kopieren</translation>
@@ -1039,6 +1044,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="8641930654639604085">Versuchen, nicht jugendfreie Websites zu blockieren</translation>
 <translation id="8655129584991699539">Sie können die Daten in den Chrome-Einstellungen löschen</translation>
+<translation id="8655599981421006542">Tippen Sie hier, um neue Tabs zu erstellen oder zu vorherigen Tabs zurückzukehren</translation>
 <translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
 <translation id="8664979001105139458">Dateiname schon vorhanden</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
@@ -1051,6 +1057,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8748850008226585750">Inhalte ausgeblendet</translation>
 <translation id="8751914237388039244">Bild auswählen</translation>
+<translation id="8758557275681689734">Alle geöffneten Tabs ansehen</translation>
 <translation id="8788265440806329501">Der Navigationsverlauf wurde geschlossen</translation>
 <translation id="8788968922598763114">Zuletzt geschlossenen Tab öffnen</translation>
 <translation id="8801436777607969138">Hier können Sie Websites angeben, für die JavaScript blockiert werden soll.</translation>

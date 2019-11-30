@@ -209,7 +209,7 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
   }
 
   skcms_PixelFormat dst_pixel_format = skcms_PixelFormat_RGBA_8888;
-  if (dst_canvas_pixel_format == kF16CanvasPixelFormat) {
+  if (dst_canvas_pixel_format == CanvasPixelFormat::kF16) {
     dst_pixel_format = (pixel_format_for_f16_canvas == kPixelFormat_hhhh)
                            ? skcms_PixelFormat_RGBA_hhhh
                            : skcms_PixelFormat_RGBA_ffff;
@@ -219,8 +219,8 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
   src_sk_color_space =
       CanvasColorParams(src_color_space,
                         (src_storage_format == kUint8ClampedArrayStorageFormat)
-                            ? kRGBA8CanvasPixelFormat
-                            : kF16CanvasPixelFormat,
+                            ? CanvasPixelFormat::kRGBA8
+                            : CanvasPixelFormat::kF16,
                         kNonOpaque, CanvasForceRGBA::kNotForced)
           .GetSkColorSpaceForSkSurfaces();
   if (!src_sk_color_space.get())

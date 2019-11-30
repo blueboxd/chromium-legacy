@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1201402288615127009">Següent</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, aplicació de Play Store</translation>
 <translation id="1243314992276662751">Penja</translation>
 <translation id="1266864766717917324">No s'ha pogut compartir <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Maximitza</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, aplicació instal·lada</translation>
 <translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# mesos}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hora i }other{# hores i }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> s'ha deixat de fixar</translation>
 <translation id="1842960171412779397">selecciona</translation>
 <translation id="1859234291848436338">Direcció de l'escriptura</translation>
 <translation id="1860796786778352021">Tanca la notificació</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2701330563083355633">S'ha compartit des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copia al porta-retalls</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Obre la carpeta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Fa 1 any}other{Fa # anys}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{d'aquí a 1 d}other{d'aquí a # d}}</translation>
 <translation id="2931838996092594335">fer clic</translation>
+<translation id="2981684127883932071">S'estan mostrant suggeriments</translation>
 <translation id="3036649622769666520">Obre fitxers</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">El prestatge és a l'esquerra</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">El text és massa llarg</translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="348799646910989694">El prestatge s'amaga automàticament</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> s'ha fixat</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dia restant}other{# dies restants}}</translation>
 <translation id="3600969208114796418">Fitxer <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">Més de <ph name="MAXIMUM_VALUE" /></translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Fa 1 mes}other{Fa # mesos}}</translation>
 <translation id="4289300219472526559">Comença a parlar</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> s'ha mogut a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />; puntuació en estrelles: <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, recomanació d'aplicació</translation>
 <translation id="4690510401873698237">El prestatge és a la part inferior</translation>
 <translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
 <translation id="4730374152663651037">UTILITZADES FREQÜENTMENT</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Fitxer multimèdia: pista anterior</translation>
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">Engan&amp;xa</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> i <ph name="IN_PLACE_APP" /> s'han combinat per crear una carpeta nova.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triangle desplegable</translation>
 <translation id="5278860589123563674">No s'ha pogut enviar</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">Sistema <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Retrocés</translation>
 <translation id="5613020302032141669">Fletxa esquerra</translation>
+<translation id="5675363643668471212">Objecte de prestatge</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Actiu avui}=1{Actiu fa 1 dia}other{Actiu fa # dies}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dia i }other{# dies i }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8210608804940886430">Av Pàg</translation>
 <translation id="8245914219290430011">Tabulador</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, aplicació</translation>
 <translation id="8259556432390118667">Valor del color hexadecimal</translation>
 <translation id="8328145009876646418">Extrem esquerre</translation>
 <translation id="8331626408530291785">Desplaçament amunt</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Pestanya</translation>
 <translation id="9161053988251441839">APLICACIONS SUGGERIDES</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
+<translation id="9178475906033259337">S'està mostrant 1 resultat per a "<ph name="QUERY" />"</translation>
 <translation id="932327136139879170">Inici</translation>
 <translation id="944069440740578670">Notificacions no llegides</translation>
+<translation id="974545358917229949">S'estan mostrant <ph name="RESULT_COUNT" /> resultats per a "<ph name="QUERY" />"</translation>
 </translationbundle>

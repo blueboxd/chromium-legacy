@@ -556,7 +556,7 @@ std::unique_ptr<RenderText> RenderText::CreateRenderText() {
 
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
     const base::string16& text) const {
-  std::unique_ptr<RenderText> render_text = CreateInstanceOfSameType();
+  std::unique_ptr<RenderText> render_text = CreateRenderText();
   // |SetText()| must be called before styles are set.
   render_text->SetText(text);
   render_text->SetFontList(font_list_);
@@ -652,12 +652,11 @@ void RenderText::SetObscured(bool obscured) {
 }
 
 void RenderText::SetObscuredRevealIndex(int index) {
-  if (obscured_reveal_index_ == index)
-    return;
-
-  obscured_reveal_index_ = index;
-  cached_bounds_and_offset_valid_ = false;
-  OnTextAttributeChanged();
+  if (obscured_reveal_index_ != index) {
+    obscured_reveal_index_ = index;
+    cached_bounds_and_offset_valid_ = false;
+    OnTextAttributeChanged();
+  }
 }
 
 void RenderText::SetMultiline(bool multiline) {
@@ -680,23 +679,23 @@ size_t RenderText::GetNumLines() {
 }
 
 void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
-  if (word_wrap_behavior_ == behavior)
-    return;
-  word_wrap_behavior_ = behavior;
-  if (multiline_) {
-    cached_bounds_and_offset_valid_ = false;
-    lines_.clear();
-    OnTextAttributeChanged();
+  if (word_wrap_behavior_ != behavior) {
+    word_wrap_behavior_ = behavior;
+    if (multiline_) {
+      cached_bounds_and_offset_valid_ = false;
+      lines_.clear();
+      OnTextAttributeChanged();
+    }
   }
 }
 
 void RenderText::SetMinLineHeight(int line_height) {
-  if (min_line_height_ == line_height)
-    return;
-  min_line_height_ = line_height;
-  cached_bounds_and_offset_valid_ = false;
-  lines_.clear();
-  OnDisplayTextAttributeChanged();
+  if (min_line_height_ != line_height) {
+    min_line_height_ = line_height;
+    cached_bounds_and_offset_valid_ = false;
+    lines_.clear();
+    OnDisplayTextAttributeChanged();
+  }
 }
 
 void RenderText::SetElideBehavior(ElideBehavior elide_behavior) {
@@ -967,13 +966,12 @@ bool RenderText::GetStyle(TextStyle style) const {
 }
 
 void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
-  if (mode == directionality_mode_)
-    return;
-
-  directionality_mode_ = mode;
-  text_direction_ = base::i18n::UNKNOWN_DIRECTION;
-  cached_bounds_and_offset_valid_ = false;
-  OnLayoutTextAttributeChanged(false);
+  if (mode != directionality_mode_) {
+    directionality_mode_ = mode;
+    text_direction_ = base::i18n::UNKNOWN_DIRECTION;
+    cached_bounds_and_offset_valid_ = false;
+    OnLayoutTextAttributeChanged(false);
+  }
 }
 
 base::i18n::TextDirection RenderText::GetDisplayTextDirection() {
@@ -1041,7 +1039,7 @@ void RenderText::Draw(Canvas* canvas, bool select_all) {
 }
 
 bool RenderText::IsValidLogicalIndex(size_t index) const {
-  // Check that the index is at a valid code point (not mid-surrgate-pair) and
+  // Check that the index is at a valid code point (not mid-surrogate-pair) and
   // that it's not truncated from the display text (its glyph may be shown).
   //
   // Indices within truncated text are disallowed so users can easily interact
@@ -1886,7 +1884,7 @@ int RenderText::DetermineBaselineCenteringText(const int display_height,
 gfx::Rect RenderText::ExpandToBeVerticallySymmetric(
     const gfx::Rect& rect,
     const gfx::Rect& display_rect) {
-  // Mirror |rect| accross the horizontal line dividing |display_rect| in half.
+  // Mirror |rect| across the horizontal line dividing |display_rect| in half.
   gfx::Rect result = rect;
   int mid_y = display_rect.CenterPoint().y();
   // The top of the mirror rect must be equidistant with the bottom of the

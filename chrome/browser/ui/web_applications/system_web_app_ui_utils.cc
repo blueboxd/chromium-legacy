@@ -184,9 +184,10 @@ void SetManifestRequestFilter(content::WebUIDataSource* source,
           [](const std::string& path) { return path == "manifest.json"; }),
       base::BindRepeating(
           [](const std::string& response, const std::string& path,
-             const content::WebUIDataSource::GotDataCallback& callback) {
+             content::WebUIDataSource::GotDataCallback callback) {
             std::string response_copy = response;
-            callback.Run(base::RefCountedString::TakeString(&response_copy));
+            std::move(callback).Run(
+                base::RefCountedString::TakeString(&response_copy));
           },
           std::move(response)));
 }

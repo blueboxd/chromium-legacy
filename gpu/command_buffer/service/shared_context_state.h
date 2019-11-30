@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/service/gl_context_virtual_delegate.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -60,7 +61,8 @@ class GPU_GLES2_EXPORT SharedContextState
       GrContextType gr_context_type = GrContextType::kGL,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr,
-      viz::DawnContextProvider* dawn_context_provider = nullptr);
+      viz::DawnContextProvider* dawn_context_provider = nullptr,
+      gpu::MemoryTracker::Observer* peak_memory_monitor = nullptr);
 
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
@@ -89,6 +91,8 @@ class GPU_GLES2_EXPORT SharedContextState
 
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  uint64_t GetMemoryUsage() const { return memory_tracker_.GetMemoryUsage(); }
 
   void PessimisticallyResetGrContext() const;
 
@@ -130,6 +134,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool support_vulkan_external_object() const {
     return support_vulkan_external_object_;
   }
+  gpu::MemoryTracker::Observer* memory_tracker() { return &memory_tracker_; }
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -148,6 +153,28 @@ class GPU_GLES2_EXPORT SharedContextState
 
  private:
   friend class base::RefCounted<SharedContextState>;
+
+  // Observer which is notified when SkiaOutputSurfaceImpl takes ownership of a
+  // shared image, and forward information to both histograms and task manager.
+  class GPU_GLES2_EXPORT MemoryTracker : public gpu::MemoryTracker::Observer {
+   public:
+    MemoryTracker(gpu::MemoryTracker::Observer* peak_memory_monitor);
+    MemoryTracker(MemoryTracker&) = delete;
+    MemoryTracker& operator=(MemoryTracker&) = delete;
+    ~MemoryTracker() override;
+
+    // gpu::MemoryTracker::Observer implementation:
+    void OnMemoryAllocatedChange(CommandBufferId id,
+                                 uint64_t old_size,
+                                 uint64_t new_size) override;
+
+    // Reports to GpuServiceImpl::GetVideoMemoryUsageStats()
+    uint64_t GetMemoryUsage() const;
+
+   private:
+    uint64_t size_ = 0;
+    gpu::MemoryTracker::Observer* const peak_memory_monitor_;
+  };
 
   ~SharedContextState() override;
 
@@ -175,6 +202,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool support_vulkan_external_object_ = false;
   base::OnceClosure context_lost_callback_;
   GrContextType gr_context_type_ = GrContextType::kGL;
+  MemoryTracker memory_tracker_;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
   viz::DawnContextProvider* const dawn_context_provider_;

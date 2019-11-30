@@ -3529,7 +3529,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Phone numbers
       </message>
       <message name="IDS_TOP_VIEW_ICON_FILTER_LABEL" desc="The label shown for the icon filter toggle button (allowing the user to exclude icons).">
-        Icons
+        Profile photos
       </message>
       <message name="IDS_CONTACTS_PICKER_MORE_DETAILS" desc="Label describing that the user has one or more telephone/emails (used for either).">
         {DETAIL_COUNT, plural,

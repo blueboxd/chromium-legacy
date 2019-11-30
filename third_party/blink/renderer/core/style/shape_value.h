@@ -47,19 +47,6 @@ class ShapeValue final : public GarbageCollected<ShapeValue> {
     kImage
   };
 
-  static ShapeValue* CreateShapeValue(scoped_refptr<BasicShape> shape,
-                                      CSSBoxType css_box) {
-    return MakeGarbageCollected<ShapeValue>(std::move(shape), css_box);
-  }
-
-  static ShapeValue* CreateBoxShapeValue(CSSBoxType css_box) {
-    return MakeGarbageCollected<ShapeValue>(css_box);
-  }
-
-  static ShapeValue* CreateImageValue(StyleImage* image) {
-    return MakeGarbageCollected<ShapeValue>(image);
-  }
-
   ShapeValue(scoped_refptr<BasicShape> shape, CSSBoxType css_box)
       : type_(kShape), shape_(std::move(shape)), css_box_(css_box) {}
   ShapeValue(ShapeValueType type)

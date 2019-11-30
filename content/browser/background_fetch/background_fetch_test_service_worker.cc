@@ -36,7 +36,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchAbortEvent(
   }
 
   if (abort_event_closure_)
-    abort_event_closure_.Run();
+    std::move(abort_event_closure_).Run();
 }
 
 void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchClickEvent(
@@ -52,7 +52,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchClickEvent(
   }
 
   if (click_event_closure_)
-    click_event_closure_.Run();
+    std::move(click_event_closure_).Run();
 }
 
 void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchFailEvent(
@@ -71,7 +71,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchFailEvent(
   }
 
   if (fetch_fail_event_closure_)
-    fetch_fail_event_closure_.Run();
+    std::move(fetch_fail_event_closure_).Run();
 }
 
 void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchSuccessEvent(
@@ -90,7 +90,7 @@ void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchSuccessEvent(
   }
 
   if (fetched_event_closure_)
-    fetched_event_closure_.Run();
+    std::move(fetched_event_closure_).Run();
 }
 
 }  // namespace content

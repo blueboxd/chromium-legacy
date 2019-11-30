@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Esitage lisateavet</translation>
 <translation id="1021110881106174305">Aktsepteeritud kaardid</translation>
 <translation id="1032854598605920125">Pööra päripäeva</translation>
-<translation id="1035334672863811645">logige Chromeʼi sisse</translation>
 <translation id="1036348656032585052">Lülita välja</translation>
 <translation id="1038842779957582377">tundmatu nimi</translation>
 <translation id="1039626062703039346">Chrome aitab teil oma Google'i kontot kaitsta ja parooli muuta. See saadab Google'ile selle saidi kohta märguande.</translation>
@@ -924,7 +923,6 @@
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="5371425731340848620">Värskendage kaarti</translation>
 <translation id="5377026284221673050">„Teie kell on ajast maas” või „Teie kell on ajast ees” või „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5384855140246857529">Kõigis seadmetes kaartide kasutamiseks logige sisse ja lülitage sünkroonimine sisse.</translation>
 <translation id="5386426401304769735">Selle saidi sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Õmblus paremas servas</translation>
@@ -1585,7 +1583,6 @@ Lisateave:
 <translation id="8759274551635299824">See kaart on aegunud</translation>
 <translation id="8761567432415473239">Google'i ohutu sirvimine <ph name="BEGIN_LINK" />tuvastas hiljuti kahjulikud programmid<ph name="END_LINK" /> saidil <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-seade</translation>
-<translation id="8768895707659403558">Kõigis seadmetes kaartide kasutamiseks <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
 <translation id="8792621596287649091">Võite kaotada juurdepääsu oma teenuse <ph name="ORG_NAME" /> kontole või teie identiteet võidakse varastada. Chromium soovitab teil kohe oma parooli muuta.</translation>

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/origin.h"
 
+using base::test::RunClosure;
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
@@ -65,10 +67,6 @@ ACTION_TEMPLATE(MoveArg,
   *out = std::move(*::testing::get<k>(args));
 }
 
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
-
 ACTION_P(QuitLoop, run_loop) {
   run_loop->Quit();
 }
@@ -83,8 +81,6 @@ MATCHER_P(IsAssociatedInterfacePtrInfoValid,
 MATCHER_P(MatchesIDBKey, key, "") {
   return arg.Equals(key);
 }
-
-typedef void (base::Closure::*ClosureRunFcn)() const &;
 
 static const char kDatabaseName[] = "db";
 static const char kOrigin[] = "https://www.example.com";
@@ -141,11 +137,11 @@ struct TestDatabaseConnection {
   DISALLOW_COPY_AND_ASSIGN(TestDatabaseConnection);
 };
 
-void StatusCallback(const base::Closure& callback,
+void StatusCallback(base::OnceClosure callback,
                     blink::mojom::IDBStatus* status_out,
                     blink::mojom::IDBStatus status) {
   *status_out = status;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 class TestIndexedDBObserver : public IndexedDBContextImpl::Observer {
@@ -1051,7 +1047,8 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+    base::RepeatingClosure quit_closure =
+        base::BarrierClosure(2, loop.QuitClosure());
 
     EXPECT_CALL(*connection1.connection_callbacks, Complete(kTransactionId1))
         .Times(1)
@@ -1107,7 +1104,8 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+    base::RepeatingClosure quit_closure =
+        base::BarrierClosure(2, loop.QuitClosure());
 
     EXPECT_CALL(*connection2.connection_callbacks, Complete(kTransactionId2))
         .Times(1)
@@ -1159,7 +1157,8 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   {
     ::testing::InSequence dummy;
     base::RunLoop loop;
-    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+    base::RepeatingClosure quit_closure =
+        base::BarrierClosure(2, loop.QuitClosure());
 
     EXPECT_CALL(*connection3.connection_callbacks, Complete(kTransactionId3))
         .Times(1)

@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Abrir vínculo en <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acceder a los dispositivos en serie y Bluetooth</translation>
 <translation id="114036956334641753">Audio y subtítulos</translation>
-<translation id="1140610710803014750">Para usar tus favoritos en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
 <translation id="1140746652461896221">Bloquear contenido en cualquier página que visites</translation>
 <translation id="1143142264369994168">Firmante del certificado</translation>
 <translation id="1145292499998999162">Complemento bloqueado</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">Copiar dirección del audio</translation>
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede usar este perfil</translation>
-<translation id="1470811252759861213">Para usar tus extensiones en todas tus computadoras, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1475502736924165259">Tienes certificados archivados que no coinciden con ninguna de las demás categorías</translation>
 <translation id="1476088332184200792">Copiar a tu dispositivo</translation>
@@ -1042,7 +1040,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2489829450872380594">La próxima vez, un nuevo teléfono desbloqueará este <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="2489918096470125693">Agregar &amp;carpeta...</translation>
 <translation id="2490481887078769936">Se quitó <ph name="FILE_NAME" /> de la lista</translation>
-<translation id="2490782392574942205">Para ver tus extensiones en todas las computadoras, accede a tu cuenta y activa la sincronización</translation>
 <translation id="249113932447298600">Lo sentimos, el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="249303669840926644">Error al completar el registro</translation>
 <translation id="2495777824269688114">Obtén respuestas o descubre más funciones. Selecciona "?" para obtener ayuda.</translation>
@@ -1752,7 +1749,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3528033729920178817">Esta página está rastreando tu ubicación.</translation>
 <translation id="3528498924003805721">Destinos de accesos directos</translation>
-<translation id="3530305684079447434">Para usar tus favoritos en todos los dispositivos, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> desea usar tu micrófono</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" />: Audio silenciado</translation>
 <translation id="3538066758857505094">Se produjo un error al desinstalar Linux. Vuelve a intentarlo.</translation>

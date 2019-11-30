@@ -118,7 +118,7 @@ class NotificationStorageTest : public ::testing::Test {
   void WriteNotificationDataSynchronous(const NotificationDatabaseData& data) {
     base::RunLoop run_loop;
     storage_->WriteNotificationData(
-        data, base::Bind(
+        data, base::BindOnce(
                   &NotificationStorageTest::DidWriteNotificationDataSynchronous,
                   base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -140,9 +140,10 @@ class NotificationStorageTest : public ::testing::Test {
     base::RunLoop run_loop;
     storage_->ReadNotificationDataAndRecordInteraction(
         service_worker_registration_id, notification_id, interaction,
-        base::Bind(&NotificationStorageTest::
-                       DidReadNotificationDataAndRecordInteractionSynchronous,
-                   base::Unretained(this), run_loop.QuitClosure()));
+        base::BindOnce(
+            &NotificationStorageTest::
+                DidReadNotificationDataAndRecordInteractionSynchronous,
+            base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return out_data_;
   }

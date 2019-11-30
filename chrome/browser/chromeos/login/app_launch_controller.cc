@@ -66,7 +66,7 @@ constexpr int kAppInstallSplashScreenMinTimeMS = 10000;
 // Parameters for test:
 bool skip_splash_wait = false;
 int network_wait_time_in_seconds = 10;
-base::Closure* network_timeout_callback = nullptr;
+base::OnceClosure* network_timeout_callback = nullptr;
 AppLaunchController::ReturnBoolCallback* can_configure_network_callback =
     nullptr;
 AppLaunchController::ReturnBoolCallback*
@@ -226,7 +226,7 @@ void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
 
 // static
 void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
-    base::Closure* callback) {
+    base::OnceClosure* callback) {
   network_timeout_callback = callback;
 }
 
@@ -379,8 +379,10 @@ void AppLaunchController::OnNetworkWaitTimedout() {
 
   MaybeShowNetworkConfigureUI();
 
-  if (network_timeout_callback)
-    network_timeout_callback->Run();
+  if (network_timeout_callback) {
+    std::move(*network_timeout_callback).Run();
+    network_timeout_callback = nullptr;
+  }
 }
 
 void AppLaunchController::OnAppWindowCreated() {

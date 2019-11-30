@@ -41,7 +41,7 @@ class InstanceIDImpl : public InstanceID {
   void ValidateToken(const std::string& authorized_entity,
                      const std::string& scope,
                      const std::string& token,
-                     const ValidateTokenCallback& callback) override;
+                     ValidateTokenCallback callback) override;
   void DeleteTokenImpl(const std::string& authorized_entity,
                        const std::string& scope,
                        DeleteTokenCallback callback) override;
@@ -69,7 +69,7 @@ class InstanceIDImpl : public InstanceID {
   void DoValidateToken(const std::string& authorized_entity,
                        const std::string& scope,
                        const std::string& token,
-                       const ValidateTokenCallback& callback);
+                       ValidateTokenCallback callback);
   void DoDeleteToken(const std::string& authorized_entity,
                      const std::string& scope,
                      DeleteTokenCallback callback);

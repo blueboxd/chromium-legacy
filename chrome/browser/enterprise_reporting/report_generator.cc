@@ -74,7 +74,8 @@ std::string ReportGenerator::GetSerialNumber() {
 void ReportGenerator::OnBrowserReportReady(
     std::unique_ptr<em::BrowserReport> browser_report) {
   basic_request_.set_allocated_browser_report(browser_report.release());
-  Requests requests = report_request_queue_generator_.Generate(basic_request_);
+  ReportRequests requests =
+      report_request_queue_generator_.Generate(basic_request_);
   std::move(callback_).Run(std::move(requests));
 }
 

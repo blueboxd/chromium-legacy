@@ -46,7 +46,7 @@ class FaviconSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string&) override;
   bool AllowCaching() override;
   bool ShouldReplaceExistingSource() override;
@@ -75,20 +75,18 @@ class FaviconSource : public content::URLDataSource {
   // |bitmap_result| is valid, returns it to caller using |callback|. Otherwise
   // will send appropriate default icon for |size_in_dip| and |scale_factor|.
   void OnFaviconDataAvailable(
-      const content::URLDataSource::GotDataCallback& callback,
+      content::URLDataSource::GotDataCallback callback,
       int size_in_dip,
       float scale_factor,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Sends the 16x16 DIP 1x default favicon.
-  void SendDefaultResponse(
-      const content::URLDataSource::GotDataCallback& callback);
+  void SendDefaultResponse(content::URLDataSource::GotDataCallback callback);
 
   // Sends the default favicon.
-  void SendDefaultResponse(
-      const content::URLDataSource::GotDataCallback& callback,
-      int size_in_dip,
-      float scale_factor);
+  void SendDefaultResponse(content::URLDataSource::GotDataCallback callback,
+                           int size_in_dip,
+                           float scale_factor);
 
   chrome::FaviconUrlFormat url_format_;
 

@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Ikonok</translation>
 <translation id="1111673857033749125">A más eszközökön mentett könyvjelzők itt jelennek meg.</translation>
 <translation id="1113597929977215864">Egyszerűsített nézet megjelenítése</translation>
+<translation id="1122278879166832009">Ide koppintva bárhonnan gyorsan megnyithatja a kezdőlapját</translation>
 <translation id="1124772482545689468">Felhasználó</translation>
 <translation id="1129510026454351943">Részletek: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 letöltés függőben.}other{# letöltés függőben.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3859306556332390985">Ugrás előre</translation>
+<translation id="388596076286380598">Hozzájuthat cikkekhez, videókhoz és más tartalmakhoz a kedvenc webhelyeiről – még akkor is, ha offline állapotban van, vagy ha a kapcsolat rossz minőségű.</translation>
 <translation id="3894427358181296146">Mappa hozzáadása</translation>
 <translation id="3895926599014793903">A nagyítás mindig engedélyezett</translation>
 <translation id="3912508018559818924">A legjobb találatok keresése az interneten…</translation>
@@ -490,6 +492,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4719927025381752090">Fordítás felajánlása</translation>
 <translation id="4720023427747327413">Megnyitás itt: <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Segítsen a Chrome fejlesztésében. <ph name="BEGIN_LINK" />Töltse ki ezt a felmérést.<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4738836084190194332">Utolsó szinkronizálás: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Új lap megnyitása</translation>
@@ -636,6 +639,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5689516760719285838">Tartózkodási hely</translation>
+<translation id="5694049548840660018">Egyszerűen megnyithatja a kezdőlapot</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
 <translation id="5710871682236653961">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára az adatok küldését és fogadását, amikor NFC-eszközökre koppint (javasolt)</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
@@ -798,6 +802,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> lap bezárva</translation>
 <translation id="6864459304226931083">Kép letöltése</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
+<translation id="6884306546558072722">Offline állapotban is folytathatja a felfedezést</translation>
 <translation id="688738109438487280">Meglévő adatok hozzáadása a(z) <ph name="TO_ACCOUNT" /> fiókhoz.</translation>
 <translation id="6891726759199484455">Oldja fel a képernyőzárat a jelszó másolásához</translation>
 <translation id="6896758677409633944">Másolás</translation>
@@ -1039,6 +1044,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8636825310635137004">Ha a többi eszközén is szeretné elérni lapjait, kapcsolja be a szinkronizálást</translation>
 <translation id="8641930654639604085">Felnőtteknek szóló webhelyek letiltásának megkísérlése</translation>
 <translation id="8655129584991699539">Az adatokat a Chrome beállításaiban módosíthatja</translation>
+<translation id="8655599981421006542">Koppintson ide új lapok létrehozásához, illetve korábbi lapokhoz való visszatéréshez</translation>
 <translation id="8662811608048051533">A rendszer a legtöbb webhelyről kijelentkezteti Önt.</translation>
 <translation id="8664979001105139458">Már van ilyen nevű fájl</translation>
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
@@ -1051,6 +1057,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8748850008226585750">Tartalom elrejtve</translation>
 <translation id="8751914237388039244">Válasszon képet</translation>
+<translation id="8758557275681689734">Az összes megnyitott ablak megtekintése</translation>
 <translation id="8788265440806329501">Bezárta a navigációs előzményeket</translation>
 <translation id="8788968922598763114">A legutóbb bezárt lap újranyitása</translation>
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>

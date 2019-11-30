@@ -27,7 +27,7 @@ WebContentsBindingSet::WebContentsBindingSet(WebContents* web_contents,
                            ->AddBindingSet(interface_name, this)) {}
 
 WebContentsBindingSet::~WebContentsBindingSet() {
-  remove_callback_.Run();
+  std::move(remove_callback_).Run();
 }
 
 // static

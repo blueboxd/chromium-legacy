@@ -271,8 +271,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   //
   // |binding_set| is not owned and must either outlive this WebContents or be
   // explicitly removed before being destroyed.
-  base::Closure AddBindingSet(const std::string& interface_name,
-                              WebContentsBindingSet* binding_set);
+  base::OnceClosure AddBindingSet(const std::string& interface_name,
+                                  WebContentsBindingSet* binding_set);
 
   // Accesses a WebContentsBindingSet for a specific interface on this
   // WebContents. Returns null of there is no registered binder for the

@@ -21,9 +21,9 @@ import java.util.regex.Pattern;
  *  provided filter configurations.
  */
 public final class JunitTestMain {
-
+    /** Enforced by {@link org.chromium.tools.errorprone.plugin.TestClassNameCheck}. */
+    private static final String TEST_CLASS_FILE_END = "Test.class";
     private static final String CLASS_FILE_EXT = ".class";
-
     private static final Pattern COLON = Pattern.compile(":");
     private static final Pattern FORWARD_SLASH = Pattern.compile("/");
 
@@ -31,27 +31,18 @@ public final class JunitTestMain {
     }
 
     /**
-     *  Finds all classes on the class path annotated with RunWith.
+     *  Finds all test classes on the class path annotated with RunWith.
      */
-    public static Class[] findClassesFromClasspath(String[] testJars) {
+    public static Class[] findClassesFromClasspath() {
         String[] jarPaths = COLON.split(System.getProperty("java.class.path"));
-        List<String> testJarPaths = new ArrayList<String>(testJars.length);
-        for (String testJar: testJars) {
-            for (String jarPath: jarPaths) {
-                if (jarPath.endsWith(testJar)) {
-                    testJarPaths.add(jarPath);
-                    break;
-                }
-            }
-        }
         List<Class> classes = new ArrayList<Class>();
-        for (String jp : testJarPaths) {
+        for (String jp : jarPaths) {
             try {
                 JarFile jf = new JarFile(jp);
                 for (Enumeration<JarEntry> eje = jf.entries(); eje.hasMoreElements();) {
                     JarEntry je = eje.nextElement();
                     String cn = je.getName();
-                    if (!cn.endsWith(CLASS_FILE_EXT) || cn.indexOf('$') != -1) {
+                    if (!cn.endsWith(TEST_CLASS_FILE_END) || cn.indexOf('$') != -1) {
                         continue;
                     }
                     cn = cn.substring(0, cn.length() - CLASS_FILE_EXT.length());
@@ -66,7 +57,7 @@ public final class JunitTestMain {
                 System.err.println("Error while reading classes from " + jp);
             }
         }
-        return classes.toArray(new Class[classes.size()]);
+        return classes.toArray(new Class[0]);
     }
 
     private static Class<?> classOrNull(String className) {
@@ -90,7 +81,7 @@ public final class JunitTestMain {
         core.addListener(new GtestListener(gtestLogger));
         JsonLogger jsonLogger = new JsonLogger(parser.getJsonOutputFile());
         core.addListener(new JsonListener(jsonLogger));
-        Class[] classes = findClassesFromClasspath(parser.getTestJars());
+        Class[] classes = findClassesFromClasspath();
         Request testRequest = Request.classes(new GtestComputer(gtestLogger), classes);
 
         for (String packageFilter : parser.getPackageFilters()) {

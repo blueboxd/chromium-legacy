@@ -265,6 +265,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+  std::unique_ptr<gpu::MemoryTracker> memory_tracker_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
   VulkanContextProvider* const vulkan_context_provider_;

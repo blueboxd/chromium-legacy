@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Jep detaje të tjera</translation>
 <translation id="1021110881106174305">Kartat e pranuara</translation>
 <translation id="1032854598605920125">Rrotullo në drejtim të akrepave të orës</translation>
-<translation id="1035334672863811645">identifikohu në Chrome</translation>
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1038842779957582377">emër i panjohur</translation>
 <translation id="1039626062703039346">Chrome mund të të ndihmojë ta mbrosh "Llogarinë tënde të Google" dhe të ndryshosh fjalëkalimin tënd. Kjo do ta njoftojë Google për këtë sajt.</translation>
@@ -908,7 +907,6 @@
 <translation id="536296301121032821">Dështoi në ruajtjen e cilësimeve të politikës.</translation>
 <translation id="5371425731340848620">Përditëso kartën</translation>
 <translation id="5377026284221673050">"Ora jote është prapa" ose "Ora jote është përpara" ose "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Për t'i përdorur kartat në të gjitha pajisjet, identifikohu dhe aktivizo sinkronizimin.</translation>
 <translation id="5386426401304769735">Zinxhiri i certifikatës për këtë sajt përmban një certifikatë të nënshkruar me SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Qepje anësore djathtas</translation>
@@ -1568,7 +1566,6 @@ Detaje shtesë:
 <translation id="8759274551635299824">Kjo kartë ka skaduar</translation>
 <translation id="8761567432415473239">Shfletimi i sigurt i Google <ph name="BEGIN_LINK" />zbuloi së fundmi programe të dëmshme<ph name="END_LINK" /> në <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Pajisja USB</translation>
-<translation id="8768895707659403558">Për t'i përdorur kartat në të gjitha pajisjet e tua, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Bëje përsëri fshirjen</translation>
 <translation id="8792621596287649091">Mund të ndodhë që të humbësh qasjen në llogarinë tënde të <ph name="ORG_NAME" /> ose mund të pësosh vjedhje të identitetit. Chromium rekomandon që ta ndryshosh fjalëkalimin tani.</translation>

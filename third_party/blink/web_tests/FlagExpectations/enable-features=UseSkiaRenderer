@@ -1,2 +1,4 @@
 # One portion of the image is offset.
 crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+
+crbug.com/1027772 media/video-controls-visibility-multimodal-mouse-after-touch.html [ Failure Pass ]

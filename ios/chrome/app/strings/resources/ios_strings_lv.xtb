@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2747003861858887689">Iepriekšējais lauks</translation>
 <translation id="2773292004659987824">Meklēt inkognito režīmā</translation>
+<translation id="277771892408211951">Atlasiet valodu</translation>
 <translation id="2780046210906776326">Nav e-pasta kontu</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Aizvērt ciļņu pārslēdzēju</translation>
@@ -268,7 +269,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="4689564913179979534">Pārvaldīt maksājumu veidus...</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4747097190499141774">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay. Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta Google serveriem un netiek tajos glabāta. Ja aizmirsīsiet ieejas frāzi vai vēlēsieties mainīt šo iestatījumu, jums būs jāatiestata sinhronizācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
-<translation id="4749030437873592350">Atrast lapā…</translation>
 <translation id="4751645464639803239">Jauna inkognito cilne</translation>
 <translation id="4758977202923349869">Novietojiet kredītkarti rāmī</translation>
 <translation id="4802417911091824046">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.
@@ -455,7 +455,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
 <translation id="7159472599653637159">Pieprasīt mobilo vietni</translation>
 <translation id="7173114856073700355">Atvērt iestatījumus</translation>
-<translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7192050974311852563">Sākt reģistrēšanu</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
 <translation id="7265758999917665941">Nekad šai vietnei</translation>
@@ -559,6 +558,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8840513115188359703">Jūs netiksiet izrakstīts no sava Google konta.</translation>
 <translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8881801611828450202">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Kopīgot...</translation>
 <translation id="895541991026785598">Ziņot par problēmu</translation>
 <translation id="8976382372951310360">Palīdzība</translation>
 <translation id="8981454092730389528">Google aktivitātes vadīklas</translation>

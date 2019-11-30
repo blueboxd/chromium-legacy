@@ -25,7 +25,7 @@ class MostVisitedIframeSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path_and_query) override;
   bool AllowCaching() override;
   bool ShouldDenyXFrameOptions() override;
@@ -39,13 +39,12 @@ class MostVisitedIframeSource : public content::URLDataSource {
 
   // Sends unmodified resource bytes.
   void SendResource(int resource_id,
-                    const content::URLDataSource::GotDataCallback& callback);
+                    content::URLDataSource::GotDataCallback callback);
 
   // Sends Javascript with an expected postMessage origin interpolated.
-  void SendJSWithOrigin(
-      int resource_id,
-      const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback);
+  void SendJSWithOrigin(int resource_id,
+                        const content::WebContents::Getter& wc_getter,
+                        content::URLDataSource::GotDataCallback callback);
 
   // This is exposed for testing and should not be overridden.
   // Sets |origin| to the URL of the WebContents identified by |wc_getter|.

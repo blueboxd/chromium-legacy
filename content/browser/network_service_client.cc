@@ -78,7 +78,7 @@ NetworkServiceClient::NetworkServiceClient(
 #if defined(OS_ANDROID)
     DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
     GetNetworkService()->GetNetworkChangeManager(
-        mojo::MakeRequest(&network_change_manager_));
+        network_change_manager_.BindNewPipeAndPassReceiver());
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
     net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
     net::NetworkChangeNotifier::AddIPAddressObserver(this);

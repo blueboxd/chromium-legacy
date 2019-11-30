@@ -40,10 +40,10 @@ class CONTENT_EXPORT PushMessagingService {
   using UnregisterCallback =
       base::OnceCallback<void(blink::mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
-      base::Callback<void(bool is_valid,
-                          const GURL& endpoint,
-                          const std::vector<uint8_t>& p256dh,
-                          const std::vector<uint8_t>& auth)>;
+      base::OnceCallback<void(bool is_valid,
+                              const GURL& endpoint,
+                              const std::vector<uint8_t>& p256dh,
+                              const std::vector<uint8_t>& auth)>;
   using StringCallback = base::OnceCallback<
       void(const std::string& data, bool success, bool not_found)>;
 
@@ -80,12 +80,11 @@ class CONTENT_EXPORT PushMessagingService {
   // information to the callback. |sender_id| is also required since an
   // InstanceID might have multiple tokens associated with different senders,
   // though in practice Push doesn't yet use that.
-  virtual void GetSubscriptionInfo(
-      const GURL& origin,
-      int64_t service_worker_registration_id,
-      const std::string& sender_id,
-      const std::string& subscription_id,
-      const SubscriptionInfoCallback& callback) = 0;
+  virtual void GetSubscriptionInfo(const GURL& origin,
+                                   int64_t service_worker_registration_id,
+                                   const std::string& sender_id,
+                                   const std::string& subscription_id,
+                                   SubscriptionInfoCallback callback) = 0;
 
   // Unsubscribe the given |sender_id| from the push messaging service. Locally
   // deactivates the subscription, then runs |callback|, then asynchronously

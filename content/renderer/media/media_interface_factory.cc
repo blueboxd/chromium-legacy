@@ -11,13 +11,13 @@
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {
 
 MediaInterfaceFactory::MediaInterfaceFactory(
-    service_manager::InterfaceProvider* remote_interfaces)
-    : remote_interfaces_(remote_interfaces) {
+    blink::BrowserInterfaceBrokerProxy* interface_broker)
+    : interface_broker_(interface_broker) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   weak_this_ = weak_factory_.GetWeakPtr();
 }
@@ -171,7 +171,7 @@ MediaInterfaceFactory::GetMediaInterfaceFactory() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!media_interface_factory_) {
-    remote_interfaces_->GetInterface(
+    interface_broker_->GetInterface(
         media_interface_factory_.BindNewPipeAndPassReceiver());
     media_interface_factory_.set_disconnect_handler(base::BindOnce(
         &MediaInterfaceFactory::OnConnectionError, base::Unretained(this)));

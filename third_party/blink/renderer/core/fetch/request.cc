@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
@@ -52,7 +53,7 @@ namespace blink {
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     ScriptState* script_state,
     const FetchRequestData* original) {
-  FetchRequestData* request = FetchRequestData::Create();
+  auto* request = MakeGarbageCollected<FetchRequestData>();
   request->SetURL(original->Url());
   request->SetMethod(original->Method());
   request->SetHeaderList(original->HeaderList()->Clone());
@@ -224,8 +225,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // |request|'s cache mode, redirect mode is |request|'s redirect mode, and
   // integrity metadata is |request|'s integrity metadata."
   FetchRequestData* request = CreateCopyOfFetchRequestDataForFetch(
-      script_state,
-      input_request ? input_request->GetRequest() : FetchRequestData::Create());
+      script_state, input_request ? input_request->GetRequest()
+                                  : MakeGarbageCollected<FetchRequestData>());
 
   if (input_request) {
     // "Set |signal| to input’s signal."

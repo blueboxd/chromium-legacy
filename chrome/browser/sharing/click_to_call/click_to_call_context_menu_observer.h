@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 

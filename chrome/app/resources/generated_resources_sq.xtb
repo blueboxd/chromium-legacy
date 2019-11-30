@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Hape lidhjen në <ph name="APP" /></translation>
 <translation id="1140351953533677694">Qasu në pajisjet e tua me Bluetooth dhe Serial</translation>
 <translation id="114036956334641753">Audioja dhe titrat</translation>
-<translation id="1140610710803014750">Për të marrë faqeshënuesit në të gjitha pajisjet e tua, identifikohu dhe aktivizo sinkronizimin.</translation>
 <translation id="1140746652461896221">Blloko përmbajtjen në çdo faqe që viziton</translation>
 <translation id="1143142264369994168">Nënshkruesi i certifikatës</translation>
 <translation id="1145292499998999162">Përbërësi shtesë u bllokua</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">K&amp;opjo adresën e audios</translation>
 <translation id="1465827627707997754">Fetë pice</translation>
 <translation id="1468571364034902819">Ky profil nuk mund të përdoret</translation>
-<translation id="1470811252759861213">Për të marrë shtesat e tua në të gjithë kompjuterët, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Shfaq më shumë</translation>
 <translation id="1475502736924165259">Ke certifikata në skedar që nuk përputhen në asnjë nga kategoritë e tjera</translation>
 <translation id="1476088332184200792">Kopjo te pajisja jote</translation>
@@ -1042,7 +1040,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2489829450872380594">Herën tjetër, një telefon i ri do të shkyçë këtë pajisje <ph name="DEVICE_TYPE" />. Mund ta çaktivizosh Smart Lock te "Cilësimet".</translation>
 <translation id="2489918096470125693">Shto &amp;dosjen...</translation>
 <translation id="2490481887078769936">"<ph name="FILE_NAME" />" u hoq nga lista</translation>
-<translation id="2490782392574942205">Për të marrë shtesat e tua në të gjithë kompjuterët e tu, identifikohu dhe aktivizo sinkronizimin</translation>
 <translation id="249113932447298600">Na vjen keq, por pajisja <ph name="DEVICE_LABEL" /> nuk mbështetet në këtë moment.</translation>
 <translation id="249303669840926644">Nuk mund të përfundonte regjistrimin</translation>
 <translation id="2495777824269688114">Zbulo më shumë funksione ose merr përgjigje. Zgjidh "?" për ndihmë.</translation>
@@ -1752,7 +1749,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3527085408025491307">Dosje</translation>
 <translation id="3528033729920178817">Kjo faqe po gjurmon vendndodhjen tënde.</translation>
 <translation id="3528498924003805721">Objektivat e shkurtoreve</translation>
-<translation id="3530305684079447434">Për të marrë faqeshënuesit në të gjitha pajisjet e tua, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> kërkon të përdorë mikrofonin</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - audioja u çaktivizua</translation>
 <translation id="3538066758857505094">Gabim gjatë çinstalimit të Linux. Provo sërish.</translation>

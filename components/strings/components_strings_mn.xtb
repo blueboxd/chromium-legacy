@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Дэлгэрэнгүй мэдээлэл өгөх</translation>
 <translation id="1021110881106174305">Зөвшөөрсөн карт</translation>
 <translation id="1032854598605920125">Цагийн зүүний дагуу эргүүлэх</translation>
-<translation id="1035334672863811645">Chrome-д нэвтрэх</translation>
 <translation id="1036348656032585052">Унтраа</translation>
 <translation id="1038842779957582377">үл мэдэгдэх нэр</translation>
 <translation id="1039626062703039346">Chrome танд Google Бүртгэлээ хамгаалах болон нууц үгээ солиход туслах боломжтой. Энэ нь Google-д энэ сайтын тухай мэдэгдэнэ.</translation>
@@ -925,7 +924,6 @@
 <translation id="536296301121032821">бодлогын тохиргоог хадгалах үйлдэл амжилтгүй болсон байна.</translation>
 <translation id="5371425731340848620">Картыг шинэчлэх</translation>
 <translation id="5377026284221673050">"Таны цаг хоцорч байна" эсвэл "Таны цаг түрүүлж байна" эсвэл "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Картаа бүх төхөөрөмжид ашиглахын тулд нэвтрээд синкийг асаана уу.</translation>
 <translation id="5386426401304769735">Энэ сайтын сертификатын хэлхээ нь SHA-1-г ашиглан баталгаажуулсан байна.</translation>
 <translation id="538659543871111977">A4-Таб</translation>
 <translation id="5396631636586785122">Баруун ирмэгийг нь нийлүүлж үдэх</translation>
@@ -1585,7 +1583,6 @@
 <translation id="8759274551635299824">Энэ картны хугацаа дууссан байна</translation>
 <translation id="8761567432415473239">Google-ийн Аюулгүй хайлт нь саяхан <ph name="SITE" /> дээр <ph name="BEGIN_LINK" />гэмтэл үүсгэж болох програм илрүүллээ<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB төхөөрөмж</translation>
-<translation id="8768895707659403558">Картаа бүх төхөөрөмждөө ашиглахын тулд <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp; Устгах үйлдлийг дахин хийх</translation>
 <translation id="8792621596287649091">Та <ph name="ORG_NAME" /> бүртгэлийнхээ хандах эрх эсвэл нууц үгээ алдаж болзошгүй. Chromium одоо таны нууц үгийг өөрчлөхийг зөвлөж байна.</translation>

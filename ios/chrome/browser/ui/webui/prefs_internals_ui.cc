@@ -35,11 +35,11 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
 
   void StartDataRequest(
       const std::string& path,
-      const web::URLDataSourceIOS::GotDataCallback& callback) override {
+      web::URLDataSourceIOS::GotDataCallback callback) override {
     // TODO(crbug.com/1006711): Properly disable this webui provider for
     // incognito browser states.
     if (browser_state_->IsOffTheRecord()) {
-      callback.Run(nullptr);
+      std::move(callback).Run(nullptr);
       return;
     }
 
@@ -51,7 +51,7 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
     DCHECK(prefs);
     CHECK(base::JSONWriter::WriteWithOptions(
         *prefs, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json));
-    callback.Run(base::RefCountedString::TakeString(&json));
+    std::move(callback).Run(base::RefCountedString::TakeString(&json));
   }
 
  private:

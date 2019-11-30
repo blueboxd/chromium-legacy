@@ -268,7 +268,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="4689564913179979534">I-manage ang Payment Method...</translation>
 <translation id="473775607612524610">I-update</translation>
 <translation id="4747097190499141774">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address mula sa Google Pay. Ang tao lang na may alam ng iyong passphrase ang makakabasa sa naka-encrypt mong data. Hindi ipinapadala sa Google ang passphrase at hindi nito ito sino-store. Kung makalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, kakailanganin mong i-reset ang pag-sync. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Hanapin sa Page...</translation>
 <translation id="4751645464639803239">Bagong Tab na Incognito</translation>
 <translation id="4758977202923349869">Iposisyon ang Credit Card sa frame na ito</translation>
 <translation id="4802417911091824046">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address mula sa Google Pay.
@@ -455,7 +454,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7136892417564438900">Hindi available ang camera</translation>
 <translation id="7159472599653637159">Hilingin ang Pang-mobile na Site</translation>
 <translation id="7173114856073700355">Buksan ang Mga Setting</translation>
-<translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7192050974311852563">Simulan ang Pag-log</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="7265758999917665941">Hindi Kailanman Para sa Site na Ito</translation>
@@ -559,6 +557,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8840513115188359703">Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8881801611828450202">Hanapin sa <ph name="SEARCH_ENGINE" /> ang Larawang Ito</translation>
+<translation id="8909135823018751308">Ibahagi…</translation>
 <translation id="895541991026785598">Mag-ulat ng Isyu</translation>
 <translation id="8976382372951310360">Tulong</translation>
 <translation id="8981454092730389528">Mga Kontrol ng Aktibidad ng Google</translation>

@@ -54,10 +54,9 @@ bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
   return !!weak_ptr;
 }
 
-void HandleRequestCallback(
-    base::WeakPtr<WelcomeUI> weak_ptr,
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+void HandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
+                           const std::string& path,
+                           content::WebUIDataSource::GotDataCallback callback) {
   DCHECK(ShouldHandleRequestCallback(weak_ptr, path));
 
   std::string index_param = path.substr(path.find_first_of("?") + 1);
@@ -66,7 +65,7 @@ void HandleRequestCallback(
         background_index < 0);
 
   DCHECK(weak_ptr);
-  weak_ptr->CreateBackgroundFetcher(background_index, callback);
+  weak_ptr->CreateBackgroundFetcher(background_index, std::move(callback));
 }
 
 void AddStrings(content::WebUIDataSource* html_source) {
@@ -204,9 +203,9 @@ WelcomeUI::~WelcomeUI() {}
 
 void WelcomeUI::CreateBackgroundFetcher(
     size_t background_index,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+    content::WebUIDataSource::GotDataCallback callback) {
   background_fetcher_ = std::make_unique<welcome::NtpBackgroundFetcher>(
-      background_index, callback);
+      background_index, std::move(callback));
 }
 
 void WelcomeUI::StorePageSeen(Profile* profile) {

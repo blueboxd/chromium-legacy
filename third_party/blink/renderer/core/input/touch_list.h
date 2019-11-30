@@ -38,8 +38,6 @@ class CORE_EXPORT TouchList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TouchList* Create() { return MakeGarbageCollected<TouchList>(); }
-
   static TouchList* Create(const HeapVector<Member<Touch>>& touches) {
     TouchList* list = MakeGarbageCollected<TouchList>();
     list->values_.AppendVector(touches);

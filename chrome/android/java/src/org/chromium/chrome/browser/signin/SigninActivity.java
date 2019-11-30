@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
 import androidx.annotation.IntDef;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -24,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 // TODO(https://crbug.com/820491): extend AsyncInitializationActivity.
 public class SigninActivity extends ChromeBaseAppCompatActivity {
-    static final String ARGUMENT_FRAGMENT_ARGS = "SigninActivity.FragmentArgs";
+    private static final String ARGUMENT_FRAGMENT_ARGS = "SigninActivity.FragmentArgs";
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
             SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO,
@@ -64,8 +66,20 @@ public class SigninActivity extends ChromeBaseAppCompatActivity {
         Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_container);
         if (fragment == null) {
             Bundle fragmentArgs = getIntent().getBundleExtra(ARGUMENT_FRAGMENT_ARGS);
-            fragment = Fragment.instantiate(this, SigninFragment.class.getName(), fragmentArgs);
+            fragment = new SigninFragment();
+            fragment.setArguments(fragmentArgs);
             fragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit();
         }
+    }
+
+    /**
+     * Create a new intent to start the SigninActivity.
+     *
+     * @param fragmentArgs arguments to create an Sign-in Fragment.
+     */
+    static Intent createIntent(Context context, Bundle fragmentArgs) {
+        Intent intent = new Intent(context, SigninActivity.class);
+        intent.putExtra(ARGUMENT_FRAGMENT_ARGS, fragmentArgs);
+        return intent;
     }
 }

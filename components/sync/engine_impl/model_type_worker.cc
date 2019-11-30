@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <map>
 #include <utility>
 #include <vector>
@@ -35,31 +34,6 @@
 namespace syncer {
 
 namespace {
-
-bool ContainsDuplicate(std::vector<std::string> values) {
-  std::sort(values.begin(), values.end());
-  return std::adjacent_find(values.begin(), values.end()) != values.end();
-}
-
-bool ContainsDuplicateClientTagHash(const UpdateResponseDataList& updates) {
-  std::vector<std::string> raw_client_tag_hashes;
-  for (const std::unique_ptr<UpdateResponseData>& update : updates) {
-    DCHECK(update);
-    if (!update->entity->client_tag_hash.value().empty()) {
-      raw_client_tag_hashes.push_back(update->entity->client_tag_hash.value());
-    }
-  }
-  return ContainsDuplicate(std::move(raw_client_tag_hashes));
-}
-
-bool ContainsDuplicateServerID(const UpdateResponseDataList& updates) {
-  std::vector<std::string> server_ids;
-  for (const std::unique_ptr<UpdateResponseData>& update : updates) {
-    DCHECK(update);
-    server_ids.push_back(update->entity->id);
-  }
-  return ContainsDuplicate(std::move(server_ids));
-}
 
 // Enumeration of possible values for the positioning schemes used in Sync
 // entities. Used in UMA metrics. Do not re-order or delete these entries; they
@@ -482,19 +456,16 @@ void ModelTypeWorker::ApplyPendingUpdates() {
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
 
-  // Having duplicates should be rare, so only do the de-duping if
-  // we've actually detected one.
+  // Deduplicate updates first based on server ids, which is the only legit
+  // source of duplicates, specially due to pagination.
+  DeduplicatePendingUpdatesBasedOnServerId();
 
-  // Deduplicate updates first based on server ids.
-  if (ContainsDuplicateServerID(pending_updates_)) {
-    DeduplicatePendingUpdatesBasedOnServerId();
-  }
-
-  // Check for duplicate client tag hashes after removing duplicate server
-  // ids, and deduplicate updates based on client tag hashes if necessary.
-  if (ContainsDuplicateClientTagHash(pending_updates_)) {
-    DeduplicatePendingUpdatesBasedOnClientTagHash();
-  }
+  // As extra precaution, and although it shouldn't be necessary without a
+  // misbehaving server, deduplicate based on client tags and originator item
+  // IDs. This allows further code to use DCHECKs without relying on external
+  // behavior.
+  DeduplicatePendingUpdatesBasedOnClientTagHash();
+  DeduplicatePendingUpdatesBasedOnOriginatorClientItemId();
 
   int num_updates_applied = pending_updates_.size();
   model_type_processor_->OnUpdateReceived(model_type_state_,
@@ -690,6 +661,7 @@ void ModelTypeWorker::DecryptStoredEntities() {
 void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
   UpdateResponseDataList candidates;
   pending_updates_.swap(candidates);
+  pending_updates_.reserve(candidates.size());
 
   std::map<std::string, size_t> id_to_index;
   for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
@@ -716,6 +688,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
 void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
   UpdateResponseDataList candidates;
   pending_updates_.swap(candidates);
+  pending_updates_.reserve(candidates.size());
 
   std::map<ClientTagHash, size_t> tag_to_index;
   for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
@@ -732,6 +705,36 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
     if (it_and_success.second) {
       // New client tag hash, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
+      pending_updates_.push_back(std::move(candidate));
+    } else {
+      // Duplicate! Overwrite the existing item.
+      size_t existing_index = it_and_success.first->second;
+      pending_updates_[existing_index] = std::move(candidate);
+    }
+  }
+}
+
+void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
+  UpdateResponseDataList candidates;
+  pending_updates_.swap(candidates);
+  pending_updates_.reserve(candidates.size());
+
+  std::map<std::string, size_t> id_to_index;
+  for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
+    DCHECK(candidate);
+    // Items with empty item ID just get passed through (which is the case for
+    // all datatypes except bookmarks).
+    if (candidate->entity->originator_client_item_id.empty()) {
+      pending_updates_.push_back(std::move(candidate));
+      continue;
+    }
+    // Try to insert. If we already saw an item with the same originator item
+    // ID, this will fail but give us its iterator.
+    auto it_and_success = id_to_index.emplace(
+        candidate->entity->originator_client_item_id, pending_updates_.size());
+    if (it_and_success.second) {
+      // New item ID, append at the end. Note that we already inserted the
+      // correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
     } else {
       // Duplicate! Overwrite the existing item.

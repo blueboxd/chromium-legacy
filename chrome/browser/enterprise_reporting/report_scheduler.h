@@ -53,7 +53,7 @@ class ReportScheduler : public ProfileManagerObserver {
   void GenerateAndUploadReport();
 
   // Callback once report is generated.
-  void OnReportGenerated(ReportGenerator::Requests requests);
+  void OnReportGenerated(ReportGenerator::ReportRequests requests);
 
   // Callback once report upload request is finished.
   void OnReportUploaded(ReportUploader::ReportStatus status);

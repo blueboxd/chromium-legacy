@@ -43,7 +43,7 @@
 namespace content {
 namespace {
 
-void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
+void OnGotCategories(WebUIDataSource::GotDataCallback callback,
                      const std::set<std::string>& categorySet) {
   base::ListValue category_list;
   for (auto it = categorySet.begin(); it != categorySet.end(); it++) {
@@ -52,34 +52,35 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
 
   scoped_refptr<base::RefCountedString> res(new base::RefCountedString());
   base::JSONWriter::Write(category_list, &res->data());
-  callback.Run(res);
+  std::move(callback).Run(res);
 }
 
-void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
+void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback);
 
 bool BeginRecording(const std::string& data64,
-                    const WebUIDataSource::GotDataCallback& callback) {
+                    WebUIDataSource::GotDataCallback callback) {
   base::trace_event::TraceConfig trace_config("", "");
   if (!TracingUI::GetTracingOptions(data64, &trace_config))
     return false;
 
   return TracingController::GetInstance()->StartTracing(
-      trace_config, base::BindOnce(&OnRecordingEnabledAck, callback));
+      trace_config,
+      base::BindOnce(&OnRecordingEnabledAck, std::move(callback)));
 }
 
-void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
-  callback.Run(
+void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback) {
+  std::move(callback).Run(
       scoped_refptr<base::RefCountedMemory>(new base::RefCountedString()));
 }
 
-void OnTraceBufferUsageResult(const WebUIDataSource::GotDataCallback& callback,
+void OnTraceBufferUsageResult(WebUIDataSource::GotDataCallback callback,
                               float percent_full,
                               size_t approximate_event_count) {
   std::string str = base::NumberToString(percent_full);
-  callback.Run(base::RefCountedString::TakeString(&str));
+  std::move(callback).Run(base::RefCountedString::TakeString(&str));
 }
 
-void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
+void OnTraceBufferStatusResult(WebUIDataSource::GotDataCallback callback,
                                float percent_full,
                                size_t approximate_event_count) {
   base::DictionaryValue status;
@@ -91,45 +92,44 @@ void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
 
   base::RefCountedString* status_base64 = new base::RefCountedString();
   base::Base64Encode(status_json, &status_base64->data());
-  callback.Run(status_base64);
+  std::move(callback).Run(status_base64);
 }
 
-void TracingCallbackWrapperBase64(
-    const WebUIDataSource::GotDataCallback& callback,
-    std::unique_ptr<std::string> data) {
+void TracingCallbackWrapperBase64(WebUIDataSource::GotDataCallback callback,
+                                  std::unique_ptr<std::string> data) {
   base::RefCountedString* data_base64 = new base::RefCountedString();
   base::Base64Encode(*data, &data_base64->data());
-  callback.Run(data_base64);
+  std::move(callback).Run(data_base64);
 }
 
 bool OnBeginJSONRequest(const std::string& path,
-                        const WebUIDataSource::GotDataCallback& callback) {
+                        WebUIDataSource::GotDataCallback* callback) {
   if (path == "json/categories") {
     return TracingController::GetInstance()->GetCategories(
-        base::BindOnce(OnGotCategories, callback));
+        base::BindOnce(OnGotCategories, std::move(*callback)));
   }
 
   const char kBeginRecordingPath[] = "json/begin_recording?";
   if (base::StartsWith(path, kBeginRecordingPath,
                        base::CompareCase::SENSITIVE)) {
     std::string data = path.substr(strlen(kBeginRecordingPath));
-    return BeginRecording(data, callback);
+    return BeginRecording(data, std::move(*callback));
   }
   if (path == "json/get_buffer_percent_full") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferUsageResult, callback));
+        base::BindOnce(OnTraceBufferUsageResult, std::move(*callback)));
   }
   if (path == "json/get_buffer_status") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferStatusResult, callback));
+        base::BindOnce(OnTraceBufferStatusResult, std::move(*callback)));
   }
   if (path == "json/end_recording_compressed") {
     if (!TracingController::GetInstance()->IsTracing())
       return false;
     scoped_refptr<TracingController::TraceDataEndpoint> data_endpoint =
         TracingControllerImpl::CreateCompressedStringEndpoint(
-            TracingControllerImpl::CreateCallbackEndpoint(
-                base::Bind(TracingCallbackWrapperBase64, callback)),
+            TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
+                TracingCallbackWrapperBase64, std::move(*callback))),
             false /* compress_with_background_priority */);
     return TracingController::GetInstance()->StopTracing(data_endpoint);
   }
@@ -143,11 +143,13 @@ bool OnShouldHandleRequest(const std::string& path) {
 }
 
 void OnTracingRequest(const std::string& path,
-                      const WebUIDataSource::GotDataCallback& callback) {
+                      WebUIDataSource::GotDataCallback callback) {
   DCHECK(OnShouldHandleRequest(path));
-  if (!OnBeginJSONRequest(path, callback)) {
+  if (!OnBeginJSONRequest(path, &callback)) {
+    // OnBeginJSONRequest only consumes |callback| if it returns true.
+    DCHECK(callback);
     std::string error("##ERROR##");
-    callback.Run(base::RefCountedString::TakeString(&error));
+    std::move(callback).Run(base::RefCountedString::TakeString(&error));
   }
 }
 

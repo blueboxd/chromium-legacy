@@ -97,7 +97,7 @@ class InterstitialHTMLSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
 
  private:
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -479,7 +479,7 @@ std::string InterstitialHTMLSource::GetContentSecurityPolicyImgSrc() {
 void InterstitialHTMLSource::StartDataRequest(
     const GURL& request_url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   // TODO(crbug/1009127): Simplify usages of |path| since |request_url| is
   // available.
   const std::string path =
@@ -536,7 +536,7 @@ void InterstitialHTMLSource::StartDataRequest(
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;
   html_bytes->data().assign(html.begin(), html.end());
-  callback.Run(html_bytes.get());
+  std::move(callback).Run(html_bytes.get());
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

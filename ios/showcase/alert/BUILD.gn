@@ -8,7 +8,7 @@ source_set("alert") {
     "sc_alert_coordinator.mm",
   ]
   deps = [
-    "//ios/chrome/browser/ui/alert_view_controller",
+    "//ios/chrome/browser/ui/alert_view",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/presenters",
     "//ios/showcase/common",

@@ -38,23 +38,24 @@ class TestFilesDataSource : public content::URLDataSource {
   ~TestFilesDataSource() override {}
 
  private:
-  // This has to match kTestResourceURL
+  // This has to match TestResourceUrl()
   std::string GetSource() override { return "file_manager_test"; }
 
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override {
+      content::URLDataSource::GotDataCallback callback) override {
     const std::string path = content::URLDataSource::URLToRequestPath(url);
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::MayBlock(),
-                    base::TaskPriority::USER_BLOCKING},
-                   base::BindOnce(&TestFilesDataSource::ReadFile,
-                                  base::Unretained(this), path, callback));
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING},
+        base::BindOnce(&TestFilesDataSource::ReadFile, base::Unretained(this),
+                       path, std::move(callback)));
   }
 
   void ReadFile(const std::string& path,
-                const content::URLDataSource::GotDataCallback& callback) {
+                content::URLDataSource::GotDataCallback callback) {
     if (source_root_.empty()) {
       CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_));
     }
@@ -85,7 +86,7 @@ class TestFilesDataSource : public content::URLDataSource {
 
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&content);
-    callback.Run(response.get());
+    std::move(callback).Run(response.get());
   }
 
   // It currently only serves HTML/JS/CSS.
@@ -138,15 +139,17 @@ class TestWebUIProvider
 base::LazyInstance<TestWebUIProvider>::DestructorAtExit test_webui_provider_ =
     LAZY_INSTANCE_INITIALIZER;
 
+static const GURL TestResourceUrl() {
+  static GURL url(content::GetWebUIURLString("file_manager_test"));
+  return url;
+}
+
 }  // namespace
 
 FileManagerJsTestBase::FileManagerJsTestBase(const base::FilePath& base_path)
     : base_path_(base_path) {}
 
 FileManagerJsTestBase::~FileManagerJsTestBase() {}
-
-const std::string FileManagerJsTestBase::kTestResourceURL =
-    content::GetWebUIURLString("file_manager_test");
 
 void FileManagerJsTestBase::RunTest(const base::FilePath& file) {
   base::FilePath root_path;
@@ -196,15 +199,14 @@ void FileManagerJsTestBase::SetUpOnMainThread() {
       std::make_unique<TestChromeWebUIControllerFactory>();
   content::WebUIControllerFactory::RegisterFactory(
       webui_controller_factory_.get());
-  webui_controller_factory_->AddFactoryOverride(GURL(kTestResourceURL).host(),
+  webui_controller_factory_->AddFactoryOverride(TestResourceUrl().host(),
                                                 test_webui_provider_.Pointer());
 }
 
 void FileManagerJsTestBase::TearDownOnMainThread() {
   InProcessBrowserTest::TearDownOnMainThread();
 
-  webui_controller_factory_->RemoveFactoryOverride(
-      GURL(kTestResourceURL).host());
+  webui_controller_factory_->RemoveFactoryOverride(TestResourceUrl().host());
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       webui_controller_factory_.get());
 

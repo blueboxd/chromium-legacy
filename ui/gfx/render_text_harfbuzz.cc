@@ -1379,11 +1379,6 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
 
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
-std::unique_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType()
-    const {
-  return std::make_unique<RenderTextHarfBuzz>();
-}
-
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {
   // TODO(krb): Consider other elision modes for multiline.
   if ((multiline() && (max_lines() == 0 || elide_behavior() != ELIDE_TAIL)) ||

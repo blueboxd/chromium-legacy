@@ -105,15 +105,15 @@ void IndexedDBBlobInfo::set_key(int64_t key) {
 }
 
 void IndexedDBBlobInfo::set_mark_used_callback(
-    const base::Closure& mark_used_callback) {
-  DCHECK(mark_used_callback_.is_null());
-  mark_used_callback_ = mark_used_callback;
+    base::RepeatingClosure mark_used_callback) {
+  DCHECK(!mark_used_callback_);
+  mark_used_callback_ = std::move(mark_used_callback);
 }
 
 void IndexedDBBlobInfo::set_release_callback(
-    const base::RepeatingClosure& release_callback) {
-  DCHECK(release_callback_.is_null());
-  release_callback_ = release_callback;
+    base::RepeatingClosure release_callback) {
+  DCHECK(!release_callback_);
+  release_callback_ = std::move(release_callback);
 }
 
 }  // namespace content

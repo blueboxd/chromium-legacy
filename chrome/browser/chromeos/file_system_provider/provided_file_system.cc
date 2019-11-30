@@ -74,21 +74,21 @@ AutoUpdater::~AutoUpdater() {
 }
 
 struct ProvidedFileSystem::AddWatcherInQueueArgs {
-  AddWatcherInQueueArgs(size_t token,
-                        const GURL& origin,
-                        const base::FilePath& entry_path,
-                        bool recursive,
-                        bool persistent,
-                        storage::AsyncFileUtil::StatusCallback callback,
-                        const storage::WatcherManager::NotificationCallback&
-                            notification_callback)
+  AddWatcherInQueueArgs(
+      size_t token,
+      const GURL& origin,
+      const base::FilePath& entry_path,
+      bool recursive,
+      bool persistent,
+      storage::AsyncFileUtil::StatusCallback callback,
+      storage::WatcherManager::NotificationCallback notification_callback)
       : token(token),
         origin(origin),
         entry_path(entry_path),
         recursive(recursive),
         persistent(persistent),
         callback(std::move(callback)),
-        notification_callback(notification_callback) {}
+        notification_callback(std::move(notification_callback)) {}
   ~AddWatcherInQueueArgs() {}
   AddWatcherInQueueArgs(AddWatcherInQueueArgs&&) = default;
 
@@ -461,8 +461,7 @@ AbortCallback ProvidedFileSystem::AddWatcher(
     bool recursive,
     bool persistent,
     storage::AsyncFileUtil::StatusCallback callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::NotificationCallback notification_callback) {
   const size_t token = watcher_queue_.NewToken();
   watcher_queue_.Enqueue(
       token,
@@ -470,7 +469,7 @@ AbortCallback ProvidedFileSystem::AddWatcher(
                      base::Unretained(this),  // Outlived by the queue.
                      AddWatcherInQueueArgs(token, origin, entry_path, recursive,
                                            persistent, std::move(callback),
-                                           notification_callback)));
+                                           std::move(notification_callback))));
   return AbortCallback();
 }
 

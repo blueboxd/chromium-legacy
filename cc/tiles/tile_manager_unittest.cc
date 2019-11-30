@@ -1532,7 +1532,9 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override {
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.software_backing()) {
       auto backing = std::make_unique<TestSoftwareBacking>();
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
@@ -1971,7 +1973,9 @@ class VerifyResourceContentIdRasterBufferProvider
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override {
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     EXPECT_EQ(expected_content_id_, resource_content_id);
     return nullptr;
   }
@@ -2170,7 +2174,9 @@ class InvalidResourceRasterBufferProvider
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override {
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.gpu_backing()) {
       auto backing = std::make_unique<StubGpuBacking>();
       // Don't set a mailbox to signal invalid resource.
@@ -2267,7 +2273,9 @@ class MockReadyToDrawRasterBufferProviderImpl
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override {
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.software_backing())
       resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
     return std::make_unique<FakeRasterBuffer>();
@@ -3256,7 +3264,9 @@ class VerifyImageProviderRasterBufferProvider
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override {
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     buffer_count_++;
     return std::make_unique<VerifyImageProviderRasterBuffer>();
   }

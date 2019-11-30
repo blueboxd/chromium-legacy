@@ -102,23 +102,24 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
   parsed_options.preserve_source_color_space =
       (options->colorSpaceConversion() ==
        kPreserveImageBitmapColorSpaceConversion);
-  parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+  parsed_options.color_params.SetCanvasColorSpace(CanvasColorSpace::kSRGB);
   if (options->colorSpaceConversion() != kSRGBImageBitmapColorSpaceConversion &&
       options->colorSpaceConversion() !=
           kPreserveImageBitmapColorSpaceConversion &&
       options->colorSpaceConversion() != kImageBitmapOptionNone &&
       options->colorSpaceConversion() != kImageBitmapOptionDefault) {
-    parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
+    parsed_options.color_params.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
     if (options->colorSpaceConversion() ==
         kLinearRGBImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(
-          kLinearRGBCanvasColorSpace);
+          CanvasColorSpace::kLinearRGB);
     } else if (options->colorSpaceConversion() ==
                kP3ImageBitmapColorSpaceConversion) {
-      parsed_options.color_params.SetCanvasColorSpace(kP3CanvasColorSpace);
+      parsed_options.color_params.SetCanvasColorSpace(CanvasColorSpace::kP3);
     } else if (options->colorSpaceConversion() ==
                kRec2020ImageBitmapColorSpaceConversion) {
-      parsed_options.color_params.SetCanvasColorSpace(kRec2020CanvasColorSpace);
+      parsed_options.color_params.SetCanvasColorSpace(
+          CanvasColorSpace::kRec2020);
     } else {
       NOTREACHED()
           << "Invalid ImageBitmap creation attribute colorSpaceConversion: "

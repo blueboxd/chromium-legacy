@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">باز کردن پیوند در <ph name="APP" /></translation>
 <translation id="1140351953533677694">دسترسی به بلوتوث و دستگاه‌های سریال خودتان</translation>
 <translation id="114036956334641753">صدا و زیرنویس</translation>
-<translation id="1140610710803014750">برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید، به سیستم وارد شوید و همگام‌سازی را روشن کنید.</translation>
 <translation id="1140746652461896221">مسدود کردن محتوا در همه صفحه‌هایی که بازدید می‌کنید</translation>
 <translation id="1143142264369994168">امضا کننده گواهی</translation>
 <translation id="1145292499998999162">افزایه مسدود شد</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">کپی آدرس صوت</translation>
 <translation id="1465827627707997754">تکه پیتزا</translation>
 <translation id="1468571364034902819">نمی‌توان از این نمایه استفاده کرد</translation>
-<translation id="1470811252759861213">برای دریافت افزونه‌هایتان در همه رایانه‌هایتان، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">بیشتر ببینید</translation>
 <translation id="1475502736924165259">گواهی‌هایی برای فایل دارید که در هیچ‌کدام از دسته‌های دیگر قرار نمی‌گیرد</translation>
 <translation id="1476088332184200792">کپی در دستگاه</translation>
@@ -1042,7 +1040,6 @@
 <translation id="2489829450872380594">‏دفعه بعد، تلفن جدیدی قفل <ph name="DEVICE_TYPE" /> را باز می‌کند. می‌توانید Smart Lock را در «تنظیمات» خاموش کنید.</translation>
 <translation id="2489918096470125693">افزودن &amp;پوشه...</translation>
 <translation id="2490481887078769936">«<ph name="FILE_NAME" />» از فهرست برداشته شد</translation>
-<translation id="2490782392574942205">برای دریافت افزونه‌ها در همه رایانه‌هایتان، به سیستم وارد شوید و همگام‌سازی را روشن کنید</translation>
 <translation id="249113932447298600">متأسفیم، دستگاه <ph name="DEVICE_LABEL" /> در حال حاضر پشتیبانی نمی‌شود.</translation>
 <translation id="249303669840926644">ثبت‌نام کامل نشد</translation>
 <translation id="2495777824269688114">قابلیت‌های بیشتری را کاوش کنید یا جواب‌ها را دریافت کنید. برای دریافت راهنمایی، «؟» را انتخاب کنید.</translation>
@@ -1752,7 +1749,6 @@
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3528033729920178817">این صفحه مکان شما را ردیابی کرده است.</translation>
 <translation id="3528498924003805721">اهداف میان‌بر</translation>
-<translation id="3530305684079447434">برای دریافت نشانک‌ها در همه دستگاه‌هایتان، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> می‌خواهد از میکروفن شما استفاده کند</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - بی‌صدا شده است</translation>
 <translation id="3538066758857505094">‏هنگام حذف نصب Linux خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>

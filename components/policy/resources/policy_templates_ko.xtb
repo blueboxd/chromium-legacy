@@ -393,11 +393,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 사용 중지되거나 설정되지 않으면 Kerberos 계정 설정이 사용 중지됩니다. Kerberos 계정을 추가할 수 없으며 Kerberos 인증도 사용할 수 없습니다. 기존의 모든 Kerberos 계정은 삭제되며 저장된 모든 비밀번호도 삭제됩니다.</translation>
 <translation id="1561424797596341174">정책은 원격 액세스 호스트의 디버그 빌드를 무시합니다.</translation>
 <translation id="1561967320164410511">개별 인증을 위한 U2F 및 확장 프로그램</translation>
-<translation id="1566329065312331399">
-      이 정책을 False로 설정하면 기기에서 파워워시를 실행할 수 없습니다.
-      True로 설정하면 기기에서 파워워시를 실행할 수 있습니다.
-      설정하지 않으면 False가 기본으로 설정되어 기기에서 파워워시를 실행할 수 없습니다.
-      </translation>
 <translation id="1574554504290354326">이 설정은 지원이 중단되었습니다. 대신 SafeBrowsingExtendedReportingEnabled를 사용하세요. SafeBrowsingExtendedReportingEnabled를 사용 또는 사용 중지하려면 SafeBrowsingExtendedReportingOptInAllowed를 False로 설정합니다.
 
       이 정책을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송할 수 없게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자가 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
@@ -4365,11 +4360,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7937491150792971922">여러 출처의 확장 프로그램 설치 목록 정책 병합</translation>
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
-<translation id="7944213656414105292">이 정책은 로그인 화면의 SAML 절차가 진행되는 동안 기기 ID의 원격 증명을 사용할 수 있는 액세스가 부여되는 URL을 지정합니다.
-
-      특히 URL이 이 정책을 통해 제공되는 패턴 중 하나와 일치하는 경우 원격 증명 챌린지의 반응을 포함하는 HTTP 헤더를 받을 수 있도록 허용하여 기기 ID 및 기기 상태를 증명합니다.
-
-      정책이 설정되지 않거나 빈 목록으로 설정되어 있는 경우 어떠한 URL도 로그인 화면에서 원격 증명을 사용할 수 있도록 허용되지 않습니다.</translation>
 <translation id="7952007677054834789"><ph name="PRODUCT_NAME" />에서 시작 시 로드될 페이지, 기본 홈페이지, 기본 새 탭 페이지를 구성하고 사용자가 변경하지 못하게 합니다.
 
       사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않으면 사용자는 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 계속해서 설정할 수 있습니다.

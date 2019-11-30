@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Verander die sluitskerm-kennisgewinginstellings</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Wys Bluetooth-instellings. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Wys altyd rak</translation>
 <translation id="1341651618736211726">Oorloop</translation>
 <translation id="1346748346194534595">Regs</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Opskerm-sleutelbord geaktiveer</translation>
 <translation id="1761222317188459878">Wissel netwerkverbinding. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rollees regs</translation>
+<translation id="181103072419391116">Seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="1812997170047690955">Wat wys op my skerm?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laai tans …)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Druk <ph name="KEYBOARD_SHORTCUT" /> om sleutelborduitleg te wissel.</translation>
 <translation id="2501920221385095727">Taaisleutels</translation>
 <translation id="2509468283778169019">HOOFLETTERSLOT is aan</translation>
+<translation id="2517825809102302935">Skakel af vir vanaand</translation>
 <translation id="2542089167727451762">Tik op jou profielprent</translation>
 <translation id="255671100581129685">Die Google Assistent is nie in 'n publieke sessie beskikbaar nie.</translation>
 <translation id="256712445991462162">die gedokte vergrootglas</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Jy kan net tot en met <ph name="MULTI_PROFILE_USER_LIMIT" /> rekeninge in veelvoudige aanmelding hê.</translation>
 <translation id="3154351730702813399">Die toesteladministrateur kan dalk jou blaai-aktiwiteit monitor.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Gekoppel aan 'n toestel}other{Gekoppel aan # toestelle}}</translation>
+<translation id="3217205077783620295">Volume is aan. Wissel om oudio te demp.</translation>
 <translation id="3226991577105957773">+nog <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Geen selnetwerk beskikbaar nie</translation>
 <translation id="3249513730522716925">Venster <ph name="WINDOW_TITLE" /> is geskuif van lessenaar <ph name="ACTIVE_DESK" /> af na lessenaar <ph name="TARGET_DESK" /> toe</translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">USB C-toestel</translation>
 <translation id="3454224730401036106">Jou verbinding het na 'n veiliger netwerk gewissel</translation>
 <translation id="3465223694362104965">Nog 'n sleutelbord is aan hierdie toestel gekoppel vandat jy laas aangemeld het. Maak seker jy vertrou hierdie sleutelbord voordat jy dit gebruik.</translation>
+<translation id="3465356146291925647">Deur jou administrateur bestuur</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Lig muismerker uit</translation>
 <translation id="3513798432020909783">Rekening word bestuur deur <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Verander terug na "<ph name="FROM_LOCALE" />" (vereis herbegin)</translation>
@@ -290,6 +296,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4924411785043111640">Herbegin en stel terug</translation>
 <translation id="495046168593986294">Rollees op</translation>
 <translation id="4961318399572185831">Saai skerm uit</translation>
+<translation id="5018302031617932556">Aandbeligting maak dit makliker om in dowwe lig na jou skerm te kyk en te lees. Tik om dit te verander.</translation>
 <translation id="5030687792513154421">Die tyd is om</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> het aan 'n nuwe foon gekoppel</translation>
 <translation id="5083553833479578423">Ontsluit meer Assistent-kenmerke.</translation>
@@ -329,6 +336,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="573413375004481890">Hierdie toestel kon nie al jou skerms steun nie en daarom is een ontkoppel</translation>
 <translation id="574392208103952083">Medium</translation>
 <translation id="5744083938413354016">Tiksleep</translation>
+<translation id="5745612484876805746">Aandbeligting skakel met sondsondergang outomaties aan</translation>
 <translation id="5750765938512549687">Bluetooth is af</translation>
 <translation id="576453121877257266">Aandbeligting is aan.</translation>
 <translation id="5777841717266010279">Stop skermdeling?</translation>
@@ -350,6 +358,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5992218262414051481">Hoëkontras-modus is geaktiveer. Druk weer Ctrl+Search+H om dit af te skakel.</translation>
 <translation id="6018164090099858612">Verlaat tans spieëlmodus</translation>
 <translation id="602001110135236999">Rollees links</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6043212731627905357">Hierdie monitor werk nie saam met jou <ph name="DEVICE_TYPE" /> nie (die monitor is nie gesteun nie).</translation>
 <translation id="6043994281159824495">Meld nou af</translation>
@@ -373,6 +382,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6376931439017688372">Bluetooth is aan</translation>
 <translation id="639644700271529076">HOOFLETTERSLOT is af</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Vee alle kennisgewings uit</translation>
 <translation id="643147933154517414">Als klaar</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> op <ph name="RECEIVER_NAME" /></translation>
@@ -386,9 +396,11 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6521655319214113338">Handskrifinvoer</translation>
 <translation id="6528179044667508675">Moenie Steur Nie</translation>
 <translation id="6537270692134705506">Vang skerm vas</translation>
+<translation id="6537924328260219877">Seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Saai tans uit na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vra administrateur</translation>
 <translation id="6585808820553845416">Sessie eindig oor <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="6627638273713273709">Soek+Shift+K</translation>
 <translation id="6637729079642709226">Verander tyd</translation>
 <translation id="6650933572246256093">Bluetooth-toestel "<ph name="DEVICE_NAME" />" soek toestemming om saam te bind. Voer asseblief hierdie wagsleutel op daardie toestel in: <ph name="PASSKEY" /></translation>
@@ -420,6 +432,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7015766095477679451">Kom terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Koppel jou <ph name="DEVICE_NAME" /> aan jou foon</translation>
 <translation id="7029814467594812963">Verlaat sessie</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistent</translation>
 <translation id="7042322267639375032">Vou statusarea in</translation>
 <translation id="7066646422045619941">Hierdie netwerk is deur jou administrateur gedeaktiveer.</translation>
 <translation id="7067196344162293536">Outodraai</translation>
@@ -502,6 +515,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8192202700944119416">Kennisgewings word versteek.</translation>
 <translation id="8203795194971602413">Regsklik</translation>
 <translation id="8236042855478648955">Tyd vir 'n blaaskans</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Druk Enter om <ph name="USER_EMAIL_ADDRESS" /> te ontsluit</translation>
 <translation id="8261506727792406068">Vee uit</translation>
 <translation id="8297006494302853456">Swak</translation>
@@ -526,10 +540,12 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8513108775083588393">Outodraai</translation>
 <translation id="8517041960877371778">Jou <ph name="DEVICE_TYPE" /> mag nie laai terwyl dit aangeskakel is nie.</translation>
 <translation id="8627191004499078455">Gekoppel aan <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> oor</translation>
 <translation id="8649101189709089199">Hardoplees</translation>
 <translation id="8652175077544655965">Maak instellings toe</translation>
 <translation id="8653151467777939995">Wys kennisgewinginstellings. Kennisgewings is aan</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Wys netwerklys. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laekraglaaier gekoppel</translation>
@@ -538,6 +554,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8734991477317290293">Dit kan dalk probeer om jou sleuteldrukke te steel</translation>
 <translation id="8735953464173050365">Wys sleutelbordinstellings. <ph name="KEYBOARD_NAME" /> is gekies</translation>
 <translation id="875593634123171288">Wys VPN-instellings</translation>
+<translation id="8785070478575117577">Koppel aan <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Wissel rotasieslot. <ph name="STATE_TEXT" /></translation>
@@ -558,6 +575,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="899350903320462459">Ontsluit toestel as <ph name="LOGIN_ID" /> om die kennisgewinghandeling uit te voer</translation>
 <translation id="9017320285115481645">Voer die Family Link-ouertoegangskode in.</translation>
 <translation id="9029474291399787231">Adobe Flash Player-opdatering beskikbaar</translation>
+<translation id="9047624247355796468">Maak instellings oop vir <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Toestel sal teruggerol word</translation>
 <translation id="9070640332319875144">Assistent-instellings</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> totdat battery leeg is.</translation>
@@ -572,6 +590,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="9183456764293710005">Volskermvergrootglas</translation>
 <translation id="9193626018745640770">Saai tans op 'n onbekende ontvanger uit</translation>
 <translation id="9194617393863864469">Meld 'n ander gebruiker aan …</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, deur jou administrateur bestuur</translation>
 <translation id="9205817095063786319">Toestel word bestuur deur <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Verlaat tans verenigde werkskermmodus</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> oor totdat battery vol gelaai is.</translation>

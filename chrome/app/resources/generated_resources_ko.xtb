@@ -99,7 +99,6 @@
 <translation id="1137673463384776352"><ph name="APP" />에서 링크 열기</translation>
 <translation id="1140351953533677694">블루투스 및 직렬 기기에 액세스</translation>
 <translation id="114036956334641753">오디오 및 자막</translation>
-<translation id="1140610710803014750">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
 <translation id="1140746652461896221">방문하는 모든 페이지의 콘텐츠를 차단합니다.</translation>
 <translation id="1143142264369994168">인증서 서명자</translation>
 <translation id="1145292499998999162">플러그인 차단됨</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">오디오 주소 복사(&amp;O)</translation>
 <translation id="1465827627707997754">피자 조각</translation>
 <translation id="1468571364034902819">이 프로필을 사용할 수 없음</translation>
-<translation id="1470811252759861213">모든 컴퓨터에서 확장 프로그램을 사용하려면 <ph name="SIGN_IN_LINK" />에 로그인하세요.</translation>
 <translation id="1472675084647422956">자세히 보기</translation>
 <translation id="1475502736924165259">모든 기타 카테고리에 맞지 않는 인증서가 등록되어 있습니다.</translation>
 <translation id="1476088332184200792">기기로 복사</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">다음번에는 새로운 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 없습니다.</translation>
 <translation id="2489918096470125693">폴더 추가(&amp;F)...</translation>
 <translation id="2490481887078769936">목록에서 <ph name="FILE_NAME" />이(가) 삭제됨</translation>
-<translation id="2490782392574942205">어느 컴퓨터에서나 내 확장 프로그램을 사용하려면 로그인하여 동기화를 사용 설정하세요.</translation>
 <translation id="249113932447298600">죄송합니다. 현재 이 기기(<ph name="DEVICE_LABEL" />)는 지원되지 않습니다.</translation>
 <translation id="249303669840926644">등록을 완료할 수 없습니다.</translation>
 <translation id="2495777824269688114">더 많은 기능을 알아보거나 궁금한 점을 해결합니다. 도움말을 보려면 '?' 아이콘을 선택하세요.</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3528033729920178817">이 페이지에서는 사용자 위치를 추적합니다.</translation>
 <translation id="3528498924003805721">바로가기 대상</translation>
-<translation id="3530305684079447434">어느 기기에서나 북마크를 사용하려면 <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" />에서 마이크를 사용하려고 합니다</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 오디오 음소거</translation>
 <translation id="3538066758857505094">Linux를 제거하는 동안 문제가 발생했습니다. 다시 시도해 주세요.</translation>

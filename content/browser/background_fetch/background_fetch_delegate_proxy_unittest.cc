@@ -177,7 +177,7 @@ class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
   BackgroundFetchDelegateProxyTest() : delegate_proxy_(&browser_context_) {
     delegate_ = browser_context_.GetBackgroundFetchDelegate();
   }
-  void DidGetIconDisplaySize(base::Closure quit_closure,
+  void DidGetIconDisplaySize(base::OnceClosure quit_closure,
                              gfx::Size* out_display_size,
                              const gfx::Size& display_size) {
     DCHECK(out_display_size);

@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Aðeins um Wi-Fi</translation>
 <translation id="2747003861858887689">Fyrri reitur</translation>
 <translation id="2773292004659987824">Leit í huliðsstillingu</translation>
+<translation id="277771892408211951">Velja tungumál</translation>
 <translation id="2780046210906776326">Engir tölvupóstreikningar</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Fara úr flipavali</translation>
@@ -268,7 +269,6 @@ Gögnin þín eru dulkóðuð með aðgangsorði samstillingar. Sláðu það in
 <translation id="4689564913179979534">Stjórna greiðslumátum...</translation>
 <translation id="473775607612524610">Uppfæra</translation>
 <translation id="4747097190499141774">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay. Aðeins þeir sem vita aðgangsorðið þitt geta lesið dulkóðuðu gögnin þín. Aðgangsorðið er hvorki sent til Google né geymt. Ef þú gleymir aðgangsorðinu eða vilt breyta þessari stillingu þarftu að endurstilla samstillingu. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Finna á síðu...</translation>
 <translation id="4751645464639803239">Nýr huliðsflipi</translation>
 <translation id="4758977202923349869">Settu kreditkortið innan þessa ramma</translation>
 <translation id="4802417911091824046">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay.
@@ -455,7 +455,6 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7136892417564438900">Myndavélin er ekki tiltæk</translation>
 <translation id="7159472599653637159">Biðja um fartækjasvæði</translation>
 <translation id="7173114856073700355">Opna stillingar</translation>
-<translation id="7189598951263744875">Deila...</translation>
 <translation id="7192050974311852563">Hefja skráningu</translation>
 <translation id="7203585745079012652">Lesa upp svör</translation>
 <translation id="7265758999917665941">Aldrei fyrir þetta vefsvæði</translation>
@@ -559,6 +558,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8840513115188359703">Þú verður ekki skráð(ur) út af Google reikningnum þínum.</translation>
 <translation id="8870413625673593573">Nýlega lokað</translation>
 <translation id="8881801611828450202">Leita að þessari mynd á <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Deila…</translation>
 <translation id="895541991026785598">Tilkynna um vandamál</translation>
 <translation id="8976382372951310360">Hjálp</translation>
 <translation id="8981454092730389528">Virknistýringar Google</translation>

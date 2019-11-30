@@ -104,7 +104,6 @@ source_set("bookmarks") {
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",

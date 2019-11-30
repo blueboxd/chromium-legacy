@@ -1183,8 +1183,12 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin,
       ImageDecodeCache::TaskType::kInRaster);
   bool has_at_raster_images = false;
-  image_controller_.ConvertImagesToTasks(&sync_decoded_images, &decode_tasks,
-                                         &has_at_raster_images, tracing_info);
+  bool has_hardware_accelerated_jpeg_candidates = false;
+  bool has_hardware_accelerated_webp_candidates = false;
+  image_controller_.ConvertImagesToTasks(
+      &sync_decoded_images, &decode_tasks, &has_at_raster_images,
+      &has_hardware_accelerated_jpeg_candidates,
+      &has_hardware_accelerated_webp_candidates, tracing_info);
   // Notify |decoded_image_tracker_| after |image_controller_| to ensure we've
   // taken new refs on the images before releasing the predecode API refs.
   decoded_image_tracker_.OnImagesUsedInDraw(sync_decoded_images);
@@ -1226,7 +1230,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   std::unique_ptr<RasterBuffer> raster_buffer =
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id(),
-          has_at_raster_images);
+          has_at_raster_images, has_hardware_accelerated_jpeg_candidates,
+          has_hardware_accelerated_webp_candidates);
 
   base::Optional<PlaybackImageProvider::Settings> settings;
   if (!skip_images) {

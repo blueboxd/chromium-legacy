@@ -39,7 +39,7 @@ ReportUploader::ReportUploader(policy::CloudPolicyClient* client,
       maximum_number_of_retries_(maximum_number_of_retries) {}
 ReportUploader::~ReportUploader() = default;
 
-void ReportUploader::SetRequestAndUpload(Requests requests,
+void ReportUploader::SetRequestAndUpload(ReportRequests requests,
                                          ReportCallback callback) {
   requests_ = std::move(requests);
   callback_ = std::move(callback);
@@ -47,7 +47,7 @@ void ReportUploader::SetRequestAndUpload(Requests requests,
 }
 
 void ReportUploader::Upload() {
-  auto request = std::make_unique<Request>(*requests_.front());
+  auto request = std::make_unique<ReportRequest>(*requests_.front());
   auto callback = base::BindRepeating(&ReportUploader::OnRequestFinished,
                                       weak_ptr_factory_.GetWeakPtr());
 

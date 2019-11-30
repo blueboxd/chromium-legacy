@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -36,6 +37,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
@@ -44,6 +46,7 @@
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/vulkan/buildflags.h"
@@ -110,6 +113,42 @@ struct ReadPixelsContext {
 
   std::unique_ptr<CopyOutputRequest> request;
   gfx::Rect result_rect;
+};
+
+class SharedImageSubMemoryTracker : public gpu::MemoryTracker {
+ public:
+  SharedImageSubMemoryTracker(gpu::CommandBufferId command_buffer_id,
+                              uint64_t client_tracing_id,
+                              Observer* observer)
+      : command_buffer_id_(command_buffer_id),
+        client_tracing_id_(client_tracing_id),
+        observer_(observer) {}
+  SharedImageSubMemoryTracker(const SharedImageSubMemoryTracker&) = delete;
+  SharedImageSubMemoryTracker& operator=(const SharedImageSubMemoryTracker&) =
+      delete;
+  ~SharedImageSubMemoryTracker() override { DCHECK(!size_); }
+
+  // MemoryTracker implementation:
+  void TrackMemoryAllocatedChange(uint64_t delta) override {
+    uint64_t old_size = size_;
+    size_ += delta;
+    DCHECK(observer_);
+    observer_->OnMemoryAllocatedChange(command_buffer_id_, old_size, size_);
+  }
+  uint64_t GetSize() const override { return size_; }
+  uint64_t ClientTracingId() const override { return client_tracing_id_; }
+  int ClientId() const override {
+    return gpu::ChannelIdFromCommandBufferId(command_buffer_id_);
+  }
+  uint64_t ContextGroupTracingId() const override {
+    return command_buffer_id_.GetUnsafeValue();
+  }
+
+ private:
+  gpu::CommandBufferId command_buffer_id_;
+  const uint64_t client_tracing_id_;
+  MemoryTracker::Observer* const observer_;
+  uint64_t size_ = 0;
 };
 
 class CopyOutputResultYUV : public CopyOutputResult {
@@ -282,10 +321,11 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
 }
 
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
-CreateSharedImageRepresentationFactory(SkiaOutputSurfaceDependency* deps) {
+CreateSharedImageRepresentationFactory(SkiaOutputSurfaceDependency* deps,
+                                       gpu::MemoryTracker* memory_tracker) {
   // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
-      deps->GetSharedImageManager(), nullptr);
+      deps->GetSharedImageManager(), memory_tracker);
 }
 
 class ScopedSurfaceToTexture {
@@ -417,6 +457,7 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
       gpu::SharedContextState* context_state,
       gpu::MailboxManager* mailbox_manager,
       gpu::SharedImageManager* shared_image_manager,
+      gpu::MemoryTracker* memory_tracker,
       scoped_refptr<gpu::SyncPointClientState> sync_point_client_state)
       : shared_image_manager_(shared_image_manager),
         shared_image_factory_(gpu_preferences,
@@ -426,7 +467,7 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
                               mailbox_manager,
                               shared_image_manager,
                               nullptr /* image_factory */,
-                              nullptr /* memory_tracker */,
+                              memory_tracker,
                               true /* is_using_skia_renderer */),
         sync_point_client_state_(sync_point_client_state) {}
 
@@ -658,8 +699,14 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       feature_info_(std::move(feature_info)),
       sync_point_client_state_(
           CreateSyncPointClientState(dependency_, sequence_id)),
+      memory_tracker_(std::make_unique<SharedImageSubMemoryTracker>(
+          sync_point_client_state_->command_buffer_id(),
+          base::trace_event::MemoryDumpManager::GetInstance()
+              ->GetTracingProcessId(),
+          dependency_->GetSharedContextState()->memory_tracker())),
       shared_image_representation_factory_(
-          CreateSharedImageRepresentationFactory(dependency_)),
+          CreateSharedImageRepresentationFactory(dependency_,
+                                                 memory_tracker_.get())),
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
       dawn_context_provider_(dependency_->GetDawnContextProvider()),
       renderer_settings_(renderer_settings),
@@ -1021,6 +1068,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         gpu_preferences_, dependency_->GetGpuDriverBugWorkarounds(),
         dependency_->GetGpuFeatureInfo(), context_state_.get(),
         dependency_->GetMailboxManager(), dependency_->GetSharedImageManager(),
+        memory_tracker_.get(),
         CreateSyncPointClientState(dependency_, sequence_id_));
     context_provider_ = base::MakeRefCounted<DirectContextProvider>(
         context_state_->context(), gl_surface_, supports_alpha_,

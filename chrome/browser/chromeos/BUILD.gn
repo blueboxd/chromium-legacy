@@ -1201,6 +1201,8 @@ source_set("chromeos") {
     "input_method/native_input_method_engine.h",
     "kerberos/kerberos_credentials_manager.cc",
     "kerberos/kerberos_credentials_manager.h",
+    "kerberos/kerberos_credentials_manager_factory.cc",
+    "kerberos/kerberos_credentials_manager_factory.h",
     "kerberos/kerberos_ticket_expiry_notification.cc",
     "kerberos/kerberos_ticket_expiry_notification.h",
     "language_preferences.cc",

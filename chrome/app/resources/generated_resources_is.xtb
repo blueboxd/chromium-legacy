@@ -48,6 +48,7 @@
 <translation id="1056775291175587022">Ekkert net í boði</translation>
 <translation id="1056898198331236512">Viðvörun</translation>
 <translation id="1058262162121953039">PUK-númer</translation>
+<translation id="1060881073479695738">Forrit úr Play Store</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> inniheldur viðkvæmt efni og hefur verið útilokuð.</translation>
 <translation id="1061904396131502319">Það fer að koma tími til að taka sér hlé</translation>
 <translation id="1067048845568873861">Búið til</translation>
@@ -99,7 +100,6 @@
 <translation id="1137673463384776352">Opna tengil í <ph name="APP" /></translation>
 <translation id="1140351953533677694">Fá aðgang að Bluetooth og raðtengdu tækjunum þínum</translation>
 <translation id="114036956334641753">Hljóð og skjátextar</translation>
-<translation id="1140610710803014750">Skráðu þig inn og kveiktu á samstillingu til að fá aðgang að bókamerkjunum þínum í öllum tækjum.</translation>
 <translation id="1140746652461896221">Lokaðu fyrir efni á þeim síðum sem þú heimsækir</translation>
 <translation id="1143142264369994168">Vottorðsundirritari</translation>
 <translation id="1145292499998999162">Viðbót útilokuð</translation>
@@ -125,6 +125,7 @@
 <translation id="1171515578268894665"><ph name="ORIGIN" /> vill tengjast við HID-tæki</translation>
 <translation id="1172750555846831341">Snúa á skammhlið</translation>
 <translation id="1173894706177603556">Endurnefna</translation>
+<translation id="1173916544412572294">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, <ph name="BATTERY_STATUS" />% hleðsla á rafhlöðu símans, upplýsingar</translation>
 <translation id="1174073918202301297">Flýtileið bætt við</translation>
 <translation id="117445914942805388">Til að hreinsa vafragögn úr öllum samstilltum tækjum og af Google reikningnum þínum skaltu <ph name="BEGIN_LINK" />skoða samstillingarkosti<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Prenta...</translation>
@@ -226,6 +227,7 @@
 <translation id="1313405956111467313">Sjálfvirk proxy-stilling</translation>
 <translation id="131364520783682672">Hástafalás</translation>
 <translation id="1313705515580255288">Bókamerkin þín, ferillinn og aðrar stillingar verða samstilltar við Google reikninginn þinn.</translation>
+<translation id="131405271941274527"><ph name="URL" /> vill senda og taka við upplýsingum þegar þú ýtir á símann í NTC-tæki</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Heimanet, ekki í reiki</translation>
 <translation id="1316136264406804862">Leitar...</translation>
@@ -241,6 +243,7 @@
 <translation id="1330145147221172764">Kveikja á skjályklaborði</translation>
 <translation id="1331977651797684645">Þetta var ég.</translation>
 <translation id="133535873114485416">Inntak sem skal nota</translation>
+<translation id="1335929031622236846">Skráðu tækið þitt</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> vill opna þetta forrit.</translation>
 <translation id="1338950911836659113">Eyðir...</translation>
 <translation id="1340527397989195812">Afrita efni tækisins með forritinu Skrár.</translation>
@@ -297,6 +300,7 @@
 <translation id="1422159345171879700">Hlaða ótraustar skriftur</translation>
 <translation id="1426410128494586442">Já</translation>
 <translation id="1426870617281699524">Smelltu á „Reyna aftur“ og samþykktu kvaðninguna sem birtist í tölvunni</translation>
+<translation id="1426891891566455573"><ph name="DEVICE_NAME" />, mús</translation>
 <translation id="1427269577154060167">Land</translation>
 <translation id="142758023928848008">Kveikja á lyklafestingu (til að slá inn flýtilykla með því að ýta á þá í röð)</translation>
 <translation id="1429300045468813835">Allt hreinsað</translation>
@@ -329,7 +333,6 @@
 <translation id="1465176863081977902">A&amp;frita slóð hljóðs</translation>
 <translation id="1465827627707997754">Pítsusneið</translation>
 <translation id="1468571364034902819">Ekki er hægt að nota þennan prófíl</translation>
-<translation id="1470811252759861213">Til að nota viðbæturnar þínar í öllum tölvunum þínum skaltu <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Sýna meira</translation>
 <translation id="1475502736924165259">Þú ert með skráð vottorð sem passa ekki í aðra flokka</translation>
 <translation id="1476088332184200792">Afrita í tæki</translation>
@@ -629,12 +632,14 @@
 <translation id="1868193363684582383">„Ok Google“</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> er uppfært</translation>
 <translation id="1875312262568496299">Hefjast handa</translation>
+<translation id="1875386316419689002">Þessi flipi er tengdur við HID-tæki.</translation>
 <translation id="1875387611427697908">Þessu er aðeins hægt að bæta við úr <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Auðkenningarlykill fékkst ekki. Skráðu þig út og inn aftur til að reyna aftur.</translation>
 <translation id="1877860345998737529">Úthlutun rofaaðgerðar</translation>
 <translation id="1878541307036593717">Setja upp heimildir</translation>
 <translation id="1879000426787380528">Skrá inn sem</translation>
 <translation id="1880905663253319515">Eyða vottorðinu „<ph name="CERTIFICATE_NAME" />“?</translation>
+<translation id="1884013283844450420">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, tengjast</translation>
 <translation id="1886996562706621347">Leyfa vefsvæðum að óska eftir að verða sjálfgefin hjálparforrit fyrir samskiptareglur (ráðlagt)</translation>
 <translation id="1887442540531652736">Innskráningarvilla</translation>
 <translation id="1887597546629269384">Segðu „Hey Google“ aftur</translation>
@@ -791,6 +796,8 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2136372518715274136">Sláðu inn nýtt aðgangsorð</translation>
 <translation id="2136476978468204130">Innslegið aðgangsorð er rangt</translation>
 <translation id="2138398485845393913">Tenging við „<ph name="DEVICE_NAME" />“ er enn í vinnslu</translation>
+<translation id="2139545522194199494">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, stjórnað af kerfisstjóra, tengjast</translation>
+<translation id="2139919072249842737">Hnappur til að setja upp</translation>
 <translation id="214169863967063661">Opna útlitsstillingar</translation>
 <translation id="2142328300403846845">Opna tengil sem</translation>
 <translation id="2143765403545170146">Sýna alltaf tækjastiku við birtingu á öllum skjánum</translation>
@@ -813,6 +820,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2157875535253991059">Þessi síða birtist núna á öllum skjánum.</translation>
 <translation id="216169395504480358">Bæta við Wi-Fi...</translation>
 <translation id="2162155940152307086">Samstilling hefst þegar þú lokar samstillingarkostum</translation>
+<translation id="2162295688984026195"><ph name="DEVICE_NAME" />, lyklaborð og mús saman</translation>
 <translation id="2163470535490402084">Tengstu netinu til að skrá þig inn á <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2165421703844373933">Opnaðu hjálparann með því að segja „Ok Google“. Veldu „Kveikt (mælt með)“ til að spara rafhlöðuna. Hjálparinn svarar aðeins þegar tækið er í sambandi eða í hleðslu.</translation>
 <translation id="2166369534954157698">Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa</translation>
@@ -914,6 +922,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2292848386125228270">Ræstu <ph name="PRODUCT_NAME" /> sem venjulegur notandi. Til að keyra sem rótarnotandi í þróunarskyni þarftu að endurkeyra með flagginu --no-sandbox.</translation>
 <translation id="2294358108254308676">Viltu setja upp <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2297705863329999812">Leita að prenturum</translation>
+<translation id="2299734369537008228">Sleði: <ph name="MIN_LABEL" /> til <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Sérsníða og stjórna <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Rótarmappa viðbótarinnar er ógild.</translation>
 <translation id="23030561267973084">„<ph name="EXTENSION_NAME" />“ hefur óskað eftir frekari heimildum.</translation>
@@ -1045,7 +1054,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2489829450872380594">Næst mun nýr sími taka <ph name="DEVICE_TYPE" /> úr lás. Þú getur slökkt á Smart Lock í stillingunum.</translation>
 <translation id="2489918096470125693">Bæta við möppu</translation>
 <translation id="2490481887078769936">Skráin „<ph name="FILE_NAME" />“ var fjarlægð af lista</translation>
-<translation id="2490782392574942205">Til að fá viðbæturnar þínar í allar tölvurnar þínar skaltu skrá þig inn og kveikja á samstillingu</translation>
 <translation id="249113932447298600">Því miður er tækið <ph name="DEVICE_LABEL" /> ekki stutt á þessari stundu.</translation>
 <translation id="249303669840926644">Ekki var hægt að ljúka við skráningu</translation>
 <translation id="2495777824269688114">Skoðaðu fleiri eiginleika eða fáðu svör. Veldu „?“ til að fá aðstoð.</translation>
@@ -1085,6 +1093,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2534460670861217804">Öruggur HTTP-staðgengilsþjónn</translation>
 <translation id="253557089021624350">Fjöldi sem heldur viðbót virkri</translation>
 <translation id="2535799430745250929">Ekkert farsímakerfi er til staðar</translation>
+<translation id="2537178555904266562">Villa við að samstilla aðgangsorð</translation>
 <translation id="2537296579376733324">Öll fótspor, aðeins á þessu vefsvæði</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> getur skoðað og breytt eftirfarandi skrám og möppum</translation>
 <translation id="2538361623464451692">Slökkt er á samstillingu</translation>
@@ -1142,6 +1151,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2621713457727696555">Læst</translation>
 <translation id="26224892172169984">Leyfa engu vefsvæði að vinna úr samskiptareglum</translation>
 <translation id="2624142942574147739">Þessi síða hefur aðgang að myndavélinni þinni og hljóðnema.</translation>
+<translation id="2624917159090553505"><ph name="DEVICE_NAME" />, jaðartæki</translation>
 <translation id="2626799779920242286">Reyndu aftur síðar.</translation>
 <translation id="2628770867680720336">Núllstilla þarf þetta Chromebook tæki til að kveikja á ADB-villuleit. <ph name="BEGIN_LINK_LEARN_MORE" />Frekari upplýsingar<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="2629227353894235473">Þróa Android forrit</translation>
@@ -1215,6 +1225,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2716986496990888774">Þessari stillingu er stjórnað af foreldri.</translation>
 <translation id="2718395828230677721">Næturljós</translation>
 <translation id="2718998670920917754">Vírusvarnarforrit fann vírus.</translation>
+<translation id="2719020180254996569">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, upplýsingar</translation>
 <translation id="2719936478972253983">Eftirfarandi fótspor voru útilokuð</translation>
 <translation id="2721037002783622288">&amp;Leita að mynd á <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1242,6 +1253,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2749756011735116528">Skráðu þig inn á <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Athuga málfræði og stafsetningu</translation>
 <translation id="2751739896257479635">Annars stigs EAP-auðkenning</translation>
+<translation id="2753765606311578230"><ph name="DEVICE_NAME" />, hljómtæki í bíl</translation>
 <translation id="2755367719610958252">Stjórna aðgengiseiginleikum</translation>
 <translation id="275662540872599901">slökkt á skjánum</translation>
 <translation id="2762441749940182211">Lokað á myndavél</translation>
@@ -1343,6 +1355,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2889064240420137087">Opna tengil með...</translation>
 <translation id="2889925978073739256">Halda áfram að útiloka óafmarkaðar viðbætur</translation>
 <translation id="2893168226686371498">Sjálfgefinn vafri</translation>
+<translation id="2894380829637873837"><ph name="DEVICE_NAME" />, spjaldtölva</translation>
 <translation id="2894757982205307093">Nýr flipi í hópi</translation>
 <translation id="289644616180464099">SIM-kortið er læst</translation>
 <translation id="2896909745808647285">Skráin <ph name="FILE_NAME" /> er dulkóðuð og lokað var á opnun hennar.</translation>
@@ -1442,6 +1455,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3024374909719388945">Nota 24 tíma klukku</translation>
 <translation id="3031417829280473749">Birgitta</translation>
 <translation id="3031557471081358569">Veldu atriði til að flytja inn:</translation>
+<translation id="3036527976720628348"><ph name="DEVICE_NAME" />, sími</translation>
 <translation id="3036546437875325427">Virkja Flash</translation>
 <translation id="3037754279345160234">Ekki tókst að þátta stillinguna til að tengjast léninu. Hafðu samband við kerfisstjóra.</translation>
 <translation id="3038612606416062604">Bæta prentara við handvirkt</translation>
@@ -1657,6 +1671,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3382200254148930874">Eftirlit stöðvað...</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Skiltákn</translation>
+<translation id="338691029516748599">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, stjórnað af kerfisstjóra, tengjast</translation>
 <translation id="3387614642886316601">Nota endurbætta ritvilluleit</translation>
 <translation id="3396800784455899911">Með því að smella á hnappinn „Samþykkja og halda áfram“ samþykkir þú þá úrvinnslu sem lýst er hér að ofan fyrir þessa Google þjónustu.</translation>
 <translation id="3399432415385675819">Tilkynningar verða gerðar óvirkar</translation>
@@ -1741,6 +1756,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3507888235492474624">Leita aftur að Bluetooth-tækjum</translation>
 <translation id="3508492320654304609">Ekki var hægt að eyða innskráningargögnum þínum</translation>
 <translation id="3508920295779105875">Velja aðra möppu...</translation>
+<translation id="3509680540198371098">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, upplýsingar</translation>
 <translation id="3511200754045804813">Leita aftur</translation>
 <translation id="3511307672085573050">Afrita slóð t&amp;engils</translation>
 <translation id="351152300840026870">Letur með fastri breidd</translation>
@@ -1755,7 +1771,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3528033729920178817">Þessi síða er að fylgjast með staðsetningunni þinni.</translation>
 <translation id="3528498924003805721">Áfangastaðir flýtileiða</translation>
-<translation id="3530305684079447434">Til að fá bókamerki í öllum tækjunum þínum skaltu <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> vill fá að nota hljóðnemann</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – slökkt á hljóði</translation>
 <translation id="3538066758857505094">Villa við að fjarlægja Linux. Reyndu aftur.</translation>
@@ -1833,6 +1848,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3629631988386925734">Færðu inn aðgangsorðið þitt til að kveikja á Smart Lock. Næst tekur síminn þinn <ph name="DEVICE_TYPE" /> úr lás. Þú getur slökkt á Smart Lock í stillingunum.</translation>
 <translation id="3630132874740063857">Síminn þinn</translation>
 <translation id="3630995161997703415">Bættu þessu vefsvæði við hilluna til að geta opnað það hvenær sem er</translation>
+<translation id="3634507049637220048">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, stjórnað af kerfisstjóra, upplýsingar</translation>
 <translation id="3635353578505343390">Senda ábendingar til Google</translation>
 <translation id="3636096452488277381">Sælinú, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – <ph name="TIME" /> eftir</translation>
@@ -1876,6 +1892,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3688507211863392146">Skrifa í skrár og möppur sem þú opnar í forritinu</translation>
 <translation id="3688526734140524629">Skipta um rás</translation>
 <translation id="3688578402379768763">Uppfært</translation>
+<translation id="3689300613247337921"><ph name="DEVICE_NAME" />, tölva</translation>
 <translation id="3691231116639905343">Lyklaborðsforrit</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> vill fá að deila skjánum þínum</translation>
 <translation id="3693415264595406141">Aðgangsorð:</translation>
@@ -1958,6 +1975,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3789841737615482174">Setja upp</translation>
 <translation id="379082410132524484">Kortið þitt er útrunnið</translation>
 <translation id="3792890930871100565">Aftengja prentara</translation>
+<translation id="3793395331556663376">Of margar kerfisskrár hafa verið opnaðar.</translation>
 <translation id="3796648294839530037">Uppáhaldsnet:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> er stjórnað<ph name="END_LINK" /> af fyrirtækinu þínu</translation>
 <translation id="3797900183766075808">Leita á <ph name="SEARCH_ENGINE" /> að „<ph name="SEARCH_TERMS" />“</translation>
@@ -2027,6 +2045,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3873423927483480833">Sýna PIN-númer</translation>
 <translation id="3873915545594852654">Vandamál með ARC++ kom upp.</translation>
 <translation id="3879748587602334249">Niðurhalsstjórnun</translation>
+<translation id="3882165008614329320">Fyrirliggjandi myndskeið úr myndavél eða skrá</translation>
 <translation id="3886446263141354045">Beiðni þín um aðgang að þessu vefsvæði hefur verið send til <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Glósur með <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Bæta við OpenVPN / L2TP...</translation>
@@ -2218,6 +2237,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4131410914670010031">Svarthvítt</translation>
 <translation id="4136203100490971508">Slekkur sjálfkrafa á næturljósi við sólsetur</translation>
 <translation id="4138267921960073861">Sýna notendanöfn og myndir á innskráningarskjánum</translation>
+<translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - HID-tæki tengt</translation>
 <translation id="4142052906269098341">Taktu <ph name="DEVICE_TYPE" /> úr lás með símanum þínum. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Fáðu betri myndgæði og sparaðu rafhlöðuna. Myndskeiðið mun aðeins spilast á skjá sem styður Cast.</translation>
 <translation id="4146026355784316281">Opna alltaf með skoðara kerfis</translation>
@@ -2390,6 +2410,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="443454694385851356">Gamalt (óöruggt)</translation>
 <translation id="443475966875174318">Uppfærðu eða fjarlægðu ósamhæf forrit</translation>
 <translation id="4438043733494739848">Gegnsætt</translation>
+<translation id="4439427728133035643">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, tengjast</translation>
 <translation id="4441124369922430666">Viltu ræsa þetta forrit sjálfkrafa þegar kveikt er á vélinni?</translation>
 <translation id="4441147046941420429">Til að halda áfram skaltu fjarlægja öryggislykilinn úr tækinu, setja hann svo aftur inn og snerta hann</translation>
 <translation id="444134486829715816">Stækka...</translation>
@@ -2405,6 +2426,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4459169140545916303">Virkt fyrir <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dögum</translation>
 <translation id="4460014764210899310">Sundra hópi</translation>
 <translation id="4462159676511157176">Þjónar með sérsniðnu heiti</translation>
+<translation id="4465725236958772856">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, stjórnað af kerfisstjóra, tengjast</translation>
 <translation id="4469477701382819144">Lokað fyrir á vefsvæðum sem sýna ágengar eða villandi auglýsingar</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> getur breytt skrám í <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Kjörstillingar ytri geymslu</translation>
@@ -2556,6 +2578,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4694024090038830733">Stjórnandi hefur umsjón með stillingum prentara.</translation>
 <translation id="4694604912444486114">Api</translation>
 <translation id="4697551882387947560">Þegar vafralotu lýkur</translation>
+<translation id="4698630591226285015"><ph name="DEVICE_NAME" />, hljóðstyrkur</translation>
 <translation id="4699172675775169585">Myndir og skrár í skyndiminni</translation>
 <translation id="4699357559218762027">(ræst sjálfkrafa)</translation>
 <translation id="470074695271471509">Skrá út til að ljúka?</translation>
@@ -2691,6 +2714,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4898011734382862273">Vottorðið „<ph name="CERTIFICATE_NAME" />“ stendur fyrir vottunarstöð</translation>
 <translation id="489985760463306091">Endurræstu tölvuna til að ljúka við að fjarlægja skaðlegan hugbúnað</translation>
 <translation id="4900392736118574277">Upphafssíðu var breytt í <ph name="URL" />.</translation>
+<translation id="4902546322522096650">Net <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, tengjast</translation>
 <translation id="49027928311173603">Reglan sem sótt var frá þjóninum er ógild: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4907161631261076876">Þessi skrá er ekki sótt oft og kann að vera hættuleg.</translation>
 <translation id="4907306957610201395">Heimildarflokkur</translation>
@@ -2745,6 +2769,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4977942889532008999">Staðfesta aðgang</translation>
 <translation id="4980805016576257426">Þessi viðbót inniheldur spilliforrit.</translation>
 <translation id="4981449534399733132">Til að hreinsa vafragögn úr öllum samstilltum tækjum og af Google reikningnum þínum skaltu <ph name="BEGIN_LINK" />skrá þig inn<ph name="END_LINK" />.</translation>
+<translation id="4986357476502426173"><ph name="DEVICE_NAME" />, myndtæki</translation>
 <translation id="4986728572522335985">Þetta eyðir öllum gögnum á öryggislyklinum, þar á meðal PIN-númerinu</translation>
 <translation id="4988526792673242964">Síður</translation>
 <translation id="49896407730300355">Snúa rangsælis</translation>
@@ -2844,6 +2869,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5135085122826131075">Opnaðu hjálparann með því að segja „Ok Google“.</translation>
 <translation id="5135533361271311778">Ekki var hægt að búa til bókamerkjaatriði.</translation>
 <translation id="5137501176474113045">Eyða þessu atriði</translation>
+<translation id="5139112070765735680"><ph name="QUERY_NAME" />, <ph name="DEFAULT_SEARCH_ENGINE_NAME" /> leit</translation>
 <translation id="5139823398361067371">Sláðu inn PIN-númer fyrir öryggislykilinn. Ef þú veist ekki hvert PIN-númerið er þarftu að endurstilla öryggislykilinn.</translation>
 <translation id="5139955368427980650">&amp;Opna</translation>
 <translation id="5142961317498132443">Auðkenning</translation>
@@ -3240,6 +3266,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5711983031544731014">Ekki tókst að opna. Sláðu inn aðgangsorðið þitt.</translation>
 <translation id="5713723565110096165">Rangt PIN-númer. Tilraunir eftir: <ph name="RETRIES" />.</translation>
 <translation id="5715711091495208045">Miðlari viðbótar: <ph name="PLUGIN_NAME" /></translation>
+<translation id="5716052956047449618"><ph name="DEVICE_NAME" />, mótald</translation>
 <translation id="5719603411793408026">Sjálfgefnar leitarvélar</translation>
 <translation id="5720705177508910913">Núverandi notandi</translation>
 <translation id="572155275267014074">Android stillingar</translation>
@@ -3629,7 +3656,9 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6263284346895336537">Ekki hætta</translation>
 <translation id="6264365405983206840">Velja &amp;allt</translation>
 <translation id="6267166720438879315">Veldu vottorð til að auðkenna þig fyrir <ph name="HOST_NAME" /></translation>
+<translation id="6267547857941397424">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, <ph name="BATTERY_STATUS" />% hleðsla á rafhlöðu símans, tengjast</translation>
 <translation id="6268252012308737255">Opna með <ph name="APP" /></translation>
+<translation id="6268718011101775129">NFC</translation>
 <translation id="6270770586500173387">Senda <ph name="BEGIN_LINK1" />kerfis- og forritsupplýsingar<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />mælingar<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Villa kom upp (<ph name="ERROR" />) við að sækja viðbótina</translation>
 <translation id="6273677812470008672">Gæði</translation>
@@ -3652,6 +3681,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="630065524203833229">Hætta</translation>
 <translation id="6305607932814307878">Altæk regla:</translation>
 <translation id="6307990684951724544">Kerfi upptekið</translation>
+<translation id="6308493641021088955">Innskráning veitt af <ph name="EXTENSION_NAME" /></translation>
 <translation id="6308937455967653460">Vista tengil sem...</translation>
 <translation id="6309510305002439352">Slökkt á hljóðnema</translation>
 <translation id="6311220991371174222">Gat ekki ræst Chrome þar sem eitthvað fór úrskeiðis við að opna prófílinn þinn. Prófaðu að endurræsa Chrome.</translation>
@@ -3778,6 +3808,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6492313032770352219">Stærð á diski:</translation>
 <translation id="6494445798847293442">Ekki vottunarstöð</translation>
 <translation id="649454645705377674">Loka</translation>
+<translation id="6495925982925244349">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, stjórnað af kerfisstjóra, upplýsingar</translation>
 <translation id="6498249116389603658">Öll &amp;tungumálin þín</translation>
 <translation id="6499143127267478107">Leysir úr hýsli í proxy-skriftu...</translation>
 <translation id="6499681088828539489">Ekki leyfa staðgengilsþjóna fyrir samnýtt netkerfi</translation>
@@ -3807,6 +3838,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6532106788206463496">Vista breytingar</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Athugaðu:<ph name="END_BOLD" /> Kveiktu aðeins á þessu ef þú veist hvað þú ert að gera eða ef þér hefur verið sagt að gera þetta, þar sem gagnasöfnun kann að draga úr afköstum.</translation>
 <translation id="6541638731489116978">Lokað hefur verið á aðgang þessa vefsvæðis að hreyfiskynjurum þínum.</translation>
+<translation id="6542922424766292144"><ph name="DEVICE_NAME" />, lyklaborð</translation>
 <translation id="6545665334409411530">Tíðni endurtekninga</translation>
 <translation id="6545864417968258051">Bluetooth-leit</translation>
 <translation id="6545867563032584178">Slökkt er á hljóðnemanum í kerfisstillingum Mac</translation>
@@ -3829,6 +3861,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6577284282025554716">Hætt við niðurhal: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Dulkóða samstillt aðgangsorð með Google notandanafninu þínu og aðgangsorði</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – skjáborðsefni deilt</translation>
+<translation id="6580203076670148210">Skönnunarhraði</translation>
 <translation id="6582080224869403177">Endurstilltu <ph name="DEVICE_TYPE" /> til að auka öryggið.</translation>
 <translation id="6584878029876017575">Microsoft-lífstíðarundirritun</translation>
 <translation id="6586451623538375658">Víxla aðalmúsarhnappi</translation>
@@ -3840,6 +3873,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6596816719288285829">IP-tala</translation>
 <translation id="6597017209724497268">Dæmi</translation>
 <translation id="6597148444736186483">Smelltu á tímann á skjánum til að skrá þig út af aðalreikningi þessa tækis. Á valmyndinni sem birtist smellirðu á „Skrá út“.</translation>
+<translation id="6602937173026466876">Aðgangur að prenturunum þínum</translation>
 <translation id="6602956230557165253">Notaðu vinstri og hægri örvatakkana til að fletta.</translation>
 <translation id="6605847144724004692">Enginn notandi hefur gefið einkunn.</translation>
 <translation id="6607831829715835317">F&amp;leiri verkfæri</translation>
@@ -4223,6 +4257,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="716810439572026343">Sækir <ph name="FILE_NAME" /></translation>
 <translation id="7168109975831002660">Lágmarksleturstærð</translation>
 <translation id="7170041865419449892">Utan þjónustusvæðis</translation>
+<translation id="7171259390164035663">Ekki skrá</translation>
 <translation id="7171559745792467651">Setja upp forrit úr öðrum tækjum</translation>
 <translation id="7174199383876220879">Nýtt! Stjórnaðu tónlistinni, myndskeiðunum og fleiru.</translation>
 <translation id="7175037578838465313">Stilla <ph name="NAME" /></translation>
@@ -4254,6 +4289,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7216409898977639127">Farsímafyrirtæki</translation>
 <translation id="7216595297012131718">Raðaðu tungumálunum eins og þú vilt</translation>
 <translation id="7220019174139618249">Ekki er hægt að flytja lykilorð út í „<ph name="FOLDER" />“</translation>
+<translation id="7220023250700248346"><ph name="DEVICE_NAME" />, stýripinni</translation>
 <translation id="722055596168483966">Sérsníða þjónustu Google</translation>
 <translation id="7221855153210829124">Sýna tilkynningar</translation>
 <translation id="7221869452894271364">Endurhlaða þessa síðu</translation>
@@ -4270,6 +4306,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7235716375204803342">Sækir aðgerðir...</translation>
 <translation id="7235737137505019098">Ekki er nægilegt pláss á öryggislyklinum fyrir fleiri reikninga.</translation>
 <translation id="7238585580608191973">SHA-256 fingrafar</translation>
+<translation id="7238643356913091553"><ph name="NETWORK_NAME" />, upplýsingar</translation>
 <translation id="7240120331469437312">Auknefni viðfangs vottorðsins</translation>
 <translation id="7240339475467890413">Tengjast nýjum heitum reit?</translation>
 <translation id="7241389281993241388">Skráðu þig inn á <ph name="TOKEN_NAME" /> til að flytja inn biðlaravottorðið.</translation>
@@ -4472,6 +4509,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> svarar ekki. Veldu „Þvinga fram lokun“ til að loka forritinu.</translation>
 <translation id="7539856059004947393">Bluetooth-öryggislykill</translation>
 <translation id="7540972813190816353">Villa kom upp við að leita að uppfærslum: <ph name="ERROR" /></translation>
+<translation id="7541773865713908457"><ph name="ACTION_NAME" /> með forritinu <ph name="APP_NAME" /></translation>
 <translation id="7543104066686362383">Virkja eiginleika villuleitar í þessu <ph name="IDS_SHORT_PRODUCT_NAME" /> tæki</translation>
 <translation id="7543525346216957623">Spyrðu foreldri þitt</translation>
 <translation id="7547317915858803630">Viðvörun: <ph name="PRODUCT_NAME" /> stillingarnar þínar eru vistaðar á netdrifi. Þetta getur leitt til hægari virkni, hruns eða jafnvel gagnataps.</translation>
@@ -4705,6 +4743,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7837776265184002579">Heimasíðu var breytt í <ph name="URL" />.</translation>
 <translation id="7839051173341654115">Skoða/afrita efni</translation>
 <translation id="7839192898639727867">Lykilauðkenni viðfangs vottorðs</translation>
+<translation id="7842692330619197998">Farðu á g.co/ChromeEnterpriseAccount ef þú þarft að búa til nýjan reikning.</translation>
 <translation id="7844553762889824470">Auðkenndu það sem þú vilt heyra og ýttu svo á leitarlykilinn + S. Þú getur líka haldið inni leitarlyklinum eða ýtt á táknið fyrir textaupplestur hjá prófílmyndinni þinni til að velja.</translation>
 <translation id="7844992432319478437">Uppfærir breytingaskrá</translation>
 <translation id="7846634333498149051">Lyklaborð</translation>
@@ -5188,6 +5227,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8535005006684281994">Endurnýjunarvefslóð Netscape-vottorðs</translation>
 <translation id="8538358978858059843">Viltu virkja skýjaþjónustu fyrir Cast?</translation>
 <translation id="8539727552378197395">Nei (HttpOnly)</translation>
+<translation id="8540608333167683902">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, upplýsingar</translation>
 <translation id="8543556556237226809">Spurningar? Hafðu samband við manneskjuna sem hefur umsjón með reikningnum þínum.</translation>
 <translation id="8545575359873600875">Ekki tókst að staðfesta aðgangsorðið þitt. Stjórnandi þessa stýrða notanda kann að hafa breytt aðgangsorðinu nýlega. Ef svo er verður það notað næst þegar þú skráir þig inn. Prófaðu að nota gamla aðgangsorðið.</translation>
 <translation id="8546186510985480118">Lítið geymslupláss er eftir á tæki</translation>
@@ -5233,6 +5273,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8608618451198398104">Bæta við Kerberos-miða</translation>
 <translation id="8609465669617005112">Færa upp</translation>
 <translation id="8610103157987623234">Rangt snið. Reyndu aftur</translation>
+<translation id="8613368722576151038"><ph name="DEVICE_NAME" />, leikjafjarstýring</translation>
 <translation id="8615618338313291042">Huliðsforrit: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Skuggi</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -5427,6 +5468,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="885246833287407341">Breytur fyrir föll forritaskila</translation>
 <translation id="8853586775156634952">Þetta kort verður aðeins vistað í þessu tæki</translation>
 <translation id="8855501062415172277"><ph name="FILE_NAME" /> inniheldur viðkvæmt efni.</translation>
+<translation id="8855977033756560989">Chrome Enterprise uppfærslan fylgir með þessu Chromebook Enterprise tæki. Til að nýta fyrirtækjaeiginleika skaltu skrá tækið með reikningi Google stjórnanda.</translation>
 <translation id="885701979325669005">Geymslurými</translation>
 <translation id="8859057652521303089">Veldu tungumál:</translation>
 <translation id="8859174528519900719">Undirrammi: <ph name="SUBFRAME_SITE" /></translation>
@@ -5502,6 +5544,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="895347679606913382">Ræsir...</translation>
 <translation id="8956941634583033512">{0,plural, =1{Uppfærðu innan dags}one{Uppfærðu innan # dags}other{Uppfærðu innan # daga}}</translation>
 <translation id="895944840846194039">JavaScript-minni</translation>
+<translation id="8961448405689538648"><ph name="DEVICE_NAME" />, óþekkt tegund tækis</translation>
 <translation id="8962083179518285172">Fela upplýsingar</translation>
 <translation id="8962918469425892674">Þessi síða notar hreyfi- eða birtuskynjara.</translation>
 <translation id="8965037249707889821">Sláðu inn gamla aðgangsorðið</translation>
@@ -5534,6 +5577,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8999560016882908256">Málskipunarvilla hluta: <ph name="ERROR_LINE" /></translation>
 <translation id="9003647077635673607">Leyfa á öllum vefsvæðum</translation>
 <translation id="9003704114456258138">Tíðni</translation>
+<translation id="9003940392834790328">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, stjórnað af kerfisstjóra, upplýsingar</translation>
 <translation id="9004952710076978168">Tilkynning barst um óþekktan prentara.</translation>
 <translation id="9008201768610948239">Hunsa</translation>
 <translation id="9009369504041480176">Hleður inn (<ph name="PROGRESS_PERCENT" />%)...</translation>

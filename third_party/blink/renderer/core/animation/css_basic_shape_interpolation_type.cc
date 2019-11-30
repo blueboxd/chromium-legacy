@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -174,8 +175,8 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
           state.CssToLengthConversionData());
   switch (CssProperty().PropertyID()) {
     case CSSPropertyID::kShapeOutside:
-      state.Style()->SetShapeOutside(
-          ShapeValue::CreateShapeValue(std::move(shape), CSSBoxType::kMissing));
+      state.Style()->SetShapeOutside(MakeGarbageCollected<ShapeValue>(
+          std::move(shape), CSSBoxType::kMissing));
       break;
     case CSSPropertyID::kClipPath:
       state.Style()->SetClipPath(

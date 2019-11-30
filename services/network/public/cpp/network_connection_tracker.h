@@ -54,9 +54,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   };
 
   // Constructs a NetworkConnectionTracker. |callback| should bind the given
-  // NetworkChangeManagerRequest to the NetworkChangeManager that should be
-  // used. NetworkConnectionTracker does not need to be destroyed before the
-  // network service.
+  // mojo::PendingReceiver<NetworkChangeManager> to the NetworkChangeManager
+  // that should be used. NetworkConnectionTracker does not need to be destroyed
+  // before the network service.
   explicit NetworkConnectionTracker(BindingCallback callback);
 
   ~NetworkConnectionTracker() override;
@@ -127,8 +127,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   // restarts.
   void HandleNetworkServicePipeBroken();
 
-  // Callback to bind a NetworkChangeManagerRequest.
-  const BindingCallback bind_request_callback_;
+  // Callback to bind a mojo::PendingReceiver<NetworkChangeManager>.
+  const BindingCallback bind_receiver_callback_;
 
   // The task runner that |this| lives on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

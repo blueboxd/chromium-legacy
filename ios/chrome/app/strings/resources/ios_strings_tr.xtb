@@ -268,7 +268,6 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="4689564913179979534">Ödeme Yöntemlerini yönet...</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4747097190499141774">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz. Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola, Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Sayfada Bul...</translation>
 <translation id="4751645464639803239">Yeni Gizli Sekme</translation>
 <translation id="4758977202923349869">Kredi Kartını bu çerçeveye yerleştirin</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
@@ -455,7 +454,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
 <translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7173114856073700355">Ayarları Aç</translation>
-<translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7192050974311852563">Günlüğe Kaydetmeyi Başlat</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="7265758999917665941">Bu Site İçin Hiçbir Zaman</translation>
@@ -559,6 +557,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8840513115188359703">Google Hesaplarınızdaki oturumlarınız kapatılmaz.</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8881801611828450202">Bu Resmi <ph name="SEARCH_ENGINE" /> Üzerinde Ara</translation>
+<translation id="8909135823018751308">Paylaş…</translation>
 <translation id="895541991026785598">Sorun Bildirin</translation>
 <translation id="8976382372951310360">Yardım</translation>
 <translation id="8981454092730389528">Google Etkinlik Kontrolleri</translation>

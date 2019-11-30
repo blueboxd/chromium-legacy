@@ -463,6 +463,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4204126831294769023">Dangaus žydrumo spalva</translation>
 <translation id="4204864733111726379">Balkšva spalva</translation>
 <translation id="4206289001967551965">Lentelės viduje</translation>
+<translation id="4207770814752775793">Iš naujo nustatykite numatytąsias teksto į kalbą funkcijos vertes.</translation>
 <translation id="4209770650650780359">Kad pasirinktumėte automatinį užbaigimą, paspauskite rodyklę aukštyn arba žemyn.</translation>
 <translation id="4215733775853809057">Kitas šliaužiklis</translation>
 <translation id="42164919740161077">Pilkšvai melsva spalva</translation>
@@ -766,6 +767,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6290434000785343030">Nėra kito išskleidžiamojo laukelio.</translation>
 <translation id="6305702903308659374">Leisti įprastu garsumu net tada, kai kalba „ChromeVox“</translation>
 <translation id="6307969636681130414">Paspausta</translation>
+<translation id="6315652249189065725">Atidaryti sparčiųjų klavišų meniu</translation>
 <translation id="6322856989298155004">Garsai</translation>
 <translation id="6324551002951139333">Aptikta gramatikos klaida</translation>
 <translation id="6325241889020214828">kopijuoti „<ph name="TEXT" />“.</translation>
@@ -959,6 +961,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="7668307052366682650">{COUNT,plural, =1{valanda}one{valanda}few{valandos}many{valandos}other{valandų}}</translation>
 <translation id="7674576868851035240">Kita nuoroda</translation>
 <translation id="7674768236845044097">žymėjimas</translation>
+<translation id="7676847077928500578">Iš naujo nustatyti teksto į kalbą nustatymus</translation>
 <translation id="7684431668231950609">Teksto redagavimas, URL įrašas</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Ankstesnė akutė</translation>

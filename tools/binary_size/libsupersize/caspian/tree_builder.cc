@@ -290,7 +290,7 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
         class_node->id_path =
             GroupedPath{node->id_path.group, owned_strings_.back()};
         class_node->short_name_index =
-            short_name_index + node->id_path.path.size() + 1;
+            short_name_index + node->id_path.size() + 1;
         class_node->src_path = node->src_path;
         class_node->component = node->component;
         class_node->container_type = ContainerType::kJavaClass;

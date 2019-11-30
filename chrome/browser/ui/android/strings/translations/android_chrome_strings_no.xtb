@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Ikoner</translation>
 <translation id="1111673857033749125">Bokmerker som er lagret på de andre enhetene dine, vises her.</translation>
 <translation id="1113597929977215864">Vis forenklet visning</translation>
+<translation id="1122278879166832009">Trykk her for å gå til startsiden fra hvor som helst raskt</translation>
 <translation id="1124772482545689468">Bruker</translation>
 <translation id="1129510026454351943">Detaljer: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 nedlasting venter.}other{# nedlastinger venter.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Slette nettstedslagring?</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3859306556332390985">Spol fremover</translation>
+<translation id="388596076286380598">Få artikler, videoer og annet innhold fra nettsteder du liker, selv om du er uten nett eller har dårlig tilkobling.</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
 <translation id="3912508018559818924">Vi finner det beste fra nettet …</translation>
@@ -490,6 +492,7 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4719927025381752090">Tilby å oversette</translation>
 <translation id="4720023427747327413">Åpne i <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Hjelp til med å forbedre Chrome. <ph name="BEGIN_LINK" />Delta i undersøkelsen<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4738836084190194332">Sist synkronisert: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Åpne en ny fane</translation>
@@ -636,6 +639,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
+<translation id="5694049548840660018">Kom enkelt tilbake til start</translation>
 <translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
 <translation id="5710871682236653961">Spør før nettsteder får tillatelse til å sende og motta info når du berører NFC-enheter (anbefales)</translation>
 <translation id="572328651809341494">Nylige faner</translation>
@@ -798,6 +802,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner ble lukket</translation>
 <translation id="6864459304226931083">Last ned bildet</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
+<translation id="6884306546558072722">Fortsett å utforske uten nett</translation>
 <translation id="688738109438487280">Legg til eksisterende data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås opp for å kopiere passordet ditt</translation>
 <translation id="6896758677409633944">Kopiér</translation>
@@ -1039,6 +1044,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>
 <translation id="8641930654639604085">Prøv å blokkere nettsteder med voksent innhold</translation>
 <translation id="8655129584991699539">Du kan slette dataene i Chrome-innstillingene</translation>
+<translation id="8655599981421006542">Trykk her for å åpne nye faner og gå tilbake til tidligere faner</translation>
 <translation id="8662811608048051533">Logger deg av de fleste nettsteder.</translation>
 <translation id="8664979001105139458">Filnavnet finnes allerede</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
@@ -1051,6 +1057,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8751914237388039244">Velg et bilde</translation>
+<translation id="8758557275681689734">Se alle åpne faner</translation>
 <translation id="8788265440806329501">Navigasjonsloggen er lukket</translation>
 <translation id="8788968922598763114">Åpne den sist lukkede fanen på nytt</translation>
 <translation id="8801436777607969138">Blokkér JavaScript for et bestemt nettsted.</translation>

@@ -205,9 +205,9 @@ void ArcDocumentsProviderRoot::AddWatcher(
   path_to_watcher_data_.insert(
       std::make_pair(path, WatcherData{kInvalidWatcherId, watcher_request_id}));
   ResolveToDocumentId(
-      path, base::Bind(&ArcDocumentsProviderRoot::AddWatcherWithDocumentId,
-                       weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id,
-                       watcher_callback));
+      path, base::BindOnce(&ArcDocumentsProviderRoot::AddWatcherWithDocumentId,
+                           weak_ptr_factory_.GetWeakPtr(), path,
+                           watcher_request_id, std::move(watcher_callback)));
 
   // HACK: Invoke |callback| immediately.
   //

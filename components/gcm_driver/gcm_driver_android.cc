@@ -119,10 +119,10 @@ void GCMDriverAndroid::ValidateRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     const std::string& registration_id,
-    const ValidateRegistrationCallback& callback) {
+    ValidateRegistrationCallback callback) {
   // gcm_driver doesn't store registration IDs on Android, so assume it's valid.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true /* is_valid */));
+      FROM_HERE, base::BindOnce(std::move(callback), true /* is_valid */));
 }
 
 void GCMDriverAndroid::OnSignedIn() {

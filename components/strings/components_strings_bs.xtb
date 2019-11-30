@@ -6,10 +6,10 @@
 <translation id="1015730422737071372">Navedite dodatne detalje</translation>
 <translation id="1021110881106174305">Prihvaćene kartice</translation>
 <translation id="1032854598605920125">Okreni u smjeru kretanja kazaljki na satu</translation>
-<translation id="1035334672863811645">prijavite se u Chrome</translation>
 <translation id="1036348656032585052">Isključi</translation>
 <translation id="1038842779957582377">nepoznato ime</translation>
 <translation id="1039626062703039346">Chrome vam može pomoći da zaštitite svoj Google račun i promijenite lozinku. Ovim će se Google obavijestiti o ovoj web lokaciji.</translation>
+<translation id="1044897699341250361">Šta to znači</translation>
 <translation id="1050038467049342496">Zatvorite druge aplikacije</translation>
 <translation id="1055184225775184556">&amp;Poništi dodavanje</translation>
 <translation id="1056898198331236512">Upozorenje</translation>
@@ -184,6 +184,7 @@
 <translation id="1745880797583122200">Vašim preglednikom se upravlja</translation>
 <translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1753706481035618306">Broj stranice</translation>
+<translation id="175838129965056221">Chrome je otkrio da neko prati vašu vezu</translation>
 <translation id="1763864636252898013">Ovaj server nije mogao potvrditi da je ovo domena <ph name="DOMAIN" />. Operativni sistem vašeg uređaja ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok može biti u pogrešnoj konfiguraciji ili da je napadač presreo vašu vezu.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Probajte pokrenuti Windows mrežnu dijagnostiku<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +253,7 @@
 <translation id="2119867082804433120">Bušenje na donjoj strani</translation>
 <translation id="2129079103035905234">Senzori pokreta</translation>
 <translation id="2130448033692577677">Šabloni koje ste naveli neće se primijeniti jer pravilo DnsOverHttpsMode nije postavljeno.</translation>
+<translation id="2131277894177304644">Chromium je otkrio da neko prati vašu vezu</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
 <translation id="214556005048008348">Otkaži plaćanje</translation>
 <translation id="2147827593068025794">Sinkronizacija u pozadini</translation>
@@ -299,6 +301,7 @@
 <translation id="2354001756790975382">Ostale oznake</translation>
 <translation id="2354430244986887761">Usluga Sigurno pregledanje na Googleu je nedavno <ph name="BEGIN_LINK" />pronašla štetne aplikacije <ph name="END_LINK" /> na web lokaciji <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Napadači mogu vidjeti slike koje gledate na ovoj web lokaciji i navesti vas da ih izmijenite.</translation>
+<translation id="2355474962185559967">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> i odmah promijenite lozinku.</translation>
 <translation id="2356070529366658676">Pitaj</translation>
 <translation id="2359629602545592467">Veći broj</translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -402,6 +405,7 @@
 <translation id="2799020568854403057">Web lokacija koja slijedi sadržava štetne aplikacije</translation>
 <translation id="2799223571221894425">Ponovo pokreni</translation>
 <translation id="2803306138276472711">Sigurno pretraživanje na Googleu je nedavno <ph name="BEGIN_LINK" />otkrilo zlonamjerni softver<ph name="END_LINK" /> na <ph name="SITE" />. Web lokacije koje su inače sigurne, ponekad se zaraze zlonamjernim softverom.</translation>
+<translation id="281585763351939989">Chromium je otkrio da neko prati vašu vezu.</translation>
 <translation id="2824775600643448204">Traka za adresu i pretraživanje</translation>
 <translation id="2826760142808435982">Veza je šifrirana i autentificirana koristeći <ph name="CIPHER" /> i koristi <ph name="KX" /> kao glavni mehanizam za razmjenu.</translation>
 <translation id="2835170189407361413">Obriši polja obrasca</translation>
@@ -446,6 +450,7 @@
 <translation id="3024663005179499861">Pogrešna vrsta pravila</translation>
 <translation id="3037605927509011580">Oh, ne!</translation>
 <translation id="3041612393474885105">Informacije o potvrdi</translation>
+<translation id="304755864151473094">Zašto se to događa</translation>
 <translation id="3057676462092457419">Način DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> još uvijek nije podržan. Način je postavljen na <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (omotnica)</translation>
 <translation id="3061707000357573562">Usluga za zakrpe</translation>
@@ -485,6 +490,7 @@
 <translation id="3228969707346345236">Prijevod nije uspio jer je stranica već na jeziku <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Informacije o verziji vašeg uređaja i preglednika</translation>
 <translation id="323107829343500871">Unesite CVC za <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> i odmah promijenite lozinku.</translation>
 <translation id="3234666976984236645">Uvijek detektiraj važan sadržaj s ove web lokacije</translation>
 <translation id="3262069459091978471">Domena <ph name="LOOKALIKE_DOMAIN" /> liči na domenu <ph name="SUGGESTED_DOMAIN" />. Napadači ponekad oponašaju web lokacije korištenjem sličnih URL-ova.</translation>
 <translation id="3270847123878663523">&amp;Poništi preuređivanje</translation>
@@ -517,6 +523,7 @@
 <translation id="342781501876943858">Chromium preporučuje ponovno postavljanje lozinke ukoliko ste je iskoristili na drugim web lokacijama.</translation>
 <translation id="3428151540071562330">Jedan ili više URI-ja šablona servera DnsOverHttpsTemplates su nevažeći i neće se koristiti.</translation>
 <translation id="3431636764301398940">Sačuvaj ovu karticu na ovaj uređaj</translation>
+<translation id="3438790640050632698">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> i odmah promijenite lozinku.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Vlasnik ovog uređaja je isključio igru s dinosaurusom.</translation>
 <translation id="3447884698081792621">Prikaži potvrdu (izdavač: <ph name="ISSUER" />)</translation>
@@ -531,6 +538,7 @@
 <translation id="3495081129428749620">Pronađi na stranici
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Ovo pravilo je zanemareno jer drugo pravilo iz iste grupe pravila ima veći prioritet.</translation>
+<translation id="3525469219100414032">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> i odmah promijenite lozinku.</translation>
 <translation id="3528171143076753409">Potvrda servera nije pouzdana.</translation>
 <translation id="3528485271872257980">Tamno smeđa</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Najmanje jedna stavka na sihroniziranim uređajima}=1{1 stavka (i još njih na sinhroniziranim uređajima)}one{# stavka (i još njih na sinhroniziranim uređajima)}few{# stavke (i još njih na sinhroniziranim uređajima)}other{# stavki (i još njih na sinhroniziranim uređajima)}}</translation>
@@ -609,6 +617,7 @@
 <translation id="3858027520442213535">Ažuriraj datum i vrijeme</translation>
 <translation id="3884278016824448484">Identifikator uređaja koji je u konfliktu</translation>
 <translation id="3885155851504623709">Parohija</translation>
+<translation id="388632593194507180">Otkriveno je praćenje</translation>
 <translation id="3890664840433101773">Dodajte adresu e-pošte</translation>
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3901925938762663762">Kartica je istekla</translation>
@@ -710,6 +719,7 @@
 <translation id="4305817255990598646">Prebaci</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
+<translation id="4318312030194671742">Usluga izrade prikaza u aplikaciji Paint</translation>
 <translation id="4318566738941496689">Naziv vašeg uređaja i mrežna adresa</translation>
 <translation id="4325863107915753736">Članak nije pronađen</translation>
 <translation id="4326324639298822553">Provjerite datum isteka kartice i pokušajte ponovo.</translation>
@@ -726,6 +736,7 @@
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Pokušali ste prići domeni <ph name="DOMAIN" />, ali je potvrdu koju je server prikazao odbio njen izdavač. Ovo znači da sigurnosnim akreditivima koje je server prikazao ne treba ni u kom slučaju vjerovati. Možda komunicirate baš sa napadačem.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="437847259914972036">Vaše aktivnosti na webu i sve informacije koje unesete se prate, a sadržaj se može promijeniti bez vašeg znanja.</translation>
 <translation id="4398334096870680409">Ova funkcija nije dostupna na vašem uređaju.</translation>
 <translation id="4406896451731180161">rezultati pretraživanja</translation>
 <translation id="4408413947728134509">Broj kolačića: <ph name="NUM_COOKIES" /></translation>
@@ -924,7 +935,6 @@
 <translation id="536296301121032821">Pohranjivanje postavki pravila nije uspjelo</translation>
 <translation id="5371425731340848620">Ažuriraj karticu</translation>
 <translation id="5377026284221673050">"Sat kasni" ili "Sat brza" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Da koristite kartice na svim uređajima, prijavite se i uključite sinhronizaciju.</translation>
 <translation id="5386426401304769735">Lanac potvrda za ovu web lokaciju sadrži potvrdu koja je izdata koristeći SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Uvez desnog ruba</translation>
@@ -962,6 +972,7 @@
 <translation id="5565735124758917034">Aktivan</translation>
 <translation id="5570825185877910964">Zaštiti račun</translation>
 <translation id="5571083550517324815">Nije moguće preuzeti s ove adrese. Odaberite drugu adresu.</translation>
+<translation id="5572009199897554128">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> i odmah promijenite lozinku.</translation>
 <translation id="5580958916614886209">Provjerite mjesec isteka i pokušajte ponovo.</translation>
 <translation id="5586446728396275693">Nije pronađena nijedna adresa</translation>
 <translation id="5595485650161345191">Uredite adresu</translation>
@@ -1144,6 +1155,7 @@
 <translation id="6446163441502663861">Kahu (koverta)</translation>
 <translation id="6446608382365791566">Dodajte više informacija</translation>
 <translation id="6447842834002726250">Kolačići</translation>
+<translation id="644931407731409778">PDF dokument sadrži {COUNT,plural, =1{1 stranicu}one{# stranicu}few{# stranice}other{# stranica}}</translation>
 <translation id="6451458296329894277">Potvrdite ponovno slanje obrasca</translation>
 <translation id="6457206614190510200">Uvez kroz sredinu</translation>
 <translation id="6465306955648956876">Upravljajte lozinkama…</translation>
@@ -1162,6 +1174,7 @@
 <translation id="6547208576736763147">Dvostruko bušenje na lijevoj strani</translation>
 <translation id="6554795675067793129">Vašim računom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ponovi</translation>
+<translation id="6559565319173126218">Potvrda koja je priložena za ovu vezu nije pouzdana za Chrome jer je poznato da se koristi za presretanje i praćenje na mreži.</translation>
 <translation id="6569060085658103619">Gledate stranicu s ekstenzijama</translation>
 <translation id="6573200754375280815">Dvostruko bušenje na desnoj strani</translation>
 <translation id="6578796323535178455">C2 (koverta)</translation>
@@ -1195,6 +1208,7 @@
 <translation id="6710594484020273272">&lt;Unesite pojam za pretraživanje&gt;</translation>
 <translation id="671076103358959139">Token za prijavu:</translation>
 <translation id="6711464428925977395">Nešto nije u redu s proxy poslužiteljem ili adresa nije točna.</translation>
+<translation id="6721811549156553509">Praćenje mreže može se predstavljati kao web lokacije koje posjećujete i može vidjeti vašu aktivnost te sve informacije koje unosite (naprimjer, lozinke, poruke ili kreditne kartice). Trebate voditi računa kada na internetu radite bilo šta osjetljivo jer će to biti vidljivo praćenje mreže koji može promijeniti sadržaj stranica koje posjećujete. To uključuje aktivnosti u drugim preglednicima i programima koji pristupaju internetu.</translation>
 <translation id="6738516213925468394">Vaši podaci su šifrirani vašim <ph name="BEGIN_LINK" />izrazom za pristup sinhroniziranju<ph name="END_LINK" /> u <ph name="TIME" />. Unesite ga da započnete sinhronizaciju.</translation>
 <translation id="674375294223700098">Nepoznata greška potvrde servera.</translation>
 <translation id="6744009308914054259">Posjetite Preuzimanja da pročitate članke van mreže dok čekate vezu.</translation>
@@ -1279,6 +1293,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> o ovom problemu.</translation>
 <translation id="7219179957768738017">Veza koristi <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Obrada</translation>
+<translation id="7239736667463137521">Chrome je otkrio da neko prati vašu vezu.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Web lokacija koju želite posjetiti sadrži zlonamjerni softver</translation>
 <translation id="724975217298816891">Unesite datum isteka i CVC za karticu <ph name="CREDIT_CARD" /> da biste ažurirali podatke o kartici. Nakon što ih potvrdite, podaci o kartici dijelit će se s ovom web-lokacijom.</translation>
@@ -1305,6 +1320,7 @@ Dodatni detalji:
 <translation id="7346048084945669753">Korisnik je povezan:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandna linija</translation>
+<translation id="7353776484425559055">Potvrda za ovu vezu nije pouzdana za Chromium jer je poznato da se koristi za presretanje i praćenje na mreži. Moguće je da se ova greška prikazuje zbog potvrde koju ste instalirali na uređaj. Prilikom uspostavljanja sigurnih veza za Chromium su pouzdane one potvrde koje su instalirane lokalno na korisnikov računar ili mobilni uređaj. Na taj način se omogućava da korisnici pokreću alate za pregled i otklanjanje grešaka na vezama za vrijeme izrade web lokacije ili da poslovna okruženja presreću i prate interni saobraćaj. U slučajevima kada se ovo zloupotrebljava za presretanje saobraćaja u javnom internet prostoru, Chromium prikazuje upozorenje.</translation>
 <translation id="7372973238305370288">rezultat pretraživanja</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />, <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Upravljanje medijima</translation>
@@ -1366,6 +1382,7 @@ Dodatni detalji:
 <translation id="7592362899630581445">Potvrda servera krši ograničenja naziva.</translation>
 <translation id="7598391785903975535">Manje od <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> trenutno ne može obraditi ovaj zahtjev.</translation>
+<translation id="7599841999395223597">Potvrda za ovu vezu nije pouzdana za Chrome jer je poznato da se koristi za presretanje i praćenje na mreži. Moguće je da se ova greška prikazuje zbog potvrde koju ste instalirali na uređaj. Prilikom uspostavljanja sigurnih veza, za Chrome su pouzdane one potvrde koje su instalirane lokalno na korisnikov računar ili mobilni uređaj. Na taj način se omogućava da korisnici pokreću alate za pregled i otklanjanje grešaka na vezama za vrijeme izrade web lokacije ili da poslovna okruženja presreću i prate interni saobraćaj. U slučajevima kada se ovo zloupotrebljava za presretanje saobraćaja u javnom internet prostoru, Chrome prikazuje upozorenje.</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /> jezik</translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Ističe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1585,7 +1602,6 @@ Dodatni detalji:
 <translation id="8759274551635299824">Ova kartica je istekla</translation>
 <translation id="8761567432415473239">Usluga Sigurno pretraživanje na Googleu je nedavno <ph name="BEGIN_LINK" />pronašla štetne programe <ph name="END_LINK" /> na web lokaciji <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB uređaj</translation>
-<translation id="8768895707659403558">Da koristite svoje kartice na svim svojim uređajima, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Poništite b&amp;risanje</translation>
 <translation id="8792621596287649091">Možete izgubiti pristup svom <ph name="ORG_NAME" /> računu ili doživjeti krađu identiteta. Chromium preporučuje da odmah promijenite lozinku.</translation>
@@ -1683,6 +1699,7 @@ Dodatni detalji:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Možete izgubiti pristup svom Google računu. Chromium preporučuje da odmah promijenite lozinku. Od vas će se tražiti da se prijavite.</translation>
 <translation id="939736085109172342">Novi folder</translation>
+<translation id="940786960229275114">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> i odmah promijenite lozinku.</translation>
 <translation id="945855313015696284">Provjerite informacije u nastavku i izbrišite nevažeće kartice</translation>
 <translation id="950736567201356821">Trostruko bušenje na gornjoj strani</translation>
 <translation id="951104842009476243">Prihvaćene debitne i prepaid kartice</translation>

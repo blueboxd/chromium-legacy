@@ -375,8 +375,7 @@ AbortCallback FakeProvidedFileSystem::AddWatcher(
     bool recursive,
     bool persistent,
     storage::AsyncFileUtil::StatusCallback callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::NotificationCallback notification_callback) {
   // TODO(mtomasz): Implement it once needed.
   return PostAbortableTask(
       base::BindOnce(std::move(callback), base::File::FILE_OK));

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -21,15 +22,8 @@ namespace enterprise_reporting {
 // Generate a report request queue that contains full profile information. The
 // request number in the queue is decided by the maximum report size setting.
 class ReportRequestQueueGenerator {
-#if defined(OS_CHROMEOS)
-  using ReportRequest = em::ChromeOsUserReportRequest;
-#else
-  using ReportRequest = em::ChromeDesktopReportRequest;
-#endif
-
+  using ReportRequest = definition::ReportRequest;
   using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
-  using BrowserReportGetter =
-      base::RepeatingCallback<em::BrowserReport*(ReportRequest*)>;
 
  public:
   explicit ReportRequestQueueGenerator();

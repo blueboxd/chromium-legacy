@@ -47,7 +47,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id,
-      bool depends_on_at_raster_decodes) override;
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override;
   void Flush() override;
   viz::ResourceFormat GetResourceFormat() const override;
   bool IsResourcePremultiplied() const override;
@@ -78,7 +80,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       const RasterSource::PlaybackSettings& playback_settings,
       const GURL& url,
       base::TimeTicks raster_buffer_creation_time,
-      bool depends_on_at_raster_decodes);
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates);
 
  private:
   class GpuRasterBacking;
@@ -89,7 +93,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                      const ResourcePool::InUsePoolResource& in_use_resource,
                      GpuRasterBacking* backing,
                      bool resource_has_previous_content,
-                     bool depends_on_at_raster_decodes);
+                     bool depends_on_at_raster_decodes,
+                     bool depends_on_hardware_accelerated_jpeg_candidates,
+                     bool depends_on_hardware_accelerated_webp_candidates);
     RasterBufferImpl(const RasterBufferImpl&) = delete;
     ~RasterBufferImpl() override;
 
@@ -115,6 +121,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     const gfx::ColorSpace color_space_;
     const bool resource_has_previous_content_;
     const bool depends_on_at_raster_decodes_;
+    const bool depends_on_hardware_accelerated_jpeg_candidates_;
+    const bool depends_on_hardware_accelerated_webp_candidates_;
     const gpu::SyncToken before_raster_sync_token_;
     const GLenum texture_target_;
     const bool texture_is_overlay_candidate_;
@@ -140,6 +148,11 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
 
     // The time at which the raster buffer was created.
     base::TimeTicks raster_buffer_creation_time;
+
+    // Whether the raster work depends on candidates for hardware accelerated
+    // JPEG or WebP decodes.
+    bool depends_on_hardware_accelerated_jpeg_candidates = false;
+    bool depends_on_hardware_accelerated_webp_candidates = false;
   };
 
   bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) const;

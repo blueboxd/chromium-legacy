@@ -386,11 +386,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
           Si no se asigna ningún valor a esta política o está inhabilitada, la configuración de las cuentas de Kerberos está inhabilitada. No se podrán añadir cuentas de Kerberos y no se podrá utilizar la autenticación Kerberos. Se eliminarán todas las cuentas de Kerberos y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1561967320164410511">U2F y extensiones de confirmación individual</translation>
-<translation id="1566329065312331399">
-      Si se asigna el valor "False" a esta política, el dispositivo no podrá activar la función Powerwash.
-      Si se le asigna el valor "True", el dispositivo podrá activar esta función.
-      Si no se le asigna ningún valor, se utilizará el valor predeterminado "False", por lo que el dispositivo no podrá ejecutar la función Powerwash.
-      </translation>
 <translation id="1574554504290354326">Esta opción está obsoleta; usa SafeBrowsingExtendedReportingEnabled en su lugar. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es igual que asignar el valor "False" a la opción SafeBrowsingExtendedReportingOptInAllowed.
 
       Si se le asigna el valor "False" a esta política, los usuarios no pueden elegir si quieren enviar determinada información del sistema y contenido de las páginas a los servidores de Google. Si se le asigna el valor "True" o no se configura, los usuarios podrán enviar algunos datos y contenido de las páginas a la función Navegación Segura para que pueda detectar aplicaciones y sitios web peligrosos.
@@ -4363,11 +4358,6 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="7937491150792971922">Combina políticas de lista de instalación de extensiones de varias fuentes</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
-<translation id="7944213656414105292">Esta política define las URL a las que se otorgará acceso para usar la atestación remota de identidades de dispositivos durante el flujo de SAML en la pantalla de inicio de sesión.
-
-      En concreto, si una URL coincide con uno de los patrones proporcionados a través de esta política, la URL podrá recibir un encabezado HTTP con una respuesta a una prueba de atestación remota, atestando la identidad y el estado del dispositivo.
-
-      Si no se define esta política o se le asigna una lista vacía, no se permitirá que ninguna URL use la atestación remota en la pantalla de inicio de sesión.</translation>
 <translation id="7952007677054834789">Permite configurar las páginas que se cargan al abrir el navegador, la página principal predeterminada y la página Nueva pestaña predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios las cambien.
 
       Para bloquear completamente la configuración de la página de inicio del usuario, es necesario definirla como la página Nueva pestaña o definirla como URL y especificar una URL de página principal. Si no se especifica la URL de la página principal, el usuario podrá definir la página Nueva pestaña como página principal especificando "chrome://newtab".

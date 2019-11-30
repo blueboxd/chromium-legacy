@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">បើក​តំណ​នៅក្នុង <ph name="APP" /></translation>
 <translation id="1140351953533677694">ចូលប្រើឧបករណ៍ប៊្លូធូស និងសេរ៊ីរបស់អ្នក</translation>
 <translation id="114036956334641753">សំឡេង និង​អក្សររត់</translation>
-<translation id="1140610710803014750">ដើម្បី​ទទួលបាន​ចំណាំ​នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក សូមចូលគណនី និងបើក​សមកាលកម្ម។</translation>
 <translation id="1140746652461896221">ទប់ស្កាត់​ខ្លឹមសារ​នៅលើទំព័រទាំងឡាយដែលអ្នកចូលមើល</translation>
 <translation id="1143142264369994168">អ្នកចុះហត្ថលេខាវិញ្ញាបនប័ត្រ</translation>
 <translation id="1145292499998999162">រារាំងកម្មវិធីជំនួយ</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">ថតចម្លងអាសយដ្ឋានសំឡេង</translation>
 <translation id="1465827627707997754">ចំណិតភីហ្សា</translation>
 <translation id="1468571364034902819">មិន​អាច​ប្រើ​កម្រង​ព័ត៌មាន​នេះ​បានទេ</translation>
-<translation id="1470811252759861213">ដើម្បីទទួលបានផ្នែកបន្ថែមរបស់អ្នកនៅលើកុំព្យូទ័ររបស់អ្នកទាំងអស់ <ph name="SIGN_IN_LINK" />។</translation>
 <translation id="1472675084647422956">បង្ហាញ​ច្រើនទៀត</translation>
 <translation id="1475502736924165259">អ្នកមានវិញ្ញាបនបត្រនៅលើឯកសារដែលមិនសមនឹងប្រភេទដ៏ទៃទៀត</translation>
 <translation id="1476088332184200792">ចម្លង​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">លើកក្រោយ ទូរសព្ទថ្មី​នឹងដោះសោ <ph name="DEVICE_TYPE" /> នេះ។ អ្នក​អាច​បិទ Smart Lock នៅក្នុង​ការកំណត់។</translation>
 <translation id="2489918096470125693">បន្ថែមថតឯកសារ...</translation>
 <translation id="2490481887078769936">បានលុប '<ph name="FILE_NAME" />' ចេញពីបញ្ជី</translation>
-<translation id="2490782392574942205">សូម​ចូលគណនី ហើយ​បើក​សមកាលកម្ម ដើម្បី​ទាញយក​កម្មវិធីបន្ថែម​របស់អ្នក នៅលើ​កុំព្យូទ័រ​ទាំងអស់​របស់អ្នក</translation>
 <translation id="249113932447298600">សូមទោស <ph name="DEVICE_LABEL" /> មិនត្រូវបានគាំទ្រទេនៅពេលនេះ។</translation>
 <translation id="249303669840926644">មិនអាចបញ្ចប់ការចុះឈ្មោះទេ</translation>
 <translation id="2495777824269688114">ស្វែងយល់អំពី​មុខងារថ្មីៗ ឬទទួលចម្លើយច្រើនទៀត។ សូមជ្រើសរើស “?” ដើម្បីទទួលបានជំនួយ។</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">ថតឯកសារ</translation>
 <translation id="3528033729920178817">ទំព័រនេះកំពុងតាមដានទីតាំងរបស់អ្នក។</translation>
 <translation id="3528498924003805721">គោលដៅផ្លូវកាត់</translation>
-<translation id="3530305684079447434">ដើម្បីទទួលបានចំណាំរបស់អ្នកនៅលើឧបករណ៍របស់អ្នកទាំងអស់ <ph name="SIGN_IN_LINK" />។</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ចង់​ប្រើ​មីក្រូហ្វូន​របស់អ្នក</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - បានបិទ​​សំឡេង​</translation>
 <translation id="3538066758857505094">មានបញ្ហា​ក្នុងការ​លុប Linux ។ សូម​ព្យាយាម​ម្ដងទៀត។</translation>

@@ -48,6 +48,29 @@ void SharedContextState::compileError(const char* shader, const char* errors) {
   }
 }
 
+SharedContextState::MemoryTracker::MemoryTracker(
+    gpu::MemoryTracker::Observer* peak_memory_monitor)
+    : peak_memory_monitor_(peak_memory_monitor) {}
+
+SharedContextState::MemoryTracker::~MemoryTracker() {
+  DCHECK(!size_);
+}
+
+void SharedContextState::MemoryTracker::OnMemoryAllocatedChange(
+    CommandBufferId id,
+    uint64_t old_size,
+    uint64_t new_size) {
+  uint64_t delta = new_size - old_size;
+  old_size = size_;
+  size_ += delta;
+  if (peak_memory_monitor_)
+    peak_memory_monitor_->OnMemoryAllocatedChange(id, old_size, size_);
+}
+
+uint64_t SharedContextState::MemoryTracker::GetMemoryUsage() const {
+  return size_;
+}
+
 SharedContextState::SharedContextState(
     scoped_refptr<gl::GLShareGroup> share_group,
     scoped_refptr<gl::GLSurface> surface,
@@ -57,10 +80,12 @@ SharedContextState::SharedContextState(
     GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
-    viz::DawnContextProvider* dawn_context_provider)
+    viz::DawnContextProvider* dawn_context_provider,
+    gpu::MemoryTracker::Observer* peak_memory_monitor)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
       gr_context_type_(gr_context_type),
+      memory_tracker_(peak_memory_monitor),
       vk_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
       dawn_context_provider_(dawn_context_provider),

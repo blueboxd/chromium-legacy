@@ -154,7 +154,7 @@ std::string NewTabUI::NewTabHTMLSource::GetSource() {
 void NewTabUI::NewTabHTMLSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
   const std::string path = content::URLDataSource::URLToRequestPath(url);
@@ -162,7 +162,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
     NOTREACHED() << path << " should not have been requested on the NTP";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -175,7 +175,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
       NTPResourceCacheFactory::GetForProfile(profile_)->
       GetNewTabHTML(win_type));
 
-  callback.Run(html_bytes.get());
+  std::move(callback).Run(html_bytes.get());
 }
 
 std::string NewTabUI::NewTabHTMLSource::GetMimeType(

@@ -43,7 +43,12 @@ CastBrowserProcess* CastBrowserProcess::GetInstance() {
 }
 
 CastBrowserProcess::CastBrowserProcess()
-    : cast_content_browser_client_(nullptr),
+    :
+#if defined(USE_AURA)
+      cast_screen_(nullptr),
+#endif
+      web_view_factory_(nullptr),
+      cast_content_browser_client_(nullptr),
       net_log_(nullptr) {
   DCHECK(!g_instance);
   g_instance = this;
@@ -84,10 +89,9 @@ void CastBrowserProcess::SetCastService(
 }
 
 #if defined(USE_AURA)
-void CastBrowserProcess::SetCastScreen(
-    std::unique_ptr<CastScreen> cast_screen) {
+void CastBrowserProcess::SetCastScreen(CastScreen* cast_screen) {
   DCHECK(!cast_screen_);
-  cast_screen_ = std::move(cast_screen);
+  cast_screen_ = cast_screen;
 }
 
 void CastBrowserProcess::SetDisplayConfigurator(

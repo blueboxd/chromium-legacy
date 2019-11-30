@@ -388,11 +388,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           Ist die Richtlinie deaktiviert oder nicht konfiguriert, sind die Einstellungen für Kerberos-Konten deaktiviert. In diesem Fall können keine Kerberos-Konten hinzugefügt werden und die Nutzung der Kerberos-Authentifizierung ist nicht möglich. Alle vorhandenen Kerberos-Konten werden gelöscht, ebenso wie alle gespeicherten Passwörter.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
-<translation id="1566329065312331399">
-      Wenn diese Richtlinie auf "False" gesetzt ist, kann das Gerät keinen Powerwash auslösen.
-      Bei Auswahl von "True" kann das Gerät einen Powerwash auslösen.
-      Ist die Richtlinie nicht konfiguriert, lautet die Standardeinstellung "False", sodass das Gerät keinen Powerwash durchführen kann.
-      </translation>
 <translation id="1574554504290354326">Diese Einstellung ist veraltet. Verwenden Sie stattdessen "SafeBrowsingExtendedReportingEnabled". Das Aktivieren oder Deaktivieren von "SafeBrowsingExtendedReportingEnabled" entspricht dem Festlegen von "false" für "SafeBrowsingExtendedReportingOptInAllowed".
 
       Wenn diese Richtlinie auf "false" gesetzt ist, können Nutzer nicht mehr festlegen, ob bestimmte Systeminformationen und Seiteninhalte an die Google-Server gesendet werden. Ist die Richtlinie auf "true" gesetzt oder nicht konfiguriert, können Nutzer bestimmte Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erkennung schädlicher Apps und Websites zu helfen.
@@ -4240,11 +4235,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7937491150792971922">Richtlinien für Listen zur Installation von Erweiterungen aus mehreren Quellen zusammenführen</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
-<translation id="7944213656414105292">Mit dieser Richtlinie kann konfiguriert werden, welche URLs Zugriff erhalten, um die Remote-Attestierung der Geräteidentität während der SAML-Abfolge auf dem Anmeldebildschirm zu verwenden.
-
-      Eine URL darf einen HTTP-Header mit einer Antwort auf die Identitätsbestätigung durch eine Remote-Attestierung empfangen, wenn sie mit einem der über diese Richtlinie verfügbaren Mustern übereinstimmt. Dabei attestiert sie die Geräteidentität und den Gerätestatus.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, darf keine URL die Remote-Attestierung auf dem Anmeldebildschirm verwenden.</translation>
 <translation id="7952007677054834789">Hiermit werden die Seiten konfiguriert, die beim Start geladen werden: die standardmäßige Startseite und die Standardseite "Neuer Tab" in <ph name="PRODUCT_NAME" />. Außerdem wird verhindert, dass Nutzer diese Einstellungen ändern.
 
       Die Startseiteneinstellungen des Nutzers sind nur dann vollständig gesperrt, wenn Sie entweder die Seite "Neuer Tab" als Startseite festlegen oder angeben, dass Sie eine URL als Startseite festlegen möchten, und dann eine Startseiten-URL angeben. Falls Sie die Startseiten-URL nicht angeben, kann der Nutzer die Seite "Neuer Tab" zur Startseite machen, indem er "chrome://newtab" eingibt.

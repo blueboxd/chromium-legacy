@@ -185,12 +185,13 @@ FloatRect DropShadowFilterOperation::MapRect(const FloatRect& rect) const {
 FilterOperation* DropShadowFilterOperation::Blend(const FilterOperation* from,
                                                   double progress) const {
   if (!from) {
-    return Create(shadow_.Blend(ShadowData::NeutralValue(), progress,
-                                Color::kTransparent));
+    return MakeGarbageCollected<DropShadowFilterOperation>(shadow_.Blend(
+        ShadowData::NeutralValue(), progress, Color::kTransparent));
   }
 
   const auto& from_op = To<DropShadowFilterOperation>(*from);
-  return Create(shadow_.Blend(from_op.shadow_, progress, Color::kTransparent));
+  return MakeGarbageCollected<DropShadowFilterOperation>(
+      shadow_.Blend(from_op.shadow_, progress, Color::kTransparent));
 }
 
 FloatRect BoxReflectFilterOperation::MapRect(const FloatRect& rect) const {

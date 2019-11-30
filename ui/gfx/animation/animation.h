@@ -84,6 +84,9 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   // Should only be called from the browser process, on the UI thread.
   static bool PrefersReducedMotion();
   static void UpdatePrefersReducedMotion();
+  static void SetPrefersReducedMotionForTesting(bool prefers_reduced_motion) {
+    prefers_reduced_motion_ = prefers_reduced_motion;
+  }
 
  protected:
   // Invoked from Start to allow subclasses to prepare for the animation.

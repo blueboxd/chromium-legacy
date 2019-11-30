@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">فتح الرابط في <ph name="APP" /></translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
 <translation id="114036956334641753">الصوت والترجمة</translation>
-<translation id="1140610710803014750">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="1140746652461896221">حظر المحتوى على أي صفحة تزورها</translation>
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
 <translation id="1145292499998999162">تم حظر المكوّن الإضافي</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">ن&amp;سخ عنوان الصوت</translation>
 <translation id="1465827627707997754">شريحة بيتزا</translation>
 <translation id="1468571364034902819">يتعذّر استخدام هذا الملف الشخصي</translation>
-<translation id="1470811252759861213">للحصول على الإضافات على جميع أجهزة الكمبيوتر، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">عرض المزيد</translation>
 <translation id="1475502736924165259">لديك شهادات في الملف لا تندرج تحت أي فئة من الفئات الأخرى</translation>
 <translation id="1476088332184200792">‏نسخ إلى Your Device (جهازك)</translation>
@@ -1045,7 +1043,6 @@
 <translation id="2489829450872380594">‏في المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" /> هذا. يمكنك إيقاف Smart Lock في "الإعدادات".</translation>
 <translation id="2489918096470125693">إضافة &amp;مجلد...</translation>
 <translation id="2490481887078769936">تمت إزالة "<ph name="FILE_NAME" />" من القائمة</translation>
-<translation id="2490782392574942205">للحصول على إضافاتك على جميع أجهزة الكمبيوتر، يُرجى تسجيل الدخول وتفعيل المزامنة</translation>
 <translation id="249113932447298600">عذرًا، لا يتوفر الجهاز <ph name="DEVICE_LABEL" /> في الوقت الحالي.</translation>
 <translation id="249303669840926644">تعذر إكمال التسجيل</translation>
 <translation id="2495777824269688114">اسكتشاف المزيد من الميزات أو الحصول على إجابات. اختر "؟" للحصول على مساعدة.</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3528033729920178817">هذه الصفحة تتتبع موقعك.</translation>
 <translation id="3528498924003805721">أهداف الاختصارات</translation>
-<translation id="3530305684079447434">للحصول على الإشارات المرجعية في جميع أجهزتك، <ph name="SIGN_IN_LINK" /> .</translation>
 <translation id="3532844647053365774">يريد <ph name="HOST" /> استخدام الميكروفون.</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - تم كتم الصوت</translation>
 <translation id="3538066758857505094">‏حدث خطأ أثناء إلغاء تثبيت نظام التشغيل Linux. يُرجى إعادة المحاولة.</translation>

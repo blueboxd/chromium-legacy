@@ -62,25 +62,6 @@ bool DocumentPolicy::IsFeatureSupported(
   }
 }
 
-void DocumentPolicy::SetHeaderPolicy(
-    const ParsedDocumentPolicy& parsed_header) {
-  for (const ParsedDocumentPolicyDeclaration& parsed_declaration :
-       parsed_header) {
-    mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
-    // TODO(iclelland): Generate this switch block
-    switch (feature) {
-      case mojom::FeaturePolicyFeature::kFontDisplay:
-        font_display_ = parsed_declaration.value.BoolValue();
-        break;
-      case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
-        unoptimized_lossless_images_ = parsed_declaration.value.DoubleValue();
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-}
-
 void DocumentPolicy::UpdateFeatureState(const FeatureState& feature_state) {
   for (const auto& feature_and_value : feature_state) {
     // TODO(iclelland): Generate this switch block
@@ -136,30 +117,14 @@ const DocumentPolicy::FeatureState& DocumentPolicy::GetFeatureDefaults() {
 }
 
 bool DocumentPolicy::IsPolicyCompatible(
-    const ParsedDocumentPolicy& required_policy) {
-  FeatureState p_map = ParsedDocumentPolicyToFeatureState(RequiredPolicy());
-  for (const ParsedDocumentPolicyDeclaration& req_p : required_policy) {
+    const DocumentPolicy::FeatureState& incoming_policy) {
+  const DocumentPolicy::FeatureState& state = GetFeatureState();
+  for (const auto& e : incoming_policy) {
     // feature value > threshold => enabled
-    // value_a > value_b => value_a looser than value_b
-    if (p_map[req_p.feature] > req_p.value)
+    // value_a > value_b => value_a less strict than value_b
+    if (state.at(e.first) > e.second)
       return false;
   }
   return true;
 }
-
-// static
-DocumentPolicy::FeatureState DocumentPolicy::ParsedDocumentPolicyToFeatureState(
-    const ParsedDocumentPolicy& policies) {
-  FeatureState result;
-  for (const ParsedDocumentPolicyDeclaration& policy : policies)
-    result[policy.feature] = policy.value;
-  return result;
-}
-
-ParsedDocumentPolicy DocumentPolicy::RequiredPolicy() const {
-  // TODO(iclelland): This is currently a placeholder.
-  // To be implemented later.
-  return ParsedDocumentPolicy();
-}
-
 }  // namespace blink

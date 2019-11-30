@@ -55,7 +55,7 @@ namespace {
 // An open User Manager window. There can only be one open at a time. This
 // is reset to nullptr when the window is closed.
 UserManagerView* g_user_manager_view = nullptr;
-base::Closure* g_user_manager_shown_callback_for_testing = nullptr;
+base::OnceClosure* g_user_manager_shown_callback_for_testing = nullptr;
 bool g_is_user_manager_view_under_construction = false;
 }  // namespace
 
@@ -202,7 +202,7 @@ void UserManager::OnUserManagerShown() {
     g_user_manager_view->LogTimeToOpen();
     if (g_user_manager_shown_callback_for_testing) {
       if (!g_user_manager_shown_callback_for_testing->is_null())
-        g_user_manager_shown_callback_for_testing->Run();
+        std::move(*g_user_manager_shown_callback_for_testing).Run();
 
       delete g_user_manager_shown_callback_for_testing;
       g_user_manager_shown_callback_for_testing = nullptr;
@@ -212,9 +212,10 @@ void UserManager::OnUserManagerShown() {
 
 // static
 void UserManager::AddOnUserManagerShownCallbackForTesting(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(!g_user_manager_shown_callback_for_testing);
-  g_user_manager_shown_callback_for_testing = new base::Closure(callback);
+  g_user_manager_shown_callback_for_testing =
+      new base::OnceClosure(std::move(callback));
 }
 
 // static

@@ -99,7 +99,6 @@
 <translation id="1137673463384776352"><ph name="APP" />માં લિંક ખોલો</translation>
 <translation id="1140351953533677694">તમારા Bluetooth અને સીરિયલ ડિવાઇસને ઍક્સેસ કરો</translation>
 <translation id="114036956334641753">ઑડિયો અને કૅપ્શન</translation>
-<translation id="1140610710803014750">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો.</translation>
 <translation id="1140746652461896221">તમે મુલાકાત લો છો તે કોઈપણ પેજ પર કન્ટેન્ટને બ્લૉક કરો</translation>
 <translation id="1143142264369994168">પ્રમાણપત્ર હસ્તાક્ષરકર્તા</translation>
 <translation id="1145292499998999162">પ્લગિન અવરોધિત</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">ઑડિઓ સરનામું કૉ&amp;પિ કરો</translation>
 <translation id="1465827627707997754">પીઝા સ્લાઇસ</translation>
 <translation id="1468571364034902819">આ પ્રોફાઇલનો ઉપયોગ કરી શકતાં નથી</translation>
-<translation id="1470811252759861213">તમારા તમામ કમ્પ્યુટર્સ પર તમારા એક્સ્ટેન્શન્સ મેળવવા માટે, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">વધુ બતાવો</translation>
 <translation id="1475502736924165259">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે અન્ય કોઈપણ કૅટેગરીઝમાં ફિટ થતાં નથી</translation>
 <translation id="1476088332184200792">તમારા ડિવાઇસ પર કૉપિ કરો</translation>
@@ -1041,7 +1039,6 @@
 <translation id="2489829450872380594">આગલી વખતે, નવો ફોન આ <ph name="DEVICE_TYPE" />ને અનલૉક કરશે. તમે સેટિંગમાં Smart Lock બંધ કરી શકો છો.</translation>
 <translation id="2489918096470125693">&amp;ફોલ્ડર ઉમેરો...</translation>
 <translation id="2490481887078769936"><ph name="FILE_NAME" />ને સૂચિમાંથી કાઢી નાખી</translation>
-<translation id="2490782392574942205">તમારા બધા કમ્પ્યુટર પર તમારા એક્સ્ટેંશન મેળવવા માટે સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="249113932447298600">માફ કરશો, આ સમયે ઉપકરણ <ph name="DEVICE_LABEL" /> ને સપોર્ટ નથી.</translation>
 <translation id="249303669840926644">નોંધણી પૂર્ણ કરી શકાઈ નથી</translation>
 <translation id="2495777824269688114">વધુ સુવિધાઓ શોધો અથવા જવાબ મેળવો. સહાય માટે "?"ને પસંદ કરો.</translation>
@@ -1751,7 +1748,6 @@
 <translation id="3527085408025491307">ફોલ્ડર</translation>
 <translation id="3528033729920178817">આ પૃષ્ઠ તમારા સ્થાનને ટ્રૅક કરી રહ્યું છે.</translation>
 <translation id="3528498924003805721">શૉર્ટકટ લક્ષ્યો</translation>
-<translation id="3530305684079447434">તમારા બધા ઉપરકણો પર તમારા બુકમાર્ક્સ મેળવવા માટે, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> તમારા માઇક્રોફોનનો ઉપયોગ કરવા માગે છે</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ઑડિઓ મ્યૂટ કર્યો</translation>
 <translation id="3538066758857505094">Linuxને અનઇન્સ્ટૉલ કરતી વખતે ભૂલ આવી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>

@@ -58,7 +58,7 @@ class NewTabUI : public content::WebUIController {
     void StartDataRequest(
         const GURL& url,
         const content::WebContents::Getter& wc_getter,
-        const content::URLDataSource::GotDataCallback& callback) override;
+        content::URLDataSource::GotDataCallback callback) override;
     std::string GetMimeType(const std::string&) override;
     bool ShouldReplaceExistingSource() override;
     std::string GetContentSecurityPolicyScriptSrc() override;

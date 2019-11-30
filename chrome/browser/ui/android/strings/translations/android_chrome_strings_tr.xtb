@@ -358,7 +358,7 @@
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3658159451045945436">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere veri tasarrufu geçmişinizi siler.</translation>
-<translation id="3682730288090679318">Sitelerin bildirim göstermelerini otomatik olarak engellemek için etkinleştirin. Bir site bildirim göstermek isterse sayfanın alt kısmında bir bilgi çubuğu görünür.</translation>
+<translation id="3682730288090679318">Sitelerin bildirim gösterme isteklerini otomatik olarak engellemek için etkinleştirin. Bir site bildirim göstermek isterse sayfanın alt kısmında bir bilgi çubuğu görünür.</translation>
 <translation id="3692944402865947621">Depolama konumuna erişilemediği için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
 <translation id="3716182511346448902">Bu sayfa, bellekte çok fazla yer kapladığından Chrome tarafından duraklatıldı.</translation>

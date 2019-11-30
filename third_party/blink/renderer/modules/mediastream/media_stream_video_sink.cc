@@ -25,9 +25,29 @@ void MediaStreamVideoSink::ConnectToTrack(
   AddSinkToMediaStreamTrack(track, this, callback, is_sink_secure);
 }
 
+void MediaStreamVideoSink::ConnectEncodedToTrack(
+    const WebMediaStreamTrack& track,
+    const EncodedVideoFrameCB& callback) {
+  DCHECK(connected_encoded_track_.IsNull());
+  connected_encoded_track_ = track;
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  DCHECK(video_track);
+  video_track->AddEncodedSink(this, callback);
+}
+
 void MediaStreamVideoSink::DisconnectFromTrack() {
   RemoveSinkFromMediaStreamTrack(connected_track_, this);
   connected_track_.Reset();
+}
+
+void MediaStreamVideoSink::DisconnectEncodedFromTrack() {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(connected_encoded_track_);
+  if (video_track) {
+    video_track->RemoveEncodedSink(this);
+  }
+  connected_encoded_track_.Reset();
 }
 
 void MediaStreamVideoSink::OnFrameDropped(

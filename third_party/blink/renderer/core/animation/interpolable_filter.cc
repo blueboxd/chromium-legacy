@@ -199,7 +199,7 @@ FilterOperation* InterpolableFilter::CreateFilterOperation(
           To<InterpolableShadow>(*value_).CreateShadowData(state);
       if (shadow_data.GetColor().IsCurrentColor())
         shadow_data.OverrideColor(Color::kBlack);
-      return DropShadowFilterOperation::Create(shadow_data);
+      return MakeGarbageCollected<DropShadowFilterOperation>(shadow_data);
     }
 
     default:

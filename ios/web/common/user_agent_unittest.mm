@@ -70,20 +70,12 @@ TEST_F(UserAgentTest, MobileUserAgentForProduct) {
       &os_major_version, &os_minor_version, &os_bugfix_version);
   base::StringAppendF(&os_version, "%d_%d", os_major_version, os_minor_version);
 
-  std::string safari_version;
-  if (@available(iOS 13, *)) {
-    safari_version = "604.1";
-  } else {
-    safari_version = "605.1";
-  }
-
   std::string expected_user_agent;
   base::StringAppendF(
       &expected_user_agent,
       "Mozilla/5.0 (%s; CPU %s %s like Mac OS X) AppleWebKit/605.1.15 (KHTML, "
-      "like Gecko) %s Mobile/15E148 Safari/%s",
-      platform.c_str(), cpu.c_str(), os_version.c_str(), product.c_str(),
-      safari_version.c_str());
+      "like Gecko) %s Mobile/15E148 Safari/604.1",
+      platform.c_str(), cpu.c_str(), os_version.c_str(), product.c_str());
 
   std::string result =
       BuildUserAgentFromProduct(web::UserAgentType::MOBILE, product);

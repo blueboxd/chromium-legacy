@@ -289,7 +289,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 account_password_store_
                     ? account_password_store_->CreateSyncControllerDelegate()
                     : nullptr,
-                sync_service, sync_client_->GetPasswordStateChangedCallback()));
+                sync_client_->GetPrefService(), sync_service,
+                sync_client_->GetPasswordStateChangedCallback()));
       }
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(

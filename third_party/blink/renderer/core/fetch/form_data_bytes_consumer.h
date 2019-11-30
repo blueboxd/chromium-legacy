@@ -29,14 +29,6 @@ class FormDataBytesConsumer final : public BytesConsumer {
                                     scoped_refptr<EncodedFormData>,
                                     BytesConsumer* consumer_for_testing);
 
-  CORE_EXPORT static FormDataBytesConsumer* CreateForTesting(
-      ExecutionContext* execution_context,
-      scoped_refptr<EncodedFormData> form_data,
-      BytesConsumer* consumer) {
-    return MakeGarbageCollected<FormDataBytesConsumer>(
-        execution_context, std::move(form_data), consumer);
-  }
-
   // BytesConsumer implementation
   Result BeginRead(const char** buffer, size_t* available) override {
     return impl_->BeginRead(buffer, available);

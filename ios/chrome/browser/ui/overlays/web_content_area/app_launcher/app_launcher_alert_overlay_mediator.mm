@@ -9,7 +9,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
+#import "ios/chrome/browser/ui/alert_view/alert_action.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

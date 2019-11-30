@@ -165,8 +165,9 @@ void PresentationServiceImpl::SetReceiver(
   presentation_receiver_remote_.set_disconnect_handler(base::BindOnce(
       &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
   receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
-      base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &PresentationServiceImpl::OnReceiverConnectionAvailable,
+          weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
@@ -292,8 +293,8 @@ void PresentationServiceImpl::ListenForConnectionStateChange(
   if (controller_delegate_) {
     controller_delegate_->ListenForConnectionStateChange(
         render_process_id_, render_frame_id_, connection,
-        base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
-                   weak_factory_.GetWeakPtr(), connection));
+        base::BindRepeating(&PresentationServiceImpl::OnConnectionStateChanged,
+                            weak_factory_.GetWeakPtr(), connection));
   }
 }
 
@@ -373,9 +374,9 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
                               presentation_urls,
                               render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->SetDefaultPresentationUrls(
-      request,
-      base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
-                 weak_factory_.GetWeakPtr()));
+      request, base::BindRepeating(
+                   &PresentationServiceImpl::OnDefaultPresentationStarted,
+                   weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::CloseConnection(

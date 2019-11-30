@@ -107,11 +107,6 @@ class BookmarkModelMerger {
   void ProcessLocalCreation(const bookmarks::BookmarkNode* parent,
                             size_t index);
 
-  // Gets the bookmark node corresponding to a permanent folder identified by
-  // |server_defined_unique_tag|.
-  const bookmarks::BookmarkNode* GetPermanentFolder(
-      const std::string& server_defined_unique_tag) const;
-
   // Looks for a local node under |local_parent| that matches |remote_node|,
   // starting at index |local_child_start_index|. First attempts to find a match
   // by GUID and otherwise attempts to find one by semantics. If no match is

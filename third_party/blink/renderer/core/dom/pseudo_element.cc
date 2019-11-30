@@ -45,6 +45,8 @@ namespace blink {
 PseudoElement* PseudoElement::Create(Element* parent, PseudoId pseudo_id) {
   if (pseudo_id == kPseudoIdFirstLetter)
     return MakeGarbageCollected<FirstLetterPseudoElement>(parent);
+  DCHECK(pseudo_id == kPseudoIdAfter || pseudo_id == kPseudoIdBefore ||
+         pseudo_id == kPseudoIdBackdrop || pseudo_id == kPseudoIdMarker);
   return MakeGarbageCollected<PseudoElement>(parent, pseudo_id);
 }
 
@@ -52,51 +54,43 @@ const QualifiedName& PseudoElementTagName(PseudoId pseudo_id) {
   switch (pseudo_id) {
     case kPseudoIdAfter: {
       DEFINE_STATIC_LOCAL(QualifiedName, after,
-                          (g_null_atom, "<pseudo:after>", g_null_atom));
+                          (g_null_atom, "::after", g_null_atom));
       return after;
     }
     case kPseudoIdBefore: {
       DEFINE_STATIC_LOCAL(QualifiedName, before,
-                          (g_null_atom, "<pseudo:before>", g_null_atom));
+                          (g_null_atom, "::before", g_null_atom));
       return before;
     }
     case kPseudoIdBackdrop: {
       DEFINE_STATIC_LOCAL(QualifiedName, backdrop,
-                          (g_null_atom, "<pseudo:backdrop>", g_null_atom));
+                          (g_null_atom, "::backdrop", g_null_atom));
       return backdrop;
     }
     case kPseudoIdFirstLetter: {
       DEFINE_STATIC_LOCAL(QualifiedName, first_letter,
-                          (g_null_atom, "<pseudo:first-letter>", g_null_atom));
+                          (g_null_atom, "::first-letter", g_null_atom));
       return first_letter;
     }
     case kPseudoIdMarker: {
       DEFINE_STATIC_LOCAL(QualifiedName, marker,
-                          (g_null_atom, "<pseudo:marker>", g_null_atom));
+                          (g_null_atom, "::marker", g_null_atom));
       return marker;
     }
     default:
       NOTREACHED();
   }
   DEFINE_STATIC_LOCAL(QualifiedName, name,
-                      (g_null_atom, "<pseudo>", g_null_atom));
+                      (g_null_atom, "::unknown", g_null_atom));
   return name;
 }
 
-String PseudoElement::PseudoElementNameForEvents(PseudoId pseudo_id) {
-  DEFINE_STATIC_LOCAL(const String, after, ("::after"));
-  DEFINE_STATIC_LOCAL(const String, before, ("::before"));
-  DEFINE_STATIC_LOCAL(const String, marker, ("::marker"));
-  switch (pseudo_id) {
-    case kPseudoIdAfter:
-      return after;
-    case kPseudoIdBefore:
-      return before;
-    case kPseudoIdMarker:
-      return marker;
-    default:
-      return g_empty_string;
-  }
+const AtomicString& PseudoElement::PseudoElementNameForEvents(
+    PseudoId pseudo_id) {
+  if (pseudo_id == kPseudoIdNone)
+    return g_null_atom;
+  else
+    return PseudoElementTagName(pseudo_id).LocalName();
 }
 
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)

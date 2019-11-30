@@ -54,7 +54,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     mock_factory_->ReadAndFullfillMetadata(
         reader_, std::move(metadata),
         base::BindOnce(
-            [](base::Closure quit_closure,
+            [](base::OnceClosure quit_closure,
                data_decoder::mojom::BundleMetadataParseErrorPtr error) {
               std::move(quit_closure).Run();
             },

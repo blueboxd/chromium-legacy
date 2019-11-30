@@ -39,16 +39,16 @@ bool IsWhitelisted(const std::string& path) {
 }
 
 // Callback for user_manager::UserImageLoader.
-void VideoLoaded(
-    const content::URLDataSource::GotDataCallback& got_data_callback,
-    std::unique_ptr<std::string> video_data,
-    bool did_load_file) {
+void VideoLoaded(content::URLDataSource::GotDataCallback got_data_callback,
+                 std::unique_ptr<std::string> video_data,
+                 bool did_load_file) {
   if (video_data->size() && did_load_file) {
-    got_data_callback.Run(new base::RefCountedBytes(
-        reinterpret_cast<const unsigned char*>(video_data->data()),
-        video_data->size()));
+    std::move(got_data_callback)
+        .Run(new base::RefCountedBytes(
+            reinterpret_cast<const unsigned char*>(video_data->data()),
+            video_data->size()));
   } else {
-    got_data_callback.Run(nullptr);
+    std::move(got_data_callback).Run(nullptr);
   }
 }
 
@@ -69,10 +69,10 @@ std::string VideoSource::GetSource() {
 void VideoSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& got_data_callback) {
+    content::URLDataSource::GotDataCallback got_data_callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   if (!IsWhitelisted(path)) {
-    got_data_callback.Run(nullptr);
+    std::move(got_data_callback).Run(nullptr);
     return;
   }
 
@@ -84,7 +84,7 @@ void VideoSource::StartDataRequest(
       base::BindOnce(&base::PathExists, video_path),
       base::BindOnce(&VideoSource::StartDataRequestAfterPathExists,
                      weak_factory_.GetWeakPtr(), video_path,
-                     got_data_callback));
+                     std::move(got_data_callback)));
 }
 
 std::string VideoSource::GetMimeType(const std::string& path) {
@@ -97,7 +97,7 @@ std::string VideoSource::GetMimeType(const std::string& path) {
 
 void VideoSource::StartDataRequestAfterPathExists(
     const base::FilePath& video_path,
-    const content::URLDataSource::GotDataCallback& got_data_callback,
+    content::URLDataSource::GotDataCallback got_data_callback,
     bool path_exists) {
   if (path_exists) {
     auto video_data = std::make_unique<std::string>();
@@ -105,10 +105,11 @@ void VideoSource::StartDataRequestAfterPathExists(
     base::PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
         base::BindOnce(&base::ReadFileToString, video_path, data),
-        base::BindOnce(&VideoLoaded, got_data_callback, std::move(video_data)));
+        base::BindOnce(&VideoLoaded, std::move(got_data_callback),
+                       std::move(video_data)));
 
   } else {
-    got_data_callback.Run(nullptr);
+    std::move(got_data_callback).Run(nullptr);
   }
 }
 

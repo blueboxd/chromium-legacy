@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Len s Wi‑Fi</translation>
 <translation id="2747003861858887689">Predchádzajúce pole</translation>
 <translation id="2773292004659987824">Anonymné vyhľadávanie</translation>
+<translation id="277771892408211951">Výber jazyka</translation>
 <translation id="2780046210906776326">Žiadne e-mailové účty</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Zavrieť Prepínač kariet</translation>
@@ -268,7 +269,6 @@
 <translation id="4689564913179979534">Spravovať spôsoby platby…</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4747097190499141774">Šifrovanie prístupovej frázy nezahŕňa spôsoby platby a adresy zo služby Google Pay. Šifrované údaje si môže prečítať iba používateľ s prístupovou frázou. Prístupová fráza sa neodosiela do Googlu ani sa v ňom neuchováva. Ak ju zabudnete, budete musieť resetovať synchronizáciu. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Nájsť na stránke...</translation>
 <translation id="4751645464639803239">Nová karta inkognito</translation>
 <translation id="4758977202923349869">Umiestnite kreditnú kartu do tohoto rámca</translation>
 <translation id="4802417911091824046">Šifrovanie prístupovej frázy nezahŕňa spôsoby platby a adresy zo služby Google Pay.
@@ -455,7 +455,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7136892417564438900">Kamera nie je k dispozícii</translation>
 <translation id="7159472599653637159">Vyžiadať stránky pre mobil</translation>
 <translation id="7173114856073700355">Otvoriť Nastavenia</translation>
-<translation id="7189598951263744875">Zdieľať...</translation>
 <translation id="7192050974311852563">Spustiť zapisovanie do denníka</translation>
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="7265758999917665941">Nikdy pre tento web</translation>
@@ -559,6 +558,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8840513115188359703">Neodhlásime vás z účtu Google.</translation>
 <translation id="8870413625673593573">Nedávno zatvorené</translation>
 <translation id="8881801611828450202">Hľadať tento obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Zdieľať…</translation>
 <translation id="895541991026785598">Nahlásiť problém</translation>
 <translation id="8976382372951310360">Pomocník</translation>
 <translation id="8981454092730389528">Riadenie aktivity Google</translation>

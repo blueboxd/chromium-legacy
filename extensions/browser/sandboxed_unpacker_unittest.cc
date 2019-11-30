@@ -120,16 +120,16 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
       const SkBitmap& install_icon,
       const base::Optional<int>& dnr_ruleset_checksum) override {
     temp_dir_ = temp_dir;
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   }
 
   void OnUnpackFailure(const CrxInstallError& error) override {
     error_ = error;
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   }
 
   base::Optional<CrxInstallError> error_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   base::FilePath temp_dir_;
   bool* deleted_tracker_ = nullptr;
 };

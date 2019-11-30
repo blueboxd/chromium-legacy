@@ -15,11 +15,10 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
   # Stack traces do not currently work on 10.6, but they are also being
   # disabled shortly so just disable it for now.
   # All platforms except chromeos should at least have a valid minidump.
-  # Disabled on Android, flaky: crbug.com/971998.
-  @decorators.Disabled('snowleopard', 'chromeos', 'android')
+  @decorators.Disabled('snowleopard', 'chromeos')
   def testValidDump(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
-      self._tab.Navigate('chrome://crash', timeout=5)
+      self._tab.Navigate('chrome://crash', timeout=10)
     self.assertTrue(c.exception.is_valid_dump)
 
   # Stack traces aren't working on Android yet.

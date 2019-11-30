@@ -36,8 +36,8 @@ class MODULES_EXPORT MediaStreamRemoteVideoSource
 
  protected:
   // Implements MediaStreamVideoSource.
-  void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) override;
+  void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
+                       EncodedVideoFrameCB encoded_frame_callback) override;
 
   void StopSourceImpl() override;
 

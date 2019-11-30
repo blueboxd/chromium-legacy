@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -75,7 +76,8 @@ void LoginScreenPolicyTest::RefreshDevicePolicyAndWaitForSettingChange(
       new content::MessageLoopRunner);
   std::unique_ptr<CrosSettings::ObserverSubscription> subscription(
       chromeos::CrosSettings::Get()->AddSettingsObserver(
-          cros_setting_name, runner->QuitClosure()));
+          cros_setting_name,
+          base::BindLambdaForTesting([&]() { runner->Quit(); })));
 
   RefreshDevicePolicy();
   runner->Run();

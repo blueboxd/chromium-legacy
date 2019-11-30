@@ -2728,7 +2728,22 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
+crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
 crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
@@ -2741,9 +2756,6 @@ crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/tokens/ms-001.h
 crbug.com/626703 [ Linux ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
@@ -5379,7 +5391,7 @@ crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.
 crbug.com/865432 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
-crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout ]
+crbug.com/937170 external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout ]
 crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.js [ Pass Timeout ]
 
 # These video tests seem to take a screenshot too early.
@@ -5851,6 +5863,13 @@ crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failu
 crbug.com/1015187 virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 crbug.com/1015187 [ Linux Mac ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 
+# Sheriff 2019-11-29
+crbug.com/1027436 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Pass Timeout ]
+crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
+crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
+crbug.com/1027435 [ Mac ] external/wpt/html/cross-origin-opener-policy/popup-none.https.html [ Pass Timeout ]
+crbug.com/1027434 [ Mac ] external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
@@ -5895,5 +5914,15 @@ crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
+# Failing document policy tests
+crbug.com/993790 external/wpt/document-policy/required-policy/document-policy.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/no-document-policy.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy-nested.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
+
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1016772 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
+crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
+
+crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
+crbug.com/1029541 virtual/threaded/external/wpt/web-animations/timing-model/animations/reverse-running-animation.html [ Pass Failure ]

@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1021110881106174305">Αποδεκτές κάρτες</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
-<translation id="1035334672863811645">σύνδεση στο Chrome</translation>
 <translation id="1036348656032585052">Απενεργοποίηση</translation>
 <translation id="1038842779957582377">άγνωστο όνομα</translation>
 <translation id="1039626062703039346">Το Chrome μπορεί να σας βοηθήσει να προστατεύσετε τον Λογαριασμό σας Google και να αλλάξετε τον κωδικό πρόσβασής σας. Αυτό θα ειδοποιήσει την Google σχετικά με αυτόν τον ιστότοπο.</translation>
@@ -937,7 +936,6 @@
 <translation id="536296301121032821">Αποτυχία αποθήκευσης ρυθμίσεων πολιτικής</translation>
 <translation id="5371425731340848620">Ενημέρωση κάρτας</translation>
 <translation id="5377026284221673050">"Το ρολόι σας πάει πίσω" ή "Το ρολόι σας πάει μπροστά" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Για να χρησιμοποιείτε τις κάρτες σας σε όλες τις συσκευές, συνδεθείτε και ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="5386426401304769735">Η αλυσίδα πιστοποιητικού για αυτόν τον ιστότοπο περιέχει ένα πιστοποιητικό το οποίο είναι υπογεγραμμένο με χρήση SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Ραφή στο δεξί άκρο</translation>
@@ -1606,7 +1604,6 @@
 <translation id="8759274551635299824">Αυτή η κάρτα έχει λήξει</translation>
 <translation id="8761567432415473239">Η ασφαλής περιήγηση Google <ph name="BEGIN_LINK" />εντόπισε επιβλαβή προγράμματα<ph name="END_LINK" /> πρόσφατα στο <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Συσκευή USB</translation>
-<translation id="8768895707659403558">Για να χρησιμοποιείτε τις κάρτες σας σε όλες τις συσκευές σας, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
 <translation id="8792621596287649091">Μπορεί να χάσετε την πρόσβαση στον λογαριασμό σας <ph name="ORG_NAME" /> ή να πέσετε θύμα κλοπής στοιχείων ταυτότητας. Το Chromium συνιστά να αλλάξετε τον κωδικό πρόσβασής σας τώρα.</translation>

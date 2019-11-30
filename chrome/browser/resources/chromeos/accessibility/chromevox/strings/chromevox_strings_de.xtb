@@ -462,6 +462,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4204126831294769023">Azurblau</translation>
 <translation id="4204864733111726379">Blütenweiß</translation>
 <translation id="4206289001967551965">In der Tabelle</translation>
+<translation id="4207770814752775793">Sprachausgabe-Einstellungen auf Standardwerte zurücksetzen.</translation>
 <translation id="4209770650650780359">Zur automatischen Vervollständigung die Pfeiltaste nach oben oder unten drücken.</translation>
 <translation id="4215733775853809057">Nächster Schieberegler</translation>
 <translation id="42164919740161077">Graublau</translation>
@@ -765,6 +766,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6290434000785343030">Kein nächstes Kombinationsfeld</translation>
 <translation id="6305702903308659374">Mit normaler Lautstärke wiedergeben, auch wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="6307969636681130414">Gedrückt</translation>
+<translation id="6315652249189065725">Menü für Tastenkombinationen öffnen</translation>
 <translation id="6322856989298155004">Töne</translation>
 <translation id="6324551002951139333">Grammatikfehler gefunden</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> kopieren.</translation>
@@ -958,6 +960,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{Stunde}other{Stunden}}</translation>
 <translation id="7674576868851035240">Nächster Link</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">Einstellungen für Sprachausgabe zurücksetzen</translation>
 <translation id="7684431668231950609">Text bearbeiten, URL-Eintrag</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Vorheriges Optionsfeld</translation>

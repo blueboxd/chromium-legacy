@@ -49,6 +49,7 @@ void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& track_adapter_settings,
     const VideoCaptureDeliverFrameCB& frame_callback,
+    const EncodedVideoFrameCB& encoded_frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     ConstraintsOnceCallback callback) {
@@ -58,15 +59,20 @@ void MediaStreamVideoSource::AddTrack(
   secure_tracker_.Add(track, true);
 
   pending_tracks_.push_back(PendingTrackInfo(
-      track, frame_callback, settings_callback, format_callback,
+      track, frame_callback, encoded_frame_callback, settings_callback,
+      format_callback,
       std::make_unique<VideoTrackAdapterSettings>(track_adapter_settings),
       std::move(callback)));
 
   switch (state_) {
     case NEW: {
       state_ = STARTING;
-      StartSourceImpl(ConvertToBaseCallback(CrossThreadBindRepeating(
-          &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)));
+      StartSourceImpl(
+          ConvertToBaseCallback(CrossThreadBindRepeating(
+              &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)),
+          ConvertToBaseCallback(CrossThreadBindRepeating(
+              &VideoTrackAdapter::DeliverEncodedVideoFrameOnIO,
+              track_adapter_)));
       break;
     }
     case STARTING:
@@ -287,7 +293,14 @@ void MediaStreamVideoSource::UpdateCapturingLinkSecure(
     bool is_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   secure_tracker_.Update(track, is_secure);
-  OnCapturingLinkSecured(secure_tracker_.is_capturing_secure());
+  NotifyCapturingLinkSecured(CountEncodedSinks());
+}
+
+void MediaStreamVideoSource::NotifyCapturingLinkSecured(
+    size_t num_encoded_sinks) {
+  // Encoded sinks imply insecure sinks.
+  OnCapturingLinkSecured(secure_tracker_.is_capturing_secure() &&
+                         num_encoded_sinks == 0);
 }
 
 void MediaStreamVideoSource::SetDeviceRotationDetection(bool enabled) {
@@ -310,6 +323,26 @@ base::Optional<media::VideoCaptureParams>
 MediaStreamVideoSource::GetCurrentCaptureParams() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return base::Optional<media::VideoCaptureParams>();
+}
+
+size_t MediaStreamVideoSource::CountEncodedSinks() const {
+  return std::accumulate(tracks_.begin(), tracks_.end(), size_t(0),
+                         [](size_t accum, MediaStreamVideoTrack* track) {
+                           return accum + track->CountEncodedSinks();
+                         });
+}
+
+void MediaStreamVideoSource::UpdateNumEncodedSinks() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  size_t count = CountEncodedSinks();
+  DCHECK(SupportsEncodedOutput() || count == 0);
+  if (count == 1) {
+    OnEncodedSinkEnabled();
+  } else if (count == 0) {
+    OnEncodedSinkDisabled();
+  }
+  // Encoded sinks are insecure.
+  NotifyCapturingLinkSecured(count);
 }
 
 void MediaStreamVideoSource::DoChangeSource(
@@ -374,10 +407,10 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
     }
 
     if (result == mojom::blink::MediaStreamRequestResult::OK) {
-      track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
-                               track_info.settings_callback,
-                               track_info.format_callback,
-                               *track_info.adapter_settings);
+      track_adapter_->AddTrack(
+          track_info.track, track_info.frame_callback,
+          track_info.encoded_frame_callback, track_info.settings_callback,
+          track_info.format_callback, *track_info.adapter_settings);
       UpdateTrackSettings(track_info.track, *track_info.adapter_settings);
     }
 
@@ -446,15 +479,21 @@ void MediaStreamVideoSource::UpdateTrackSettings(
   track->SetTrackAdapterSettings(adapter_settings);
 }
 
+bool MediaStreamVideoSource::SupportsEncodedOutput() const {
+  return false;
+}
+
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
     const VideoCaptureDeliverFrameCB& frame_callback,
+    const EncodedVideoFrameCB& encoded_frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
     ConstraintsOnceCallback callback)
     : track(track),
       frame_callback(frame_callback),
+      encoded_frame_callback(encoded_frame_callback),
       settings_callback(settings_callback),
       format_callback(format_callback),
       adapter_settings(std::move(adapter_settings)),

@@ -2228,7 +2228,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
@@ -2263,7 +2263,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
@@ -2301,7 +2301,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
@@ -2339,7 +2339,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
@@ -2374,7 +2374,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
@@ -2412,7 +2412,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =
       new content::MessageLoopRunner;
   push_service()->SetContentSettingChangedCallbackForTesting(
-      message_loop_runner->QuitClosure());
+      base::BarrierClosure(1, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())

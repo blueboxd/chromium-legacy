@@ -5991,6 +5991,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

@@ -940,13 +940,13 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
 }
 
 void LaunchURL(const GURL& url,
-               const content::WebContents::Getter& web_contents_getter,
+               content::WebContents::OnceGetter web_contents_getter,
                ui::PageTransition page_transition,
                bool has_user_gesture,
                const base::Optional<url::Origin>& initiating_origin) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
-  content::WebContents* web_contents = web_contents_getter.Run();
+  content::WebContents* web_contents = std::move(web_contents_getter).Run();
   if (!web_contents)
     return;
 
@@ -4768,7 +4768,7 @@ ChromeContentBrowserClient::CreateLoginDelegate(
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    content::WebContents::Getter web_contents_getter,
+    content::WebContents::OnceGetter web_contents_getter,
     int child_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,
@@ -4799,8 +4799,8 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
 
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&LaunchURL, url, web_contents_getter, page_transition,
-                     has_user_gesture, initiating_origin));
+      base::BindOnce(&LaunchURL, url, std::move(web_contents_getter),
+                     page_transition, has_user_gesture, initiating_origin));
   return true;
 }
 

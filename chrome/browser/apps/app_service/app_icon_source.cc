@@ -24,7 +24,7 @@ namespace apps {
 
 namespace {
 
-void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
+void LoadDefaultImage(content::URLDataSource::GotDataCallback callback) {
   base::StringPiece contents =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           IDR_APP_DEFAULT_ICON, apps_util::GetPrimaryDisplayUIScaleFactor());
@@ -32,18 +32,18 @@ void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
   base::RefCountedBytes* image_bytes = new base::RefCountedBytes();
   image_bytes->data().assign(contents.data(),
                              contents.data() + contents.size());
-  callback.Run(image_bytes);
+  std::move(callback).Run(image_bytes);
 }
 
-void RunCallback(const content::URLDataSource::GotDataCallback& callback,
+void RunCallback(content::URLDataSource::GotDataCallback callback,
                  apps::mojom::IconValuePtr iv) {
   if (!iv->compressed.has_value() || iv->compressed.value().empty()) {
-    LoadDefaultImage(callback);
+    LoadDefaultImage(std::move(callback));
     return;
   }
   base::RefCountedBytes* image_bytes =
       new base::RefCountedBytes(iv->compressed.value());
-  callback.Run(image_bytes);
+  std::move(callback).Run(image_bytes);
 }
 
 }  // namespace
@@ -59,7 +59,7 @@ std::string AppIconSource::GetSource() {
 void AppIconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   const std::string path_lower =
       base::ToLowerASCII(content::URLDataSource::URLToRequestPath(url));
   std::vector<std::string> path_parts = base::SplitString(
@@ -67,7 +67,7 @@ void AppIconSource::StartDataRequest(
 
   // Check data exists, load default image if it doesn't.
   if (path_lower.empty() || path_parts.size() < 2) {
-    LoadDefaultImage(callback);
+    LoadDefaultImage(std::move(callback));
     return;
   }
 
@@ -76,7 +76,7 @@ void AppIconSource::StartDataRequest(
   std::string size_param = path_parts[1];
   int size = 0;
   if (!base::StringToInt(size_param, &size)) {
-    LoadDefaultImage(callback);
+    LoadDefaultImage(std::move(callback));
     return;
   }
   constexpr bool quantize_to_supported_scale_factor = true;
@@ -86,7 +86,7 @@ void AppIconSource::StartDataRequest(
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (!app_service_proxy) {
-    LoadDefaultImage(callback);
+    LoadDefaultImage(std::move(callback));
     return;
   }
 
@@ -95,7 +95,8 @@ void AppIconSource::StartDataRequest(
   constexpr bool allow_placeholder_icon = false;
   app_service_proxy->LoadIcon(
       app_type, app_id, apps::mojom::IconCompression::kCompressed, size_in_dip,
-      allow_placeholder_icon, base::BindOnce(&RunCallback, callback));
+      allow_placeholder_icon,
+      base::BindOnce(&RunCallback, std::move(callback)));
 }
 
 std::string AppIconSource::GetMimeType(const std::string&) {

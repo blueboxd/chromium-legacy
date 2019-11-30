@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Diğer ayrıntıları sağlayın</translation>
 <translation id="1021110881106174305">Kabul edilen kartlar</translation>
 <translation id="1032854598605920125">Saat yönünde döndür</translation>
-<translation id="1035334672863811645">Chrome'da oturum açın</translation>
 <translation id="1036348656032585052">Kapat</translation>
 <translation id="1038842779957582377">bilinmeyen ad</translation>
 <translation id="1039626062703039346">Chrome, Google Hesabınızı korumanıza ve şifrenizi değiştirmenize yardımcı olabilir. Bu işlem, Google'ın bu siteyle ilgili bilgilendirilmesini sağlar.</translation>
@@ -792,7 +791,7 @@
 <translation id="4780900888022378816">Cihazınız <ph name="ENROLLMENT_DOMAIN" /> tarafından, hesabınız ise <ph name="ACCOUNT_DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="4785689107224900852">Bu sekmeye geç</translation>
 <translation id="4791134497475588553">Yüklü Linux uygulamaları ve son kullanılma zamanları</translation>
-<translation id="4798078619018708837">Kart bilgilerinizi güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ait son kullanma tarihini ve CVC kodunu girin. Onayladığınızda Googe Hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
+<translation id="4798078619018708837">Kart bilgilerinizi güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ait son kullanma tarihini ve CVC kodunu girin. Onayladığınızda Google Hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="4800132727771399293">Son kullanma tarihinizi ve CVC'nizi kontrol edip tekrar deneyin</translation>
 <translation id="480334179571489655">Kaynak Politikası Hatası</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
@@ -919,7 +918,6 @@
 <translation id="536296301121032821">Politika ayarları saklanamadı</translation>
 <translation id="5371425731340848620">Kartı güncelle</translation>
 <translation id="5377026284221673050">"Saatiniz geri", "Saatiniz ileri" veya "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Kartlarınızı tüm cihazlarınızda kullanmak için oturum açın ve senkronizasyonu etkinleştirin.</translation>
 <translation id="5386426401304769735">Bu sitenin sertifika zinciri, SHA-1 kullanılarak imzalanmış bir sertifika içeriyor.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Sağda kenar dikişi</translation>
@@ -1581,7 +1579,6 @@ Ek ayrıntılar:
 <translation id="8759274551635299824">Bu kartın kullanım süresi doldu</translation>
 <translation id="8761567432415473239">Google Güvenli Tarama, yakın zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı programlar buldu<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB cihaz</translation>
-<translation id="8768895707659403558">Kartlarınızı tüm cihazlarınızda kullanmak için <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chromium, şifrenizi hemen değiştirmenizi önerir.</translation>

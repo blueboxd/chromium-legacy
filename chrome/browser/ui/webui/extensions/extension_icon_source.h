@@ -73,7 +73,7 @@ class ExtensionIconSource : public content::URLDataSource,
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   bool AllowCaching() override;
 
  private:
@@ -120,15 +120,15 @@ class ExtensionIconSource : public content::URLDataSource,
   void LoadIconFailed(int request_id);
 
   // Parses and saves an ExtensionIconRequest for the URL |path| for the
-  // specified |request_id|.
+  // specified |request_id|. Takes the |callback| if it returns true.
   bool ParseData(const std::string& path,
                  int request_id,
-                 const content::URLDataSource::GotDataCallback& callback);
+                 content::URLDataSource::GotDataCallback* callback);
 
   // Stores the parameters associated with the |request_id|, making them
   // as an ExtensionIconRequest via GetData.
   void SetData(int request_id,
-               const content::URLDataSource::GotDataCallback& callback,
+               content::URLDataSource::GotDataCallback callback,
                const Extension* extension,
                bool grayscale,
                int size,

@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Angiv yderligere oplysninger</translation>
 <translation id="1021110881106174305">Accepterede kort</translation>
 <translation id="1032854598605920125">Rotér med uret</translation>
-<translation id="1035334672863811645">log ind på Chrome</translation>
 <translation id="1036348656032585052">Deaktiver</translation>
 <translation id="1038842779957582377">ukendt navn</translation>
 <translation id="1039626062703039346">Chrome kan hjælpe dig med at beskytte din Google-konto og ændre din adgangskode. Dette underretter Google om dette website.</translation>
@@ -924,7 +923,6 @@
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5371425731340848620">Opdater kortet</translation>
 <translation id="5377026284221673050">"Dit ur er bagud" eller "Dit ur er forud" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Log ind, og aktivér synkronisering for at bruge dine kort på alle enheder.</translation>
 <translation id="5386426401304769735">Certifikatkæden for dette website indeholder et certifikat, der er signeret med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kanthæftning i højre side</translation>
@@ -1586,7 +1584,6 @@ Yderligere oplysninger:
 <translation id="8759274551635299824">Kortet er udløbet</translation>
 <translation id="8761567432415473239">Beskyttet browsing i Google har for nylig <ph name="BEGIN_LINK" />fundet skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhed</translation>
-<translation id="8768895707659403558"><ph name="SIGN_IN_LINK" /> for at bruge dine kort på alle dine enheder.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
 <translation id="8792621596287649091">Du kan miste adgangen til din <ph name="ORG_NAME" />-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>

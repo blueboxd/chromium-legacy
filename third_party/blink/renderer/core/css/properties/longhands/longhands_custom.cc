@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -1977,7 +1978,7 @@ void Content::ApplyValue(StyleResolverState& state,
     ContentData* next_content = nullptr;
     if (item->IsImageGeneratorValue() || item->IsImageSetValue() ||
         item->IsImageValue()) {
-      next_content = ContentData::Create(
+      next_content = MakeGarbageCollected<ImageContentData>(
           state.GetStyleImage(CSSPropertyID::kContent, *item));
     } else if (const auto* counter_value =
                    DynamicTo<cssvalue::CSSCounterValue>(item.Get())) {
@@ -1987,7 +1988,8 @@ void Content::ApplyValue(StyleResolverState& state,
           std::make_unique<CounterContent>(
               AtomicString(counter_value->Identifier()), list_style_type,
               AtomicString(counter_value->Separator()));
-      next_content = ContentData::Create(std::move(counter));
+      next_content =
+          MakeGarbageCollected<CounterContentData>(std::move(counter));
     } else if (auto* item_identifier_value =
                    DynamicTo<CSSIdentifierValue>(item.Get())) {
       QuoteType quote_type;
@@ -2008,7 +2010,7 @@ void Content::ApplyValue(StyleResolverState& state,
           quote_type = QuoteType::kNoClose;
           break;
       }
-      next_content = ContentData::Create(quote_type);
+      next_content = MakeGarbageCollected<QuoteContentData>(quote_type);
     } else {
       String string;
       if (const auto* function_value =
@@ -2030,7 +2032,7 @@ void Content::ApplyValue(StyleResolverState& state,
         text_content->SetText(text_content->GetText() + string);
         continue;
       }
-      next_content = ContentData::Create(string);
+      next_content = MakeGarbageCollected<TextContentData>(string);
     }
 
     if (!first_content)
@@ -2044,7 +2046,7 @@ void Content::ApplyValue(StyleResolverState& state,
   // outer list.
   if (outer_list.length() > 1) {
     String string = To<CSSStringValue>(outer_list.Item(1)).Value();
-    ContentData* alt_content = ContentData::CreateAltText(string);
+    auto* alt_content = MakeGarbageCollected<AltTextContentData>(string);
     prev_content->SetNext(alt_content);
   }
   DCHECK(first_content);

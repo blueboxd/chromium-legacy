@@ -86,10 +86,11 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    VideoCaptureDeliverFrameCB frame_callback,
+    EncodedVideoFrameCB encoded_frame_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = STARTING;
-  frame_callback_ = frame_callback;
+  frame_callback_ = std::move(frame_callback);
   source_->StartCapture(
       capture_params_, frame_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,

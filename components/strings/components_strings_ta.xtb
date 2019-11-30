@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">கூடுதல் விவரங்களை வழங்கவும்</translation>
 <translation id="1021110881106174305">ஏற்கப்படும் கார்டுகள்</translation>
 <translation id="1032854598605920125">கடிகாரத்திசையில் சுழற்று</translation>
-<translation id="1035334672863811645">Chrome இல் உள்நுழைக</translation>
 <translation id="1036348656032585052">முடக்கு</translation>
 <translation id="1038842779957582377">அறியப்படாத பெயர்</translation>
 <translation id="1039626062703039346">உங்கள் Google கணக்கைப் பாதுகாக்கவும் கடவுச்சொல்லை மாற்றவும் Chrome உதவும். இந்தத் தளம் குறித்து Googleளுக்குத் தெரியப்படுத்தும்.</translation>
@@ -908,7 +907,6 @@
 <translation id="536296301121032821">கொள்கை அமைப்புகளைச் சேமிப்பதில் தோல்வி</translation>
 <translation id="5371425731340848620">கார்டை மாற்றவும்</translation>
 <translation id="5377026284221673050">"நேரம் பின்தங்கியுள்ளது" அல்லது "நேரம் கூடுதலாக அமைக்கப்பட்டுள்ளது" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">உங்கள் சாதனங்கள் அனைத்திலும் உங்கள் கார்டுகளைப் பயன்படுத்த, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்.</translation>
 <translation id="5386426401304769735">இந்தச் சான்றிதழ் சங்கிலியில், SHA-1ஐப் பயன்படுத்தி கையொப்பமிடப்பட்ட சான்றிதழ் உள்ளது.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">எட்ஜ் ஸ்டிட்ச் ரைட்</translation>
@@ -1568,7 +1566,6 @@
 <translation id="8759274551635299824">கார்டு காலாவதியாகிவிட்டது</translation>
 <translation id="8761567432415473239">Google பாதுகாப்பான தேடல், <ph name="SITE" /> இல் சமீபத்தில் <ph name="BEGIN_LINK" />தீங்கான நிரல்களைக் கண்டறிந்தது<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB சாதனம்</translation>
-<translation id="8768895707659403558">உங்கள் சாதனங்கள் அனைத்திலும் உங்கள் கார்டுகளைப் பயன்படுத்த, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>

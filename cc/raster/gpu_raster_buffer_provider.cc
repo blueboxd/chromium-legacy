@@ -285,7 +285,9 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     const ResourcePool::InUsePoolResource& in_use_resource,
     GpuRasterBacking* backing,
     bool resource_has_previous_content,
-    bool depends_on_at_raster_decodes)
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates)
     : client_(client),
       backing_(backing),
       resource_size_(in_use_resource.size()),
@@ -293,6 +295,10 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
       color_space_(in_use_resource.color_space()),
       resource_has_previous_content_(resource_has_previous_content),
       depends_on_at_raster_decodes_(depends_on_at_raster_decodes),
+      depends_on_hardware_accelerated_jpeg_candidates_(
+          depends_on_hardware_accelerated_jpeg_candidates),
+      depends_on_hardware_accelerated_webp_candidates_(
+          depends_on_hardware_accelerated_webp_candidates),
       before_raster_sync_token_(backing->returned_sync_token),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
@@ -340,7 +346,9 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       before_raster_sync_token_, resource_size_, resource_format_, color_space_,
       resource_has_previous_content_, raster_source, raster_full_rect,
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
-      creation_time_, depends_on_at_raster_decodes_);
+      creation_time_, depends_on_at_raster_decodes_,
+      depends_on_hardware_accelerated_jpeg_candidates_,
+      depends_on_hardware_accelerated_webp_candidates_);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
@@ -373,7 +381,9 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id,
-    bool depends_on_at_raster_decodes) {
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates) {
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->worker_context_provider = worker_context_provider_;
@@ -386,9 +396,11 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
       static_cast<GpuRasterBacking*>(resource.gpu_backing());
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
-  return std::make_unique<RasterBufferImpl>(this, resource, backing,
-                                            resource_has_previous_content,
-                                            depends_on_at_raster_decodes);
+  return std::make_unique<RasterBufferImpl>(
+      this, resource, backing, resource_has_previous_content,
+      depends_on_at_raster_decodes,
+      depends_on_hardware_accelerated_jpeg_candidates,
+      depends_on_hardware_accelerated_webp_candidates);
 }
 
 void GpuRasterBufferProvider::Flush() {
@@ -466,8 +478,14 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
     base::TimeTicks raster_buffer_creation_time,
-    bool depends_on_at_raster_decodes) {
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates) {
   PendingRasterQuery query;
+  query.depends_on_hardware_accelerated_jpeg_candidates =
+      depends_on_hardware_accelerated_jpeg_candidates;
+  query.depends_on_hardware_accelerated_webp_candidates =
+      depends_on_hardware_accelerated_webp_candidates;
   gpu::SyncToken raster_finished_token = PlaybackOnWorkerThreadInternal(
       mailbox, texture_target, texture_is_overlay_candidate, sync_token,
       resource_size, resource_format, color_space,
@@ -676,6 +694,22 @@ bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
               "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes.All",
               client_name),
           raster_scheduling_delay);
+      if (it->depends_on_hardware_accelerated_jpeg_candidates) {
+        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+            base::StringPrintf(
+                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
+                "TilesWithJpegHwDecodeCandidates",
+                client_name),
+            raster_scheduling_delay);
+      }
+      if (it->depends_on_hardware_accelerated_webp_candidates) {
+        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+            base::StringPrintf(
+                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
+                "TilesWithWebPHwDecodeCandidates",
+                client_name),
+            raster_scheduling_delay);
+      }
     }
 
     if (enable_oop_rasterization_) {

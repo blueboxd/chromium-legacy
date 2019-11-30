@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">在<ph name="APP" />中打开链接</translation>
 <translation id="1140351953533677694">访问您的蓝牙和串行设备</translation>
 <translation id="114036956334641753">音频和字幕</translation>
-<translation id="1140610710803014750">要想将您的书签同步到您的所有设备上，请登录并开启同步功能。</translation>
 <translation id="1140746652461896221">屏蔽您访问的任意网页上的内容</translation>
 <translation id="1143142264369994168">证书签名人</translation>
 <translation id="1145292499998999162">插件已被拦截</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">复制音频地址(&amp;O)</translation>
 <translation id="1465827627707997754">披萨片</translation>
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
-<translation id="1470811252759861213">要将您的扩展程序同步到您所有的设备上，请<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1472675084647422956">显示更多</translation>
 <translation id="1475502736924165259">您有一些证书不属于前面的任何类别</translation>
 <translation id="1476088332184200792">复制到您的设备</translation>
@@ -1041,7 +1039,6 @@
 <translation id="2489829450872380594">下次，您只需使用新手机就能解锁 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="2489918096470125693">添加文件夹(&amp;F)...</translation>
 <translation id="2490481887078769936">已从列表中移除“<ph name="FILE_NAME" />”</translation>
-<translation id="2490782392574942205">若想在您的所有计算机上使用您的扩展程序，请登录帐号并开启同步功能</translation>
 <translation id="249113932447298600">抱歉，系统目前不支持设备“<ph name="DEVICE_LABEL" />”。</translation>
 <translation id="249303669840926644">无法完成注册</translation>
 <translation id="2495777824269688114">探索更多功能或获得相关解答。如需帮助，请选择“?”。</translation>
@@ -1751,7 +1748,6 @@
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3528033729920178817">此网页正在跟踪您的位置。</translation>
 <translation id="3528498924003805721">快捷方式目标</translation>
-<translation id="3530305684079447434">要将您的书签同步到自己的所有设备上，请<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> 想使用您的麦克风</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 音频已静音</translation>
 <translation id="3538066758857505094">卸载 Linux 时出错。请重试。</translation>

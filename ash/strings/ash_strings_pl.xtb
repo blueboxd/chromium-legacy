@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Zmień ustawienia powiadomień na ekranie blokady</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Pokaż ustawienia Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Zawsze pokazuj półkę</translation>
 <translation id="1341651618736211726">Rozwiń menu</translation>
 <translation id="1346748346194534595">W prawo</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1761222317188459878">Włącz lub wyłącz połączenie sieciowe. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Przewiń w prawo</translation>
+<translation id="181103072419391116">Siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="1812997170047690955">Co widać na moim ekranie?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
+<translation id="2517825809102302935">Dzisiaj wyłącz</translation>
 <translation id="2542089167727451762">Kliknij swoje zdjęcie profilowe</translation>
 <translation id="255671100581129685">Asystent Google jest niedostępny w sesji publicznej.</translation>
 <translation id="256712445991462162">Lupa zadokowana</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">W wielokrotnym logowaniu nie możesz mieć więcej kont niż <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Administrator urządzenia może monitorować Twoją aktywność związaną z przeglądaniem.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Połączono z urządzeniem}few{Połączono z # urządzeniami}many{Połączono z # urządzeniami}other{Połączono z # urządzenia}}</translation>
+<translation id="3217205077783620295">Dźwięk jest włączony. Kliknij, by wyciszyć.</translation>
 <translation id="3226991577105957773">i jeszcze <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
 <translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> zostało przeniesione z biurka <ph name="ACTIVE_DESK" /> na biurko <ph name="TARGET_DESK" /></translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3454224730401036106">Połączenie zostało przełączone na bezpieczniejszą sieć</translation>
 <translation id="3465223694362104965">Od czasu Twojego ostatniego logowania do tego urządzenia podłączono inną klawiaturę. Zanim jej użyjesz, upewnij się, że masz do niej zaufanie.</translation>
+<translation id="3465356146291925647">Zarządzana przez administratora</translation>
 <translation id="3477079411857374384">Control+Shift+spacja</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
 <translation id="495046168593986294">Przewiń w górę</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
+<translation id="5018302031617932556">Dzięki Podświetleniu nocnemu oczy mniej się męczą podczas patrzenia na ekran lub czytania przy słabym oświetleniu. Kliknij, by to zmienić.</translation>
 <translation id="5030687792513154421">Czas minął</translation>
 <translation id="5035236842988137213">Urządzenie <ph name="DEVICE_NAME" /> zostało połączone z nowym telefonem</translation>
 <translation id="5083553833479578423">Poznaj więcej funkcji Asystenta.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">To urządzenie nie może obsługiwać wszystkich Twoich wyświetlaczy, dlatego jeden z nich został odłączony</translation>
 <translation id="574392208103952083">Średni</translation>
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
+<translation id="5745612484876805746">Podświetlenie nocne włącza się automatycznie o zachodzie słońca</translation>
 <translation id="5750765938512549687">Bluetooth jest wyłączony</translation>
 <translation id="576453121877257266">Podświetlenie nocne jest włączone.</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Tryb wysokiego kontrastu został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
 <translation id="602001110135236999">Przewiń w lewo</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Bluetooth jest włączony</translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Wyczyść wszystkie powiadomienia</translation>
 <translation id="643147933154517414">Wszystko gotowe</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6528179044667508675">Nie przeszkadzać</translation>
 <translation id="6537270692134705506">Zrzut całego ekranu</translation>
+<translation id="6537924328260219877">Siła sygnału: <ph name="SIGNAL_STRENGTH" />, bateria telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Przesyłam do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Poproś administratora</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6637729079642709226">Zmień czas</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Połącz urządzenie <ph name="DEVICE_NAME" /> z telefonem</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Asystent Google</translation>
 <translation id="7042322267639375032">Zwiń pasek stanu</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">Powiadomienia są ukryte.</translation>
 <translation id="8203795194971602413">Kliknięcie prawym przyciskiem</translation>
 <translation id="8236042855478648955">Czas na przerwę</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, bateria telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Naciśnij Enter, by odblokować dla: <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">Autoobracanie</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8627191004499078455">Połączono z urządzeniem <ph name="DEVICE_NAME" /></translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>
 <translation id="8652175077544655965">Zamknij ustawienia</translation>
 <translation id="8653151467777939995">Pokaż ustawienia powiadomień. Powiadomienia są włączone</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Pokaż listę sieci. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">Klawiatura może próbować przechwycić naciskane klawisze</translation>
 <translation id="8735953464173050365">Pokaż ustawienia klawiatury. Wybrana jest: <ph name="KEYBOARD_NAME" />.</translation>
 <translation id="875593634123171288">Pokaż ustawienia VPN</translation>
+<translation id="8785070478575117577">Połącz z <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Włącz lub wyłącz blokadę obracania. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="9017320285115481645">Wpisz kod dostępu rodzica w Family Link.</translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
+<translation id="9047624247355796468">Otwórz ustawienia sieci <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Na urządzeniu zostanie przywrócona wcześniejsza wersja oprogramowania</translation>
 <translation id="9070640332319875144">Ustawienia Asystenta</translation>
 <translation id="9072519059834302790">Czas pozostały do całkowitego rozładowania baterii: <ph name="TIME_LEFT" />.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">Lupa pełnego ekranu</translation>
 <translation id="9193626018745640770">Przesyłam do nieznanego odbiornika</translation>
 <translation id="9194617393863864469">Zaloguj innego użytkownika...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, zarządzana przez administratora</translation>
 <translation id="9205817095063786319">Urządzeniem zarządza <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Wyłączam tryb ujednoliconego pulpitu</translation>
 <translation id="9211681782751733685">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" />.</translation>

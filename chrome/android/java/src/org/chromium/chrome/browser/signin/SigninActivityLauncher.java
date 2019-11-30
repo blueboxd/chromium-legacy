@@ -79,8 +79,7 @@ public class SigninActivityLauncher {
     }
 
     private void launchInternal(Context context, Bundle fragmentArgs) {
-        Intent intent = new Intent(context, SigninActivity.class);
-        intent.putExtra(SigninActivity.ARGUMENT_FRAGMENT_ARGS, fragmentArgs);
+        Intent intent = SigninActivity.createIntent(context, fragmentArgs);
         context.startActivity(intent);
     }
 }

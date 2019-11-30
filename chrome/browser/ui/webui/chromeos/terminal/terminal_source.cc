@@ -25,7 +25,7 @@ constexpr base::FilePath::CharType kDefaultFile[] =
 constexpr char kDefaultMime[] = "text/html";
 
 void ReadFile(const base::FilePath& path,
-              const content::URLDataSource::GotDataCallback& callback) {
+              content::URLDataSource::GotDataCallback callback) {
   std::string content;
   // First look for uncompressed resource, then try for gzipped file.
   bool result = base::ReadFileToString(path, &content);
@@ -43,7 +43,7 @@ void ReadFile(const base::FilePath& path,
       << path;
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
-  callback.Run(response.get());
+  std::move(callback).Run(response.get());
 }
 }  // namespace
 
@@ -60,7 +60,7 @@ bool TerminalSource::AllowCaching() {
 void TerminalSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   // Reparse path to strip any query or fragment, skip first '/' in path.
@@ -72,7 +72,7 @@ void TerminalSource::StartDataRequest(
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&ReadFile, file_path, callback));
+      base::BindOnce(&ReadFile, file_path, std::move(callback)));
 }
 
 std::string TerminalSource::GetMimeType(const std::string& path) {

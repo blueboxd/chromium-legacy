@@ -7,7 +7,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_coordinator_test.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 

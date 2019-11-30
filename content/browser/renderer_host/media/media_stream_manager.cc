@@ -486,6 +486,7 @@ class MediaStreamManager::DeviceRequest {
 
 // static
 void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
+  DVLOG(1) << message;
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},

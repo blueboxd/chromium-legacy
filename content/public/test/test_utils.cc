@@ -249,8 +249,8 @@ void MessageLoopRunner::Run() {
   RunThisRunLoop(&run_loop_);
 }
 
-base::RepeatingClosure MessageLoopRunner::QuitClosure() {
-  return base::BindRepeating(&MessageLoopRunner::Quit, this);
+base::OnceClosure MessageLoopRunner::QuitClosure() {
+  return base::BindOnce(&MessageLoopRunner::Quit, this);
 }
 
 void MessageLoopRunner::Quit() {

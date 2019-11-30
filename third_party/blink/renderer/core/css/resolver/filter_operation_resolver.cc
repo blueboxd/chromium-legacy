@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -226,7 +227,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
           shadow.OverrideColor(state.Style()->GetColor());
         }
         operations.Operations().push_back(
-            DropShadowFilterOperation::Create(shadow));
+            MakeGarbageCollected<DropShadowFilterOperation>(shadow));
         break;
       }
       default:
@@ -308,7 +309,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
           shadow.OverrideColor(Color::kBlack);
         }
         operations.Operations().push_back(
-            DropShadowFilterOperation::Create(shadow));
+            MakeGarbageCollected<DropShadowFilterOperation>(shadow));
         break;
       }
       default:

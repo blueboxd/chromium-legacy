@@ -499,9 +499,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   network::mojom::CredentialsMode credentials_mode_;
   network::mojom::RedirectMode redirect_mode_;
   String fetch_integrity_;
-  // TODO(domfarolino): Use AtomicString for referrer_string_ once
-  // off-main-thread fetch is fully implemented and ResourceRequest never gets
-  // transferred between threads. See https://crbug.com/706331.
   String referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;

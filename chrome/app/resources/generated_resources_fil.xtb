@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Buksan ang link sa <ph name="APP" /></translation>
 <translation id="1140351953533677694">I-access ang iyong mga Bluetooth at Serial device</translation>
 <translation id="114036956334641753">Audio at mga caption</translation>
-<translation id="1140610710803014750">Para mailagay ang iyong mga bookmark sa lahat ng device mo, mag-sign in at i-on ang sync.</translation>
 <translation id="1140746652461896221">I-block ang content sa anumang page na binibisita mo</translation>
 <translation id="1143142264369994168">Tagapaglagda ng Certificate</translation>
 <translation id="1145292499998999162">Na-block ang plugin</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">K&amp;opyahin ang Address ng Audio</translation>
 <translation id="1465827627707997754">Hiwa ng pizza</translation>
 <translation id="1468571364034902819">Hindi magagamit ang profile na ito</translation>
-<translation id="1470811252759861213">Upang mailagay ang iyong mga extension sa lahat ng iyong computer, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Magpakita ng higit pa</translation>
 <translation id="1475502736924165259">Mayroon kang mga certificate sa file na hindi umaangkop sa alinman sa iba pang mga kategorya</translation>
 <translation id="1476088332184200792">Kopyahin sa Iyong Device</translation>
@@ -1045,7 +1043,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2489829450872380594">Sa susunod, ia-unlock ng bagong telepono ang <ph name="DEVICE_TYPE" /> na ito. Puwede mong i-off ang Smart Lock sa Mga Setting.</translation>
 <translation id="2489918096470125693">Magdagdag ng &amp;Folder...</translation>
 <translation id="2490481887078769936">Inalis ang '<ph name="FILE_NAME" />' sa listahan</translation>
-<translation id="2490782392574942205">Para makuha ang iyong mga extension sa lahat ng computer mo, mag-sign in at i-on ang pag-sync</translation>
 <translation id="249113932447298600">Paumanhin, hindi sinusuportahan ang device na <ph name="DEVICE_LABEL" /> sa oras na ito.</translation>
 <translation id="249303669840926644">Hindi makumpleto ang pagpaparehistro</translation>
 <translation id="2495777824269688114">Tumuklas ng higit pang feature o makakuha ng mga sagot. Piliin ang “?” para sa tulong.</translation>
@@ -1755,7 +1752,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528033729920178817">Sinusubaybayan ng pahinang ito ang iyong lokasyon.</translation>
 <translation id="3528498924003805721">Mga target ng shortcut</translation>
-<translation id="3530305684079447434">Upang makuha ang iyong mga bookmark sa lahat ng iyong device, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774">Gustong gamitin ng <ph name="HOST" /> ang iyong mikropono</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Naka-mute ang audio</translation>
 <translation id="3538066758857505094">Nagkaroon ng error sa pag-uninstall sa Linux. Pakisubukang muli.</translation>

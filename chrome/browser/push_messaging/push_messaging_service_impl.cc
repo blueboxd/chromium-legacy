@@ -726,31 +726,33 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
     int64_t service_worker_registration_id,
     const std::string& sender_id,
     const std::string& subscription_id,
-    const SubscriptionInfoCallback& callback) {
+    SubscriptionInfoCallback callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
           profile_, origin, service_worker_registration_id);
 
   if (app_identifier.is_null()) {
-    callback.Run(false /* is_valid */, GURL::EmptyGURL() /*endpoint*/,
-                 std::vector<uint8_t>() /* p256dh */,
-                 std::vector<uint8_t>() /* auth */);
+    std::move(callback).Run(
+        false /* is_valid */, GURL::EmptyGURL() /*endpoint*/,
+        std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }
 
   const GURL endpoint = CreateEndpoint(subscription_id);
   const std::string& app_id = app_identifier.app_id();
-  base::Callback<void(bool)> validate_cb = base::Bind(
-      &PushMessagingServiceImpl::DidValidateSubscription,
-      weak_factory_.GetWeakPtr(), app_id, sender_id, endpoint, callback);
+  base::OnceCallback<void(bool)> validate_cb =
+      base::BindOnce(&PushMessagingServiceImpl::DidValidateSubscription,
+                     weak_factory_.GetWeakPtr(), app_id, sender_id, endpoint,
+                     std::move(callback));
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->ValidateToken(
         NormalizeSenderInfo(sender_id), kGCMScope, subscription_id,
-        validate_cb);
+        std::move(validate_cb));
   } else {
     GetGCMDriver()->ValidateRegistration(
-        app_id, {NormalizeSenderInfo(sender_id)}, subscription_id, validate_cb);
+        app_id, {NormalizeSenderInfo(sender_id)}, subscription_id,
+        std::move(validate_cb));
   }
 }
 
@@ -758,31 +760,32 @@ void PushMessagingServiceImpl::DidValidateSubscription(
     const std::string& app_id,
     const std::string& sender_id,
     const GURL& endpoint,
-    const SubscriptionInfoCallback& callback,
+    SubscriptionInfoCallback callback,
     bool is_valid) {
   if (!is_valid) {
-    callback.Run(false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
-                 std::vector<uint8_t>() /* p256dh */,
-                 std::vector<uint8_t>() /* auth */);
+    std::move(callback).Run(
+        false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
+        std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }
 
   GetEncryptionInfoForAppId(
       app_id, sender_id,
       base::BindOnce(&PushMessagingServiceImpl::DidGetEncryptionInfo,
-                     weak_factory_.GetWeakPtr(), endpoint, callback));
+                     weak_factory_.GetWeakPtr(), endpoint,
+                     std::move(callback)));
 }
 
 void PushMessagingServiceImpl::DidGetEncryptionInfo(
     const GURL& endpoint,
-    const SubscriptionInfoCallback& callback,
+    SubscriptionInfoCallback callback,
     std::string p256dh,
     std::string auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   bool is_valid = !p256dh.empty();
-  callback.Run(is_valid, endpoint,
-               std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
-               std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
+  std::move(callback).Run(
+      is_valid, endpoint, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
+      std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }
 
 // Unsubscribe methods ---------------------------------------------------------

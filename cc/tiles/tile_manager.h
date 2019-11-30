@@ -207,7 +207,11 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(),
               client_->GetRasterColorSpace());
-      raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0, false);
+      raster_buffer_provider_->AcquireBufferForRaster(
+          resource, 0, 0,
+          /*depends_on_at_raster_decodes=*/false,
+          /*depends_on_hardware_accelerated_jpeg_candidates=*/false,
+          /*depends_on_hardware_accelerated_webp_candidates=*/false);
       // The raster here never really happened, cuz tests. So just add an
       // arbitrary sync token.
       if (resource.gpu_backing()) {

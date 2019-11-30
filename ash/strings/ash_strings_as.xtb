@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">বন্ধ স্ক্ৰীণৰ জাননী ছেটিংসমূহ সলনি কৰক</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">ব্লুটুথ ছেটিংসমূহ দেখুৱাওক। <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">সদায় শ্বেল্ফ দেখুৱাওক</translation>
 <translation id="1341651618736211726">অভাৰফ্ল'</translation>
 <translation id="1346748346194534595">সোঁ</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">অন-স্ক্ৰীণ কীব‘র্ড সক্ষম কৰা হ‘ল</translation>
 <translation id="1761222317188459878">নেটৱৰ্ক সংযোগ ট’গল কৰক। <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">সোঁফাললৈ স্ক্ৰ’ল কৰক</translation>
+<translation id="181103072419391116">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="1812997170047690955">মোৰ স্ক্ৰীণত কি আছে?</translation>
 <translation id="1823873187264960516">ইথাৰনেট: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (ল’ড হৈ আছে...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">কীব'র্ডৰ লেইআউট সলনি কৰিবলৈ <ph name="KEYBOARD_SHORTCUT" /> টিপক।</translation>
 <translation id="2501920221385095727">ষ্টিকি কী</translation>
 <translation id="2509468283778169019">CAPS LOCK হৈ আছে</translation>
+<translation id="2517825809102302935">আজি ৰাতিৰ বাবে অফ কৰক</translation>
 <translation id="2542089167727451762">আপোনাৰ প্ৰ’ফাইলৰ প্ৰতিচ্ছবিত টিপক</translation>
 <translation id="255671100581129685">ৰাজহুৱা ছেশ্বনত Google Assistant নাই।</translation>
 <translation id="256712445991462162">ড'ক কৰা বিৱৰ্ধকটো</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">একাধিক ছাইন ইন প্ৰক্রিয়াত আপোনাৰ মাত্ৰ <ph name="MULTI_PROFILE_USER_LIMIT" />টা একাউণ্টহে থাকিব পাৰে।</translation>
 <translation id="3154351730702813399">ডিভাইচৰ প্ৰশাসকে আপুনি কৰা ব্ৰাউজৰ কাৰ্যকলাপ নিৰীক্ষণ কৰিব পাৰে।</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{এটা ডিভাইচৰ সৈতে সংযোগ হৈ আছে}one{#টা ডিভাইচৰ সৈতে সংযোগ হৈ আছে}other{#টা ডিভাইচৰ সৈতে সংযোগ হৈ আছে}}</translation>
+<translation id="3217205077783620295">ভলিউম অন কৰা আছে, ট’গল কৰিলে অডিঅ’ মিউট হ’ব।</translation>
 <translation id="3226991577105957773">আৰু <ph name="COUNT" />টা</translation>
 <translation id="3236488194889173876">কোনো ম'বাইল নেটৱর্ক নাই</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> ৱিণ্ড’খন <ph name="ACTIVE_DESK" /> ডেস্কৰ পৰা <ph name="TARGET_DESK" />লৈ স্থানান্তৰ কৰা হৈছে</translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">ইউএছবি চি ডিভাইচ</translation>
 <translation id="3454224730401036106">আপোনাৰ সংযোগ অন্য কোনো সুৰক্ষিত নেটৱর্কলৈ সলনি কৰা হৈছে</translation>
 <translation id="3465223694362104965">আপুনি অন্তিমবাৰ ছাইন ইন কৰাৰ পিছত আন এখন কীব’ৰ্ড সংযোগ কৰা হৈছে। ব্যৱহাৰ কৰাৰ আগেয়ে আপুনি সেইখনক যে বিশ্বাস কৰে তাক নিশ্চিত কৰক।</translation>
+<translation id="3465356146291925647">আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">মাউছৰ কাৰ্ছৰ হাইলাইট কৰক</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" />এ একাউণ্ট পৰিচালনা কৰে</translation>
 <translation id="3573179567135747900">পুনৰ "<ph name="FROM_LOCALE" />"লৈ সলনি কৰক (ৰিষ্টাৰ্ট কৰাৰ প্ৰয়োজন)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">ৰিষ্টাৰ্ট কৰি ৰিছেট কৰক</translation>
 <translation id="495046168593986294">ওপৰলৈ স্ক্ৰল কৰক</translation>
 <translation id="4961318399572185831">স্ক্রীণ কাষ্ট কৰক</translation>
+<translation id="5018302031617932556">ৰাতিৰ পোহৰে আপোনাৰ স্ক্ৰীনখনলৈ চোৱা অথবা কম পোহৰত পঢ়া সহজ কৰি তোলে। এইটো সলনি কৰিবলৈ টিপক।</translation>
 <translation id="5030687792513154421">সময় সীমা উকলিল</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />ক এটা নতুন ডিভাইচত সংযোগ কৰা হ'ল</translation>
 <translation id="5083553833479578423">Assistantৰ অন্যান্য সুবিধাসমূহ ব্যৱহাৰ কৰক।</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">আপোনাৰ সকলো ডিছপ্লে’ এই ডিভাইচটোৱে সমৰ্থন কৰিব নোৱাৰিলে, সেয়েহে এটাৰ সংযোগ বিচ্ছিন্ন কৰা হৈছে</translation>
 <translation id="574392208103952083">মধ্যমীয়া</translation>
 <translation id="5744083938413354016">টিপি ধৰি টানি অনা সুবিধা</translation>
+<translation id="5745612484876805746">সূৰ্যাস্ত হ’লে ৰাতিৰ পোহৰ স্বয়ংক্রিয়ভাৱে অন হয়</translation>
 <translation id="5750765938512549687">ব্লুটুথ অফ আছে</translation>
 <translation id="576453121877257266">ৰাতিৰ লাইট অন কৰা আছে।</translation>
 <translation id="5777841717266010279">স্ক্ৰীণ শ্বেয়াৰ কৰাটো বন্ধ কৰিবনে?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">উচ্চ বৈষাদৃশ্যৰ ম’ড সক্ষম কৰা হ’ল। ইয়াক ট’গল অফ কৰিবলৈ আকৌ Ctrl+Search+H টিপক।</translation>
 <translation id="6018164090099858612">প্ৰতিবিম্বকৰণ ম’ড বন্ধ কৰি আছে</translation>
 <translation id="602001110135236999">বাওঁফাললৈ স্ক্ৰ’ল কৰক</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6043212731627905357">এই মনিটৰটো আপোনাৰ <ph name="DEVICE_TYPE" />ৰ খাপ খোৱা নাই (মনিটৰটো সমৰ্থিত নহয়)।</translation>
 <translation id="6043994281159824495">এতিয়াই ছাইন আউট কৰক</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">ব্লুটুথ অন কৰা আছে</translation>
 <translation id="639644700271529076">CAPS LOCK অফ হৈ আছে</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">সকলো জাননী মচক</translation>
 <translation id="643147933154517414">সকলো কৰা হৈছে</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" />ত <ph name="ROUTE_TITLE" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">হাতেৰে লিখা ইনপুট</translation>
 <translation id="6528179044667508675">অসুবিধা নিদিব</translation>
 <translation id="6537270692134705506">স্ক্ৰীণ কেপচাৰ কৰক</translation>
+<translation id="6537924328260219877">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, ফ’নৰ বেটাৰী <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> লৈ কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="6559976592393364813">প্ৰশাসকক সোধক</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />ত ছেশ্বন অন্ত পৰিব।</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6637729079642709226">সময় সলনি কৰক</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে৷ অনুগ্ৰহ কৰি সেই ডিভাইচটোত এই পাছক’ডটো দিয়ক: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />ত পুনৰ ব্যৱহাৰ কৰিব পাৰিব।</translation>
 <translation id="7025533177575372252">আপোনাৰ <ph name="DEVICE_NAME" /> নিজৰ ফ’নৰ সৈতে সংযোগ কৰক</translation>
 <translation id="7029814467594812963">ছেশ্বনৰ পৰা বাহিৰ হওক</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistant</translation>
 <translation id="7042322267639375032">বিভিন্ন স্থিতি দেখুওৱা ঠাই সংকোচন কৰক</translation>
 <translation id="7066646422045619941">এই নেটৱৰ্কটো আপোনাৰ প্ৰশাসকে অক্ষম কৰি থৈছে।</translation>
 <translation id="7067196344162293536">স্বয়ং-ঘূৰ্ণন</translation>
@@ -498,6 +511,7 @@
 <translation id="8192202700944119416">জাননীবোৰ লুকুৱাই ৰখা হৈছে।</translation>
 <translation id="8203795194971602413">সোঁফালে ক্লিক</translation>
 <translation id="8236042855478648955">বিৰতিৰ সময়</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, ফ’নৰ বেটাৰী <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" />ৰ বাবে আনলক কৰিবলৈ এণ্টাৰ টিপক</translation>
 <translation id="8261506727792406068">মচক</translation>
 <translation id="8297006494302853456">দুৰ্বল</translation>
@@ -522,10 +536,12 @@
 <translation id="8513108775083588393">স্বয়ং-ঘূৰ্ণন</translation>
 <translation id="8517041960877371778">আপোনাৰ <ph name="DEVICE_TYPE" /> অন কৰি থোৱা অৱস্থাত চার্জ নহ'ব পাৰে।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />ৰ সৈতে সংযোজিত</translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকী আছে</translation>
 <translation id="8649101189709089199">কথা ক’বলৈ বাছনি কৰক</translation>
 <translation id="8652175077544655965">ছেটিংসমূহ বন্ধ কৰক</translation>
 <translation id="8653151467777939995">জাননীৰ ছেটিংসমূহ দেখুৱাওক। জাননী অন কৰা আছে</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">নেটৱর্ক সূচী দেখুওৱাক। <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">কম শক্তিযুক্ত চ্চাৰ্জাৰ সংযোগ কৰা হৈছে</translation>
@@ -534,6 +550,7 @@
 <translation id="8734991477317290293">এইটোৱে আপোনাৰ কীষ্ট্র’ক চুৰ কৰিব চেষ্টা কৰি থাকিব পাৰে</translation>
 <translation id="8735953464173050365">কীব'ৰ্ডৰ ছেটিংসমূহ দেখুৱাওক। <ph name="KEYBOARD_NAME" /> বাছনি কৰা হৈছে।</translation>
 <translation id="875593634123171288">VPN ছেটিংসমূহ দেখুৱাওক</translation>
+<translation id="8785070478575117577"><ph name="NETWORK_NAME" />ত সংযোগ কৰক</translation>
 <translation id="8814190375133053267">ৱাই-ফাই</translation>
 <translation id="8828714802988429505">৯০°</translation>
 <translation id="8843682306134542540">ঘূৰ্ণন লক ট’গল কৰক৷<ph name="STATE_TEXT" /></translation>
@@ -554,6 +571,7 @@
 <translation id="899350903320462459">জাননী সম্পর্কীয় কার্যসমূহ কৰিবলৈ <ph name="LOGIN_ID" /> হিচাপে ডিভাইচটো আনলক কৰক</translation>
 <translation id="9017320285115481645">Family Linkৰ অভিভাৱকৰ এক্সেছ ক'ডটো দিয়ক।</translation>
 <translation id="9029474291399787231">Adobe Flash Playerৰ আপডে’ট উপলব্ধ</translation>
+<translation id="9047624247355796468"><ph name="NETWORK_NAME" />ৰ বাবে ছেটিংসমূহ খোলক</translation>
 <translation id="9056839673611986238">ডিভাইচটো ৰ’লবেক কৰা হ’ব</translation>
 <translation id="9070640332319875144">Assistantৰ ছেটিংসমূহ</translation>
 <translation id="9072519059834302790">বেটাৰী খালী হ’বলৈ <ph name="TIME_LEFT" /> বাকী আছে।</translation>
@@ -568,6 +586,7 @@
 <translation id="9183456764293710005">পূৰ্ণ স্ক্রীনৰ বিৱৰ্ধক</translation>
 <translation id="9193626018745640770">কোনো অজ্ঞাত ৰিচিভাৰ কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="9194617393863864469">অন্য ব্যৱহাৰকাৰীক ছাইন ইন কৰাওক...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="9205817095063786319">ডিভাইচ <ph name="DOMAIN" />এ পৰিচালনা কৰে</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ ম’ড বন্ধ কৰি আছে</translation>
 <translation id="9211681782751733685">বেটাৰী সম্পূৰ্ণ চ্চাৰ্জ হ’বলৈ <ph name="TIME_REMAINING" /> বাকী আছে।</translation>

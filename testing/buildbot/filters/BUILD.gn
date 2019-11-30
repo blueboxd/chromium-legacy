@@ -125,6 +125,12 @@ source_set("fuchsia_filters") {
   ]
 }
 
+source_set("linux_trusty_rel_browser_tests_filters") {
+  data = [
+    "//testing/buildbot/filters/linux_trusty_rel.browser_tests.filter",
+  ]
+}
+
 source_set("ozone_unittests_filters") {
   data = [
     "//testing/buildbot/filters/chromeos.ozone_unittests.filter",

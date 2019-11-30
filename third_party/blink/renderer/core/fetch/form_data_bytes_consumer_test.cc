@@ -201,8 +201,8 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
   scoped_refptr<EncodedFormData> data = ComplexFormData();
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
-  BytesConsumer* consumer =
-      FormDataBytesConsumer::CreateForTesting(&GetDocument(), data, underlying);
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      &GetDocument(), data, underlying);
   Checkpoint checkpoint;
 
   const char* buffer = nullptr;
@@ -384,7 +384,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
 
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
-  BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
       &GetDocument(), ComplexFormData(), underlying);
 
   const char* buffer = nullptr;
@@ -423,7 +423,7 @@ TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
-  BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
 
@@ -445,7 +445,7 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
-  BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
 

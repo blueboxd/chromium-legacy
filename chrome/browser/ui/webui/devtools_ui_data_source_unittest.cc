@@ -49,15 +49,15 @@ class TestDevToolsDataSource : public DevToolsDataSource {
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
-      const GotDataCallback& callback) override {
+      GotDataCallback callback) override {
     std::string result = "url: " + url.spec();
-    callback.Run(base::RefCountedString::TakeString(&result));
+    std::move(callback).Run(base::RefCountedString::TakeString(&result));
   }
 
   void StartFileRequest(const std::string& path,
-                        const GotDataCallback& callback) override {
+                        GotDataCallback callback) override {
     std::string result = "file: " + path;
-    callback.Run(base::RefCountedString::TakeString(&result));
+    std::move(callback).Run(base::RefCountedString::TakeString(&result));
   }
 };
 

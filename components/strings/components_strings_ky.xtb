@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Кошумча маалымат берүү</translation>
 <translation id="1021110881106174305">Кабыл алынган карточкалар</translation>
 <translation id="1032854598605920125">Сааттын жебеси боюнча айландыруу</translation>
-<translation id="1035334672863811645">Chrome'го кириңиз</translation>
 <translation id="1036348656032585052">Өчүрүү</translation>
 <translation id="1038842779957582377">белгисиз ат</translation>
 <translation id="1039626062703039346">Chrome Google аккаунтуңуздун коопсуздугун коргоп, сырсөзүңүздү өзгөртүүгө жардам берет. Ушуну менен Google ушул сайт жөнүндө кабарланат.</translation>
@@ -923,7 +922,6 @@
 <translation id="536296301121032821">Саясат жөндөөлөрү сакталбай калды</translation>
 <translation id="5371425731340848620">Картаны жаңыртуу</translation>
 <translation id="5377026284221673050">"Саатыңыз артта" же "Саатыңыз алдыда" же "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Карталарыңызды бардык түзмөктөрүңүздө колдонуу үчүн аккаунтуңузга кирип, шайкештирүүнү күйгүзүңүз.</translation>
 <translation id="5386426401304769735">Бул сайттын тастыктамалар чынжырында SHA-1 алгоритми менен кол коюлган тастыктама камтылган.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Оң четин жамоо</translation>
@@ -1584,7 +1582,6 @@
 <translation id="8759274551635299824">Бул карточканын мөөнөтү бүткөн</translation>
 <translation id="8761567432415473239">Google Коопсуз серептегич жакында <ph name="SITE" /> дарегинен <ph name="BEGIN_LINK" />зыянкеч программаларды тапты<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB түзмөгү</translation>
-<translation id="8768895707659403558">Бардык түзмөктөрүңүздөн карталарыңызды алуу үчүн <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">Жок кылууну &amp;кайталоо</translation>
 <translation id="8792621596287649091">Кимдир бирөө сиздин жеке дайындарыңызга же <ph name="ORG_NAME" /> аккаунтуңузга кирип алган окшойт. Chromium сырсөзүңүздү азыр өзгөртүүнү сунуштайт.</translation>

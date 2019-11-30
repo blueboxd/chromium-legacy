@@ -43,13 +43,14 @@ class StrikeDatabaseIntegratorTestStrikeDatabaseTest : public ::testing::Test {
     // to a task runner, requires running the loop to complete.
     strike_database_.reset();
     strike_database_service_.reset();
+    db_provider_.reset();
     task_environment_.RunUntilIdle();
   }
 
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
-  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
   std::unique_ptr<StrikeDatabase> strike_database_service_;
   std::unique_ptr<StrikeDatabaseIntegratorTestStrikeDatabase> strike_database_;

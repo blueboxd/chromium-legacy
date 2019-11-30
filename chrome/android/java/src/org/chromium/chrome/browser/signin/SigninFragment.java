@@ -11,7 +11,6 @@ import android.os.Bundle;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -95,10 +94,6 @@ public class SigninFragment extends SigninFragmentBase {
         result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NEW_ACCOUNT);
         return result;
     }
-
-    // Every fragment must have a public default constructor.
-    @UsedByReflection("SigninActivity.java")
-    public SigninFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

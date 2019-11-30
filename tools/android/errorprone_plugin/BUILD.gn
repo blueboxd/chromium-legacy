@@ -14,6 +14,7 @@ java_library("errorprone_plugin_java") {
     "src/org/chromium/tools/errorprone/plugin/NoRedundantFieldInitCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedThisCheck.java",
+    "src/org/chromium/tools/errorprone/plugin/TestClassNameCheck.java",
   ]
 
   # Necessary to avoid dependency cycle

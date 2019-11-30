@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Deschide linkul în <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accesează dispozitivele Bluetooth și seriale</translation>
 <translation id="114036956334641753">Audio și subtitrări</translation>
-<translation id="1140610710803014750">Pentru a accesa marcajele pe toate dispozitivele, conectează-te și activează sincronizarea.</translation>
 <translation id="1140746652461896221">Blochează conținutul pe orice pagină pe care o accesezi</translation>
 <translation id="1143142264369994168">Semnatarul certificatului</translation>
 <translation id="1145292499998999162">Plugin blocat</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">C&amp;opiază adresa conținutului audio</translation>
 <translation id="1465827627707997754">Felie de pizza</translation>
 <translation id="1468571364034902819">Nu se poate folosi acest profil</translation>
-<translation id="1470811252759861213">Pentru a accesa extensiile pe toate computerele tale, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Afișați mai multe</translation>
 <translation id="1475502736924165259">Ai stocate certificate care nu se încadrează în niciuna dintre celelalte categorii</translation>
 <translation id="1476088332184200792">Copiază pe dispozitiv</translation>
@@ -1045,7 +1043,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2489829450872380594">Data viitoare, un telefon nou va debloca acest <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock în Setări.</translation>
 <translation id="2489918096470125693">Adăugați un &amp;dosar...</translation>
 <translation id="2490481887078769936">„<ph name="FILE_NAME" />” a fost eliminat din listă</translation>
-<translation id="2490782392574942205">Pentru a accesa extensiile pe toate computerele, conectează-te și activează sincronizarea</translation>
 <translation id="249113932447298600">Ne pare rău, dispozitivul <ph name="DEVICE_LABEL" /> nu este acceptat în prezent.</translation>
 <translation id="249303669840926644">Înregistrarea nu s-a putut finaliza</translation>
 <translation id="2495777824269688114">Descoperă mai multe funcții sau obține răspunsuri. Selectează „?” pentru ajutor.</translation>
@@ -1755,7 +1752,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3528033729920178817">Această pagină îți urmărește locația.</translation>
 <translation id="3528498924003805721">Țintele comenzilor rapide</translation>
-<translation id="3530305684079447434">Pentru a accesa marcajele pe toate dispozitivele, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> dorește să utilizeze microfonul</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – sunetul a fost dezactivat</translation>
 <translation id="3538066758857505094">A apărut o eroare la dezinstalarea Linux. Încearcă din nou.</translation>

@@ -188,7 +188,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
                   "network.mojom.RestrictedCookieManager",
                   "viz.mojom.Gpu"})

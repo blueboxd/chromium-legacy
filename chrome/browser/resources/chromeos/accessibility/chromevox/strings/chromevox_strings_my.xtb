@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">ပင်လယ်ပြာ</translation>
 <translation id="4204864733111726379">ပန်းပွင့်ဖြူ</translation>
 <translation id="4206289001967551965">အတွင်းဇယား</translation>
+<translation id="4207770814752775793">စာားမှ စကားပြောသို့ ဆက်တင်များကို မူရင်းတန်ဖိုးများသို့ ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="4209770650650780359">အလိုအလျောက် ဖြည့်စွက်ရန်အတွက် အပေါ် သို့မဟုတ် အောက် မြားကို နှိပ်ပါ။</translation>
 <translation id="4215733775853809057">နောက် ဆလိုက်ဒါး</translation>
 <translation id="42164919740161077">ရဲတပ်အပြာ</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">နောက် ကွန်ဘို သေတ္တာ မရှိပါ။</translation>
 <translation id="6305702903308659374">ChromeVox စကားပြောနေသည့်အချိန်တွင်ပင် အသံပုံမှန်ဖြင့်ဖွင့်ရန်</translation>
 <translation id="6307969636681130414">နှိပ်ပြီး</translation>
+<translation id="6315652249189065725">ကီးဘုတ်ဖြတ်လမ်းလင့်ခ် မီနူးကို ဖွင့်ရန်</translation>
 <translation id="6322856989298155004">အသံများ</translation>
 <translation id="6324551002951139333">သဒ္ဒါ အမှား ရှာတွေ့ခဲ့</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> ကို ကူးယူပါ။</translation>
@@ -959,6 +961,7 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7668307052366682650">{COUNT,plural, =1{နာရီ}other{နာရီ}}</translation>
 <translation id="7674576868851035240">နောက်ထပ် လင့်ခ်</translation>
 <translation id="7674768236845044097">အမှတ်</translation>
+<translation id="7676847077928500578">စာသားမှ စကားပြောသို့ ဆက်တင်ကို ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="7684431668231950609">စာသား၊ URL ရိုက်ထည့်မှု တည်းဖြတ်ရန်</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ယခင် ရေဒီယို ခလုတ်</translation>

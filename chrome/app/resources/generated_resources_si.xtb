@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">සබැඳිය <ph name="APP" /> තුළ විවෘත කරන්න</translation>
 <translation id="1140351953533677694">ඔබගේ බ්ලූටූත් සහ අනුක්‍රමික උපාංග වෙත ප්‍රවේශ වන්න</translation>
 <translation id="114036956334641753">ශ්‍රව්‍ය සහ සිරස්තල</translation>
-<translation id="1140610710803014750">ඔබේ සියලු උපාංග මත ඔබේ පිටුසන් ලබා ගැනීමට, පුරනය වී සමමුහුර්තය ක්‍රියාත්මක කරන්න.</translation>
 <translation id="1140746652461896221">ඔබ පිවිසෙන ඕනෑම පිටුවක් මත අන්තර්ගතය අවහිර කරන්න</translation>
 <translation id="1143142264369994168">සහතික අත්සන් කරන්නා</translation>
 <translation id="1145292499998999162">ප්ලගින අවහිර කරන ලදී</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">ශ්‍රව්‍ය ලිපිනය පිටපත් කරන්න</translation>
 <translation id="1465827627707997754">පීසා පෙත්ත</translation>
 <translation id="1468571364034902819">මෙම පැතිකඩ භාවිතා කළ නොහැක</translation>
-<translation id="1470811252759861213">ඔබේ සියලු පරිගණක මත ඔබේ දිගු ලබා ගැනීමට, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">තවත් පෙන්වන්න</translation>
 <translation id="1475502736924165259">ඔබට වෙනත් ප්‍රවර්ග කිසිවකට නොගැළපෙන සහතික ගොනුවෙහි ඇත</translation>
 <translation id="1476088332184200792">ඔබේ උපාංගයට පිටපත් කරන්න</translation>
@@ -1042,7 +1040,6 @@
 <translation id="2489829450872380594">මීළඟ වරට, නව දුරකථනයක් මෙම <ph name="DEVICE_TYPE" /> අඟුලු අරියි. ඔබට සැකසීම් තුළ Smart Lock අක්‍රිය කළ හැක.</translation>
 <translation id="2489918096470125693">&amp;ෆෝල්ඩරය එක් කරන්න...</translation>
 <translation id="2490481887078769936">ලැයිස්තුවෙන් '<ph name="FILE_NAME" />' ඉවත් කළා</translation>
-<translation id="2490782392574942205">ඔබේ දිගු ඔබේ සියලුම පරිගණකවල ලබා ගැනීමට, පුරනය වී සමමුහූර්තය සක්‍රීය කරන්න</translation>
 <translation id="249113932447298600">කණගාටුයි, ඔබේ <ph name="DEVICE_LABEL" /> උපාංගය මේ මොහොතේ සහය නොදක්වයි.</translation>
 <translation id="249303669840926644">ලියාපදිංචිය සම්පූර්ණ කළ නොහැකි විය</translation>
 <translation id="2495777824269688114">තව විශේෂාංග සොයා ගන්න හෝ පිළිතුරු ලබා ගන්න. උදවු සඳහා “?” තෝරන්න.</translation>
@@ -1752,7 +1749,6 @@
 <translation id="3527085408025491307">ෆෝල්ඩරය</translation>
 <translation id="3528033729920178817">මෙම පිටුව ඔබගේ පිහිටීම හඹා යමින් සිටී.</translation>
 <translation id="3528498924003805721">කෙටිමං ඉලක්ක</translation>
-<translation id="3530305684079447434">සියලුම උපාංග මත ඇති ඔබගේ පොත් සලකුණු ලබා ගැනීමට, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> හට ඔබේ මයික්‍රෆෝනය භාවිතා කිරීමට අවශ්‍යයි</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ශ්‍රව්‍ය නිහඬ කළ</translation>
 <translation id="3538066758857505094">Linux අස්ථාපනය කිරීමේ දෝෂයකි. කරුණාකර නැවත උත්සාහ කරන්න.</translation>

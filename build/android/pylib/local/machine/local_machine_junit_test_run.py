@@ -38,8 +38,7 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       command = [java_script]
 
       # Add Jar arguments.
-      jar_args = ['-test-jars', self._test_instance.suite + '.jar',
-                  '-json-results-file', json_file_path]
+      jar_args = ['-json-results-file', json_file_path]
       if self._test_instance.test_filter:
         jar_args.extend(['-gtest-filter', self._test_instance.test_filter])
       if self._test_instance.package_filter:

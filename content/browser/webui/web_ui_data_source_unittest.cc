@@ -54,9 +54,9 @@ class WebUIDataSourceTest : public testing::Test {
   WebUIDataSourceImpl* source() { return source_.get(); }
 
   void StartDataRequest(const std::string& path,
-                        const URLDataSource::GotDataCallback& callback) {
+                        URLDataSource::GotDataCallback callback) {
     source_->StartDataRequest(GURL("https://any-host/" + path),
-                              WebContents::Getter(), callback);
+                              WebContents::Getter(), std::move(callback));
   }
 
   std::string GetMimeType(const std::string& path) const {
@@ -64,7 +64,7 @@ class WebUIDataSourceTest : public testing::Test {
   }
 
   void HandleRequest(const std::string& path,
-                     const WebUIDataSourceImpl::GotDataCallback&) {
+                     WebUIDataSourceImpl::GotDataCallback) {
     request_path_ = path;
   }
 
@@ -100,12 +100,12 @@ void EmptyStringsCallback(bool from_js_module,
 
 TEST_F(WebUIDataSourceTest, EmptyStrings) {
   source()->UseStringsJs();
-  StartDataRequest("strings.js", base::Bind(&EmptyStringsCallback, false));
+  StartDataRequest("strings.js", base::BindOnce(&EmptyStringsCallback, false));
 }
 
 TEST_F(WebUIDataSourceTest, EmptyModuleStrings) {
   source()->UseStringsJs();
-  StartDataRequest("strings.m.js", base::Bind(&EmptyStringsCallback, true));
+  StartDataRequest("strings.m.js", base::BindOnce(&EmptyStringsCallback, true));
 }
 
 void SomeValuesCallback(scoped_refptr<base::RefCountedMemory> data) {
@@ -124,7 +124,7 @@ TEST_F(WebUIDataSourceTest, SomeValues) {
   source()->AddInteger("debt", -456);
   source()->AddString("planet", base::ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", kDummyStringId);
-  StartDataRequest("strings.js", base::Bind(&SomeValuesCallback));
+  StartDataRequest("strings.js", base::BindOnce(&SomeValuesCallback));
 }
 
 void DefaultResourceFoobarCallback(scoped_refptr<base::RefCountedMemory> data) {
@@ -140,8 +140,9 @@ void DefaultResourceStringsCallback(
 
 TEST_F(WebUIDataSourceTest, DefaultResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
-  StartDataRequest("foobar", base::Bind(&DefaultResourceFoobarCallback));
-  StartDataRequest("strings.js", base::Bind(&DefaultResourceStringsCallback));
+  StartDataRequest("foobar", base::BindOnce(&DefaultResourceFoobarCallback));
+  StartDataRequest("strings.js",
+                   base::BindOnce(&DefaultResourceStringsCallback));
 }
 
 void NamedResourceFoobarCallback(scoped_refptr<base::RefCountedMemory> data) {
@@ -157,8 +158,8 @@ void NamedResourceStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
 TEST_F(WebUIDataSourceTest, NamedResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
-  StartDataRequest("foobar", base::Bind(&NamedResourceFoobarCallback));
-  StartDataRequest("strings.js", base::Bind(&NamedResourceStringsCallback));
+  StartDataRequest("foobar", base::BindOnce(&NamedResourceFoobarCallback));
+  StartDataRequest("strings.js", base::BindOnce(&NamedResourceStringsCallback));
 }
 
 void NamedResourceWithQueryStringCallback(
@@ -171,7 +172,7 @@ TEST_F(WebUIDataSourceTest, NamedResourceWithQueryString) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest("foobar?query?string",
-                   base::Bind(&NamedResourceWithQueryStringCallback));
+                   base::BindOnce(&NamedResourceWithQueryStringCallback));
 }
 
 void WebUIDataSourceTest::RequestFilterQueryStringCallback(
@@ -192,8 +193,8 @@ TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
   source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest(
       "foobar?query?string",
-      base::Bind(&WebUIDataSourceTest::RequestFilterQueryStringCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&WebUIDataSourceTest::RequestFilterQueryStringCallback,
+                     base::Unretained(this)));
 }
 
 TEST_F(WebUIDataSourceTest, MimeType) {

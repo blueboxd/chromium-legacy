@@ -377,14 +377,27 @@ void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(bool success) {
 
   if (!success) {
     LOG(ERROR) << "Failed to configure container";
-    HandleError(InstallerError::kErrorConfiguringContainer);
+    CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
+        kCrostiniDefaultVmName,
+        base::BindOnce(
+            &CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed,
+            weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 }
 
+void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
+    CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to remove Crostini after failed configuration";
+  }
+  HandleError(InstallerError::kErrorConfiguringContainer);
+}
+
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
   if (result == CrostiniResult::CONTAINER_CONFIGURATION_FAILED) {
-    DCHECK_EQ(state_, State::ERROR);
+    LOG(ERROR) << "Container start failed due to failed configuration";
+    NOTREACHED();
     return;
   }
 

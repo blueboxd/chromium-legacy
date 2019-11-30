@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -1356,7 +1357,7 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
 
   if (value.IsImageValue() || value.IsImageGeneratorValue() ||
       value.IsImageSetValue()) {
-    return ShapeValue::CreateImageValue(
+    return MakeGarbageCollected<ShapeValue>(
         state.GetStyleImage(CSSPropertyID::kShapeOutside, value));
   }
 
@@ -1373,10 +1374,10 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
   }
 
   if (shape)
-    return ShapeValue::CreateShapeValue(std::move(shape), css_box);
+    return MakeGarbageCollected<ShapeValue>(std::move(shape), css_box);
 
   DCHECK_NE(css_box, CSSBoxType::kMissing);
-  return ShapeValue::CreateBoxShapeValue(css_box);
+  return MakeGarbageCollected<ShapeValue>(css_box);
 }
 
 float StyleBuilderConverter::ConvertSpacing(StyleResolverState& state,

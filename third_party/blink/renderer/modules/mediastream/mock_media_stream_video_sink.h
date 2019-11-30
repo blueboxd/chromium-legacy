@@ -23,12 +23,18 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
     MediaStreamVideoSink::ConnectToTrack(track, GetDeliverFrameCB(), true);
   }
 
+  void ConnectEncodedToTrack(const WebMediaStreamTrack& track) {
+    MediaStreamVideoSink::ConnectEncodedToTrack(
+        track, GetDeliverEncodedVideoFrameCB());
+  }
+
   void ConnectToTrackWithCallback(const WebMediaStreamTrack& track,
                                   const VideoCaptureDeliverFrameCB& callback) {
     MediaStreamVideoSink::ConnectToTrack(track, callback, true);
   }
 
-  void DisconnectFromTrack() { MediaStreamVideoSink::DisconnectFromTrack(); }
+  using MediaStreamVideoSink::DisconnectEncodedFromTrack;
+  using MediaStreamVideoSink::DisconnectFromTrack;
 
   void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) override;
   void OnEnabledChanged(bool enabled) override;
@@ -36,8 +42,10 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   // Triggered when OnVideoFrame(scoped_refptr<media::VideoFrame> frame)
   // is called.
   MOCK_METHOD0(OnVideoFrame, void());
+  MOCK_METHOD0(OnEncodedVideoFrame, void());
 
   VideoCaptureDeliverFrameCB GetDeliverFrameCB();
+  EncodedVideoFrameCB GetDeliverEncodedVideoFrameCB();
 
   int number_of_frames() const { return number_of_frames_; }
   media::VideoPixelFormat format() const { return format_; }
@@ -50,6 +58,8 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
  private:
   void DeliverVideoFrame(scoped_refptr<media::VideoFrame> frame,
                          base::TimeTicks estimated_capture_time);
+  void DeliverEncodedVideoFrame(scoped_refptr<EncodedVideoFrame> frame,
+                                base::TimeTicks estimated_capture_time);
 
   int number_of_frames_;
   bool enabled_;

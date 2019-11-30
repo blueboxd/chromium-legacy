@@ -849,10 +849,6 @@ void FetchManager::Loader::NotifyFinished() {
     fetch_manager_->OnLoaderFinished(this);
 }
 
-FetchManager* FetchManager::Create(ExecutionContext* execution_context) {
-  return MakeGarbageCollected<FetchManager>(execution_context);
-}
-
 FetchManager::FetchManager(ExecutionContext* execution_context)
     : ContextLifecycleObserver(execution_context) {}
 

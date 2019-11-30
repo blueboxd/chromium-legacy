@@ -383,11 +383,6 @@
           Bu politika devre dışı bırakılır veya ayarlanmazsa Kerberos Hesap ayarları devre dışı bırakılır. Kerberos hesabı eklenemez ve Kerberos kimlik doğrulama protokolü kullanılamaz. Mevcut tüm Kerberos hesapları kaldırılır, saklanan tüm şifreler silinir.</translation>
 <translation id="1561424797596341174">Politika, uzaktan erişim ana makinesinin Hata Ayıklama yapılarını geçersiz kılar</translation>
 <translation id="1561967320164410511">Bağımsız doğrulama için U2F plus uzantıları</translation>
-<translation id="1566329065312331399">
-      Bu politika False (yanlış) değerine ayarlandığında, cihazın Powerwash fonksiyonunu tetiklemesine izin vermez.
-      True (doğru) değerine ayarlanırsa cihazın Powerwash fonksiyonunu tetiklemesine izin verir.
-      Ayarlanmadan bırakılırsa varsayılan olarak False (yanlış) değerini alır, yani cihazın Powerwash fonksiyonunu tetiklemesine izin vermez.
-      </translation>
 <translation id="1574554504290354326">Bu ayar kullanımdan kaldırılmıştır, bunun yerine SafeBrowsingExtendedReportingEnabled'ı kullanın. SafeBrowsingExtendedReportingEnabled'ın etkinleştirilmesi veya devre dışı bırakılması, SafeBrowsingExtendedReportingOptInAllowed'ın Yanlış değerine ayarlanmasıyla eşdeğerdir.
 
       Bu politika yanlış değerine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru değerine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
@@ -4336,11 +4331,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7937491150792971922">Uzantı yükleme listesi politikalarını birden çok kaynaktan birleştir</translation>
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
-<translation id="7944213656414105292">Bu politika, oturum açma ekranında SAML akışı sırasında cihaz kimliğinin uzaktan onayını kullanması için erişim izni verilecek URL'leri yapılandırır.
-
-      Özellikle bir URL bu politika aracılığıyla sağlanan kalıplardan biriyle eşleşirse bu URL'nin bir uzaktan onay sorusunun yanıtını, onay veren cihaz kimliğini ve cihaz durumunu içeren bir HTTP üst bilgisi almasına izin verilir.
-
-      Bu politika ayarlanmaz veya boş bir listeye ayarlanırsa hiçbir URL'nin oturum açma ekranında uzaktan onayı kullanmasına izin verilmez.</translation>
 <translation id="7952007677054834789">Başlangıçta yüklenecek sayfaları, <ph name="PRODUCT_NAME" /> varsayılan ana sayfasını, varsayılan yeni sekme sayfasını yapılandırın ve kullanıcıların bunları değiştirmesini engelleyin.
 
       Kullanıcının ana sayfa ayarları sadece ana sayfayı yeni sayfa sekmesi olarak seçerseniz veya onu bir URL olarak ayarlayıp bir ana sayfa URL'si belirtirseniz tamamen kilitlenir. Ana sayfa URL'sini belirtmezseniz, kullanıcı "chrome://newtab" dizesini belirterek yine de ana sayfayı yeni sekme sayfası olarak ayarlayabilir.

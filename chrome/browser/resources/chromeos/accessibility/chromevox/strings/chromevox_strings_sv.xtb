@@ -463,6 +463,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4204126831294769023">Azurblå</translation>
 <translation id="4204864733111726379">Blomvit</translation>
 <translation id="4206289001967551965">I tabellen</translation>
+<translation id="4207770814752775793">Återställ inställningarna för text till tal till standardvärden.</translation>
 <translation id="4209770650650780359">Du kan välja autoslutföranden med uppåtpil eller nedåtpil.</translation>
 <translation id="4215733775853809057">Nästa skjutreglage</translation>
 <translation id="42164919740161077">Kadettblå</translation>
@@ -766,6 +767,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6290434000785343030">Det finns inga fler kombinationsrutor.</translation>
 <translation id="6305702903308659374">Spela upp på normal volym även när ChromeVox används</translation>
 <translation id="6307969636681130414">Nedtryckt</translation>
+<translation id="6315652249189065725">Öppna menyn för kortkommandon</translation>
 <translation id="6322856989298155004">Ljud</translation>
 <translation id="6324551002951139333">Ett grammatiskt fel har upptäckts</translation>
 <translation id="6325241889020214828">kopiera <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7668307052366682650">{COUNT,plural, =1{timme}other{timmar}}</translation>
 <translation id="7674576868851035240">Nästa länk</translation>
 <translation id="7674768236845044097">markering</translation>
+<translation id="7676847077928500578">Återställ inställningarna för text till tal</translation>
 <translation id="7684431668231950609">Textinmatning, webbadress</translation>
 <translation id="7685589220304187312">verktygsfält</translation>
 <translation id="7693840228159394336">Föregående alternativknapp</translation>

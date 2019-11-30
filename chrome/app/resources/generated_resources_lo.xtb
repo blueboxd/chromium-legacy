@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">ເປີດລິ້ງໃນ <ph name="APP" /></translation>
 <translation id="1140351953533677694">​ເຂົ້າຫາ​ອຸ​ປະ​ກອນ Bluetooth ແລະ Serial ຂອງ​ທ່ານ</translation>
 <translation id="114036956334641753">ສຽງ ແລະ ຄຳບັນຍາຍ</translation>
-<translation id="1140610710803014750">ເພື່ອມີບຸກມາກຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, ກະລຸນາເຂົ້າສູ່ລະບົບ ແລະ ເປີດການຊິ້ງຂໍ້ມູນ.</translation>
 <translation id="1140746652461896221">ບລັອກເນື້ອຫາໃນໜ້າໃດໆກໍຕາມທີ່ທ່ານເຂົ້າເບິ່ງ</translation>
 <translation id="1143142264369994168">ຜູ້ເຊັນໃບຢັ້ງຢືນ</translation>
 <translation id="1145292499998999162">ບລັອກປລັກອິນແລ້ວ</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">ອັດ​ສຳ​ເນົາ​ທີ່​ຢູ່​ສຽງ</translation>
 <translation id="1465827627707997754">ແຜ່ນພິດຊ້າ</translation>
 <translation id="1468571364034902819">ບໍ່ສາມາດໃຊ້ໂປຣໄຟລ໌ນີ້</translation>
-<translation id="1470811252759861213">ເພື່ອດາວໂຫຼດສ່ວນຂະຫຍາຍຂອງທ່ານຢູ່ໃນທຸກຄອມພິວເຕີຂອງທ່ານ, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">ສະແດງເພີ່ມເຕີມ</translation>
 <translation id="1475502736924165259">ທ່ານມີໃບຢັ້ງຢືນຢູ່ໃນໄຟລ໌ທີ່ບໍ່ເຂົ້າກັບໝວດອື່ນໃດໜຶ່ງ:</translation>
 <translation id="1476088332184200792">ສຳເນົາໄປໃສ່ອຸປະກອນຂອງທ່ານ</translation>
@@ -1043,7 +1041,6 @@
 <translation id="2489829450872380594">ຄັ້ງຕໍ່ໄປ, ໂທລະສັບໃໝ່ຈະປົດລັອກ <ph name="DEVICE_TYPE" /> ນີ້. ທ່ານສາມາດປິດ Smart Lock ໄດ້ໃນການຕັ້ງຄ່າ.</translation>
 <translation id="2489918096470125693">ເພີ່ມ​ໂຟລເດີ...</translation>
 <translation id="2490481887078769936">ລຶບ '<ph name="FILE_NAME" />' ອອກຈາກລາຍການແລ້ວ</translation>
-<translation id="2490782392574942205">ເພື່ອຮັບສ່ວນຂະຫຍາຍຂອງທ່ານຢູ່ໃນຄອມພິວເຕີທັງໝົດ, ກະລຸນາເຂົ້າສູ່ລະບົບ ແລ້ວເປີດການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="249113932447298600">ຂໍອະໄພ, ອຸປະກອນ <ph name="DEVICE_LABEL" /> ບໍ່ຮອງຮັບໃນເວລານີ້.</translation>
 <translation id="249303669840926644">ບໍ່ສາມາດລົງທະບຽນໄດ້ສໍາເັລດ</translation>
 <translation id="2495777824269688114">ເບິ່ງຄຸນສົມບັດເພີ່ມເຕີມ ຫຼື ຂໍຄຳຕອບໄດ້. ເລືອກ “?” ສຳລັບຄວາມຊ່ວຍເຫຼືອ.</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
 <translation id="3528033729920178817">ໜ້ານີ້ກໍາລັງຕິດຕາມທີ່ຕັ້ງຂອງທ່ານ.</translation>
 <translation id="3528498924003805721">ເປົ້າ​ຫມາຍ​ທາງລັດ</translation>
-<translation id="3530305684079447434">ເພື່ອເອົາບຸກມາກສຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ຕ້ອງການໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ປິດສຽງແລ້ວ</translation>
 <translation id="3538066758857505094">ເກີດຄວາມຜິດພາດໃນຖອນການຕິດຕັ້ງ Linux. ກະລຸນາລອງໃໝ່ໃນພາຍຫຼັງ.</translation>

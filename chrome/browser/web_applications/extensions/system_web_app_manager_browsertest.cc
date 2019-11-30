@@ -82,7 +82,7 @@ class TestWebUIController : public content::WebUIController {
         }),
         base::BindRepeating(
             [](const std::string& id,
-               const content::WebUIDataSource::GotDataCallback& callback) {
+               content::WebUIDataSource::GotDataCallback callback) {
               scoped_refptr<base::RefCountedString> ref_contents(
                   new base::RefCountedString);
               if (id == "manifest.json")
@@ -92,7 +92,7 @@ class TestWebUIController : public content::WebUIController {
               else
                 NOTREACHED();
 
-              callback.Run(ref_contents);
+              std::move(callback).Run(ref_contents);
             }));
     content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                   data_source);

@@ -380,11 +380,6 @@
           如果停用或不設定這項政策，系統會停用 Kerberos 帳戶設定。使用者無法新增 Kerberos 帳戶，也無法使用 Kerberos 驗證。系統會刪除所有現有的 Kerberos 帳戶和所有已儲存的密碼。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
-<translation id="1566329065312331399">
-      如果將這項政策設為 False，系統會禁止裝置觸發 Powerwash。
-      如果將這項政策設為 True，系統會允許裝置觸發 Powerwash。
-      如果不設定，則這項政策會預設為 False，代表系統不允許裝置執行 Powerwash。
-      </translation>
 <translation id="1574554504290354326">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
 
       如果將這項政策設為 False，使用者就無法選擇將部分系統資訊和網頁內容傳送至 Google 伺服器；如果設為 True 或未設定，使用者就可以將部分系統資訊和網頁內容傳送至「安全瀏覽」服務，協助偵測危險的應用程式和網站。
@@ -4199,11 +4194,6 @@
 <translation id="7937491150792971922">合併多個來源的擴充功能安裝清單政策</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
-<translation id="7944213656414105292">這項政策會設定哪些網址可在登入畫面的 SAML 流程中，取得使用裝置身分遠端認證機制的存取權。
-
-      具體來說，如果網址符合這項政策提供的其中一種模式，系統會允許該網址接收 HTTP 標頭 (其中包含對遠端認證機制驗證問題的回覆)，以認證裝置身分及裝置狀態。
-
-      如果不設定這項政策或將其設為空白，則系統不允許任何網址在登入畫面使用遠端認證機制。</translation>
 <translation id="7952007677054834789">設定 <ph name="PRODUCT_NAME" /> 的起始載入頁面、預設首頁和預設新分頁，並禁止使用者變更這些設定。
 
       如果你選取使用者的首頁做為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果你沒有指定首頁網址，那麼使用者只要將網址設為「chrome://newtab」，就能以新分頁做為首頁。

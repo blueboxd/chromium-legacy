@@ -31,8 +31,8 @@
 namespace blink {
 
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
-  ShapeValue* shape1 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
-  ShapeValue* shape2 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
+  auto* shape1 = MakeGarbageCollected<ShapeValue>(CSSBoxType::kContent);
+  auto* shape2 = MakeGarbageCollected<ShapeValue>(CSSBoxType::kContent);
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
   style1->SetShapeOutside(shape1);
@@ -43,10 +43,10 @@ TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
 TEST(ComputedStyleTest, ShapeOutsideCircleEqual) {
   scoped_refptr<BasicShapeCircle> circle1 = BasicShapeCircle::Create();
   scoped_refptr<BasicShapeCircle> circle2 = BasicShapeCircle::Create();
-  ShapeValue* shape1 =
-      ShapeValue::CreateShapeValue(circle1, CSSBoxType::kContent);
-  ShapeValue* shape2 =
-      ShapeValue::CreateShapeValue(circle2, CSSBoxType::kContent);
+  auto* shape1 = MakeGarbageCollected<ShapeValue>(std::move(circle1),
+                                                  CSSBoxType::kContent);
+  auto* shape2 = MakeGarbageCollected<ShapeValue>(std::move(circle2),
+                                                  CSSBoxType::kContent);
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
   style1->SetShapeOutside(shape1);

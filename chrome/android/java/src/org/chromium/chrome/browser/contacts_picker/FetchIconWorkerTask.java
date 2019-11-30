@@ -78,7 +78,6 @@ class FetchIconWorkerTask extends AsyncTask<Bitmap> {
             if (cursor.moveToFirst()) {
                 byte[] data = cursor.getBlob(0);
                 if (data != null) {
-                    // TODO(finnur): Before launching, verify images have already been re-encoded.
                     return BitmapFactory.decodeStream(new ByteArrayInputStream(data));
                 }
             }

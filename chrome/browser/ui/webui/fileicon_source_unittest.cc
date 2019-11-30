@@ -22,11 +22,18 @@ class TestFileIconSource : public FileIconSource {
  public:
   TestFileIconSource() {}
 
-  MOCK_METHOD4(FetchFileIcon,
+  void FetchFileIcon(
+      const base::FilePath& path,
+      float scale_factor,
+      IconLoader::IconSize icon_size,
+      content::URLDataSource::GotDataCallback callback) override {
+    FetchFileIcon_(path, scale_factor, icon_size, callback);
+  }
+  MOCK_METHOD4(FetchFileIcon_,
                void(const base::FilePath& path,
                     float scale_factor,
                     IconLoader::IconSize icon_size,
-                    const content::URLDataSource::GotDataCallback& callback));
+                    content::URLDataSource::GotDataCallback& callback));
 
   ~TestFileIconSource() override {}
 };
@@ -115,14 +122,14 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
   for (unsigned i = 0; i < base::size(kBasicExpectations); i++) {
     auto source = std::make_unique<TestFileIconSource>();
     content::URLDataSource::GotDataCallback callback;
-    EXPECT_CALL(*source.get(),
-                FetchFileIcon(
-                    base::FilePath(kBasicExpectations[i].unescaped_path),
-                    kBasicExpectations[i].scale_factor,
-                    kBasicExpectations[i].size, CallbackIsNull()));
+    EXPECT_CALL(
+        *source.get(),
+        FetchFileIcon_(base::FilePath(kBasicExpectations[i].unescaped_path),
+                       kBasicExpectations[i].scale_factor,
+                       kBasicExpectations[i].size, CallbackIsNull()));
     source->StartDataRequest(
         GURL(base::StrCat(
             {"chrome://any-host/", kBasicExpectations[i].request_path})),
-        content::WebContents::Getter(), callback);
+        content::WebContents::Getter(), std::move(callback));
   }
 }

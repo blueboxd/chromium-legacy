@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Berikan detail tambahan</translation>
 <translation id="1021110881106174305">Kartu yang diterima</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
-<translation id="1035334672863811645">login ke Chrome</translation>
 <translation id="1036348656032585052">Matikan</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1039626062703039346">Chrome dapat membantu Anda melindungi Akun Google dan mengubah sandi Anda. Hal ini akan memberi tahu Google tentang situs ini.</translation>
@@ -923,7 +922,6 @@
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
 <translation id="5371425731340848620">Perbarui kartu</translation>
 <translation id="5377026284221673050">"Jam Anda terlalu lambat" atau "Jam Anda terlalu cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Untuk menggunakan kartu di semua perangkat, harap login dan aktifkan sinkronisasi.</translation>
 <translation id="5386426401304769735">Rantai sertifikat untuk situs ini berisi sertifikat yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Jahitan tepi di kanan</translation>
@@ -1580,7 +1578,6 @@
 <translation id="8759274551635299824">Kartu sudah tidak aktif</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Perangkat USB</translation>
-<translation id="8768895707659403558">Untuk menggunakan kartu Anda di semua perangkat, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8792621596287649091">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chromium menyarankan Anda untuk mengubah sandi sekarang.</translation>

@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Buka pautan dalam <ph name="APP" /></translation>
 <translation id="1140351953533677694">Akses peranti Bluetooth dan Bersiri anda</translation>
 <translation id="114036956334641753">Audio dan kapsyen</translation>
-<translation id="1140610710803014750">Log masuk dan hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
 <translation id="1140746652461896221">Sekat kandungan pada mana-mana halaman yang anda lawati</translation>
 <translation id="1143142264369994168">Penandatangan Sijil</translation>
 <translation id="1145292499998999162">Pemalam disekat</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">S&amp;alin Alamat Audio</translation>
 <translation id="1465827627707997754">Potongan piza</translation>
 <translation id="1468571364034902819">Tidak dapat menggunakan profil ini</translation>
-<translation id="1470811252759861213">Untuk mendapatkan sambungan pada semua komputer anda, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Tunjukkan lagi</translation>
 <translation id="1475502736924165259">Anda mempunyai sijil pada fail yang tidak sepadan dengan mana-mana kategori lain</translation>
 <translation id="1476088332184200792">Salin ke Peranti Anda</translation>
@@ -1045,7 +1043,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2489829450872380594">Selepas ini, telefon baharu akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda boleh mematikan Smart Lock dalam Tetapan.</translation>
 <translation id="2489918096470125693">Tambah &amp;Folder...</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />' telah dialih keluar daripada senarai</translation>
-<translation id="2490782392574942205">Log masuk dan hidupkan penyegerakan untuk mendapatkan sambungan anda pada semua komputer anda</translation>
 <translation id="249113932447298600">Maaf, peranti <ph name="DEVICE_LABEL" /> tidak disokong pada masa ini.</translation>
 <translation id="249303669840926644">Tidak dapat melengkapkan pendaftaran</translation>
 <translation id="2495777824269688114">Temui lebih banyak ciri atau dapatkan jawapan. Pilih “?” untuk mendapatkan bantuan.</translation>
@@ -1755,7 +1752,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528033729920178817">Halaman ini menjejaki lokasi anda.</translation>
 <translation id="3528498924003805721">Sasaran pintasan</translation>
-<translation id="3530305684079447434">Untuk mendapatkan penanda halaman pada semua peranti anda, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ingin menggunakan mikrofon anda</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio diredam</translation>
 <translation id="3538066758857505094">Ralat menyahpasang Linux. Sila cuba lagi.</translation>

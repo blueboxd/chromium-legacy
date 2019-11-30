@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">Wi-Fi uniquement</translation>
 <translation id="2747003861858887689">Champ précédent</translation>
 <translation id="2773292004659987824">Recherche en mode navigation privée</translation>
+<translation id="277771892408211951">Sélectionner la langue</translation>
 <translation id="2780046210906776326">Aucun compte messag.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
@@ -268,7 +269,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="4689564913179979534">Gérer les modes de paiement…</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4747097190499141774">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay. Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète n'est pas envoyée à Google et Google ne la stocke pas. Si vous l'oubliez ou si vous souhaitez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Rechercher dans la page…</translation>
 <translation id="4751645464639803239">Nouvel onglet de navigation privée</translation>
 <translation id="4758977202923349869">Positionnez la carte de crédit à l'intérieur de ce cadre</translation>
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
@@ -455,7 +455,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7173114856073700355">Ouvrir les paramètres</translation>
-<translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
@@ -559,6 +558,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8840513115188359703">Vous ne serez pas déconnecté de votre compte Google.</translation>
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8881801611828450202">Chercher cette image sur <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Partager…</translation>
 <translation id="895541991026785598">Signaler un problème</translation>
 <translation id="8976382372951310360">Aide</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>

@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_database.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
@@ -101,7 +102,7 @@ class CONTENT_EXPORT NetworkServiceClient
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
-  network::mojom::NetworkChangeManagerPtr network_change_manager_;
+  mojo::Remote<network::mojom::NetworkChangeManager> network_change_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);

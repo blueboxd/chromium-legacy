@@ -163,7 +163,7 @@ bool ShouldHandleAccessibilityRequestCallback(const std::string& path) {
 void HandleAccessibilityRequestCallback(
     content::BrowserContext* current_context,
     const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
+    content::WebUIDataSource::GotDataCallback callback) {
   DCHECK(ShouldHandleAccessibilityRequestCallback(path));
 
   base::DictionaryValue data;
@@ -250,7 +250,7 @@ void HandleAccessibilityRequestCallback(
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
 
-  callback.Run(base::RefCountedString::TakeString(&json_string));
+  std::move(callback).Run(base::RefCountedString::TakeString(&json_string));
 }
 
 bool MatchesPropertyFilters(

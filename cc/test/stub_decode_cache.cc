@@ -9,13 +9,15 @@ namespace cc {
 ImageDecodeCache::TaskResult StubDecodeCache::GetTaskForImageAndRef(
     const DrawImage& image,
     const TracingInfo& tracing_info) {
-  return TaskResult(/*need_unref=*/true, /*is_at_raster_decode=*/false);
+  return TaskResult(/*need_unref=*/true, /*is_at_raster_decode=*/false,
+                    /*can_do_hardware_accelerated_decode=*/false);
 }
 
 ImageDecodeCache::TaskResult
 StubDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
     const DrawImage& image) {
-  return TaskResult(/*need_unref=*/true, /*is_at_raster_decode=*/false);
+  return TaskResult(/*need_unref=*/true, /*is_at_raster_decode=*/false,
+                    /*can_do_hardware_accelerated_decode=*/false);
 }
 
 DecodedDrawImage StubDecodeCache::GetDecodedImageForDraw(

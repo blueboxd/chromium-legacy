@@ -67,11 +67,10 @@ class GCMDriverDesktop : public GCMDriver,
   ~GCMDriverDesktop() override;
 
   // GCMDriver implementation:
-  void ValidateRegistration(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
-      const std::string& registration_id,
-      const ValidateRegistrationCallback& callback) override;
+  void ValidateRegistration(const std::string& app_id,
+                            const std::vector<std::string>& sender_ids,
+                            const std::string& registration_id,
+                            ValidateRegistrationCallback callback) override;
   void Shutdown() override;
   void OnSignedIn() override;
   void OnSignedOut() override;
@@ -128,7 +127,7 @@ class GCMDriverDesktop : public GCMDriver,
                      const std::string& authorized_entity,
                      const std::string& scope,
                      const std::string& token,
-                     const ValidateTokenCallback& callback) override;
+                     ValidateTokenCallback callback) override;
   void DeleteToken(const std::string& app_id,
                    const std::string& authorized_entity,
                    const std::string& scope,
@@ -150,7 +149,7 @@ class GCMDriverDesktop : public GCMDriver,
 
   void DoValidateRegistration(scoped_refptr<RegistrationInfo> registration_info,
                               const std::string& registration_id,
-                              const ValidateRegistrationCallback& callback);
+                              ValidateRegistrationCallback callback);
 
   //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
   void Stop();

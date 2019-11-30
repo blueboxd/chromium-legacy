@@ -250,11 +250,12 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    VideoCaptureDeliverFrameCB frame_callback,
+    EncodedVideoFrameCB /*encoded_frame_callback*/) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!delegate_.get());
-  delegate_ = base::MakeRefCounted<RemoteVideoSourceDelegate>(io_task_runner(),
-                                                              frame_callback);
+  delegate_ = base::MakeRefCounted<RemoteVideoSourceDelegate>(
+      io_task_runner(), std::move(frame_callback));
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());

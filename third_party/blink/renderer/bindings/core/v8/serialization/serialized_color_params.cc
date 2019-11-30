@@ -14,29 +14,28 @@ SerializedColorParams::SerializedColorParams()
 
 SerializedColorParams::SerializedColorParams(CanvasColorParams color_params) {
   switch (color_params.ColorSpace()) {
-    case kSRGBCanvasColorSpace:
+    case CanvasColorSpace::kSRGB:
       color_space_ = SerializedColorSpace::kSRGB;
       break;
-    case kLinearRGBCanvasColorSpace:
+    case CanvasColorSpace::kLinearRGB:
       color_space_ = SerializedColorSpace::kLinearRGB;
       break;
-    case kRec2020CanvasColorSpace:
+    case CanvasColorSpace::kRec2020:
       color_space_ = SerializedColorSpace::kRec2020;
       break;
-    case kP3CanvasColorSpace:
+    case CanvasColorSpace::kP3:
       color_space_ = SerializedColorSpace::kP3;
       break;
   }
-
   // todo(crbug/1021986) remove force_rgba in canvasColorParams
   if (color_params.GetForceRGBA() == CanvasForceRGBA::kForced) {
     pixel_format_ = SerializedPixelFormat::kForceRGBA8;
   } else {
     switch (color_params.PixelFormat()) {
-      case kRGBA8CanvasPixelFormat:
+      case CanvasPixelFormat::kRGBA8:
         pixel_format_ = SerializedPixelFormat::kRGBA8;
         break;
-      case kF16CanvasPixelFormat:
+      case CanvasPixelFormat::kF16:
         pixel_format_ = SerializedPixelFormat::kF16;
         break;
     }
@@ -77,32 +76,33 @@ SerializedColorParams::SerializedColorParams(
 }
 
 CanvasColorParams SerializedColorParams::GetCanvasColorParams() const {
-  CanvasColorSpace color_space = kSRGBCanvasColorSpace;
+  CanvasColorSpace color_space = CanvasColorSpace::kSRGB;
   switch (color_space_) {
     case SerializedColorSpace::kLegacyObsolete:
     case SerializedColorSpace::kSRGB:
-      color_space = kSRGBCanvasColorSpace;
+      color_space = CanvasColorSpace::kSRGB;
       break;
     case SerializedColorSpace::kLinearRGB:
-      color_space = kLinearRGBCanvasColorSpace;
+      color_space = CanvasColorSpace::kLinearRGB;
       break;
     case SerializedColorSpace::kRec2020:
-      color_space = kRec2020CanvasColorSpace;
+      color_space = CanvasColorSpace::kRec2020;
       break;
     case SerializedColorSpace::kP3:
-      color_space = kP3CanvasColorSpace;
+      color_space = CanvasColorSpace::kP3;
       break;
   }
 
   // todo(crbug/1021986) remove force_rgba in canvasColorParams
   CanvasForceRGBA force_rgba = CanvasForceRGBA::kNotForced;
-  CanvasPixelFormat pixel_format = kRGBA8CanvasPixelFormat;
+  CanvasPixelFormat pixel_format = CanvasPixelFormat::kRGBA8;
   if (pixel_format_ == SerializedPixelFormat::kForceRGBA8) {
     force_rgba = CanvasForceRGBA::kForced;
-  } else if (pixel_format_ == SerializedPixelFormat::kF16)
-    pixel_format = kF16CanvasPixelFormat;
-  else if (pixel_format_ == SerializedPixelFormat::kRGBA8)
-    pixel_format = kRGBA8CanvasPixelFormat;
+  } else if (pixel_format_ == SerializedPixelFormat::kF16) {
+    pixel_format = CanvasPixelFormat::kF16;
+  } else if (pixel_format_ == SerializedPixelFormat::kRGBA8) {
+    pixel_format = CanvasPixelFormat::kRGBA8;
+  }
 
   blink::OpacityMode opacity_mode = blink::kNonOpaque;
   if (opacity_mode_ == SerializedOpacityMode::kOpaque)

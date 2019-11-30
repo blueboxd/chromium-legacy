@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Havolani <ph name="APP" /> dasturida ochish</translation>
 <translation id="1140351953533677694">Bluetooth va keyingi seriyali qurilmalaringizga ruxsat</translation>
 <translation id="114036956334641753">Audio va taglavhalar</translation>
-<translation id="1140610710803014750">Xatcho‘plarni barcha qurilmalaringizda sinxronlash uchun o‘z hisobingizga kiring va sinxronizatsiyani yoqing.</translation>
 <translation id="1140746652461896221">Kirilgan sahifadagi kontentni bloklash</translation>
 <translation id="1143142264369994168">Sertifikat imzolovchisi</translation>
 <translation id="1145292499998999162">Plagin bloklandi</translation>
@@ -330,7 +329,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1465176863081977902">Audioning URL manzilini nusxalash</translation>
 <translation id="1465827627707997754">Pitsa bo‘lagi</translation>
 <translation id="1468571364034902819">Bu profilni ishlatib bo‘lmaydi</translation>
-<translation id="1470811252759861213">Hisobingizdagi kengaytmalarni barcha qurilmalaringizda o‘rnatish uchun <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Yana</translation>
 <translation id="1475502736924165259">Sizda quyidagi turkumlardan hech qaysiga to‘g‘ri kelmaydigan sertifikatlar mavjud</translation>
 <translation id="1476088332184200792">Qurilmaga nusxalash</translation>
@@ -1043,7 +1041,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2489829450872380594">Keyingi safar yangi telefoningiz <ph name="DEVICE_TYPE" /> qurilmasini qulfdan chiqara oladi. Sozlamalar orqali Smart Lock funksiyasini faolsizlantirish mumkin.</translation>
 <translation id="2489918096470125693">&amp;Jild qo‘shish</translation>
 <translation id="2490481887078769936"><ph name="FILE_NAME" /> fayli roʻyxatdan olib tashlandi</translation>
-<translation id="2490782392574942205">Kengaytmalarni barcha qurilmalaringizda ishlatish uchun hisobingizga kiring va sinxronizatsiyani yoqing</translation>
 <translation id="249113932447298600">Kechirasiz, <ph name="DEVICE_LABEL" /> qurilmasi ayni vaqtda qo‘llab-quvvatlanmaydi.</translation>
 <translation id="249303669840926644">Ro‘yxatdan o‘tish amalini yakunlab bo‘lmadi</translation>
 <translation id="2495777824269688114">Boshqa funksiyalar yoki javoblar uchun “?” ustiga bosing.</translation>
@@ -1753,7 +1750,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3527085408025491307">Jild</translation>
 <translation id="3528033729920178817">Bu sahifa joylashuvingizni kuzatmoqda.</translation>
 <translation id="3528498924003805721">Yorliq manzillari</translation>
-<translation id="3530305684079447434">Xatcho‘plaringizni barcha qurilmalarda ko‘rish uchun, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> mikrofoningizdan foydalanmoqchi</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> – ovozsiz qilindi</translation>
 <translation id="3538066758857505094">Linux o‘chirib tashlanmadi. Qaytadan urining.</translation>

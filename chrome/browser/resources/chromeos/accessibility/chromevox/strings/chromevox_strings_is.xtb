@@ -462,6 +462,7 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4204126831294769023">Heiðblár</translation>
 <translation id="4204864733111726379">Gulhvítur</translation>
 <translation id="4206289001967551965">Innan töflu</translation>
+<translation id="4207770814752775793">Endurstilla á sjálfgefnar stillingar talgervils.</translation>
 <translation id="4209770650650780359">Ýttu á ör upp eða niður til að nota sjálfvirka útfyllingu.</translation>
 <translation id="4215733775853809057">Næsti sleði</translation>
 <translation id="42164919740161077">Blágrágrænn</translation>
@@ -765,6 +766,7 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6290434000785343030">Engin næsta fellivalmynd.</translation>
 <translation id="6305702903308659374">Spila með venjulegum hljóðstyrk jafnvel þótt ChromeVox sé að tala</translation>
 <translation id="6307969636681130414">Ýtt</translation>
+<translation id="6315652249189065725">Opna valmynd flýtilykla</translation>
 <translation id="6322856989298155004">Hljóð</translation>
 <translation id="6324551002951139333">Málvilla fannst</translation>
 <translation id="6325241889020214828">afrita <ph name="TEXT" />.</translation>
@@ -958,6 +960,7 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7668307052366682650">{COUNT,plural, =1{klukkustund}one{klukkustund}other{klukkustundir}}</translation>
 <translation id="7674576868851035240">Næsti tengill</translation>
 <translation id="7674768236845044097">merki</translation>
+<translation id="7676847077928500578">Endurstilla stillingar talgervils</translation>
 <translation id="7684431668231950609">Textareitur, innsláttur vefslóðar</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Fyrri valhnappur</translation>

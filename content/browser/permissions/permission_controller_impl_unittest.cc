@@ -300,7 +300,7 @@ TEST_F(PermissionControllerImplTest,
 TEST_F(PermissionControllerImplTest,
        NotifyChangedSubscriptionsCallsOnChangeOnly) {
   using PermissionStatusCallback =
-      base::Callback<void(blink::mojom::PermissionStatus)>;
+      base::RepeatingCallback<void(blink::mojom::PermissionStatus)>;
   GURL kUrl = GURL(kTestUrl);
   url::Origin kTestOrigin = url::Origin::Create(kUrl);
 

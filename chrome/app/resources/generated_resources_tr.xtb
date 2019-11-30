@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Bağlantıyı <ph name="APP" /> uygulamasında aç</translation>
 <translation id="1140351953533677694">Bluetooth ve Seri cihazlarınıza erişme</translation>
 <translation id="114036956334641753">Ses ve altyazı</translation>
-<translation id="1140610710803014750">Yer işaretlerinizi tüm cihazlarınızda almak için oturum açın ve senkronizasyonu etkinleştirin.</translation>
 <translation id="1140746652461896221">Ziyaret ettiğiniz tüm sayfalardaki içerik engellensin</translation>
 <translation id="1143142264369994168">Sertifika İmza Sahibi</translation>
 <translation id="1145292499998999162">Eklenti engellendi</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">Ses Adresini K&amp;opyala</translation>
 <translation id="1465827627707997754">Pizza dilimi</translation>
 <translation id="1468571364034902819">Bu profil kullanılamaz</translation>
-<translation id="1470811252759861213">Uzantılarınızı tüm bilgisayarlarınızda kullanmak için <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Daha fazla göster</translation>
 <translation id="1475502736924165259">Dosyanızda diğer kategorilerin hiçbirine uymayan sertifikalar var</translation>
 <translation id="1476088332184200792">Cihazıma Kopyala</translation>
@@ -1045,7 +1043,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2489829450872380594">Bir dahaki sefere yeni bir telefon kullanarak bu <ph name="DEVICE_TYPE" /> cihazın kilidini açabilirsiniz. Smart Lock'u Ayarlar'dan kapatabilirsiniz.</translation>
 <translation id="2489918096470125693">&amp;Klasör Ekle...</translation>
 <translation id="2490481887078769936">"<ph name="FILE_NAME" />" listeden kaldırıldı</translation>
-<translation id="2490782392574942205">Uzantılarınızı tüm bilgisayarlarınızda almak için oturum açın ve senkronizasyonu etkinleştirin</translation>
 <translation id="249113932447298600">Maalesef, <ph name="DEVICE_LABEL" /> cihazı şu anda desteklenmiyor.</translation>
 <translation id="249303669840926644">Kayıt işlemi tamamlanamadı</translation>
 <translation id="2495777824269688114">Daha fazla özellik keşfedin veya sorularınıza yanıt alın. Yardım için “?” düğmesini seçin.</translation>
@@ -1746,7 +1743,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="351152300840026870">Sabit genişlikte yazı tipi</translation>
 <translation id="3511528412952710609">Kısa</translation>
 <translation id="3514373592552233661">Birden fazla ağ kullanılabilir olduğunda, bilinen ağlar arasında tercih edilen ağlar seçilir</translation>
-<translation id="3515983984924808886">Sıfırlamayı onaylamak için güvenlik anahtarınıza tekrar dokunun. PIN'i de dahil olmak üzere güvenlik anahtarında depolanan tüm bilgiler silinecek.</translation>
+<translation id="3515983984924808886">Sıfırlamayı onaylamak için güvenlik anahtarınıza tekrar dokunun. PIN'i de dahil olmak üzere güvenlik anahtarında depolanan tüm bilgiler silinir.</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
 <translation id="351952459507671940">Yeni gruba ekle</translation>
 <translation id="3523642406908660543">Bir site, bilgisayarıma erişmek için eklenti kullanmak istediğinde bana sor (önerilen)</translation>
@@ -1755,7 +1752,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3527085408025491307">Klasör</translation>
 <translation id="3528033729920178817">Bu sayfa konumunuzu izliyor.</translation>
 <translation id="3528498924003805721">Kısayol hedefleri</translation>
-<translation id="3530305684079447434">Tüm cihazlarınızdaki yer işaretlerinizi almak için <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774"><ph name="HOST" />, mikrofonunuzu kullanmak istiyor</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Ses kapatıldı</translation>
 <translation id="3538066758857505094">Linux yüklemesi kaldırılırken hata oluştu. Lütfen tekrar deneyin.</translation>
@@ -2615,7 +2611,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth Günlükleri<ph name="END_LINK" /> ekle (Google dahili)</translation>
 <translation id="4801448226354548035">Hesapları gizle</translation>
 <translation id="4801512016965057443">Mobil veri dolaşımına izin ver</translation>
-<translation id="4804756772600045300">Devam edilirse ADB hata ayıklama işlevi, Android uygulaması oluşturmak ve test etmek için etkinleştirilir. ADB hata ayıklama işlevinin Google tarafından doğrulanmayan test uygulamalarının yüklenmesine izin verdiğini unutmayın.</translation>
+<translation id="4804756772600045300">Devam edilirse ADB hata ayıklama işlevi, Android uygulaması oluşturmak ve test etmek için etkinleştirilir. ADB hata ayıklama işlevinin Google tarafından doğrulanmamış test uygulamalarının yüklenmesine izin verdiğini unutmayın.</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
@@ -4388,7 +4384,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7401778920660465883">Bu iletiyi kapat</translation>
 <translation id="740624631517654988">Pop-up engellendi</translation>
 <translation id="7407430846095439694">İçe Aktar ve Bağla</translation>
-<translation id="7407504355934009739">Çoğu kullanıcı bu siteden gelen bildirimleri engeller</translation>
+<translation id="7407504355934009739">Çoğu kullanıcı bu siteden gelen bildirimleri engelliyor</translation>
 <translation id="7409549334477097887">Çok büyük</translation>
 <translation id="7409836189476010449">Flash öğesi çalıştırmak</translation>
 <translation id="7410344089573941623"><ph name="HOST" /> sitesi kamerama ve mikrofonuma erişmek isterse sor</translation>
@@ -4978,7 +4974,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8214489666383623925">Dosya Aç...</translation>
 <translation id="8214962590150211830">Bu kişiyi kaldır</translation>
 <translation id="8217399928341212914">Otomatik olarak birden fazla dosya indirilmesini engellemeye devam et</translation>
-<translation id="8221491193165283816">Genelde bildirimleri engellersiniz. Bu sitenin size bildirim göndermesine izin vermek için burayı tıklayın.</translation>
+<translation id="8221491193165283816">Genelde bildirimleri engelliyorsunuz. Bu sitenin size bildirim göndermesine izin vermek için burayı tıklayın.</translation>
 <translation id="8225265270453771718">Uygulama penceresi paylaşın</translation>
 <translation id="8225753906568652947">Tekliflerinizi kullanın</translation>
 <translation id="8226222018808695353">Yasak</translation>

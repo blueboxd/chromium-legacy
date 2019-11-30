@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">लॉक स्क्रीन सूचना सेटिंग्ज बदला</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">ब्लूटूथ सेटिंग्ज दाखवा. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">नेहमी शेल्फ दाखवा</translation>
 <translation id="1341651618736211726">ओव्हरफ्लो</translation>
 <translation id="1346748346194534595">उजवे</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1761222317188459878">नेटवर्क कनेक्शन टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">उजवीकडे स्क्रोल करा</translation>
+<translation id="181103072419391116">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="1812997170047690955">माझ्या स्क्रीनवर काय आहे?</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">कीबोर्डचा लेआउट स्विच करण्यासाठी <ph name="KEYBOARD_SHORTCUT" /> दाबा.</translation>
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
+<translation id="2517825809102302935">आज रात्रीसाठी बंद करा</translation>
 <translation id="2542089167727451762">तुमच्या प्रोफाइल इमेजवर टॅप करा</translation>
 <translation id="255671100581129685">सार्वजनिक सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="256712445991462162">डॉक केलेले मॅग्निफायर</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3154351730702813399">डिव्हाइस प्रशासक कदाचित आपल्या ब्राउझिंग क्रियाकलापाचे परीक्षण करू शकतो.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{डिव्हाइसशी कनेक्ट केले}other{# डिव्हाइसशी कनेक्ट केले}}</translation>
+<translation id="3217205077783620295">व्हॉल्यूम सुरू आहे, टॉगल केल्याने ऑडिओ म्यूट होईल.</translation>
 <translation id="3226991577105957773">आणखी +<ph name="COUNT" /></translation>
 <translation id="3236488194889173876">कोणतेही मोबाइल नेटवर्क उपलब्ध नाही</translation>
 <translation id="3249513730522716925">विंडो <ph name="WINDOW_TITLE" /> डेस्क <ph name="ACTIVE_DESK" /> वरून डेस्क <ph name="TARGET_DESK" /> वर हलवली</translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">USB-C डिव्‍हाइस</translation>
 <translation id="3454224730401036106">तुमचे कनेक्शन अधिक सुरक्षित नेटवर्कवर स्विच केले आहे</translation>
 <translation id="3465223694362104965">तुम्ही शेवटचे साइन इन केल्यापासून या डिव्हाइसवर दुसरा कीबोर्ड कनेक्ट करण्यात आला आहे. तो वापरण्यापूर्वी तुमचा या कीबोर्डवर विश्वास असल्याची खात्री करा.</translation>
+<translation id="3465356146291925647">तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">रीस्टार्ट करा आणि रीसेट करा</translation>
 <translation id="495046168593986294">वर स्क्रोल करा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
+<translation id="5018302031617932556">रात्रीचा प्रकाश तुमच्या स्क्रीनकडे पाहणे किंवा मंद प्रकाशात वाचणे आणखी सोपे करतो. हे बदलण्यासाठी टॅप करा.</translation>
 <translation id="5030687792513154421">वेळ संपली</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> नवीन फोनशी कनेक्ट केले</translation>
 <translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">हे डिव्हाइस तुमच्या सर्व डिस्प्लेंना सपोर्ट करू शकले नाही, त्यामुळे एक डिस्प्ले डिस्कनेक्ट केला गेला</translation>
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टॅप ड्रॅगिंग</translation>
+<translation id="5745612484876805746">रात्रीचा प्रकाश सूर्यास्ताच्या वेळी आपोआप सुरू होतो</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद आहे</translation>
 <translation id="576453121877257266">रात्रीचा प्रकाश सुरू आहे.</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">उच्च तीव्रता मोड चालू केला आहे. तो बंदवर टॉगल करण्यासाठी Ctrl+Search+H दाबा.</translation>
 <translation id="6018164090099858612">मिरर मोडमधून बाहेर पडत आहे</translation>
 <translation id="602001110135236999">डावीकडे स्‍क्रोल करा</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6043212731627905357">हा मॉनिटर आपल्या <ph name="DEVICE_TYPE" /> सह प्राप्त होत नाही (मॉनिटर समर्थित नाही).</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">ब्लूटूथ सुरू आहे</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">सर्व सूचना साफ करा</translation>
 <translation id="643147933154517414">सर्व पूर्ण झाले</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> वर <ph name="ROUTE_TITLE" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6528179044667508675">व्यत्यय आणू नका</translation>
 <translation id="6537270692134705506">स्क्रीन कॅप्चर करा</translation>
+<translation id="6537924328260219877">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> वर कास्ट करत आहे</translation>
 <translation id="6559976592393364813">अ‍ॅडमिनिस्ट्रेटरला विचारा</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सेशन समाप्त होते.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6637729079642709226">वेळ बदला</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="7025533177575372252">तुमचे <ph name="DEVICE_NAME" /> तुमच्या फोनशी कनेक्ट करा</translation>
 <translation id="7029814467594812963">सेशनमधून बाहेर पडा</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistant</translation>
 <translation id="7042322267639375032">स्थिती क्षेत्र कोलॅप्स करा</translation>
 <translation id="7066646422045619941">हे नेटवर्क तुमच्या ॲडमिनिस्ट्रेटरने अक्षम केले आहे.</translation>
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
 <translation id="8203795194971602413">राइट क्लिक</translation>
 <translation id="8236042855478648955">विश्रांतीची वेळ</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> अनलॉक करण्यासाठी एंटर दाबा</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8297006494302853456">कमकुवत</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">ऑटो-रोटेट</translation>
 <translation id="8517041960877371778">तुमचे <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> शी कनेक्ट केले</translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शिल्लक</translation>
 <translation id="8649101189709089199">बोलण्यासाठी निवडा</translation>
 <translation id="8652175077544655965">सेटिंग्ज बंद करा</translation>
 <translation id="8653151467777939995">सूचना सेटिंग्ज दाखवा. सूचना सुरू आहेत</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">नेटवर्क सूची दाखवा. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
 <translation id="8735953464173050365">कीबोर्ड सेटिंग्ज दाखवा. <ph name="KEYBOARD_NAME" /> निवडले आहे</translation>
 <translation id="875593634123171288">VPN सेटिंग्ज दाखवा</translation>
+<translation id="8785070478575117577"><ph name="NETWORK_NAME" /> शी कनेक्ट करा</translation>
 <translation id="8814190375133053267">वाय-फाय</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">रोटेशन लॉक टॉगल करा. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="9017320285115481645">Family Link पालक ॲक्सेस कोड एंटर करा.</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
+<translation id="9047624247355796468"><ph name="NETWORK_NAME" /> साठी सेटिंग्ज उघडा</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>
 <translation id="9070640332319875144">असिस्टंट सेटिंग्ज</translation>
 <translation id="9072519059834302790">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ <ph name="TIME_LEFT" />.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">फुल-स्क्रीन मॅग्निफायर</translation>
 <translation id="9193626018745640770">एका अज्ञात मिळवणाऱ्यावर कास्ट करत आहे</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, तुमच्‍या ॲडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="9205817095063786319">डिव्हाइस <ph name="DOMAIN" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोडमधून बाहेर पडत आहे</translation>
 <translation id="9211681782751733685">बॅटरी पूर्णपणे चार्ज होण्यासाठी <ph name="TIME_REMAINING" /> तास बाकी.</translation>

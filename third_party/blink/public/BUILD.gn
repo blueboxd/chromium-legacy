@@ -317,6 +317,7 @@ source_set("blink_headers") {
     "web/mac/web_substring_util.h",
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/media/webmediaplayer_util.h",
+    "web/modules/mediastream/encoded_video_frame.h",
     "web/modules/mediastream/media_stream_video_sink.h",
     "web/modules/mediastream/media_stream_video_source.h",
     "web/modules/mediastream/media_stream_video_track.h",

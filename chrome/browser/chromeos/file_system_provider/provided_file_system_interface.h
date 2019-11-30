@@ -231,8 +231,7 @@ class ProvidedFileSystemInterface {
       bool recursive,
       bool persistent,
       storage::AsyncFileUtil::StatusCallback callback,
-      const storage::WatcherManager::NotificationCallback&
-          notification_callback) = 0;
+      storage::WatcherManager::NotificationCallback notification_callback) = 0;
 
   // Requests removing a watcher, which is immediately deleted from the internal
   // list, hence the operation is not abortable.

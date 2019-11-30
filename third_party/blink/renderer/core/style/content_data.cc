@@ -34,26 +34,6 @@
 
 namespace blink {
 
-ContentData* ContentData::Create(StyleImage* image) {
-  return MakeGarbageCollected<ImageContentData>(image);
-}
-
-ContentData* ContentData::Create(const String& text) {
-  return MakeGarbageCollected<TextContentData>(text);
-}
-
-ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
-  return MakeGarbageCollected<CounterContentData>(std::move(counter));
-}
-
-ContentData* ContentData::Create(QuoteType quote) {
-  return MakeGarbageCollected<QuoteContentData>(quote);
-}
-
-ContentData* ContentData::CreateAltText(const String& text) {
-  return MakeGarbageCollected<AltTextContentData>(text);
-}
-
 ContentData* ContentData::Clone() const {
   ContentData* result = CloneInternal();
 

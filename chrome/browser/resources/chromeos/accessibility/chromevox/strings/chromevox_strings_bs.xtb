@@ -463,6 +463,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="4204126831294769023">Azurna</translation>
 <translation id="4204864733111726379">Cvjetno bijela</translation>
 <translation id="4206289001967551965">U tabeli</translation>
+<translation id="4207770814752775793">Vratite postavke pretvaranja teksta u govor na zadane vrijednosti.</translation>
 <translation id="4209770650650780359">Pritisnite strelicu nagore ili nadolje za automatska popunjavanja.</translation>
 <translation id="4215733775853809057">Sljedeći klizač</translation>
 <translation id="42164919740161077">Sivkastoplava</translation>
@@ -766,6 +767,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="6290434000785343030">Nema sljedećeg kombiniranog okvira.</translation>
 <translation id="6305702903308659374">Reproduciraj pri normalnoj jačini zvuka kada ChromeVox govori</translation>
 <translation id="6307969636681130414">Pritisnuto</translation>
+<translation id="6315652249189065725">Otvara meni prečica na tastaturi</translation>
 <translation id="6322856989298155004">Zvukovi</translation>
 <translation id="6324551002951139333">Otkrivene su gramatičke greške</translation>
 <translation id="6325241889020214828">kopiraj <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{sat}one{sat}few{sata}other{sati}}</translation>
 <translation id="7674576868851035240">Sljedeći link</translation>
 <translation id="7674768236845044097">oznaka</translation>
+<translation id="7676847077928500578">Vraćanje postavki pretvaranja teksta u govor na zadano</translation>
 <translation id="7684431668231950609">Uređivanje teksta, unos URL-a</translation>
 <translation id="7685589220304187312">altrk</translation>
 <translation id="7693840228159394336">Prethodno dugme za izbor</translation>

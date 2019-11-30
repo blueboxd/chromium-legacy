@@ -21,6 +21,13 @@
 
 using content::WebUIMessageHandler;
 
+namespace {
+const GURL& DummyUrl() {
+  static GURL url(content::GetWebUIURLString("DummyURL"));
+  return url;
+}
+}  // namespace
+
 // According to the interface for EXPECT_FATAL_FAILURE
 // (https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#catching-failures)
 // the statement must be statically available. Therefore, we make a static
@@ -79,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, MAYBE_TestFailsFast) {
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest,
                        MAYBE_TestRuntimeErrorFailsFast) {
   AddLibrary(base::FilePath(FILE_PATH_LITERAL("runtime_error.js")));
-  ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
+  ui_test_utils::NavigateToURL(browser(), DummyUrl());
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("TestRuntimeErrorFailsFast"),
                        "GetAsBoolean(&run_test_succeeded_)");
 }
@@ -170,11 +177,11 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     return &message_handler_;
   }
 
-  // Set up and browse to kDummyURL for all tests.
+  // Set up and browse to DummyUrl() for all tests.
   void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("async.js")));
-    ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
+    ui_test_utils::NavigateToURL(browser(), DummyUrl());
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebUIBrowserAsyncTest);

@@ -15,6 +15,9 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.ChangeBounds;
+import android.transition.Transition;
+import android.transition.TransitionManager;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -44,6 +47,7 @@ import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -410,6 +414,14 @@ public class PickerCategoryView extends RelativeLayout
     }
 
     private void flipZoomMode() {
+        // Bitmap scaling is cumulative, so if an image is selected when we switch modes, it will
+        // become skewed when switching between full size and square modes because dimensions of the
+        // picture also change (from square to full width). We therefore un-select all items before
+        // starting the animation and then reselect them once animation has ended.
+        final HashSet<PickerBitmap> selectedItems =
+                new HashSet<>(mSelectionDelegate.getSelectedItems());
+        mSelectionDelegate.clearSelection();
+
         mMagnifyingMode = !mMagnifyingMode;
 
         ImageView zoom = findViewById(R.id.zoom);
@@ -420,6 +432,33 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         calculateGridMetrics();
+
+        mZoomSwitchingInEffect = true;
+
+        ChangeBounds transition = new ChangeBounds();
+        transition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {}
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                mZoomSwitchingInEffect = false;
+
+                // Redo selection when switching between modes to make it obvious what got selected.
+                mSelectionDelegate.setSelectedItems(selectedItems);
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {}
+
+            @Override
+            public void onTransitionPause(Transition transition) {}
+
+            @Override
+            public void onTransitionResume(Transition transition) {}
+        });
+
+        TransitionManager.beginDelayedTransition(mRecyclerView, transition);
 
         mLayoutManager.setSpanCount(mColumns);
         mPickerAdapter.notifyDataSetChanged();
@@ -442,6 +481,10 @@ public class PickerCategoryView extends RelativeLayout
 
     public boolean isInMagnifyingMode() {
         return mMagnifyingMode;
+    }
+
+    public boolean isZoomSwitchingInEffect() {
+        return mZoomSwitchingInEffect;
     }
 
     public SelectionDelegate<PickerBitmap> getSelectionDelegate() {

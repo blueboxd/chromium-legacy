@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -73,6 +73,11 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
 
   if (!IsClickToCallEnabled(browser_context))
     return base::nullopt;
+
+  if (base::FeatureList::IsEnabled(kClickToCallDetectionV2)) {
+    return ExtractPhoneNumber(selection_text,
+                              PhoneNumberRegexVariant::kLowConfidenceModified);
+  }
 
   return ExtractPhoneNumber(selection_text, PhoneNumberRegexVariant::kSimple);
 }

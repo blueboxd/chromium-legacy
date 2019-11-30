@@ -45,13 +45,13 @@ std::string TestDataSource::GetSource() {
 void TestDataSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&TestDataSource::ReadFile, base::Unretained(this), path,
-                     callback));
+                     std::move(callback)));
 }
 
 std::string TestDataSource::GetMimeType(const std::string& path) {
@@ -87,7 +87,7 @@ GURL TestDataSource::GetURLForPath(const std::string& path) {
 
 void TestDataSource::ReadFile(
     const std::string& path,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   std::string content;
 
   GURL url = GetURLForPath(path);
@@ -125,5 +125,5 @@ void TestDataSource::ReadFile(
 
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
-  callback.Run(response.get());
+  std::move(callback).Run(response.get());
 }

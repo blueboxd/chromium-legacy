@@ -312,6 +312,8 @@ jumbo_static_library("browser") {
     "component_updater/component_updater_utils.h",
     "component_updater/crl_set_component_installer.cc",
     "component_updater/crl_set_component_installer.h",
+    "component_updater/crowd_deny_component_installer.cc",
+    "component_updater/crowd_deny_component_installer.h",
     "component_updater/file_type_policies_component_installer.cc",
     "component_updater/file_type_policies_component_installer.h",
     "component_updater/games_component_installer.cc",
@@ -1170,6 +1172,8 @@ jumbo_static_library("browser") {
     "permissions/adaptive_notification_permission_ui_selector.h",
     "permissions/chooser_context_base.cc",
     "permissions/chooser_context_base.h",
+    "permissions/crowd_deny_preload_data.cc",
+    "permissions/crowd_deny_preload_data.h",
     "permissions/crowd_deny_safe_browsing_request.cc",
     "permissions/crowd_deny_safe_browsing_request.h",
     "permissions/permission_context_base.cc",
@@ -1941,6 +1945,7 @@ jumbo_static_library("browser") {
     ":buildflags",
     ":expired_flags_list",
     ":ntp_background_proto",
+    ":permissions_proto",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -3096,6 +3101,7 @@ jumbo_static_library("browser") {
       "enterprise_reporting/profile_report_generator.h",
       "enterprise_reporting/report_generator.cc",
       "enterprise_reporting/report_generator.h",
+      "enterprise_reporting/report_request_definition.h",
       "enterprise_reporting/report_request_queue_generator.cc",
       "enterprise_reporting/report_request_queue_generator.h",
       "enterprise_reporting/report_scheduler.cc",
@@ -3460,6 +3466,8 @@ jumbo_static_library("browser") {
       "serial/serial_chooser_context_factory.h",
       "sharing/click_to_call/click_to_call_context_menu_observer.cc",
       "sharing/click_to_call/click_to_call_context_menu_observer.h",
+      "sharing/click_to_call/click_to_call_metrics.cc",
+      "sharing/click_to_call/click_to_call_metrics.h",
       "sharing/click_to_call/click_to_call_ui_controller.cc",
       "sharing/click_to_call/click_to_call_ui_controller.h",
       "sharing/click_to_call/click_to_call_utils.cc",
@@ -5330,6 +5338,12 @@ proto_library("availability_protos") {
 proto_library("resource_prefetch_predictor_proto") {
   sources = [
     "predictors/resource_prefetch_predictor.proto",
+  ]
+}
+
+proto_library("permissions_proto") {
+  sources = [
+    "permissions/crowd_deny.proto",
   ]
 }
 

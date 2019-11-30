@@ -4630,10 +4630,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
-  registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
-      &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
-      base::Unretained(this)));
-
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
                           base::Unretained(this)));
@@ -6438,7 +6434,7 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       this, audio_system, media_stream_manager, std::move(receiver));
 }
 
-void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
+void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
     mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -39,7 +38,7 @@ static const int32_t kConnectionTypeInvalid = -1;
 }  // namespace
 
 NetworkConnectionTracker::NetworkConnectionTracker(BindingCallback callback)
-    : bind_request_callback_(callback),
+    : bind_receiver_callback_(callback),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
@@ -168,12 +167,10 @@ void NetworkConnectionTracker::Initialize() {
 
   // Get mojo::Remote<NetworkChangeManager>.
   mojo::Remote<network::mojom::NetworkChangeManager> manager_remote;
-  bind_request_callback_.Run(manager_remote.BindNewPipeAndPassReceiver());
+  bind_receiver_callback_.Run(manager_remote.BindNewPipeAndPassReceiver());
 
   // Request notification from mojo::Remote<NetworkChangeManager>.
-  mojo::PendingRemote<network::mojom::NetworkChangeManagerClient> client_remote;
-  receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
-  manager_remote->RequestNotifications(std::move(client_remote));
+  manager_remote->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
 
   // base::Unretained is safe as |receiver_| is owned by |this|.
   receiver_.set_disconnect_handler(base::BindRepeating(

@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">Ouvrir le lien dans <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accéder à vos appareils connectés par Bluetooth et en série</translation>
 <translation id="114036956334641753">Audio et sous-titres</translation>
-<translation id="1140610710803014750">Pour synchroniser vos favoris sur tous vos appareils, connectez-vous et activez la synchronisation.</translation>
 <translation id="1140746652461896221">Bloquer du contenu sur n'importe quelle page que vous consultez</translation>
 <translation id="1143142264369994168">Signataire du certificat</translation>
 <translation id="1145292499998999162">Plugiciel bloqué</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">C&amp;opier l'adresse de l'audio</translation>
 <translation id="1465827627707997754">Pointe de pizza</translation>
 <translation id="1468571364034902819">Impossible d'utiliser ce profil</translation>
-<translation id="1470811252759861213">Pour synchroniser vos extensions sur tous vos ordinateurs, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="1472675084647422956">Plus</translation>
 <translation id="1475502736924165259">Vous disposez de certificats qui n'appartiennent à aucune autre catégorie</translation>
 <translation id="1476088332184200792">Copier vers votre appareil</translation>
@@ -1045,7 +1043,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2489829450872380594">La prochaine fois, un nouveau téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans le menu Paramètres.</translation>
 <translation id="2489918096470125693">Ajouter un &amp;dossier...</translation>
 <translation id="2490481887078769936">« <ph name="FILE_NAME" /> » a été supprimé de la liste</translation>
-<translation id="2490782392574942205">Pour utiliser vos extensions sur tous vos ordinateurs, connectez-vous et activez la synchronisation</translation>
 <translation id="249113932447298600">Désolés, le périphérique <ph name="DEVICE_LABEL" /> n'est pas compatible pour le moment.</translation>
 <translation id="249303669840926644">Impossible de terminer l'enregistrement</translation>
 <translation id="2495777824269688114">Découvrez d'autres fonctions et obtenez des réponses. Sélectionnez « ? » pour obtenir de l'aide.</translation>
@@ -1756,7 +1753,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3528033729920178817">Cette page suit votre position géographique.</translation>
 <translation id="3528498924003805721">Cibles des raccourcis</translation>
-<translation id="3530305684079447434">Pour synchroniser vos favoris sur tous vos appareils, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="3532844647053365774">L'hôte <ph name="HOST" /> veut utiliser votre microphone</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Audio désactivé</translation>
 <translation id="3538066758857505094">Erreur lors de la désinstallation de Linux. Veuillez réessayer.</translation>

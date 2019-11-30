@@ -268,7 +268,6 @@
 <translation id="4689564913179979534">ຈັດການວິທີການຈ່າຍເງິນ...</translation>
 <translation id="473775607612524610">ອັບເດດ</translation>
 <translation id="4747097190499141774">ການເຂົ້າລະຫັດໂດຍໃຊ້ລະຫັດຜ່ານບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay. ມີແຕ່ຜູ້ທີ່ມີລະຫັດຜ່ານຂອງທ່ານເທົ່ານັ້ນທີ່ສາມາດອ່ານຂໍ້ມູນທີ່ເຂົ້າລະຫັດຂອງທ່ານໄດ້. ລະຫັດຜ່ານຈະບໍ່ຖືກສົ່ງຫາ ຫຼື ຮັກສາໄວ້ໂດຍ Google. ຖ້າທ່ານລືມລະຫັດຜ່ານຂອງທ່ານ ຫຼື ຕ້ອງການປ່ຽນການຕັ້ງຄ່ານີ້, ທ່ານຈະຈຳເປັນຕ້ອງຣີເຊັດການຊິ້ງຂໍ້ມູນກ່ອນ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">ຊອກຫາໃນໜ້າ...</translation>
 <translation id="4751645464639803239">ແຖບທີ່ບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
 <translation id="4758977202923349869">ຈັດຕຳແໜ່ງບັດເຄຣດິດໃຫ້ຢູ່ໃນຂອບນີ້</translation>
 <translation id="4802417911091824046">ການເຂົ້າລະຫັດໂດຍໃຊ້ລະຫັດຜ່ານບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay.
@@ -455,7 +454,6 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7136892417564438900">ກ້ອງຖ່າຍຮູບບໍ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="7159472599653637159">ຮ້ອງຂໍເວັບໄຊມືຖື</translation>
 <translation id="7173114856073700355">ເປີດການຕັ້ງຄ່າ</translation>
-<translation id="7189598951263744875">ແບ່ງປັນ...</translation>
 <translation id="7192050974311852563">ເລີ່ມການບັນທຶກ</translation>
 <translation id="7203585745079012652">ເວົ້າ​ຄຳ​ຕອບ​ກັບ​ຄືນ</translation>
 <translation id="7265758999917665941">ບໍ່ເລີຍສໍາລັບເວັບໄຊນີ້</translation>
@@ -559,6 +557,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8840513115188359703">ທ່ານຈະບໍ່ຖືກນຳອອກຈາກລະບົບບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="8870413625673593573">ປິດ​ບໍ່​ດົນ​ມາ​ນີ້</translation>
 <translation id="8881801611828450202">ຊອກຫາຮູບນີ້ໃນ <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">ແຊຣ໌...</translation>
 <translation id="895541991026785598">ລາຍ​ງານ​ບັນ​ຫາ</translation>
 <translation id="8976382372951310360">ຊ່ວຍເຫຼືອ</translation>
 <translation id="8981454092730389528">ການຄວບຄຸມກິດຈະກຳ Google</translation>

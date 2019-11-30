@@ -373,9 +373,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // If block-size is non-auto, subtract the space for content we've consumed in
   // previous fragments. This is necessary when we're nested inside another
   // fragmentation context.
-  if (is_constrained_by_outer_fragmentation_context_ &&
-      column_size.block_size != kIndefiniteSize) {
-    if (BreakToken())
+  if (column_size.block_size != kIndefiniteSize) {
+    if (BreakToken() && is_constrained_by_outer_fragmentation_context_)
       column_size.block_size -= BreakToken()->ConsumedBlockSize();
 
     // Subtract the space already taken in the current fragment (spanners and

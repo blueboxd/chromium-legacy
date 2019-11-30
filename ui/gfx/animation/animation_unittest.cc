@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -9,6 +10,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
+#include "ui/gfx/switches.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -156,6 +158,20 @@ TEST_F(AnimationTest, StartState) {
   EXPECT_EQ(1.0, animation.GetCurrentValue());
   animation.Start();
   EXPECT_EQ(0.0, animation.GetCurrentValue());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PrefersReducedMotion tests
+
+TEST_F(AnimationTest, PrefersReducedMotionRespectsOverrideFlag) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kForcePrefersReducedMotion, "1");
+  EXPECT_TRUE(Animation::PrefersReducedMotion());
+
+  // It doesn't matter what the system setting says; the flag should continue to
+  // override it.
+  Animation::SetPrefersReducedMotionForTesting(false);
+  EXPECT_TRUE(Animation::PrefersReducedMotion());
 }
 
 }  // namespace gfx

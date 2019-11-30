@@ -48,13 +48,13 @@ int TracingManager::RequestTrace() {
   return current_trace_id_;
 }
 
-bool TracingManager::GetTraceData(int id, const TraceDataCallback& callback) {
+bool TracingManager::GetTraceData(int id, TraceDataCallback callback) {
   // If a trace is being collected currently, send it via callback when
   // complete.
   if (current_trace_id_) {
     // Only allow one trace data request at a time.
-    if (trace_callback_.is_null()) {
-      trace_callback_ = callback;
+    if (!trace_callback_) {
+      trace_callback_ = std::move(callback);
       return true;
     } else {
       return false;
@@ -66,7 +66,7 @@ bool TracingManager::GetTraceData(int id, const TraceDataCallback& callback) {
 
     // Always return the data asychronously, so the behavior is consistant.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, data->second));
+        FROM_HERE, base::BindOnce(std::move(callback), data->second));
     return true;
   }
 }
@@ -79,10 +79,8 @@ void TracingManager::DiscardTraceData(int id) {
     current_trace_id_ = 0;
 
     // If the trace has already been requested, provide an empty string.
-    if (!trace_callback_.is_null()) {
-      trace_callback_.Run(scoped_refptr<base::RefCountedString>());
-      trace_callback_.Reset();
-    }
+    if (trace_callback_)
+      std::move(trace_callback_).Run(scoped_refptr<base::RefCountedString>());
   }
 }
 
@@ -106,10 +104,8 @@ void TracingManager::OnTraceDataCollected(
 
   trace_data_[current_trace_id_] = output;
 
-  if (!trace_callback_.is_null()) {
-    trace_callback_.Run(output);
-    trace_callback_.Reset();
-  }
+  if (trace_callback_)
+    std::move(trace_callback_).Run(output);
 
   current_trace_id_ = 0;
 

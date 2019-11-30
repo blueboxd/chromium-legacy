@@ -6,10 +6,10 @@
 <translation id="1015730422737071372">Forneça detalhes adicionais</translation>
 <translation id="1021110881106174305">Cartões aceitos</translation>
 <translation id="1032854598605920125">Girar no sentido horário</translation>
-<translation id="1035334672863811645">fazer login no Chrome</translation>
 <translation id="1036348656032585052">Desativar</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
 <translation id="1039626062703039346">No Chrome, você pode receber ajuda para proteger sua Conta do Google e alterar sua senha. Essa ação notificará o Google sobre este site.</translation>
+<translation id="1044897699341250361">O que isso significa</translation>
 <translation id="1050038467049342496">Fechar outros apps</translation>
 <translation id="1055184225775184556">&amp;Desfazer adicionar</translation>
 <translation id="1056898198331236512">Aviso</translation>
@@ -184,6 +184,7 @@
 <translation id="1745880797583122200">Seu navegador é gerenciado</translation>
 <translation id="17513872634828108">Guias abertas</translation>
 <translation id="1753706481035618306">Numero da página</translation>
+<translation id="175838129965056221">O Chrome detectou que sua conexão está sendo monitorada</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Rede do Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +253,7 @@
 <translation id="2119867082804433120">Perfuração na parte inferior direita</translation>
 <translation id="2129079103035905234">Sensores de movimento</translation>
 <translation id="2130448033692577677">Os modelos que você especificou podem não ser aplicados, porque a política DnsOverHttpsMode não foi definida.</translation>
+<translation id="2131277894177304644">O Chromium detectou que sua conexão está sendo monitorada</translation>
 <translation id="213826338245044447">Favoritos nos dispositivos móveis</translation>
 <translation id="214556005048008348">Cancelar pagamento</translation>
 <translation id="2147827593068025794">Sincronização em segundo plano</translation>
@@ -299,6 +301,7 @@
 <translation id="2354001756790975382">Outros favoritos</translation>
 <translation id="2354430244986887761">Recentemente, o recurso "Navegação segura" do Google <ph name="BEGIN_LINK" />encontrou apps prejudiciais<ph name="END_LINK" /> em <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">É possível que invasores consigam ver as imagens que você está olhando nesse site e as modifiquem para enganar você.</translation>
+<translation id="2355474962185559967">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chromium, acesse <ph name="WEBSITE_1" /> para mudar a senha imediatamente.</translation>
 <translation id="2356070529366658676">Perguntar</translation>
 <translation id="2359629602545592467">Várias</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -392,6 +395,7 @@
 <translation id="2799020568854403057">O site a seguir contém apps prejudiciais</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2803306138276472711">A Navegação segura do Google recentemente <ph name="BEGIN_LINK" />detectou malware<ph name="END_LINK" /> em <ph name="SITE" />. Websites que geralmente são seguros, algumas vezes, são infetados com malware.</translation>
+<translation id="281585763351939989">O Chromium detectou que sua conexão está sendo monitorada.</translation>
 <translation id="2824775600643448204">Barra de endereço e de pesquisa</translation>
 <translation id="2826760142808435982">A conexão foi criptografada e autenticada utilizando <ph name="CIPHER" /> e usa <ph name="KX" /> como o mecanismo de troca de chave.</translation>
 <translation id="2835170189407361413">Limpar formulário</translation>
@@ -436,6 +440,7 @@
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
+<translation id="304755864151473094">Por que isso está acontecendo</translation>
 <translation id="3057676462092457419">O modo DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> ainda não é compatível, o modo foi definido como <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Aplicar patch ao serviço</translation>
@@ -475,6 +480,7 @@
 <translation id="3228969707346345236">A tradução falhou porque a página já está em <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Informações sobre a versão do seu dispositivo e navegador</translation>
 <translation id="323107829343500871">Digite o CVC do <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chromium, acesse <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /> para mudar a senha imediatamente.</translation>
 <translation id="3234666976984236645">Sempre detectar conteúdo importante neste site</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> é semelhante a <ph name="SUGGESTED_DOMAIN" />. Às vezes, os invasores imitam sites, usando URLs parecidos.</translation>
 <translation id="3270847123878663523">&amp;Desfazer reordenar</translation>
@@ -507,6 +513,7 @@
 <translation id="342781501876943858">O Chromium recomenda redefinir sua senha se você a reutilizou em outros sites.</translation>
 <translation id="3428151540071562330">Um ou mais dos URIs de modelo de servidor da DnsOverHttpsTemplates é inválido e não será usado.</translation>
 <translation id="3431636764301398940">Salvar este cartão neste dispositivo</translation>
+<translation id="3438790640050632698">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chrome, acesse <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /> para mudar a senha imediatamente.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">O proprietário deste dispositivo desativou o jogo do dinossauro.</translation>
 <translation id="3447884698081792621">Mostrar certificado (emitido por <ph name="ISSUER" />)</translation>
@@ -521,6 +528,7 @@
 <translation id="3495081129428749620">Encontrar na página
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Esta política é ignorada porque outra política do mesmo grupo tem uma prioridade mais alta.</translation>
+<translation id="3525469219100414032">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chrome, acesse <ph name="WEBSITE_1" /> para mudar a senha imediatamente.</translation>
 <translation id="3528171143076753409">O certificado do servidor não é confiável.</translation>
 <translation id="3528485271872257980">Marrom-escuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}one{# item (e mais em dispositivos sincronizados)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
@@ -594,6 +602,7 @@
 <translation id="3858027520442213535">Atualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
 <translation id="3885155851504623709">Município</translation>
+<translation id="388632593194507180">Monitoramento detectado</translation>
 <translation id="3890664840433101773">Adicionar e-mail</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
@@ -695,6 +704,7 @@
 <translation id="4305817255990598646">Alternar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
+<translation id="4318312030194671742">Serviço de criação para visualizações de pintura</translation>
 <translation id="4318566738941496689">O nome do seu dispositivo e o endereço da rede</translation>
 <translation id="4325863107915753736">Falha ao encontrar artigo</translation>
 <translation id="4326324639298822553">Verifique a data de validade e tente novamente</translation>
@@ -711,6 +721,7 @@
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Você tentou acessar <ph name="DOMAIN" />, mas o certificado que o servidor apresentou foi revogado pelo seu emissor. Isso significa que as credenciais de segurança que o servidor apresentou não são nem um pouco seguras. Talvez você esteja se comunicando com um invasor.</translation>
 <translation id="4378154925671717803">Telefone</translation>
+<translation id="437847259914972036">Toda a sua atividade na Web e as informações que você disponibiliza estão sendo monitoradas, e o conteúdo pode mudar sem seu conhecimento.</translation>
 <translation id="4398334096870680409">Esse recurso não está disponível no seu dispositivo.</translation>
 <translation id="4406896451731180161">resultados da pesquisa</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
@@ -750,7 +761,7 @@
 <translation id="4594403342090139922">&amp;Desfazer exclusão</translation>
 <translation id="4597348597567598915">Tamanho 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4613966523036881546">O certificado dessa conexão não é confiável para o Chrome, porque é conhecido por ser usado para monitoramento e intercepção de rede.</translation>
+<translation id="4613966523036881546">O certificado dessa conexão não é confiável para o Chrome, porque é conhecido por ser usado para monitoramento e interceptação de rede.</translation>
 <translation id="4635654612248442824">O site <ph name="ORIGIN" /> solicitou que uma política de origem seja aplicada a todas as solicitações, mas ela não pode ser aplicada no momento.</translation>
 <translation id="464342062220857295">Recursos de pesquisa</translation>
 <translation id="4646534391647090355">Acessar agora</translation>
@@ -908,7 +919,6 @@
 <translation id="536296301121032821">Falha ao armazenar as configurações da política</translation>
 <translation id="5371425731340848620">Atualizar cartão</translation>
 <translation id="5377026284221673050">"Seu relógio está atrasado", "Seu relógio está adiantado" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Para usar seus cartões em todos os dispositivos, faça login e ative a sincronização.</translation>
 <translation id="5386426401304769735">A cadeia de certificados desse site contém um certificado assinado usando SHA-1.</translation>
 <translation id="538659543871111977">A4 Tab</translation>
 <translation id="5396631636586785122">Costura no lado direito</translation>
@@ -946,6 +956,7 @@
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="5570825185877910964">Proteger conta</translation>
 <translation id="5571083550517324815">Não é possível fazer a retirada nesse endereço. Tente um endereço diferente.</translation>
+<translation id="5572009199897554128">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chromium, acesse <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /> para mudar a senha imediatamente.</translation>
 <translation id="5580958916614886209">Verifique o mês de validade e tente novamente</translation>
 <translation id="5586446728396275693">Nenhum endereço salvo</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
@@ -1128,6 +1139,7 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="644931407731409778">Documento em PDF contendo {COUNT,plural, =1{1 página}one{# página}other{# páginas}}</translation>
 <translation id="6451458296329894277">Confirmar reenvio do formulário</translation>
 <translation id="6457206614190510200">Grampo canoa</translation>
 <translation id="6465306955648956876">Gerenciar senhas…</translation>
@@ -1146,6 +1158,7 @@
 <translation id="6547208576736763147">Perfuração dupla no lado esquerdo</translation>
 <translation id="6554795675067793129">Sua conta é gerenciada por <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Refazer</translation>
+<translation id="6559565319173126218">O certificado apresentado para essa conexão não é confiável para o Chrome, porque é conhecido por ser usado para monitoramento e interceptação de rede.</translation>
 <translation id="6569060085658103619">Você está vendo uma página de extensões</translation>
 <translation id="6573200754375280815">Perfuração dupla no lado direito</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1179,6 +1192,7 @@
 <translation id="6710594484020273272">&lt;Digitar termo de pesquisa&gt;</translation>
 <translation id="671076103358959139">Token de inscrição:</translation>
 <translation id="6711464428925977395">Há algo errado com o servidor proxy, ou o endereço está incorreto.</translation>
+<translation id="6721811549156553509">O monitor de rede pode fingir ser os sites que você visita e pode ver toda a sua atividade, assim como as informações que você disponibilizar (como senhas, mensagens ou cartões de crédito). Você precisa tomar cuidado quando fizer qualquer atividade confidencial on-line, uma vez que ela ficará visível para o monitor de rede, que poderá mudar o conteúdo das páginas que você visita. Isso inclui atividades em outros navegadores e programas que acessam a Internet.</translation>
 <translation id="6738516213925468394">Seus dados foram criptografados com sua <ph name="BEGIN_LINK" />senha longa de sincronização<ph name="END_LINK" /> em <ph name="TIME" />. Digite-a para iniciar a sincronização.</translation>
 <translation id="674375294223700098">Erro, certificado de servidor desconhecido.</translation>
 <translation id="6744009308914054259">Enquanto espera por uma conexão, acesse "Downloads" para ler artigos off-line.</translation>
@@ -1263,6 +1277,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">A conexão usa a <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processando</translation>
+<translation id="7239736667463137521">O Chrome detectou que sua conexão está sendo monitorada.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />, <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">O site a seguir contém malware</translation>
 <translation id="724975217298816891">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois da confirmação, os detalhes do cartão serão compartilhados com esse site.</translation>
@@ -1289,6 +1304,7 @@ Mais detalhes:
 <translation id="7346048084945669753">O usuário é afiliado:</translation>
 <translation id="7349430561505560861">A4 Extra</translation>
 <translation id="7353601530677266744">Linha de comando</translation>
+<translation id="7353776484425559055">O certificado dessa conexão não é confiável para o Chromium, porque é conhecido por ser usado para monitoramento e interceptação de rede. É possível que este erro esteja aparecendo por causa de um certificado que você instalou no dispositivo. Ao fazer conexões seguras, o Chromium confia em certificados que foram instalados localmente em um computador ou dispositivo móvel do usuário. Isso permite que os usuários usem ferramentas para inspecionar e depurar as conexões durante o desenvolvimento de sites, ou que ambientes corporativos interceptem e monitorem o tráfego interno. Para casos em que isso esteja sendo abusado para interceptar tráfego na Internet pública, o Chromium exibe um aviso.</translation>
 <translation id="7372973238305370288">resultado da pesquisa</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controles de mídia</translation>
@@ -1350,6 +1366,7 @@ Mais detalhes:
 <translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> não consegue atender a esta solicitação no momento.</translation>
+<translation id="7599841999395223597">O certificado dessa conexão não é confiável para o Chrome, porque é conhecido por ser usado para monitoramento e interceptação de rede. É possível que este erro esteja aparecendo por causa de um certificado que você instalou no dispositivo. Ao estabelecer conexões seguras, o Chrome confia em certificados que foram instalados localmente no computador ou dispositivo móvel de um usuário. Isso permite que os usuários usem ferramentas para inspecionar e depurar as conexões durante o desenvolvimento de sites, ou que ambientes corporativos interceptem e monitorem o tráfego interno. Para casos em que isso esteja sendo abusado para interceptar tráfego na Internet pública, o Chrome exibe um aviso.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">O valor não corresponde ao período <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Data de expiração: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1459,7 +1476,7 @@ Mais detalhes:
 <translation id="8103161714697287722">Forma de Pagamento</translation>
 <translation id="8105368624971345109">Desativar</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
-<translation id="8124023448510659215">O certificado dessa conexão não é confiável para o Chromium, porque é conhecido por ser usado para monitoramento e intercepção de rede.</translation>
+<translation id="8124023448510659215">O certificado dessa conexão não é confiável para o Chromium, porque é conhecido por ser usado para monitoramento e interceptação de rede.</translation>
 <translation id="8127301229239896662">O software "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI para resolver o problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">Seu computador entrou em modo de suspensão.</translation>
@@ -1570,7 +1587,6 @@ Mais detalhes:
 <translation id="8759274551635299824">Este cartão expirou</translation>
 <translation id="8761567432415473239">Recentemente, a Navegação Segura do Google <ph name="BEGIN_LINK" />encontrou programas nocivos<ph name="END_LINK" /> no site <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
-<translation id="8768895707659403558">Para usar seus cartões em todos os dispositivos, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
 <translation id="8792621596287649091">Você pode perder o acesso à sua conta de <ph name="ORG_NAME" /> ou ter sua identidade roubada. O Chromium recomenda que sua senha seja alterada agora.</translation>
@@ -1669,6 +1685,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="936474030629450166">Super B</translation>
 <translation id="936602727769022409">Você pode perder o acesso à sua Conta do Google. O Chromium recomenda que sua senha seja alterada agora. Solicitaremos que você faça login.</translation>
 <translation id="939736085109172342">Nova pasta</translation>
+<translation id="940786960229275114">Você acabou de digitar sua senha em um site suspeito. Por recomendação do Chrome, acesse <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /> para mudar a senha imediatamente.</translation>
 <translation id="945855313015696284">Verifique as informações abaixo e exclua todos os cartões inválidos</translation>
 <translation id="950736567201356821">Perfuração tripla na parte superior</translation>
 <translation id="951104842009476243">Cartões de débito e pré-pagos aceitos</translation>

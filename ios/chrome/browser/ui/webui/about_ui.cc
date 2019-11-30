@@ -38,14 +38,13 @@ class AboutUIHTMLSource : public web::URLDataSourceIOS {
   std::string GetSource() const override;
   void StartDataRequest(
       const std::string& path,
-      const web::URLDataSourceIOS::GotDataCallback& callback) override;
+      web::URLDataSourceIOS::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) const override;
   bool ShouldDenyXFrameOptions() const override;
 
   // Send the response data.
-  void FinishDataRequest(
-      const std::string& html,
-      const web::URLDataSourceIOS::GotDataCallback& callback);
+  void FinishDataRequest(const std::string& html,
+                         web::URLDataSourceIOS::GotDataCallback callback);
 
  private:
   ~AboutUIHTMLSource() override;
@@ -112,7 +111,7 @@ std::string AboutUIHTMLSource::GetSource() const {
 
 void AboutUIHTMLSource::StartDataRequest(
     const std::string& path,
-    const web::URLDataSourceIOS::GotDataCallback& callback) {
+    web::URLDataSourceIOS::GotDataCallback callback) {
   std::string response;
   // Add your data source here, in alphabetical order.
   if (source_name_ == kChromeUIChromeURLsHost) {
@@ -131,14 +130,14 @@ void AboutUIHTMLSource::StartDataRequest(
     base::StatisticsRecorder::WriteHTMLGraph("", &response);
   }
 
-  FinishDataRequest(response, callback);
+  FinishDataRequest(response, std::move(callback));
 }
 
 void AboutUIHTMLSource::FinishDataRequest(
     const std::string& html,
-    const web::URLDataSourceIOS::GotDataCallback& callback) {
+    web::URLDataSourceIOS::GotDataCallback callback) {
   std::string html_copy(html);
-  callback.Run(base::RefCountedString::TakeString(&html_copy));
+  std::move(callback).Run(base::RefCountedString::TakeString(&html_copy));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {

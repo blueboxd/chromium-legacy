@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Proporciona más detalles</translation>
 <translation id="1021110881106174305">Tarjetas aceptadas</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
-<translation id="1035334672863811645">acceder a Chrome</translation>
 <translation id="1036348656032585052">Desactivar</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
 <translation id="1039626062703039346">Chrome puede ayudarte a proteger tu Cuenta de Google y cambiar tu contraseña. Esta acción enviará una notificación a Google sobre este sitio.</translation>
@@ -923,7 +922,6 @@
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
 <translation id="5371425731340848620">Actualizar tarjeta</translation>
 <translation id="5377026284221673050">"El reloj está atrasado", "El reloj está adelantado" o "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Para usar tus tarjetas en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
 <translation id="5386426401304769735">La cadena del certificado de este sitio web contiene un certificado que se firmó con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Costura de borde a la derecha</translation>
@@ -1585,7 +1583,6 @@ Detalles adicionales:
 <translation id="8759274551635299824">La tarjeta está vencida</translation>
 <translation id="8761567432415473239">La navegación segura de Google <ph name="BEGIN_LINK" />encontró programas peligrosos<ph name="END_LINK" /> recientemente en <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
-<translation id="8768895707659403558">Para usar tus tarjetas en todos los dispositivos, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>
 <translation id="8792621596287649091">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chromium te recomienda que cambies la contraseña ahora.</translation>

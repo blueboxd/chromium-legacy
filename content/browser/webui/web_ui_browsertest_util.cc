@@ -30,11 +30,11 @@ namespace content {
 namespace {
 
 void GetResource(const std::string& id,
-                 const WebUIDataSource::GotDataCallback& callback) {
+                 WebUIDataSource::GotDataCallback callback) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   if (id == "error") {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -46,7 +46,7 @@ void GetResource(const std::string& id,
 
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
-  callback.Run(ref_contents);
+  std::move(callback).Run(ref_contents);
 }
 
 struct WebUIControllerConfig {

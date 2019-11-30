@@ -103,11 +103,17 @@ class MockInstanceID : public InstanceID {
                     const std::map<std::string, std::string>& options,
                     std::set<Flags> flags,
                     GetTokenCallback& callback));
-  MOCK_METHOD4(ValidateToken,
+  void ValidateToken(const std::string& authorized_entity,
+                     const std::string& scope,
+                     const std::string& token,
+                     ValidateTokenCallback callback) override {
+    ValidateToken_(authorized_entity, scope, token, callback);
+  }
+  MOCK_METHOD4(ValidateToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::string& token,
-                    const ValidateTokenCallback& callback));
+                    ValidateTokenCallback& callback));
 
  protected:
   void DeleteTokenImpl(const std::string& authorized_entity,

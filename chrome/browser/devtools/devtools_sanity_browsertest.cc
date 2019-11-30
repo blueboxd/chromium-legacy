@@ -2154,9 +2154,9 @@ class StaticURLDataSource : public content::URLDataSource {
   std::string GetSource() override { return source_; }
   void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
-                        const GotDataCallback& callback) override {
+                        GotDataCallback callback) override {
     std::string data(content_);
-    callback.Run(base::RefCountedString::TakeString(&data));
+    std::move(callback).Run(base::RefCountedString::TakeString(&data));
   }
   std::string GetMimeType(const std::string& path) override {
     return "text/html";

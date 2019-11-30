@@ -183,7 +183,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
   bool HandleExternalProtocol(
       const GURL& url,
-      content::WebContents::Getter web_contents_getter,
+      content::WebContents::OnceGetter web_contents_getter,
       int child_id,
       content::NavigationUIData* navigation_data,
       bool is_main_frame,

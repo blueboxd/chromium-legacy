@@ -15,6 +15,7 @@
 <translation id="1110022065703191351">Aikoni</translation>
 <translation id="1111673857033749125">Alamisho zilizohifadhiwa katika vifaa vyako vingine zitaonekana hapa.</translation>
 <translation id="1113597929977215864">Onyesha mwonekano rahisi</translation>
+<translation id="1122278879166832009">Gusa hapa ili ufikie ukurasa wako wa kwanza ukitumia kifaa chochote</translation>
 <translation id="1124772482545689468">Mtumiaji</translation>
 <translation id="1129510026454351943">Maelezo: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Inasubiri kupakua faili 1.}other{Inasubiri kupakua faili #.}}</translation>
@@ -379,6 +380,7 @@
 <translation id="3822502789641063741">Ungependa kufuta hifadhi ya tovuti?</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3859306556332390985">Peleka mbele</translation>
+<translation id="388596076286380598">Pata makala, video na maudhui mengine kutoka tovuti unazopenda, hata ikiwa uko nje ya mtandao au muunganisho wako ni duni.</translation>
 <translation id="3894427358181296146">Ongeza folda</translation>
 <translation id="3895926599014793903">Lazimisha kuwasha ukuzaji</translation>
 <translation id="3912508018559818924">Inatafuta maudhui bora zaidi kwenye wavuti…</translation>
@@ -490,6 +492,7 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="4719927025381752090">Jitolee kutafsiri</translation>
 <translation id="4720023427747327413">Fungua katika <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Tusaidie kuboresha Chrome.<ph name="BEGIN_LINK" />Shiriki katika utafiti<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Kiondoaji cha Rafu</translation>
 <translation id="473775607612524610">Sasisha</translation>
 <translation id="4738836084190194332">Kilisawazishwa mara ya mwisho: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Fungua kichupo kipya</translation>
@@ -636,6 +639,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
 <translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5689516760719285838">Mahali</translation>
+<translation id="5694049548840660018">Rudi kwenye ukurasa wa kwanza kwa urahisi</translation>
 <translation id="569536719314091526">Tafsiri ukurasa huu katika lugha yoyote kutoka kitufe cha Chaguo zaidi</translation>
 <translation id="5710871682236653961">Uliza kabla ya kuruhusu tovuti kutuma na kupokea maelezo unapogusa vifaa vya NFC (inapendekezwa)</translation>
 <translation id="572328651809341494">Vichupo vya hivi majuzi</translation>
@@ -798,6 +802,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6850830437481525139">Vichupo <ph name="TAB_COUNT" /> vimefungwa</translation>
 <translation id="6864459304226931083">Pakua picha</translation>
 <translation id="6865313869410766144">Data ya fomu ya Kujaza Kiotomatiki</translation>
+<translation id="6884306546558072722">Endelea kupitia ukiwa nje ya mtandao</translation>
 <translation id="688738109438487280">Ongeza data iliyopo kwenye <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Fungua ili unakili nenosiri lako</translation>
 <translation id="6896758677409633944">Nakili</translation>
@@ -1038,6 +1043,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8636825310635137004">Ili upate vichupo kutoka kwenye vifaa vyako vingine, washa kipengele cha usawazishaji.</translation>
 <translation id="8641930654639604085">Jaribu kuzuia tovuti zilizo na maudhui ya watu wazima</translation>
 <translation id="8655129584991699539">Unaweza kufuta data hii katika Mipangilio ya Chrome</translation>
+<translation id="8655599981421006542">Gusa hapa ili utengeneze vichupo vipya na urudi kwenye vichupo vya awali</translation>
 <translation id="8662811608048051533">Hukuondoa kwenye tovuti nyingi.</translation>
 <translation id="8664979001105139458">Jina la faili tayari lipo</translation>
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
@@ -1050,6 +1056,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8730621377337864115">Nimemaliza</translation>
 <translation id="8748850008226585750">Maudhui yamefichwa</translation>
 <translation id="8751914237388039244">Chagua picha</translation>
+<translation id="8758557275681689734">Angalia vichupo vyote ulivyofungua</translation>
 <translation id="8788265440806329501">Historia ya uelekezaji imezimwa</translation>
 <translation id="8788968922598763114">Fungua tena kichupo kilichofungwa mwisho</translation>
 <translation id="8801436777607969138">Zuia JavaScript katika tovuti mahususi.</translation>

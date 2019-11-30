@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
 <translation id="1021110881106174305">البطاقات المقبولة</translation>
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
-<translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="1036348656032585052">إيقاف</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
 <translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا الإجراء إلى إشعار Google بموقع الويب هذا.</translation>
@@ -924,7 +923,6 @@
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
 <translation id="5371425731340848620">تحديث البطاقة</translation>
 <translation id="5377026284221673050">‏""توقيت ساعتك متأخِّر" أو "توقيت ساعتك متقدِّم" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">لاستخدام بطاقاتك على جميع الأجهزة، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="5386426401304769735">‏تتضمن سلسلة الشهادات لهذا الموقع شهادة موقعة باستخدام SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">خزم الحواف يمينًا</translation>
@@ -1586,7 +1584,6 @@
 <translation id="8759274551635299824">هذه البطاقة منتهية الصلاحية</translation>
 <translation id="8761567432415473239">‏عثر ‏‫التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />على برامج ضارة<ph name="END_LINK" /> في <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">‏جهاز USB</translation>
-<translation id="8768895707659403558">لاستخدام بطاقاتك على جميع أجهزتك، <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
 <translation id="8792621596287649091">‏قد تفقد إمكانية الوصول إلى حسابك على <ph name="ORG_NAME" /> أو تتعرض لسرقة هويتك. لذا يوصي Chromium بتغيير كلمة مرورك الآن.</translation>

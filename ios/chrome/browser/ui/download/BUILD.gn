@@ -50,7 +50,6 @@ source_set("download") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ios/web:core",
     "//net",

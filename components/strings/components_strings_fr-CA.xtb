@@ -6,7 +6,6 @@
 <translation id="1015730422737071372">Fournir des détails supplémentaires</translation>
 <translation id="1021110881106174305">Cartes acceptées</translation>
 <translation id="1032854598605920125">Faire pivoter dans le sens horaire</translation>
-<translation id="1035334672863811645">se connecter à Google Chrome</translation>
 <translation id="1036348656032585052">Désactiver</translation>
 <translation id="1038842779957582377">nom inconnu</translation>
 <translation id="1039626062703039346">Chrome peut vous aider à protéger votre compte Google et à changer votre mot de passe. Cette action enverra une notification concernant ce site à Google.</translation>
@@ -908,7 +907,6 @@
 <translation id="536296301121032821">Échec de stockage des paramètres de la règle</translation>
 <translation id="5371425731340848620">Mettre à jour la carte</translation>
 <translation id="5377026284221673050">« Votre horloge est en retard », « Votre horloge est en avance » ou « &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt; »</translation>
-<translation id="5384855140246857529">Pour utiliser vos cartes sur tous vos appareils, connectez-vous et activez la synchronisation.</translation>
 <translation id="5386426401304769735">La chaîne de certificat pour ce site contient un certificat qui a été signé avec SHA-1.</translation>
 <translation id="538659543871111977">A4 à onglet</translation>
 <translation id="5396631636586785122">Agrafage par le bord droit</translation>
@@ -1569,7 +1567,6 @@ Détails supplémentaires :
 <translation id="8759274551635299824">Cette carte a expiré</translation>
 <translation id="8761567432415473239">La navigation sécurisée de Google a récemment <ph name="BEGIN_LINK" />détecté des programmes malveillants<ph name="END_LINK" /> sur <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Appareil USB</translation>
-<translation id="8768895707659403558">Pour utiliser vos cartes sur tous vos appareils, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8792621596287649091">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'un vol d'identité. Chromium recommande de modifier votre mot de passe maintenant.</translation>

@@ -65,24 +65,21 @@ void ParseQueryParams(const std::string& path,
 
 }  // namespace
 
-FileIconSource::IconRequestDetails::IconRequestDetails() : scale_factor(1.0f) {
-}
-
+FileIconSource::IconRequestDetails::IconRequestDetails() = default;
 FileIconSource::IconRequestDetails::IconRequestDetails(
-    const IconRequestDetails& other) = default;
+    IconRequestDetails&& other) = default;
+FileIconSource::IconRequestDetails& FileIconSource::IconRequestDetails::
+operator=(IconRequestDetails&& other) = default;
+FileIconSource::IconRequestDetails::~IconRequestDetails() = default;
 
-FileIconSource::IconRequestDetails::~IconRequestDetails() {
-}
-
-FileIconSource::FileIconSource() {}
-
-FileIconSource::~FileIconSource() {}
+FileIconSource::FileIconSource() = default;
+FileIconSource::~FileIconSource() = default;
 
 void FileIconSource::FetchFileIcon(
     const base::FilePath& path,
     float scale_factor,
     IconLoader::IconSize icon_size,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   IconManager* im = g_browser_process->icon_manager();
   gfx::Image* icon = im->LookupIconFromFilepath(path, icon_size);
 
@@ -92,18 +89,17 @@ void FileIconSource::FetchFileIcon(
         icon->ToImageSkia()->GetRepresentation(scale_factor).GetBitmap(), false,
         &icon_data->data());
 
-    callback.Run(icon_data.get());
+    std::move(callback).Run(icon_data.get());
   } else {
     // Attach the ChromeURLDataManager request ID to the history request.
     IconRequestDetails details;
-    details.callback = callback;
+    details.callback = std::move(callback);
     details.scale_factor = scale_factor;
 
     // Icon was not in cache, go fetch it slowly.
-    im->LoadIcon(path,
-                 icon_size,
-                 base::Bind(&FileIconSource::OnFileIconDataAvailable,
-                            base::Unretained(this), details),
+    im->LoadIcon(path, icon_size,
+                 base::BindOnce(&FileIconSource::OnFileIconDataAvailable,
+                                base::Unretained(this), std::move(details)),
                  &cancelable_task_tracker_);
   }
 }
@@ -115,14 +111,14 @@ std::string FileIconSource::GetSource() {
 void FileIconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   base::FilePath file_path;
   IconLoader::IconSize icon_size = IconLoader::NORMAL;
   float scale_factor = 1.0f;
   // TODO(crbug/1009127): Make ParseQueryParams take GURL.
   ParseQueryParams(path, &file_path, &scale_factor, &icon_size);
-  FetchFileIcon(file_path, scale_factor, icon_size, callback);
+  FetchFileIcon(file_path, scale_factor, icon_size, std::move(callback));
 }
 
 std::string FileIconSource::GetMimeType(const std::string&) {
@@ -134,7 +130,7 @@ bool FileIconSource::AllowCaching() {
   return false;
 }
 
-void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
+void FileIconSource::OnFileIconDataAvailable(IconRequestDetails details,
                                              gfx::Image icon) {
   if (!icon.IsEmpty()) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
@@ -142,9 +138,9 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
         icon.ToImageSkia()->GetRepresentation(details.scale_factor).GetBitmap(),
         false, &icon_data->data());
 
-    details.callback.Run(icon_data.get());
+    std::move(details.callback).Run(icon_data.get());
   } else {
     // TODO(glen): send a dummy icon.
-    details.callback.Run(nullptr);
+    std::move(details.callback).Run(nullptr);
   }
 }

@@ -184,7 +184,7 @@ void StartURLLoader(
   // request_start response_start
 
   WebContents::Getter wc_getter =
-      base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
+      base::BindRepeating(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
   bool replace_in_js =
       source->source()->ShouldReplaceI18nInJS() &&
@@ -197,9 +197,9 @@ void StartURLLoader(
   // To keep the same behavior as the old WebUI code, we call the source to get
   // the value for |replacements| on the IO thread. Since |replacements| is
   // owned by |source| keep a reference to it in the callback.
-  auto data_available_callback =
-      base::Bind(DataAvailable, resource_response, replacements, replace_in_js,
-                 base::RetainedRef(source), base::Passed(&client_remote));
+  URLDataSource::GotDataCallback data_available_callback = base::BindOnce(
+      DataAvailable, resource_response, replacements, replace_in_js,
+      base::RetainedRef(source), base::Passed(&client_remote));
 
   // TODO(jam): once we only have this code path for WebUI, and not the
   // URLLRequestJob one, then we should switch data sources to run on the UI

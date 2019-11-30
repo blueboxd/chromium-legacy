@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}few{# m}other{# m}}</translation>
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="1201402288615127009">Naprijed</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, aplikacija u Play trgovini</translation>
 <translation id="1243314992276662751">Otpremi</translation>
 <translation id="1266864766717917324">Nije moguće podijeliti <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">S lijeva na desno</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1398853756734560583">Povećaj maksimalno</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, instalirana aplikacija</translation>
 <translation id="1450753235335490080">Nije moguće podijeliti sadržaj <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">To ste već pretraživali. Ako izbrišete upit "<ph name="QUERY" />" iz historije, trajno ćete ga ukloniti s računa na svim svojim uređajima.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }one{# minuta i }few{# minute i }other{# minuta i }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mjesec}one{# mjesec}few{# mjeseca}other{# mjeseci}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 sat i }one{# sat i }few{# sata i }other{# sati i }}</translation>
+<translation id="1830308660060964064">Stavka <ph name="ITEM_TITLE" /> je otkačena</translation>
 <translation id="1842960171412779397">odaberi</translation>
 <translation id="1859234291848436338">Smjer pisanja</translation>
 <translation id="1860796786778352021">Zatvaranje obavještenja</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Gornji</translation>
 <translation id="2701330563083355633">Dijeljeno s uređaja: <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Kopiraj u međumemoriju</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otvori folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Prije godinu dana}one{Prije # godinu}few{Prije # godine}other{Prije # godina}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{Za 1 d}one{Za # d}few{Za # d}other{Za # d}}</translation>
 <translation id="2931838996092594335">kliknuti</translation>
+<translation id="2981684127883932071">Prikaz prijedloga</translation>
 <translation id="3036649622769666520">Otvori fajlove</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Polica je na lijevoj strani</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Tekst je predug</translation>
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="348799646910989694">Polica je automatski skrivena</translation>
+<translation id="3554637740840164787">Stavka <ph name="ITEM_TITLE" /> je zakačena</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Preostao je još 1 dan}one{Preostao je još # dan}few{Preostala su još # dana}other{Preostalo je još # dana}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> fajl</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Snimak ekrana</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Prije 1 mjesec}one{Prije # mjesec}few{Prije # mjeseca}other{Prije # mjeseci}}</translation>
 <translation id="4289300219472526559">Započinjanje govora</translation>
+<translation id="430191667033048642">Aplikacija <ph name="MOVED_APP_NAME" /> je premještena u folder <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4588090240171750605">Kliznite udesno</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ocjena zvjezdicama <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, preporučena aplikacija</translation>
 <translation id="4690510401873698237">Polica na dnu</translation>
 <translation id="4724120544754982507">Centar za obavijesti, nepročitanih obavijesti: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČESTO KORIŠTENO</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Prethodna numera medijskog fajla</translation>
 <translation id="5046499563572181734">Dodirnite ovdje</translation>
 <translation id="5076340679995252485">&amp;Zalijepi</translation>
+<translation id="5198715732953550718">Aplikacija <ph name="MOVED_APP_NAME" /> je kombinirana s aplikacijom <ph name="IN_PLACE_APP" /> za kreiranje novog foldera.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trougao za otkrivanje</translation>
 <translation id="5278860589123563674">Slanje nije uspjelo</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistem</translation>
 <translation id="5583640892426849032">Tipka za brisanje</translation>
 <translation id="5613020302032141669">Strelica ulijevo</translation>
+<translation id="5675363643668471212">Stavka na polici</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}few{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktivan danas}=1{Aktivan prije 1 dan}one{Aktivan prije # dan}few{Aktivan prije # dana}other{Aktivan prije # dana}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dan i }one{# dan i }few{# dana i }other{# dan i }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stranica prema dolje</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, aplikacija</translation>
 <translation id="8259556432390118667">Hex vrijednost boje</translation>
 <translation id="8328145009876646418">Lijevi rub</translation>
 <translation id="8331626408530291785">Klizni prema gore</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Kartica</translation>
 <translation id="9161053988251441839">PREDLOŽENE APLIKACIJE</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>
+<translation id="9178475906033259337">Prikaz jednog rezultata za upit <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Početna stranica</translation>
 <translation id="944069440740578670">Nepročitana obavještenja</translation>
+<translation id="974545358917229949">Prikaz <ph name="RESULT_COUNT" /> rezultata za upit <ph name="QUERY" /></translation>
 </translationbundle>

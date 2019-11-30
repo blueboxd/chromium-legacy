@@ -101,7 +101,7 @@ std::string AppLauncherPageUI::HTMLSource::GetSource() {
 void AppLauncherPageUI::HTMLSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   NTPResourceCache* resource = AppResourceCacheFactory::GetForProfile(profile_);
@@ -114,7 +114,7 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   scoped_refptr<base::RefCountedMemory> html_bytes(
       resource->GetNewTabHTML(win_type));
 
-  callback.Run(html_bytes.get());
+  std::move(callback).Run(html_bytes.get());
 }
 
 std::string AppLauncherPageUI::HTMLSource::GetMimeType(

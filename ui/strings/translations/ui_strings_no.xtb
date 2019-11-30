@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1201402288615127009">Neste</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" /> – Play Butikk-app</translation>
 <translation id="1243314992276662751">Last opp</translation>
 <translation id="1266864766717917324">Kunne ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Venstre til høyre</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" /> – installert app</translation>
 <translation id="1450753235335490080">Kan ikke dele <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Du har søkt etter dette før. Hvis du sletter «<ph name="QUERY" />» fra loggen, blir det fjernet permanent fra kontoen din på alle enhetene dine.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutt og }other{# minutter og }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 måned}other{# måneder}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB per sek.</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 time og }other{# timer og }}</translation>
+<translation id="1830308660060964064">Løsnet <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">velg</translation>
 <translation id="1859234291848436338">Skriveretning</translation>
 <translation id="1860796786778352021">Lukk varsel</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Topp</translation>
 <translation id="2701330563083355633">Delt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" /> – <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Åpne mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{for 1 år siden}other{for # år siden}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 d}other{om # d}}</translation>
 <translation id="2931838996092594335">klikk</translation>
+<translation id="2981684127883932071">Viser forslag</translation>
 <translation id="3036649622769666520">Åpne filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Hyllen er til venstre</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Teksten er for stor</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348799646910989694">Hyllen skjules automatisk</translation>
+<translation id="3554637740840164787">Festet <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag igjen}other{# dager igjen}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-fil</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Skjermdump</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{for 1 måned siden}other{for # måneder siden}}</translation>
 <translation id="4289300219472526559">Begynn å snakke</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> er flyttet til mappen <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALLE APPER</translation>
 <translation id="4588090240171750605">Rull mot høyre</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" /> – stjernerangering <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" /> – appanbefaling</translation>
 <translation id="4690510401873698237">Hyllen er nederst</translation>
 <translation id="4724120544754982507">Varselsenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> uleste varsler</translation>
 <translation id="4730374152663651037">OFTE BRUKT</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Media – forrige spor</translation>
 <translation id="5046499563572181734">Trykk her</translation>
 <translation id="5076340679995252485">&amp;Lim inn</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> er kombinert med <ph name="IN_PLACE_APP" /> for å opprette en ny mappe.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trekant for mer innhold</translation>
 <translation id="5278860589123563674">Kunne ikke sende</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" />-systemet</translation>
 <translation id="5583640892426849032">Tilbake-tasten</translation>
 <translation id="5613020302032141669">Pil venstre</translation>
+<translation id="5675363643668471212">Hylleelement</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktiv i dag}=1{Aktiv for én dag siden}other{Aktiv for # dager siden}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }other{# dager og }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Ned 1 s.</translation>
 <translation id="8245914219290430011">Fane</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" /> – app</translation>
 <translation id="8259556432390118667">Heksadesimal fargekode</translation>
 <translation id="8328145009876646418">Venstre kant</translation>
 <translation id="8331626408530291785">Rull opp</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Fane</translation>
 <translation id="9161053988251441839">FORESLÅTTE APPER</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
+<translation id="9178475906033259337">Viser 1 resultat for <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="944069440740578670">Uleste varsler</translation>
+<translation id="974545358917229949">Viser <ph name="RESULT_COUNT" /> resultater for <ph name="QUERY" /></translation>
 </translationbundle>

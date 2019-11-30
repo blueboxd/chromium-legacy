@@ -31,18 +31,19 @@ class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
   void set_fail_fetched_event(bool fail) { fail_fetched_event_ = fail; }
   void delay_dispatch() { delay_dispatch_ = true; }
 
-  // Sets a base::Callback that should be executed when the named event is ran.
-  void set_abort_event_closure(const base::Closure& closure) {
-    abort_event_closure_ = closure;
+  // Sets a callback that should be executed when the next named event is
+  // ran.
+  void set_abort_event_closure(base::OnceClosure closure) {
+    abort_event_closure_ = std::move(closure);
   }
-  void set_click_event_closure(const base::Closure& closure) {
-    click_event_closure_ = closure;
+  void set_click_event_closure(base::OnceClosure closure) {
+    click_event_closure_ = std::move(closure);
   }
-  void set_fetch_fail_event_closure(const base::Closure& closure) {
-    fetch_fail_event_closure_ = closure;
+  void set_fetch_fail_event_closure(base::OnceClosure closure) {
+    fetch_fail_event_closure_ = std::move(closure);
   }
-  void set_fetched_event_closure(const base::Closure& closure) {
-    fetched_event_closure_ = closure;
+  void set_fetched_event_closure(base::OnceClosure closure) {
+    fetched_event_closure_ = std::move(closure);
   }
 
   const blink::mojom::BackgroundFetchRegistrationDataPtr& last_registration()
@@ -83,10 +84,10 @@ class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
   bool delay_dispatch_ = false;
   base::OnceClosure delayed_closure_;
 
-  base::Closure abort_event_closure_;
-  base::Closure click_event_closure_;
-  base::Closure fetch_fail_event_closure_;
-  base::Closure fetched_event_closure_;
+  base::OnceClosure abort_event_closure_;
+  base::OnceClosure click_event_closure_;
+  base::OnceClosure fetch_fail_event_closure_;
+  base::OnceClosure fetched_event_closure_;
 
   blink::mojom::BackgroundFetchRegistrationPtr last_registration_;
 

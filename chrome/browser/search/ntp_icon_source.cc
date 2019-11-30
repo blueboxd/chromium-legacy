@@ -226,17 +226,20 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
 }  // namespace
 
 struct NtpIconSource::NtpIconRequest {
-  NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
+  NtpIconRequest(content::URLDataSource::GotDataCallback cb,
                  const GURL& path,
                  int icon_size_in_pixels,
                  float scale,
                  bool show_fallback_monogram)
-      : callback(cb),
+      : callback(std::move(cb)),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
         device_scale_factor(scale),
         show_fallback_monogram(show_fallback_monogram) {}
-  NtpIconRequest(const NtpIconRequest& other) = default;
+
+  NtpIconRequest(NtpIconRequest&& other) = default;
+  NtpIconRequest& operator=(NtpIconRequest&& other) = default;
+
   ~NtpIconRequest() {}
 
   content::URLDataSource::GotDataCallback callback;
@@ -262,7 +265,7 @@ std::string NtpIconSource::GetSource() {
 void NtpIconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
@@ -273,7 +276,7 @@ void NtpIconSource::StartDataRequest(
   if (parsed.url.is_valid()) {
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
-    NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
+    NtpIconRequest request(std::move(callback), parsed.url, icon_size_in_pixels,
                            parsed.device_scale_factor,
                            parsed.show_fallback_monogram);
 
@@ -295,10 +298,10 @@ void NtpIconSource::StartDataRequest(
                 gfx::ImageSkiaOperations::CreateResizedImage(
                     image.AsImageSkia(), skia::ImageOperations::RESIZE_BEST,
                     target_size);
-            ReturnRenderedIconForRequest(request,
+            ReturnRenderedIconForRequest(std::move(request),
                                          gfx::Image(resized_image).AsBitmap());
           } else {
-            ReturnRenderedIconForRequest(request, image.AsBitmap());
+            ReturnRenderedIconForRequest(std::move(request), image.AsBitmap());
           }
           return;
         }
@@ -311,11 +314,11 @@ void NtpIconSource::StartDataRequest(
     favicon_service->GetRawFaviconForPageURL(
         parsed.url, {favicon_base::IconType::kFavicon}, icon_size_in_pixels,
         fallback_to_host,
-        base::Bind(&NtpIconSource::OnLocalFaviconAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), request),
+        base::BindOnce(&NtpIconSource::OnLocalFaviconAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request)),
         &cancelable_task_tracker_);
   } else {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
   }
 }
 
@@ -338,7 +341,7 @@ bool NtpIconSource::ShouldServiceRequest(
 }
 
 void NtpIconSource::OnLocalFaviconAvailable(
-    const NtpIconRequest& request,
+    NtpIconRequest request,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // A local favicon was found. Decode it to an SkBitmap so it can eventually
@@ -348,12 +351,12 @@ void NtpIconSource::OnLocalFaviconAvailable(
         gfx::PNGCodec::Decode(bitmap_result.bitmap_data.get()->front(),
                               bitmap_result.bitmap_data.get()->size(), &bitmap);
     DCHECK(result);
-    ReturnRenderedIconForRequest(request, bitmap);
+    ReturnRenderedIconForRequest(std::move(request), bitmap);
   } else {
     // Since a local favicon was not found, attempt to fetch a server icon if
     // the url is known to the server (this last check is important to avoid
     // leaking private history to the server).
-    RequestServerFavicon(request);
+    RequestServerFavicon(std::move(request));
   }
 }
 
@@ -374,14 +377,14 @@ bool NtpIconSource::IsRequestedUrlInServerSuggestions(const GURL& url) {
   return position != profile.suggestions().end();
 }
 
-void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
+void NtpIconSource::RequestServerFavicon(NtpIconRequest request) {
   // Only fetch a server icon if the page url is known to the server. This check
   // is important to avoid leaking private history to the server.
   const GURL server_favicon_url =
       GURL(base::StringPrintf(kServerFaviconURL, request.path.spec().c_str()));
   if (!server_favicon_url.is_valid() ||
       !IsRequestedUrlInServerSuggestions(request.path)) {
-    ReturnRenderedIconForRequest(request, SkBitmap());
+    ReturnRenderedIconForRequest(std::move(request), SkBitmap());
     return;
   }
 
@@ -412,13 +415,13 @@ void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
       gfx::Size(request.icon_size_in_pixels, request.icon_size_in_pixels));
   image_fetcher_->FetchImage(
       server_favicon_url,
-      base::Bind(&NtpIconSource::OnServerFaviconAvailable,
-                 weak_ptr_factory_.GetWeakPtr(), request),
+      base::BindOnce(&NtpIconSource::OnServerFaviconAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request)),
       std::move(params));
 }
 
 void NtpIconSource::OnServerFaviconAvailable(
-    const NtpIconRequest& request,
+    NtpIconRequest request,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   // If a server icon was not found, |fetched_bitmap| will be empty and a
@@ -432,10 +435,10 @@ void NtpIconSource::OnServerFaviconAvailable(
         request.icon_size_in_pixels, request.icon_size_in_pixels);
   }
 
-  ReturnRenderedIconForRequest(request, fetched_bitmap);
+  ReturnRenderedIconForRequest(std::move(request), fetched_bitmap);
 }
 
-void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
+void NtpIconSource::ReturnRenderedIconForRequest(NtpIconRequest request,
                                                  const SkBitmap& favicon) {
   // Only use even pixel sizes to avoid issues when centering the fallback
   // monogram.
@@ -478,5 +481,6 @@ void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
   std::vector<unsigned char> bitmap_data;
   bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
   DCHECK(result);
-  request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
+  std::move(request.callback)
+      .Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

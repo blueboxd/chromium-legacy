@@ -1773,9 +1773,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
 namespace {
 
-void OnZoomLevelChanged(const base::Closure& callback,
+void OnZoomLevelChanged(base::OnceClosure* callback,
                         const HostZoomMap::ZoomLevelChange& host) {
-  callback.Run();
+  std::move(*callback).Run();
 }
 
 }  // namespace
@@ -1801,8 +1801,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   {
     scoped_refptr<content::MessageLoopRunner> loop_runner(
         new content::MessageLoopRunner);
+    base::OnceClosure quit_closure = loop_runner->QuitClosure();
     content::HostZoomMap::ZoomLevelChangedCallback callback(
-        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+        base::BindRepeating(&OnZoomLevelChanged, &quit_closure));
     std::unique_ptr<content::HostZoomMap::Subscription> sub =
         content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
             ->AddZoomLevelChangedCallback(callback);
@@ -1817,8 +1818,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   {
     scoped_refptr<content::MessageLoopRunner> loop_runner(
         new content::MessageLoopRunner);
+    base::OnceClosure quit_closure = loop_runner->QuitClosure();
     content::HostZoomMap::ZoomLevelChangedCallback callback(
-        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+        base::Bind(&OnZoomLevelChanged, &quit_closure));
     std::unique_ptr<content::HostZoomMap::Subscription> sub =
         content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
             ->AddZoomLevelChangedCallback(callback);
@@ -1833,8 +1835,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   {
     scoped_refptr<content::MessageLoopRunner> loop_runner(
         new content::MessageLoopRunner);
+    base::OnceClosure quit_closure = loop_runner->QuitClosure();
     content::HostZoomMap::ZoomLevelChangedCallback callback(
-        base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
+        base::Bind(&OnZoomLevelChanged, &quit_closure));
     std::unique_ptr<content::HostZoomMap::Subscription> sub =
         content::HostZoomMap::GetDefaultForBrowserContext(browser()->profile())
             ->AddZoomLevelChangedCallback(callback);

@@ -208,9 +208,6 @@ class GFX_EXPORT RenderText {
   // Creates a RenderText instance.
   static std::unique_ptr<RenderText> CreateRenderText();
 
-  // Creates another instance of the same concrete class.
-  virtual std::unique_ptr<RenderText> CreateInstanceOfSameType() const = 0;
-
   // Like above but copies all style settings too.
   std::unique_ptr<RenderText> CreateInstanceOfSameStyle(
       const base::string16& text) const;

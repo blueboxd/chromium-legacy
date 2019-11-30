@@ -115,17 +115,17 @@ std::string ExtensionIconSource::GetMimeType(const std::string&) {
 void ExtensionIconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   // This is where everything gets started. First, parse the request and make
   // the request data available for later.
   static int next_id = 0;
-  if (!ParseData(path, ++next_id, callback)) {
+  if (!ParseData(path, ++next_id, &callback)) {
     // If the request data cannot be parsed, request parameters will not be
     // added to |request_map_|.
     // Send back the default application icon (not resized or desaturated) as
     // the default response.
-    callback.Run(BitmapToMemory(GetDefaultAppImage()).get());
+    std::move(callback).Run(BitmapToMemory(GetDefaultAppImage()).get());
     return;
   }
 
@@ -174,7 +174,7 @@ void ExtensionIconSource::FinalizeImage(const SkBitmap* image,
   else
     bitmap = *image;
 
-  request->callback.Run(BitmapToMemory(&bitmap).get());
+  std::move(request->callback).Run(BitmapToMemory(&bitmap).get());
   ClearData(request_id);
 }
 
@@ -243,7 +243,7 @@ void ExtensionIconSource::OnFaviconDataAvailable(
   if (!request->grayscale) {
     // If we don't need a grayscale image, then we can bypass FinalizeImage
     // to avoid unnecessary conversions.
-    request->callback.Run(bitmap_result.bitmap_data.get());
+    std::move(request->callback).Run(bitmap_result.bitmap_data.get());
     ClearData(request_id);
   } else {
     FinalizeImage(ToBitmap(bitmap_result.bitmap_data->front(),
@@ -273,7 +273,7 @@ void ExtensionIconSource::LoadIconFailed(int request_id) {
 bool ExtensionIconSource::ParseData(
     const std::string& path,
     int request_id,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback* callback) {
   // Extract the parameters from the path by lower casing and splitting.
   std::string path_lower = base::ToLowerASCII(path);
   std::vector<std::string> path_parts = base::SplitString(
@@ -309,21 +309,22 @@ bool ExtensionIconSource::ParseData(
 
   bool grayscale = path_lower.find("grayscale=true") != std::string::npos;
 
-  SetData(request_id, callback, extension, grayscale, size, match_type);
+  SetData(request_id, std::move(*callback), extension, grayscale, size,
+          match_type);
 
   return true;
 }
 
 void ExtensionIconSource::SetData(
     int request_id,
-    const content::URLDataSource::GotDataCallback& callback,
+    content::URLDataSource::GotDataCallback callback,
     const Extension* extension,
     bool grayscale,
     int size,
     ExtensionIconSet::MatchType match) {
   std::unique_ptr<ExtensionIconRequest> request =
       std::make_unique<ExtensionIconRequest>();
-  request->callback = callback;
+  request->callback = std::move(callback);
   request->extension = extension;
   request->grayscale = grayscale;
   request->size = size;

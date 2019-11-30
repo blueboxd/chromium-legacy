@@ -56,7 +56,6 @@ source_set("cells") {
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
   ]
 

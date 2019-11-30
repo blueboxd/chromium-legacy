@@ -57,6 +57,7 @@
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
+#include "chrome/browser/component_updater/crowd_deny_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/games_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
@@ -553,6 +554,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #endif
 
   RegisterSafetyTipsComponent(cus, path);
+  RegisterCrowdDenyComponent(cus, path);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
   component_updater::RegisterGamesComponent(cus, profile_prefs);

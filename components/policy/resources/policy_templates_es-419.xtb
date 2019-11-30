@@ -387,11 +387,6 @@
           Si se inhabilita o no se establece, no se permitirá la configuración de las cuentas de Kerberos. No se podrán agregar cuentas de Kerberos ni usar la autenticación Kerberos. Se borrarán todas las cuentas de Kerberos existentes y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
-<translation id="1566329065312331399">
-      Si se establece como falsa, esta política no permite que el dispositivo active Powerwash.
-      Si se establece como verdadera, permite que el dispositivo active Powerwash.
-      Si no se establece, su valor predeterminado es falso, lo que significa que no permite que el dispositivo active Powerwash.
-      </translation>
 <translation id="1574554504290354326">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
 
       Si se establece esta política como falsa, los usuarios ya no podrán enviar cierta información del sistema ni contenido de páginas a los servidores de Google. Si se establece como verdadera o no se configura, los usuarios podrán enviar cierta información del sistema y contenido de páginas a la Navegación segura para detectar apps y sitios peligrosos.
@@ -4245,11 +4240,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
-<translation id="7944213656414105292">Esta política determina las URL a las que se les permitirá utilizar certificación remota de la identidad de los dispositivos durante el flujo de SAML en la pantalla de acceso.
-
-      Específicamente, si una URL coincide con uno de los patrones que se proporcionan a través de esta política, se le permitirá recibir un encabezado HTTP que contenga una respuesta a un desafío de certificación remota para certificar el estado y la identidad de un dispositivo.
-
-      Si no se establece esta política o se establece como una lista vacía, no se permitirá que ninguna URL utilice la certificación remota en la pantalla de acceso.</translation>
 <translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y evita que los usuarios las cambien.
 
       Las opciones de configuración de la página principal del usuario solo estarán completamente bloqueadas si se selecciona la página principal como la página Nueva pestaña o si se establece como una dirección URL y se especifica la dirección URL de la página principal. Si no se establece la dirección URL de la página principal, el usuario aún podrá configurar la página principal como la página Nueva pestaña al especificar la opción "chrome://newtab".

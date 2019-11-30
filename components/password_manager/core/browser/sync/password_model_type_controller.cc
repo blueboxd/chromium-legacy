@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
@@ -18,13 +21,21 @@ PasswordModelTypeController::PasswordModelTypeController(
         delegate_for_full_sync_mode,
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_transport_mode,
+    PrefService* pref_service,
     syncer::SyncService* sync_service,
     const base::RepeatingClosure& state_changed_callback)
     : ModelTypeController(syncer::PASSWORDS,
                           std::move(delegate_for_full_sync_mode),
                           std::move(delegate_for_transport_mode)),
+      pref_service_(pref_service),
       sync_service_(sync_service),
-      state_changed_callback_(state_changed_callback) {}
+      state_changed_callback_(state_changed_callback) {
+  pref_registrar_.Init(pref_service_);
+  pref_registrar_.Add(
+      prefs::kAccountStorageOptedInAccounts,
+      base::BindRepeating(&PasswordModelTypeController::OnOptInPrefChanged,
+                          base::Unretained(this)));
+}
 
 PasswordModelTypeController::~PasswordModelTypeController() = default;
 
@@ -61,9 +72,24 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
   state_changed_callback_.Run();
 }
 
+syncer::DataTypeController::PreconditionState
+PasswordModelTypeController::GetPreconditionState() const {
+  if (sync_mode_ == syncer::SyncMode::kFull)
+    return PreconditionState::kPreconditionsMet;
+  return password_manager_util::IsOptedInForAccountStorage(pref_service_,
+                                                           sync_service_)
+             ? PreconditionState::kPreconditionsMet
+             : PreconditionState::kMustStopAndClearData;
+}
+
 void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
+  sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
   state_changed_callback_.Run();
+}
+
+void PasswordModelTypeController::OnOptInPrefChanged() {
+  sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
 }
 
 }  // namespace password_manager

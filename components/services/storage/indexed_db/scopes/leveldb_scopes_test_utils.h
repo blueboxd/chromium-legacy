@@ -99,8 +99,10 @@ class LevelDBScopesTestBase : public testing::Test {
 
  protected:
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_;
-  base::test::TaskEnvironment task_env_;
+  // Ensure that the ScopedTempDir outlives the TaskEnvironment since the latter
+  // may need to run cleanup tasks that close files residing in the former.
   base::ScopedTempDir temp_directory_;
+  base::test::TaskEnvironment task_env_;
 
   const std::string simple_lock_begin_ = "0000000001";
   const std::string simple_lock_end_ = "0000000010";

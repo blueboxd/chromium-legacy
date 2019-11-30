@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 
-#import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
-#import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/alert_view/alert_action.h"
+#import "ios/chrome/browser/ui/alert_view/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"

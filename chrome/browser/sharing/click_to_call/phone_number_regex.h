@@ -5,8 +5,15 @@
 #ifndef CHROME_BROWSER_SHARING_CLICK_TO_CALL_PHONE_NUMBER_REGEX_H_
 #define CHROME_BROWSER_SHARING_CLICK_TO_CALL_PHONE_NUMBER_REGEX_H_
 
-#include "chrome/browser/sharing/sharing_metrics.h"
-#include "third_party/re2/src/re2/re2.h"
+namespace re2 {
+class RE2;
+}  // namespace re2
+
+// Phone number regex to use to detect numbers from text selections.
+enum class PhoneNumberRegexVariant {
+  kSimple = 0,
+  kLowConfidenceModified = 1,
+};
 
 // Returns an RE2 instance for the given |variant| to detect phone numbers.
 const re2::RE2& GetPhoneNumberRegex(PhoneNumberRegexVariant variant);

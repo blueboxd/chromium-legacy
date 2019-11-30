@@ -4856,6 +4856,47 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerMarginsRtl) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, FixedSizeMulticolWithSpanner) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        column-fill: auto;
+        width: 320px;
+        height: 300px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:33px; height:300px;"></div>
+        <div style="column-span:all; width:44px; height:50px;"></div>
+        <div style="width:55px; height:450px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x300
+    offset:0,0 size:320x300
+      offset:0,0 size:100x100
+        offset:0,0 size:33x100
+      offset:110,0 size:100x100
+        offset:0,0 size:33x100
+      offset:220,0 size:100x100
+        offset:0,0 size:33x100
+      offset:0,100 size:44x50
+      offset:0,150 size:100x150
+        offset:0,0 size:55x150
+      offset:110,150 size:100x150
+        offset:0,0 size:55x150
+      offset:220,150 size:100x150
+        offset:0,0 size:55x150
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithMargins) {
   SetBodyInnerHTML(R"HTML(
     <style>

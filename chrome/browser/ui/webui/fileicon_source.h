@@ -29,7 +29,7 @@ class FileIconSource : public content::URLDataSource {
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string&) override;
   bool AllowCaching() override;
 
@@ -37,29 +37,30 @@ class FileIconSource : public content::URLDataSource {
   // Once the |path| and |icon_size| has been determined from the request, this
   // function is called to perform the actual fetch. Declared as virtual for
   // testing.
-  virtual void FetchFileIcon(
-      const base::FilePath& path,
-      float scale_factor,
-      IconLoader::IconSize icon_size,
-      const content::URLDataSource::GotDataCallback& callback);
+  virtual void FetchFileIcon(const base::FilePath& path,
+                             float scale_factor,
+                             IconLoader::IconSize icon_size,
+                             content::URLDataSource::GotDataCallback callback);
 
  private:
   // Contains the necessary information for completing an icon fetch request.
   struct IconRequestDetails {
     IconRequestDetails();
-    IconRequestDetails(const IconRequestDetails& other);
+
+    IconRequestDetails(IconRequestDetails&& other);
+    IconRequestDetails& operator=(IconRequestDetails&& other);
+
     ~IconRequestDetails();
 
     // The callback to run with the response.
     content::URLDataSource::GotDataCallback callback;
 
     // The requested scale factor to respond with.
-    float scale_factor;
+    float scale_factor = 1;
   };
 
   // Called when favicon data is available from the history backend.
-  void OnFileIconDataAvailable(const IconRequestDetails& details,
-                               gfx::Image icon);
+  void OnFileIconDataAvailable(IconRequestDetails details, gfx::Image icon);
 
   // Tracks tasks requesting file icons.
   base::CancelableTaskTracker cancelable_task_tracker_;

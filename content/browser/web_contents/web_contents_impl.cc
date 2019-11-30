@@ -607,9 +607,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
       had_inner_webcontents_(false) {
-  frame_tree_.SetFrameRemoveListener(
-      base::Bind(&WebContentsImpl::OnFrameRemoved,
-                 base::Unretained(this)));
+  frame_tree_.SetFrameRemoveListener(base::BindRepeating(
+      &WebContentsImpl::OnFrameRemoved, base::Unretained(this)));
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
@@ -1218,14 +1217,14 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
 }
 #endif  // !defined(OS_ANDROID)
 
-base::Closure WebContentsImpl::AddBindingSet(
+base::OnceClosure WebContentsImpl::AddBindingSet(
     const std::string& interface_name,
     WebContentsBindingSet* binding_set) {
   auto result =
       binding_sets_.insert(std::make_pair(interface_name, binding_set));
   DCHECK(result.second);
-  return base::Bind(&WebContentsImpl::RemoveBindingSet,
-                    weak_factory_.GetWeakPtr(), interface_name);
+  return base::BindOnce(&WebContentsImpl::RemoveBindingSet,
+                        weak_factory_.GetWeakPtr(), interface_name);
 }
 
 WebContentsBindingSet* WebContentsImpl::GetBindingSet(

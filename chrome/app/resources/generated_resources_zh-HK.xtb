@@ -99,7 +99,6 @@
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取您的藍牙和序列裝置</translation>
 <translation id="114036956334641753">音訊和字幕</translation>
-<translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="1140746652461896221">封鎖您瀏覽的任何網頁內容</translation>
 <translation id="1143142264369994168">憑證簽署者</translation>
 <translation id="1145292499998999162">已封鎖外掛程式</translation>
@@ -329,7 +328,6 @@
 <translation id="1465176863081977902">複製音效檔案位址(&amp;O)</translation>
 <translation id="1465827627707997754">一塊薄餅</translation>
 <translation id="1468571364034902819">無法使用此設定檔</translation>
-<translation id="1470811252759861213">如要在所有電腦上使用擴充程式，請登入 <ph name="SIGN_IN_LINK" />。</translation>
 <translation id="1472675084647422956">顯示更多</translation>
 <translation id="1475502736924165259">下列檔案上的憑證不屬於任何其他類別</translation>
 <translation id="1476088332184200792">複製至您的裝置</translation>
@@ -1044,7 +1042,6 @@
 <translation id="2489829450872380594">手機之後會解鎖呢部 <ph name="DEVICE_TYPE" />。您可以在「設定」中停用 Smart Lock。</translation>
 <translation id="2489918096470125693">新增資料夾(&amp;F)…</translation>
 <translation id="2490481887078769936">已從清單中移除「<ph name="FILE_NAME" />」</translation>
-<translation id="2490782392574942205">如要在所有電腦上取得您的擴充程式，請登入和開啟同步功能</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
 <translation id="2495777824269688114">探索更多功能或獲得解答。選取 [？] 即可取得協助。</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3528033729920178817">這個網頁正在追蹤您的位置。</translation>
 <translation id="3528498924003805721">捷徑目標</translation>
-<translation id="3530305684079447434">如要在所有裝置上查看書籤，請<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> 要求使用麥克風</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 靜音</translation>
 <translation id="3538066758857505094">解除安裝 Linux 時發生錯誤。請再試一次。</translation>

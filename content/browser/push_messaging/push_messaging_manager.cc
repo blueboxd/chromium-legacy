@@ -462,10 +462,10 @@ void PushMessagingManager::Core::RegisterOnUI(
               ->RequestPermission(
                   PermissionType::NOTIFICATIONS, render_frame_host,
                   data.requesting_origin, data.user_gesture,
-                  base::Bind(&PushMessagingManager::Core::
-                                 DidRequestPermissionInIncognito,
-                             weak_factory_ui_to_ui_.GetWeakPtr(),
-                             base::Passed(&data)));
+                  base::BindOnce(&PushMessagingManager::Core::
+                                     DidRequestPermissionInIncognito,
+                                 weak_factory_ui_to_ui_.GetWeakPtr(),
+                                 base::Passed(&data)));
         }
       }
     }
@@ -480,13 +480,13 @@ void PushMessagingManager::Core::RegisterOnUI(
     push_service->SubscribeFromDocument(
         requesting_origin, registration_id, render_process_id_,
         render_frame_id_, std::move(options), data.user_gesture,
-        base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
-                   base::Passed(&data)));
+        base::BindOnce(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
+                       base::Passed(&data)));
   } else {
     push_service->SubscribeFromWorker(
         requesting_origin, registration_id, std::move(options),
-        base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
-                   base::Passed(&data)));
+        base::BindOnce(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
+                       base::Passed(&data)));
   }
 }
 
@@ -681,9 +681,9 @@ void PushMessagingManager::Core::UnregisterFromService(
   push_service->Unsubscribe(
       blink::mojom::PushUnregistrationReason::JAVASCRIPT_API, requesting_origin,
       service_worker_registration_id, sender_id,
-      base::Bind(&Core::DidUnregisterFromService,
-                 weak_factory_ui_to_ui_.GetWeakPtr(), base::Passed(&callback),
-                 service_worker_registration_id));
+      base::BindOnce(&Core::DidUnregisterFromService,
+                     weak_factory_ui_to_ui_.GetWeakPtr(),
+                     base::Passed(&callback), service_worker_registration_id));
 }
 
 void PushMessagingManager::Core::DidUnregisterFromService(
@@ -787,14 +787,14 @@ void PushMessagingManager::DidGetSubscription(
 
       RunOrPostTaskOnThread(
           FROM_HERE, BrowserThread::UI,
-          base::BindOnce(&Core::GetSubscriptionInfoOnUI,
-                         base::Unretained(ui_core_.get()), origin,
-                         service_worker_registration_id, application_server_key,
-                         push_subscription_id,
-                         base::Bind(&Core::GetSubscriptionDidGetInfoOnUI,
-                                    ui_core_weak_ptr_, base::Passed(&callback),
-                                    origin, service_worker_registration_id,
-                                    application_server_key)));
+          base::BindOnce(
+              &Core::GetSubscriptionInfoOnUI, base::Unretained(ui_core_.get()),
+              origin, service_worker_registration_id, application_server_key,
+              push_subscription_id,
+              base::BindOnce(&Core::GetSubscriptionDidGetInfoOnUI,
+                             ui_core_weak_ptr_, base::Passed(&callback), origin,
+                             service_worker_registration_id,
+                             application_server_key)));
 
       return;
     }
@@ -888,13 +888,13 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     blink::mojom::PushGetRegistrationStatus status =
         blink::mojom::PushGetRegistrationStatus::STORAGE_CORRUPT;
 
-    push_service->Unsubscribe(blink::mojom::PushUnregistrationReason::
-                                  GET_SUBSCRIPTION_STORAGE_CORRUPT,
-                              origin, service_worker_registration_id,
-                              application_server_key,
-                              base::Bind(&Core::GetSubscriptionDidUnsubscribe,
-                                         weak_factory_ui_to_ui_.GetWeakPtr(),
-                                         base::Passed(&callback), status));
+    push_service->Unsubscribe(
+        blink::mojom::PushUnregistrationReason::
+            GET_SUBSCRIPTION_STORAGE_CORRUPT,
+        origin, service_worker_registration_id, application_server_key,
+        base::BindOnce(&Core::GetSubscriptionDidUnsubscribe,
+                       weak_factory_ui_to_ui_.GetWeakPtr(),
+                       base::Passed(&callback), status));
 
     RecordGetRegistrationStatus(status);
   }

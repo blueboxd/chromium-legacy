@@ -177,7 +177,7 @@ TEST_F(WebBundleReaderTest, ReadResponseBody) {
   GetReader()->ReadResponseBody(
       std::move(response), std::move(producer),
       base::BindOnce(
-          [](base::Closure quit_closure, net::Error* callback_result,
+          [](base::OnceClosure quit_closure, net::Error* callback_result,
              net::Error result) {
             *callback_result = result;
             std::move(quit_closure).Run();

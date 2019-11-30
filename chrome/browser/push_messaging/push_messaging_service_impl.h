@@ -105,7 +105,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
                            const std::string& subscription_id,
-                           const SubscriptionInfoCallback& callback) override;
+                           SubscriptionInfoCallback callback) override;
   void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
@@ -199,11 +199,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DidValidateSubscription(const std::string& app_id,
                                const std::string& sender_id,
                                const GURL& endpoint,
-                               const SubscriptionInfoCallback& callback,
+                               SubscriptionInfoCallback callback,
                                bool is_valid);
 
   void DidGetEncryptionInfo(const GURL& endpoint,
-                            const SubscriptionInfoCallback& callback,
+                            SubscriptionInfoCallback callback,
                             std::string p256dh,
                             std::string auth_secret) const;
 

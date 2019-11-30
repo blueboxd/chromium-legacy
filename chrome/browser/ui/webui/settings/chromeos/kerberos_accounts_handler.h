@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_KERBEROS_ACCOUNTS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_KERBEROS_ACCOUNTS_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,13 +21,17 @@ namespace kerberos {
 class ListAccountsResponse;
 }
 
+class Profile;
+
 namespace chromeos {
 namespace settings {
 
 class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
                                 public KerberosCredentialsManager::Observer {
  public:
-  KerberosAccountsHandler();
+  static std::unique_ptr<KerberosAccountsHandler> CreateIfKerberosEnabled(
+      Profile* profile);
+
   ~KerberosAccountsHandler() override;
 
   // WebUIMessageHandler:
@@ -38,6 +43,9 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   void OnAccountsChanged() override;
 
  private:
+  explicit KerberosAccountsHandler(
+      KerberosCredentialsManager* kerberos_credentials_manager);
+
   // WebUI "getKerberosAccounts" message callback.
   void HandleGetKerberosAccounts(const base::ListValue* args);
 
@@ -78,6 +86,9 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   ScopedObserver<KerberosCredentialsManager,
                  KerberosCredentialsManager::Observer>
       credentials_manager_observer_{this};
+
+  // Not owned.
+  KerberosCredentialsManager* kerberos_credentials_manager_;
 
   base::WeakPtrFactory<KerberosAccountsHandler> weak_factory_{this};
 

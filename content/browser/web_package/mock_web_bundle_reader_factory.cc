@@ -184,7 +184,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
 
     base::RunLoop run_loop;
     reader->ReadMetadata(base::BindOnce(
-        [](base::Closure quit_closure,
+        [](base::OnceClosure quit_closure,
            WebBundleReader::MetadataCallback callback,
            data_decoder::mojom::BundleMetadataParseErrorPtr error) {
           std::move(callback).Run(std::move(error));
@@ -207,7 +207,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
     base::RunLoop run_loop;
     reader->ReadResponse(
         url, base::BindOnce(
-                 [](base::Closure quit_closure,
+                 [](base::OnceClosure quit_closure,
                     WebBundleReader::ResponseCallback callback,
                     data_decoder::mojom::BundleResponsePtr response,
                     data_decoder::mojom::BundleResponseParseErrorPtr error) {

@@ -135,6 +135,7 @@
 <translation id="2718352093833049315">কেৱল ৱাই-ফাইত</translation>
 <translation id="2747003861858887689">আগৰ ক্ষেত্ৰ</translation>
 <translation id="2773292004659987824">ইনক’গনিট’ ম’ডত সন্ধান কৰক</translation>
+<translation id="277771892408211951">ভাষা বাছনি কৰক</translation>
 <translation id="2780046210906776326">কোনো ইমেইল একাউণ্ট নাই</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">টেব সলনি কৰোঁতা এৰক</translation>
@@ -268,7 +269,6 @@
 <translation id="4689564913179979534">পৰিশোধৰ পদ্ধতি পৰিচালনা কৰক...</translation>
 <translation id="473775607612524610">আপডে'ট কৰক</translation>
 <translation id="4747097190499141774">পাছফ্ৰেজ এনক্ৰিপশ্বনত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনা অন্তৰ্ভুক্ত নহয়। আপোনাৰ পাছফ্ৰেজ থকাজনেহে আপোনাৰ এনক্ৰিপ্ট কৰা ডেটা পঢ়িব পাৰিব। পাছফ্ৰেজ Googleএ নপঠায় বা ষ্ট’ৰ নকৰে। আপুনি যদি নিজৰ পাছফ্রেজটো পাহৰিছে বা এই ছেটিংটো সলনি কৰিব বিচাৰিছে তেন্তে আপুনি পুনৰ ছিংক ৰিছেট কৰাৰ আৱশ্যক। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">পৃষ্ঠাত বিচাৰক...</translation>
 <translation id="4751645464639803239">নতুন ইনকগনিট’ টেব</translation>
 <translation id="4758977202923349869">ক্ৰেডিট কাৰ্ডখনক এই ফ্ৰেমটোলৈ আনক</translation>
 <translation id="4802417911091824046">পাছফ্ৰেজ এনক্ৰিপশ্বনত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনা অন্তৰ্ভুক্ত নহয়।
@@ -454,7 +454,6 @@
 <translation id="7136892417564438900">কেমেৰা উপলব্ধ নহয়</translation>
 <translation id="7159472599653637159">ম’বাইল ছাইটৰ বাবে অনুৰোধ কৰক</translation>
 <translation id="7173114856073700355">ছেটিংসমূহ খোলক</translation>
-<translation id="7189598951263744875">শ্বেয়াৰ কৰক...</translation>
 <translation id="7192050974311852563">ল’গ কৰা প্ৰক্ৰিয়া আৰম্ভ কৰক</translation>
 <translation id="7203585745079012652">সঁহাৰিটো কৈ দিয়ক</translation>
 <translation id="7265758999917665941">এই ছাইটটোৰ বাবে কেতিয়াও নহয়</translation>
@@ -556,6 +555,7 @@
 <translation id="8840513115188359703">আপোনাক নিজৰ Google Accountৰ পৰা ছাইন আউট কৰোৱা নহয়।</translation>
 <translation id="8870413625673593573">শেহতীয়াকৈ বন্ধ কৰা</translation>
 <translation id="8881801611828450202">এই প্ৰতিচ্ছবিটোৰ কাৰণে <ph name="SEARCH_ENGINE" />ত সন্ধান কৰক</translation>
+<translation id="8909135823018751308">শ্বেয়াৰ কৰক…</translation>
 <translation id="895541991026785598">কোনো সমস্যাৰ অভিযোগ দিয়ক</translation>
 <translation id="8976382372951310360">সহায়</translation>
 <translation id="8981454092730389528">Googleৰ কাৰ্যকলাপৰ নিয়ন্ত্ৰণ</translation>

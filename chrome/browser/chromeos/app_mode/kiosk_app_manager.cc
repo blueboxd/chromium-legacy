@@ -295,10 +295,10 @@ void KioskAppManager::AddAppForTest(
 }
 
 void KioskAppManager::EnableConsumerKioskAutoLaunch(
-    const KioskAppManager::EnableKioskAutoLaunchCallback& callback) {
+    KioskAppManager::EnableKioskAutoLaunchCallback callback) {
   if (!IsConsumerKioskEnabled()) {
-    if (!callback.is_null())
-      callback.Run(false);
+    if (callback)
+      std::move(callback).Run(false);
     return;
   }
 
@@ -309,24 +309,23 @@ void KioskAppManager::EnableConsumerKioskAutoLaunch(
       std::string(),  // domain
       std::string(),  // realm
       std::string(),  // device_id
-      base::Bind(
-          &KioskAppManager::OnLockDevice, base::Unretained(this), callback));
+      base::BindOnce(&KioskAppManager::OnLockDevice, base::Unretained(this),
+                     std::move(callback)));
 }
 
 void KioskAppManager::GetConsumerKioskAutoLaunchStatus(
-    const KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback& callback) {
+    KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback callback) {
   if (!IsConsumerKioskEnabled()) {
-    if (!callback.is_null())
-      callback.Run(CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
+    if (callback)
+      std::move(callback).Run(CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
     return;
   }
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetInstallAttributes()->ReadImmutableAttributes(
-      base::Bind(&KioskAppManager::OnReadImmutableAttributes,
-                 base::Unretained(this),
-                 callback));
+      base::BindOnce(&KioskAppManager::OnReadImmutableAttributes,
+                     base::Unretained(this), std::move(callback)));
 }
 
 bool KioskAppManager::IsConsumerKioskDeviceWithAutoLaunch() {
@@ -338,34 +337,33 @@ bool KioskAppManager::IsConsumerKioskDeviceWithAutoLaunch() {
 }
 
 void KioskAppManager::OnLockDevice(
-    const KioskAppManager::EnableKioskAutoLaunchCallback& callback,
+    KioskAppManager::EnableKioskAutoLaunchCallback callback,
     InstallAttributes::LockResult result) {
-  if (callback.is_null())
+  if (!callback)
     return;
 
-  callback.Run(result == InstallAttributes::LOCK_SUCCESS);
+  std::move(callback).Run(result == InstallAttributes::LOCK_SUCCESS);
 }
 
 void KioskAppManager::OnOwnerFileChecked(
-    const KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback& callback,
+    KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback callback,
     bool* owner_present) {
   ownership_established_ = *owner_present;
 
-  if (callback.is_null())
+  if (!callback)
     return;
 
   // If we have owner already established on the machine, don't let
   // consumer kiosk to be enabled.
   if (ownership_established_)
-    callback.Run(CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
+    std::move(callback).Run(CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED);
   else
-    callback.Run(CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
+    std::move(callback).Run(CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
 }
 
 void KioskAppManager::OnReadImmutableAttributes(
-    const KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback&
-        callback) {
-  if (callback.is_null())
+    KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback callback) {
+  if (!callback)
     return;
 
   ConsumerKioskAutoLaunchStatus status =
@@ -385,7 +383,7 @@ void KioskAppManager::OnReadImmutableAttributes(
              base::TaskPriority::BEST_EFFORT},
             base::BindOnce(&CheckOwnerFilePresence, owner_present),
             base::BindOnce(&KioskAppManager::OnOwnerFileChecked,
-                           base::Unretained(this), callback,
+                           base::Unretained(this), std::move(callback),
                            base::Owned(owner_present)));
         return;
       }
@@ -398,7 +396,7 @@ void KioskAppManager::OnReadImmutableAttributes(
       break;
   }
 
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 void KioskAppManager::SetEnableAutoLaunch(bool value) {

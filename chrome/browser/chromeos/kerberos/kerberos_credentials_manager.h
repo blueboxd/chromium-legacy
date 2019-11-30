@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 
@@ -32,7 +33,8 @@ namespace chromeos {
 class KerberosAddAccountRunner;
 class VariableExpander;
 
-class KerberosCredentialsManager : public policy::PolicyService::Observer {
+class KerberosCredentialsManager : public KeyedService,
+                                   public policy::PolicyService::Observer {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
@@ -56,10 +58,6 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   KerberosCredentialsManager(PrefService* local_state,
                              Profile* primary_profile);
   ~KerberosCredentialsManager() override;
-
-  // Singleton accessor. Available once the primary profile is available.
-  // DCHECKs if the instance has not been created yet.
-  static KerberosCredentialsManager& Get();
 
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

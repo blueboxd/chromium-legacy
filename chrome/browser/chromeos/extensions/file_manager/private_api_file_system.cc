@@ -407,19 +407,19 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
 namespace {
 
 void PostResponseCallbackTaskToUIThread(
-    const FileWatchFunctionBase::ResponseCallback& callback,
+    FileWatchFunctionBase::ResponseCallback callback,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, success));
+                 base::BindOnce(std::move(callback), success));
 }
 
 void PostNotificationCallbackTaskToUIThread(
-    const storage::WatcherManager::NotificationCallback& callback,
+    storage::WatcherManager::NotificationCallback callback,
     storage::WatcherManager::ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, type));
+                 base::BindOnce(std::move(callback), type));
 }
 
 }  // namespace

@@ -36,9 +36,9 @@ std::string ScreenlockIconSource::GetSource() const {
 void ScreenlockIconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   if (!icon_provider_) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
+    std::move(callback).Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
@@ -49,11 +49,11 @@ void ScreenlockIconSource::StartDataRequest(
 
   gfx::Image image = icon_provider_->GetIcon(username);
   if (image.IsEmpty()) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
+    std::move(callback).Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
-  callback.Run(image.As1xPNGBytes().get());
+  std::move(callback).Run(image.As1xPNGBytes().get());
 }
 
 std::string ScreenlockIconSource::GetMimeType(const std::string&) const {

@@ -563,7 +563,7 @@ void GCMDriverDesktop::ValidateRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     const std::string& registration_id,
-    const ValidateRegistrationCallback& callback) {
+    ValidateRegistrationCallback callback) {
   DCHECK(!app_id.empty());
   DCHECK(!sender_ids.empty() && sender_ids.size() <= kMaxSenders);
   DCHECK(!registration_id.empty());
@@ -586,25 +586,27 @@ void GCMDriverDesktop::ValidateRegistration(
   std::sort(gcm_info->sender_ids.begin(), gcm_info->sender_ids.end());
 
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(base::Bind(
-        &GCMDriverDesktop::DoValidateRegistration,
-        weak_ptr_factory_.GetWeakPtr(), gcm_info, registration_id, callback));
+    delayed_task_controller_->AddTask(
+        base::BindOnce(&GCMDriverDesktop::DoValidateRegistration,
+                       weak_ptr_factory_.GetWeakPtr(), gcm_info,
+                       registration_id, std::move(callback)));
     return;
   }
 
-  DoValidateRegistration(std::move(gcm_info), registration_id, callback);
+  DoValidateRegistration(std::move(gcm_info), registration_id,
+                         std::move(callback));
 }
 
 void GCMDriverDesktop::DoValidateRegistration(
     scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id,
-    const ValidateRegistrationCallback& callback) {
+    ValidateRegistrationCallback callback) {
   base::PostTaskAndReplyWithResult(
       io_thread_.get(), FROM_HERE,
-      base::Bind(&GCMDriverDesktop::IOWorker::ValidateRegistration,
-                 base::Unretained(io_worker_.get()),
-                 std::move(registration_info), registration_id),
-      callback);
+      base::BindOnce(&GCMDriverDesktop::IOWorker::ValidateRegistration,
+                     base::Unretained(io_worker_.get()),
+                     std::move(registration_info), registration_id),
+      std::move(callback));
 }
 
 void GCMDriverDesktop::Shutdown() {
@@ -928,12 +930,12 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
                                      const std::string& authorized_entity,
                                      const std::string& scope,
                                      const std::string& token,
-                                     const ValidateTokenCallback& callback) {
+                                     ValidateTokenCallback callback) {
   DCHECK(!app_id.empty());
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
   DCHECK(!token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
@@ -953,13 +955,15 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
   instance_id_info->scope = scope;
 
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(base::Bind(
-        &GCMDriverDesktop::DoValidateRegistration,
-        weak_ptr_factory_.GetWeakPtr(), instance_id_info, token, callback));
+    delayed_task_controller_->AddTask(
+        base::BindOnce(&GCMDriverDesktop::DoValidateRegistration,
+                       weak_ptr_factory_.GetWeakPtr(), instance_id_info, token,
+                       std::move(callback)));
     return;
   }
 
-  DoValidateRegistration(std::move(instance_id_info), token, callback);
+  DoValidateRegistration(std::move(instance_id_info), token,
+                         std::move(callback));
 }
 
 void GCMDriverDesktop::DeleteToken(const std::string& app_id,
@@ -993,12 +997,9 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
 
   // Delay the DeleteToken operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoDeleteToken,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   app_id,
-                   authorized_entity,
-                   scope));
+    delayed_task_controller_->AddTask(base::BindOnce(
+        &GCMDriverDesktop::DoDeleteToken, weak_ptr_factory_.GetWeakPtr(),
+        app_id, authorized_entity, scope));
     return;
   }
 
@@ -1031,12 +1032,9 @@ void GCMDriverDesktop::AddInstanceIDData(
 
   // Delay the operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoAddInstanceIDData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   app_id,
-                   instance_id,
-                   extra_data));
+    delayed_task_controller_->AddTask(base::BindOnce(
+        &GCMDriverDesktop::DoAddInstanceIDData, weak_ptr_factory_.GetWeakPtr(),
+        app_id, instance_id, extra_data));
     return;
   }
 
@@ -1066,9 +1064,8 @@ void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
   // Delay the operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoRemoveInstanceIDData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   app_id));
+        base::BindOnce(&GCMDriverDesktop::DoRemoveInstanceIDData,
+                       weak_ptr_factory_.GetWeakPtr(), app_id));
     return;
   }
 
@@ -1110,9 +1107,8 @@ void GCMDriverDesktop::GetInstanceIDData(
   // Delay the operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoGetInstanceIDData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   app_id));
+        base::BindOnce(&GCMDriverDesktop::DoGetInstanceIDData,
+                       weak_ptr_factory_.GetWeakPtr(), app_id));
     return;
   }
 
@@ -1178,10 +1174,9 @@ void GCMDriverDesktop::WakeFromSuspendForHeartbeat(bool wake) {
 
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     // The GCM service was initialized but has not started yet.
-    delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::WakeFromSuspendForHeartbeat,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   wake_from_suspend_enabled_));
+    delayed_task_controller_->AddTask(base::BindOnce(
+        &GCMDriverDesktop::WakeFromSuspendForHeartbeat,
+        weak_ptr_factory_.GetWeakPtr(), wake_from_suspend_enabled_));
     return;
   }
 
@@ -1205,8 +1200,8 @@ void GCMDriverDesktop::AddHeartbeatInterval(const std::string& scope,
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     // The GCM service was initialized but has not started yet.
     delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::AddHeartbeatInterval,
-                   weak_ptr_factory_.GetWeakPtr(), scope, interval_ms));
+        base::BindOnce(&GCMDriverDesktop::AddHeartbeatInterval,
+                       weak_ptr_factory_.GetWeakPtr(), scope, interval_ms));
     return;
   }
 
@@ -1226,8 +1221,8 @@ void GCMDriverDesktop::RemoveHeartbeatInterval(const std::string& scope) {
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     // The GCM service was initialized but has not started yet.
     delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::RemoveHeartbeatInterval,
-                   weak_ptr_factory_.GetWeakPtr(), scope));
+        base::BindOnce(&GCMDriverDesktop::RemoveHeartbeatInterval,
+                       weak_ptr_factory_.GetWeakPtr(), scope));
     return;
   }
 

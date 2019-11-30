@@ -100,7 +100,6 @@
 <translation id="1137673463384776352">አገናኝን በ<ph name="APP" /> ውስጥ ክፈት</translation>
 <translation id="1140351953533677694">የእርስዎን የብሉቱዝ እና ተከታታይ መሣሪያዎች ይደርሳል</translation>
 <translation id="114036956334641753">ኦዲዮ እና መገለጫ ጽሑፎች</translation>
-<translation id="1140610710803014750">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት በመለያ ይግቡና ስምረትን ያብሩ።</translation>
 <translation id="1140746652461896221">በሚጎበኙት ማንኛውም ገጽ ላይ ይዘትን ማገድ</translation>
 <translation id="1143142264369994168">ሰርቲፊኬት ፈራሚ</translation>
 <translation id="1145292499998999162">ተሰኪ ታግዷል</translation>
@@ -334,7 +333,6 @@
 <translation id="1465176863081977902">የኦዲዮ አድራሻ &amp;ቅዳ</translation>
 <translation id="1465827627707997754">የፒዛ ቁራጭ</translation>
 <translation id="1468571364034902819">ይህን መገለጫ መጠቀም አይቻልም</translation>
-<translation id="1470811252759861213">በሁሉም ኮምፒውተሮችዎ ላይ ቅጥያዎችዎን ለማግኘት <ph name="SIGN_IN_LINK" />።</translation>
 <translation id="1472675084647422956">ተጨማሪ አሳይ</translation>
 <translation id="1475502736924165259">ከሌሎች ማንኛቸውም መደቦች ጋር የማይገጣጠሙ የእውቅና ማረጋገጫዎች በፋይል ላይ አለዎት</translation>
 <translation id="1476088332184200792">ወደ መሣሪያዎ ይቅዱ</translation>
@@ -1055,7 +1053,6 @@
 <translation id="2489829450872380594">በሚቀጥለው ጊዜ አዲስ ስልክ ይህን <ph name="DEVICE_TYPE" /> ይከፍተዋል። በቅንብሮች ውስጥ Smart Lockን ማጥፋት ይችላሉ።</translation>
 <translation id="2489918096470125693">&amp;አቃፊ አክል...</translation>
 <translation id="2490481887078769936">«<ph name="FILE_NAME" />» ከዝርዝር ተወግዷል</translation>
-<translation id="2490782392574942205">በሁሉም ኮምፒውተሮችዎ ላይ ቅጥያዎችዎን ለማግኘት በመለያ ይግቡና ስምረትን ያብሩ</translation>
 <translation id="249113932447298600">ይቅርታ፣ መሣሪያ <ph name="DEVICE_LABEL" /> በአሁኑ ጊዜ አይደገፍም።</translation>
 <translation id="249303669840926644">ምዝገባን ማጠናቀቅ አልተቻለም</translation>
 <translation id="2495777824269688114">ተጨማሪ ባህሪዎችን ወይም መልሶችን ያግኙ። ለእገዛ «?» ን ይምረጡ።</translation>
@@ -1773,7 +1770,6 @@
 <translation id="3527085408025491307">አቃፊ</translation>
 <translation id="3528033729920178817">ይህ ገጽ አካባቢዎን እየተከታተለ ነው።</translation>
 <translation id="3528498924003805721">የአቋራጭ ዒላማዎች</translation>
-<translation id="3530305684079447434">የእርስዎን ዕልባቶችን በሁሉም መሣሪያዎችዎ ላይ ለማግኘት <ph name="SIGN_IN_LINK" />።</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ማይክሮፎንዎን መጠቀም ይፈልጋል</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ኦዲዮ ድምፀ-ከል ተደርጎበታል</translation>
 <translation id="3538066758857505094">Linuxን በማራገፍ ላይ ስህተት። እባክዎ እንደገና ይሞክሩ።</translation>

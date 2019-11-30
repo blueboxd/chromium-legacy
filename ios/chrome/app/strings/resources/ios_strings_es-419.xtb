@@ -268,7 +268,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="4689564913179979534">Administrar formas de pago…</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4747097190499141774">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay. Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="4749030437873592350">Buscar en la página…</translation>
 <translation id="4751645464639803239">Nueva pestaña de incógnito</translation>
 <translation id="4758977202923349869">Coloca la tarjeta de crédito en este marco</translation>
 <translation id="4802417911091824046">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay.
@@ -455,7 +454,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7159472599653637159">Solicitar sitio móvil</translation>
 <translation id="7173114856073700355">Abrir la configuración</translation>
-<translation id="7189598951263744875">Compartir...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="7265758999917665941">Nunca para este sitio</translation>
@@ -559,6 +557,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8840513115188359703">No saldrás de tu cuenta de Google.</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8881801611828450202">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="8909135823018751308">Compartir…</translation>
 <translation id="895541991026785598">Informar de un problema</translation>
 <translation id="8976382372951310360">Ayuda</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>

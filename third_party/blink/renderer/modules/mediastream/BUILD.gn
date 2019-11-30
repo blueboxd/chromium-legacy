@@ -13,6 +13,7 @@ blink_modules_sources("mediastream") {
     "apply_constraints_request.cc",
     "apply_constraints_request.h",
     "dom_window_media_stream.h",
+    "encoded_frame.h",
     "input_device_info.cc",
     "input_device_info.h",
     "local_media_stream_audio_source.cc",
@@ -105,6 +106,7 @@ jumbo_source_set("test_support") {
   sources = [
     "mock_constraint_factory.cc",
     "mock_constraint_factory.h",
+    "mock_encoded_video_frame.h",
     "mock_media_stream_registry.cc",
     "mock_media_stream_registry.h",
     "mock_media_stream_video_sink.cc",

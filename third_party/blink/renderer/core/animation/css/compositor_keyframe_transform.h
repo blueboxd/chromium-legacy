@@ -19,11 +19,6 @@ class CORE_EXPORT CompositorKeyframeTransform final
       : transform_(transform), zoom_(zoom) {}
   ~CompositorKeyframeTransform() override = default;
 
-  static CompositorKeyframeTransform* Create(
-      const TransformOperations& transform,
-      double zoom) {
-    return MakeGarbageCollected<CompositorKeyframeTransform>(transform, zoom);
-  }
   const TransformOperations& GetTransformOperations() const {
     return transform_;
   }

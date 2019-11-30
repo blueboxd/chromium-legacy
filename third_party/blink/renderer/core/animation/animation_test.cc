@@ -107,7 +107,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
     // doesn't call.
-    start_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(1.0));
+    start_keyframe->SetCompositorValue(
+        MakeGarbageCollected<CompositorKeyframeDouble>(1.0));
     TransitionKeyframe* end_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
     end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
@@ -115,7 +116,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
         std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
-    end_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(0.0));
+    end_keyframe->SetCompositorValue(
+        MakeGarbageCollected<CompositorKeyframeDouble>(0.0));
 
     TransitionKeyframeVector keyframes;
     keyframes.push_back(start_keyframe);

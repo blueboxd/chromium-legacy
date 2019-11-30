@@ -17,10 +17,6 @@ class CORE_EXPORT CompositorKeyframeColor final
   CompositorKeyframeColor(SkColor color) : color_(color) {}
   ~CompositorKeyframeColor() override = default;
 
-  static CompositorKeyframeColor* Create(SkColor color) {
-    return MakeGarbageCollected<CompositorKeyframeColor>(color);
-  }
-
   SkColor ToColor() const { return color_; }
 
  private:

@@ -14,10 +14,6 @@ class CORE_EXPORT CSSTransition : public Animation {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSTransition* Create(AnimationEffect*,
-                               AnimationTimeline*,
-                               const PropertyHandle&);
-
   CSSTransition(ExecutionContext*,
                 AnimationTimeline*,
                 AnimationEffect*,

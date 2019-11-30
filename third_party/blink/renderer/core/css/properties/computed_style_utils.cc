@@ -1420,7 +1420,7 @@ static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsSVGChild());
   return layout_object.IsSVGImage() || layout_object.IsSVGForeignObject() ||
          (layout_object.IsSVGShape() &&
-          IsSVGRectElement(layout_object.GetNode()));
+          IsA<SVGRectElement>(layout_object.GetNode()));
 }
 
 FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {

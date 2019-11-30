@@ -14,11 +14,6 @@ namespace blink {
 class CompositorKeyframeFilterOperations final
     : public CompositorKeyframeValue {
  public:
-  static CompositorKeyframeFilterOperations* Create(
-      const FilterOperations& operations) {
-    return MakeGarbageCollected<CompositorKeyframeFilterOperations>(operations);
-  }
-
   CompositorKeyframeFilterOperations(const FilterOperations& operations)
       : operation_wrapper_(
             MakeGarbageCollected<FilterOperationsWrapper>(operations)) {}

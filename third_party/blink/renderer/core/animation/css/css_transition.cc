@@ -6,14 +6,6 @@
 
 namespace blink {
 
-CSSTransition* CSSTransition::Create(AnimationEffect* effect,
-                                     AnimationTimeline* timeline,
-                                     const PropertyHandle& property) {
-  DCHECK(timeline && timeline->IsDocumentTimeline());
-  return MakeGarbageCollected<CSSTransition>(
-      timeline->GetDocument()->ContextDocument(), timeline, effect, property);
-}
-
 CSSTransition::CSSTransition(ExecutionContext* execution_context,
                              AnimationTimeline* timeline,
                              AnimationEffect* content,

@@ -160,7 +160,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
     if (auto* image = ToSVGImageElementOrNull(*node)) {
       if (!image->CurrentFrameHasSingleSecurityOrigin())
         return false;
-    } else if (auto* fe_image = ToSVGFEImageElementOrNull(*node)) {
+    } else if (auto* fe_image = DynamicTo<SVGFEImageElement>(*node)) {
       if (!fe_image->CurrentFrameHasSingleSecurityOrigin())
         return false;
     }

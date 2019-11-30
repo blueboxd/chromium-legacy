@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -27,8 +28,8 @@ static CompositorKeyframeValue* CreateFromTransformProperties(
     operation.Operations().push_back(
         std::move(has_transform ? transform : initial_transform));
   }
-  return CompositorKeyframeTransform::Create(operation,
-                                             has_transform ? zoom : 1);
+  return MakeGarbageCollected<CompositorKeyframeTransform>(
+      operation, has_transform ? zoom : 1);
 }
 
 CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
@@ -44,14 +45,16 @@ CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
 #endif
   switch (css_property.PropertyID()) {
     case CSSPropertyID::kOpacity:
-      return CompositorKeyframeDouble::Create(style.Opacity());
+      return MakeGarbageCollected<CompositorKeyframeDouble>(style.Opacity());
     case CSSPropertyID::kFilter:
-      return CompositorKeyframeFilterOperations::Create(style.Filter());
+      return MakeGarbageCollected<CompositorKeyframeFilterOperations>(
+          style.Filter());
     case CSSPropertyID::kBackdropFilter:
-      return CompositorKeyframeFilterOperations::Create(style.BackdropFilter());
+      return MakeGarbageCollected<CompositorKeyframeFilterOperations>(
+          style.BackdropFilter());
     case CSSPropertyID::kTransform:
-      return CompositorKeyframeTransform::Create(style.Transform(),
-                                                 style.EffectiveZoom());
+      return MakeGarbageCollected<CompositorKeyframeTransform>(
+          style.Transform(), style.EffectiveZoom());
     case CSSPropertyID::kTranslate: {
       return CreateFromTransformProperties(style.Translate(),
                                            style.EffectiveZoom(), nullptr);
@@ -73,7 +76,7 @@ CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
 
       const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
       if (primitive_value && primitive_value->IsNumber()) {
-        return CompositorKeyframeDouble::Create(
+        return MakeGarbageCollected<CompositorKeyframeDouble>(
             primitive_value->GetFloatValue());
       }
 
@@ -81,7 +84,7 @@ CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
       // CSSIdentifierValue when given a value of currentcolor
       if (const auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value)) {
         Color color = color_value->Value();
-        return CompositorKeyframeColor::Create(SkColorSetARGB(
+        return MakeGarbageCollected<CompositorKeyframeColor>(SkColorSetARGB(
             color.Alpha(), color.Red(), color.Green(), color.Blue()));
       }
 

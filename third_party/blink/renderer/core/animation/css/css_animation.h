@@ -15,10 +15,6 @@ class CORE_EXPORT CSSAnimation : public Animation {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSAnimation* Create(AnimationEffect*,
-                              AnimationTimeline*,
-                              const String& animation_name);
-
   CSSAnimation(ExecutionContext*,
                AnimationTimeline*,
                AnimationEffect*,

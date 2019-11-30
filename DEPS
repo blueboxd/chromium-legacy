@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': 'bf0fe874a27bd6c9a4a35b98e662d2d02f8879a2',
+  'googletest_revision': '5395345ca4f0c596110188688ed990e0de5a181c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -303,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fd12e1b746bded4b4432d0ec7c804d6a86deab40',
+  'dawn_revision': '969df2b3a21c126b2e0015ce2392c135f32a6a08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1561,7 +1561,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a75cf40b23712ff0a9ad64963e8d58e497b9c5f0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a129bb05ed85fc8cbf5b755e9347acd19e70efb3',
     'condition': 'checkout_src_internal',
   },
 

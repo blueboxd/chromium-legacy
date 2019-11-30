@@ -209,7 +209,13 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       }
     }
   }
-
+  if (token.GetType() == HTMLToken::kEndTag && InForeignContent()) {
+    const String& tag_name = token.Data();
+    if (ThreadSafeMatch(tag_name, html_names::kPTag) ||
+        ThreadSafeMatch(tag_name, html_names::kBrTag)) {
+      namespace_stack_.pop_back();
+    }
+  }
   if (token.GetType() == HTMLToken::kEndTag ||
       (token.GetType() == HTMLToken::kStartTag && token.SelfClosing() &&
        InForeignContent())) {

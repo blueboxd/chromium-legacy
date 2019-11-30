@@ -1532,6 +1532,9 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1016945) Clean up, enable.
           "-Wno-builtin-assume-aligned-alignment",
+
+          # TODO(https://crbug.com/1028110): Evaluate and possible enable.
+          "-Wno-deprecated-copy",
         ]
 
         if (is_fuchsia || is_mac) {
@@ -1557,13 +1560,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1028110): Evaluate and possible enable.
-            "-Wno-deprecated-copy",
-          ]
-        }
       }
     }
   }

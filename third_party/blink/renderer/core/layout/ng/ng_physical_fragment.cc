@@ -424,11 +424,11 @@ const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
     const {
   DCHECK(IsInline());
   DCHECK(GetLayoutObject());
-  LayoutBlockFlow* block_flow = GetLayoutObject()->ContainingNGBlockFlow();
+  LayoutBlockFlow* block_flow =
+      GetLayoutObject()->RootInlineFormattingContext();
   // TODO(xiaochengh): Code below is copied from ng_offset_mapping.cc with
   // modification. Unify them.
   DCHECK(block_flow);
-  DCHECK(block_flow->ChildrenInline());
   NGBlockNode block_node = NGBlockNode(block_flow);
   DCHECK(block_node.CanUseNewLayout());
   NGLayoutInputNode node = block_node.FirstChild();

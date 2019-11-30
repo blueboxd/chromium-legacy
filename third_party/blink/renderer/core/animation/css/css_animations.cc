@@ -523,8 +523,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
 
-    CSSAnimation* animation = CSSAnimation::Create(
-        effect, &(element->GetDocument().Timeline()), entry.name);
+    auto* animation = MakeGarbageCollected<CSSAnimation>(
+        element->GetDocument().ContextDocument(),
+        &(element->GetDocument().Timeline()), effect, entry.name);
     animation->play();
     if (inert_animation->Paused())
       animation->pause();
@@ -592,8 +593,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     auto* transition_effect = MakeGarbageCollected<KeyframeEffect>(
         element, model, inert_animation->SpecifiedTiming(),
         KeyframeEffect::kTransitionPriority, event_delegate);
-    Animation* animation = CSSTransition::Create(
-        transition_effect, &(element->GetDocument().Timeline()), property);
+    auto* animation = MakeGarbageCollected<CSSTransition>(
+        element->GetDocument().ContextDocument(),
+        &(element->GetDocument().Timeline()), transition_effect, property);
+
     animation->play();
 
     // Set the current time as the start time for retargeted transitions

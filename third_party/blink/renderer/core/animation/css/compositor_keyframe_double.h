@@ -16,10 +16,6 @@ class CORE_EXPORT CompositorKeyframeDouble final
   CompositorKeyframeDouble(double number) : number_(number) {}
   ~CompositorKeyframeDouble() override = default;
 
-  static CompositorKeyframeDouble* Create(double number) {
-    return MakeGarbageCollected<CompositorKeyframeDouble>(number);
-  }
-
   double ToDouble() const { return number_; }
 
  private:

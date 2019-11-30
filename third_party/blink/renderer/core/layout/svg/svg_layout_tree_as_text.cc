@@ -338,7 +338,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
   const ComputedStyle& style = shape.StyleRef();
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  if (IsSVGRectElement(*svg_element)) {
+  if (IsA<SVGRectElement>(*svg_element)) {
     WriteNameValuePair(ts, "x",
                        length_context.ValueForLength(svg_style.X(), style,
                                                      SVGLengthMode::kWidth));

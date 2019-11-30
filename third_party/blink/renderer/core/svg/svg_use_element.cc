@@ -497,7 +497,7 @@ LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style,
 }
 
 static bool IsDirectReference(const SVGElement& element) {
-  return IsSVGPathElement(element) || IsSVGRectElement(element) ||
+  return IsSVGPathElement(element) || IsA<SVGRectElement>(element) ||
          IsSVGCircleElement(element) || IsSVGEllipseElement(element) ||
          IsA<SVGPolygonElement>(element) || IsA<SVGPolylineElement>(element) ||
          IsSVGTextElement(element);

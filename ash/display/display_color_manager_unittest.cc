@@ -39,8 +39,8 @@ class DisplayColorManagerForTest : public DisplayColorManager {
       display::DisplayConfigurator* configurator)
       : DisplayColorManager(configurator, nullptr /* display_to_observe */) {}
 
-  void SetOnFinishedForTest(base::Closure on_finished_for_test) {
-    on_finished_for_test_ = on_finished_for_test;
+  void SetOnFinishedForTest(base::OnceClosure on_finished_for_test) {
+    on_finished_for_test_ = std::move(on_finished_for_test);
   }
 
  private:
@@ -54,8 +54,8 @@ class DisplayColorManagerForTest : public DisplayColorManager {
         display_id, product_id, has_color_correction_matrix, type, path,
         file_downloaded);
     // If path is empty, there is no icc file, and the DCM's work is done.
-    if (path.empty() && !on_finished_for_test_.is_null()) {
-      on_finished_for_test_.Run();
+    if (path.empty() && on_finished_for_test_) {
+      std::move(on_finished_for_test_).Run();
       on_finished_for_test_.Reset();
     }
   }
@@ -66,13 +66,13 @@ class DisplayColorManagerForTest : public DisplayColorManager {
       std::unique_ptr<ColorCalibrationData> data) override {
     DisplayColorManager::UpdateCalibrationData(display_id, product_id,
                                                std::move(data));
-    if (!on_finished_for_test_.is_null()) {
-      on_finished_for_test_.Run();
+    if (on_finished_for_test_) {
+      std::move(on_finished_for_test_).Run();
       on_finished_for_test_.Reset();
     }
   }
 
-  base::Closure on_finished_for_test_;
+  base::OnceClosure on_finished_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayColorManagerForTest);
 };

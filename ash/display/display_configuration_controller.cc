@@ -99,8 +99,8 @@ void DisplayConfigurationController::SetDisplayLayout(
     std::unique_ptr<display::DisplayLayout> layout) {
   if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
-        base::Bind(&DisplayConfigurationController::SetDisplayLayoutImpl,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&layout)));
+        base::BindOnce(&DisplayConfigurationController::SetDisplayLayoutImpl,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(layout)));
   } else {
     SetDisplayLayoutImpl(std::move(layout));
   }
@@ -111,7 +111,7 @@ void DisplayConfigurationController::SetUnifiedDesktopLayoutMatrix(
   DCHECK(display_manager_->IsInUnifiedMode());
 
   if (display_animator_) {
-    display_animator_->StartFadeOutAnimation(base::Bind(
+    display_animator_->StartFadeOutAnimation(base::BindOnce(
         &DisplayConfigurationController::SetUnifiedDesktopLayoutMatrixImpl,
         weak_ptr_factory_.GetWeakPtr(), matrix));
   } else {
@@ -128,8 +128,8 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror, bool throttle) {
   SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
   if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
-        base::Bind(&DisplayConfigurationController::SetMirrorModeImpl,
-                   weak_ptr_factory_.GetWeakPtr(), mirror));
+        base::BindOnce(&DisplayConfigurationController::SetMirrorModeImpl,
+                       weak_ptr_factory_.GetWeakPtr(), mirror));
   } else {
     SetMirrorModeImpl(mirror);
   }
@@ -176,8 +176,8 @@ void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
   SetThrottleTimeout(kSetPrimaryDisplayThrottleTimeoutMs);
   if (display_animator_) {
     display_animator_->StartFadeOutAnimation(
-        base::Bind(&DisplayConfigurationController::SetPrimaryDisplayIdImpl,
-                   weak_ptr_factory_.GetWeakPtr(), display_id));
+        base::BindOnce(&DisplayConfigurationController::SetPrimaryDisplayIdImpl,
+                       weak_ptr_factory_.GetWeakPtr(), display_id));
   } else {
     SetPrimaryDisplayIdImpl(display_id);
   }

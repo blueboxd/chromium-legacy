@@ -536,7 +536,7 @@ SVGElement* SVGElement::viewportElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
     if (IsA<SVGSVGElement>(*n) || IsSVGImageElement(*n) ||
-        IsSVGSymbolElement(*n))
+        IsA<SVGSymbolElement>(*n))
       return To<SVGElement>(n);
 
     n = n->ParentOrShadowHostNode();

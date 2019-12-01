@@ -25,17 +25,18 @@ public class PaymentHandlerToolbarCoordinator {
     /**
      * Observer for the error of the payment handler toolbar.
      */
-    public interface ErrorObserver {
-        /**
-         * Called when the UI gets an error
-         */
-        void onError();
+    public interface PaymentHandlerToolbarObserver {
+        /** Called when the UI gets an error. */
+        void onToolbarError();
+
+        /** Called when the close button is clicked. */
+        void onToolbarCloseButtonClicked();
     }
 
     /** Constructs the payment-handler toolbar component coordinator. */
     public PaymentHandlerToolbarCoordinator(
-            Context context, WebContents webContents, ErrorObserver errorObserver) {
-        mToolbarView = new PaymentHandlerToolbarView(context);
+            Context context, WebContents webContents, PaymentHandlerToolbarObserver observer) {
+        mToolbarView = new PaymentHandlerToolbarView(context, observer);
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
                                       .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
                                       .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS, 0)
@@ -43,7 +44,7 @@ public class PaymentHandlerToolbarCoordinator {
                                               ConnectionSecurityLevel.NONE)
                                       .build();
         PaymentHandlerToolbarMediator mediator =
-                new PaymentHandlerToolbarMediator(model, webContents, errorObserver);
+                new PaymentHandlerToolbarMediator(model, webContents, observer);
         webContents.addObserver(mediator);
         PropertyModelChangeProcessor changeProcessor = PropertyModelChangeProcessor.create(
                 model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);

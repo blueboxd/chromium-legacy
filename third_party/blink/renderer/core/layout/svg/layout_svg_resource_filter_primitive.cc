@@ -67,7 +67,7 @@ void LayoutSVGResourceFilterPrimitive::StyleDidChange(
                         new_style.FloodColor());
     if (new_style.FloodOpacity() != old_style->SvgStyle().FloodOpacity())
       element.PrimitiveAttributeChanged(svg_names::kFloodOpacityAttr);
-  } else if (IsSVGFEDiffuseLightingElement(element) ||
+  } else if (IsA<SVGFEDiffuseLightingElement>(element) ||
              IsA<SVGFESpecularLightingElement>(element)) {
     CheckForColorChange(element, svg_names::kLightingColorAttr, diff,
                         old_style->SvgStyle().LightingColor(),

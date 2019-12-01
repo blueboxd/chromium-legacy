@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.payments.SslValidityChecker;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
+import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -21,7 +22,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * backend (the coordinator).
  */
 /* package */ class PaymentHandlerMediator
-        extends WebContentsObserver implements BottomSheetObserver {
+        extends WebContentsObserver implements BottomSheetObserver, PaymentHandlerToolbarObserver {
     private final PropertyModel mModel;
     private final Runnable mHider;
     // Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. Although
@@ -104,6 +105,20 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void didFailLoad(
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
         // TODO(crbug.com/1017926): Respond to service worker with the net error.
+        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
+        mHider.run();
+    }
+
+    // PaymentHandlerToolbarObserver:
+    @Override
+    public void onToolbarCloseButtonClicked() {
+        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
+        mHider.run();
+    }
+
+    @Override
+    public void onToolbarError() {
+        // TODO(maxlg): send an error message to users.
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
         mHider.run();
     }

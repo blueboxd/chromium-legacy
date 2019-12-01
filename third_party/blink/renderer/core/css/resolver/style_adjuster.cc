@@ -696,7 +696,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (style.Display() == EDisplay::kContents &&
         (is_svg_root ||
          (!IsA<SVGSVGElement>(element) && !IsSVGGElement(element) &&
-          !IsA<SVGUseElement>(element) && !IsSVGTSpanElement(element)))) {
+          !IsA<SVGUseElement>(element) && !IsA<SVGTSpanElement>(element)))) {
       // According to the CSS Display spec[1], nested <svg> elements, <g>,
       // <use>, and <tspan> elements are not rendered and their children are
       // "hoisted". For other elements display:contents behaves as display:none.
@@ -706,12 +706,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
 
     // SVG text layout code expects us to be a block-level style element.
-    if ((IsSVGForeignObjectElement(*element) || IsSVGTextElement(*element)) &&
+    if ((IsSVGForeignObjectElement(*element) ||
+         IsA<SVGTextElement>(*element)) &&
         style.IsDisplayInlineType())
       style.SetDisplay(EDisplay::kBlock);
 
     // Columns don't apply to svg text elements.
-    if (IsSVGTextElement(*element))
+    if (IsA<SVGTextElement>(*element))
       style.ClearMultiCol();
   } else if (element && element->IsMathMLElement()) {
     if (style.Display() == EDisplay::kContents) {

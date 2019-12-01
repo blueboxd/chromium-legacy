@@ -333,10 +333,10 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(
       display->product_code(), display->display_name(),
-      base::Bind(&DisplayColorManager::FinishLoadCalibrationForDisplay,
-                 weak_ptr_factory_.GetWeakPtr(), display->display_id(),
-                 display->product_code(),
-                 display->has_color_correction_matrix(), display->type()));
+      base::BindOnce(&DisplayColorManager::FinishLoadCalibrationForDisplay,
+                     weak_ptr_factory_.GetWeakPtr(), display->display_id(),
+                     display->product_code(),
+                     display->has_color_correction_matrix(), display->type()));
   return true;
 }
 
@@ -373,9 +373,9 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
 
   base::PostTaskAndReplyWithResult(
       sequenced_task_runner_.get(), FROM_HERE,
-      base::Bind(&ParseDisplayProfile, path, has_color_correction_matrix),
-      base::Bind(&DisplayColorManager::UpdateCalibrationData,
-                 weak_ptr_factory_.GetWeakPtr(), display_id, product_code));
+      base::BindOnce(&ParseDisplayProfile, path, has_color_correction_matrix),
+      base::BindOnce(&DisplayColorManager::UpdateCalibrationData,
+                     weak_ptr_factory_.GetWeakPtr(), display_id, product_code));
 }
 
 void DisplayColorManager::UpdateCalibrationData(

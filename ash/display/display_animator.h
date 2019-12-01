@@ -35,7 +35,7 @@ class ASH_EXPORT DisplayAnimator
   DisplayAnimator();
   ~DisplayAnimator() override;
 
-  void StartFadeOutAnimation(base::Closure callback);
+  void StartFadeOutAnimation(base::OnceClosure callback);
   void StartFadeInAnimation();
 
  protected:

@@ -639,7 +639,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
     }
 
     // There is no caret position in non-text svg elements.
-    if (current_node->IsSVGElement() && !IsSVGTextElement(current_node))
+    if (current_node->IsSVGElement() && !IsA<SVGTextElement>(current_node))
       continue;
 
     // If we've moved to a position that is visually distinct, return the last
@@ -786,7 +786,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
       break;
 
     // There is no caret position in non-text svg elements.
-    if (current_node->IsSVGElement() && !IsSVGTextElement(current_node))
+    if (current_node->IsSVGElement() && !IsA<SVGTextElement>(current_node))
       continue;
 
     // Do not move to a visually distinct position.

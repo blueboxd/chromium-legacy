@@ -139,7 +139,7 @@ static void TransferUseWidthAndHeightIfNeeded(
     const SVGElement& original_element) {
   // Use |original_element| for checking the element type, because we will
   // have replaced a <symbol> with an <svg> in the instance tree.
-  if (!IsSVGSymbolElement(original_element) &&
+  if (!IsA<SVGSymbolElement>(original_element) &&
       !IsA<SVGSVGElement>(original_element))
     return;
 
@@ -410,7 +410,7 @@ static void MoveChildrenToReplacementElement(ContainerNode& source_root,
 
 SVGElement* SVGUseElement::CreateInstanceTree(SVGElement& target_root) const {
   SVGElement* instance_root = &To<SVGElement>(target_root.CloneWithChildren());
-  if (IsSVGSymbolElement(target_root)) {
+  if (IsA<SVGSymbolElement>(target_root)) {
     // Spec: The referenced 'symbol' and its contents are deep-cloned into
     // the generated tree, with the exception that the 'symbol' is replaced
     // by an 'svg'. This generated 'svg' will always have explicit values
@@ -500,7 +500,7 @@ static bool IsDirectReference(const SVGElement& element) {
   return IsSVGPathElement(element) || IsA<SVGRectElement>(element) ||
          IsSVGCircleElement(element) || IsSVGEllipseElement(element) ||
          IsA<SVGPolygonElement>(element) || IsA<SVGPolylineElement>(element) ||
-         IsSVGTextElement(element);
+         IsA<SVGTextElement>(element);
 }
 
 Path SVGUseElement::ToClipPath() const {

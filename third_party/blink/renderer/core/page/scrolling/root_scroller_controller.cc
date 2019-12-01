@@ -175,7 +175,10 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
     }
   }
 
-  if (effective_root_scroller_ == new_effective_root_scroller)
+  // Note, the layout object can be replaced during a rebuild. In that case,
+  // re-run process even if the element itself is the same.
+  if (effective_root_scroller_ == new_effective_root_scroller &&
+      effective_root_scroller_->IsEffectiveRootScroller())
     return;
 
   Node* old_effective_root_scroller = effective_root_scroller_;

@@ -74,6 +74,8 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
                void(Profile*,
                     const Extension*,
                     const std::vector<base::FilePath>&));
+  MOCK_METHOD2(OpenAppURLInBrowserWindow,
+               void(const base::FilePath&, const GURL& url));
 
   // Conditionally mock LaunchShim. Some tests will execute |launch_callback|
   // with a particular value.
@@ -397,6 +399,9 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
       handler_->SetProfileMenuItems(std::move(items));
     }
 
+    // Tests that expect this call will override it.
+    EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(_, _)).Times(0);
+
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
@@ -586,13 +591,24 @@ class ExtensionAppShimHandlerTestMultiProfile
 };
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
-  // Bad profile path.
+  // Bad profile path, opens a bookmark app in a new window.
   EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
       .WillRepeatedly(Return(static_cast<Profile*>(nullptr)));
   NormalLaunch(bootstrap_aa_, nullptr);
+  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   delegate_->RunLoadProfileCallback(profile_path_a_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileNotFound,
             *bootstrap_aa_result_);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFoundNotBookmark) {
+  // Bad profile path, not a bookmark app, doesn't open anything.
+  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+      .WillRepeatedly(Return(static_cast<Profile*>(nullptr)));
+  NormalLaunch(bootstrap_ab_, nullptr);
+  delegate_->RunLoadProfileCallback(profile_path_a_, nullptr);
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileNotFound,
+            *bootstrap_ab_result_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
@@ -600,6 +616,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
   EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
       .WillOnce(Return(true));
   EXPECT_CALL(*delegate_, LaunchUserManager());
+  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   NormalLaunch(bootstrap_aa_, nullptr);
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kProfileLocked,
             *bootstrap_aa_result_);
@@ -611,6 +628,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
   EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
+  EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kAppNotFound,
             *bootstrap_aa_result_);

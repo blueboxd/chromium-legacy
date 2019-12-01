@@ -377,6 +377,24 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   }
 }
 
+void ExtensionAppShimHandler::Delegate::OpenAppURLInBrowserWindow(
+    const base::FilePath& profile_path,
+    const GURL& url) {
+  Profile* profile =
+      profile_path.empty() ? nullptr : ProfileForPath(profile_path);
+  if (!profile)
+    profile = g_browser_process->profile_manager()->GetLastUsedProfile();
+  if (!profile)
+    return;
+  Browser* browser =
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
+  browser->window()->Show();
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
+}
+
 void ExtensionAppShimHandler::Delegate::LaunchShim(
     Profile* profile,
     const Extension* extension,
@@ -527,6 +545,7 @@ void ExtensionAppShimHandler::OnShimLaunchRequested(
 
 void ExtensionAppShimHandler::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
+  DCHECK(crx_file::id_util::IdIsValid(bootstrap->GetAppId()));
   switch (bootstrap->GetLaunchType()) {
     case chrome::mojom::AppShimLaunchType::kNormal:
       OnShimProcessConnectedForLaunch(std::move(bootstrap));
@@ -540,7 +559,6 @@ void ExtensionAppShimHandler::OnShimProcessConnected(
 void ExtensionAppShimHandler::OnShimProcessConnectedForRegisterOnly(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   const std::string& app_id = bootstrap->GetAppId();
-  DCHECK(crx_file::id_util::IdIsValid(app_id));
   DCHECK_EQ(bootstrap->GetLaunchType(),
             chrome::mojom::AppShimLaunchType::kRegisterOnly);
 
@@ -580,7 +598,6 @@ void ExtensionAppShimHandler::OnShimProcessConnectedForRegisterOnly(
 void ExtensionAppShimHandler::OnShimProcessConnectedForLaunch(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   const std::string& app_id = bootstrap->GetAppId();
-  DCHECK(crx_file::id_util::IdIsValid(app_id));
   DCHECK_EQ(bootstrap->GetLaunchType(),
             chrome::mojom::AppShimLaunchType::kNormal);
 
@@ -643,16 +660,14 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
   auto launch_files = bootstrap->GetLaunchFiles();
 
   // Launch all of the profiles in |profile_paths_to_launch|. Record the most
-  // profile successfully launched in |profile_state|, and the most recent
-  // reason for a failure (if any) in |launch_result|.
-  ProfileState* profile_state = nullptr;
-  auto launch_result = chrome::mojom::AppShimLaunchResult::kNoHost;
-  for (size_t i = 0; i < profile_paths_to_launch.size(); ++i) {
-    const base::FilePath& profile_path = profile_paths_to_launch[i];
-    if (profile_path.empty()) {
-      launch_result = chrome::mojom::AppShimLaunchResult::kProfileNotFound;
+  // profile successfully launched in |launched_profile_state|, and the most
+  // recent reason for a failure (if any) in |launch_result|.
+  ProfileState* launched_profile_state = nullptr;
+  auto launch_result = chrome::mojom::AppShimLaunchResult::kProfileNotFound;
+  for (size_t iter = 0; iter < profile_paths_to_launch.size(); ++iter) {
+    const base::FilePath& profile_path = profile_paths_to_launch[iter];
+    if (profile_path.empty())
       continue;
-    }
     if (delegate_->IsProfileLockedForPath(profile_path)) {
       launch_result = chrome::mojom::AppShimLaunchResult::kProfileLocked;
       continue;
@@ -669,28 +684,56 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
       continue;
     }
 
-    // Create a ProfileState for this app. We will connect |bootstrap| to it
-    // after all profiles have been launched.
+    // Create a ProfileState for this app, if appropriate (e.g, not for
+    // open-in-a-tab bookmark apps).
+    ProfileState* profile_state = nullptr;
     if (delegate_->AllowShimToConnect(profile, extension))
       profile_state = GetOrCreateProfileState(profile, extension);
 
-    // Launch the app (that is, open a browser window for it). Only pass
-    // |launch_files| to the first profile opened.
-    delegate_->LaunchApp(profile, extension, launch_files);
-    launch_files.clear();
+    // If there exist any open window for this profile, then bring them to the
+    // front.
+    bool had_open_windows = false;
+    if (profile_state && !profile_state->browsers.empty()) {
+      for (auto* browser : profile_state->browsers) {
+        if (auto* window = browser->window()) {
+          window->Show();
+          had_open_windows = true;
+        }
+      }
+    }
+
+    // Launch the app (open a window for it) if there were no open windows for
+    // it already, or if we were asked to open files.
+    if (!had_open_windows || !launch_files.empty()) {
+      delegate_->LaunchApp(profile, extension, launch_files);
+      launch_files.clear();
+    }
+
+    // If we successfully created a profile state, save it for |bootstrap| to
+    // connect to once all launches are done.
+    if (profile_state)
+      launched_profile_state = profile_state;
+    else
+      launch_result = chrome::mojom::AppShimLaunchResult::kNoHost;
 
     // If this was the first profile in |profile_paths_to_launch|, then this
     // was the profile specified in the bootstrap, so stop here.
-    if (i == 0)
+    if (iter == 0)
       break;
   }
 
-  // If we launched any profile, report success.
-  if (profile_state)
+  if (launched_profile_state) {
+    // If we launched any profile, report success.
     launch_result = chrome::mojom::AppShimLaunchResult::kSuccess;
+  } else {
+    // Otherwise, if the app specified a URL, open that URL in a new window.
+    const GURL& url = bootstrap->GetAppURL();
+    if (url.is_valid())
+      delegate_->OpenAppURLInBrowserWindow(bootstrap->GetProfilePath(), url);
+  }
 
-  OnShimProcessConnectedAndAllLaunchesDone(profile_state, launch_result,
-                                           std::move(bootstrap));
+  OnShimProcessConnectedAndAllLaunchesDone(launched_profile_state,
+                                           launch_result, std::move(bootstrap));
 }
 
 void ExtensionAppShimHandler::OnShimProcessConnectedAndAllLaunchesDone(
@@ -701,20 +744,15 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndAllLaunchesDone(
   if (result == chrome::mojom::AppShimLaunchResult::kProfileLocked)
     delegate_->LaunchUserManager();
 
-  // If we failed to launch the app at all, report that.
+  // If we failed to find a AppShimHost (in a ProfileState) for |bootstrap|
+  // to attempt to connect to, then quit the shim. This may not represent an
+  // actual failure (e.g, for open-in-a-tab bookmarks).
   if (result != chrome::mojom::AppShimLaunchResult::kSuccess) {
+    DCHECK(!profile_state);
     bootstrap->OnFailedToConnectToHost(result);
     return;
   }
-
-  // Find an AppShimHost that |bootstrap| can connect to. This may be because no
-  // host was created (e.g, open-in-a-tab bookmarks) or because the app was
-  // closed were closed between callbacks.
-  if (!profile_state) {
-    bootstrap->OnFailedToConnectToHost(
-        chrome::mojom::AppShimLaunchResult::kNoHost);
-    return;
-  }
+  DCHECK(profile_state);
   AppShimHost* host = profile_state->GetHost();
   DCHECK(host);
 

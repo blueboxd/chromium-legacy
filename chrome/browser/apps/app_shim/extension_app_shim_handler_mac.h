@@ -99,6 +99,13 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
                            const extensions::Extension* extension,
                            const std::vector<base::FilePath>& files);
 
+    // Open the specified URL in a new Chrome window. This is the fallback when
+    // an app shim exists, but there is no profile or extension for it. If
+    // |profile_path| is specified, then that profile is preferred, otherwise,
+    // the last used profile is used.
+    virtual void OpenAppURLInBrowserWindow(const base::FilePath& profile_path,
+                                           const GURL& url);
+
     // Launch the shim process for an app.
     virtual void LaunchShim(Profile* profile,
                             const extensions::Extension* extension,
@@ -235,7 +242,8 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
       const std::vector<base::FilePath>& profile_paths_to_launch);
 
   // The final step of both paths for OnShimProcessConnected. This will connect
-  // |bootstrap| to |profile_state|'s AppShimHost, if possible.
+  // |bootstrap| to |profile_state|'s AppShimHost, if possible. The value of
+  // |profile_state| is non-null if and only if |result| is success.
   void OnShimProcessConnectedAndAllLaunchesDone(
       ProfileState* profile_state,
       chrome::mojom::AppShimLaunchResult result,

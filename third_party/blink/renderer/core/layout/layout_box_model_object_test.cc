@@ -421,8 +421,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
       scrollable_area->GetStickyConstraintsMap().Contains(sticky->Layer()));
   EXPECT_EQ(25.f, scrollable_area->GetStickyConstraintsMap()
                       .at(sticky->Layer())
-                      .scroll_container_relative_sticky_box_rect.Location()
-                      .X());
+                      .scroll_container_relative_sticky_box_rect.X());
   To<HTMLElement>(target->GetNode())->classList().Add("hide");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Layout should invalidate the sticky constraints of the sticky element and
@@ -435,8 +434,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50.f, scrollable_area->GetStickyConstraintsMap()
                       .at(sticky->Layer())
-                      .scroll_container_relative_sticky_box_rect.Location()
-                      .X());
+                      .scroll_container_relative_sticky_box_rect.X());
 }
 
 // Verifies that the correct sticky-box shifting ancestor is found when

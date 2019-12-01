@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_STICKY_POSITION_SCROLLING_CONSTRAINTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_STICKY_POSITION_SCROLLING_CONSTRAINTS_H_
 
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -85,8 +85,8 @@ struct StickyPositionScrollingConstraints final {
   //
   // This method is non-const as we cache internal state for performance; see
   // documentation in the implementation for details.
-  FloatSize ComputeStickyOffset(const FloatRect& content_box_rect,
-                                const StickyConstraintsMap&);
+  PhysicalOffset ComputeStickyOffset(const PhysicalRect& content_box_rect,
+                                     const StickyConstraintsMap&);
 
   // Returns the last-computed offset of the sticky box from its original
   // position before scroll.
@@ -94,17 +94,17 @@ struct StickyPositionScrollingConstraints final {
   // This method exists for performance (to avoid recomputing the sticky offset)
   // and must only be called when compositing inputs are clean for the sticky
   // element. (Or after prepaint for CompositeAfterPaint).
-  FloatSize GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
+  PhysicalOffset GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
 
   bool is_anchored_left : 1;
   bool is_anchored_right : 1;
   bool is_anchored_top : 1;
   bool is_anchored_bottom : 1;
 
-  float left_offset = 0.f;
-  float right_offset = 0.f;
-  float top_offset = 0.f;
-  float bottom_offset = 0.f;
+  LayoutUnit left_offset;
+  LayoutUnit right_offset;
+  LayoutUnit top_offset;
+  LayoutUnit bottom_offset;
 
   // The containing block rect and sticky box rect are the basic components
   // for calculating the sticky offset to apply after a scroll. Consider the
@@ -119,12 +119,12 @@ struct StickyPositionScrollingConstraints final {
   // The layout position of the containing block relative to the scroll
   // container. When calculating the sticky offset it is used to ensure the
   // sticky element stays bounded by its containing block.
-  FloatRect scroll_container_relative_containing_block_rect;
+  PhysicalRect scroll_container_relative_containing_block_rect;
 
   // The layout position of the sticky element relative to the scroll container.
   // When calculating the sticky offset it is used to determine how large the
   // offset needs to be to satisfy the sticky constraints.
-  FloatRect scroll_container_relative_sticky_box_rect;
+  PhysicalRect scroll_container_relative_sticky_box_rect;
 
   // In the case of nested sticky elements the layout position of the sticky
   // element and its containing block are not accurate (as they are affected by
@@ -158,16 +158,17 @@ struct StickyPositionScrollingConstraints final {
   //
   // In the above example, both outerInline and innerInline have the same
   // containing block - the outermost <div>.
-  FloatSize total_sticky_box_sticky_offset;
+  PhysicalOffset total_sticky_box_sticky_offset;
 
   // The containing block offset accumulates all sticky-related offsets between
   // this element and the ancestor scroller. If this element is a containing
   // block shifting ancestor for some descendant, it shifts the descendant's
   // constraint rects by its entire offset.
-  FloatSize total_containing_block_sticky_offset;
+  PhysicalOffset total_containing_block_sticky_offset;
 
-  FloatSize AncestorStickyBoxOffset(const StickyConstraintsMap&) const;
-  FloatSize AncestorContainingBlockOffset(const StickyConstraintsMap&) const;
+  PhysicalOffset AncestorStickyBoxOffset(const StickyConstraintsMap&) const;
+  PhysicalOffset AncestorContainingBlockOffset(
+      const StickyConstraintsMap&) const;
 };
 
 }  // namespace blink

@@ -312,6 +312,10 @@ void PaintDocumentMarkers(GraphicsContext& context,
 
 }  // namespace
 
+StringView NGTextPainterCursor::CurrentText() const {
+  return CurrentItem()->Text();
+}
+
 const NGPaintFragment& NGTextPainterCursor::RootPaintFragment() const {
   if (!root_paint_fragment_)
     root_paint_fragment_ = paint_fragment_.Root();
@@ -475,7 +479,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
       ComputeMarkersToPaint(node, text_item.IsEllipsis());
   if (paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    PaintDocumentMarkers(context, text_item, fragment_paint_info.text,
+    PaintDocumentMarkers(context, text_item, cursor_.CurrentText(),
                          markers_to_paint, box_rect.offset, style,
                          DocumentMarkerPaintPhase::kBackground, nullptr);
     if (have_selection) {
@@ -576,7 +580,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
 
   if (paint_info.phase != PaintPhase::kForeground)
     return;
-  PaintDocumentMarkers(context, text_item, fragment_paint_info.text,
+  PaintDocumentMarkers(context, text_item, cursor_.CurrentText(),
                        markers_to_paint, box_rect.offset, style,
                        DocumentMarkerPaintPhase::kForeground, &text_painter);
 }

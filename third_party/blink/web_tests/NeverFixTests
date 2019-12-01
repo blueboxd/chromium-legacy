@@ -997,7 +997,6 @@ external/wpt/css/css-transforms/external-styles/svg-external-styles-003.html [ S
 external/wpt/css/css-transforms/external-styles/svg-external-styles-004.html [ Skip ]
 external/wpt/css/css-transforms/external-styles/svg-external-styles-006.html [ Skip ]
 external/wpt/css/css-transforms/external-styles/svg-external-styles-010.html [ Skip ]
-external/wpt/css/css-transforms/external-styles/svg-external-styles-012.html [ Skip ]
 external/wpt/css/css-transforms/external-styles/svg-external-styles-013.html [ Skip ]
 external/wpt/css/css-transforms/gradientTransform/svg-gradientTransform-001.html [ Skip ]
 external/wpt/css/css-transforms/gradientTransform/svg-gradientTransform-combination-001.html [ Skip ]

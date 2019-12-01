@@ -38,6 +38,7 @@ class NGTextPainterCursor {
 
   const NGPaintFragment& PaintFragment() const { return paint_fragment_; }
   const NGPhysicalTextFragment* CurrentItem() const { return &text_fragment_; }
+  StringView CurrentText() const;
   const NGPaintFragment& RootPaintFragment() const;
 
  private:

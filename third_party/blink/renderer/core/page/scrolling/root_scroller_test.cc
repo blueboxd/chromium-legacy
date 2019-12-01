@@ -2087,6 +2087,52 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterPositiveAfterLoad) {
       GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 }
 
+// Test that we correctly recompute the cached bits and thus the root scroller
+// properties in the event of a layout tree reattachment which causes the
+// LayoutObject to be disposed and replaced with a new one.
+TEST_F(ImplicitRootScrollerSimTest, LayoutTreeReplaced) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <style>
+            ::-webkit-scrollbar {
+            }
+            #rootscroller {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              position: absolute;
+              left: 0;
+              top: 0;
+            }
+            #spacer {
+              height: 20000px;
+              width: 10px;
+            }
+          </style>
+          <div id="rootscroller">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* scroller = GetDocument().getElementById("rootscroller");
+  ASSERT_EQ(scroller,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+  ASSERT_TRUE(scroller->GetLayoutObject()->IsEffectiveRootScroller());
+  ASSERT_TRUE(scroller->GetLayoutObject()->IsGlobalRootScroller());
+
+  // This will cause the layout tree to be rebuilt and reattached which creates
+  // new LayoutObjects. Ensure the bits are reapplied to the new layout
+  // objects after they're recreated.
+  GetDocument().setDesignMode("on");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(scroller->GetLayoutObject()->IsEffectiveRootScroller());
+  EXPECT_TRUE(scroller->GetLayoutObject()->IsGlobalRootScroller());
+}
+
 // Tests that if we have multiple valid candidates for implicit promotion, we
 // don't promote either.
 TEST_F(ImplicitRootScrollerSimTest, DontPromoteWhenMultipleAreValid) {

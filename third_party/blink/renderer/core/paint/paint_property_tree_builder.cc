@@ -560,17 +560,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         constraint->is_anchored_right = layout_constraint.is_anchored_right;
         constraint->is_anchored_top = layout_constraint.is_anchored_top;
         constraint->is_anchored_bottom = layout_constraint.is_anchored_bottom;
-        constraint->left_offset = layout_constraint.left_offset;
-        constraint->right_offset = layout_constraint.right_offset;
-        constraint->top_offset = layout_constraint.top_offset;
-        constraint->bottom_offset = layout_constraint.bottom_offset;
+        constraint->left_offset = layout_constraint.left_offset.ToFloat();
+        constraint->right_offset = layout_constraint.right_offset.ToFloat();
+        constraint->top_offset = layout_constraint.top_offset.ToFloat();
+        constraint->bottom_offset = layout_constraint.bottom_offset.ToFloat();
         constraint->constraint_box_rect =
-            RoundedIntRect(box_model.ComputeStickyConstrainingRect());
-        constraint->scroll_container_relative_sticky_box_rect = RoundedIntRect(
-            layout_constraint.scroll_container_relative_sticky_box_rect);
-        constraint
-            ->scroll_container_relative_containing_block_rect = RoundedIntRect(
-            layout_constraint.scroll_container_relative_containing_block_rect);
+            PixelSnappedIntRect(box_model.ComputeStickyConstrainingRect());
+        constraint->scroll_container_relative_sticky_box_rect =
+            PixelSnappedIntRect(
+                layout_constraint.scroll_container_relative_sticky_box_rect);
+        constraint->scroll_container_relative_containing_block_rect =
+            PixelSnappedIntRect(
+                layout_constraint
+                    .scroll_container_relative_containing_block_rect);
         if (PaintLayer* sticky_box_shifting_ancestor =
                 layout_constraint.nearest_sticky_layer_shifting_sticky_box) {
           constraint->nearest_element_shifting_sticky_box =

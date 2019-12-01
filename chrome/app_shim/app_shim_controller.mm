@@ -356,6 +356,28 @@ void AppShimController::OnShimConnectedResponse(
     chrome::mojom::AppShimLaunchResult result,
     mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
   if (result != chrome::mojom::AppShimLaunchResult::kSuccess) {
+    switch (result) {
+      case chrome::mojom::AppShimLaunchResult::kSuccess:
+        break;
+      case chrome::mojom::AppShimLaunchResult::kNoHost:
+        LOG(ERROR) << "No AppShimHost accepted connection.";
+        break;
+      case chrome::mojom::AppShimLaunchResult::kDuplicateHost:
+        LOG(ERROR) << "An AppShimHostBootstrap already exists for this app.";
+        break;
+      case chrome::mojom::AppShimLaunchResult::kProfileNotFound:
+        LOG(ERROR) << "No suitable profile found.";
+        break;
+      case chrome::mojom::AppShimLaunchResult::kAppNotFound:
+        LOG(ERROR) << "App not installed for specified profile.";
+        break;
+      case chrome::mojom::AppShimLaunchResult::kProfileLocked:
+        LOG(ERROR) << "Profile locked.";
+        break;
+      case chrome::mojom::AppShimLaunchResult::kFailedValidation:
+        LOG(ERROR) << "Validation failed.";
+        break;
+    };
     Close();
     return;
   }

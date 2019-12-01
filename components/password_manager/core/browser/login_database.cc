@@ -50,6 +50,10 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
+#if !defined(OS_IOS)
+#include "components/safe_browsing/features.h"
+#endif
+
 using autofill::PasswordForm;
 
 namespace password_manager {
@@ -825,9 +829,14 @@ bool LoginDatabase::Init() {
     }
   }
 
-  // TODO(bdea): Create a more generic experiment for creation of compromise
-  // credentials because the current experiment is leak detection specific.
-  if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory)) {
+  bool password_protection_show_domains_for_saved_password_is_on = true;
+#if !defined(OS_IOS)
+  password_protection_show_domains_for_saved_password_is_on =
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
+#endif
+  if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory) ||
+      password_protection_show_domains_for_saved_password_is_on) {
     if (!compromised_credentials_table_.CreateTableIfNecessary()) {
       LogDatabaseInitError(INIT_COMPROMISED_CREDENTIALS_ERROR);
       LOG(ERROR) << "Unable to create the compromised credentials table.";

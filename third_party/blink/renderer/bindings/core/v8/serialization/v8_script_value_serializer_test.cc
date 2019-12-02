@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -1437,7 +1438,7 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileNative) {
   V8TestingScope scope;
-  File* file = File::Create("/native/path");
+  auto* file = MakeGarbageCollected<File>("/native/path");
   v8::Local<v8::Value> wrapper = ToV8(file, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));
@@ -1451,8 +1452,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
   V8TestingScope scope;
   const double kModificationTime = 0.0;
   scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
-  File* file =
-      File::Create("/native/path", kModificationTime, blob_data_handle);
+  auto* file = MakeGarbageCollected<File>("/native/path", kModificationTime,
+                                          blob_data_handle);
   v8::Local<v8::Value> wrapper = ToV8(file, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));
@@ -1633,7 +1634,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
   V8TestingScope scope;
-  File* file = File::Create("/native/path");
+  auto* file = MakeGarbageCollected<File>("/native/path");
   v8::Local<v8::Value> wrapper = ToV8(file, scope.GetScriptState());
   WebBlobInfoArray blob_info_array;
   v8::Local<v8::Value> result =
@@ -1703,8 +1704,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
 TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
   V8TestingScope scope;
   auto* file_list = MakeGarbageCollected<FileList>();
-  file_list->Append(File::Create("/native/path"));
-  file_list->Append(File::Create("/native/path2"));
+  file_list->Append(MakeGarbageCollected<File>("/native/path"));
+  file_list->Append(MakeGarbageCollected<File>("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8FileList::HasInstance(result, scope.GetIsolate()));
@@ -1764,8 +1765,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
 TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
   V8TestingScope scope;
   auto* file_list = MakeGarbageCollected<FileList>();
-  file_list->Append(File::Create("/native/path"));
-  file_list->Append(File::Create("/native/path2"));
+  file_list->Append(MakeGarbageCollected<File>("/native/path"));
+  file_list->Append(MakeGarbageCollected<File>("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());
   WebBlobInfoArray blob_info_array;
   v8::Local<v8::Value> result =

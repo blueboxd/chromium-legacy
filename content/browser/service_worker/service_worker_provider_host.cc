@@ -7,51 +7,27 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
-#include "content/browser/bad_message.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/renderer_interface_binders.h"
-#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_controllee_request_handler.h"
-#include "content/browser/service_worker/service_worker_registration_object_host.h"
-#include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/url_loader_factory_getter.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
-#include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
-#include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "net/base/url_util.h"
-#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -192,7 +168,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
       running_hosted_version_(std::move(running_hosted_version)),
-      context_(context),
       interface_provider_binding_(this),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           type,
@@ -246,7 +221,6 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
         interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         broker_receiver) {
-  DCHECK(context_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, worker_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   DCHECK(IsProviderForServiceWorker());

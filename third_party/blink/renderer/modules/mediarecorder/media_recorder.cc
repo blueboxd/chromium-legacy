@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediarecorder/blob_event.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -380,8 +381,8 @@ void MediaRecorder::WriteData(const char* data,
 
   // Cache |m_blobData->length()| before release()ng it.
   const uint64_t blob_data_length = blob_data_->length();
-  CreateBlobEvent(Blob::Create(BlobDataHandle::Create(std::move(blob_data_),
-                                                      blob_data_length)),
+  CreateBlobEvent(MakeGarbageCollected<Blob>(BlobDataHandle::Create(
+                      std::move(blob_data_), blob_data_length)),
                   timecode);
 }
 

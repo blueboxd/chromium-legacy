@@ -15,10 +15,6 @@ UserActivation* UserActivation::CreateSnapshot(LocalDOMWindow* window) {
       LocalFrame::HasTransientUserActivation(frame));
 }
 
-UserActivation* UserActivation::CreateLive(LocalDOMWindow* window) {
-  return MakeGarbageCollected<UserActivation>(window);
-}
-
 UserActivation::UserActivation(bool has_been_active, bool is_active)
     : has_been_active_(has_been_active), is_active_(is_active) {}
 

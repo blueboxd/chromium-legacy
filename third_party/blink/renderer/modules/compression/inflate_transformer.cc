@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/compression/compression_format.h"
@@ -51,7 +51,7 @@ InflateTransformer::~InflateTransformer() {
 
 ScriptPromise InflateTransformer::Transform(
     v8::Local<v8::Value> chunk,
-    TransformStreamDefaultControllerInterface* controller,
+    TransformStreamDefaultController* controller,
     ExceptionState& exception_state) {
   // TODO(canonmukai): Support SharedArrayBuffer.
   ArrayBufferOrArrayBufferView buffer_source;
@@ -78,7 +78,7 @@ ScriptPromise InflateTransformer::Transform(
 }
 
 ScriptPromise InflateTransformer::Flush(
-    TransformStreamDefaultControllerInterface* controller,
+    TransformStreamDefaultController* controller,
     ExceptionState& exception_state) {
   DCHECK(!was_flush_called_);
   Inflate(nullptr, 0u, IsFinished(true), controller, exception_state);
@@ -93,12 +93,11 @@ ScriptPromise InflateTransformer::Flush(
   return ScriptPromise::CastUndefined(script_state_);
 }
 
-void InflateTransformer::Inflate(
-    const uint8_t* start,
-    wtf_size_t length,
-    IsFinished finished,
-    TransformStreamDefaultControllerInterface* controller,
-    ExceptionState& exception_state) {
+void InflateTransformer::Inflate(const uint8_t* start,
+                                 wtf_size_t length,
+                                 IsFinished finished,
+                                 TransformStreamDefaultController* controller,
+                                 ExceptionState& exception_state) {
   if (reached_end_ && length != 0) {
     // zlib will ignore data after the end of the stream, so we have to
     // explicitly throw an error.
@@ -127,8 +126,10 @@ void InflateTransformer::Inflate(
 
     wtf_size_t bytes = out_buffer_.size() - stream_.avail_out;
     if (bytes) {
-      controller->Enqueue(
-          ToV8(DOMUint8Array::Create(out_buffer_.data(), bytes), script_state_),
+      controller->enqueue(
+          script_state_,
+          ScriptValue::From(script_state_,
+                            DOMUint8Array::Create(out_buffer_.data(), bytes)),
           exception_state);
       if (exception_state.HadException()) {
         return;

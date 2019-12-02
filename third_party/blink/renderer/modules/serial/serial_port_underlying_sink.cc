@@ -25,14 +25,14 @@ SerialPortUnderlyingSink::SerialPortUnderlyingSink(
 
 ScriptPromise SerialPortUnderlyingSink::start(
     ScriptState* script_state,
-    WritableStreamDefaultControllerInterface* controller) {
+    WritableStreamDefaultController* controller) {
   return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise SerialPortUnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
-    WritableStreamDefaultControllerInterface* controller) {
+    WritableStreamDefaultController* controller) {
   // There can only be one call to write() in progress at a time.
   DCHECK(buffer_source_.IsNull());
   DCHECK_EQ(0u, offset_);

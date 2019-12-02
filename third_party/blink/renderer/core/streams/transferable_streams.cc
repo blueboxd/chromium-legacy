@@ -17,12 +17,12 @@
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -431,7 +431,7 @@ class CrossRealmTransformWritable final : public CrossRealmTransformStream {
         backpressure_promise_(
             MakeGarbageCollected<StreamPromiseResolver>(script_state)) {}
 
-  WritableStreamNative* CreateWritableStream(ExceptionState&);
+  WritableStream* CreateWritableStream(ExceptionState&);
 
   ScriptState* GetScriptState() const override { return script_state_; }
   MessagePort* GetMessagePort() const override { return message_port_; }
@@ -614,7 +614,7 @@ class CrossRealmTransformWritable::AbortAlgorithm final
   const Member<CrossRealmTransformWritable> writable_;
 };
 
-WritableStreamNative* CrossRealmTransformWritable::CreateWritableStream(
+WritableStream* CrossRealmTransformWritable::CreateWritableStream(
     ExceptionState& exception_state) {
   DCHECK(!controller_) << "CreateWritableStream() can only be called once";
 
@@ -623,12 +623,12 @@ WritableStreamNative* CrossRealmTransformWritable::CreateWritableStream(
   message_port_->setOnmessageerror(
       MakeGarbageCollected<CrossRealmTransformErrorListener>(this));
 
-  auto* stream = WritableStreamNative::Create(
-      script_state_, CreateTrivialStartAlgorithm(),
-      MakeGarbageCollected<WriteAlgorithm>(this),
-      MakeGarbageCollected<CloseAlgorithm>(this),
-      MakeGarbageCollected<AbortAlgorithm>(this), 1,
-      CreateDefaultSizeAlgorithm(), exception_state);
+  auto* stream =
+      WritableStream::Create(script_state_, CreateTrivialStartAlgorithm(),
+                             MakeGarbageCollected<WriteAlgorithm>(this),
+                             MakeGarbageCollected<CloseAlgorithm>(this),
+                             MakeGarbageCollected<AbortAlgorithm>(this), 1,
+                             CreateDefaultSizeAlgorithm(), exception_state);
 
   if (exception_state.HadException()) {
     return nullptr;
@@ -686,7 +686,7 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
         backpressure_promise_(
             MakeGarbageCollected<StreamPromiseResolver>(script_state)) {}
 
-  ReadableStreamNative* CreateReadableStream(ExceptionState&);
+  ReadableStream* CreateReadableStream(ExceptionState&);
 
   ScriptState* GetScriptState() const override { return script_state_; }
   MessagePort* GetMessagePort() const override { return message_port_; }
@@ -785,7 +785,7 @@ class CrossRealmTransformReadable::CancelAlgorithm final
   const Member<CrossRealmTransformReadable> readable_;
 };
 
-ReadableStreamNative* CrossRealmTransformReadable::CreateReadableStream(
+ReadableStream* CrossRealmTransformReadable::CreateReadableStream(
     ExceptionState& exception_state) {
   DCHECK(!controller_) << "CreateReadableStream can only be called once";
 
@@ -794,7 +794,7 @@ ReadableStreamNative* CrossRealmTransformReadable::CreateReadableStream(
   message_port_->setOnmessageerror(
       MakeGarbageCollected<CrossRealmTransformErrorListener>(this));
 
-  auto* stream = ReadableStreamNative::Create(
+  auto* stream = ReadableStream::Create(
       script_state_, CreateTrivialStartAlgorithm(),
       MakeGarbageCollected<PullAlgorithm>(this),
       MakeGarbageCollected<CancelAlgorithm>(this),
@@ -859,7 +859,7 @@ void CrossRealmTransformReadable::HandleError(v8::Local<v8::Value> error) {
 
 }  // namespace
 
-CORE_EXPORT WritableStreamNative* CreateCrossRealmTransformWritable(
+CORE_EXPORT WritableStream* CreateCrossRealmTransformWritable(
     ScriptState* script_state,
     MessagePort* port,
     ExceptionState& exception_state) {
@@ -867,7 +867,7 @@ CORE_EXPORT WritableStreamNative* CreateCrossRealmTransformWritable(
       ->CreateWritableStream(exception_state);
 }
 
-CORE_EXPORT ReadableStreamNative* CreateCrossRealmTransformReadable(
+CORE_EXPORT ReadableStream* CreateCrossRealmTransformReadable(
     ScriptState* script_state,
     MessagePort* port,
     ExceptionState& exception_state) {

@@ -155,7 +155,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // triggered immediately if it's already ready.
   void ActivateWaitingVersionWhenReady();
 
-  // Takes over control of provider hosts which are currently not controlled or
+  // Takes over control of container hosts which are currently not controlled or
   // controlled by other registrations.
   void ClaimClients();
 

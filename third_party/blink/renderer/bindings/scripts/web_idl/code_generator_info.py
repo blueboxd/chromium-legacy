@@ -5,6 +5,8 @@
 # The list of attributes that CodeGeneratorInfo supports.  CodeGeneratorInfo's
 # attributes are auto-generated from this list because they're boilerplated.
 _CODE_GENERATOR_INFO_ATTRIBUTES = (
+    'defined_in_mixin',
+    'defined_in_partial',
     'property_implemented_as',
     'receiver_implemented_as',
 )

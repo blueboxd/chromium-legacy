@@ -127,7 +127,7 @@ void SVGTextPathElement::BuildPendingResource() {
   if (!isConnected())
     return;
   Element* target = ObserveTarget(target_id_observer_, *this);
-  if (IsSVGPathElement(target)) {
+  if (IsA<SVGPathElement>(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.

@@ -13,10 +13,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream_default_reader.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -40,14 +40,8 @@ TEST(TransferableStreamsTest, SmokeTest) {
       script_state, channel->port2(), ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(readable);
 
-  auto* writer = V8WritableStreamDefaultWriter::ToImpl(
-      writable->getWriter(script_state, ASSERT_NO_EXCEPTION)
-          .V8Value()
-          .As<v8::Object>());
-  auto* reader = V8ReadableStreamDefaultReader::ToImpl(
-      readable->getReader(script_state, ASSERT_NO_EXCEPTION)
-          .V8Value()
-          .As<v8::Object>());
+  auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
 
   writer->write(script_state, ScriptValue::CreateNull(scope.GetIsolate()));
 

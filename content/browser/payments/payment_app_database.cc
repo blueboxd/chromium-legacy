@@ -225,7 +225,9 @@ void PaymentAppDatabase::WritePaymentInstrument(
   if (instrument->icons.size() > 0) {
     std::vector<blink::Manifest::ImageResource> icons(instrument->icons);
     PaymentInstrumentIconFetcher::Start(
-        scope, service_worker_context_->GetProviderHostIds(scope.GetOrigin()),
+        scope,
+        service_worker_context_->GetWindowClientFrameRoutingIds(
+            scope.GetOrigin()),
         icons,
         base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
                        weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,

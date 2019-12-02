@@ -170,7 +170,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return remote_endpoint;
   }
 
-  ServiceWorkerProviderHost* CreateProviderHost(const GURL& document_url) {
+  base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHost(
+      const GURL& document_url) {
     GURL site_for_cookies = document_url;
     url::Origin top_frame_origin = url::Origin::Create(document_url);
     remote_endpoints_.emplace_back();
@@ -179,16 +180,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
                                       &remote_endpoints_.back());
   }
 
-  ServiceWorkerProviderHost* CreateProviderHostWithInsecureParentFrame(
-      const GURL& document_url) {
+  base::WeakPtr<ServiceWorkerProviderHost>
+  CreateProviderHostWithInsecureParentFrame(const GURL& document_url) {
     remote_endpoints_.emplace_back();
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), false /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
-    ServiceWorkerProviderHost* host_raw = host.get();
     host->container_host()->UpdateUrls(document_url, document_url,
                                        url::Origin::Create(document_url));
-    return host_raw;
+    return host;
   }
 
   void FinishNavigation(ServiceWorkerContainerHost* container_host) {
@@ -268,13 +268,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }
 
-  bool CanFindClientProviderHost(ServiceWorkerProviderHost* host) {
-    for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-             context_->GetClientProviderHostIterator(
-                 host->container_host()->url().GetOrigin(),
+  bool CanFindClientContainerHost(ServiceWorkerContainerHost* container_host) {
+    for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+             context_->GetClientContainerHostIterator(
+                 container_host->url().GetOrigin(),
                  false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      if (host == it->GetProviderHost())
+      if (container_host == it->GetContainerHost())
         return true;
     }
     return false;
@@ -320,7 +320,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   std::vector<std::string> bad_messages_;
 
  private:
-  ServiceWorkerProviderHost* CreateProviderHostInternal(
+  base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostInternal(
       const GURL& document_url,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin,
@@ -330,7 +330,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         helper_->context()->AsWeakPtr(), remote_endpoint);
     host->container_host()->UpdateUrls(document_url, site_for_cookies,
                                        top_frame_origin);
-    return host.get();
+    return host;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
@@ -354,7 +354,7 @@ class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
 };
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
-  ServiceWorkerProviderHost* provider_host =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       CreateProviderHost(GURL("https://www.example.com/example1.html"));
   ServiceWorkerContainerHost* container_host = provider_host->container_host();
 
@@ -387,9 +387,9 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
-  ServiceWorkerProviderHost* provider_host_secure_parent =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_secure_parent =
       CreateProviderHost(GURL("https://www.example.com/example1.html"));
-  ServiceWorkerProviderHost* provider_host_insecure_parent =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_insecure_parent =
       CreateProviderHostWithInsecureParentFrame(
           GURL("https://www.example.com/example1.html"));
 
@@ -434,7 +434,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   const GURL url1("https://origin1.example.com/page1.html");
   const GURL url2("https://origin1.example.com/page2.html");
 
-  ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
@@ -453,7 +453,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   const GURL url1("https://origin1.example.com/page1.html");
   const GURL url2("https://origin2.example.com/page2.html");
 
-  ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
@@ -498,16 +498,15 @@ class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
 
 TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
   // Create a provider host connected with the renderer process.
-  ServiceWorkerProviderHost* provider_host =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       CreateProviderHost(GURL("https://www.example.com/example1.html"));
-  int provider_id = provider_host->provider_id();
-  EXPECT_TRUE(context_->GetProviderHost(provider_id));
+  EXPECT_TRUE(provider_host);
 
   // Disconnect the mojo pipe from the renderer side.
   ASSERT_TRUE(remote_endpoints_.back().host_remote()->is_bound());
   remote_endpoints_.back().host_remote()->reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(context_->GetProviderHost(provider_id));
+  EXPECT_FALSE(provider_host);
 }
 
 class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
@@ -955,7 +954,7 @@ TEST_F(ServiceWorkerProviderHostTest,
 }
 
 // Test that a "reserved" (i.e., not execution ready) client is not included
-// when iterating over client provider hosts. If it were, it'd be undesirably
+// when iterating over client container hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
 void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     blink::mojom::ServiceWorkerProviderType provider_type,
@@ -976,10 +975,10 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
     host->container_host()->UpdateUrls(url, url, url::Origin::Create(url));
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->CompleteWebWorkerPreparation(
         network::mojom::CrossOriginEmbedderPolicy::kNone);
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 
   {
@@ -992,13 +991,13 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
     FinishNavigation(host->container_host());
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
 
     base::RunLoop run_loop;
     host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 }
 
@@ -1128,7 +1127,7 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
             helper_->mock_render_process_id(),
             true /* is_parent_frame_secure */, version.get(),
             helper_->context()->AsWeakPtr(), &remote_endpoint);
-    ASSERT_TRUE(context_->GetProviderHost(host.get()->provider_id()));
+    ASSERT_TRUE(host);
   }
   {
     std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
@@ -1140,17 +1139,17 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
     FinishNavigation(host->container_host());
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
 
     base::RunLoop run_loop;
     host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->EnterBackForwardCacheForTesting();
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->LeaveBackForwardCacheForTesting();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 }
 
@@ -1169,7 +1168,7 @@ TEST_F(ServiceWorkerProviderHostTestWithBackForwardCache,
 // destroyed.
 TEST_F(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   // Make a window.
-  ServiceWorkerProviderHost* host =
+  base::WeakPtr<ServiceWorkerProviderHost> host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
   ServiceWorkerContainerHost* container_host = host->container_host();
 
@@ -1221,7 +1220,7 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   registration1_->SetActiveVersion(version1);
 
   // Make a window.
-  ServiceWorkerProviderHost* host =
+  base::WeakPtr<ServiceWorkerProviderHost> host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
   ServiceWorkerContainerHost* container_host = host->container_host();
 
@@ -1246,7 +1245,7 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
 TEST_F(ServiceWorkerProviderHostTest,
        HintToUpdateServiceWorkerButNoVersionToUpdate) {
   // Make a window.
-  ServiceWorkerProviderHost* host =
+  base::WeakPtr<ServiceWorkerProviderHost> host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
   ServiceWorkerContainerHost* container_host = host->container_host();
 
@@ -1306,7 +1305,7 @@ TEST_F(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   registration3_->SetActiveVersion(version1);
 
   // Make a window.
-  ServiceWorkerProviderHost* host =
+  base::WeakPtr<ServiceWorkerProviderHost> host =
       CreateProviderHost(GURL("https://www.example.com/example.html"));
   ServiceWorkerContainerHost* container_host = host->container_host();
 

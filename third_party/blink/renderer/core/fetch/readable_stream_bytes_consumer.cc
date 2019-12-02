@@ -97,7 +97,7 @@ ReadableStreamBytesConsumer::ReadableStreamBytesConsumer(
     ScriptState* script_state,
     ReadableStream* stream,
     ExceptionState& exception_state)
-    : read_handle_(stream->GetReadHandle(script_state, exception_state)),
+    : reader_(stream->GetReaderNotForAuthorCode(script_state, exception_state)),
       script_state_(script_state) {}
 
 ReadableStreamBytesConsumer::~ReadableStreamBytesConsumer() {}
@@ -122,8 +122,8 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
   if (!is_reading_) {
     is_reading_ = true;
     ScriptState::Scope scope(script_state_);
-    DCHECK(read_handle_);
-    read_handle_->Read(script_state_)
+    DCHECK(reader_);
+    reader_->read(script_state_)
         .Then(OnFulfilled::CreateFunction(script_state_, this),
               OnRejected::CreateFunction(script_state_, this))
         .MarkAsHandled();
@@ -157,7 +157,7 @@ void ReadableStreamBytesConsumer::Cancel() {
     return;
   state_ = PublicState::kClosed;
   ClearClient();
-  read_handle_ = nullptr;
+  reader_ = nullptr;
 }
 
 BytesConsumer::PublicState ReadableStreamBytesConsumer::GetPublicState() const {
@@ -169,7 +169,7 @@ BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
 }
 
 void ReadableStreamBytesConsumer::Trace(blink::Visitor* visitor) {
-  visitor->Trace(read_handle_);
+  visitor->Trace(reader_);
   visitor->Trace(client_);
   visitor->Trace(pending_buffer_);
   visitor->Trace(script_state_);
@@ -198,7 +198,7 @@ void ReadableStreamBytesConsumer::OnReadDone() {
     return;
   DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
   state_ = PublicState::kClosed;
-  read_handle_ = nullptr;
+  reader_ = nullptr;
   Client* client = client_;
   ClearClient();
   if (client)
@@ -213,7 +213,7 @@ void ReadableStreamBytesConsumer::OnRejected() {
     return;
   DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
   state_ = PublicState::kErrored;
-  read_handle_ = nullptr;
+  reader_ = nullptr;
   Client* client = client_;
   ClearClient();
   if (client)

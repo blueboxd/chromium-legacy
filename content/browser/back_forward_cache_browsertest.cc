@@ -96,7 +96,6 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
-    EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
     SetupFeaturesAndParameters();
 
     command_line->AppendSwitchASCII(
@@ -116,13 +115,17 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     }
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                /*disabled_features*/ {});
+                                                disabled_features_);
   }
 
   void EnableFeatureAndSetParams(base::Feature feature,
                                  std::string param_name,
                                  std::string param_value) {
     features_with_params_[feature][param_name] = param_value;
+  }
+
+  void DisableFeature(base::Feature feature) {
+    disabled_features_.push_back(feature);
   }
 
   void SetUpOnMainThread() override {
@@ -302,6 +305,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
                      FeatureHash,
                      FeatureEqualOperator>
       features_with_params_;
+  std::vector<base::Feature> disabled_features_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -1733,7 +1737,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_FALSE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK},
+      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK,
+       BackForwardCacheMetrics::NotRestoredReason::
+           kNotMostRecentNavigationEntry},
       FROM_HERE);
 }
 
@@ -2631,7 +2637,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 class BackForwardCacheBrowserTestWithServiceWorkerEnabled
-    : public BackForwardCacheBrowserTest {
+    : public BackForwardCacheBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
   BackForwardCacheBrowserTestWithServiceWorkerEnabled() {}
   ~BackForwardCacheBrowserTestWithServiceWorkerEnabled() override {}
@@ -2640,12 +2647,16 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "service_worker_supported", "true");
+    if (GetParam())
+      EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
+    else
+      DisableFeature(features::kServiceWorkerOnUI);
 
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        CachedPagesWithServiceWorkers) {
   CreateHttpsServer();
   SetupCrossSiteRedirector(https_server());
@@ -2676,7 +2687,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_EQ(rfh_a, current_frame_host());
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        EvictIfCacheBlocksServiceWorkerVersionActivation) {
   CreateHttpsServer();
   https_server()->RegisterRequestHandler(
@@ -2720,7 +2731,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        EvictWithPostMessageToCachedClient) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.RegisterRequestHandler(
@@ -2780,6 +2791,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       {BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerPostMessage},
       FROM_HERE);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   constexpr char kKeepalivePath[] = "/keepalive";
@@ -2940,25 +2955,23 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
-  // TODO(hajimehoshi): Record kConflictingBrowsingInstance instead of kUnknown
-  // here.
   ExpectNotRestored(
       {
-          BackForwardCacheMetrics::NotRestoredReason::kUnknown,
+          BackForwardCacheMetrics::NotRestoredReason::
+              kRenderFrameHostReused_SameSite,
       },
       FROM_HERE);
 
-  // 5) Go back to B3.
-  web_contents()->GetController().GoToIndex(2);
+  // 5) Go to A2.
+  web_contents()->GetController().GoForward();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
-  ExpectDisabledWithReason("BackForwardCacheBrowserTest", FROM_HERE);
   ExpectNotRestored(
       {
           BackForwardCacheMetrics::NotRestoredReason::
-              kDisableForRenderFrameHostCalled,
+              kConflictingBrowsingInstance,
       },
       FROM_HERE);
 }
@@ -4537,6 +4550,72 @@ IN_PROC_BROWSER_TEST_F(
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(url_a1, web_contents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       RTCPeerConnectionNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, "new RTCPeerConnection()"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  // - Page A should not be in the cache.
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kWebRTC, FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebLocksNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // Wait for the page to acquire a lock and ensure that it continues to do so.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    const never_resolved = new Promise(resolve => {});
+    new Promise(continue_test => {
+      navigator.locks.request('test', async () => {
+        continue_test();
+        await never_resolved;
+      });
+    })
+  )"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  // - Page A should not be in the cache.
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kWebLocks, FROM_HERE);
 }
 
 }  // namespace content

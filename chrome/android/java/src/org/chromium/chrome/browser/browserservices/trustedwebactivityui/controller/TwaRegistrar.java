@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 import android.content.Context;
 
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 
 import java.util.HashSet;
@@ -65,9 +64,8 @@ public class TwaRegistrar {
 
         // Register that we should wipe data for this origin when the client app is uninstalled.
         mClientAppDataRecorder.get().register(packageName, origin);
-        // Register that we trust the client app to forward notifications from this origin to.
-        TrustedWebActivityClient.registerClient(mAppContext, origin, packageName);
-        // Update Chrome's notification permission for the website to that of the client app.
+        // Register that we trust the client app to handle notifications for this origin and update
+        // Chrome's permission for the origin.
         mNotificationPermissionUpdater.onOriginVerified(origin, packageName);
 
         mRegisteredOrigins.add(origin);

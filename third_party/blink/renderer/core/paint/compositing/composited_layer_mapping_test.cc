@@ -1721,4 +1721,67 @@ TEST_F(CompositedLayerMappingTest, CompositedHiddenAnimatingLayer) {
               CompositingReason::kActiveTransformAnimation);
 }
 
+TEST_F(CompositedLayerMappingTest,
+       RepaintScrollableAreaLayersInMainThreadScrolling) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        width: 200px;
+        height: 100px;
+        overflow: scroll;
+        opacity: 0.8; /*MainThreadScrollingReason::kHasOpacityAndLCDText*/
+      }
+
+      #child {
+        width: 100px;
+        height: 200px;
+        transform: translate3d(0, 0, 0);
+        overflow: hidden;
+      }
+      #uncorrelated {
+        transform: translate3d(0, 0, 0);
+        height: 100px;
+        width: 100px;
+        background-color: red;
+      }
+    </style>
+
+    <div id="scroller">
+      <div id="child">
+      </div>
+    </div>
+    <div id="uncorrelated"></div>
+  )HTML");
+
+  PaintLayer* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
+
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+
+  GraphicsLayer* vertical_scrollbar =
+      scrollable_area->GraphicsLayerForVerticalScrollbar();
+  ASSERT_TRUE(vertical_scrollbar);
+
+  CompositedLayerMapping* mapping = scroller->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+
+  // Input events, animations and DOM changes, etc, can trigger cc::ProxyMain::
+  // BeginMainFrame, which may check if all graphics layers need repaint.
+  //
+  // We shouldn't repaint scrollable area layer which has no paint invalidation
+  // in many uncorrelated BeginMainFrame scenes, such as moving mouse over the
+  // non-scrollbar area, animating or DOM changes in another composited layer.
+  GetDocument()
+      .getElementById("uncorrelated")
+      ->setAttribute(html_names::kStyleAttr, "width: 200px");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(mapping->NeedsRepaint(*vertical_scrollbar));
+
+  GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
+                                                      "height: 300px");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar));
+}
+
 }  // namespace blink

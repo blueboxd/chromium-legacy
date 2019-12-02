@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -147,8 +148,9 @@ File* File::Create(
                    normalize_line_endings_to_native);
 
   uint64_t file_size = blob_data->length();
-  return File::Create(file_name, last_modified,
-                      BlobDataHandle::Create(std::move(blob_data), file_size));
+  return MakeGarbageCollected<File>(
+      file_name, last_modified,
+      BlobDataHandle::Create(std::move(blob_data), file_size));
 }
 
 File* File::CreateFromControlState(const FormControlState& state,
@@ -369,7 +371,8 @@ Blob* File::slice(int64_t start,
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
   blob_data->AppendFile(path_, start, length, modification_time);
-  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), length));
 }
 
 void File::CaptureSnapshot(

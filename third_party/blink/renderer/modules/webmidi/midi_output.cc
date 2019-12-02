@@ -229,18 +229,6 @@ class MessageValidator {
 
 }  // namespace
 
-MIDIOutput* MIDIOutput::Create(MIDIAccess* access,
-                               unsigned port_index,
-                               const String& id,
-                               const String& manufacturer,
-                               const String& name,
-                               const String& version,
-                               PortState state) {
-  DCHECK(access);
-  return MakeGarbageCollected<MIDIOutput>(access, port_index, id, manufacturer,
-                                          name, version, state);
-}
-
 MIDIOutput::MIDIOutput(MIDIAccess* access,
                        unsigned port_index,
                        const String& id,

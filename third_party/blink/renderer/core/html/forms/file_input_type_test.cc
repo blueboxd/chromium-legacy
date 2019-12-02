@@ -71,7 +71,8 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
   DataObject* native_file_raw_drag_data = DataObject::Create();
   const DragData native_file_drag_data(native_file_raw_drag_data, FloatPoint(),
                                        FloatPoint(), kDragOperationCopy);
-  native_file_drag_data.PlatformData()->Add(File::Create("/native/path"));
+  native_file_drag_data.PlatformData()->Add(
+      MakeGarbageCollected<File>("/native/path"));
   native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");
   file_input->ReceiveDroppedFiles(&native_file_drag_data);
   EXPECT_EQ("fileSystemId", file_input->DroppedFileSystemId());
@@ -145,7 +146,7 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
                           run_loop.QuitClosure());
   DragData drag_data(DataObject::Create(), FloatPoint(), FloatPoint(),
                      kDragOperationCopy);
-  drag_data.PlatformData()->Add(File::Create("/foo/bar"));
+  drag_data.PlatformData()->Add(MakeGarbageCollected<File>("/foo/bar"));
   input.ReceiveDroppedFiles(&drag_data);
   run_loop.Run();
 

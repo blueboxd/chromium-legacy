@@ -344,6 +344,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   mojom::RequestMode request_mode_;
 
+  bool has_user_activation_;
+
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;

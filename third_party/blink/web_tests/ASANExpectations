@@ -70,5 +70,5 @@ crbug.com/896068 [ Linux ] webaudio/AudioBuffer/huge-buffer.html [ Crash ]
 crbug.com/896068 [ Linux ] webaudio/dom-exceptions.html [ Pass Crash ]
 
 # Sheriff 2019-07-31
-crbug.com/989365 [ Linux ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
+crbug.com/989365 [ Linux ] external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_single_subscription.tentative.https.any.serviceworker.html [ Pass Timeout ]
 

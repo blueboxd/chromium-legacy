@@ -72,7 +72,7 @@ public class TrustedWebActivityPreferencesUiTest {
         final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.register(origin, mPackage, true));
+                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
 
         Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.NOTIFICATIONS);
@@ -125,7 +125,7 @@ public class TrustedWebActivityPreferencesUiTest {
         final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.register(origin, mPackage, true));
+                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
 
         WebsiteAddress address = WebsiteAddress.create(site);
         Website website = new Website(address, address);

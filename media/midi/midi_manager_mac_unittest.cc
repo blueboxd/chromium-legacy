@@ -12,9 +12,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "base/test/task_environment.h"
 #include "media/midi/midi_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,9 +112,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
 class MidiManagerMacTest : public ::testing::Test {
  public:
-  MidiManagerMacTest()
-      : service_(std::make_unique<MidiService>()),
-        message_loop_(std::make_unique<base::MessageLoop>()) {}
+  MidiManagerMacTest() : service_(std::make_unique<MidiService>()) {}
   ~MidiManagerMacTest() override {
     service_->Shutdown();
     base::RunLoop run_loop;
@@ -129,7 +127,7 @@ class MidiManagerMacTest : public ::testing::Test {
 
  private:
   std::unique_ptr<MidiService> service_;
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerMacTest);
 };

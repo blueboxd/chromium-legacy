@@ -17,32 +17,47 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import androidx.annotation.Nullable;
+import androidx.browser.trusted.Token;
 import androidx.browser.trusted.TrustedWebActivityService;
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
-import androidx.browser.trusted.TrustedWebActivityServiceWrapper;
+import androidx.browser.trusted.TrustedWebActivityServiceConnection;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 /**
  * Uses a Trusted Web Activity client to display notifications.
  */
 @Singleton
 public class TrustedWebActivityClient {
-    private final TrustedWebActivityServiceConnectionManager mConnection;
+    private static final String TAG = "TWAClient";
+    private static final Executor UI_THREAD_EXECUTOR =
+            (Runnable r) -> PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, r);
+
+    private final TrustedWebActivityServiceConnectionPool mConnection;
+    private final TrustedWebActivityPermissionManager mDelegatesManager;
     private final TrustedWebActivityUmaRecorder mRecorder;
 
     /** Interface for callbacks to {@link #checkNotificationPermission}. */
@@ -55,9 +70,11 @@ public class TrustedWebActivityClient {
      * Creates a TrustedWebActivityService.
      */
     @Inject
-    public TrustedWebActivityClient(TrustedWebActivityServiceConnectionManager connection,
+    public TrustedWebActivityClient(TrustedWebActivityServiceConnectionPool connection,
+            TrustedWebActivityPermissionManager delegatesManager,
             TrustedWebActivityUmaRecorder recorder) {
         mConnection = connection;
+        mDelegatesManager = delegatesManager;
         mRecorder = recorder;
     }
 
@@ -70,19 +87,24 @@ public class TrustedWebActivityClient {
     public boolean twaExistsForScope(Uri scope) {
         Origin origin = Origin.create(scope);
         if (origin == null) return false;
-        return mConnection.serviceExistsForScope(scope, origin.toString());
+        Set<Token> possiblePackages = mDelegatesManager.getAllDelegateApps(origin);
+        if (possiblePackages == null) return false;
+        return mConnection.serviceExistsForScope(scope, possiblePackages);
     }
 
     /**
      * Checks whether the TWA of the given origin has the notification permission granted.
      * @param callback Will be called on a background thread with whether the permission is granted.
      * @return {@code false} if no such TWA exists (in which case the callback will not be called).
+     *         Ensure that the app has been added to the {@link TrustedWebActivityPermissionManager}
+     *         before calling this.
      */
     public boolean checkNotificationPermission(Origin origin,
             NotificationPermissionCheckCallback callback) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        return mConnection.execute(origin.uri(), origin.toString(), service ->
+
+        return connectAndExecute(origin.uri(), service ->
                 callback.onPermissionCheck(service.getComponentName(),
                         service.areNotificationsEnabled(channelDisplayName)));
     }
@@ -102,10 +124,10 @@ public class TrustedWebActivityClient {
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
         Origin origin = Origin.createOrThrow(scope);
 
-        mConnection.execute(scope, origin.toString(), service -> {
+        connectAndExecute(scope, service -> {
             if (!service.areNotificationsEnabled(channelDisplayName)) {
-                NotificationPermissionUpdater.onDelegatedNotificationDisabled(origin,
-                        service.getComponentName());
+                mDelegatesManager.updatePermission(origin,
+                        service.getComponentName().getPackageName(), false);
 
                 // Attempting to notify when notifications are disabled won't have any effect, but
                 // returning here just saves us from doing unnecessary work.
@@ -128,7 +150,7 @@ public class TrustedWebActivityClient {
     }
 
     private void fallbackToIconFromServiceIfNecessary(NotificationBuilderBase builder,
-            TrustedWebActivityServiceWrapper service) throws RemoteException {
+            TrustedWebActivityServiceConnection service) throws RemoteException {
         if (builder.hasSmallIconForContent() && builder.hasStatusBarIconBitmap()) {
             recordFallback(NO_FALLBACK);
             return;
@@ -165,22 +187,29 @@ public class TrustedWebActivityClient {
      * @param platformId The id of the notification to cancel.
      */
     public void cancelNotification(Uri scope, String platformTag, int platformId) {
-        Origin origin = Origin.createOrThrow(scope);
-        mConnection.execute(scope, origin.toString(),
-                service -> service.cancel(platformTag, platformId));
+        connectAndExecute(scope, service -> service.cancel(platformTag, platformId));
     }
 
-    /**
-     * Registers the package of a Trusted Web Activity client app to be used to deal with
-     * notifications from the given origin. This can be called on any thread, but may hit the disk
-     * so should be called on a background thread if possible.
-     * @param context A context used to access shared preferences.
-     * @param origin The origin to use the client app for.
-     * @param clientPackage The package of the client app.
-     */
-    public static void registerClient(Context context, Origin origin, String clientPackage) {
-        TrustedWebActivityServiceConnectionManager
-                .registerClient(context, origin.toString(), clientPackage);
+    private interface ExecutionCallback {
+        void onConnected(TrustedWebActivityServiceConnection service) throws RemoteException;
+    }
+
+    private boolean connectAndExecute(Uri scope, ExecutionCallback callback) {
+        Origin origin = Origin.createOrThrow(scope);
+        Set<Token> possiblePackages = mDelegatesManager.getAllDelegateApps(origin);
+        if (possiblePackages == null || possiblePackages.isEmpty()) return false;
+
+        ListenableFuture<TrustedWebActivityServiceConnection> connection =
+                mConnection.connect(scope, possiblePackages, AsyncTask.THREAD_POOL_EXECUTOR);
+        connection.addListener(() -> {
+            try {
+                callback.onConnected(connection.get());
+            } catch (RemoteException | ExecutionException | InterruptedException e) {
+                Log.w(TAG, "Failed to execute TWA command.");
+            }
+        }, UI_THREAD_EXECUTOR);
+
+        return true;
     }
 
     /**
@@ -192,13 +221,20 @@ public class TrustedWebActivityClient {
      */
     public static @Nullable Intent createLaunchIntentForTwa(Context appContext, String url,
             List<ResolveInfo> resolveInfosForUrl) {
+        // This is ugly, but the call site for this is static and called by native.
+        TrustedWebActivityClient client =
+                ChromeApplication.getComponent().resolveTrustedWebActivityClient();
+        return client.createLaunchIntentForTwaInternal(appContext, url, resolveInfosForUrl);
+    }
+
+    private @Nullable Intent createLaunchIntentForTwaInternal(Context appContext, String url,
+            List<ResolveInfo> resolveInfosForUrl) {
         Origin origin = Origin.createOrThrow(url);
 
         // Trusted Web Activities only work with https so we can shortcut here.
         if (!UrlConstants.HTTPS_SCHEME.equals(origin.uri().getScheme())) return null;
 
-        Set<String> verifiedPackages = TrustedWebActivityServiceConnectionManager
-                .getVerifiedPackages(appContext, origin.toString());
+        Set<Token> verifiedPackages = mDelegatesManager.getAllDelegateApps(origin);
         if (verifiedPackages == null || verifiedPackages.size() == 0) return null;
 
         String twaPackageName = null;
@@ -206,7 +242,11 @@ public class TrustedWebActivityClient {
         for (ResolveInfo info : resolveInfosForUrl) {
             if (info.activityInfo == null) continue;
 
-            if (verifiedPackages.contains(info.activityInfo.packageName)) {
+            Token token =
+                    Token.create(info.activityInfo.packageName, appContext.getPackageManager());
+            if (token == null) continue;
+
+            if (verifiedPackages.contains(token)) {
                 twaPackageName = info.activityInfo.packageName;
                 twaActivityName = info.activityInfo.name;
                 break;

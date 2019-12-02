@@ -143,7 +143,7 @@ void SVGFEImageElement::ImageNotifyFinished(ImageResourceContent*) {
     return;
 
   Element* parent = parentElement();
-  if (!parent || !IsSVGFilterElement(parent) || !parent->GetLayoutObject())
+  if (!parent || !IsA<SVGFilterElement>(parent) || !parent->GetLayoutObject())
     return;
 
   if (LayoutObject* layout_object = GetLayoutObject())

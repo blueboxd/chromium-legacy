@@ -62,11 +62,10 @@ class CallbackInterface(UserDefinedType, WithExtendedAttributes,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
         self._constants = tuple([
             Constant(constant_ir, owner=self) for constant_ir in ir.constants
         ])

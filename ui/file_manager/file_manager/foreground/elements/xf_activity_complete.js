@@ -8,18 +8,10 @@
 class ActivityComplete extends HTMLElement {
   constructor() {
     super();
-    const host = document.createElement('template');
-    host.innerHTML = this.constructor.template_;
-    this.attachShadow({mode: 'open'}).appendChild(host.content.cloneNode(true));
-  }
 
-  /**
-   * Returns the custom element template content.
-   * @return {string}
-   * @private
-   */
-  static get template_() {
-    return `<iron-icon style='width: 36px; height: 36px;'></icon-icon>`;
+    const icon = document.createElement('iron-icon');
+    icon.setAttribute('style', 'width: 36px; height: 36px;');
+    this.attachShadow({mode: 'open'}).appendChild(icon);
   }
 
   /**
@@ -43,4 +35,4 @@ class ActivityComplete extends HTMLElement {
   }
 }
 
-window.customElements.define('xf-activity-complete', ActivityComplete);
+customElements.define('xf-activity-complete', ActivityComplete);

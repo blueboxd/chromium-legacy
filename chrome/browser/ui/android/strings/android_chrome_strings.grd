@@ -1136,13 +1136,13 @@ Your Google account may have other forms of browsing history like searches and a
         Ask before allowing sites to know your location (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications.">
-        Ask before sending
+        New sites you visit can ask to send you notifications
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET" desc="A setting that, if turned on will enable a quieter permission prompt for notifications.">
-        Show prompts quietly
+        Inform quietly
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET_SUMMARY_ENABLED" desc="A summary explaining how quiet notifications work, when the setting is enabled.">
-        Sites will be blocked from asking to show you notifications. If a site requests notifications, an infobar will appear at the bottom of the page.
+        Block sites from interrupting you when asking for notifications, and inform quietly instead
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET_SUMMARY_DISABLED" desc="A summary explaining how quiet notifications work, when the setting is disabled.">
         Enable to automatically block sites from asking to show you notifications. If a site requests notifications, an infobar will appear at the bottom of the page.

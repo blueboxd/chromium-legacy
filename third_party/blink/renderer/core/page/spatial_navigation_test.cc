@@ -620,6 +620,87 @@ TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
   EXPECT_EQ(origin, BottomOfVisualViewport());
 }
 
+TEST_F(SpatialNavigationTest, StraightTextNoFragments) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  body {font: 10px/10px Ahem; width: 500px}"
+      "</style>"
+      "<a href='#' id='a'>blaaaaa blaaaaa blaaaaa</a>");
+  Element* a = GetDocument().getElementById("a");
+  EXPECT_FALSE(IsFragmentedInline(*a));
+}
+
+TEST_F(SpatialNavigationTest, LineBrokenTextHasFragments) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  body {font: 10px/10px Ahem; width: 40px}"
+      "</style>"
+      "<a href='#' id='a'>blaaaaa blaaaaa blaaaaa</a>");
+  Element* a = GetDocument().getElementById("a");
+  EXPECT_TRUE(IsFragmentedInline(*a));
+}
+
+TEST_F(SpatialNavigationTest, ManyClientRectsButNotLineBrokenText) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  div {width: 20px; height: 20px;}"
+      "</style>"
+      "<a href='#' id='a'><div></div></a>");
+  Element* a = GetDocument().getElementById("a");
+  EXPECT_FALSE(IsFragmentedInline(*a));
+}
+
+TEST_F(SpatialNavigationTest, UseTheFirstFragment) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  body {font: 10px/10px Ahem; margin: 0; width: 50px;}"
+      "</style>"
+      "<a href='#' id='a'>12345 12</a>");
+  Element* a = GetDocument().getElementById("a");
+  EXPECT_TRUE(IsFragmentedInline(*a));
+
+  // Search downards.
+  PhysicalRect origin_down = SearchOrigin(RootViewport(&GetFrame()), a,
+                                          SpatialNavigationDirection::kDown);
+  PhysicalRect origin_fragment =
+      SearchOriginFragment(NodeRectInRootFrame(a), *a->GetLayoutObject(),
+                           SpatialNavigationDirection::kDown);
+  EXPECT_EQ(origin_down, origin_fragment);
+  EXPECT_EQ(origin_down.Height(), 10);
+  EXPECT_EQ(origin_down.Width(), 50);
+  EXPECT_EQ(origin_down.X(), 0);
+  EXPECT_EQ(origin_down.Y(), 0);
+
+  // Search upwards.
+  PhysicalRect origin_up = SearchOrigin(RootViewport(&GetFrame()), a,
+                                        SpatialNavigationDirection::kUp);
+  PhysicalRect origin_fragment_up =
+      SearchOriginFragment(NodeRectInRootFrame(a), *a->GetLayoutObject(),
+                           SpatialNavigationDirection::kUp);
+  EXPECT_EQ(origin_up, origin_fragment_up);
+  EXPECT_EQ(origin_up.Height(), 10);
+  EXPECT_EQ(origin_up.Width(), 20);
+  EXPECT_EQ(origin_up.X(), 0);
+  EXPECT_EQ(origin_up.Y(), 10);
+
+  // Search from the top fragment.
+  PhysicalRect origin_left = SearchOrigin(RootViewport(&GetFrame()), a,
+                                          SpatialNavigationDirection::kLeft);
+  EXPECT_EQ(origin_left, origin_down);
+
+  // Search from the bottom fragment.
+  PhysicalRect origin_right = SearchOrigin(RootViewport(&GetFrame()), a,
+                                           SpatialNavigationDirection::kRight);
+  EXPECT_EQ(origin_right, origin_up);
+}
+
 TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
   PhysicalRect origin = SearchOrigin(RootViewport(&GetFrame()), nullptr,
                                      SpatialNavigationDirection::kDown);

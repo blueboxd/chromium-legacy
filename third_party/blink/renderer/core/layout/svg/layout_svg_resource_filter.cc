@@ -87,20 +87,20 @@ bool LayoutSVGResourceFilter::RemoveClientFromCache(SVGResourceClient& client) {
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
     const FloatRect& reference_box) const {
-  const auto* filter_element = ToSVGFilterElement(GetElement());
+  const auto* filter_element = To<SVGFilterElement>(GetElement());
   return SVGLengthContext::ResolveRectangle(filter_element, FilterUnits(),
                                             reference_box);
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::FilterUnits() const {
-  return ToSVGFilterElement(GetElement())
+  return To<SVGFilterElement>(GetElement())
       ->filterUnits()
       ->CurrentValue()
       ->EnumValue();
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
-  return ToSVGFilterElement(GetElement())
+  return To<SVGFilterElement>(GetElement())
       ->primitiveUnits()
       ->CurrentValue()
       ->EnumValue();
@@ -126,8 +126,8 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
       return;
     node_map->InvalidateDependentEffects(effect);
   }
-  if (LocalSVGResource* resource =
-          ToSVGFilterElement(GetElement())->AssociatedResource()) {
+  if (auto* resource =
+          To<SVGFilterElement>(GetElement())->AssociatedResource()) {
     resource->NotifyContentChanged(
         SVGResourceClient::kPaintInvalidation |
         SVGResourceClient::kSkipAncestorInvalidation);

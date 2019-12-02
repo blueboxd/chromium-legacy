@@ -104,11 +104,11 @@ EphemeralRangeInFlatTree FindImmediateMatch(String search_text,
   // TODO(nburris): FindBuffer will search the rest of the document for a match,
   // but we only need to check for an immediate match, so we should stop
   // searching if there's no immediate match.
-  std::unique_ptr<FindBuffer::Results> match_results =
+  FindBuffer::Results match_results =
       buffer.FindMatches(search_text, kCaseInsensitive);
 
-  if (!match_results->IsEmpty() && match_results->front().start == 0u) {
-    FindBuffer::BufferMatchResult buffer_match = match_results->front();
+  if (!match_results.IsEmpty() && match_results.front().start == 0u) {
+    FindBuffer::BufferMatchResult buffer_match = match_results.front();
     EphemeralRangeInFlatTree match = buffer.RangeFromBufferIndex(
         buffer_match.start, buffer_match.start + buffer_match.length);
     if (IsWholeWordMatch(match))

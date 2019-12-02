@@ -65,11 +65,11 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
       text_path_element.HrefString(),
       text_path_element.TreeScopeForIdResolution());
 
-  if (!IsSVGPathElement(target_element))
+  const auto* path_element = DynamicTo<SVGPathElement>(target_element);
+  if (!path_element)
     return nullptr;
 
-  const SVGPathElement& path_element = ToSVGPathElement(*target_element);
-  Path path_data = path_element.AsPath();
+  Path path_data = path_element->AsPath();
   if (path_data.IsEmpty())
     return nullptr;
 
@@ -80,13 +80,13 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
   // 'transform' property on the current 'text' element.
   // https://svgwg.org/svg2-draft/text.html#TextPathElement
   path_data.Transform(
-      path_element.CalculateTransform(SVGElement::kIncludeMotionTransform));
+      path_element->CalculateTransform(SVGElement::kIncludeMotionTransform));
 
   // Determine the length to resolve any percentage 'startOffset'
   // against - either 'pathLength' (author path length) or the
   // computed length of the path.
   float computed_path_length = path_data.length();
-  float author_path_length = path_element.AuthorPathLength();
+  float author_path_length = path_element->AuthorPathLength();
   float offset_scale = 1;
   if (!std::isnan(author_path_length)) {
     offset_scale = SVGGeometryElement::PathLengthScaleFactor(

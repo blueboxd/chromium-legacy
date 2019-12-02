@@ -250,7 +250,6 @@ class PasswordManagerClient {
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
 
-  PasswordFeatureManager* GetPasswordFeatureManager();
   virtual const PasswordFeatureManager* GetPasswordFeatureManager() const = 0;
 
   // Returns the HttpAuthManager associated with this client.

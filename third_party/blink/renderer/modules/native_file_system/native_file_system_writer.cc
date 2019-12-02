@@ -62,7 +62,8 @@ ScriptPromise NativeFileSystemWriter::write(
 
   if (!blob) {
     uint64_t size = blob_data->length();
-    blob = Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+    blob = MakeGarbageCollected<Blob>(
+        BlobDataHandle::Create(std::move(blob_data), size));
   }
 
   return WriteBlob(script_state, position, blob);

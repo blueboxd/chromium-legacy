@@ -957,7 +957,6 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       case autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
       case autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
       case autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN:
       case autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
         // This is a footer, so this suggestion will be processed later. Don't
         // increment |line_number|, or else it will be skipped when adding

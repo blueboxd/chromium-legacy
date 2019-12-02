@@ -2731,6 +2731,7 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-left-css_touch.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
@@ -5639,7 +5640,7 @@ crbug.com/987138 [ Linux Win ] virtual/audio-service/media/controls/doubletap-to
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
-crbug.com/988246 external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_mismatch.tentative.https.html [ Skip ]
+crbug.com/988246 external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_mismatched_subscription.tentative.https.any.serviceworker.html [ Skip ]
 crbug.com/988252 [ Linux Debug ] virtual/threaded/transitions/composited-with-hit-testing.html [ Pass Failure ]
 crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
@@ -5673,7 +5674,7 @@ crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
 crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.https.html [ Pass Timeout ]
-crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
+crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_single_subscription.tentative.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/989665 [ Win Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
 
 # Sheriff 2019-08-01
@@ -5773,7 +5774,6 @@ crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.
 
 # Sheriff 2019-09-04
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Pass Failure ]
-crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/devices-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js [ Pass Failure ]
@@ -5979,7 +5979,12 @@ crbug.com/1027436 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-de
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1027435 [ Mac ] external/wpt/html/cross-origin-opener-policy/popup-none.https.html [ Pass Timeout ]
-crbug.com/1027434 [ Mac ] external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+
+# Sheriff 2019-12-02
+crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_multiple.tentative.https.any.html [ Pass Failure ]
+crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
 
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
@@ -6032,7 +6037,6 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
-crbug.com/1016772 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]

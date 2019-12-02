@@ -26,7 +26,7 @@ class CompressionStream final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
-  const Member<TransformStream> transform_;
+  Member<TransformStream> transform_;
 
   DISALLOW_COPY_AND_ASSIGN(CompressionStream);
 };

@@ -1800,8 +1800,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
 #if defined(OS_CHROMEOS)
   if (params_->dhcp_wpad_url_client) {
-    builder.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
-        std::move(params_->dhcp_wpad_url_client)));
+    builder.SetDhcpWpadUrlClient(std::move(params_->dhcp_wpad_url_client));
   }
 #endif  // defined(OS_CHROMEOS)
 

@@ -23,21 +23,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.TimeoutException;
 
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
 
 /**
  * Tests the TrustedWebActivityClient.
@@ -127,12 +126,12 @@ public class TrustedWebActivityClientTest {
         RecordHistogram.setDisabledForTests(true);
         mTargetContext = InstrumentationRegistry.getTargetContext();
         mBuilder = new StandardNotificationBuilder(mTargetContext);
-        mClient = new TrustedWebActivityClient(new TrustedWebActivityServiceConnectionManager(
-                ContextUtils.getApplicationContext()),
-                new TrustedWebActivityUmaRecorder(ChromeBrowserInitializer.getInstance()));
+
+        ChromeAppComponent component = ChromeApplication.getComponent();
+        mClient = component.resolveTrustedWebActivityClient();
 
         // TestTrustedWebActivityService is in the test support apk.
-        TrustedWebActivityClient.registerClient(mTargetContext, ORIGIN, TEST_SUPPORT_PACKAGE);
+        component.resolveTwaPermissionManager().addDelegateApp(ORIGIN, TEST_SUPPORT_PACKAGE);
 
         // The MessengerService lives in the same package as the TestTrustedWebActivityService.
         // We use it as a side channel to verify what the TestTrustedWebActivityService does.

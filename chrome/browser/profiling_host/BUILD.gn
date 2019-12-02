@@ -21,6 +21,10 @@ static_library("profiling_host") {
     "//components/services/heap_profiling/public/cpp",
     "//content/public/browser",
     "//content/public/common",
+
+    # Added to support the dependency on //chrome/browser/metrics
+    # TODO(darin): We should instead have a way to express that dependency here.
+    "//chrome/common:mojo_bindings",
   ]
 }
 

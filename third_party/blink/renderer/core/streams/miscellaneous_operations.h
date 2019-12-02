@@ -119,48 +119,6 @@ CORE_EXPORT v8::Local<v8::Promise> PromiseResolve(ScriptState*,
 // Implements "a promise resolved with *undefined*".
 CORE_EXPORT v8::Local<v8::Promise> PromiseResolveWithUndefined(ScriptState*);
 
-// Validates the "options" argument to ReadableStream::getReader(). This
-// implementation is shared between ReadableStreamWrapper and
-// ReadableStreamNative. If an exception is thrown validation failed.
-// TODO(ricea): Move it into the native implementation once
-// ReadableStreamWrapper is deleted.
-CORE_EXPORT void GetReaderValidateOptions(ScriptState*,
-                                          ScriptValue options,
-                                          ExceptionState&);
-
-// Extracts the "readable" and "writable" streams from the |transform_stream|
-// dictionary, validates them, and returns them via the |readable_stream| and
-// |writable_stream| out parameters. The types of |readable_stream| and
-// |writable_stream| are asymmetric because |readable_stream| is returned
-// directly to JavaScript and so there is no point in converting it to an
-// internal type.
-// TODO(ricea): Move it into the native implementation once
-// ReadableStreamWrapper is deleted.
-CORE_EXPORT void PipeThroughExtractReadableWritable(
-    ScriptState*,
-    const ReadableStream* stream,
-    ScriptValue transform_stream,
-    ScriptValue* readable_stream,
-    WritableStream** writable_stream,
-    ExceptionState&);
-
-// Verifies that |destination_value| is a WritableStream and that both it and
-// |source| are unlocked. Returns the WritableStream that was wrapped by
-// |destination_value|.
-CORE_EXPORT WritableStream* PipeToCheckSourceAndDestination(
-    ScriptState*,
-    ReadableStream* source,
-    ScriptValue destination_value,
-    ExceptionState&);
-
-// Calls Tee() on |readable|, converts the two branches to a JavaScript array
-// and returns them.
-// TODO(ricea): Move it into the native implementation once
-// ReadableStreamWrapper is deleted.
-ScriptValue CallTeeAndReturnBranchArray(ScriptState* script_state,
-                                        ReadableStream* readable,
-                                        ExceptionState& exception_state);
-
 // Converts |value| to an object. |value| must not be empty. If |value| is
 // undefined, an empty object will be returned. If |value| is JavaScript null,
 // then an exception will be thrown. In the standard, this is performed as part

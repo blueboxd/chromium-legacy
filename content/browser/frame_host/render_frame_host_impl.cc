@@ -99,6 +99,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -1206,8 +1207,22 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
     StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
     child->current_frame_host()->EnterBackForwardCache();
-  for (auto* container_host : service_worker_container_hosts_)
-    container_host->OnEnterBackForwardCache();
+
+  if (service_worker_container_hosts_.empty())
+    return;
+  std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts;
+  for (auto host : service_worker_container_hosts_)
+    hosts.push_back(host.second);
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(
+          [](std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts) {
+            for (auto host : hosts) {
+              if (host)
+                host->OnEnterBackForwardCache();
+            }
+          },
+          std::move(hosts)));
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -1220,8 +1235,21 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
   for (auto& child : children_)
     child->current_frame_host()->LeaveBackForwardCache();
 
-  for (auto* container_host : service_worker_container_hosts_)
-    container_host->OnRestoreFromBackForwardCache();
+  if (service_worker_container_hosts_.empty())
+    return;
+  std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts;
+  for (auto host : service_worker_container_hosts_)
+    hosts.push_back(host.second);
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(
+          [](std::vector<base::WeakPtr<ServiceWorkerContainerHost>> hosts) {
+            for (auto host : hosts) {
+              if (host)
+                host->OnRestoreFromBackForwardCache();
+            }
+          },
+          std::move(hosts)));
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -7533,17 +7561,23 @@ RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
 }
 
 void RenderFrameHostImpl::AddServiceWorkerContainerHost(
-    ServiceWorkerContainerHost* host) {
-  DCHECK(!base::Contains(service_worker_container_hosts_, host));
-  service_worker_container_hosts_.push_back(host);
+    const std::string& uuid,
+    base::WeakPtr<content::ServiceWorkerContainerHost> host) {
+  if (is_in_back_forward_cache_) {
+    // RenderFrameHost entered BackForwardCache before adding
+    // ServiceWorkerContainerHost. In this case, evict the entry from the cache.
+    EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::NotRestoredReason::
+            kEnteredBackForwardCacheBeforeServiceWorkerHostAdded);
+  }
+  DCHECK(!base::Contains(service_worker_container_hosts_, uuid));
+  service_worker_container_hosts_[uuid] = std::move(host);
 }
 
 void RenderFrameHostImpl::RemoveServiceWorkerContainerHost(
-    ServiceWorkerContainerHost* host) {
-  DCHECK(base::Contains(service_worker_container_hosts_, host));
-  service_worker_container_hosts_.erase(
-      std::find(service_worker_container_hosts_.begin(),
-                service_worker_container_hosts_.end(), host));
+    const std::string& uuid) {
+  DCHECK(base::Contains(service_worker_container_hosts_, uuid));
+  service_worker_container_hosts_.erase(uuid);
 }
 
 void RenderFrameHostImpl::UpdateFrameFrozenState() {

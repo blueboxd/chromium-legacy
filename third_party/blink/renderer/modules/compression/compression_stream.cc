@@ -33,8 +33,7 @@ void CompressionStream::Trace(Visitor* visitor) {
 
 CompressionStream::CompressionStream(ScriptState* script_state,
                                      const AtomicString& format,
-                                     ExceptionState& exception_state)
-    : transform_(MakeGarbageCollected<TransformStream>()) {
+                                     ExceptionState& exception_state) {
   CompressionFormat deflate_format =
       LookupCompressionFormat(format, exception_state);
   if (exception_state.HadException())
@@ -46,9 +45,11 @@ CompressionStream::CompressionStream(ScriptState* script_state,
   // default level is hardcoded for now.
   // TODO(arenevier): Make level configurable
   const int deflate_level = 6;
-  transform_->Init(MakeGarbageCollected<DeflateTransformer>(
-                       script_state, deflate_format, deflate_level),
-                   script_state, exception_state);
+  transform_ =
+      TransformStream::Create(script_state,
+                              MakeGarbageCollected<DeflateTransformer>(
+                                  script_state, deflate_format, deflate_level),
+                              exception_state);
 }
 
 }  // namespace blink

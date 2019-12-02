@@ -91,7 +91,7 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary* impl, v8::Loca
 }
 
 TestPermissiveDictionary* NativeValueTraits<TestPermissiveDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestPermissiveDictionary* impl = TestPermissiveDictionary::Create();
+  TestPermissiveDictionary* impl = MakeGarbageCollected<TestPermissiveDictionary>();
   V8TestPermissiveDictionary::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

@@ -27,8 +27,8 @@
 namespace content {
 
 class ResourceContext;
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   // request interception.
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<ServiceWorkerContainerHost> container_host,
       ResourceType resource_type,
       bool skip_service_worker);
   ~ServiceWorkerControlleeRequestHandler();
@@ -64,8 +64,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   // to MaybeCreateLoader(). Otherwise this returns base::nullopt.
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams();
 
-  // Does all initialization of |provider_host_| for a request.
-  bool InitializeProvider(const network::ResourceRequest& tentative_request);
+  // Does all initialization of |container_host_| for a request.
+  bool InitializeContainerHost(
+      const network::ResourceRequest& tentative_request);
 
   // Exposed for testing.
   ServiceWorkerNavigationLoader* loader() {
@@ -104,7 +105,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   void MaybeScheduleUpdate();
 
   const base::WeakPtr<ServiceWorkerContextCore> context_;
-  const base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  const base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   const ResourceType resource_type_;
 
   // If true, service workers are bypassed for request interception.

@@ -99,7 +99,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit* impl, v8::Local<v8
 }
 
 TestInterfaceEventInit* NativeValueTraits<TestInterfaceEventInit>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceEventInit* impl = TestInterfaceEventInit::Create();
+  TestInterfaceEventInit* impl = MakeGarbageCollected<TestInterfaceEventInit>();
   V8TestInterfaceEventInit::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

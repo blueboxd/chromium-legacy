@@ -287,12 +287,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.
   if (IsFetchMetadataEnabled() && IsOriginSecure(url)) {
-    // Navigations that aren't triggerable from the web (e.g. typing in the
-    // address bar, or clicking a bookmark) are labeled as user-initiated.
-    std::string user_value = has_user_gesture ? "?1" : std::string();
-    if (!PageTransitionIsWebTriggerable(transition))
-      user_value = "?1";
-
     std::string destination;
     switch (frame_tree_node->frame_owner_element_type()) {
       case blink::FrameOwnerElementType::kNone:
@@ -322,11 +316,9 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     if (IsFetchMetadataDestinationEnabled()) {
       headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     }
-    if (!user_value.empty())
-      headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
 
-    // `Sec-Fetch-Site` and `Sec-Fetch-Mode` are covered by the
-    // `network::SetFetchMetadataHeaders` function.
+    // `Sec-Fetch-User`, `Sec-Fetch-Site` and `Sec-Fetch-Mode` are covered by
+    // the `network::SetFetchMetadataHeaders` function.
   }
 
   if (!render_prefs.enable_referrers) {

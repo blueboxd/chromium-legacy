@@ -92,7 +92,6 @@ crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/application-panel/
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/basic-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/console-a11y-test.js [ Failure Pass ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/devices-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/memory/heap-profiler-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Failure Pass ]

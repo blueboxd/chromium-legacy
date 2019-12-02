@@ -2327,7 +2327,7 @@ TEST_F(NetworkContextTest, ProxyConfig) {
   }
 }
 
-// Verify that a proxy config works without a ProxyConfigClientRequest.
+// Verify that a proxy config works without a ProxyConfigClient PendingReceiver.
 TEST_F(NetworkContextTest, StaticProxyConfig) {
   net::ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");

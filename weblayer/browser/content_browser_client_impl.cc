@@ -46,11 +46,14 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/bundle_utils.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
+#include "weblayer/browser/java/jni/ExternalNavigationHandler_jni.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -357,5 +360,65 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+bool ContentBrowserClientImpl::ShouldOverrideUrlLoading(
+    int frame_tree_node_id,
+    bool browser_initiated,
+    const GURL& gurl,
+    const std::string& request_method,
+    bool has_user_gesture,
+    bool is_redirect,
+    bool is_main_frame,
+    ui::PageTransition transition,
+    bool* ignore_navigation) {
+  *ignore_navigation = false;
+
+  // Only GETs can be overridden.
+  if (request_method != "GET")
+    return true;
+
+  bool application_initiated =
+      browser_initiated || transition & ui::PAGE_TRANSITION_FORWARD_BACK;
+
+  // Don't offer application-initiated navigations unless it's a redirect.
+  if (application_initiated && !is_redirect)
+    return true;
+
+  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
+  // WebView Classic lets app override only top level about:blank navigations.
+  // So we filter out non-top about:blank navigations here.
+  if (!is_main_frame &&
+      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
+       gurl.SchemeIs(url::kAboutScheme)))
+    return true;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (web_contents == nullptr)
+    return true;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::string16 url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
+  base::android::ScopedJavaLocalRef<jstring> jurl =
+      base::android::ConvertUTF16ToJavaString(env, url);
+
+  *ignore_navigation = Java_ExternalNavigationHandler_shouldOverrideUrlLoading(
+      env, jurl, has_user_gesture, is_redirect, is_main_frame);
+
+  if (base::android::HasException(env)) {
+    // Tell the chromium message loop to not perform any tasks after the
+    // current one - we want to make sure we return to Java cleanly without
+    // first making any new JNI calls.
+    base::MessageLoopCurrentForUI::Get()->Abort();
+    // If we crashed we don't want to continue the navigation.
+    *ignore_navigation = true;
+    return false;
+  }
+
+  return true;
+}
+#endif
 
 }  // namespace weblayer

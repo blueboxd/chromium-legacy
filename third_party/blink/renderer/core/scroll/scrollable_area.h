@@ -385,6 +385,16 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   bool HasLayerForVerticalScrollbar() const;
   bool HasLayerForScrollCorner() const;
 
+  bool HorizontalScrollbarNeedsPaintInvalidation() const {
+    return horizontal_scrollbar_needs_paint_invalidation_;
+  }
+  bool VerticalScrollbarNeedsPaintInvalidation() const {
+    return vertical_scrollbar_needs_paint_invalidation_;
+  }
+  bool ScrollCornerNeedsPaintInvalidation() const {
+    return scroll_corner_needs_paint_invalidation_;
+  }
+
   void LayerForScrollingDidChange(CompositorAnimationTimeline*);
   bool NeedsShowScrollbarLayers() const { return needs_show_scrollbar_layers_; }
   void DidShowScrollbarLayers() { needs_show_scrollbar_layers_ = false; }
@@ -493,15 +503,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   friend class ScrollAnimatorCompositorCoordinator;
   void ScrollOffsetChanged(const ScrollOffset&, ScrollType);
 
-  bool HorizontalScrollbarNeedsPaintInvalidation() const {
-    return horizontal_scrollbar_needs_paint_invalidation_;
-  }
-  bool VerticalScrollbarNeedsPaintInvalidation() const {
-    return vertical_scrollbar_needs_paint_invalidation_;
-  }
-  bool ScrollCornerNeedsPaintInvalidation() const {
-    return scroll_corner_needs_paint_invalidation_;
-  }
   void ClearNeedsPaintInvalidationForScrollControls() {
     horizontal_scrollbar_needs_paint_invalidation_ = false;
     vertical_scrollbar_needs_paint_invalidation_ = false;

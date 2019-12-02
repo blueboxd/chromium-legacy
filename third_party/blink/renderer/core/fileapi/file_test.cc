@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/file/file_utilities.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -70,7 +71,7 @@ TEST(FileTest, NativeFileWithoutTimestamp) {
   info.last_modified = base::Time();
   host.SetFileInfoToBeReturned(info);
 
-  File* const file = File::Create("/native/path");
+  auto* const file = MakeGarbageCollected<File>("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ("/native/path", file->GetPath());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
@@ -83,7 +84,7 @@ TEST(FileTest, NativeFileWithUnixEpochTimestamp) {
   info.last_modified = base::Time::UnixEpoch();
   host.SetFileInfoToBeReturned(info);
 
-  File* const file = File::Create("/native/path");
+  auto* const file = MakeGarbageCollected<File>("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(0, file->lastModified());
   EXPECT_EQ(0.0, file->LastModifiedDate());
@@ -95,7 +96,7 @@ TEST(FileTest, NativeFileWithApocalypseTimestamp) {
   info.last_modified = base::Time::Max();
   host.SetFileInfoToBeReturned(info);
 
-  File* const file = File::Create("/native/path");
+  auto* const file = MakeGarbageCollected<File>("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
 
   ExpectLastModifiedIsNow(*file);
@@ -107,7 +108,7 @@ TEST(FileTest, NativeFileWithApocalypseTimestamp) {
 TEST(FileTest, blobBackingFile) {
   const scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create();
-  File* const file = File::Create("name", 0.0, blob_data_handle);
+  auto* const file = MakeGarbageCollected<File>("name", 0.0, blob_data_handle);
   EXPECT_FALSE(file->HasBackingFile());
   EXPECT_TRUE(file->GetPath().IsEmpty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
@@ -145,15 +146,18 @@ TEST(FileTest, fileSystemFileWithoutNativeSnapshot) {
 }
 
 TEST(FileTest, hsaSameSource) {
-  File* const native_file_a1 = File::Create("/native/pathA");
-  File* const native_file_a2 = File::Create("/native/pathA");
-  File* const native_file_b = File::Create("/native/pathB");
+  auto* const native_file_a1 = MakeGarbageCollected<File>("/native/pathA");
+  auto* const native_file_a2 = MakeGarbageCollected<File>("/native/pathA");
+  auto* const native_file_b = MakeGarbageCollected<File>("/native/pathB");
 
   const scoped_refptr<BlobDataHandle> blob_data_a = BlobDataHandle::Create();
   const scoped_refptr<BlobDataHandle> blob_data_b = BlobDataHandle::Create();
-  File* const blob_file_a1 = File::Create("name", 0.0, blob_data_a);
-  File* const blob_file_a2 = File::Create("name", 0.0, blob_data_a);
-  File* const blob_file_b = File::Create("name", 0.0, blob_data_b);
+  auto* const blob_file_a1 =
+      MakeGarbageCollected<File>("name", 0.0, blob_data_a);
+  auto* const blob_file_a2 =
+      MakeGarbageCollected<File>("name", 0.0, blob_data_a);
+  auto* const blob_file_b =
+      MakeGarbageCollected<File>("name", 0.0, blob_data_b);
 
   KURL url_a("filesystem:http://example.com/isolated/hash/non-native-file-A");
   KURL url_b("filesystem:http://example.com/isolated/hash/non-native-file-B");

@@ -370,7 +370,7 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   FinishSyncSetup();
 
   if ((signin_type_ == SigninType::UI_SIGNIN) &&
-      !login_ui_test_utils::DismissSyncConfirmationDialog(
+      !login_ui_test_utils::ConfirmSyncConfirmationDialog(
           chrome::FindBrowserWithProfile(profile_),
           base::TimeDelta::FromSeconds(30))) {
     LOG(ERROR) << "Failed to dismiss sync confirmation dialog.";

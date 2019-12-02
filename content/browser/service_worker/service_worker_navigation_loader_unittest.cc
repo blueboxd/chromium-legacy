@@ -387,16 +387,18 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   void StartRequest(std::unique_ptr<network::ResourceRequest> request) {
     // Create a ServiceWorkerProviderHost and simulate what
     // ServiceWorkerControlleeRequestHandler does to assign it a controller.
-    if (!provider_host_) {
-      provider_host_ = CreateProviderHostForWindow(
-          helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
-          helper_->context()->AsWeakPtr(), &provider_endpoints_);
-      ServiceWorkerContainerHost* container_host =
-          provider_host_->container_host();
-      container_host->UpdateUrls(request->url, request->url,
-                                 url::Origin::Create(request->url));
-      container_host->AddMatchingRegistration(registration_.get());
-      container_host->SetControllerRegistration(
+    if (!container_host_) {
+      container_host_ =
+          CreateProviderHostForWindow(helper_->mock_render_process_id(),
+                                      /*is_parent_frame_secure=*/true,
+                                      helper_->context()->AsWeakPtr(),
+                                      &provider_endpoints_)
+              ->container_host()
+              ->GetWeakPtr();
+      container_host_->UpdateUrls(request->url, request->url,
+                                  url::Origin::Create(request->url));
+      container_host_->AddMatchingRegistration(registration_.get());
+      container_host_->SetControllerRegistration(
           registration_, /*notify_controllerchange=*/false);
     }
 
@@ -404,7 +406,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     loader_ = std::make_unique<ServiceWorkerNavigationLoader>(
         base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                        base::Unretained(this)),
-        provider_host_,
+        container_host_,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
 
@@ -477,7 +479,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   network::TestURLLoaderClient client_;
   std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
   mojo::Remote<network::mojom::URLLoader> loader_remote_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   ServiceWorkerRemoteProviderEndpoint provider_endpoints_;
 
   bool did_call_fallback_callback_ = false;
@@ -513,10 +515,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   base::HistogramTester histogram_tester;
 
   // Make a provider host without a controller.
-  provider_host_ = CreateProviderHostForWindow(
-      helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
-      helper_->context()->AsWeakPtr(), &provider_endpoints_);
-  provider_host_->container_host()->UpdateUrls(
+  container_host_ =
+      CreateProviderHostForWindow(
+          helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
+          helper_->context()->AsWeakPtr(), &provider_endpoints_)
+          ->container_host()
+          ->GetWeakPtr();
+  container_host_->UpdateUrls(
       GURL("https://example.com/"), GURL("https://example.com/"),
       url::Origin::Create(GURL("https://example.com/")));
 
@@ -804,7 +809,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
 
   // The request should not be handled by the loader, but it shouldn't be a
   // failure.
-  EXPECT_TRUE(provider_host_->container_host()->controller());
+  EXPECT_TRUE(container_host_->controller());
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
 
@@ -846,7 +851,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   // The fallback callback should be called.
   RunUntilFallbackCallback();
   EXPECT_TRUE(reset_subresource_loader_params_);
-  EXPECT_FALSE(provider_host_->container_host()->controller());
+  EXPECT_FALSE(container_host_->controller());
 
   histogram_tester.ExpectUniqueSample(
       kHistogramMainResourceFetchEvent,
@@ -951,7 +956,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   // crashing.
   provider_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(provider_host_);
+  EXPECT_FALSE(container_host_);
 
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);

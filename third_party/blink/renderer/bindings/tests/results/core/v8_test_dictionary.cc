@@ -1837,7 +1837,7 @@ bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictio
 }
 
 TestDictionary* NativeValueTraits<TestDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestDictionary* impl = TestDictionary::Create();
+  TestDictionary* impl = MakeGarbageCollected<TestDictionary>();
   V8TestDictionary::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

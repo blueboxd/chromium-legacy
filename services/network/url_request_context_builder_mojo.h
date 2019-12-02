@@ -48,7 +48,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
 
 #if defined(OS_CHROMEOS)
   void SetDhcpWpadUrlClient(
-      network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client);
+      mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+          dhcp_wpad_url_client);
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -65,7 +66,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
 #if defined(OS_CHROMEOS)
   // If set, handles calls to get the PAC script URL from the browser process.
   // Only used if |mojo_proxy_resolver_factory_| is set.
-  network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client_;
+  mojo::PendingRemote<network::mojom::DhcpWpadUrlClient> dhcp_wpad_url_client_;
 #endif  // defined(OS_CHROMEOS)
 
   mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>

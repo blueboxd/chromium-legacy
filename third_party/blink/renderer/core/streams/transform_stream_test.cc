@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -46,8 +46,8 @@ class TransformStreamTest : public ::testing::Test {
   void Init(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state) {
-    stream_ = MakeGarbageCollected<TransformStream>();
-    stream_->Init(transformer, script_state, exception_state);
+    stream_ =
+        TransformStream::Create(script_state, transformer, exception_state);
   }
 
   // This takes the |readable| and |writable| properties of the TransformStream
@@ -82,20 +82,19 @@ class TestTransformer : public TransformStreamTransformer {
       : script_state_(script_state) {}
 
   virtual void TransformVoid(v8::Local<v8::Value>,
-                             TransformStreamDefaultControllerInterface*,
+                             TransformStreamDefaultController*,
                              ExceptionState&) {}
 
   ScriptPromise Transform(v8::Local<v8::Value> chunk,
-                          TransformStreamDefaultControllerInterface* controller,
+                          TransformStreamDefaultController* controller,
                           ExceptionState& exception_state) override {
     TransformVoid(chunk, controller, exception_state);
     return ScriptPromise::CastUndefined(script_state_);
   }
 
-  virtual void FlushVoid(TransformStreamDefaultControllerInterface*,
-                         ExceptionState&) {}
+  virtual void FlushVoid(TransformStreamDefaultController*, ExceptionState&) {}
 
-  ScriptPromise Flush(TransformStreamDefaultControllerInterface* controller,
+  ScriptPromise Flush(TransformStreamDefaultController* controller,
                       ExceptionState& exception_state) override {
     FlushVoid(controller, exception_state);
     return ScriptPromise::CastUndefined(script_state_);
@@ -118,9 +117,11 @@ class IdentityTransformer final : public TestTransformer {
       : TestTransformer(script_state) {}
 
   void TransformVoid(v8::Local<v8::Value> chunk,
-                     TransformStreamDefaultControllerInterface* controller,
+                     TransformStreamDefaultController* controller,
                      ExceptionState& exception_state) override {
-    controller->Enqueue(chunk, exception_state);
+    controller->enqueue(GetScriptState(),
+                        ScriptValue(GetScriptState()->GetIsolate(), chunk),
+                        exception_state);
   }
 };
 
@@ -131,10 +132,10 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
 
   MOCK_METHOD3(Transform,
                ScriptPromise(v8::Local<v8::Value> chunk,
-                             TransformStreamDefaultControllerInterface*,
+                             TransformStreamDefaultController*,
                              ExceptionState&));
   MOCK_METHOD2(Flush,
-               ScriptPromise(TransformStreamDefaultControllerInterface*,
+               ScriptPromise(TransformStreamDefaultController*,
                              ExceptionState&));
 
   ScriptState* GetScriptState() override { return script_state_; }
@@ -263,9 +264,8 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
                         "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, reader->read(script_state));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -277,9 +277,11 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
     explicit EnqueueFromFlushTransformer(ScriptState* script_state)
         : TestTransformer(script_state) {}
 
-    void FlushVoid(TransformStreamDefaultControllerInterface* controller,
+    void FlushVoid(TransformStreamDefaultController* controller,
                    ExceptionState& exception_state) override {
-      controller->Enqueue(ToV8("a", GetScriptState()), exception_state);
+      controller->enqueue(GetScriptState(),
+                          ScriptValue::From(GetScriptState(), "a"),
+                          exception_state);
     }
   };
 
@@ -295,9 +297,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
                         "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, reader->read(script_state));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -311,7 +312,7 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
         : TestTransformer(script_state) {}
 
     void TransformVoid(v8::Local<v8::Value>,
-                       TransformStreamDefaultControllerInterface*,
+                       TransformStreamDefaultController*,
                        ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
@@ -331,10 +332,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
                             "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state,
-                                  read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -352,7 +351,7 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
     explicit ThrowFromFlushTransformer(ScriptState* script_state)
         : TestTransformer(script_state) {}
 
-    void FlushVoid(TransformStreamDefaultControllerInterface*,
+    void FlushVoid(TransformStreamDefaultController*,
                    ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
@@ -370,10 +369,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
                             "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state,
-                                  read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -404,12 +401,12 @@ TEST_F(TransformStreamTest, WaitInTransform) {
               MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {}
 
     ScriptPromise Transform(v8::Local<v8::Value>,
-                            TransformStreamDefaultControllerInterface*,
+                            TransformStreamDefaultController*,
                             ExceptionState&) override {
       return transform_promise_resolver_->Promise();
     }
 
-    void FlushVoid(TransformStreamDefaultControllerInterface*,
+    void FlushVoid(TransformStreamDefaultController*,
                    ExceptionState&) override {
       flush_called_ = true;
     }
@@ -443,8 +440,8 @@ TEST_F(TransformStreamTest, WaitInTransform) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
-      ->Read(script_state);
+      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->read(script_state);
 
   ScriptPromiseTester write_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));
@@ -470,7 +467,7 @@ TEST_F(TransformStreamTest, WaitInFlush) {
           flush_promise_resolver_(
               MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {}
 
-    ScriptPromise Flush(TransformStreamDefaultControllerInterface*,
+    ScriptPromise Flush(TransformStreamDefaultController*,
                         ExceptionState&) override {
       return flush_promise_resolver_->Promise();
     }
@@ -501,8 +498,8 @@ TEST_F(TransformStreamTest, WaitInFlush) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
-      ->Read(script_state);
+      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->read(script_state);
 
   ScriptPromiseTester close_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));

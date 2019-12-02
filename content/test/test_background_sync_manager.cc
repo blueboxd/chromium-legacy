@@ -94,10 +94,10 @@ void TestBackgroundSyncManager::DispatchPeriodicSyncEvent(
   dispatch_periodic_sync_callback_.Run(active_version, std::move(callback));
 }
 
-void TestBackgroundSyncManager::HasMainFrameProviderHost(
+void TestBackgroundSyncManager::HasMainFrameWindowClient(
     const url::Origin& origin,
     BoolCallback callback) {
-  std::move(callback).Run(has_main_frame_provider_host_);
+  std::move(callback).Run(has_main_frame_window_client_);
 }
 
 void TestBackgroundSyncManager::FireReadyEvents(

@@ -27,6 +27,9 @@ const base::Feature kSyncManualStartAndroid{"SyncManualStartAndroid",
 
 const base::Feature kSyncUseSessionsUnregisterDelay{
     "SyncUseSessionsUnregisterDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSyncErrorInfoBarAndroid{"SyncErrorInfoBarAndroid",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 }  // namespace switches

@@ -22,20 +22,6 @@ class PasswordFeatureManager {
   // string.
   virtual bool ShouldCheckReuseOnLeakDetection() const = 0;
 
-  // Whether the current signed-in user (aka unconsented primary account) has
-  // opted in to use the Google account storage for passwords (as opposed to
-  // local/profile storage).
-  virtual bool IsOptedInForAccountStorage() const = 0;
-
-  // Whether it makes sense to ask the user to opt-in for account-based
-  // password storage. This is true if the opt-in doesn't exist yet, but all
-  // other requirements are met (i.e. there is a signed-in user etc).
-  virtual bool ShouldShowAccountStorageOptIn() const = 0;
-
-  // Sets or clears the opt-in to using account storage for passwords for the
-  // current signed-in user (unconsented primary account).
-  virtual void SetAccountStorageOptIn(bool opt_in) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManager);
 };

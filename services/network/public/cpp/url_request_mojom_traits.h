@@ -64,6 +64,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.disable_secure_dns;
   }
+  static bool has_user_activation(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.has_user_activation;
+  }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
                    network::ResourceRequest::TrustedParams* out);

@@ -38,8 +38,8 @@ namespace syncer {
 // Manages the details of registering types for invalidation. For example,
 // Chrome Sync uses the ModelTypes (bookmarks, passwords, autofill data) as
 // topics, which will be registered for the invalidations.
-// TODO(melandory): Methods in this class have names which are similar to names
-// in RegistrationManager. As part of clean-up work for removing old
+// TODO(crbug.com/1029698): Methods in this class have names which are similar
+// to names in RegistrationManager. As part of clean-up work for removing old
 // RegistrationManger and cachinvalidation library it's worth to revisit methods
 // names in this class.
 class INVALIDATION_EXPORT PerUserTopicRegistrationManager {

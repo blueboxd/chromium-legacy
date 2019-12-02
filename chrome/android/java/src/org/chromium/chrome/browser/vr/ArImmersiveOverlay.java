@@ -24,7 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -115,9 +115,10 @@ public class ArImmersiveOverlay
         }
     }
 
-    private class SurfaceUiCompositor extends EmptyTabObserver implements SurfaceUiWrapper {
+    private class SurfaceUiCompositor implements SurfaceUiWrapper {
         private SurfaceView mSurfaceView;
         private CompositorView mCompositorView;
+        private FullscreenListener mFullscreenListener;
 
         public SurfaceUiCompositor() {
             mSurfaceView = new SurfaceView(mActivity);
@@ -137,8 +138,16 @@ public class ArImmersiveOverlay
             if (DEBUG_LOGS) Log.i(TAG, "calling mCompositorView.setOverlayImmersiveArMode(true)");
             mCompositorView.setOverlayImmersiveArMode(true);
 
+            mFullscreenListener = new FullscreenListener() {
+                @Override
+                public void onExitFullscreen(Tab tab) {
+                    if (DEBUG_LOGS) Log.i(TAG, "onExitFullscreenMode");
+                    cleanupAndExit();
+                }
+            };
+
             // Watch for fullscreen exit triggered from JS, this needs to end the session.
-            mActivity.getActivityTab().addObserver(this);
+            mActivity.getFullscreenManager().addListener(mFullscreenListener);
         }
 
         @Override // SurfaceUiWrapper
@@ -146,18 +155,12 @@ public class ArImmersiveOverlay
 
         @Override // SurfaceUiWrapper
         public void destroy() {
-            mActivity.getActivityTab().removeObserver(this);
+            mActivity.getFullscreenManager().removeListener(mFullscreenListener);
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();
             group.removeView(mSurfaceView);
             mSurfaceView = null;
             mCompositorView.setOverlayImmersiveArMode(false);
-        }
-
-        @Override // TabObserver
-        public void onExitFullscreenMode(Tab tab) {
-            if (DEBUG_LOGS) Log.i(TAG, "onExitFullscreenMode");
-            cleanupAndExit();
         }
     }
 
@@ -288,7 +291,7 @@ public class ArImmersiveOverlay
         // even if this wasn't visible to the user. Ensure that we fully exit out of any active
         // fullscreen state on session end to avoid being left in a confusing state.
         if (mActivity.getActivityTab() != null) {
-            mActivity.getActivityTab().exitFullscreenMode();
+            mActivity.getFullscreenManager().onExitFullscreen(mActivity.getActivityTab());
         }
 
         // Restore orientation.

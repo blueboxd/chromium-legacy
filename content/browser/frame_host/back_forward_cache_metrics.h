@@ -26,6 +26,7 @@ class BackForwardCacheCanStoreDocumentResult;
 class NavigationEntryImpl;
 class NavigationRequest;
 class RenderFrameHostImpl;
+struct LoadCommittedDetails;
 
 // Helper class for recording metrics around history navigations.
 // Associated with a main frame document and shared between all
@@ -66,7 +67,11 @@ class BackForwardCacheMetrics
     kSessionRestored = 23,
     kUnknown = 24,
     kServiceWorkerPostMessage = 25,
-    kMaxValue = kServiceWorkerPostMessage,
+    kEnteredBackForwardCacheBeforeServiceWorkerHostAdded = 26,
+    kRenderFrameHostReused_SameSite = 27,
+    kRenderFrameHostReused_CrossSite = 28,
+    kNotMostRecentNavigationEntry = 29,
+    kMaxValue = kNotMostRecentNavigationEntry,
   };
 
   using NotRestoredReasons =
@@ -128,7 +133,12 @@ class BackForwardCacheMetrics
   // Records when another navigation commits away from the most recent entry
   // associated with |this|.  This is the point in time that the previous
   // document could enter the back-forward cache.
-  void MainFrameDidNavigateAwayFromDocument();
+  // |new_main_document| points to the newly committed RFH, which might or might
+  // not be the same as the RFH for the old document.
+  void MainFrameDidNavigateAwayFromDocument(
+      RenderFrameHostImpl* new_main_document,
+      LoadCommittedDetails* details,
+      NavigationRequest* navigation);
 
   // Snapshots the state of the features active on the page before closing it.
   // It should be called at the same time when the document might have been
@@ -158,6 +168,12 @@ class BackForwardCacheMetrics
 
   void RecordMetricsForHistoryNavigationCommit(
       NavigationRequest* navigation) const;
+
+  // Record additional reason why navigation was not served from bfcache which
+  // are known only at the commit time.
+  void UpdateNotRestoredReasonsForNavigation(NavigationRequest* navigation);
+
+  bool ShouldRecordBrowsingInstanceNotSwappedReason() const;
 
   // Main frame document sequence number that identifies all NavigationEntries
   // this metrics object is associated with.

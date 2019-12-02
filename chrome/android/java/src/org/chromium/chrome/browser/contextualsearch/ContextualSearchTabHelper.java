@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Over
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -247,22 +246,6 @@ public class ContextualSearchTabHelper
         mContextualSearchManager = null;
         mSelectionClientManager = null;
         mGestureStateListener = null;
-    }
-
-    @Override
-    public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
-        ContextualSearchManager manager = getContextualSearchManager(tab);
-        if (manager != null) {
-            manager.hideContextualSearch(StateChangeReason.UNKNOWN);
-        }
-    }
-
-    @Override
-    public void onExitFullscreenMode(Tab tab) {
-        ContextualSearchManager manager = getContextualSearchManager(tab);
-        if (manager != null) {
-            manager.hideContextualSearch(StateChangeReason.UNKNOWN);
-        }
     }
 
     @Override

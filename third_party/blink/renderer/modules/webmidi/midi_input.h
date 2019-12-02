@@ -43,13 +43,6 @@ class MIDIInput final : public MIDIPort {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIInput* Create(MIDIAccess*,
-                           const String& id,
-                           const String& manufacturer,
-                           const String& name,
-                           const String& version,
-                           midi::mojom::PortState);
-
   MIDIInput(MIDIAccess*,
             const String& id,
             const String& manufacturer,

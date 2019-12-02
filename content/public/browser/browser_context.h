@@ -189,7 +189,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int64_t service_worker_registration_id,
       const std::string& message_id,
       base::Optional<std::string> payload,
-      const base::Callback<void(blink::mojom::PushDeliveryStatus)>& callback);
+      base::OnceCallback<void(blink::mojom::PushDeliveryStatus)> callback);
 
   static void NotifyWillBeDestroyed(BrowserContext* browser_context);
 

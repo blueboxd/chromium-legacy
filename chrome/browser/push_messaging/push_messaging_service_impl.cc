@@ -264,7 +264,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   }
 #endif
 
-  base::Closure message_handled_closure =
+  base::OnceClosure message_handled_closure =
       message_callback_for_testing_.is_null() ? base::DoNothing()
                                               : message_callback_for_testing_;
   PushMessagingAppIdentifier app_identifier =
@@ -273,7 +273,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   if (app_identifier.is_null()) {
     DeliverMessageCallback(app_id, GURL::EmptyGURL(),
                            -1 /* kInvalidServiceWorkerRegistrationId */,
-                           message, message_handled_closure,
+                           message, std::move(message_handled_closure),
                            blink::mojom::PushDeliveryStatus::UNKNOWN_APP_ID);
     return;
   }
@@ -288,7 +288,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   if (!IsPermissionSet(app_identifier.origin())) {
     DeliverMessageCallback(app_id, app_identifier.origin(),
                            app_identifier.service_worker_registration_id(),
-                           message, message_handled_closure,
+                           message, std::move(message_handled_closure),
                            blink::mojom::PushDeliveryStatus::PERMISSION_DENIED);
     return;
   }
@@ -304,11 +304,11 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
       profile_, app_identifier.origin(),
       app_identifier.service_worker_registration_id(), message.message_id,
       payload,
-      base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
-                 weak_factory_.GetWeakPtr(), app_identifier.app_id(),
-                 app_identifier.origin(),
-                 app_identifier.service_worker_registration_id(), message,
-                 message_handled_closure));
+      base::BindOnce(&PushMessagingServiceImpl::DeliverMessageCallback,
+                     weak_factory_.GetWeakPtr(), app_identifier.app_id(),
+                     app_identifier.origin(),
+                     app_identifier.service_worker_registration_id(), message,
+                     std::move(message_handled_closure)));
 
   // Inform tests observing message dispatching about the event.
   if (!message_dispatched_callback_for_testing_.is_null()) {
@@ -323,19 +323,14 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const gcm::IncomingMessage& message,
-    const base::Closure& message_handled_closure,
+    base::OnceClosure message_handled_closure,
     blink::mojom::PushDeliveryStatus status) {
   DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
-  RecordDeliveryStatus(status);
+  // Note: It's important that |message_handled_closure| is run or passed to
+  // another function before this function returns.
 
-  base::RepeatingClosure completion_closure = base::BindRepeating(
-      &PushMessagingServiceImpl::DidHandleMessage, weak_factory_.GetWeakPtr(),
-      app_id, message.message_id, message_handled_closure,
-      false /* did_show_generic_notification */);
-  // The |completion_closure| should run by default at the end of this function,
-  // unless it is explicitly passed to another function or disabled.
-  base::ScopedClosureRunner completion_closure_runner(completion_closure);
+  RecordDeliveryStatus(status);
 
   // A reason to automatically unsubscribe. UNKNOWN means do not unsubscribe.
   blink::mojom::PushUnregistrationReason unsubscribe_reason =
@@ -362,9 +357,8 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
             requesting_origin, service_worker_registration_id,
             base::BindOnce(&PushMessagingServiceImpl::DidHandleMessage,
                            weak_factory_.GetWeakPtr(), app_id,
-                           message.message_id, message_handled_closure));
-        // Disable the default completion closure.
-        completion_closure_runner.ReplaceClosure(base::DoNothing());
+                           message.message_id,
+                           std::move(message_handled_closure)));
       }
       break;
     case blink::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
@@ -383,6 +377,18 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
           blink::mojom::PushUnregistrationReason::DELIVERY_NO_SERVICE_WORKER;
       break;
   }
+
+  // If |message_handled_closure| was not yet used, make a |completion_closure|
+  // which should run by default at the end of this function, unless it is
+  // explicitly passed to another function or disabled.
+  base::ScopedClosureRunner completion_closure_runner(
+      message_handled_closure
+          ? base::BindOnce(&PushMessagingServiceImpl::DidHandleMessage,
+                           weak_factory_.GetWeakPtr(), app_id,
+                           message.message_id,
+                           std::move(message_handled_closure),
+                           false /* did_show_generic_notification */)
+          : base::DoNothing());
 
   if (unsubscribe_reason != blink::mojom::PushUnregistrationReason::UNKNOWN) {
     PushMessagingAppIdentifier app_identifier =
@@ -416,7 +422,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 void PushMessagingServiceImpl::DidHandleMessage(
     const std::string& app_id,
     const std::string& push_message_id,
-    const base::RepeatingClosure& message_handled_closure,
+    base::OnceClosure message_handled_closure,
     bool did_show_generic_notification) {
   auto in_flight_iterator = in_flight_message_deliveries_.find(app_id);
   DCHECK(in_flight_iterator != in_flight_message_deliveries_.end());
@@ -431,7 +437,7 @@ void PushMessagingServiceImpl::DidHandleMessage(
     in_flight_keep_alive_.reset();
 #endif
 
-  message_handled_closure.Run();
+  std::move(message_handled_closure).Run();
 
 #if defined(OS_ANDROID)
   chrome::android::Java_PushMessagingServiceObserver_onMessageHandled(

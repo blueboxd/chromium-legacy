@@ -66,7 +66,7 @@ FloatRect LayoutSVGResourceMarker::MarkerBoundaries(
 }
 
 FloatPoint LayoutSVGResourceMarker::ReferencePoint() const {
-  SVGMarkerElement* marker = ToSVGMarkerElement(GetElement());
+  auto* marker = To<SVGMarkerElement>(GetElement());
   DCHECK(marker);
 
   SVGLengthContext length_context(marker);
@@ -75,21 +75,21 @@ FloatPoint LayoutSVGResourceMarker::ReferencePoint() const {
 }
 
 float LayoutSVGResourceMarker::Angle() const {
-  return ToSVGMarkerElement(GetElement())
+  return To<SVGMarkerElement>(GetElement())
       ->orientAngle()
       ->CurrentValue()
       ->Value();
 }
 
 SVGMarkerUnitsType LayoutSVGResourceMarker::MarkerUnits() const {
-  return ToSVGMarkerElement(GetElement())
+  return To<SVGMarkerElement>(GetElement())
       ->markerUnits()
       ->CurrentValue()
       ->EnumValue();
 }
 
 SVGMarkerOrientType LayoutSVGResourceMarker::OrientType() const {
-  return ToSVGMarkerElement(GetElement())
+  return To<SVGMarkerElement>(GetElement())
       ->orientType()
       ->CurrentValue()
       ->EnumValue();
@@ -119,7 +119,7 @@ AffineTransform LayoutSVGResourceMarker::MarkerTransformation(
 
 bool LayoutSVGResourceMarker::ShouldPaint() const {
   // An empty viewBox disables rendering.
-  SVGMarkerElement* marker = ToSVGMarkerElement(GetElement());
+  auto* marker = To<SVGMarkerElement>(GetElement());
   DCHECK(marker);
   return !marker->viewBox()->IsSpecified() ||
          !marker->viewBox()->CurrentValue()->IsValid() ||
@@ -137,7 +137,7 @@ SVGTransformChange LayoutSVGResourceMarker::CalculateLocalTransform() {
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 
-  SVGMarkerElement* marker = ToSVGMarkerElement(GetElement());
+  auto* marker = To<SVGMarkerElement>(GetElement());
   DCHECK(marker);
 
   SVGLengthContext length_context(marker);

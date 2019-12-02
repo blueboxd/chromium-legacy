@@ -126,9 +126,6 @@ public class BottomSheetController implements Destroyable {
     /** A means for getting the activity's current tab and observing change events. */
     private ActivityTabProvider mTabProvider;
 
-    /** Observer for watching the current tab. */
-    private ActivityTabProvider.ActivityTabTabObserver mTabObserver;
-
     /** A fullscreen manager for polling browser controls offsets. */
     private ChromeFullscreenManager mFullscreenManager;
 
@@ -204,9 +201,6 @@ public class BottomSheetController implements Destroyable {
 
         mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
             @Override
-            public void onContentOffsetChanged(int offset) {}
-
-            @Override
             public void onControlsOffsetChanged(
                     int topOffset, int bottomOffset, boolean needsAnimate) {
                 if (mBottomSheet != null) {
@@ -216,10 +210,16 @@ public class BottomSheetController implements Destroyable {
             }
 
             @Override
-            public void onToggleOverlayVideoMode(boolean enabled) {}
+            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                if (mBottomSheet == null || mTabProvider.get() != tab) return;
+                suppressSheet(StateChangeReason.COMPOSITED_UI);
+            }
 
             @Override
-            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+            public void onExitFullscreen(Tab tab) {
+                if (mBottomSheet == null || mTabProvider.get() != tab) return;
+                unsuppressSheet();
+            }
         };
         mFullscreenManager.addListener(mFullscreenListener);
 
@@ -295,18 +295,6 @@ public class BottomSheetController implements Destroyable {
             }
         });
 
-        mTabObserver = new ActivityTabProvider.ActivityTabTabObserver(mTabProvider) {
-            @Override
-            public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
-                suppressSheet(StateChangeReason.COMPOSITED_UI);
-            }
-
-            @Override
-            public void onExitFullscreenMode(Tab tab) {
-                unsuppressSheet();
-            }
-        };
-
         ScrimObserver scrimObserver = new ScrimObserver() {
             @Override
             public void onScrimClick() {
@@ -378,7 +366,6 @@ public class BottomSheetController implements Destroyable {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
         if (mBottomSheet != null) mBottomSheet.destroy();
-        if (mTabObserver != null) mTabObserver.destroy();
     }
 
     /**

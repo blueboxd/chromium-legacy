@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_output.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_output_map.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -70,11 +71,11 @@ MIDIAccess::MIDIAccess(
   dispatcher_->SetClient(this);
   for (const auto& port : ports) {
     if (port.type == MIDIPort::kTypeInput) {
-      inputs_.push_back(MIDIInput::Create(this, port.id, port.manufacturer,
-                                          port.name, port.version,
-                                          ToDeviceState(port.state)));
+      inputs_.push_back(MakeGarbageCollected<MIDIInput>(
+          this, port.id, port.manufacturer, port.name, port.version,
+          ToDeviceState(port.state)));
     } else {
-      outputs_.push_back(MIDIOutput::Create(
+      outputs_.push_back(MakeGarbageCollected<MIDIOutput>(
           this, outputs_.size(), port.id, port.manufacturer, port.name,
           port.version, ToDeviceState(port.state)));
     }
@@ -139,8 +140,8 @@ void MIDIAccess::DidAddInputPort(const String& id,
                                  const String& version,
                                  PortState state) {
   DCHECK(IsMainThread());
-  MIDIInput* port = MIDIInput::Create(this, id, manufacturer, name, version,
-                                      ToDeviceState(state));
+  auto* port = MakeGarbageCollected<MIDIInput>(this, id, manufacturer, name,
+                                               version, ToDeviceState(state));
   inputs_.push_back(port);
   DispatchEvent(*MIDIConnectionEvent::Create(port));
 }
@@ -152,8 +153,8 @@ void MIDIAccess::DidAddOutputPort(const String& id,
                                   PortState state) {
   DCHECK(IsMainThread());
   unsigned port_index = outputs_.size();
-  MIDIOutput* port = MIDIOutput::Create(this, port_index, id, manufacturer,
-                                        name, version, ToDeviceState(state));
+  auto* port = MakeGarbageCollected<MIDIOutput>(
+      this, port_index, id, manufacturer, name, version, ToDeviceState(state));
   outputs_.push_back(port);
   DispatchEvent(*MIDIConnectionEvent::Create(port));
 }

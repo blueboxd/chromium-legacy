@@ -360,8 +360,8 @@ PerUserTopicRegistrationRequest::Builder::BuildURLFetcher(
   }
   request->url = url;
   request->headers = headers;
-  // TODO(treib): Should we set request->credentials_mode to kOmit, to match
-  // "cookies_allowed: NO" above?
+  // TODO(crbug.com/1020117): Should we set request->credentials_mode to kOmit,
+  // to match "cookies_allowed: NO" above?
 
   std::unique_ptr<network::SimpleURLLoader> url_loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

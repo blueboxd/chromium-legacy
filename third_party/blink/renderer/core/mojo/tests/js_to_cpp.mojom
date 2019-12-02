@@ -43,9 +43,10 @@ interface CppSide {
   PingResponse();
   EchoResponse(EchoArgsList list);
 
-  // Having an associated interface pointer in the message makes sure the
-  // message header version 2 is tested.
-  BitFlipResponse(EchoArgsList arg, associated ForTesting? not_used);
+  // Having an associated remote in the message makes sure the message header
+  // version 2 is tested.
+  BitFlipResponse(EchoArgsList arg,
+                  pending_associated_remote<ForTesting>? not_used);
 
   BackPointerResponse(EchoArgsList arg);
 };

@@ -17,11 +17,11 @@
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
@@ -68,11 +68,10 @@ class WebSocketStream::UnderlyingSink final : public UnderlyingSinkBase {
   explicit UnderlyingSink(WebSocketStream* creator) : creator_(creator) {}
 
   // UnderlyingSinkBase implementation.
-  ScriptPromise start(ScriptState*,
-                      WritableStreamDefaultControllerInterface*) override;
+  ScriptPromise start(ScriptState*, WritableStreamDefaultController*) override;
   ScriptPromise write(ScriptState*,
                       ScriptValue chunk,
-                      WritableStreamDefaultControllerInterface*) override;
+                      WritableStreamDefaultController*) override;
   ScriptPromise close(ScriptState*) override;
   ScriptPromise abort(ScriptState*, ScriptValue reason) override;
 
@@ -179,7 +178,7 @@ void WebSocketStream::UnderlyingSource::DidClose(bool was_clean,
 
 ScriptPromise WebSocketStream::UnderlyingSink::start(
     ScriptState* script_state,
-    WritableStreamDefaultControllerInterface*) {
+    WritableStreamDefaultController*) {
   DVLOG(1) << "WebSocketStream::UnderlyingSink " << this << " start()";
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -187,7 +186,7 @@ ScriptPromise WebSocketStream::UnderlyingSink::start(
 ScriptPromise WebSocketStream::UnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
-    WritableStreamDefaultControllerInterface*) {
+    WritableStreamDefaultController*) {
   DVLOG(1) << "WebSocketStream::UnderlyingSink " << this << " write()";
   is_writing_ = true;
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -249,17 +248,21 @@ void WebSocketStream::UnderlyingSink::DidClose(bool was_clean,
     return;
   }
 
-  Controller()->Error(creator_->script_state_,
-                      creator_->CreateNetworkErrorDOMException());
+  ScriptState* script_state = creator_->script_state_;
+  Controller()->error(script_state,
+                      ScriptValue(script_state->GetIsolate(),
+                                  creator_->CreateNetworkErrorDOMException()));
 }
 
 void WebSocketStream::UnderlyingSink::ErrorControllerBecauseClosed() {
   ScriptState* script_state = creator_->script_state_;
-  Controller()->Error(
+  Controller()->error(
       script_state,
-      V8ThrowDOMException::CreateOrEmpty(
-          script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
-          "Cannot write to a closed WebSocketStream"));
+      ScriptValue(
+          script_state->GetIsolate(),
+          V8ThrowDOMException::CreateOrEmpty(
+              script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
+              "Cannot write to a closed WebSocketStream")));
 }
 
 void WebSocketStream::UnderlyingSink::FinishWriteCallback(

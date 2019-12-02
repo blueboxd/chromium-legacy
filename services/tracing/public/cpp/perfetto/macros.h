@@ -40,12 +40,13 @@ constexpr char kTraceEventEndName[] = "";
 //       });
 #define TRACE_EVENT_BEGIN(category, name, ...)                              \
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_BEGIN, category, name, \
-                                   ##__VA_ARGS__)
+                                   TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
 
 // End a thread-scoped slice under |category|.
-#define TRACE_EVENT_END(category, ...)                              \
-  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, \
-                                   kTraceEventEndName, ##__VA_ARGS__)
+#define TRACE_EVENT_END(category, ...)                                        \
+  TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category,           \
+                                   kTraceEventEndName, TRACE_EVENT_FLAG_NONE, \
+                                   ##__VA_ARGS__)
 
 // Begin a thread-scoped slice which gets automatically closed when going out
 // of scope.
@@ -57,6 +58,6 @@ constexpr char kTraceEventEndName[] = "";
 // perfetto does.
 #define TRACE_EVENT_INSTANT(category, name, ...)                              \
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_INSTANT, category, name, \
-                                   ##__VA_ARGS__)
+                                   TRACE_EVENT_SCOPE_THREAD, ##__VA_ARGS__)
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_H_

@@ -235,8 +235,7 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
       //     out-of-viewport images already have priority set to kLow
       // - Link preloads
       //     For this initial implementation we do a blanket demotion regardless
-      //     of `as` value/type. TODO(domfarolino): maybe discuss a more
-      //     granular approach with loading team
+      //     of `as` value/type.
       if (type == ResourceType::kImage ||
           resource_request.GetRequestContext() ==
               mojom::RequestContextType::FETCH ||

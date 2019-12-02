@@ -59,15 +59,6 @@ class MIDIAccess final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(MIDIAccess, Dispose);
 
  public:
-  static MIDIAccess* Create(
-      std::unique_ptr<MIDIDispatcher> dispatcher,
-      bool sysex_enabled,
-      const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
-      ExecutionContext* execution_context) {
-    return MakeGarbageCollected<MIDIAccess>(
-        std::move(dispatcher), sysex_enabled, ports, execution_context);
-  }
-
   MIDIAccess(std::unique_ptr<MIDIDispatcher>,
              bool sysex_enabled,
              const Vector<MIDIAccessInitializer::PortDescriptor>&,

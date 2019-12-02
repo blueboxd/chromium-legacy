@@ -11,8 +11,7 @@ from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node import UnlikelyExitNode
-
-_format = CodeNode.format_template
+from .codegen_format import format_template as _format
 
 
 def blink_class_name(idl_definition):

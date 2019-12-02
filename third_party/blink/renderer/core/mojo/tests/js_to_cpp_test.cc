@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -242,7 +243,8 @@ class CppSideConnection : public js_to_cpp::blink::CppSide {
 
   void BitFlipResponse(
       js_to_cpp::blink::EchoArgsListPtr list,
-      js_to_cpp::blink::ForTestingAssociatedPtrInfo not_used) override {
+      mojo::PendingAssociatedRemote<js_to_cpp::blink::ForTesting> not_used)
+      override {
     mishandled_messages_ += 1;
   }
 
@@ -329,7 +331,8 @@ class BitFlipCppSideConnection : public CppSideConnection {
 
   void BitFlipResponse(
       js_to_cpp::blink::EchoArgsListPtr list,
-      js_to_cpp::blink::ForTestingAssociatedPtrInfo not_used) override {
+      mojo::PendingAssociatedRemote<js_to_cpp::blink::ForTesting> not_used)
+      override {
     CheckCorruptedEchoArgsList(list);
   }
 

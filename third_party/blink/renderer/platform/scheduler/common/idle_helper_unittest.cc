@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -448,72 +447,6 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestEnterAndExitIdlePeriod) {
       test_task_runner_->NowTicks(),
       test_task_runner_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
   idle_helper_->EndIdlePeriod();
-}
-
-class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
- public:
-  IdleHelperWithMessageLoopTest()
-      : BaseIdleHelperTest(std::make_unique<base::MessageLoop>(),
-                           base::TimeDelta()) {}
-  ~IdleHelperWithMessageLoopTest() override = default;
-
-  void PostFromNestedRunloop(
-      Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>* tasks) {
-    for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
-      if (pair.second) {
-        idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
-      } else {
-        idle_task_runner_->PostNonNestableIdleTask(FROM_HERE,
-                                                   std::move(pair.first));
-      }
-    }
-    idle_helper_->StartIdlePeriod(
-        IdleHelper::IdlePeriodState::kInShortIdlePeriod,
-        test_task_runner_->NowTicks(),
-        test_task_runner_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-  }
-
-  void SetUp() override {
-    EXPECT_CALL(*idle_helper_, OnIdlePeriodStarted()).Times(AnyNumber());
-    EXPECT_CALL(*idle_helper_, OnIdlePeriodEnded()).Times(AnyNumber());
-    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(_)).Times(AnyNumber());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IdleHelperWithMessageLoopTest);
-};
-
-TEST_F(IdleHelperWithMessageLoopTest,
-       NonNestableIdleTaskDoesntExecuteInNestedLoop) {
-  Vector<String> order;
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "1"));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "2"));
-
-  Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
-      tasks_to_post_from_nested_loop;
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "3"), false));
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "4"), true));
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "5"), true));
-
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IdleHelperWithMessageLoopTest::PostFromNestedRunloop,
-                     base::Unretained(this),
-                     base::Unretained(&tasks_to_post_from_nested_loop)));
-
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::kInShortIdlePeriod,
-      test_task_runner_->NowTicks(),
-      test_task_runner_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  base::RunLoop().RunUntilIdle();
-  // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre("1", "2", "4", "5", "3"));
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriod) {

@@ -36,6 +36,7 @@ bind_gen/code_node.py
 bind_gen/codegen_accumulator.py
 bind_gen/codegen_context.py
 bind_gen/codegen_expr.py
+bind_gen/codegen_format.py
 bind_gen/codegen_utils.py
 bind_gen/dictionary.py
 bind_gen/interface.py

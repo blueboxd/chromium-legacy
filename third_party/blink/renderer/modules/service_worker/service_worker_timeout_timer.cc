@@ -80,25 +80,44 @@ void ServiceWorkerTimeoutTimer::Start() {
                                   WTF::Unretained(this)));
 }
 
-int ServiceWorkerTimeoutTimer::StartEvent(AbortCallback abort_callback) {
-  return StartEventWithCustomTimeout(std::move(abort_callback), kEventTimeout);
-}
-
-int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
-    AbortCallback abort_callback,
-    base::TimeDelta timeout) {
+void ServiceWorkerTimeoutTimer::PushTask(std::unique_ptr<Task> task) {
+  DCHECK(task->type != Task::Type::Pending || did_idle_timeout());
+  bool can_start_processing_tasks =
+      !processing_tasks_ && task->type != Task::Type::Pending;
+  task_queue_.emplace_back(std::move(task));
+  if (!can_start_processing_tasks)
+    return;
   if (did_idle_timeout()) {
-    DCHECK(!running_pending_tasks_);
     idle_time_ = base::TimeTicks();
     did_idle_timeout_ = false;
-
-    running_pending_tasks_ = true;
-    while (!pending_tasks_.IsEmpty()) {
-      pending_tasks_.TakeFirst().Run();
-    }
-    running_pending_tasks_ = false;
   }
+  ProcessTasks();
+}
 
+void ServiceWorkerTimeoutTimer::ProcessTasks() {
+  DCHECK(!processing_tasks_);
+  processing_tasks_ = true;
+  while (!task_queue_.IsEmpty()) {
+    StartTask(task_queue_.TakeFirst());
+  }
+  processing_tasks_ = false;
+
+  // We have to check HasInflightEvent() and may trigger
+  // OnNoInflightEvent() here because StartTask() can call EndEvent()
+  // synchronously, and EndEvent() never triggers OnNoInflightEvent()
+  // while ProcessTasks() is running.
+  if (!HasInflightEvent())
+    OnNoInflightEvent();
+}
+
+void ServiceWorkerTimeoutTimer::StartTask(std::unique_ptr<Task> task) {
+  int event_id = StartEvent(std::move(task->abort_callback),
+                            task->custom_timeout.value_or(kEventTimeout));
+  std::move(task->start_callback).Run(event_id);
+}
+
+int ServiceWorkerTimeoutTimer::StartEvent(AbortCallback abort_callback,
+                                          base::TimeDelta timeout) {
   idle_time_ = base::TimeTicks();
   const int event_id = NextEventId();
   auto add_result = id_event_map_.insert(
@@ -112,7 +131,10 @@ int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
 void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
   DCHECK(HasEvent(event_id));
   id_event_map_.erase(event_id);
-  if (!HasInflightEvent())
+  // Check |processing_tasks_| here because EndEvent() can be called
+  // synchronously in StartTask(). We don't want to trigger
+  // OnNoInflightEvent() while ProcessTasks() is running.
+  if (!processing_tasks_ && !HasInflightEvent())
     OnNoInflightEvent();
 }
 
@@ -124,12 +146,6 @@ std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
 ServiceWorkerTimeoutTimer::CreateStayAwakeToken() {
   return std::make_unique<ServiceWorkerTimeoutTimer::StayAwakeToken>(
       weak_factory_.GetWeakPtr());
-}
-
-void ServiceWorkerTimeoutTimer::PushPendingTask(
-    base::OnceClosure pending_task) {
-  DCHECK(did_idle_timeout());
-  pending_tasks_.emplace_back(std::move(pending_task));
 }
 
 void ServiceWorkerTimeoutTimer::SetIdleTimerDelayToZero() {
@@ -188,9 +204,20 @@ void ServiceWorkerTimeoutTimer::OnNoInflightEvent() {
 }
 
 bool ServiceWorkerTimeoutTimer::HasInflightEvent() const {
-  return !id_event_map_.IsEmpty() || running_pending_tasks_ ||
-         num_of_stay_awake_tokens_ > 0;
+  return !id_event_map_.IsEmpty() || num_of_stay_awake_tokens_ > 0;
 }
+
+ServiceWorkerTimeoutTimer::Task::Task(
+    ServiceWorkerTimeoutTimer::Task::Type type,
+    StartCallback start_callback,
+    AbortCallback abort_callback,
+    base::Optional<base::TimeDelta> custom_timeout)
+    : type(type),
+      start_callback(std::move(start_callback)),
+      abort_callback(std::move(abort_callback)),
+      custom_timeout(custom_timeout) {}
+
+ServiceWorkerTimeoutTimer::Task::~Task() = default;
 
 ServiceWorkerTimeoutTimer::EventInfo::EventInfo(
     base::TimeTicks expiration_time,

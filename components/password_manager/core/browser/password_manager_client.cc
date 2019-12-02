@@ -76,12 +76,6 @@ PasswordManager* PasswordManagerClient::GetPasswordManager() {
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
 }
 
-PasswordFeatureManager* PasswordManagerClient::GetPasswordFeatureManager() {
-  return const_cast<PasswordFeatureManager*>(
-      static_cast<const PasswordManagerClient*>(this)
-          ->GetPasswordFeatureManager());
-}
-
 HttpAuthManager* PasswordManagerClient::GetHttpAuthManager() {
   return nullptr;
 }

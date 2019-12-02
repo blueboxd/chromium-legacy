@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -287,6 +288,13 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
   }
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (auto host_receiver = receiver.As<chrome::mojom::MetricsService>()) {
+    ChromeMetricsServiceAccessor::BindMetricsServiceReceiver(
+        std::move(host_receiver));
+  }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
 void ChromeContentBrowserClient::BindHostReceiverForRendererOnIOThread(

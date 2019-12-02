@@ -4,6 +4,11 @@
 
 #include "media/gpu/v4l2/v4l2_device.h"
 
+#include <fcntl.h>
+#include <poll.h>
+#include <linux/media.h>
+#include <sys/ioctl.h>
+
 #include <algorithm>
 #include <set>
 
@@ -16,6 +21,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/color_plane_layout.h"
@@ -29,6 +35,8 @@
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
+
+#define REQUEST_DEVICE "/dev/media-dec0"
 
 namespace media {
 
@@ -1847,6 +1855,304 @@ void V4L2Device::SchedulePoll() {
     return;
 
   device_poller_->SchedulePoll();
+}
+
+V4L2RequestsQueue* V4L2Device::GetRequestsQueue() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (requests_queue_creation_called_)
+    return requests_queue_.get();
+
+  requests_queue_creation_called_ = true;
+  int media_fd = open(REQUEST_DEVICE, O_RDWR, 0);
+  if (media_fd < 0) {
+    VPLOGF(1) << "Failed to open media device.";
+    return nullptr;
+  }
+
+  // Not using std::make_unique because constructor is private.
+  std::unique_ptr<V4L2RequestsQueue> requests_queue(new V4L2RequestsQueue(
+      base::ScopedFD(media_fd)));
+  requests_queue_ = std::move(requests_queue);
+
+  return requests_queue_.get();
+}
+
+class V4L2Request {
+ public:
+  // Sets the passed controls to the request.
+  bool SetCtrls(struct v4l2_ext_controls* ctrls);
+  // Sets the passed buffer to the request.
+  bool SetQueueBuffer(struct v4l2_buffer* buffer);
+  // Submits the request to the driver.
+  bool Submit();
+  // Indicates if the request has completed.
+  bool IsCompleted();
+  // Waits for the request to complete for a determined timeout. Returns false
+  // if the request is not ready or other error. Default timeout is 500ms.
+  bool WaitForCompletion(int poll_timeout_ms = 500);
+  // Resets the request.
+  bool Reset();
+
+ private:
+  V4L2RequestsQueue* request_queue_;
+  int ref_counter_ = 0;
+  base::ScopedFD request_fd_;
+
+  friend class V4L2RequestsQueue;
+  V4L2Request(base::ScopedFD&& request_fd, V4L2RequestsQueue* request_queue) :
+   request_queue_(request_queue), request_fd_(std::move(request_fd)) {}
+
+  friend class V4L2RequestRefBase;
+  // Increases the number of request references.
+  void IncRefCounter();
+  // Decreases the number of request references.
+  // When the counters reaches zero, the request is returned to the queue.
+  int DecRefCounter();
+
+  SEQUENCE_CHECKER(sequence_checker_);
+  DISALLOW_COPY_AND_ASSIGN(V4L2Request);
+};
+
+void V4L2Request::IncRefCounter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ref_counter_++;
+}
+
+int V4L2Request::DecRefCounter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ref_counter_--;
+
+  if (ref_counter_< 1)
+    request_queue_->ReturnRequest(this);
+
+  return ref_counter_;
+}
+
+bool V4L2Request::SetCtrls(struct v4l2_ext_controls* ctrls) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(ctrls, nullptr);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
+  ctrls->request_fd = request_fd_.get();
+
+  return true;
+}
+
+bool V4L2Request::SetQueueBuffer(struct v4l2_buffer* buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(buffer, nullptr);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  buffer->flags |= V4L2_BUF_FLAG_REQUEST_FD;
+  buffer->request_fd = request_fd_.get();
+
+  return true;
+}
+
+bool V4L2Request::Submit() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "No valid request file descriptor to submit request.";
+    return false;
+  }
+
+  return HANDLE_EINTR(ioctl(request_fd_.get(), MEDIA_REQUEST_IOC_QUEUE)) == 0;
+}
+
+bool V4L2Request::IsCompleted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return WaitForCompletion(0);
+}
+
+bool V4L2Request::WaitForCompletion(int poll_timeout_ms) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  struct pollfd poll_fd = {request_fd_.get(), POLLPRI, 0};
+
+  // Poll the request to ensure its previous task is done
+  if (poll(&poll_fd, 1, poll_timeout_ms) != 1) {
+    VPLOGF(1) << "Failed to poll request.";
+    return false;
+  }
+
+  return true;
+}
+
+bool V4L2Request::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  // Reinit the request to make sure we can use it for a new submission.
+  if (HANDLE_EINTR(ioctl(request_fd_.get(), MEDIA_REQUEST_IOC_REINIT)) < 0) {
+    VPLOGF(1) << "Failed to reinit request.";
+    return false;
+  }
+
+  return true;
+}
+
+V4L2RequestRefBase::V4L2RequestRefBase(V4L2RequestRefBase&& req_base) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  request_ = req_base.request_;
+  req_base.request_ = nullptr;
+}
+
+V4L2RequestRefBase::V4L2RequestRefBase(V4L2Request* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (request) {
+    request_ = request;
+    request_->IncRefCounter();
+  }
+}
+
+V4L2RequestRefBase::~V4L2RequestRefBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (IsValid())
+    request_->DecRefCounter();
+}
+
+bool V4L2RequestRef::SetCtrls(struct v4l2_ext_controls* ctrls) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return request_->SetCtrls(ctrls);
+}
+
+bool V4L2RequestRef::SetQueueBuffer(struct v4l2_buffer* buffer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return request_->SetQueueBuffer(buffer);
+}
+
+V4L2SubmittedRequestRef V4L2RequestRef::Submit() && {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
+
+  V4L2RequestRef self(std::move(*this));
+
+  if (!self.request_->Submit())
+    return V4L2SubmittedRequestRef(nullptr);
+
+  return V4L2SubmittedRequestRef(self.request_);
+}
+
+bool V4L2SubmittedRequestRef::IsCompleted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
+
+  return request_->IsCompleted();
+}
+
+V4L2RequestsQueue::V4L2RequestsQueue(base::ScopedFD&& media_fd) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  media_fd_ = std::move(media_fd);
+}
+
+V4L2RequestsQueue::~V4L2RequestsQueue() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  requests_.clear();
+  media_fd_.reset();
+}
+
+base::Optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  int request_fd;
+  int ret = HANDLE_EINTR(
+        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+  if (ret < 0) {
+    VPLOGF(1) << "Failed to create request.";
+    return base::nullopt;
+  }
+
+  return base::ScopedFD(request_fd);
+}
+
+bool V4L2RequestsQueue::AllocateRequests(size_t nb_requests) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Only positive number of requests are valid.
+  if (nb_requests < 1) {
+    VLOGF(1) << "Failed to create requests. Request number must be 1 or more";
+    return false;
+  }
+
+  // Returns if requests have been already allocated.
+  if (!free_requests_.empty()) {
+    VLOGF(1) << "Requests already allocated";
+    return false;
+  }
+
+  // Creates the number of requested requests.
+  for (size_t i = 0; i < nb_requests; i++) {
+    auto request_fd = CreateRequestFD();
+    if (request_fd.has_value()) {
+      // Not using std::make_unique because constructor is private.
+      std::unique_ptr<V4L2Request> request(
+          new V4L2Request(std::move(request_fd.value()), this));
+      free_requests_.push(request.get());
+      requests_.push_back(std::move(request));
+    } else {
+      requests_.clear();
+      VPLOGF(1) << "Failed to created number of requested requests.";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+V4L2RequestRef V4L2RequestsQueue::GetFreeRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Gets a request in the front of the queue and checked is free to be used.
+  // If no request is available, still returns a request reference but the
+  // request will null which will make it marked invalid.
+  V4L2Request* request_ptr = nullptr;
+  if (!free_requests_.empty()) {
+    request_ptr = free_requests_.front();
+    if (request_ptr->WaitForCompletion() && request_ptr->Reset())
+      free_requests_.pop();
+    else
+      request_ptr = nullptr;
+  }
+
+  return V4L2RequestRef(request_ptr);
+}
+
+void V4L2RequestsQueue::ReturnRequest(V4L2Request* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(request);
+
+  if (request)
+    free_requests_.push(request);
 }
 
 }  //  namespace media

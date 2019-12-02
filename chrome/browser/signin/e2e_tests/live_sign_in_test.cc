@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
@@ -124,7 +125,7 @@ class LiveSignInTest : public signin::test::LiveTest {
     base::RunLoop primary_account_set_loop;
     observer.SetOnPrimaryAccountSetCallback(
         primary_account_set_loop.QuitClosure());
-    login_ui_test_utils::DismissSyncConfirmationDialog(
+    login_ui_test_utils::ConfirmSyncConfirmationDialog(
         browser(), base::TimeDelta::FromSeconds(3));
     primary_account_set_loop.Run();
   }
@@ -303,6 +304,64 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_TurnOffSync) {
       identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar_2.accounts_are_fresh);
   ASSERT_TRUE(accounts_in_cookie_jar_2.signed_in_accounts.empty());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
+// Signs in an account on the web. Goes to the Chrome settings to enable Sync
+// but cancels the sync confirmation dialog. Checks that the account is still
+// signed in on the web but Sync is disabled.
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSyncWithWebAccount) {
+  TestAccount test_account;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
+  SignInFromWeb(test_account);
+
+  GURL settings_url("chrome://settings");
+  AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
+  auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(
+      settings_tab,
+      base::StringPrintf("settings.SyncBrowserProxyImpl.getInstance()."
+                         "startSyncingWithEmail(\"%s\", true)",
+                         test_account.user.c_str())));
+  login_ui_test_utils::CancelSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3));
+
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
+  ASSERT_EQ(1u, accounts_in_cookie_jar.signed_in_accounts.size());
+  const gaia::ListedAccount& account =
+      accounts_in_cookie_jar.signed_in_accounts[0];
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account.user, account.email));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account.id));
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
+// Starts the sign in flow from the settings page, enters credentials on the
+// login page but cancels the Sync confirmation dialog. Checks that Sync is
+// disabled and no account was added to Chrome.
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSync) {
+  TestAccount test_account;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
+  SignInFromSettings(test_account);
+
+  TestIdentityManagerObserver observer(identity_manager());
+  base::RunLoop cookie_update_loop;
+  observer.SetOnAccountsInCookieUpdatedCallback(
+      cookie_update_loop.QuitClosure());
+  SignOutTestObserver sign_out_observer(identity_manager());
+
+  login_ui_test_utils::CancelSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3));
+
+  cookie_update_loop.Run();
+  sign_out_observer.WaitForRefreshTokenRemovedForAccounts(1);
+
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }

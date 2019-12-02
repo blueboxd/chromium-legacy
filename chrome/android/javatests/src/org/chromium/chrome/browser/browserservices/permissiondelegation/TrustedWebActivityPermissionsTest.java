@@ -83,7 +83,7 @@ public class TrustedWebActivityPermissionsTest {
     @MediumTest
     public void allowNotifications() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, true));
+                mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
     }
 
@@ -91,7 +91,7 @@ public class TrustedWebActivityPermissionsTest {
     @MediumTest
     public void blockNotifications() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, false));
+                mPermissionManager.updatePermission(mOrigin, mPackage, false));
         assertEquals("\"denied\"", getNotificationPermission());
     }
 
@@ -99,7 +99,7 @@ public class TrustedWebActivityPermissionsTest {
     @MediumTest
     public void unregisterTwa() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, true));
+                mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -112,7 +112,7 @@ public class TrustedWebActivityPermissionsTest {
     @SmallTest
     public void detectTwa() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionManager.register(mOrigin, mPackage, true));
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertTrue(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPermissionManager.unregister(mOrigin); });

@@ -122,7 +122,12 @@ class FCMInvalidationListener : public InvalidationListener,
   UnackedInvalidationsMap unacked_invalidations_map_;
   Delegate* delegate_;
 
-  // Stored to pass to |per_user_topic_registration_manager_| on start.
+  // Stores all topics which are registered (or subscribed?).
+  // TODO(crbug.com/1029698,crbug.com/1020117): We should get this information
+  // from |per_user_topic_registration_manager_| instead of keeping another copy
+  // here. Also, figure out whether this refers to registered topics (i.e. have
+  // a handler in Chrome) or subscribed topics (i.e. we're subscribed on the
+  // server).
   Topics registered_topics_;
 
   // The states of the HTTP and FCM channel.

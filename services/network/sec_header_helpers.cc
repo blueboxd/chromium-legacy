@@ -25,6 +25,7 @@ namespace {
 
 const char kSecFetchMode[] = "Sec-Fetch-Mode";
 const char kSecFetchSite[] = "Sec-Fetch-Site";
+const char kSecFetchUser[] = "Sec-Fetch-User";
 
 // Sec-Fetch-Site infrastructure:
 //
@@ -124,11 +125,20 @@ void SetSecFetchModeHeader(net::URLRequest* request,
   request->SetExtraRequestHeaderByName(kSecFetchMode, header_value, false);
 }
 
+// Sec-Fetch-User
+void SetSecFetchUserHeader(net::URLRequest* request, bool has_user_activation) {
+  if (has_user_activation)
+    request->SetExtraRequestHeaderByName(kSecFetchUser, "?1", true);
+  else
+    request->RemoveRequestHeaderByName(kSecFetchUser);
+}
+
 }  // namespace
 
 void SetFetchMetadataHeaders(
     net::URLRequest* request,
     network::mojom::RequestMode mode,
+    bool has_user_activation,
     const GURL* pending_redirect_url,
     const mojom::URLLoaderFactoryParams& factory_params) {
   DCHECK(request);
@@ -144,6 +154,7 @@ void SetFetchMetadataHeaders(
 
   SetSecFetchSiteHeader(request, pending_redirect_url, factory_params);
   SetSecFetchModeHeader(request, mode);
+  SetSecFetchUserHeader(request, has_user_activation);
 }
 
 void MaybeRemoveSecHeaders(net::URLRequest* request,

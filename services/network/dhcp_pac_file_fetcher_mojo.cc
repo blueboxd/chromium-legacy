@@ -14,11 +14,12 @@ namespace network {
 
 DhcpPacFileFetcherMojo::DhcpPacFileFetcherMojo(
     net::URLRequestContext* url_request_context,
-    network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client) {
+    mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+        dhcp_wpad_url_client) {
   DCHECK(url_request_context);
   CHECK(dhcp_wpad_url_client) << "DhcpWpadUrlClient not set.";
   pac_file_fetcher_ = net::PacFileFetcherImpl::Create(url_request_context);
-  dhcp_wpad_url_client_ = std::move(dhcp_wpad_url_client);
+  dhcp_wpad_url_client_.Bind(std::move(dhcp_wpad_url_client));
 }
 
 DhcpPacFileFetcherMojo::~DhcpPacFileFetcherMojo() = default;

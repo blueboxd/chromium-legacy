@@ -1701,6 +1701,9 @@
     'syncfs': {
       'filepath': 'sync_file_system',
     },
+    'system_web_apps': {
+      'filepath': 'chrome/.*system_web_app'
+    },
     'tab_alert_indicators': {
       'filepath': 'content/browser/media/audio_stream_monitor'\
         '|chrome/browser/ui/tabs/tab_utils'\
@@ -2671,6 +2674,7 @@
     'sync': ['sync-reviews@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org'],
+    'system_web_apps': [ 'ortuno@chromium.org' ],
     'tab_alert_indicators': ['miu+watch@chromium.org'],
     'tab_capture': ['miu+watch@chromium.org',
                     'pthatcher+watch@chromium.org'],

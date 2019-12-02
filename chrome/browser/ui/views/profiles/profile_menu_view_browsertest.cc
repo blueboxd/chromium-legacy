@@ -950,7 +950,7 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
     // The sync confirmation dialog was opened after clicking the signin button
     // in the profile menu. It needs to be manually dismissed to not cause any
     // crashes during shutdown.
-    EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
+    EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
         browser(), base::TimeDelta::FromSeconds(30)));
   }
 }

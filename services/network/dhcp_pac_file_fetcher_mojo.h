@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
@@ -33,9 +34,9 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_SERVICE) DhcpPacFileFetcherMojo
     : public net::DhcpPacFileFetcher {
  public:
-  DhcpPacFileFetcherMojo(
-      net::URLRequestContext* url_request_context,
-      network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client);
+  DhcpPacFileFetcherMojo(net::URLRequestContext* url_request_context,
+                         mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+                             dhcp_wpad_url_client);
 
   ~DhcpPacFileFetcherMojo() override;
 
@@ -64,7 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DhcpPacFileFetcherMojo
   GURL pac_url_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<net::PacFileFetcher> pac_file_fetcher_;
-  network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client_;
+  mojo::Remote<network::mojom::DhcpWpadUrlClient> dhcp_wpad_url_client_;
 
   base::WeakPtrFactory<DhcpPacFileFetcherMojo> weak_ptr_factory_{this};
 

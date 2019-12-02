@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
@@ -583,12 +582,6 @@ public class TabImpl implements Tab {
         if (getWebContents() != null) getWebContents().getNavigationController().goForward();
     }
 
-    @Override
-    public void exitFullscreenMode() {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) observers.next().onExitFullscreenMode(this);
-    }
-
     /**
      * @return Whether or not this Tab has a live native component.  This will be true prior to
      *         {@link #initializeNative()} being called or after {@link #destroy()}.
@@ -1015,16 +1008,6 @@ public class TabImpl implements Tab {
         boolean toDifferentDocument = mIsLoading;
         mIsLoading = false;
         for (TabObserver observer : mObservers) observer.onLoadStopped(this, toDifferentDocument);
-    }
-
-    /**
-     * Enters fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
-     * will be delayed until the tab is interactable.
-     * @param options Options to adjust fullscreen mode.
-     */
-    void enterFullscreenMode(FullscreenOptions options) {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) observers.next().onEnterFullscreenMode(this, options);
     }
 
     void handleRendererResponsiveStateChanged(boolean isResponsive) {

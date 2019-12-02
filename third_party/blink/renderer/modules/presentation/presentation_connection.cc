@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_request.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -562,8 +563,8 @@ void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
     case kBinaryTypeBlob: {
       auto blob_data = std::make_unique<BlobData>();
       blob_data->AppendBytes(data, length);
-      Blob* blob =
-          Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+      auto* blob = MakeGarbageCollected<Blob>(
+          BlobDataHandle::Create(std::move(blob_data), length));
       DispatchEvent(*MessageEvent::Create(blob));
       return;
     }

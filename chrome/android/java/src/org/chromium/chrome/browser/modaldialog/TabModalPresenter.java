@@ -352,7 +352,7 @@ public class TabModalPresenter
         TabAttributes.from(mActiveTab).set(TabAttributeKeys.MODAL_DIALOG_SHOWING, isShowing);
 
         // Make sure to exit fullscreen mode before showing the tab modal dialog view.
-        if (isShowing) mActiveTab.exitFullscreenMode();
+        mChromeFullscreenManager.onExitFullscreen(mActiveTab);
 
         // Also need to update browser control state after dismissal to refresh the constraints.
         if (isShowing && areRendererInputEventsIgnored()) {

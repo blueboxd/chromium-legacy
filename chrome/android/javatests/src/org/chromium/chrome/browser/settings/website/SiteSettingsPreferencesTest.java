@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.settings.website;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v7.preference.Preference;
@@ -202,6 +203,22 @@ public class SiteSettingsPreferencesTest {
             ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
                     SingleCategoryPreferences.BINARY_TOGGLE_KEY);
             preferences.onPreferenceChange(toggle, enabled);
+        });
+        preferenceActivity.finish();
+    }
+
+    private void setGlobalTriStateToggleForCategory(
+            final @SiteSettingsCategory.Type int type, final int newValue) {
+        final Preferences preferenceActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategoryPreferences preferences =
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+            TriStateSiteSettingsPreference triStateToggle =
+                    (TriStateSiteSettingsPreference) preferences.findPreference(
+                            SingleCategoryPreferences.TRI_STATE_TOGGLE_KEY);
+            preferences.onPreferenceChange(triStateToggle, newValue);
         });
         preferenceActivity.finish();
     }
@@ -442,6 +459,20 @@ public class SiteSettingsPreferencesTest {
         String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
         String[] cookie = new String[] {"binary_toggle", "third_party_cookies", "add_exception"};
         String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
+        String[] notifications_enabled;
+        String[] notifications_disabled;
+        // The "notifications_vibrate" option has been removed in Android O but is present in
+        // earlier versions.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            notifications_enabled = new String[] {"binary_toggle", "notifications_quiet_ui",
+                    "notifications_vibrate", "allowed_group"};
+            notifications_disabled =
+                    new String[] {"binary_toggle", "notifications_vibrate", "allowed_group"};
+        } else {
+            notifications_enabled =
+                    new String[] {"binary_toggle", "notifications_quiet_ui", "allowed_group"};
+            notifications_disabled = binaryToggleWithAllowed;
+        }
 
         HashMap<Integer, Pair<String[], String[]>> testCases =
                 new HashMap<Integer, Pair<String[], String[]>>();
@@ -461,10 +492,8 @@ public class SiteSettingsPreferencesTest {
         testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.NFC, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.NOTIFICATIONS,
-                new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
+                new Pair<>(notifications_disabled, notifications_enabled));
         testCases.put(SiteSettingsCategory.Type.POPUPS, new Pair<>(binaryToggle, binaryToggle));
-        testCases.put(SiteSettingsCategory.Type.PROTECTED_MEDIA,
-                new Pair<>(protectedMedia, protectedMedia));
         testCases.put(SiteSettingsCategory.Type.SENSORS, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.SOUND,
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
@@ -475,12 +504,24 @@ public class SiteSettingsPreferencesTest {
 
         for (@SiteSettingsCategory.Type int key = 0; key < SiteSettingsCategory.Type.NUM_ENTRIES;
                 ++key) {
+            // Protected media has a tri-state global toggle so it needs to be handled slightly
+            // differently.
+            if (key == SiteSettingsCategory.Type.PROTECTED_MEDIA) {
+                setGlobalTriStateToggleForCategory(key, ContentSettingValues.ALLOW);
+                checkPreferencesForCategory(key, protectedMedia);
+                setGlobalTriStateToggleForCategory(key, ContentSettingValues.ASK);
+                checkPreferencesForCategory(key, protectedMedia);
+                setGlobalTriStateToggleForCategory(key, ContentSettingValues.BLOCK);
+                checkPreferencesForCategory(key, protectedMedia);
+                continue;
+            }
+
             Pair<String[], String[]> values = testCases.get(key);
 
             if (key == SiteSettingsCategory.Type.ALL_SITES
                     || key == SiteSettingsCategory.Type.USE_STORAGE) {
                 checkPreferencesForCategory(key, values.first);
-                return;
+                continue;
             }
 
             // Disable the category and check for the right preferences.

@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
   ntp_url_observer.Wait();
 
   // Dismiss the Sync confirmation UI.
-  EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
+  EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
       browser(), base::TimeDelta::FromSeconds(30)));
 }
 
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
   ntp_url_observer.Wait();
 
   // Dismiss the Sync confirmation UI.
-  EXPECT_TRUE(login_ui_test_utils::DismissSyncConfirmationDialog(
+  EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
       browser(), base::TimeDelta::FromSeconds(30)));
 }
 

@@ -219,7 +219,6 @@ void FCMInvalidationServiceBase::StartInvalidator() {
 void FCMInvalidationServiceBase::StopInvalidator() {
   DCHECK(invalidation_listener_);
   diagnostic_info_.service_was_stopped = base::Time::Now();
-  // TODO(melandory): reset the network.
   invalidation_listener_.reset();
 }
 

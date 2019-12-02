@@ -794,17 +794,18 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(
+  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+           context_->GetClientContainerHostIterator(
                registration->scope().GetOrigin(),
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
+    DCHECK(container_host->IsContainerForClient());
     if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
-                                          host->container_host()->url())) {
+                                          container_host->url())) {
       continue;
     }
-    host->container_host()->AddMatchingRegistration(registration);
+    container_host->AddMatchingRegistration(registration);
   }
 }
 

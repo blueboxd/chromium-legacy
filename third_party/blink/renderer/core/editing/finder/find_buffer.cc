@@ -34,20 +34,27 @@ FindBuffer::Results::Results() {
   empty_result_ = true;
 }
 
-FindBuffer::Results::Results(const Vector<UChar>& buffer,
-                             String search_text,
+FindBuffer::Results::Results(const FindBuffer& find_buffer,
+                             TextSearcherICU* text_searcher,
+                             const Vector<UChar>& buffer,
+                             const String& search_text,
                              const blink::FindOptions options) {
   // We need to own the |search_text| because |text_searcher_| only has a
   // StringView (doesn't own the search text).
   search_text_ = search_text;
-  text_searcher_.SetPattern(search_text_, options);
-  text_searcher_.SetText(buffer.data(), buffer.size());
-  text_searcher_.SetOffset(0);
+  find_buffer_ = &find_buffer;
+  text_searcher_ = text_searcher;
+  text_searcher_->SetPattern(search_text_, options);
+  text_searcher_->SetText(buffer.data(), buffer.size());
+  text_searcher_->SetOffset(0);
 }
 
-FindBuffer::Results::Iterator::Iterator(TextSearcherICU* text_searcher,
-                                        String search_text)
-    : text_searcher_(text_searcher), has_match_(true) {
+FindBuffer::Results::Iterator::Iterator(const FindBuffer& find_buffer,
+                                        TextSearcherICU* text_searcher,
+                                        const String& search_text)
+    : find_buffer_(&find_buffer),
+      text_searcher_(text_searcher),
+      has_match_(true) {
   operator++();
 }
 
@@ -60,28 +67,50 @@ const FindBuffer::BufferMatchResult FindBuffer::Results::Iterator::operator*()
 void FindBuffer::Results::Iterator::operator++() {
   DCHECK(has_match_);
   has_match_ = text_searcher_->NextMatchResult(match_);
+  if (has_match_ && find_buffer_ && find_buffer_->IsInvalidMatch(match_))
+    operator++();
 }
 
-FindBuffer::Results::Iterator FindBuffer::Results::begin() {
+bool FindBuffer::IsInvalidMatch(MatchResultICU match) const {
+  // Invalid matches are a result of accidentally matching elements that are
+  // replaced with the max code point, and may lead to crashes. To avoid
+  // crashing, we should skip the matches that are invalid - they would have
+  // either an empty position or a non-offset-in-anchor position.
+  const unsigned start_index = match.start;
+  PositionInFlatTree start_position =
+      PositionAtStartOfCharacterAtIndex(start_index);
+  if (start_position.IsNull() || !start_position.IsOffsetInAnchor())
+    return true;
+
+  const unsigned end_index = match.start + match.length;
+  DCHECK_LE(start_index, end_index);
+  PositionInFlatTree end_position =
+      PositionAtEndOfCharacterAtIndex(end_index - 1);
+  if (end_position.IsNull() || !end_position.IsOffsetInAnchor())
+    return true;
+  return false;
+}
+
+FindBuffer::Results::Iterator FindBuffer::Results::begin() const {
   if (empty_result_)
     return end();
-  text_searcher_.SetOffset(0);
-  return Iterator(&text_searcher_, search_text_);
+  text_searcher_->SetOffset(0);
+  return Iterator(*find_buffer_, text_searcher_, search_text_);
 }
 
 FindBuffer::Results::Iterator FindBuffer::Results::end() const {
   return Iterator();
 }
 
-bool FindBuffer::Results::IsEmpty() {
+bool FindBuffer::Results::IsEmpty() const {
   return begin() == end();
 }
 
-FindBuffer::BufferMatchResult FindBuffer::Results::front() {
+FindBuffer::BufferMatchResult FindBuffer::Results::front() const {
   return *begin();
 }
 
-FindBuffer::BufferMatchResult FindBuffer::Results::back() {
+FindBuffer::BufferMatchResult FindBuffer::Results::back() const {
   Iterator last_result;
   for (Iterator it = begin(); it != end(); ++it) {
     last_result = it;
@@ -89,7 +118,7 @@ FindBuffer::BufferMatchResult FindBuffer::Results::back() {
   return *last_result;
 }
 
-unsigned FindBuffer::Results::CountForTesting() {
+unsigned FindBuffer::Results::CountForTesting() const {
   unsigned result = 0;
   for (Iterator it = begin(); it != end(); ++it) {
     ++result;
@@ -205,15 +234,14 @@ EphemeralRangeInFlatTree FindBuffer::FindMatchInRange(
 
     FindBuffer buffer(
         EphemeralRangeInFlatTree(start_position, range.EndPosition()));
-    std::unique_ptr<Results> match_results =
-        buffer.FindMatches(search_text, options);
-    if (!match_results->IsEmpty()) {
+    Results match_results = buffer.FindMatches(search_text, options);
+    if (!match_results.IsEmpty()) {
       if (!(options & kBackwards)) {
-        BufferMatchResult match = match_results->front();
+        BufferMatchResult match = match_results.front();
         return buffer.RangeFromBufferIndex(match.start,
                                            match.start + match.length);
       }
-      BufferMatchResult match = match_results->back();
+      BufferMatchResult match = match_results.back();
       last_match_range =
           buffer.RangeFromBufferIndex(match.start, match.start + match.length);
     }
@@ -222,19 +250,18 @@ EphemeralRangeInFlatTree FindBuffer::FindMatchInRange(
   return last_match_range;
 }
 
-std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
-    const WebString& search_text,
-    const blink::FindOptions options) const {
+FindBuffer::Results FindBuffer::FindMatches(const WebString& search_text,
+                                            const blink::FindOptions options) {
   // We should return empty result if it's impossible to get a match (buffer is
   // empty or too short), or when something went wrong in layout, in which case
   // |offset_mapping_| is null.
   if (buffer_.IsEmpty() || search_text.length() > buffer_.size() ||
       !offset_mapping_)
-    return std::make_unique<Results>();
+    return Results();
   String search_text_16_bit = search_text;
   search_text_16_bit.Ensure16Bit();
   FoldQuoteMarksAndSoftHyphens(search_text_16_bit);
-  return std::make_unique<Results>(buffer_, search_text_16_bit, options);
+  return Results(*this, &text_searcher_, buffer_, search_text_16_bit, options);
 }
 
 bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
@@ -388,7 +415,7 @@ EphemeralRangeInFlatTree FindBuffer::RangeFromBufferIndex(
   return EphemeralRangeInFlatTree(start_position, end_position);
 }
 
-FindBuffer::BufferNodeMapping FindBuffer::MappingForIndex(
+const FindBuffer::BufferNodeMapping* FindBuffer::MappingForIndex(
     unsigned index) const {
   // Get the first entry that starts at a position higher than offset, and
   // move back one entry.
@@ -397,27 +424,32 @@ FindBuffer::BufferNodeMapping FindBuffer::MappingForIndex(
       [](const unsigned offset, const BufferNodeMapping& entry) {
         return offset < entry.offset_in_buffer;
       });
-  DCHECK_NE(it, buffer_node_mappings_.begin());
-  auto* const entry = std::prev(it);
-  return *entry;
+  if (it == buffer_node_mappings_.begin())
+    return nullptr;
+  auto* entry = std::prev(it);
+  return entry;
 }
 
 PositionInFlatTree FindBuffer::PositionAtStartOfCharacterAtIndex(
     unsigned index) const {
   DCHECK_LT(index, buffer_.size());
   DCHECK(offset_mapping_);
-  BufferNodeMapping entry = MappingForIndex(index);
+  const BufferNodeMapping* entry = MappingForIndex(index);
+  if (!entry)
+    return PositionInFlatTree();
   return ToPositionInFlatTree(offset_mapping_->GetLastPosition(
-      index - entry.offset_in_buffer + entry.offset_in_mapping));
+      index - entry->offset_in_buffer + entry->offset_in_mapping));
 }
 
 PositionInFlatTree FindBuffer::PositionAtEndOfCharacterAtIndex(
     unsigned index) const {
   DCHECK_LT(index, buffer_.size());
   DCHECK(offset_mapping_);
-  BufferNodeMapping entry = MappingForIndex(index);
+  const BufferNodeMapping* entry = MappingForIndex(index);
+  if (!entry)
+    return PositionInFlatTree();
   return ToPositionInFlatTree(offset_mapping_->GetFirstPosition(
-      index - entry.offset_in_buffer + entry.offset_in_mapping + 1));
+      index - entry->offset_in_buffer + entry->offset_in_mapping + 1));
 }
 
 void FindBuffer::AddTextToBuffer(const Text& text_node,

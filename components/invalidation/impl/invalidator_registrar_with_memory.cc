@@ -138,14 +138,14 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
     }
   }
 
-  // TODO(treib): This seems inconsistent - if there's a duplicate, we don't
-  // update |registered_handler_to_topics_map_| but we *do* still update
-  // |handler_name_to_subscribed_topics_map_| and the prefs?!
+  // TODO(crbug.com/1020117): This seems inconsistent - if there's a duplicate,
+  // we don't update |registered_handler_to_topics_map_| but we *do* still
+  // update |handler_name_to_subscribed_topics_map_| and the prefs?!
 
   DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
-  // TODO(treib): This does *not* remove subscribed topics which were not
-  // registered. Bug or feature?
+  // TODO(crbug.com/1020117): This does currently *not* remove subscribed topics
+  // which are not registered, but it almost certainly should.
   auto to_unregister = FindRemovedTopics(old_topics, topics);
   for (const auto& topic : to_unregister) {
     pref_data->RemoveKey(topic);

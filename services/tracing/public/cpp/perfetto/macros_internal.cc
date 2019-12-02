@@ -27,7 +27,8 @@ base::trace_event::ThreadInstructionCount ThreadInstructionNow() {
 base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
-    const char* name) {
+    const char* name,
+    unsigned int flags) {
   DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END ||
          phase == TRACE_EVENT_PHASE_INSTANT);
   DCHECK(category_group_enabled);
@@ -49,8 +50,7 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
   return base::trace_event::TraceEvent(
       thread_id, offset_event_timestamp, thread_now, thread_instruction_now,
       phase, category_group_enabled, name, trace_event_internal::kGlobalScope,
-      trace_event_internal::kNoId, trace_event_internal::kNoId, nullptr,
-      TRACE_EVENT_FLAG_NONE);
+      trace_event_internal::kNoId, trace_event_internal::kNoId, nullptr, flags);
 }
 
 }  // namespace internal

@@ -66,18 +66,6 @@ class CORE_EXPORT File final : public Blob {
       const String& file_name,
       const FilePropertyBag*);
 
-  static File* Create(const String& path,
-                      ContentTypeLookupPolicy policy = kWellKnownContentTypes) {
-    return MakeGarbageCollected<File>(path, policy, File::kIsUserVisible);
-  }
-
-  static File* Create(const String& name,
-                      double modification_time,
-                      scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return MakeGarbageCollected<File>(name, modification_time,
-                                      std::move(blob_data_handle));
-  }
-
   // For deserialization.
   static File* CreateFromSerialization(
       const String& path,
@@ -131,7 +119,9 @@ class CORE_EXPORT File final : public Blob {
     return MakeGarbageCollected<File>(url, metadata, user_visibility);
   }
 
-  File(const String& path, ContentTypeLookupPolicy, UserVisibility);
+  File(const String& path,
+       ContentTypeLookupPolicy = kWellKnownContentTypes,
+       UserVisibility = File::kIsUserVisible);
   File(const String& path,
        const String& name,
        ContentTypeLookupPolicy,

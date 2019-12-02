@@ -386,7 +386,7 @@ TEST_F(ProxyResolvingSocketMojoTest, ConnectWithFakeTLSHandshake) {
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 }
 
-// Tests that when ProxyResolvingSocketPtr is destroyed but not the
+// Tests that when ProxyResolvingSocket remote is destroyed but not the
 // ProxyResolvingSocketFactory, the connect callback is not dropped.
 // Regression test for https://crbug.com/862608.
 TEST_F(ProxyResolvingSocketMojoTest, SocketDestroyedBeforeConnectCompletes) {

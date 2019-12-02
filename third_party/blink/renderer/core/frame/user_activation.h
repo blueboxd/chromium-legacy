@@ -19,9 +19,6 @@ class UserActivation final : public ScriptWrappable {
   // LocalDOMWindow.
   static UserActivation* CreateSnapshot(LocalDOMWindow* window);
 
-  // Creates an instance that represents the live state of this LocalDOMWindow.
-  static UserActivation* CreateLive(LocalDOMWindow* window);
-
   explicit UserActivation(LocalDOMWindow* window);
   UserActivation(bool has_been_active, bool is_active);
   ~UserActivation() override;

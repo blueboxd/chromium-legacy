@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/text/line_ending.h"
@@ -359,8 +360,9 @@ File* FormData::Entry::GetFile() const {
   String filename = filename_;
   if (filename.IsNull())
     filename = "blob";
-  return File::Create(filename, base::Time::Now().ToDoubleT() * 1000.0,
-                      GetBlob()->GetBlobDataHandle());
+  return MakeGarbageCollected<File>(filename,
+                                    base::Time::Now().ToDoubleT() * 1000.0,
+                                    GetBlob()->GetBlobDataHandle());
 }
 
 void FormData::AppendToControlState(FormControlState& state) const {

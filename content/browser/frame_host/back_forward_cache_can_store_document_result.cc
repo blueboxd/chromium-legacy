@@ -110,6 +110,14 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "unknown";
     case Reason::kServiceWorkerPostMessage:
       return "postMessage from service worker";
+    case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
+      return "frame already in the cache when service worker host was added";
+    case Reason::kRenderFrameHostReused_SameSite:
+      return "RenderFrameHost is reused for a same-site navigation";
+    case Reason::kRenderFrameHostReused_CrossSite:
+      return "RenderFrameHost is reused for a cross-site navigation";
+    case Reason::kNotMostRecentNavigationEntry:
+      return "navigation entry is not the most recent one for this document";
   }
 }
 

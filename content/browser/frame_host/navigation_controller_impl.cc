@@ -1042,7 +1042,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   if (!rfh->GetParent() && !is_same_document_navigation) {
     if (NavigationEntryImpl* navigation_entry = GetLastCommittedEntry()) {
       if (auto* metrics = navigation_entry->back_forward_cache_metrics()) {
-        metrics->MainFrameDidNavigateAwayFromDocument();
+        metrics->MainFrameDidNavigateAwayFromDocument(rfh, details,
+                                                      navigation_request);
       }
     }
   }

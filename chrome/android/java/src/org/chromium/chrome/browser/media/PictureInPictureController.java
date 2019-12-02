@@ -24,6 +24,8 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -215,7 +217,14 @@ public class PictureInPictureController {
         final WebContentsObserver webContentsObserver =
                 new DismissActivityOnWebContentsObserver(activity);
         final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
+        final FullscreenListener fullscreenListener = new FullscreenListener() {
+            @Override
+            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                dismissActivity(activity, METRICS_END_REASON_LEFT_FULLSCREEN);
+            }
+        };
 
+        activity.getFullscreenManager().addListener(fullscreenListener);
         activityTab.addObserver(tabObserver);
         tabModelSelector.addObserver(tabModelSelectorObserver);
         webContents.addObserver(webContentsObserver);
@@ -226,6 +235,7 @@ public class PictureInPictureController {
                 activityTab.removeObserver(tabObserver);
                 tabModelSelector.removeObserver(tabModelSelectorObserver);
                 webContents.removeObserver(webContentsObserver);
+                activity.getFullscreenManager().removeListener(fullscreenListener);
             }
         });
 
@@ -336,11 +346,6 @@ public class PictureInPictureController {
         @Override
         public void onCrash(Tab tab) {
             dismissActivity(mActivity, METRICS_END_REASON_CRASH);
-        }
-
-        @Override
-        public void onExitFullscreenMode(Tab tab) {
-            dismissActivity(mActivity, METRICS_END_REASON_LEFT_FULLSCREEN);
         }
     }
 

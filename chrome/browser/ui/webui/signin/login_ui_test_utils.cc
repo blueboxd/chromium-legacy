@@ -175,12 +175,28 @@ void WaitUntilAnyElementExistsInSigninFrame(
       "Could not find elements in the signin frame");
 }
 
+enum class SyncConfirmationDialogAction { kConfirm, kCancel };
+
+#if !defined(OS_CHROMEOS)
+std::string GetButtonIdForSyncConfirmationDialogAction(
+    SyncConfirmationDialogAction action) {
+  switch (action) {
+    case SyncConfirmationDialogAction::kConfirm:
+      return "confirmButton";
+    case SyncConfirmationDialogAction::kCancel:
+      return "cancelButton";
+  }
+}
+#endif  // !defined(OS_CHROMEOS)
+
 }  // namespace
 
 namespace login_ui_test_utils {
 class SigninViewControllerTestUtil {
  public:
-  static bool TryDismissSyncConfirmationDialog(Browser* browser) {
+  static bool TryDismissSyncConfirmationDialog(
+      Browser* browser,
+      SyncConfirmationDialogAction action) {
 #if defined(OS_CHROMEOS)
     NOTREACHED();
     return false;
@@ -193,15 +209,18 @@ class SigninViewControllerTestUtil {
     content::WebContents* dialog_web_contents =
         signin_view_controller->GetModalDialogWebContentsForTesting();
     DCHECK_NE(dialog_web_contents, nullptr);
-    std::string confirm_button_selector =
+    std::string button_id = GetButtonIdForSyncConfirmationDialogAction(action);
+    std::string button_selector =
+        "(document.querySelector('sync-confirmation-app') == null ? null :"
         "document.querySelector('sync-confirmation-app').shadowRoot."
-        "querySelector('#confirmButton')";
+        "querySelector('#" +
+        button_id + "'))";
     std::string message;
     std::string find_button_js =
         "if (document.readyState != 'complete') {"
         "  window.domAutomationController.send('DocumentNotReady');"
         "} else if (" +
-        confirm_button_selector +
+        button_selector +
         " == null) {"
         "  window.domAutomationController.send('NotFound');"
         "} else {"
@@ -215,7 +234,7 @@ class SigninViewControllerTestUtil {
     // This cannot be a synchronous call, because it closes the window as a side
     // effect, which may cause the javascript execution to never finish.
     content::ExecuteScriptAsync(dialog_web_contents,
-                                confirm_button_selector + ".click();");
+                                button_selector + ".click();");
     return true;
 #endif
   }
@@ -319,7 +338,9 @@ bool SignInWithUI(Browser* browser,
 #endif
 }
 
-bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {
+bool DismissSyncConfirmationDialog(Browser* browser,
+                                   base::TimeDelta timeout,
+                                   SyncConfirmationDialogAction action) {
   SyncConfirmationClosedObserver confirmation_closed_observer;
   ScopedObserver<LoginUIService, LoginUIService::Observer>
       scoped_confirmation_closed_observer(&confirmation_closed_observer);
@@ -329,13 +350,23 @@ bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {
   const base::Time expire_time = base::Time::Now() + timeout;
   while (base::Time::Now() <= expire_time) {
     if (SigninViewControllerTestUtil::TryDismissSyncConfirmationDialog(
-            browser)) {
+            browser, action)) {
       confirmation_closed_observer.WaitForConfirmationClosed();
       return true;
     }
     RunLoopFor(base::TimeDelta::FromMilliseconds(1000));
   }
   return false;
+}
+
+bool ConfirmSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {
+  return DismissSyncConfirmationDialog(browser, timeout,
+                                       SyncConfirmationDialogAction::kConfirm);
+}
+
+bool CancelSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {
+  return DismissSyncConfirmationDialog(browser, timeout,
+                                       SyncConfirmationDialogAction::kCancel);
 }
 
 }  // namespace login_ui_test_utils

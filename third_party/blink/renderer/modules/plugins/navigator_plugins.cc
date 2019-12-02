@@ -50,13 +50,13 @@ bool NavigatorPlugins::javaEnabled(Navigator& navigator) {
 
 DOMPluginArray* NavigatorPlugins::plugins(LocalFrame* frame) const {
   if (!plugins_)
-    plugins_ = DOMPluginArray::Create(frame);
+    plugins_ = MakeGarbageCollected<DOMPluginArray>(frame);
   return plugins_.Get();
 }
 
 DOMMimeTypeArray* NavigatorPlugins::mimeTypes(LocalFrame* frame) const {
   if (!mime_types_)
-    mime_types_ = DOMMimeTypeArray::Create(frame);
+    mime_types_ = MakeGarbageCollected<DOMMimeTypeArray>(frame);
   return mime_types_.Get();
 }
 

@@ -363,6 +363,9 @@ std::vector<std::string> AppServiceProxy::GetAppIdsForIntent(
   std::vector<std::string> app_ids;
   if (app_service_.is_bound()) {
     cache_.ForEachApp([&app_ids, &intent](const apps::AppUpdate& update) {
+      if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
+        return;
+      }
       for (const auto& filter : update.IntentFilters()) {
         if (apps_util::IntentMatchesFilter(intent, filter)) {
           app_ids.push_back(update.AppId());

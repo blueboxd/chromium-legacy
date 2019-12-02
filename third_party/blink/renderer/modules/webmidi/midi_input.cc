@@ -35,23 +35,13 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_message_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
 using midi::mojom::PortState;
-
-MIDIInput* MIDIInput::Create(MIDIAccess* access,
-                             const String& id,
-                             const String& manufacturer,
-                             const String& name,
-                             const String& version,
-                             PortState state) {
-  DCHECK(access);
-  return MakeGarbageCollected<MIDIInput>(access, id, manufacturer, name,
-                                         version, state);
-}
 
 MIDIInput::MIDIInput(MIDIAccess* access,
                      const String& id,
@@ -103,7 +93,7 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
     return;
   DOMUint8Array* array =
       DOMUint8Array::Create(data, SafeCast<unsigned>(length));
-  DispatchEvent(*MIDIMessageEvent::Create(time_stamp, array));
+  DispatchEvent(*MakeGarbageCollected<MIDIMessageEvent>(time_stamp, array));
 
   UseCounter::Count(*To<Document>(GetExecutionContext()),
                     WebFeature::kMIDIMessageEvent);

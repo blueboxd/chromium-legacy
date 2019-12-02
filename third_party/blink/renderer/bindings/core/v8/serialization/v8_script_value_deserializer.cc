@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
@@ -236,7 +237,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       auto blob_handle = GetOrCreateBlobDataHandle(uuid, type, size);
       if (!blob_handle)
         return nullptr;
-      return Blob::Create(std::move(blob_handle));
+      return MakeGarbageCollected<Blob>(std::move(blob_handle));
     }
     case kBlobIndexTag: {
       if (Version() < 6 || !blob_info_array_)
@@ -252,7 +253,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       }
       if (!blob_handle)
         return nullptr;
-      return Blob::Create(std::move(blob_handle));
+      return MakeGarbageCollected<Blob>(std::move(blob_handle));
     }
     case kFileTag:
       return ReadFile();

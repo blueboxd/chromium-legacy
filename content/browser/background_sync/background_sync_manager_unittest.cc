@@ -1634,13 +1634,13 @@ TEST_F(BackgroundSyncManagerTest, KillManagerMidSync) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutMainFrame) {
-  test_background_sync_manager()->set_has_main_frame_provider_host(false);
+  test_background_sync_manager()->set_has_main_frame_window_client(false);
   EXPECT_FALSE(Register(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterExistingWithoutMainFrame) {
   EXPECT_TRUE(Register(sync_options_1_));
-  test_background_sync_manager()->set_has_main_frame_provider_host(false);
+  test_background_sync_manager()->set_has_main_frame_window_client(false);
   EXPECT_FALSE(Register(sync_options_1_));
 }
 

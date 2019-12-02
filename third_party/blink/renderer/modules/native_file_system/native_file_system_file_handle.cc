@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -85,7 +86,8 @@ ScriptPromise NativeFileSystemFileHandle::getFile(ScriptState* script_state) {
         double last_modified = info.last_modified.is_null()
                                    ? InvalidFileTime()
                                    : info.last_modified.ToJsTime();
-        resolver->Resolve(File::Create(name, last_modified, blob));
+        resolver->Resolve(
+            MakeGarbageCollected<File>(name, last_modified, blob));
       },
       WrapPersistent(resolver), name()));
 

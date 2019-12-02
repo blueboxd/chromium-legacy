@@ -34,11 +34,10 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         assert isinstance(ir, Typedef.IR)
 
         ir = make_copy(ir)
-        WithIdentifier.__init__(self, ir.identifier)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithIdentifier.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
         self._idl_type = ir.idl_type
 

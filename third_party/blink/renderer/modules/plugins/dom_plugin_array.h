@@ -41,10 +41,6 @@ class DOMPluginArray final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 
  public:
-  static DOMPluginArray* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<DOMPluginArray>(frame);
-  }
-
   explicit DOMPluginArray(LocalFrame*);
 
   void UpdatePluginData();

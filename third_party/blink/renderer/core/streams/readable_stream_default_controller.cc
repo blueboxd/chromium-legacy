@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/queue_with_sizes.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
@@ -44,13 +44,13 @@ void ReadableStreamDefaultController::close(ScriptState* script_state,
           "Cannot close a readable stream that has already been requested to "
           "be closed";
     } else {
-      const ReadableStreamNative* stream = this->controlled_readable_stream_;
+      const ReadableStream* stream = this->controlled_readable_stream_;
       switch (stream->state_) {
-        case ReadableStreamNative::kErrored:
+        case ReadableStream::kErrored:
           errorDescription = "Cannot close an errored readable stream";
           break;
 
-        case ReadableStreamNative::kClosed:
+        case ReadableStream::kClosed:
           errorDescription = "Cannot close an errored readable stream";
           break;
 
@@ -107,7 +107,7 @@ void ReadableStreamDefaultController::Close(
     ReadableStreamDefaultController* controller) {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-close
   // 1. Let stream be controller.[[controlledReadableStream]].
-  ReadableStreamNative* stream = controller->controlled_readable_stream_;
+  ReadableStream* stream = controller->controlled_readable_stream_;
 
   // 2. Assert: ! ReadableStreamDefaultControllerCanCloseOrEnqueue(controller)
   //    is true.
@@ -122,7 +122,7 @@ void ReadableStreamDefaultController::Close(
     ClearAlgorithms(controller);
 
     // b. Perform ! ReadableStreamClose(stream).
-    ReadableStreamNative::Close(script_state, stream);
+    ReadableStream::Close(script_state, stream);
   }
 }
 
@@ -142,10 +142,9 @@ void ReadableStreamDefaultController::Enqueue(
   // 3. If ! IsReadableStreamLocked(stream) is true and !
   //    ReadableStreamGetNumReadRequests(stream) > 0, perform !
   //    ReadableStreamFulfillReadRequest(stream, chunk, false).
-  if (ReadableStreamNative::IsLocked(stream) &&
-      ReadableStreamNative::GetNumReadRequests(stream) > 0) {
-    ReadableStreamNative::FulfillReadRequest(script_state, stream, chunk,
-                                             false);
+  if (ReadableStream::IsLocked(stream) &&
+      ReadableStream::GetNumReadRequests(stream) > 0) {
+    ReadableStream::FulfillReadRequest(script_state, stream, chunk, false);
   } else {
     // 4. Otherwise,
     //   a. Let result be the result of performing controller.
@@ -191,10 +190,10 @@ void ReadableStreamDefaultController::Error(
     v8::Local<v8::Value> e) {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-error
   // 1. Let stream be controller.[[controlledReadableStream]].
-  ReadableStreamNative* stream = controller->controlled_readable_stream_;
+  ReadableStream* stream = controller->controlled_readable_stream_;
 
   // 2. If stream.[[state]] is not "readable", return.
-  if (stream->state_ != ReadableStreamNative::kReadable) {
+  if (stream->state_ != ReadableStream::kReadable) {
     return;
   }
 
@@ -205,7 +204,7 @@ void ReadableStreamDefaultController::Error(
   ClearAlgorithms(controller);
 
   // 5. Perform ! ReadableStreamError(stream, e).
-  ReadableStreamNative::Error(script_state, stream, e);
+  ReadableStream::Error(script_state, stream, e);
 }
 
 // This is an instance method rather than the static function in the standard,
@@ -214,14 +213,14 @@ base::Optional<double> ReadableStreamDefaultController::GetDesiredSize() const {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-get-desired-size
   switch (controlled_readable_stream_->state_) {
     // 3. If state is "errored", return null.
-    case ReadableStreamNative::kErrored:
+    case ReadableStream::kErrored:
       return base::nullopt;
 
     // 4. If state is "closed", return 0.
-    case ReadableStreamNative::kClosed:
+    case ReadableStream::kClosed:
       return 0.0;
 
-    case ReadableStreamNative::kReadable:
+    case ReadableStream::kReadable:
       // 5. Return controller.[[strategyHWM]] − controller.[[queueTotalSize]].
       return strategy_high_water_mark_ - queue_->TotalSize();
   }
@@ -236,8 +235,7 @@ bool ReadableStreamDefaultController::CanCloseOrEnqueue(
   // 2. If controller.[[closeRequested]] is false and state is "readable",
   //    return true.
   // 3. Otherwise, return false.
-  return !controller->is_close_requested_ &&
-         state == ReadableStreamNative::kReadable;
+  return !controller->is_close_requested_ && state == ReadableStream::kReadable;
 }
 
 bool ReadableStreamDefaultController::HasBackpressure(
@@ -257,12 +255,12 @@ const char* ReadableStreamDefaultController::EnqueueExceptionMessage(
            "has been requested to be closed";
   }
 
-  const ReadableStreamNative* stream = controller->controlled_readable_stream_;
+  const ReadableStream* stream = controller->controlled_readable_stream_;
   const auto state = stream->state_;
-  if (state == ReadableStreamNative::kErrored) {
+  if (state == ReadableStream::kErrored) {
     return "Cannot enqueue a chunk into an errored readable stream";
   }
-  DCHECK(state == ReadableStreamNative::kClosed);
+  DCHECK(state == ReadableStream::kClosed);
   return "Cannot enqueue a chunk into a closed readable stream";
 }
 
@@ -301,7 +299,7 @@ StreamPromiseResolver* ReadableStreamDefaultController::PullSteps(
     ScriptState* script_state) {
   // https://streams.spec.whatwg.org/#rs-default-controller-private-pull
   // 1. Let stream be this.[[controlledReadableStream]].
-  ReadableStreamNative* stream = controlled_readable_stream_;
+  ReadableStream* stream = controlled_readable_stream_;
 
   // 2. If this.[[queue]] is not empty,
   if (!queue_->IsEmpty()) {
@@ -314,7 +312,7 @@ StreamPromiseResolver* ReadableStreamDefaultController::PullSteps(
       ClearAlgorithms(this);
 
       //   ii. Perform ! ReadableStreamClose(stream).
-      ReadableStreamNative::Close(script_state, stream);
+      ReadableStream::Close(script_state, stream);
     } else {
       // c. Otherwise, perform !
       //    ReadableStreamDefaultControllerCallPullIfNeeded(this).
@@ -326,13 +324,13 @@ StreamPromiseResolver* ReadableStreamDefaultController::PullSteps(
     //    stream.[[reader]].[[forAuthorCode]]).
     return StreamPromiseResolver::CreateResolved(
         script_state,
-        ReadableStreamNative::CreateReadResult(
-            script_state, chunk, false, stream->reader_->for_author_code_));
+        ReadableStream::CreateReadResult(script_state, chunk, false,
+                                         stream->reader_->for_author_code_));
   }
 
   // 3. Let pendingPromise be ! ReadableStreamAddReadRequest(stream).
   StreamPromiseResolver* pendingPromise =
-      ReadableStreamNative::AddReadRequest(script_state, stream);
+      ReadableStream::AddReadRequest(script_state, stream);
 
   // 4. Perform ! ReadableStreamDefaultControllerCallPullIfNeeded(this).
   CallPullIfNeeded(script_state, this);
@@ -440,7 +438,7 @@ bool ReadableStreamDefaultController::ShouldCallPull(
     const ReadableStreamDefaultController* controller) {
   // https://streams.spec.whatwg.org/#readable-stream-default-controller-should-call-pull
   // 1. Let stream be controller.[[controlledReadableStream]].
-  const ReadableStreamNative* stream = controller->controlled_readable_stream_;
+  const ReadableStream* stream = controller->controlled_readable_stream_;
 
   // 2. If ! ReadableStreamDefaultControllerCanCloseOrEnqueue(controller) is
   //    false, return false.
@@ -455,8 +453,8 @@ bool ReadableStreamDefaultController::ShouldCallPull(
 
   // 4. If ! IsReadableStreamLocked(stream) is true and !
   //    ReadableStreamGetNumReadRequests(stream) > 0, return true.
-  if (ReadableStreamNative::IsLocked(stream) &&
-      ReadableStreamNative::GetNumReadRequests(stream) > 0) {
+  if (ReadableStream::IsLocked(stream) &&
+      ReadableStream::GetNumReadRequests(stream) > 0) {
     return true;
   }
 
@@ -487,7 +485,7 @@ void ReadableStreamDefaultController::ClearAlgorithms(
 
 void ReadableStreamDefaultController::SetUp(
     ScriptState* script_state,
-    ReadableStreamNative* stream,
+    ReadableStream* stream,
     ReadableStreamDefaultController* controller,
     StreamStartAlgorithm* start_algorithm,
     StreamAlgorithm* pull_algorithm,
@@ -601,7 +599,7 @@ void ReadableStreamDefaultController::SetUp(
 
 void ReadableStreamDefaultController::SetUpFromUnderlyingSource(
     ScriptState* script_state,
-    ReadableStreamNative* stream,
+    ReadableStream* stream,
     v8::Local<v8::Object> underlying_source,
     double high_water_mark,
     StrategySizeAlgorithm* size_algorithm,

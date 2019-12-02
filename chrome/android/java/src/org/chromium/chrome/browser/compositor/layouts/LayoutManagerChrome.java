@@ -95,9 +95,11 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
                 assert tabManagementDelegate != null;
                 startSurface.setStateChangeObserver(new StartSurface.StateObserver() {
                     @Override
-                    public void onStateChanged(boolean shouldShowTabSwitcherToolbar) {
+                    public void onStateChanged(@OverviewModeState int overviewModeState,
+                            boolean shouldShowTabSwitcherToolbar) {
                         for (OverviewModeObserver observer : mOverviewModeObservers) {
-                            observer.onOverviewModeStateChanged(shouldShowTabSwitcherToolbar);
+                            observer.onOverviewModeStateChanged(
+                                    overviewModeState, shouldShowTabSwitcherToolbar);
                         }
                     }
                 });

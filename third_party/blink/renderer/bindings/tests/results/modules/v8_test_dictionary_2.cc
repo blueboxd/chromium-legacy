@@ -125,7 +125,7 @@ bool toV8TestDictionary2(const TestDictionary2* impl, v8::Local<v8::Object> dict
 }
 
 TestDictionary2* NativeValueTraits<TestDictionary2>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestDictionary2* impl = TestDictionary2::Create();
+  TestDictionary2* impl = MakeGarbageCollected<TestDictionary2>();
   V8TestDictionary2::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

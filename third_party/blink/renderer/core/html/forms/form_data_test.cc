@@ -100,7 +100,7 @@ TEST(FormDataTest, AppendToControlState) {
   {
     auto* fd = MakeGarbageCollected<FormData>();
     fd->append("n1", "string");
-    fd->AppendFromElement("n1", File::Create("/etc/hosts"));
+    fd->AppendFromElement("n1", MakeGarbageCollected<File>("/etc/hosts"));
     FormControlState state;
     fd->AppendToControlState(state);
 

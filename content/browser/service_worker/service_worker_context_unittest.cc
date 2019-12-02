@@ -956,7 +956,7 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, notifications_[2].registration_id);
 }
 
-TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
+TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   const int kRenderProcessId1 = 1;
   const int kRenderProcessId2 = 2;
   const GURL kOrigin1 = GURL("https://www.example.com/");
@@ -1005,43 +1005,39 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
-  const int host4_provider_id = host4->provider_id();
-  EXPECT_NE(host4_provider_id, blink::kInvalidServiceWorkerProviderId);
+  EXPECT_NE(host4->provider_id(), blink::kInvalidServiceWorkerProviderId);
 
-  ServiceWorkerProviderHost* host1_raw = host1.get();
-  ServiceWorkerProviderHost* host2_raw = host2.get();
-  ServiceWorkerProviderHost* host3_raw = host3.get();
-  ASSERT_TRUE(context()->GetProviderHost(host1->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host2->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host3->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host4->provider_id()));
+  ASSERT_TRUE(host1);
+  ASSERT_TRUE(host2);
+  ASSERT_TRUE(host3);
+  ASSERT_TRUE(host4);
 
-  // Iterate over the client provider hosts that belong to kOrigin1.
-  std::set<ServiceWorkerProviderHost*> results;
-  for (auto it = context()->GetClientProviderHostIterator(
+  // Iterate over the client container hosts that belong to kOrigin1.
+  std::set<ServiceWorkerContainerHost*> results;
+  for (auto it = context()->GetClientContainerHostIterator(
            kOrigin1, true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetProviderHost());
+    results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(2u, results.size());
-  EXPECT_TRUE(base::Contains(results, host1_raw));
-  EXPECT_TRUE(base::Contains(results, host3_raw));
+  EXPECT_TRUE(base::Contains(results, host1->container_host()));
+  EXPECT_TRUE(base::Contains(results, host3->container_host()));
 
-  // Iterate over the provider hosts that belong to kOrigin2.
+  // Iterate over the container hosts that belong to kOrigin2.
   // (This should not include host4 as it's not for controllee.)
   results.clear();
-  for (auto it = context()->GetClientProviderHostIterator(
+  for (auto it = context()->GetClientContainerHostIterator(
            kOrigin2, true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetProviderHost());
+    results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(base::Contains(results, host2_raw));
+  EXPECT_TRUE(base::Contains(results, host2->container_host()));
 
   context()->RemoveProviderHost(host1->provider_id());
   context()->RemoveProviderHost(host2->provider_id());
   context()->RemoveProviderHost(host3->provider_id());
-  context()->RemoveProviderHost(host4_provider_id);
+  context()->RemoveProviderHost(host4->provider_id());
 }
 
 class ServiceWorkerContextRecoveryTest

@@ -299,6 +299,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // associated with this mapping.
   bool IsScrollableAreaLayer(const GraphicsLayer*) const;
 
+  // Returns whether the given layer is a repaint needed part of the scrollable
+  // area, if any, associated with this mapping.
+  bool IsScrollableAreaLayerWhichNeedsRepaint(const GraphicsLayer*) const;
+
   // Helper methods to updateGraphicsLayerGeometry:
   void ComputeGraphicsLayerParentLocation(
       const PaintLayer* compositing_container,

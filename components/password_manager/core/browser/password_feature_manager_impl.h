@@ -12,28 +12,20 @@ namespace syncer {
 class SyncService;
 }  // namespace syncer
 
-class PrefService;
-
 namespace password_manager {
 
 // Keeps track of which feature of PasswordManager is enabled for a given
 // profile.
 class PasswordFeatureManagerImpl : public PasswordFeatureManager {
  public:
-  PasswordFeatureManagerImpl(PrefService* pref_service,
-                             const syncer::SyncService* sync_service);
+  PasswordFeatureManagerImpl(const syncer::SyncService* sync_service);
   ~PasswordFeatureManagerImpl() override = default;
 
   bool IsGenerationEnabled() const override;
 
   bool ShouldCheckReuseOnLeakDetection() const override;
 
-  bool IsOptedInForAccountStorage() const override;
-  bool ShouldShowAccountStorageOptIn() const override;
-  void SetAccountStorageOptIn(bool opt_in) override;
-
  private:
-  PrefService* const pref_service_;
   const syncer::SyncService* const sync_service_;
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManagerImpl);
 };

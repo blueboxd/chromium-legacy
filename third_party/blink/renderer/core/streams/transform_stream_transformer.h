@@ -16,18 +16,13 @@ namespace blink {
 class ExceptionState;
 class ScriptPromise;
 class ScriptState;
-class TransformStreamDefaultControllerInterface;
+class TransformStreamDefaultController;
 class Visitor;
 
 // Interface to be implemented by C++ code that needs to create a
-// TransformStream. Very similar to the JavaScript [Transformer
-// API](https://streams.spec.whatwg.org/#transformer-api), but asynchronous
-// transforms are not currently supported. Errors should be signalled by
-// exceptions.
-//
-// An instance is stored in a JS object as a Persistent reference, so to avoid
-// uncollectable cycles implementations must not directly or indirectly strongly
-// reference any JS object.
+// TransformStream. Based on the JavaScript [Transformer
+// API](https://streams.spec.whatwg.org/#transformer-api). Errors should be
+// signalled by exceptions or promise rejections.
 class CORE_EXPORT TransformStreamTransformer
     : public GarbageCollected<TransformStreamTransformer> {
  public:
@@ -35,9 +30,9 @@ class CORE_EXPORT TransformStreamTransformer
   virtual ~TransformStreamTransformer() = default;
 
   virtual ScriptPromise Transform(v8::Local<v8::Value> chunk,
-                                  TransformStreamDefaultControllerInterface*,
+                                  TransformStreamDefaultController*,
                                   ExceptionState&) = 0;
-  virtual ScriptPromise Flush(TransformStreamDefaultControllerInterface*,
+  virtual ScriptPromise Flush(TransformStreamDefaultController*,
                               ExceptionState&) = 0;
 
   // Returns the ScriptState associated with this Transformer.

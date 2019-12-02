@@ -942,6 +942,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
 
+        // Can be in finishing state. No need to attempt PIP.
+        if (isActivityFinishingOrDestroyed()) return;
+
         if (mPictureInPictureController == null) {
             mPictureInPictureController = new PictureInPictureController();
         }
@@ -1747,7 +1750,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private void setTabContentManager(TabContentManager tabContentManager) {
         mTabContentManager = tabContentManager;
-        TabContentManagerHandler.create(tabContentManager, getTabModelSelector());
+        TabContentManagerHandler.create(
+                tabContentManager, getFullscreenManager(), getTabModelSelector());
     }
 
     /**

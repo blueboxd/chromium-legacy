@@ -780,8 +780,7 @@ void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
 
 void ServiceWorkerVersion::OnControlleeDestroyed(
     const std::string& client_uuid) {
-  if (!IsBackForwardCacheEnabled() ||
-      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+  if (!IsBackForwardCacheEnabled()) {
     RemoveControllee(client_uuid);
   } else {
     if (base::Contains(controllee_map_, client_uuid)) {
@@ -1274,8 +1273,7 @@ void ServiceWorkerVersion::PostMessageToClient(
     return;
   }
 
-  if (IsBackForwardCacheEnabled() &&
-      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+  if (IsBackForwardCacheEnabled()) {
     // When |PostMessageToClient| is called on a client that is in bfcache,
     // evict the bfcache entry.
     if (container_host->IsInBackForwardCache()) {

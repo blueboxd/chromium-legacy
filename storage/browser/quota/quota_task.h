@@ -27,7 +27,7 @@ class QuotaTaskObserver;
 // This class is not thread-safe and it's subclasses need not be either.
 // CallCompleted(), Abort(), and DeleteSoon() must be called on the same thread
 // that is the constructor is called on.
-// TODO(kinuko): Revise this using base::Callback.
+// TODO(kinuko): Revise this using base::OnceCallback.
 class QuotaTask {
  public:
   void Start();

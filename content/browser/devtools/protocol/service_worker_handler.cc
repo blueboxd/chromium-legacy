@@ -349,7 +349,7 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   BrowserContext::DeliverPushMessage(
       browser_context_, GURL(origin), id, /* push_message_id= */ std::string(),
       std::move(payload),
-      base::BindRepeating([](blink::mojom::PushDeliveryStatus status) {}));
+      base::BindOnce([](blink::mojom::PushDeliveryStatus status) {}));
 
   return Response::OK();
 }

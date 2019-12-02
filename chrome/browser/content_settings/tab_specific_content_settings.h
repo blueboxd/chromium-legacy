@@ -287,7 +287,7 @@ class TabSpecificContentSettings
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread forwarded from the
-  // ChromeRenderMessageFilter.
+  // ContentSettingsManagerImpl.
   void OnDomStorageAccessed(const GURL& url,
                             bool local,
                             bool blocked_by_policy);

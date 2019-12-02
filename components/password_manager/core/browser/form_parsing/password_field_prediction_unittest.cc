@@ -89,6 +89,8 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     EXPECT_EQ(test_fields[i].expected_type, actual_prediction.type);
     EXPECT_EQ(test_fields[i].may_use_prefilled_placeholder,
               actual_prediction.may_use_prefilled_placeholder);
+    EXPECT_EQ(form_structure.field(i)->GetFieldSignature(),
+              actual_prediction.signature);
   }
 }
 

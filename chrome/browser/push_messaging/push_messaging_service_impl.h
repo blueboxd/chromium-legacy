@@ -155,12 +155,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const GURL& requesting_origin,
                               int64_t service_worker_registration_id,
                               const gcm::IncomingMessage& message,
-                              const base::Closure& message_handled_closure,
+                              base::OnceClosure message_handled_closure,
                               blink::mojom::PushDeliveryStatus status);
 
   void DidHandleMessage(const std::string& app_id,
                         const std::string& push_message_id,
-                        const base::RepeatingClosure& completion_closure,
+                        base::OnceClosure completion_closure,
                         bool did_show_generic_notification);
 
   // Subscribe methods ---------------------------------------------------------

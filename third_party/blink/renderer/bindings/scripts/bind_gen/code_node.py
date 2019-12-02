@@ -9,9 +9,9 @@ specific bindings, such as ECMAScript bindings.
 """
 
 import copy
-import string
 
 from .codegen_accumulator import CodeGenAccumulator
+from .codegen_format import format_template
 from .mako_renderer import MakoRenderer
 
 
@@ -64,39 +64,7 @@ class CodeNode(object):
             # SymbolDefinitionNodes at SymbolScopeNode.
             self.undefined_code_symbols = []
 
-    class _LooseFormatter(string.Formatter):
-        def __init__(self):
-            string.Formatter.__init__(self)
-            self._loose_formatter_indexing_count_ = 0
-
-        def get_value(self, key, args, kwargs):
-            if isinstance(key, (int, long)):
-                return args[key]
-            assert isinstance(key, str)
-            if not key:
-                # Before Python 3.1, when a positional argument specifier is
-                # omitted, |format_string="{}"| produces |key=""|.
-                index = self._loose_formatter_indexing_count_
-                self._loose_formatter_indexing_count_ += 1
-                return args[index]
-            if key in kwargs:
-                return kwargs[key]
-            else:
-                return "{" + key + "}"
-
     _gensym_seq_id = 0
-
-    @classmethod
-    def format_template(cls, format_string, *args, **kwargs):
-        """
-        Formats a string like the built-in |format| allowing unbound keys.
-
-            format_template("${template_var} {format_var}", format_var=42)
-        will produce
-            "${template_var} 42"
-        without raising an exception that |template_var| is unbound.
-        """
-        return cls._LooseFormatter().format(format_string, *args, **kwargs)
 
     @classmethod
     def gensym(cls):
@@ -119,7 +87,7 @@ class CodeNode(object):
 
         Good example:
             sym = CodeNode.gensym()
-            template_text = CodeNode.format_template(
+            template_text = format_template(
                 "abc ${{{node_a}}} xyz", node_a=sym)
             a = CodeNodeA(template_text='123')
             b = CodeNodeB(template_text=template_text, {sym: a})
@@ -369,7 +337,7 @@ class LiteralNode(CodeNode):
 
     def __init__(self, literal_text):
         literal_text_gensym = CodeNode.gensym()
-        template_text = CodeNode.format_template(
+        template_text = format_template(
             "${{{literal_text}}}", literal_text=literal_text_gensym)
         template_vars = {literal_text_gensym: literal_text}
 
@@ -404,7 +372,7 @@ class SequenceNode(CodeNode):
 
         element_nodes_gensym = CodeNode.gensym()
         element_nodes = []
-        template_text = CodeNode.format_template(
+        template_text = format_template(
             """\
 % for node in {element_nodes}:
 ${node}\\
@@ -743,7 +711,7 @@ class ConditionalExitNode(ConditionalNode):
             "conditional": CodeNode.gensym(),
             "body": CodeNode.gensym(),
         }
-        template_text = CodeNode.format_template(
+        template_text = format_template(
             """\
 if (${{{conditional}}}) {{
   ${{{body}}}
@@ -851,7 +819,7 @@ class FunctionDefinitionNode(CodeNode):
 
         maybe_colon = " : " if member_initializer_list else ""
 
-        template_text = CodeNode.format_template(
+        template_text = format_template(
             """\
 ${{{comment}}}
 ${{{return_type}}} ${{{name}}}(${{{arg_decls}}})\

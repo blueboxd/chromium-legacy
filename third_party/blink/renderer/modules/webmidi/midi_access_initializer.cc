@@ -108,7 +108,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
     case Result::NOT_INITIALIZED:
       break;
     case Result::OK:
-      return Resolve(MIDIAccess::Create(
+      return Resolve(MakeGarbageCollected<MIDIAccess>(
           std::move(dispatcher_), options_->hasSysex() && options_->sysex(),
           port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:

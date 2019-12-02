@@ -29,7 +29,8 @@ public interface OverviewModeBehavior {
          * Called when the internal state is changed.
          * @param showTabSwitcherToolbar Whether or not request showing the Tab switcher toolbar.
          */
-        void onOverviewModeStateChanged(boolean showTabSwitcherToolbar);
+        void onOverviewModeStateChanged(
+                @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar);
 
         /**
          * Called when overview mode starts hiding.

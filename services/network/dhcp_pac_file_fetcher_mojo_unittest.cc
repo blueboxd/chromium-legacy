@@ -31,9 +31,8 @@ class DhcpPacFileFetcherMojoTest : public testing::Test {
     net::TestURLRequestContext context;
     dhcp_pac_file_fetcher_mojo_ = std::make_unique<DhcpPacFileFetcherMojo>(
         &context,
-        network::mojom::DhcpWpadUrlClientPtr(
-            network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-                pac_url)));
+        network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+            pac_url));
     mock_pac_file_fetcher_ = new net::MockPacFileFetcher();
     dhcp_pac_file_fetcher_mojo_->SetPacFileFetcherForTesting(
         base::WrapUnique(mock_pac_file_fetcher_));

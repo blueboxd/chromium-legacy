@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -19,9 +19,8 @@ ReadableStreamReader* ReadableStreamReader::Create(
     ScriptState* script_state,
     ReadableStream* stream,
     ExceptionState& exception_state) {
-  auto* stream_native = static_cast<ReadableStreamNative*>(stream);
   auto* reader = MakeGarbageCollected<ReadableStreamReader>(
-      script_state, stream_native, exception_state);
+      script_state, stream, exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -29,12 +28,12 @@ ReadableStreamReader* ReadableStreamReader::Create(
 }
 
 ReadableStreamReader::ReadableStreamReader(ScriptState* script_state,
-                                           ReadableStreamNative* stream,
+                                           ReadableStream* stream,
                                            ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-reader-constructor
   // 2. If ! IsReadableStreamLocked(stream) is true, throw a TypeError
   //    exception.
-  if (ReadableStreamNative::IsLocked(stream)) {
+  if (ReadableStream::IsLocked(stream)) {
     exception_state.ThrowTypeError(
         "ReadableStreamReader constructor can only accept readable streams "
         "that are not yet locked to a reader");
@@ -126,7 +125,7 @@ StreamPromiseResolver* ReadableStreamReader::Read(
   auto* isolate = script_state->GetIsolate();
   // https://streams.spec.whatwg.org/#readable-stream-default-reader-read
   // 1. Let stream be reader.[[ownerReadableStream]].
-  ReadableStreamNative* stream = reader->owner_readable_stream_;
+  ReadableStream* stream = reader->owner_readable_stream_;
 
   // 2. Assert: stream is not undefined.
   DCHECK(stream);
@@ -138,21 +137,21 @@ StreamPromiseResolver* ReadableStreamReader::Read(
     // 4. If stream.[[state]] is "closed", return a promise resolved with !
     //    ReadableStreamCreateReadResult(undefined, true,
     //    reader.[[forAuthorCode]]).
-    case ReadableStreamNative::kClosed:
+    case ReadableStream::kClosed:
       return StreamPromiseResolver::CreateResolved(
-          script_state, ReadableStreamNative::CreateReadResult(
-                            script_state, v8::Undefined(isolate), true,
-                            reader->for_author_code_));
+          script_state,
+          ReadableStream::CreateReadResult(script_state, v8::Undefined(isolate),
+                                           true, reader->for_author_code_));
 
     // 5. If stream.[[state]] is "errored", return a promise rejected with
     //    stream.[[storedError]].
-    case ReadableStreamNative::kErrored:
+    case ReadableStream::kErrored:
       return StreamPromiseResolver::CreateRejected(
           script_state, stream->GetStoredError(isolate));
 
-    case ReadableStreamNative::kReadable:
+    case ReadableStream::kReadable:
       // 6. Assert: stream.[[state]] is "readable".
-      DCHECK_EQ(stream->state_, ReadableStreamNative::kReadable);
+      DCHECK_EQ(stream->state_, ReadableStream::kReadable);
 
       // 7. Return ! stream.[[readableStreamController]].[[PullSteps]]().
       return stream->GetController()->PullSteps(script_state);
@@ -172,8 +171,7 @@ void ReadableStreamReader::GenericRelease(ScriptState* script_state,
 
   // 3. If reader.[[ownerReadableStream]].[[state]] is "readable", reject
   //    reader.[[closedPromise]] with a TypeError exception.
-  if (reader->owner_readable_stream_->state_ ==
-      ReadableStreamNative::kReadable) {
+  if (reader->owner_readable_stream_->state_ == ReadableStream::kReadable) {
     reader->closed_promise_->Reject(
         script_state,
         v8::Exception::TypeError(V8String(
@@ -213,18 +211,18 @@ v8::Local<v8::Promise> ReadableStreamReader::GenericCancel(
     v8::Local<v8::Value> reason) {
   // https://streams.spec.whatwg.org/#readable-stream-reader-generic-cancel
   // 1. Let stream be reader.[[ownerReadableStream]].
-  ReadableStreamNative* stream = reader->owner_readable_stream_;
+  ReadableStream* stream = reader->owner_readable_stream_;
 
   // 2. Assert: stream is not undefined.
   DCHECK(stream);
 
   // 3. Return ! ReadableStreamCancel(stream, reason).
-  return ReadableStreamNative::Cancel(script_state, stream, reason);
+  return ReadableStream::Cancel(script_state, stream, reason);
 }
 
 void ReadableStreamReader::GenericInitialize(ScriptState* script_state,
                                              ReadableStreamReader* reader,
-                                             ReadableStreamNative* stream) {
+                                             ReadableStream* stream) {
   auto* isolate = script_state->GetIsolate();
 
   // https://streams.spec.whatwg.org/#readable-stream-reader-generic-initialize
@@ -239,23 +237,23 @@ void ReadableStreamReader::GenericInitialize(ScriptState* script_state,
 
   switch (stream->state_) {
     // 4. If stream.[[state]] is "readable",
-    case ReadableStreamNative::kReadable:
+    case ReadableStream::kReadable:
       // a. Set reader.[[closedPromise]] to a new promise.
       reader->closed_promise_ =
           MakeGarbageCollected<StreamPromiseResolver>(script_state);
       break;
 
     // 5. Otherwise, if stream.[[state]] is "closed",
-    case ReadableStreamNative::kClosed:
+    case ReadableStream::kClosed:
       // a. Set reader.[[closedPromise]] to a promise resolved with undefined.
       reader->closed_promise_ =
           StreamPromiseResolver::CreateResolvedWithUndefined(script_state);
       break;
 
     // 6. Otherwise,
-    case ReadableStreamNative::kErrored:
+    case ReadableStream::kErrored:
       // a. Assert: stream.[[state]] is "errored".
-      DCHECK_EQ(stream->state_, ReadableStreamNative::kErrored);
+      DCHECK_EQ(stream->state_, ReadableStream::kErrored);
 
       // b. Set reader.[[closedPromise]] to a promise rejected with stream.
       //    [[storedError]].

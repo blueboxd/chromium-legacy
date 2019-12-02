@@ -15,12 +15,11 @@ from .code_node import FunctionDefinitionNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .codegen_context import CodeGenContext
+from .codegen_format import format_template as _format
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
-
-_format = CodeNode.format_template
 
 
 def make_dict_member_get_def(cg_context):
@@ -167,7 +166,7 @@ def make_fill_with_own_dict_members_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
-    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+    own_members = dictionary.own_members
 
     func_name = _format(
         "{_1}::FillWithOwnMembers", _1=blink_class_name(dictionary))
@@ -249,7 +248,7 @@ def make_fill_dict_members_def(cg_context):
 
     dictionary = cg_context.dictionary
     class_name = blink_class_name(dictionary)
-    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+    own_members = dictionary.own_members
     required_own_members = list(
         member for member in own_members if member.is_required)
 
@@ -306,7 +305,7 @@ def make_fill_dict_members_internal_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
-    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+    own_members = dictionary.own_members
     class_name = blink_class_name(dictionary)
 
     func_name = _format("{_1}::FillMembersInternal", _1=class_name)
@@ -397,7 +396,7 @@ def make_dict_trace_def(cg_context):
     T = TextNode
 
     dictionary = cg_context.dictionary
-    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+    own_members = dictionary.own_members
     class_name = blink_class_name(dictionary)
 
     func_def = FunctionDefinitionNode(
@@ -446,7 +445,7 @@ def generate_dictionaries(web_idl_database, output_dirs):
         make_dict_trace_def(cg_context),
     ])
 
-    for member in sorted(dictionary.own_members, key=lambda x: x.identifier):
+    for member in dictionary.own_members:
         code_node.extend([
             make_dict_member_get_def(cg_context.make_copy(dict_member=member)),
             make_dict_member_has_def(cg_context.make_copy(dict_member=member)),

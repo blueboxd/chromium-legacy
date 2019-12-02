@@ -77,10 +77,12 @@ class IdlCompiler(object):
         self._did_run = True
 
         # Merge partial definitions.
+        self._record_defined_in_partial_and_mixin()
         self._propagate_extattrs_per_idl_fragment()
         self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
         # Merge mixins.
+        self._set_owner_mixin_of_mixin_members()
         self._merge_interface_mixins()
 
         # Process inheritances.
@@ -89,6 +91,8 @@ class IdlCompiler(object):
         # Make groups of overloaded functions including inherited ones.
         self._group_overloaded_functions()
         self._calculate_group_exposure()
+
+        self._sort_dictionary_members()
 
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
@@ -102,6 +106,25 @@ class IdlCompiler(object):
         self._create_public_unions()
 
         return Database(self._db)
+
+    def _record_defined_in_partial_and_mixin(self):
+        old_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
+            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            for member in new_ir.iter_all_members():
+                member.code_generator_info.set_defined_in_partial(
+                    hasattr(new_ir, 'is_partial') and new_ir.is_partial)
+                member.code_generator_info.set_defined_in_mixin(
+                    hasattr(new_ir, 'is_mixin') and new_ir.is_mixin)
 
     def _propagate_extattrs_per_idl_fragment(self):
         def propagate_extattr(extattr_key_and_attr_name,
@@ -218,6 +241,19 @@ class IdlCompiler(object):
                     partial_dictionary.debug_info.all_locations)
                 new_dictionary.own_members.extend(
                     make_copy(partial_dictionary.own_members))
+
+    def _set_owner_mixin_of_mixin_members(self):
+        mixins = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in mixins:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            ref_to_mixin = self._ref_to_idl_def_factory.create(
+                new_ir.identifier)
+            for member in new_ir.iter_all_members():
+                member.set_owner_mixin(ref_to_mixin)
 
     def _merge_interface_mixins(self):
         interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
@@ -356,6 +392,18 @@ class IdlCompiler(object):
                             if exposure.only_in_secure_contexts is not True
                         ]))
                     group.exposure.set_only_in_secure_contexts(flag_names)
+
+    def _sort_dictionary_members(self):
+        """Sorts dictionary members in alphabetical order."""
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            new_ir.own_members.sort(key=lambda x: x.identifier)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""

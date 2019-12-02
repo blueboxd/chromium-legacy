@@ -44,7 +44,12 @@ bool SignInWithUI(Browser* browser,
 // Waits for sync confirmation dialog to get displayed, then executes javascript
 // to click on confirm button. Returns false if dialog wasn't dismissed before
 // |timeout|.
-bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout);
+bool ConfirmSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout);
+
+// Waits for sync confirmation dialog to get displayed, then executes javascript
+// to click on cancel button. Returns false if dialog wasn't dismissed before
+// |timeout|.
+bool CancelSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout);
 
 }  // namespace login_ui_test_utils
 

@@ -9,7 +9,6 @@ import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -95,12 +94,6 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onUpdateUrl(Tab tab, String url) { }
-
-    @Override
-    public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {}
-
-    @Override
-    public void onExitFullscreenMode(Tab tab) {}
 
     @Override
     public void onDidFailLoad(

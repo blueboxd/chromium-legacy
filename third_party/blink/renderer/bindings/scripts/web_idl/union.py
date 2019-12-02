@@ -77,7 +77,7 @@ class Union(WithIdentifier, WithComponent, WithDebugInfo):
             idl_type.apply_to_all_composing_elements(collect_components)
 
         WithIdentifier.__init__(self, identifier)
-        WithComponent.__init__(self, components=sorted(components))
+        WithComponent.__init__(self, sorted(components))
         WithDebugInfo.__init__(self)
 
         # Sort improves reproducibility.

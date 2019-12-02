@@ -331,6 +331,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_android_support_support_v13_java",
     "//third_party/android_deps:com_android_support_viewpager_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
+    "//third_party/android_deps:com_google_guava_listenablefuture_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",

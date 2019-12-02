@@ -49,8 +49,8 @@ DOMMimeType* DOMMimeTypeArray::item(unsigned index) {
   if (index >= dom_mime_types_.size())
     return nullptr;
   if (!dom_mime_types_[index]) {
-    dom_mime_types_[index] =
-        DOMMimeType::Create(GetFrame(), *GetPluginData()->Mimes()[index]);
+    dom_mime_types_[index] = MakeGarbageCollected<DOMMimeType>(
+        GetFrame(), *GetPluginData()->Mimes()[index]);
   }
 
   return dom_mime_types_[index];

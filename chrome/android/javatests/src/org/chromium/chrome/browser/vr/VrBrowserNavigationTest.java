@@ -23,6 +23,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -528,6 +530,15 @@ public class VrBrowserNavigationTest {
         enterFullscreenOrFail(mVrBrowserTestFramework.getCurrentWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
+        int activityState =
+                ApplicationStatus.getStateForActivity(tab.getWindowAndroid().getActivity().get());
+        android.util.Log.i("crdebug",
+                "test "
+                        + " as: " + activityState + " cond: "
+                        + (activityState == ActivityState.PAUSED
+                                || activityState == ActivityState.STOPPED
+                                || activityState == ActivityState.DESTROYED));
+
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 

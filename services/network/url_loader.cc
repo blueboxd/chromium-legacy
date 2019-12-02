@@ -361,6 +361,7 @@ URLLoader::URLLoader(
       want_raw_headers_(request.report_raw_headers),
       report_raw_headers_(false),
       devtools_request_id_(request.devtools_request_id),
+      has_user_activation_(false),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
@@ -444,14 +445,17 @@ URLLoader::URLLoader(
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
   request_mode_ = request.mode;
+  if (request.trusted_params) {
+    has_user_activation_ = request.trusted_params->has_user_activation;
+  }
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
   url_request_->set_initiator(request.request_initiator);
 
-  SetFetchMetadataHeaders(url_request_.get(), request_mode_, nullptr,
-                          *factory_params_);
+  SetFetchMetadataHeaders(url_request_.get(), request_mode_,
+                          has_user_activation_, nullptr, *factory_params_);
 
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
@@ -816,7 +820,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // to do this before we re-add any.
   MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetFetchMetadataHeaders(url_request_.get(), request_mode_,
-                          &redirect_info.new_url, *factory_params_);
+                          has_user_activation_, &redirect_info.new_url,
+                          *factory_params_);
 
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }

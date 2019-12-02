@@ -45,6 +45,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
         update_network_isolation_key_on_redirect =
             network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
     bool disable_secure_dns = false;
+    bool has_user_activation = false;
   };
 
   ResourceRequest();

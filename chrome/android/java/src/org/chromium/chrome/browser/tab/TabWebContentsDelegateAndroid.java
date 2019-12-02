@@ -18,7 +18,6 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditorJni;
@@ -117,12 +116,12 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
 
     @Override
     public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
-        mTab.enterFullscreenMode(new FullscreenOptions(prefersNavigationBar));
+        assert false : "Fullscreen mode switching is supported on ChromeActivity only.";
     }
 
     @Override
     public void exitFullscreenModeForTab() {
-        mTab.exitFullscreenMode();
+        assert false : "Fullscreen mode switching is supported on ChromeActivity only.";
     }
 
     @Override

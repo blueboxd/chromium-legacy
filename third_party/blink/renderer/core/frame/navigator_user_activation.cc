@@ -36,7 +36,8 @@ void NavigatorUserActivation::Trace(blink::Visitor* visitor) {
 }
 
 NavigatorUserActivation::NavigatorUserActivation(Navigator& navigator) {
-  user_activation_ = UserActivation::CreateLive(navigator.DomWindow());
+  user_activation_ =
+      MakeGarbageCollected<UserActivation>(navigator.DomWindow());
 }
 
 }  // namespace blink

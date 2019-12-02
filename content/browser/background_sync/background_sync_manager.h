@@ -213,7 +213,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,
       ServiceWorkerVersion::StatusCallback callback);
-  virtual void HasMainFrameProviderHost(const url::Origin& origin,
+  virtual void HasMainFrameWindowClient(const url::Origin& origin,
                                         BoolCallback callback);
 
  private:

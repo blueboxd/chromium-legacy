@@ -44,11 +44,6 @@ class MIDIMessageEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIMessageEvent* Create(base::TimeTicks time_stamp,
-                                  DOMUint8Array* data) {
-    return MakeGarbageCollected<MIDIMessageEvent>(time_stamp, data);
-  }
-
   static MIDIMessageEvent* Create(const AtomicString& type,
                                   const MIDIMessageEventInit* initializer) {
     return MakeGarbageCollected<MIDIMessageEvent>(type, initializer);

@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -347,8 +346,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
                 // TODO(cjhopman): This should possibly ignore navigations that replace the entry
                 // (like those from history.replaceState()).
                 if (!navigation.hasCommitted() || !navigation.isInMainFrame()
-                        || navigation.isSameDocument())
+                        || navigation.isSameDocument()) {
                     return;
+                }
 
                 if (mShouldRemovePreviousNavigation) {
                     mShouldRemovePreviousNavigation = false;
@@ -456,7 +456,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
         // Make sure to exit fullscreen mode before navigating.
         Tab currentTab = mTabModelSelector.getCurrentTab();
-        currentTab.exitFullscreenMode();
+        mChromeActivity.getFullscreenManager().onExitFullscreen(currentTab);
 
         // RenderWidgetHostViewAndroid hides the controls after transitioning to reader mode.
         // See the long history of the issue in https://crbug.com/825765, https://crbug.com/853686,
@@ -469,10 +469,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
     private void showControlsTransient(Tab tab) {
         assert mChromeActivity != null;
-        FullscreenManager fullscreenManager = mChromeActivity.getFullscreenManager();
-        if (!(fullscreenManager instanceof ChromeFullscreenManager)) return;
-        ((ChromeFullscreenManager) fullscreenManager).getBrowserVisibilityDelegate()
-                .showControlsTransient();
+        ChromeFullscreenManager fullscreenManager = mChromeActivity.getFullscreenManager();
+        fullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
     }
 
     private void distillInCustomTab() {

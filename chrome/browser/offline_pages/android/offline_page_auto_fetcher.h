@@ -31,8 +31,8 @@ class OfflinePageAutoFetcher : public chrome::mojom::OfflinePageAutoFetcher {
   void CancelSchedule() override;
 
   static void Create(
-      mojo::PendingReceiver<chrome::mojom::OfflinePageAutoFetcher> receiver,
-      content::RenderFrameHost* render_frame_host);
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<chrome::mojom::OfflinePageAutoFetcher> receiver);
 
  private:
   OfflinePageAutoFetcherService* GetService();

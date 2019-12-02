@@ -486,7 +486,7 @@ class StartSurfaceMediator
 
     private void notifyStateChange() {
         if (mStateObserver != null) {
-            mStateObserver.onStateChanged(shouldShowTabSwitcherToolbar());
+            mStateObserver.onStateChanged(mOverviewModeState, shouldShowTabSwitcherToolbar());
         }
     }
 

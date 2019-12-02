@@ -97,6 +97,11 @@ struct TrustedUrlRequestParams {
 
   // Whether secure DNS should be disabled for the request.
   bool disable_secure_dns;
+
+  // Whether a navigation is triggered with a user gesture.
+  // Always true for navigations except the one triggered from a document
+  // without user gesture. Used to determine the `Sec-Fetch-User` header.
+  bool has_user_activation;
 };
 
 // Typemapped to network::ResourceRequest.

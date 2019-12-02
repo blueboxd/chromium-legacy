@@ -198,7 +198,7 @@ bool toV8{{cpp_class}}(const {{cpp_class}}* impl, v8::Local<v8::Object> dictiona
 }
 
 {{cpp_class}}* NativeValueTraits<{{cpp_class}}>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  {{cpp_class}}* impl = {{cpp_class}}::Create();
+  {{cpp_class}}* impl = MakeGarbageCollected<{{cpp_class}}>();
   {{v8_class}}::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

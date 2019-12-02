@@ -415,7 +415,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     FilterEffect* previous_effect) const {
   SVGResource* resource = reference_operation.Resource();
   if (auto* filter =
-          ToSVGFilterElementOrNull(resource ? resource->Target() : nullptr))
+          DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr))
     return BuildReferenceFilter(*filter, previous_effect);
   return nullptr;
 }

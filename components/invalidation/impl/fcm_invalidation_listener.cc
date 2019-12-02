@@ -64,14 +64,11 @@ void FCMInvalidationListener::Invalidate(const std::string& payload,
                                          const std::string& private_topic,
                                          const std::string& public_topic,
                                          const std::string& version) {
-  // TODO(melandory): use |private_topic| in addition to
-  // |registered_topics_| to verify that topic is registered.
   int64_t v;
   if (!base::StringToInt64(version, &v)) {
-    // Version must always be in the message and
-    // in addition version must be number.
-    // TODO(melandory): Report error and consider not to process with the
-    // invalidation.
+    // The version must always be in the message, and be a number.
+    // TODO(crbug.com/1023813): Record UMA, and either use InitUnknownVersion()
+    // instead of Init() below, or don't process the invalidation at all.
   }
   // Note: |public_topic| is empty for some invalidations (e.g. Drive). Prefer
   // using |*expected_public_topic| over |public_topic|.

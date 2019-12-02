@@ -46,7 +46,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
@@ -62,11 +62,10 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
-        WithComponent.__init__(self, components=ir.components)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
+        WithComponent.__init__(self, ir, readonly=True)
         WithDebugInfo.__init__(self, ir.debug_info)
 
         self._inherited = ir.inherited
@@ -85,8 +84,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         """
         Returns own dictionary members.  Inherited members are not included.
 
-        Note that members are not sorted alphabetically.  The order should be
-        the declaration order.
+        Members are sorted by their identifiers alphabetically.
         """
         return self._own_members
 
@@ -100,9 +98,9 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
         def collect_inherited_members(dictionary):
             if dictionary is None:
-                return []
-            return (collect_inherited_members(dictionary.inherited) + sorted(
-                dictionary.own_members, key=lambda member: member.identifier))
+                return ()
+            return (collect_inherited_members(dictionary.inherited) +
+                    dictionary.own_members)
 
         return tuple(collect_inherited_members(self))
 
@@ -133,7 +131,7 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
@@ -144,14 +142,13 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
         assert isinstance(owner, Dictionary)
 
         ir = make_copy(ir)
-        WithIdentifier.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithIdentifier.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
         self._idl_type = ir.idl_type
         self._default_value = ir.default_value

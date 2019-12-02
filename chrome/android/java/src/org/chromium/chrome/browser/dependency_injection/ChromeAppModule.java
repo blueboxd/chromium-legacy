@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import android.content.Context;
 
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
@@ -80,11 +80,11 @@ public class ChromeAppModule {
 
     @Provides
     @Singleton
-    public TrustedWebActivityServiceConnectionManager providesTwaServiceConnectionManager(
+    public TrustedWebActivityServiceConnectionPool providesTwaServiceConnectionManager(
             @Named(APP_CONTEXT) Context context) {
-        // TrustedWebActivityServiceConnectionManager comes from the Custom Tabs Support Library
+        // TrustedWebActivityServiceConnectionManager comes from AndroidX Browser
         // so we can't make it injectable.
-        return new TrustedWebActivityServiceConnectionManager(context);
+        return TrustedWebActivityServiceConnectionPool.create(context);
     }
 
     @Provides

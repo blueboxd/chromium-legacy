@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
@@ -18,8 +18,9 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
   // construct multiple streams).
   DCHECK(!controller_);
 
-  controller_ = ReadableStreamDefaultControllerInterface::Create(script_state,
-                                                                 js_controller);
+  controller_ =
+      MakeGarbageCollected<ReadableStreamDefaultControllerWithScriptScope>(
+          script_state, js_controller);
 
   return Start(script_state);
 }

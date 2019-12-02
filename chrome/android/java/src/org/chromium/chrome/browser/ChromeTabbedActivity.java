@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
@@ -384,9 +385,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
 
         @Override
-        public void onOverviewModeStateChanged(boolean showTabSwitcherToolbar) {
+        public void onOverviewModeStateChanged(
+                @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
             for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeStateChanged(showTabSwitcherToolbar);
+                observer.onOverviewModeStateChanged(overviewModeState, showTabSwitcherToolbar);
             }
         }
 

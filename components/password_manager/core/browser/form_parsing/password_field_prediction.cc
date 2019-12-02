@@ -88,6 +88,7 @@ FormPredictions ConvertToFormPredictions(int driver_id,
 
     field_predictions.emplace_back();
     field_predictions.back().renderer_id = field->unique_renderer_id;
+    field_predictions.back().signature = field->GetFieldSignature();
     field_predictions.back().type = server_type;
     field_predictions.back().may_use_prefilled_placeholder =
         may_use_prefilled_placeholder;

@@ -131,7 +131,7 @@ public class ChromeFullscreenManager extends FullscreenManager
          * Called whenever the content's offset changes.
          * @param offset The new offset of the content from the top of the screen in px.
          */
-        void onContentOffsetChanged(int offset);
+        default void onContentOffsetChanged(int offset) {}
 
         /**
          * Called whenever the controls' offset changes.
@@ -139,18 +139,19 @@ public class ChromeFullscreenManager extends FullscreenManager
          * @param bottomOffset The new value of the offset from the top of the bottom control in px.
          * @param needsAnimate Whether the caller is driving an animation with further updates.
          */
-        void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate);
+        default void onControlsOffsetChanged(
+                int topOffset, int bottomOffset, boolean needsAnimate) {}
 
         /**
          * Called when a ContentVideoView is created/destroyed.
          * @param enabled Whether to enter or leave overlay video mode.
          */
-        void onToggleOverlayVideoMode(boolean enabled);
+        default void onToggleOverlayVideoMode(boolean enabled) {}
 
         /**
          * Called when the height of the bottom controls are changed.
          */
-        void onBottomControlsHeightChanged(int bottomControlsHeight);
+        default void onBottomControlsHeightChanged(int bottomControlsHeight) {}
 
         /**
          * Called when the height of the top controls are changed.
@@ -162,6 +163,19 @@ public class ChromeFullscreenManager extends FullscreenManager
          * Called when the viewport size of the active content is updated.
          */
         default void onUpdateViewportSize() {}
+
+        /**
+         * Called when entering fullscreen mode.
+         * @param tab The tab whose content is entering fullscreen mode.
+         * @param options Options to adjust fullscreen mode.
+         */
+        default void onEnterFullscreen(Tab tab, FullscreenOptions options) {}
+
+        /**
+         * Called when exiting fullscreen mode.
+         * @param tab The tab whose content is exiting fullscreen mode.
+         */
+        default void onExitFullscreen(Tab tab) {}
     }
 
     private final Runnable mUpdateVisibilityRunnable = new Runnable() {
@@ -287,49 +301,6 @@ public class ChromeFullscreenManager extends FullscreenManager
             }
 
             @Override
-            public void onEnterFullscreenMode(Tab tab, final FullscreenOptions options) {
-                // If enabling fullscreen while the tab is not interactable, fullscreen
-                // * will be delayed until the tab is interactable.
-                if (tab.isUserInteractable()) {
-                    enterPersistentFullscreenMode(options);
-                    destroySelectActionMode(tab);
-                } else {
-                    setEnterFullscreenRunnable(tab, () -> {
-                        enterPersistentFullscreenMode(options);
-                        destroySelectActionMode(tab);
-                        setEnterFullscreenRunnable(tab, null);
-                    });
-                }
-            }
-
-            @Override
-            public void onExitFullscreenMode(Tab tab) {
-                setEnterFullscreenRunnable(tab, null);
-                if (tab == getTab()) exitPersistentFullscreenMode();
-            }
-
-            private void setEnterFullscreenRunnable(Tab tab, Runnable runnable) {
-                TabAttributes attrs = TabAttributes.from(tab);
-                if (runnable == null) {
-                    attrs.clear(TabAttributeKeys.ENTER_FULLSCREEN);
-                } else {
-                    attrs.set(TabAttributeKeys.ENTER_FULLSCREEN, runnable);
-                }
-            }
-
-            private Runnable getEnterFullscreenRunnable(Tab tab) {
-                return tab != null ? TabAttributes.from(tab).get(TabAttributeKeys.ENTER_FULLSCREEN)
-                                   : null;
-            }
-
-            private void destroySelectActionMode(Tab tab) {
-                WebContents webContents = tab.getWebContents();
-                if (webContents != null) {
-                    SelectionPopupController.fromWebContents(webContents).destroySelectActionMode();
-                }
-            }
-
-            @Override
             public void onCrash(Tab tab) {
                 if (tab == getTab() && SadTab.isShowing(tab)) showAndroidControls(false);
             }
@@ -395,6 +366,49 @@ public class ChromeFullscreenManager extends FullscreenManager
         if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
             setPositionsForTabToNonFullscreen();
         }
+    }
+
+    public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+        // If enabling fullscreen while the tab is not interactable, fullscreen
+        // will be delayed until the tab is interactable.
+        if (tab.isUserInteractable()) {
+            enterPersistentFullscreenMode(options);
+            destroySelectActionMode(tab);
+        } else {
+            setEnterFullscreenRunnable(tab, () -> {
+                enterPersistentFullscreenMode(options);
+                destroySelectActionMode(tab);
+                setEnterFullscreenRunnable(tab, null);
+            });
+        }
+
+        for (FullscreenListener listener : mListeners) listener.onEnterFullscreen(tab, options);
+    }
+
+    public void onExitFullscreen(Tab tab) {
+        setEnterFullscreenRunnable(tab, null);
+        if (tab == getTab()) exitPersistentFullscreenMode();
+        for (FullscreenListener listener : mListeners) listener.onExitFullscreen(tab);
+    }
+
+    private void destroySelectActionMode(Tab tab) {
+        WebContents webContents = tab.getWebContents();
+        if (webContents != null) {
+            SelectionPopupController.fromWebContents(webContents).destroySelectActionMode();
+        }
+    }
+
+    private void setEnterFullscreenRunnable(Tab tab, Runnable runnable) {
+        TabAttributes attrs = TabAttributes.from(tab);
+        if (runnable == null) {
+            attrs.clear(TabAttributeKeys.ENTER_FULLSCREEN);
+        } else {
+            attrs.set(TabAttributeKeys.ENTER_FULLSCREEN, runnable);
+        }
+    }
+
+    private Runnable getEnterFullscreenRunnable(Tab tab) {
+        return tab != null ? TabAttributes.from(tab).get(TabAttributeKeys.ENTER_FULLSCREEN) : null;
     }
 
     private void updateViewStateListener() {

@@ -231,7 +231,7 @@ class MCSProbe {
 
   std::unique_ptr<network::NetworkContext> network_context_;
   mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -371,7 +371,7 @@ void MCSProbe::InitializeNetworkState() {
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory_),
+      url_loader_factory_.BindNewPipeAndPassReceiver(),
       std::move(url_loader_factory_params));
   shared_url_loader_factory_ =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

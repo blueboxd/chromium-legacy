@@ -315,8 +315,7 @@ class TraceEventDataSourceTest : public testing::Test {
                         uint64_t id = 0,
                         int64_t absolute_timestamp = 0,
                         int32_t tid_override = 0,
-                        int32_t pid_override = 0,
-                        int64_t duration = 0) {
+                        int32_t pid_override = 0) {
     EXPECT_TRUE(packet->has_track_event());
 
     if (absolute_timestamp > 0) {
@@ -344,12 +343,41 @@ class TraceEventDataSourceTest : public testing::Test {
       EXPECT_EQ(packet->track_event().category_iids_size(), 0);
     }
 
-    EXPECT_TRUE(packet->track_event().has_legacy_event());
+    EXPECT_EQ(packet->track_event().name_iid(), name_iid);
 
+    TrackEvent::Type track_event_type;
+    switch (phase) {
+      case TRACE_EVENT_PHASE_BEGIN:
+        track_event_type = TrackEvent::TYPE_SLICE_BEGIN;
+        break;
+      case TRACE_EVENT_PHASE_END:
+        track_event_type = TrackEvent::TYPE_SLICE_END;
+        break;
+      case TRACE_EVENT_PHASE_INSTANT:
+        track_event_type = TrackEvent::TYPE_INSTANT;
+        break;
+      default:
+        track_event_type = TrackEvent::TYPE_UNSPECIFIED;
+        break;
+    }
+
+    if (track_event_type != TrackEvent::TYPE_UNSPECIFIED) {
+      EXPECT_EQ(packet->track_event().type(), track_event_type);
+    }
+
+    // We don't emit the legacy event if we don't need it.
+    if (track_event_type != TrackEvent::TYPE_UNSPECIFIED && !flags &&
+        !tid_override && !pid_override) {
+      EXPECT_FALSE(packet->track_event().has_legacy_event());
+      return;
+    }
+
+    EXPECT_TRUE(packet->track_event().has_legacy_event());
     const auto& legacy_event = packet->track_event().legacy_event();
-    EXPECT_EQ(legacy_event.name_iid(), name_iid);
-    EXPECT_EQ(legacy_event.phase(), phase);
-    EXPECT_EQ(legacy_event.duration_us(), duration);
+
+    if (track_event_type == TrackEvent::TYPE_UNSPECIFIED) {
+      EXPECT_EQ(legacy_event.phase(), phase);
+    }
 
     if (phase == TRACE_EVENT_PHASE_INSTANT) {
       switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
@@ -1435,7 +1463,7 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnInstant) {
 
   auto* e_packet = producer_client()->GetFinalizedPacket(1);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
-                   TRACE_EVENT_PHASE_INSTANT);
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
 
   ExpectEventCategories(e_packet, {{1u, "browser"}});
   ExpectEventNames(e_packet, {{1u, "bar"}});

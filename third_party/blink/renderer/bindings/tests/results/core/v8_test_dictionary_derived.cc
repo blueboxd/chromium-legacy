@@ -184,7 +184,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
 }
 
 TestDictionaryDerivedImplementedAs* NativeValueTraits<TestDictionaryDerivedImplementedAs>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestDictionaryDerivedImplementedAs* impl = TestDictionaryDerivedImplementedAs::Create();
+  TestDictionaryDerivedImplementedAs* impl = MakeGarbageCollected<TestDictionaryDerivedImplementedAs>();
   V8TestDictionaryDerivedImplementedAs::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }

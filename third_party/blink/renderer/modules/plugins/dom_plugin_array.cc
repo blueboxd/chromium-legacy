@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/modules/plugins/dom_mime_type_array.h"
 #include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -55,8 +56,8 @@ DOMPlugin* DOMPluginArray::item(unsigned index) {
     return nullptr;
 
   if (!dom_plugins_[index]) {
-    dom_plugins_[index] =
-        DOMPlugin::Create(GetFrame(), *GetPluginData()->Plugins()[index]);
+    dom_plugins_[index] = MakeGarbageCollected<DOMPlugin>(
+        GetFrame(), *GetPluginData()->Plugins()[index]);
   }
 
   return dom_plugins_[index];

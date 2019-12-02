@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
+
 from .argument import Argument
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
@@ -10,6 +12,7 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
+from .composition_parts import WithOwnerMixin
 from .exposure import Exposure
 from .function_like import FunctionLike
 from .function_like import OverloadGroup
@@ -18,11 +21,12 @@ from .make_copy import make_copy
 
 
 class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
-                WithExposure, WithOwner, WithComponent, WithDebugInfo):
+                WithExposure, WithOwner, WithOwnerMixin, WithComponent,
+                WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-operations"""
 
     class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithExposure, WithComponent, WithDebugInfo):
+             WithExposure, WithOwnerMixin, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      arguments,
@@ -40,7 +44,8 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithOwnerMixin.__init__(self)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_stringifier = False
@@ -49,13 +54,13 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         assert isinstance(ir, Operation.IR)
 
         FunctionLike.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithOwnerMixin.__init__(self, ir)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
         self._is_stringifier = ir.is_stringifier
 
@@ -65,7 +70,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
 
 
 class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
-                     WithOwner, WithDebugInfo):
+                     WithOwner, WithComponent, WithDebugInfo):
     """
     Represents a group of operations with the same identifier.
 
@@ -92,10 +97,14 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
         assert all(
             operation.identifier == ir.identifier for operation in operations)
 
+        components = functools.reduce(
+            lambda s, operation: s.union(operation.components), operations,
+            set())
+
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=operations)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithComponent.__init__(self, sorted(components))
+        WithDebugInfo.__init__(self, ir)

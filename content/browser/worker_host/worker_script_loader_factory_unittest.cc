@@ -107,8 +107,8 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 
   // The container host should be set up.
-  ServiceWorkerContainerHost* container_host =
-      service_worker_handle_->core()->provider_host()->container_host();
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      service_worker_handle_->core()->container_host();
   EXPECT_TRUE(container_host->is_response_committed());
   EXPECT_TRUE(container_host->is_execution_ready());
   EXPECT_EQ(url, container_host->url());

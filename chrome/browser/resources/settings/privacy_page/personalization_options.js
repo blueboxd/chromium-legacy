@@ -98,6 +98,14 @@ Polymer({
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
+
+    // Even though we already set checked="[[getCheckedLeakDetection_(...)]]"
+    // in the DOM, this might be overridden within prefValueChanged_ of
+    // SettingsBooleanControlBehaviorImpl which gets invoked once we navigate to
+    // sync_page.html. Re-computing the checked value here once fixes this
+    // problem.
+    this.$.passwordsLeakDetectionCheckbox.checked =
+        this.getCheckedLeakDetection_();
   },
 
   /**

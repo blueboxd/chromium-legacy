@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -212,8 +213,10 @@ int32_t PepperUMAHost::OnIsCrashReportingEnabled(
   if (!IsPluginWhitelisted())
     return PP_ERROR_NOACCESS;
   bool enabled = false;
-  content::RenderThread::Get()->Send(
-      new ChromeViewHostMsg_IsCrashReportingEnabled(&enabled));
+  mojo::Remote<chrome::mojom::MetricsService> metrics_service;
+  content::RenderThread::Get()->BindHostReceiver(
+      metrics_service.BindNewPipeAndPassReceiver());
+  metrics_service->IsMetricsAndCrashReportingEnabled(&enabled);
   if (enabled)
     return PP_OK;
   return PP_ERROR_FAILED;

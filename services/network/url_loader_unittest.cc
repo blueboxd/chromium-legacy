@@ -2134,6 +2134,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
   // followed. It should have no added Sec- headers as it is not trustworthy.
   const auto& request_headers1 = sent_request().headers;
   EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-Site"));
+  EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Now follow the redirect to the final destination and validate again.
   loader->FollowRedirect({}, {}, base::nullopt);
@@ -2144,6 +2145,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
   // a trustworthy url again.
   const auto& request_headers2 = sent_request().headers;
   EXPECT_EQ("cross-site", request_headers2.find("Sec-Fetch-Site")->second);
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-User"));
 }
 
 // Validate Sec- prefixed headers are properly handled when redirecting from
@@ -2188,6 +2190,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
   EXPECT_EQ("Value2", request_headers1.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers1.find("Other-Header")->second);
   EXPECT_EQ("same-origin", request_headers1.find("Sec-Fetch-Site")->second);
+  EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Now follow the redirect to the final destination and validate again.
   loader->FollowRedirect({}, {}, base::nullopt);
@@ -2201,6 +2204,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
   EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
   EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-User"));
 }
 
 // Validate Sec- prefixed headers are properly handled when redirecting from
@@ -2247,6 +2251,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   EXPECT_EQ("Value2", request_headers1.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers1.find("Other-Header")->second);
   EXPECT_EQ("same-origin", request_headers1.find("Sec-Fetch-Site")->second);
+  EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Follow our redirect and then verify again.
   loader->FollowRedirect({}, {}, base::nullopt);
@@ -2261,6 +2266,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
   EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-User"));
 
   // Now follow the final redirect back to a trustworthy destination and
   // re-validate.
@@ -2273,6 +2279,71 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   EXPECT_EQ("Value2", request_headers3.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers3.find("Other-Header")->second);
   EXPECT_EQ("cross-site", request_headers3.find("Sec-Fetch-Site")->second);
+  EXPECT_EQ(request_headers3.end(), request_headers3.find("Sec-Fetch-User"));
+}
+
+// Validate Sec-Fetch-User header is properly handled.
+TEST_F(URLLoaderTest, RedirectSecHeadersUser) {
+  GURL url = test_server()->GetURL("/server-redirect?" +
+                                   test_server()->GetURL("/echo").spec());
+
+  // Add some initial headers to ensure the right ones are removed and
+  // everything else is left alone.
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.trusted_params->has_user_activation = true;
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */);
+
+  client()->RunUntilRedirectReceived();
+
+  const auto& request_headers = sent_request().headers;
+  EXPECT_EQ("same-origin", request_headers.find("Sec-Fetch-Site")->second);
+  EXPECT_EQ("?1", request_headers.find("Sec-Fetch-User")->second);
+}
+
+// Validate Sec-Fetch-User header cannot be modified by manually set the value.
+TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
+  GURL url = test_server()->GetURL("/server-redirect?" +
+                                   test_server()->GetURL("/echo").spec());
+
+  // Try to modify `Sec-Fetch-User` directly.
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.headers.SetHeader("Sec-Fetch-User", "?1");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, 0 /* keepalive_request_size */,
+      resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */);
+
+  client()->RunUntilRedirectReceived();
+
+  const auto& request_headers = sent_request().headers;
+  EXPECT_EQ(request_headers.end(), request_headers.find("Sec-Fetch-User"));
 }
 
 // A mock URLRequestJob which simulates an HTTPS request with a certificate

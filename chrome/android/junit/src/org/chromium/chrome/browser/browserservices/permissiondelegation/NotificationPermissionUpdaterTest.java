@@ -65,8 +65,8 @@ public class NotificationPermissionUpdaterTest {
 
         PackageManager pm = RuntimeEnvironment.application.getPackageManager();
         mShadowPackageManager = shadowOf(pm);
-        mNotificationPermissionUpdater = new NotificationPermissionUpdater(
-                RuntimeEnvironment.application, mPermissionManager, mTrustedWebActivityClient);
+        mNotificationPermissionUpdater =
+                new NotificationPermissionUpdater(mPermissionManager, mTrustedWebActivityClient);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionNotUpdated() {
-        verify(mPermissionManager, never()).register(any(), anyString(), anyBoolean());
+        verify(mPermissionManager, never()).updatePermission(any(), anyString(), anyBoolean());
     }
 
     private void verifyPermissionUpdated(boolean enabled) {
@@ -237,7 +237,7 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionUpdated(String packageName, boolean enabled) {
-        verify(mPermissionManager).register(eq(ORIGIN), eq(packageName), eq(enabled));
+        verify(mPermissionManager).updatePermission(eq(ORIGIN), eq(packageName), eq(enabled));
     }
 
     private void verifyPermissionUnregistered() {

@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -517,6 +518,18 @@ public class WebsitePreferenceBridge {
                 contentSettingType, pattern, setting);
     }
 
+    public static boolean isQuietNotificationsUiEnabled() {
+        return WebsitePreferenceBridgeJni.get().getQuietNotificationsUiEnabled(getProfile());
+    }
+
+    public static void setQuietNotificationsUiEnabled(boolean enabled) {
+        WebsitePreferenceBridgeJni.get().setQuietNotificationsUiEnabled(getProfile(), enabled);
+    }
+
+    private static Profile getProfile() {
+        return Profile.getLastUsedProfile().getOriginalProfile();
+    }
+
     @VisibleForTesting
     @NativeMethods
     public interface Natives {
@@ -608,5 +621,7 @@ public class WebsitePreferenceBridge {
         void setNfcEnabled(boolean enabled);
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
+        boolean getQuietNotificationsUiEnabled(Profile profile);
+        void setQuietNotificationsUiEnabled(Profile profile, boolean enabled);
     }
 }

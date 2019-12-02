@@ -36,10 +36,6 @@ class DOMPlugin final : public ScriptWrappable, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMPlugin* Create(LocalFrame* frame, const PluginInfo& plugin_info) {
-    return MakeGarbageCollected<DOMPlugin>(frame, plugin_info);
-  }
-
   DOMPlugin(LocalFrame*, const PluginInfo&);
 
   String name() const;

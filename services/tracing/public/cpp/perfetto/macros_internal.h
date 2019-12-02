@@ -18,7 +18,8 @@ namespace internal {
 base::Optional<base::trace_event::TraceEvent> COMPONENT_EXPORT(TRACING_CPP)
     CreateTraceEvent(char phase,
                      const unsigned char* category_group_enabled,
-                     const char* name);
+                     const char* name,
+                     unsigned int flags);
 
 // A simple function that will add the TraceEvent requested and will call the
 // |argument_func| after the track_event has been filled in.
@@ -28,9 +29,11 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    unsigned int flags,
     TrackEventArgumentFunction argument_func) {
   base::trace_event::TraceEventHandle handle = {0, 0, 0};
-  auto maybe_event = CreateTraceEvent(phase, category_group_enabled, name);
+  auto maybe_event =
+      CreateTraceEvent(phase, category_group_enabled, name, flags);
   if (!maybe_event) {
     return handle;
   }
@@ -49,14 +52,14 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 #define TRACING_INTERNAL_CONCAT(a, b) TRACING_INTERNAL_CONCAT2(a, b)
 #define TRACING_INTERNAL_UID(prefix) TRACING_INTERNAL_CONCAT(prefix, __LINE__)
 
-#define TRACING_INTERNAL_ADD_TRACE_EVENT(phase, category, name, ...)     \
-  do {                                                                   \
-    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category);                    \
-    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED()) {                 \
-      tracing::internal::AddTraceEvent(                                  \
-          phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), name, \
-          ##__VA_ARGS__);                                                \
-    }                                                                    \
+#define TRACING_INTERNAL_ADD_TRACE_EVENT(phase, category, name, flags, ...) \
+  do {                                                                      \
+    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category);                       \
+    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED()) {                    \
+      tracing::internal::AddTraceEvent(                                     \
+          phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,    \
+          flags, ##__VA_ARGS__);                                            \
+    }                                                                       \
   } while (false)
 
 #define TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ...)          \
@@ -74,12 +77,13 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
         /* field. As described in macros.h we shouldn't need it in our */     \
         /* end state                                                   */     \
         TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_END, category, "", \
+                                         TRACE_EVENT_FLAG_NONE,               \
                                          [](perfetto::EventContext) {});      \
       }                                                                       \
     } event;                                                                  \
   } TRACING_INTERNAL_UID(scoped_event){[&]() {                                \
     TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_BEGIN, category, name, \
-                                     ##__VA_ARGS__);                          \
+                                     TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__);   \
     return 0;                                                                 \
   }()};
 

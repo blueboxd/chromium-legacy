@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class ReadableStreamDefaultControllerInterface;
+class ReadableStreamDefaultControllerWithScriptScope;
 
 class CORE_EXPORT UnderlyingSourceBase
     : public ScriptWrappable,
@@ -48,12 +48,12 @@ class CORE_EXPORT UnderlyingSourceBase
   explicit UnderlyingSourceBase(ScriptState* script_state)
       : ContextLifecycleObserver(ExecutionContext::From(script_state)) {}
 
-  ReadableStreamDefaultControllerInterface* Controller() const {
+  ReadableStreamDefaultControllerWithScriptScope* Controller() const {
     return controller_;
   }
 
  private:
-  Member<ReadableStreamDefaultControllerInterface> controller_;
+  Member<ReadableStreamDefaultControllerWithScriptScope> controller_;
 };
 
 }  // namespace blink

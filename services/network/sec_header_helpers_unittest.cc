@@ -24,6 +24,7 @@ constexpr char kInsecureSite[] = "http://othersite.tld";
 constexpr char kKnownSecChHeader[] = "Sec-CH-UA";
 constexpr char kKnownSecFetchSiteHeader[] = "Sec-Fetch-Site";
 constexpr char kKnownSecFetchModeHeader[] = "Sec-Fetch-Mode";
+constexpr char kKnownSecFetchUserHeader[] = "Sec-Fetch-User";
 constexpr char kOtherSecHeader[] = "sec-other-info-header";
 constexpr char kOtherHeader[] = "Other-Header";
 
@@ -168,7 +169,8 @@ TEST_F(SecHeaderHelpersTest, UnprivilegedRequestOnExtension) {
       url::Origin::Create(url);
 
   SetFetchMetadataHeaders(current_url_request,
-                          network::mojom::RequestMode::kCors, &url, params);
+                          network::mojom::RequestMode::kCors, false, &url,
+                          params);
   ASSERT_EQ(2, static_cast<int>(current_url_request->extra_request_headers()
                                     .GetHeaderVector()
                                     .size()));
@@ -203,8 +205,9 @@ TEST_F(SecHeaderHelpersTest, PrivilegedRequestOnExtension) {
           mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
 
   SetFetchMetadataHeaders(current_url_request,
-                          network::mojom::RequestMode::kCors, &url, params);
-  ASSERT_EQ(2, static_cast<int>(current_url_request->extra_request_headers()
+                          network::mojom::RequestMode::kCors, true, &url,
+                          params);
+  ASSERT_EQ(3, static_cast<int>(current_url_request->extra_request_headers()
                                     .GetHeaderVector()
                                     .size()));
 
@@ -216,6 +219,10 @@ TEST_F(SecHeaderHelpersTest, PrivilegedRequestOnExtension) {
   ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
       kKnownSecFetchModeHeader, &header_value));
   ASSERT_EQ(header_value, "cors");
+
+  ASSERT_TRUE(current_url_request->extra_request_headers().GetHeader(
+      kKnownSecFetchUserHeader, &header_value));
+  ASSERT_EQ(header_value, "?1");
 }
 
 }  // namespace network

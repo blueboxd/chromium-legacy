@@ -28,7 +28,7 @@
 
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
 #include "third_party/blink/renderer/core/frame/navigator_device_memory.h"
 #include "third_party/blink/renderer/core/frame/navigator_id.h"
@@ -44,6 +44,7 @@ namespace blink {
 class CORE_EXPORT WorkerNavigator final
     : public ScriptWrappable,
       public AcceptLanguagesWatcher,
+      public ContextClient,
       public NavigatorConcurrentHardware,
       public NavigatorDeviceMemory,
       public NavigatorID,
@@ -54,7 +55,7 @@ class CORE_EXPORT WorkerNavigator final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 
  public:
-  explicit WorkerNavigator(const String&, ExecutionContext* context);
+  explicit WorkerNavigator(const String&, ExecutionContext* execution_context);
   ~WorkerNavigator() override;
 
   // NavigatorID override

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -2154,85 +2153,6 @@ TEST_P(MainThreadSchedulerImplTest, GetContinuationTaskRunner) {
 TEST_P(MainThreadSchedulerImplTest,
        GetContinuationTaskRunnerWithNoTaskRunning) {
   EXPECT_DCHECK_DEATH(base::GetContinuationTaskRunner());
-}
-
-class MainThreadSchedulerImplWithMessageLoopTest
-    : public MainThreadSchedulerImplTest {
- public:
-  MainThreadSchedulerImplWithMessageLoopTest()
-      : message_loop_(new base::MessageLoop()) {}
-  ~MainThreadSchedulerImplWithMessageLoopTest() override = default;
-
-  void SetUp() override {
-    clock_.Advance(base::TimeDelta::FromMilliseconds(5));
-    Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
-            base::sequence_manager::SequenceManager::Settings::Builder()
-                .SetTickClock(&clock_)
-                .SetAntiStarvationLogicForPrioritiesDisabled(
-                    GetParam() == AntiStarvationLogic::kDisabled)
-                .Build()),
-        base::nullopt));
-  }
-
-  // Needed for EnableIdleTasks().
-  base::TimeTicks Now() override { return clock_.NowTicks(); }
-
-  void PostFromNestedRunloop(
-      Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>* tasks) {
-    for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
-      if (pair.second) {
-        idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
-      } else {
-        idle_task_runner_->PostNonNestableIdleTask(FROM_HERE,
-                                                   std::move(pair.first));
-      }
-    }
-    EnableIdleTasks();
-    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-  }
-
- private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  base::SimpleTestTickClock clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplWithMessageLoopTest);
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         MainThreadSchedulerImplWithMessageLoopTest,
-                         testing::Values(AntiStarvationLogic::kEnabled,
-                                         AntiStarvationLogic::kDisabled),
-                         GetTestNameSuffix);
-
-TEST_P(MainThreadSchedulerImplWithMessageLoopTest,
-       NonNestableIdleTaskDoesntExecuteInNestedLoop) {
-  Vector<String> order;
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "1"));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "2"));
-
-  Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
-      tasks_to_post_from_nested_loop;
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "3"), false));
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "4"), true));
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, "5"), true));
-
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &MainThreadSchedulerImplWithMessageLoopTest::PostFromNestedRunloop,
-          base::Unretained(this),
-          base::Unretained(&tasks_to_post_from_nested_loop)));
-
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-  // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre("1", "2", "4", "5", "3"));
 }
 
 TEST_P(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {

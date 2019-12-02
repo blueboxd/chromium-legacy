@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.StateProperty;
@@ -116,9 +117,11 @@ class ManualFillingMediator extends EmptyTabObserver
             pause();
             refreshTabs();
         }
+    };
 
+    private final FullscreenListener mFullscreenListener = new FullscreenListener() {
         @Override
-        public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+        public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
             pause();
         }
     };
@@ -155,6 +158,7 @@ class ManualFillingMediator extends EmptyTabObserver
                 mStateCache.destroyStateFor(tab);
             }
         };
+        mActivity.getFullscreenManager().addListener(mFullscreenListener);
         ensureObserverRegistered(getActiveBrowserTab());
         refreshTabs();
     }
@@ -234,6 +238,7 @@ class ManualFillingMediator extends EmptyTabObserver
         mObservedTabs.clear();
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
+        mActivity.getFullscreenManager().removeListener(mFullscreenListener);
         mWindowAndroid = null;
         mActivity = null;
     }

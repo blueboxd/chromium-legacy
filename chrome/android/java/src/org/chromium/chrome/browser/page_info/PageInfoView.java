@@ -27,9 +27,8 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.TintedDrawable;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -333,16 +332,10 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
                 (TextView) permissionRow.findViewById(R.id.page_info_permission_status);
         permissionStatus.setText(params.status);
 
-        ImageView permissionIcon =
-                (ImageView) permissionRow.findViewById(R.id.page_info_permission_icon);
-        if (params.iconTintColorResource == 0) {
-            permissionIcon.setImageDrawable(
-                    TintedDrawable.constructTintedDrawable(getContext(), params.iconResource));
-        } else {
-            permissionIcon.setImageResource(params.iconResource);
-            permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
-                    getContext().getResources(), params.iconTintColorResource));
-        }
+        ImageView permissionIcon = permissionRow.findViewById(R.id.page_info_permission_icon);
+        permissionIcon.setImageDrawable(UiUtils.getTintedDrawable(getContext(), params.iconResource,
+                params.iconTintColorResource != 0 ? params.iconTintColorResource
+                                                  : R.color.default_icon_color));
 
         if (params.warningTextResource != 0) {
             TextView permissionUnavailable = (TextView) permissionRow.findViewById(

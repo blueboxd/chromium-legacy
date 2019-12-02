@@ -16,11 +16,6 @@ class CORE_EXPORT CSPViolationReportBody : public LocationReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSPViolationReportBody* Create(
-      const SecurityPolicyViolationEventInit& violation_data) {
-    return MakeGarbageCollected<CSPViolationReportBody>(violation_data);
-  }
-
   CSPViolationReportBody(const SecurityPolicyViolationEventInit& violation_data)
       : LocationReportBody(
             SourceLocation::Capture(violation_data.sourceFile(),

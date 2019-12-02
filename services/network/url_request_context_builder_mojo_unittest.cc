@@ -77,8 +77,8 @@ TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
       test_mojo_proxy_resolver_factory_.CreateFactoryRemote());
 
 #if defined(OS_CHROMEOS)
-  builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(
-      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string())));
+  builder_.SetDhcpWpadUrlClient(
+      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string()));
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
@@ -113,8 +113,8 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
       test_mojo_proxy_resolver_factory_.CreateFactoryRemote());
 
 #if defined(OS_CHROMEOS)
-  builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(
-      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string())));
+  builder_.SetDhcpWpadUrlClient(
+      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string()));
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());

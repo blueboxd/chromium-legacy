@@ -10,7 +10,6 @@ import android.view.ContextMenu;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -208,19 +207,6 @@ public interface TabObserver {
      * @param url The new URL.
      */
     void onUpdateUrl(Tab tab, String url);
-
-    /**
-     * Called when the {@link Tab} should enter fullscreen mode.
-     * @param tab    The notifying {@link Tab}.
-     * @param options Options to adjust fullscreen mode.
-     */
-    void onEnterFullscreenMode(Tab tab, FullscreenOptions options);
-
-    /**
-     * Called when the {@link Tab} should exit fullscreen mode.
-     * @param tab    The notifying {@link Tab}.
-     */
-    void onExitFullscreenMode(Tab tab);
 
     // WebContentsObserver methods ---------------------------------------------------------
 

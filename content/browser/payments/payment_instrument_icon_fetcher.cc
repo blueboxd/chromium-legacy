@@ -107,14 +107,14 @@ void DownloadBestMatchingIcon(
   DCHECK(can_download_icon);
 }
 
-WebContents* GetWebContentsFromProviderHostIds(
+WebContents* GetWebContentsFromFrameRoutingIds(
     const GURL& scope,
-    std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts) {
+    std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (const auto& host : *provider_hosts) {
+  for (const auto& ids : *frame_routing_ids) {
     RenderFrameHostImpl* render_frame_host =
-        RenderFrameHostImpl::FromID(host.child_id, host.frame_routing_id);
+        RenderFrameHostImpl::FromID(ids.child_id, ids.frame_routing_id);
     if (!render_frame_host)
       continue;
 
@@ -132,14 +132,14 @@ WebContents* GetWebContentsFromProviderHostIds(
 
 void StartOnUI(
     const GURL& scope,
-    std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts,
+    std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids,
     const std::vector<blink::Manifest::ImageResource>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents =
-      GetWebContentsFromProviderHostIds(scope, std::move(provider_hosts));
+      GetWebContentsFromFrameRoutingIds(scope, std::move(frame_routing_ids));
   DownloadBestMatchingIcon(web_contents, icons, std::move(callback));
 }
 

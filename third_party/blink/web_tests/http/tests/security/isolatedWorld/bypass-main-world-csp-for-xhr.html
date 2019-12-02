@@ -18,19 +18,13 @@ var tests = [
     },
     function() {
         debug('XHR from isolated world with unchanged CSP');
-        // Clear any existing isolated world CSP or security origin.
-        testRunner.setIsolatedWorldInfo(1, null, null);
+        testRunner.setIsolatedWorldInfo(1, window.origin, null);
         runTestInWorld(1, 'xhr', 'true');
     },
     function() {
-        debug('XHR from isolated world with same security origin as XHR target.');
-        testRunner.setIsolatedWorldInfo(2, 'http://localhost:8000', null);
-        runTestInWorld(2, 'xhr', 'true');
-    },
-    function() {
-        debug('XHR from isolated world with same security origin as XHR target, and looser CSP.');
-        testRunner.setIsolatedWorldInfo(3, 'http://localhost:8000', 'connect-src *');
-        runTestInWorld(3, 'xhr', 'false');
+        debug('XHR from isolated world with looser CSP');
+        testRunner.setIsolatedWorldInfo(2, window.origin, 'connect-src *');
+        runTestInWorld(2, 'xhr', 'false');
     },
     function() {
         debug('XHR from main world is not affected by the isolated world origin or CSP');
@@ -51,7 +45,6 @@ if (window.testRunner) {
                     if (currentTest == tests.length) {
                         testRunner.setIsolatedWorldInfo(1, null, null);
                         testRunner.setIsolatedWorldInfo(2, null, null);
-                        testRunner.setIsolatedWorldInfo(3, null, null);
                         finishJSTest();
                     }
                     else
@@ -94,7 +87,7 @@ function xhr(shouldBlock)
 
     var xhr = new XMLHttpRequest();
     try {
-        xhr.open('GET', 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt', true);
+        xhr.open('GET', '/security/isolatedWorld/resources/empty.html', true);
         xhr.onload = function(response) {
             if (shouldBlock)
                 debug('FAIL: The request should have been disallowed');

@@ -47,14 +47,6 @@ class MIDIOutput final : public MIDIPort {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIOutput* Create(MIDIAccess*,
-                            unsigned port_index,
-                            const String& id,
-                            const String& manufacturer,
-                            const String& name,
-                            const String& version,
-                            midi::mojom::PortState);
-
   MIDIOutput(MIDIAccess*,
              unsigned port_index,
              const String& id,

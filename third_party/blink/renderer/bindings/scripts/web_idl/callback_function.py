@@ -47,11 +47,10 @@ class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
         FunctionLike.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
     # UserDefinedType overrides
     @property

@@ -390,7 +390,7 @@ void PerUserTopicRegistrationManager::ScheduleRequestForRepetition(
   registration_statuses_[topic]->completion_callback = base::BindOnce(
       &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
       base::Unretained(this));
-  // TODO(treib): We already called InformOfRequest(false) before in
+  // TODO(crbug.com/1020117): We already called InformOfRequest(false) before in
   // RegistrationFinishedForTopic(), should probably not call it again here?
   registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
   registration_statuses_[topic]->request_retry_timer_.Start(
@@ -448,7 +448,7 @@ void PerUserTopicRegistrationManager::RemoveObserver(Observer* observer) {
 }
 
 void PerUserTopicRegistrationManager::RequestAccessToken() {
-  // TODO(melandory): Implement traffic optimisation.
+  // TODO(crbug.com/1020117): Implement traffic optimisation.
   // * Before sending request to server ask for access token from identity
   //   provider (don't invalidate previous token).
   //   Identity provider will take care of retrieving/caching.
@@ -524,7 +524,7 @@ PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange() {
   topic_to_private_topic_.clear();
   private_topic_to_topic_.clear();
   return TokenStateOnRegistrationRequest::kTokenChanged;
-  // TODO(melandory): Figure out if the unsubscribe request should be
+  // TODO(crbug.com/1020117): Figure out if the unsubscribe request should be
   // sent with the old token.
 }
 

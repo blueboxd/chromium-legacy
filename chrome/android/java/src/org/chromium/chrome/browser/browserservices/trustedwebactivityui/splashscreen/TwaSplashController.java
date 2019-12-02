@@ -97,7 +97,8 @@ public class TwaSplashController
         mFinishHandler = finishHandler;
 
         long splashHideAnimationDurationMs = IntentUtils.safeGetInt(
-                getSplashScreenParamsFromIntent(), SplashScreenParamKey.FADE_OUT_DURATION_MS, 0);
+                getSplashScreenParamsFromIntent(), SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS,
+                0);
         boolean isWindowInitiallyTranslucent = mActivity instanceof TranslucentCustomTabActivity;
         mSplashController.setConfig(
                 this, isWindowInitiallyTranslucent, splashHideAnimationDurationMs);
@@ -162,11 +163,12 @@ public class TwaSplashController
     private void applyCustomizationsToSplashScreenView(ImageView imageView) {
         Bundle params = getSplashScreenParamsFromIntent();
 
-        int backgroundColor =
-                IntentUtils.safeGetInt(params, SplashScreenParamKey.BACKGROUND_COLOR, Color.WHITE);
+        int backgroundColor = IntentUtils.safeGetInt(params,
+                SplashScreenParamKey.KEY_BACKGROUND_COLOR, Color.WHITE);
         imageView.setBackgroundColor(ColorUtils.getOpaqueColor(backgroundColor));
 
-        int scaleTypeOrdinal = IntentUtils.safeGetInt(params, SplashScreenParamKey.SCALE_TYPE, -1);
+        int scaleTypeOrdinal = IntentUtils.safeGetInt(params,
+                SplashScreenParamKey.KEY_SCALE_TYPE, -1);
         ImageView.ScaleType[] scaleTypes = ImageView.ScaleType.values();
         ImageView.ScaleType scaleType;
         if (scaleTypeOrdinal < 0 || scaleTypeOrdinal >= scaleTypes.length) {
@@ -178,7 +180,7 @@ public class TwaSplashController
 
         if (scaleType != ImageView.ScaleType.MATRIX) return;
         float[] matrixValues = IntentUtils.safeGetFloatArray(
-                params, SplashScreenParamKey.IMAGE_TRANSFORMATION_MATRIX);
+                params, SplashScreenParamKey.KEY_IMAGE_TRANSFORMATION_MATRIX);
         if (matrixValues == null || matrixValues.length != 9) return;
         Matrix matrix = new Matrix();
         matrix.setValues(matrixValues);

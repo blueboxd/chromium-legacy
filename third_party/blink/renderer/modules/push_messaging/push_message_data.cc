@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "v8/include/v8.h"
@@ -71,7 +72,7 @@ Blob* PushMessageData::blob() const {
   // provided, following the specification.
 
   const uint64_t byte_length = blob_data->length();
-  return Blob::Create(
+  return MakeGarbageCollected<Blob>(
       BlobDataHandle::Create(std::move(blob_data), byte_length));
 }
 

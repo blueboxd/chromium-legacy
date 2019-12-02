@@ -1632,8 +1632,11 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
       return NGBoxFragmentPainter(*paint_fragment)
           .NodeAtPoint(result, hit_test_location, physical_offset, action);
     }
+    const NGFragmentItem* item = cursor.CurrentItem();
+    DCHECK(item);
+    DCHECK_EQ(item->BoxFragment(), &fragment);
     NGInlineCursor descendants = cursor.CursorForDescendants();
-    return NGBoxFragmentPainter(fragment, &descendants)
+    return NGBoxFragmentPainter(*item, fragment, &descendants)
         .NodeAtPoint(result, hit_test_location, physical_offset, action);
   }
 

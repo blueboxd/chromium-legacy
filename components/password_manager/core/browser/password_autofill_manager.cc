@@ -31,18 +31,14 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -210,8 +206,7 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN)
+      identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY)
     return;
   bool success = PreviewSuggestion(GetUsernameFromSuggestion(value));
   DCHECK(success);
@@ -236,14 +231,12 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
         PasswordDropdownSelectedOption::kShowAll,
         password_client_->IsIncognito());
 
-    if (password_client_->GetMetricsRecorder()) {
+    if (password_client_ && password_client_->GetMetricsRecorder()) {
       using UserAction =
           password_manager::PasswordManagerMetricsRecorder::PageLevelUserAction;
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
-  } else if (identifier == autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN) {
-    password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
@@ -314,24 +307,16 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     const base::string16& typed_username,
     int options,
     const gfx::RectF& bounds) {
-  bool show_account_storage_optin = false;
-  if (password_client_) {
-    show_account_storage_optin = password_client_->GetPasswordFeatureManager()
-                                     ->ShouldShowAccountStorageOptIn();
-  }
-
-  if (!fill_data_ && !show_account_storage_optin) {
+  std::vector<autofill::Suggestion> suggestions;
+  if (!fill_data_) {
     // Probably the credential was deleted in the mean time.
     return;
   }
-  std::vector<autofill::Suggestion> suggestions;
-  if (fill_data_) {
-    GetSuggestions(*fill_data_, typed_username, page_favicon_,
-                   (options & autofill::SHOW_ALL) != 0,
-                   (options & autofill::IS_PASSWORD_FIELD) != 0, &suggestions);
-  }
+  GetSuggestions(*fill_data_, typed_username, page_favicon_,
+                 (options & autofill::SHOW_ALL) != 0,
+                 (options & autofill::IS_PASSWORD_FIELD) != 0, &suggestions);
 
-  if (suggestions.empty() && !show_account_storage_optin) {
+  if (suggestions.empty()) {
     autofill_client_->HideAutofillPopup();
     return;
   }
@@ -345,14 +330,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
     metrics_util::LogContextOfShowAllSavedPasswordsShown(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
-  }
-
-  if (show_account_storage_optin) {
-    // TODO(crbug.com/1024332): Add proper (translated) string.
-    autofill::Suggestion suggestion(
-        base::ASCIIToUTF16("Use passwords stored in your Google account"));
-    suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN;
-    suggestions.push_back(suggestion);
   }
 
   metrics_util::LogPasswordDropdownShown(

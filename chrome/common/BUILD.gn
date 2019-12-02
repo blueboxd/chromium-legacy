@@ -724,6 +724,7 @@ mojom("mojo_bindings") {
     "content_settings_agent.mojom",
     "content_settings_manager.mojom",
     "media/webrtc_logging.mojom",
+    "metrics.mojom",
     "navigation_corrector.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",

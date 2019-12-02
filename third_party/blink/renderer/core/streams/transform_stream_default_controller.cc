@@ -6,11 +6,11 @@
 
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_native.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/transform_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -131,7 +131,7 @@ class TransformStreamDefaultController::DefaultTransformAlgorithm final
 };
 
 void TransformStreamDefaultController::SetUp(
-    TransformStreamNative* stream,
+    TransformStream* stream,
     TransformStreamDefaultController* controller,
     StreamAlgorithm* transform_algorithm,
     StreamAlgorithm* flush_algorithm) {
@@ -157,7 +157,7 @@ void TransformStreamDefaultController::SetUp(
 
 v8::Local<v8::Value> TransformStreamDefaultController::SetUpFromTransformer(
     ScriptState* script_state,
-    TransformStreamNative* stream,
+    TransformStream* stream,
     v8::Local<v8::Object> transformer,
     ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#set-up-transform-stream-default-controller-from-transformer
@@ -245,7 +245,7 @@ void TransformStreamDefaultController::Enqueue(
     ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#transform-stream-default-controller-enqueue
   // 1. Let stream be controller.[[controlledTransformStream]].
-  TransformStreamNative* stream = controller->controlled_transform_stream_;
+  TransformStream* stream = controller->controlled_transform_stream_;
 
   // 2. Let readableController be
   //    stream.[[readable]].[[readableStreamController]].
@@ -271,7 +271,7 @@ void TransformStreamDefaultController::Enqueue(
   if (exception_state.HadException()) {
     // a. Perform ! TransformStreamErrorWritableAndUnblockWrite(stream,
     //    enqueueResult.[[Value]]).
-    TransformStreamNative::ErrorWritableAndUnblockWrite(
+    TransformStream::ErrorWritableAndUnblockWrite(
         script_state, stream, exception_state.GetException());
     exception_state.ClearException();
 
@@ -292,7 +292,7 @@ void TransformStreamDefaultController::Enqueue(
     DCHECK(backpressure);
 
     // b. Perform ! TransformStreamSetBackpressure(stream, true).
-    TransformStreamNative::SetBackpressure(script_state, stream, true);
+    TransformStream::SetBackpressure(script_state, stream, true);
   }
 }
 
@@ -303,8 +303,8 @@ void TransformStreamDefaultController::Error(
   // https://streams.spec.whatwg.org/#transform-stream-default-controller-error
   // 1. Perform ! TransformStreamError(controller.[[controlledTransformStream]],
   //    e).
-  TransformStreamNative::Error(script_state,
-                               controller->controlled_transform_stream_, e);
+  TransformStream::Error(script_state, controller->controlled_transform_stream_,
+                         e);
 }
 
 v8::Local<v8::Promise> TransformStreamDefaultController::PerformTransform(
@@ -319,7 +319,7 @@ v8::Local<v8::Promise> TransformStreamDefaultController::PerformTransform(
 
   class RejectFunction final : public PromiseHandlerWithValue {
    public:
-    RejectFunction(ScriptState* script_state, TransformStreamNative* stream)
+    RejectFunction(ScriptState* script_state, TransformStream* stream)
         : PromiseHandlerWithValue(script_state), stream_(stream) {}
 
     v8::Local<v8::Value> CallWithLocal(v8::Local<v8::Value> r) override {
@@ -328,7 +328,7 @@ v8::Local<v8::Promise> TransformStreamDefaultController::PerformTransform(
       //    steps:
       //    a. Perform ! TransformStreamError(controller.
       //       [[controlledTransformStream]], r).
-      TransformStreamNative::Error(GetScriptState(), stream_, r);
+      TransformStream::Error(GetScriptState(), stream_, r);
 
       //    b. Throw r.
       return PromiseReject(GetScriptState(), r);
@@ -340,7 +340,7 @@ v8::Local<v8::Promise> TransformStreamDefaultController::PerformTransform(
     }
 
    private:
-    Member<TransformStreamNative> stream_;
+    Member<TransformStream> stream_;
   };
 
   // 2. Return the result of transforming transformPromise ...
@@ -355,7 +355,7 @@ void TransformStreamDefaultController::Terminate(
     TransformStreamDefaultController* controller) {
   // https://streams.spec.whatwg.org/#transform-stream-default-controller-terminate
   // 1. Let stream be controller.[[controlledTransformStream]].
-  TransformStreamNative* stream = controller->controlled_transform_stream_;
+  TransformStream* stream = controller->controlled_transform_stream_;
 
   // 2. Let readableController be
   //    stream.[[readable]].[[readableStreamController]].
@@ -376,8 +376,7 @@ void TransformStreamDefaultController::Terminate(
       script_state->GetIsolate(), "The transform stream has been terminated"));
 
   // 5. Perform ! TransformStreamErrorWritableAndUnblockWrite(stream, error).
-  TransformStreamNative::ErrorWritableAndUnblockWrite(script_state, stream,
-                                                      error);
+  TransformStream::ErrorWritableAndUnblockWrite(script_state, stream, error);
 }
 
 }  // namespace blink

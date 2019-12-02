@@ -124,11 +124,6 @@ V4L2StatelessVideoDecoderBackend::~V4L2StatelessVideoDecoderBackend() {
     avd_->Reset();
     avd_ = nullptr;
   }
-
-  if (supports_requests_) {
-    requests_ = {};
-    media_fd_.reset();
-  }
 }
 
 bool V4L2StatelessVideoDecoderBackend::Initialize() {
@@ -172,8 +167,11 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
     return false;
   }
 
-  if (supports_requests_ && !AllocateRequests()) {
-    return false;
+  if (supports_requests_) {
+    requests_queue_ = device_->GetRequestsQueue();
+    if (requests_queue_ == nullptr)
+      return false;
+    return requests_queue_->AllocateRequests(kNumRequests);
   }
 
   return true;
@@ -261,18 +259,16 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
 
   scoped_refptr<V4L2DecodeSurface> dec_surface;
   if (supports_requests_) {
-    DCHECK(!requests_.empty());
-    base::ScopedFD request = std::move(requests_.front());
-    requests_.pop();
-    auto ret = V4L2RequestDecodeSurface::Create(
-        std::move(input_buf), std::move(output_buf), std::move(frame),
-        request.get());
-    requests_.push(std::move(request));
-    if (!ret) {
-      DVLOGF(3) << "Could not create surface.";
+    V4L2RequestRef request_ref = requests_queue_->GetFreeRequest();
+    if (!request_ref.IsValid()) {
+      DVLOGF(3) << "Could not get free request.";
       return nullptr;
     }
-    dec_surface = std::move(*ret);
+
+    dec_surface = new V4L2RequestDecodeSurface(std::move(input_buf),
+                                      std::move(output_buf),
+                                      std::move(frame),
+                                      std::move(request_ref));
   } else {
     dec_surface = new V4L2ConfigStoreDecodeSurface(
         std::move(input_buf), std::move(output_buf), std::move(frame));
@@ -603,42 +599,9 @@ bool V4L2StatelessVideoDecoderBackend::CheckRequestAPISupport() {
   if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
     supports_requests_ = true;
     VLOGF(1) << "Using request API.";
-    DCHECK(!media_fd_.is_valid());
-    // Let's try to open the media device
-    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
-    // integration.
-    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
-    if (media_fd < 0) {
-      VPLOGF(1) << "Failed to open media device.";
-      return false;
-    }
-    media_fd_ = base::ScopedFD(media_fd);
   } else {
     VLOGF(1) << "Using config store.";
   }
-
-  return true;
-}
-
-bool V4L2StatelessVideoDecoderBackend::AllocateRequests() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOGF(3);
-
-  DCHECK(requests_.empty());
-
-  for (size_t i = 0; i < kNumRequests; i++) {
-    int request_fd;
-
-    int ret = HANDLE_EINTR(
-        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
-    if (ret < 0) {
-      VPLOGF(1) << "Failed to create request: ";
-      return false;
-    }
-
-    requests_.push(base::ScopedFD(request_fd));
-  }
-  DCHECK_EQ(requests_.size(), kNumRequests);
 
   return true;
 }

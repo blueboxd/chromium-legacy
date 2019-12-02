@@ -56,9 +56,17 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
   if (paint_info.phase == PaintPhase::kForeground)
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
-  NGBoxFragmentPainter box_painter(PhysicalFragment(),
-                                   inline_box_paint_fragment_, descendants_);
-  bool suppress_box_decoration_background = true;
+  const bool suppress_box_decoration_background = true;
+  if (inline_box_paint_fragment_) {
+    NGBoxFragmentPainter box_painter(PhysicalFragment(),
+                                     inline_box_paint_fragment_);
+    box_painter.PaintObject(paint_info, adjusted_paint_offset,
+                            suppress_box_decoration_background);
+    return;
+  }
+  DCHECK(inline_box_item_);
+  NGBoxFragmentPainter box_painter(*inline_box_item_, PhysicalFragment(),
+                                   descendants_);
   box_painter.PaintObject(paint_info, adjusted_paint_offset,
                           suppress_box_decoration_background);
 }

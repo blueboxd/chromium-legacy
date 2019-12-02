@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -42,14 +41,14 @@ v8::Local<v8::String> CreateCannotActionOnStateStreamMessage(
 v8::Local<v8::Value> CreateCannotActionOnStateStreamException(
     v8::Isolate* isolate,
     const char* action,
-    WritableStreamNative::State state) {
+    WritableStream::State state) {
   const char* state_name = nullptr;
   switch (state) {
-    case WritableStreamNative::kClosed:
+    case WritableStream::kClosed:
       state_name = "CLOSED";
       break;
 
-    case WritableStreamNative::kErrored:
+    case WritableStream::kErrored:
       state_name = "ERRORED";
       break;
 
@@ -67,8 +66,7 @@ WritableStreamDefaultWriter* WritableStreamDefaultWriter::Create(
     WritableStream* stream,
     ExceptionState& exception_state) {
   auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
-      script_state, static_cast<WritableStreamNative*>(stream),
-      exception_state);
+      script_state, static_cast<WritableStream*>(stream), exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -79,13 +77,13 @@ WritableStreamDefaultWriter* WritableStreamDefaultWriter::Create(
 // being created with the correct global?
 WritableStreamDefaultWriter::WritableStreamDefaultWriter(
     ScriptState* script_state,
-    WritableStreamNative* stream,
+    WritableStream* stream,
     ExceptionState& exception_state)
     //  3. Set this.[[ownerWritableStream]] to stream.
     : owner_writable_stream_(stream) {
   // https://streams.spec.whatwg.org/#default-writer-constructor 2. If !
   //  IsWritableStreamLocked(stream) is true, throw a TypeError exception.
-  if (WritableStreamNative::IsLocked(stream)) {
+  if (WritableStream::IsLocked(stream)) {
     exception_state.ThrowTypeError(
         "Cannot create writer when WritableStream is locked");
     return;
@@ -99,11 +97,11 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
 
   switch (state) {
     //  6. If state is "writable",
-    case WritableStreamNative::kWritable: {
+    case WritableStream::kWritable: {
       //      a. If ! WritableStreamCloseQueuedOrInFlight(stream) is false and
       //         stream.[[backpressure]] is true, set this.[[readyPromise]] to
       //         a new promise.
-      if (!WritableStreamNative::CloseQueuedOrInFlight(stream) &&
+      if (!WritableStream::CloseQueuedOrInFlight(stream) &&
           stream->HasBackpressure()) {
         ready_promise_ =
             MakeGarbageCollected<StreamPromiseResolver>(script_state);
@@ -120,7 +118,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
     }
 
     //  7. Otherwise, if state is "erroring",
-    case WritableStreamNative::kErroring: {
+    case WritableStream::kErroring: {
       //      a. Set this.[[readyPromise]] to a promise rejected with
       //         stream.[[storedError]].
       ready_promise_ = StreamPromiseResolver::CreateRejected(
@@ -136,7 +134,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
     }
 
     //  8. Otherwise, if state is "closed",
-    case WritableStreamNative::kClosed: {
+    case WritableStream::kClosed: {
       //      a. Set this.[[readyPromise]] to a promise resolved with undefined.
       ready_promise_ =
           StreamPromiseResolver::CreateResolvedWithUndefined(script_state);
@@ -149,7 +147,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
     }
 
     //  9. Otherwise,
-    case WritableStreamNative::kErrored: {
+    case WritableStream::kErrored: {
       //      a. Assert: state is "errored".
       // Check omitted as it is not meaningful.
 
@@ -234,7 +232,7 @@ ScriptPromise WritableStreamDefaultWriter::abort(ScriptState* script_state,
 ScriptPromise WritableStreamDefaultWriter::close(ScriptState* script_state) {
   // https://streams.spec.whatwg.org/#default-writer-close
   //  2. Let stream be this.[[ownerWritableStream]].
-  WritableStreamNative* stream = owner_writable_stream_;
+  WritableStream* stream = owner_writable_stream_;
 
   //  3. If stream is undefined, return a promise rejected with a TypeError
   //     exception.
@@ -246,7 +244,7 @@ ScriptPromise WritableStreamDefaultWriter::close(ScriptState* script_state) {
 
   //  4. If ! WritableStreamCloseQueuedOrInFlight(stream) is true, return a
   //      promise rejected with a TypeError exception.
-  if (WritableStreamNative::CloseQueuedOrInFlight(stream)) {
+  if (WritableStream::CloseQueuedOrInFlight(stream)) {
     return ScriptPromise::Reject(
         script_state, v8::Exception::TypeError(
                           V8String(script_state->GetIsolate(),
@@ -261,7 +259,7 @@ ScriptPromise WritableStreamDefaultWriter::close(ScriptState* script_state) {
 void WritableStreamDefaultWriter::releaseLock(ScriptState* script_state) {
   // https://streams.spec.whatwg.org/#default-writer-release-lock
   //  2. Let stream be this.[[ownerWritableStream]].
-  WritableStreamNative* stream = owner_writable_stream_;
+  WritableStream* stream = owner_writable_stream_;
 
   //  3. If stream is undefined, return.
   if (!stream) {
@@ -323,7 +321,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::CloseWithErrorPropagation(
     WritableStreamDefaultWriter* writer) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-close-with-error-propagation
   //  1. Let stream be writer.[[ownerWritableStream]].
-  WritableStreamNative* stream = writer->owner_writable_stream_;
+  WritableStream* stream = writer->owner_writable_stream_;
 
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
@@ -333,21 +331,21 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::CloseWithErrorPropagation(
 
   //  4. If ! WritableStreamCloseQueuedOrInFlight(stream) is true or state is
   //     "closed", return a promise resolved with undefined.
-  if (WritableStreamNative::CloseQueuedOrInFlight(stream) ||
-      state == WritableStreamNative::kClosed) {
+  if (WritableStream::CloseQueuedOrInFlight(stream) ||
+      state == WritableStream::kClosed) {
     return PromiseResolveWithUndefined(script_state);
   }
 
   //  5. If state is "errored", return a promise rejected with
   //     stream.[[storedError]].
-  if (state == WritableStreamNative::kErrored) {
+  if (state == WritableStream::kErrored) {
     return PromiseReject(script_state,
                          stream->GetStoredError(script_state->GetIsolate()));
   }
 
   //  6. Assert: state is "writable" or "erroring".
-  DCHECK(state == WritableStreamNative::kWritable ||
-         state == WritableStreamNative::kErroring);
+  DCHECK(state == WritableStream::kWritable ||
+         state == WritableStream::kErroring);
 
   //  7. Return ! WritableStreamDefaultWriterClose(writer).
   return Close(script_state, writer);
@@ -357,7 +355,7 @@ void WritableStreamDefaultWriter::Release(ScriptState* script_state,
                                           WritableStreamDefaultWriter* writer) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-release
   //  1. Let stream be writer.[[ownerWritableStream]].
-  WritableStreamNative* stream = writer->owner_writable_stream_;
+  WritableStream* stream = writer->owner_writable_stream_;
 
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
@@ -393,7 +391,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
     v8::Local<v8::Value> chunk) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-write
   //  1. Let stream be writer.[[ownerWritableStream]].
-  WritableStreamNative* stream = writer->owner_writable_stream_;
+  WritableStream* stream = writer->owner_writable_stream_;
 
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
@@ -419,36 +417,36 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
 
   //  7. If state is "errored", return a promise rejected with
   //     stream.[[storedError]].
-  if (state == WritableStreamNative::kErrored) {
+  if (state == WritableStream::kErrored) {
     return PromiseReject(script_state, stream->GetStoredError(isolate));
   }
 
   //  8. If ! WritableStreamCloseQueuedOrInFlight(stream) is true or state is
   //     "closed", return a promise rejected with a TypeError exception
   //     indicating that the stream is closing or closed.
-  if (WritableStreamNative::CloseQueuedOrInFlight(stream)) {
+  if (WritableStream::CloseQueuedOrInFlight(stream)) {
     return PromiseReject(
         script_state,
         v8::Exception::TypeError(CreateCannotActionOnStateStreamMessage(
             isolate, "write to", "closing")));
   }
-  if (state == WritableStreamNative::kClosed) {
-    return PromiseReject(
-        script_state, CreateCannotActionOnStateStreamException(
-                          isolate, "write to", WritableStreamNative::kClosed));
+  if (state == WritableStream::kClosed) {
+    return PromiseReject(script_state,
+                         CreateCannotActionOnStateStreamException(
+                             isolate, "write to", WritableStream::kClosed));
   }
 
   //  9. If state is "erroring", return a promise rejected with
   //     stream.[[storedError]].
-  if (state == WritableStreamNative::kErroring) {
+  if (state == WritableStream::kErroring) {
     return PromiseReject(script_state, stream->GetStoredError(isolate));
   }
 
   // 10. Assert: state is "writable".
-  DCHECK_EQ(state, WritableStreamNative::kWritable);
+  DCHECK_EQ(state, WritableStream::kWritable);
 
   // 11. Let promise be ! WritableStreamAddWriteRequest(stream).
-  auto promise = WritableStreamNative::AddWriteRequest(script_state, stream);
+  auto promise = WritableStream::AddWriteRequest(script_state, stream);
 
   // 12. Perform ! WritableStreamDefaultControllerWrite(controller, chunk,
   //     chunkSize).
@@ -463,19 +461,19 @@ base::Optional<double> WritableStreamDefaultWriter::GetDesiredSizeInternal()
     const {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
   //  1. Let stream be writer.[[ownerWritableStream]].
-  const WritableStreamNative* stream = owner_writable_stream_;
+  const WritableStream* stream = owner_writable_stream_;
 
   //  2. Let state be stream.[[state]].
   const auto state = stream->GetState();
 
   switch (state) {
     //  3. If state is "errored" or "erroring", return null.
-    case WritableStreamNative::kErrored:
-    case WritableStreamNative::kErroring:
+    case WritableStream::kErrored:
+    case WritableStream::kErroring:
       return base::nullopt;
 
       //  4. If state is "closed", return 0.
-    case WritableStreamNative::kClosed:
+    case WritableStream::kClosed:
       return 0.0;
 
     default:
@@ -506,13 +504,13 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Abort(
     v8::Local<v8::Value> reason) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-abort
   //  1. Let stream be writer.[[ownerWritableStream]].
-  WritableStreamNative* stream = writer->owner_writable_stream_;
+  WritableStream* stream = writer->owner_writable_stream_;
 
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
 
   //  3. Return ! WritableStreamAbort(stream, reason).
-  return WritableStreamNative::Abort(script_state, stream, reason);
+  return WritableStream::Abort(script_state, stream, reason);
 }
 
 v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
@@ -520,7 +518,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
     WritableStreamDefaultWriter* writer) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-close
   //  1. Let stream be writer.[[ownerWritableStream]].
-  WritableStreamNative* stream = writer->owner_writable_stream_;
+  WritableStream* stream = writer->owner_writable_stream_;
 
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
@@ -530,19 +528,18 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
 
   //  4. If state is "closed" or "errored", return a promise rejected with a
   //     TypeError exception.
-  if (state == WritableStreamNative::kClosed ||
-      state == WritableStreamNative::kErrored) {
+  if (state == WritableStream::kClosed || state == WritableStream::kErrored) {
     return PromiseReject(script_state,
                          CreateCannotActionOnStateStreamException(
                              script_state->GetIsolate(), "close", state));
   }
 
   //  5. Assert: state is "writable" or "erroring".
-  DCHECK(state == WritableStreamNative::kWritable ||
-         state == WritableStreamNative::kErroring);
+  DCHECK(state == WritableStream::kWritable ||
+         state == WritableStream::kErroring);
 
   //  6. Assert: ! WritableStreamCloseQueuedOrInFlight(stream) is false.
-  DCHECK(!WritableStreamNative::CloseQueuedOrInFlight(stream));
+  DCHECK(!WritableStream::CloseQueuedOrInFlight(stream));
 
   //  7. Let promise be a new promise.
   auto* promise = MakeGarbageCollected<StreamPromiseResolver>(script_state);
@@ -552,7 +549,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
 
   //  9. If stream.[[backpressure]] is true and state is "writable", resolve
   //     writer.[[readyPromise]] with undefined.
-  if (stream->HasBackpressure() && state == WritableStreamNative::kWritable) {
+  if (stream->HasBackpressure() && state == WritableStream::kWritable) {
     writer->ready_promise_->ResolveWithUndefined(script_state);
   }
 

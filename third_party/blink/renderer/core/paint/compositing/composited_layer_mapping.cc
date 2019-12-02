@@ -2103,9 +2103,8 @@ LayoutSize CompositedLayerMapping::SubpixelAccumulation() const {
 
 bool CompositedLayerMapping::NeedsRepaint(
     const GraphicsLayer& graphics_layer) const {
-  return IsScrollableAreaLayer(&graphics_layer)
-             ? true
-             : owning_layer_.SelfOrDescendantNeedsRepaint();
+  return IsScrollableAreaLayerWhichNeedsRepaint(&graphics_layer) ||
+         owning_layer_.SelfOrDescendantNeedsRepaint();
 }
 
 bool CompositedLayerMapping::AdjustForCompositedScrolling(
@@ -2240,6 +2239,23 @@ bool CompositedLayerMapping::IsScrollableAreaLayer(
   return graphics_layer == LayerForHorizontalScrollbar() ||
          graphics_layer == LayerForVerticalScrollbar() ||
          graphics_layer == LayerForScrollCorner();
+}
+
+bool CompositedLayerMapping::IsScrollableAreaLayerWhichNeedsRepaint(
+    const GraphicsLayer* graphics_layer) const {
+  if (PaintLayerScrollableArea* scrollable_area =
+          owning_layer_.GetScrollableArea()) {
+    if (graphics_layer == LayerForHorizontalScrollbar())
+      return scrollable_area->HorizontalScrollbarNeedsPaintInvalidation();
+
+    if (graphics_layer == LayerForVerticalScrollbar())
+      return scrollable_area->VerticalScrollbarNeedsPaintInvalidation();
+
+    if (graphics_layer == LayerForScrollCorner())
+      return scrollable_area->ScrollCornerNeedsPaintInvalidation();
+  }
+
+  return false;
 }
 
 bool CompositedLayerMapping::ShouldThrottleRendering() const {

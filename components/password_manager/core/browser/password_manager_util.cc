@@ -9,12 +9,10 @@
 #include <string>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -34,11 +32,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "crypto/sha2.h"
-#include "google_apis/gaia/core_account_id.h"
 
 using autofill::PasswordForm;
 
@@ -63,13 +58,6 @@ bool IsBetterMatchUsingLastUsed(const PasswordForm* lhs,
                                 const PasswordForm* rhs) {
   return std::make_pair(!lhs->is_public_suffix_match, lhs->date_last_used) >
          std::make_pair(!rhs->is_public_suffix_match, rhs->date_last_used);
-}
-
-std::string GetAccountHash(const CoreAccountId& account_id) {
-  std::string account_hash;
-  base::Base64Encode(crypto::SHA256HashString(account_id.ToString()),
-                     &account_hash);
-  return account_hash;
 }
 
 }  // namespace
@@ -350,49 +338,6 @@ autofill::PasswordForm MakeNormalizedBlacklistedForm(
     result.origin = digest.origin.GetOrigin();
   }
   return result;
-}
-
-bool IsOptedInForAccountStorage(const PrefService* pref_service,
-                                const syncer::SyncService* sync_service) {
-  DCHECK(pref_service);
-  DCHECK(sync_service);
-
-  CoreAccountId account_id = sync_service->GetAuthenticatedAccountId();
-  const base::DictionaryValue* dict = pref_service->GetDictionary(
-      password_manager::prefs::kAccountStorageOptedInAccounts);
-  if (!dict)
-    return false;
-
-  base::Optional<bool> opted_in = dict->FindBoolKey(GetAccountHash(account_id));
-  return opted_in.value_or(false);
-}
-
-bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
-                                   const syncer::SyncService* sync_service) {
-  DCHECK(pref_service);
-  DCHECK(sync_service);
-
-  // Only show the opt-in if:
-  // - Sync transport is enabled (i.e. user is signed in, Sync is not disabled
-  //   by policy etc) - otherwise there's no point in asking.
-  // - Sync feature is NOT enabled - Sync feature doesn't depend on this opt-in.
-  // - Not already opted in.
-  return sync_service->GetTransportState() !=
-             syncer::SyncService::TransportState::DISABLED &&
-         !sync_service->IsSyncFeatureEnabled() &&
-         !IsOptedInForAccountStorage(pref_service, sync_service);
-}
-
-void SetAccountStorageOptIn(PrefService* pref_service,
-                            const syncer::SyncService* sync_service,
-                            bool opt_in) {
-  DCHECK(pref_service);
-  DCHECK(sync_service);
-
-  CoreAccountId account_id = sync_service->GetAuthenticatedAccountId();
-  DictionaryPrefUpdate update(
-      pref_service, password_manager::prefs::kAccountStorageOptedInAccounts);
-  update->SetBoolean(GetAccountHash(account_id), opt_in);
 }
 
 }  // namespace password_manager_util

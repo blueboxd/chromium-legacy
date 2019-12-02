@@ -21,7 +21,6 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -371,7 +370,7 @@ void OnGetWindowClientsOnUI(
     blink::mojom::ServiceWorkerClientInfoPtr info = GetWindowClientInfoOnUI(
         std::get<0>(it), std::get<1>(it), std::get<2>(it), std::get<3>(it));
 
-    // If the request to the provider_host returned a null
+    // If the request to the container_host returned a null
     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
     // it with a valid RenderFrameHost. It might be because the frame was killed
     // or navigated in between.
@@ -436,11 +435,11 @@ void GetNonWindowClients(
       AddNonWindowClient(controllee.second, options->client_type, &clients);
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
-    for (auto it = controller->context()->GetClientProviderHostIterator(
+    for (auto it = controller->context()->GetClientContainerHostIterator(
              origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      AddNonWindowClient(it->GetProviderHost()->container_host(),
-                         options->client_type, &clients);
+      AddNonWindowClient(it->GetContainerHost(), options->client_type,
+                         &clients);
     }
   }
   DidGetClients(std::move(callback), std::move(clients));
@@ -476,10 +475,10 @@ void GetWindowClients(
       AddWindowClient(controllee.second, &clients_info);
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
-    for (auto it = controller->context()->GetClientProviderHostIterator(
+    for (auto it = controller->context()->GetClientContainerHostIterator(
              origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      AddWindowClient(it->GetProviderHost()->container_host(), &clients_info);
+      AddWindowClient(it->GetContainerHost(), &clients_info);
     }
   }
 
@@ -681,36 +680,33 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     return;
   }
 
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetClientProviderHostIterator(
+  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+           context->GetClientContainerHostIterator(
                origin, true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    if (provider_host->container_host()->process_id() != render_process_id ||
-        provider_host->container_host()->frame_id() != render_frame_id) {
+    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
+    DCHECK(container_host->IsContainerForClient());
+    if (container_host->process_id() != render_process_id ||
+        container_host->frame_id() != render_frame_id) {
       continue;
     }
     // DidNavigate must be called with a preparation complete client (the
     // navigation was committed), but the client might not be execution ready
     // yet (Blink hasn't yet created the Document).
-    ServiceWorkerContainerHost* container_host =
-        provider_host->container_host();
     DCHECK(container_host->is_response_committed());
     if (!container_host->is_execution_ready()) {
-      container_host->AddExecutionReadyCallback(
-          base::BindOnce(&DidGetExecutionReadyClient, context,
-                         provider_host->container_host()->client_uuid(), origin,
-                         std::move(callback)));
+      container_host->AddExecutionReadyCallback(base::BindOnce(
+          &DidGetExecutionReadyClient, context, container_host->client_uuid(),
+          origin, std::move(callback)));
       return;
     }
 
-    DidGetExecutionReadyClient(context,
-                               provider_host->container_host()->client_uuid(),
-                               origin, std::move(callback));
+    DidGetExecutionReadyClient(context, container_host->client_uuid(), origin,
+                               std::move(callback));
     return;
   }
 
-  // If here, it means that no provider_host was found, in which case, the
+  // If here, it means that no container_host was found, in which case, the
   // renderer should still be informed that the window was opened.
   std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
                           nullptr /* client_info */);

@@ -421,9 +421,9 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       if (blob_data_) {
         DCHECK(!string_builder_);
         const auto size = blob_data_->length();
-        File* file =
-            File::Create(filename_, InvalidFileTime(),
-                         BlobDataHandle::Create(std::move(blob_data_), size));
+        auto* file = MakeGarbageCollected<File>(
+            filename_, InvalidFileTime(),
+            BlobDataHandle::Create(std::move(blob_data_), size));
         form_data->append(name_, file, filename_);
         return true;
       }

@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
+
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.UiThread;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -23,8 +22,13 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.trusted.Token;
 import dagger.Lazy;
 
 /**
@@ -41,6 +45,7 @@ public class TrustedWebActivityPermissionManager {
     private static final String TAG = "TwaPermissionManager";
 
     private final TrustedWebActivityPermissionStore mStore;
+    private final PackageManager mPackageManager;
 
     // Use a Lazy instance so we don't instantiate it on Android versions pre-O.
     private final Lazy<NotificationChannelPreserver> mPermissionPreserver;
@@ -50,8 +55,10 @@ public class TrustedWebActivityPermissionManager {
     }
 
     @Inject
-    public TrustedWebActivityPermissionManager(TrustedWebActivityPermissionStore store,
+    public TrustedWebActivityPermissionManager(@Named(APP_CONTEXT) Context context,
+            TrustedWebActivityPermissionStore store,
             Lazy<NotificationChannelPreserver> preserver) {
+        mPackageManager = context.getPackageManager();
         mStore = store;
         mPermissionPreserver = preserver;
     }
@@ -81,7 +88,20 @@ public class TrustedWebActivityPermissionManager {
     }
 
     @UiThread
-    void register(Origin origin, String packageName, boolean notificationsEnabled) {
+    public void addDelegateApp(Origin origin, String packageName) {
+        Token token = Token.create(packageName, mPackageManager);
+        if (token == null) return;
+        mStore.addDelegateApp(origin, token);
+    }
+
+    @UiThread
+    @Nullable
+    public Set<Token> getAllDelegateApps(Origin origin) {
+        return mStore.getAllDelegateApps(origin);
+    }
+
+    @UiThread
+    public void updatePermission(Origin origin, String packageName, boolean notificationsEnabled) {
         // TODO(peconn): Only trigger if this is for the first time?
 
         String appName = getAppNameForPackage(packageName);
@@ -114,13 +134,13 @@ public class TrustedWebActivityPermissionManager {
      */
     @Nullable
     public String getDelegateAppName(Origin origin) {
-        return mStore.getAppName(origin);
+        return mStore.getDelegateAppName(origin);
     }
 
     /** Returns the package of the app that will handle permission delegation for the origin. */
     @Nullable
     public String getDelegatePackageName(Origin origin) {
-        return mStore.getPackageName(origin);
+        return mStore.getDelegatePackageName(origin);
     }
 
     /** Gets all the origins that we delegate permissions for. */

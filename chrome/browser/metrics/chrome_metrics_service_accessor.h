@@ -13,7 +13,9 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/common/metrics.mojom.h"
 #include "components/metrics/metrics_service_accessor.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
@@ -86,8 +88,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeBrowserFieldTrials;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;
+  friend class ChromeContentBrowserClient;
   friend class ChromeMetricsServicesManagerClient;
-  friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
   friend class extensions::ChromeGuestViewManagerDelegate;
@@ -159,6 +161,12 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // Cover for function of same name in MetricsServiceAccssor. See
   // ChromeMetricsServiceAccessor for details.
   static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Provides an implementation of chrome::mojom::MetricsService.
+  static void BindMetricsServiceReceiver(
+      mojo::PendingReceiver<chrome::mojom::MetricsService> receiver);
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };

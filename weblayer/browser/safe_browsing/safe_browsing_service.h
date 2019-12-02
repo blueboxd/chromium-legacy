@@ -8,6 +8,7 @@
 #include "components/safe_browsing/base_ui_manager.h"
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
@@ -74,8 +75,8 @@ class SafeBrowsingService {
   scoped_refptr<safe_browsing::RemoteSafeBrowsingDatabaseManager>
       safe_browsing_db_manager_;
 
-  // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
+  // A SharedURLLoaderFactory and its remote used on the IO thread.
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_on_io_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_on_io_;
 

@@ -33,6 +33,7 @@ COMPONENT_EXPORT(NETWORK_SERVICE)
 void SetFetchMetadataHeaders(
     net::URLRequest* request,
     network::mojom::RequestMode mode,
+    bool has_user_activation,
     const GURL* pending_redirect_url,
     const mojom::URLLoaderFactoryParams& factory_params);
 

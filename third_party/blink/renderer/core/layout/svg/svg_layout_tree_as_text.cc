@@ -360,7 +360,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                        element->x2()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y2",
                        element->y2()->CurrentValue()->Value(length_context));
-  } else if (IsSVGEllipseElement(*svg_element)) {
+  } else if (IsA<SVGEllipseElement>(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
                                                      SVGLengthMode::kWidth));
@@ -389,7 +389,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                 .Points()
                                 ->CurrentValue()
                                 ->ValueAsString());
-  } else if (IsSVGPathElement(*svg_element)) {
+  } else if (IsA<SVGPathElement>(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
     WriteNameAndQuotedValue(
@@ -567,8 +567,8 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     auto* dummy_filter = MakeGarbageCollected<Filter>(dummy_rect, dummy_rect, 1,
                                                       Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
-    builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
-                       dummy_rect);
+    builder.BuildGraph(dummy_filter,
+                       To<SVGFilterElement>(*filter->GetElement()), dummy_rect);
     if (FilterEffect* last_effect = builder.LastEffect())
       last_effect->ExternalRepresentation(ts, indent + 1);
   } else if (resource->ResourceType() == kClipperResourceType) {

@@ -249,9 +249,9 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 }
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {
-  // TODO(melandory): consider notifyint the client that messages were
-  // deleted. So the client can act on it, e.g. in case of sync request
-  // GetUpdates from the server.
+  // TODO(crbug.com/1023813): Record UMA. Then, if this actually happens in
+  // practice, consider notifying the client that messages were deleted, so it
+  // can act on it, e.g. in case of sync, trigger a GetUpdates.
 }
 
 void FCMNetworkHandler::OnSendError(

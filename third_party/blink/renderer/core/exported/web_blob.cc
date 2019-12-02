@@ -37,19 +37,21 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 WebBlob WebBlob::CreateFromUUID(const WebString& uuid,
                                 const WebString& type,
                                 uint64_t size) {
-  return Blob::Create(BlobDataHandle::Create(uuid, type, size));
+  return MakeGarbageCollected<Blob>(BlobDataHandle::Create(uuid, type, size));
 }
 
 WebBlob WebBlob::CreateFromFile(const WebString& path, uint64_t size) {
   auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendFile(path, 0, size, base::nullopt);
-  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), size));
 }
 
 WebBlob WebBlob::FromV8Value(v8::Local<v8::Value> value) {

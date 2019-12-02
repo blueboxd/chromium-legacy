@@ -210,8 +210,9 @@ void DeviceInfoSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
   // Store the cache GUID, mainly in case MergeSyncData() is executed later.
   local_cache_guid_ = request.cache_guid;
-  // Garbage-collect old local cache GUIDs, for privacy reasons.
-  device_info_prefs_->GarbageCollectExpiredCacheGuids();
+
+  // TODO(crbug.com/989340): Call GarbageCollectExpiredCacheGuids() here.
+
   // Add the cache guid to the local prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
   // SyncMode determines the client name in GetLocalClientName().

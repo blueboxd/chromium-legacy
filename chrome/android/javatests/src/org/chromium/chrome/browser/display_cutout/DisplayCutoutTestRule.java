@@ -15,8 +15,8 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -113,13 +113,13 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     }
 
     /** Listens to fullscreen tab events and tracks the fullscreen state of the tab. */
-    private class FullscreenTabObserver extends EmptyTabObserver {
+    private class FullscreenToggleObserver implements FullscreenListener {
         @Override
-        public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+        public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
             mIsTabFullscreen = true;
         }
         @Override
-        public void onExitFullscreenMode(Tab tab) {
+        public void onExitFullscreen(Tab tab) {
             mIsTabFullscreen = false;
         }
     }
@@ -142,6 +142,9 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
 
     /** The {@link Tab} we are running the test in. */
     private Tab mTab;
+
+    /** The {@link FullscreenListener} observing fullscreen mode. */
+    private FullscreenListener mListener;
 
     public DisplayCutoutTestRule(Class<T> activityClass) {
         super(activityClass);
@@ -178,11 +181,12 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
                 () -> DisplayCutoutController.initForTesting(
                                 mTab.getUserDataHost(), mTestController));
 
-        FullscreenTabObserver observer = new FullscreenTabObserver();
-        mTab.addObserver(observer);
+        mListener = new FullscreenToggleObserver();
+        getActivity().getFullscreenManager().addListener(mListener);
     }
 
     protected void tearDown() {
+        getActivity().getFullscreenManager().removeListener(mListener);
         mTestServer.stopAndDestroyServer();
     }
 

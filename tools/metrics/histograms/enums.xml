@@ -4951,6 +4951,10 @@ Unknown properties are collapsed to zero. -->
   <int value="23" label="Session restored"/>
   <int value="24" label="Unknown (should not be happening)"/>
   <int value="25" label="ServiceWorker postMessage"/>
+  <int value="26" label="ServiceWorker added after entering cache"/>
+  <int value="27" label="RenderFrameHost is reused for same-site navigation"/>
+  <int value="28" label="RenderFrameHost is reused for cross-site navigation"/>
+  <int value="29" label="NavigationEntry is not the most recent one"/>
 </enum>
 
 <enum name="BackForwardNavigationType">

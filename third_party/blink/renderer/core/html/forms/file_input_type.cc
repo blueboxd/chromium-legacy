@@ -132,7 +132,8 @@ void FileInputType::AppendToFormData(FormData& form_data) const {
   FileList* file_list = GetElement().files();
   unsigned num_files = file_list->length();
   if (num_files == 0) {
-    form_data.AppendFromElement(GetElement().GetName(), File::Create(""));
+    form_data.AppendFromElement(GetElement().GetName(),
+                                MakeGarbageCollected<File>(""));
     return;
   }
 

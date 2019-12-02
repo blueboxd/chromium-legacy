@@ -96,14 +96,14 @@ void LayoutSVGResourceMasker::CalculateMaskContentVisualRect() {
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceMasker::MaskUnits() const {
-  return ToSVGMaskElement(GetElement())
+  return To<SVGMaskElement>(GetElement())
       ->maskUnits()
       ->CurrentValue()
       ->EnumValue();
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceMasker::MaskContentUnits() const {
-  return ToSVGMaskElement(GetElement())
+  return To<SVGMaskElement>(GetElement())
       ->maskContentUnits()
       ->CurrentValue()
       ->EnumValue();
@@ -111,7 +111,7 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceMasker::MaskContentUnits() const {
 
 FloatRect LayoutSVGResourceMasker::ResourceBoundingBox(
     const FloatRect& reference_box) {
-  SVGMaskElement* mask_element = ToSVGMaskElement(GetElement());
+  auto* mask_element = To<SVGMaskElement>(GetElement());
   DCHECK(mask_element);
 
   FloatRect mask_boundaries = SVGLengthContext::ResolveRectangle(

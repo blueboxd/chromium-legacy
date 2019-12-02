@@ -257,35 +257,35 @@ void ServiceWorkerRegistration::ClaimClients() {
   // "For each service worker client client whose origin is the same as the
   //  service worker's origin:
   const bool include_reserved_clients = false;
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(scope_.GetOrigin(),
-                                                   include_reserved_clients);
+  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+           context_->GetClientContainerHostIterator(scope_.GetOrigin(),
+                                                    include_reserved_clients);
        !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
     // "1. If client’s execution ready flag is unset or client’s discarded flag
     //     is set, continue."
     // |include_reserved_clients| ensures only execution ready clients are
     // returned.
-    DCHECK(host->container_host()->is_execution_ready());
+    DCHECK(container_host->is_execution_ready());
 
     // This is part of step 5 but performed here as an optimization. Do nothing
     // if this version is already the controller.
-    if (host->container_host()->controller() == active_version())
+    if (container_host->controller() == active_version())
       continue;
 
     // "2. If client is not a secure context, continue."
-    if (!host->container_host()->IsContextSecureForServiceWorker())
+    if (!container_host->IsContextSecureForServiceWorker())
       continue;
 
     // "3. Let registration be the result of running Match Service Worker
     //     Registration algorithm passing client’s creation URL as the argument.
     //  4. If registration is not the service worker's containing service worker
     //     registration, continue."
-    if (host->container_host()->MatchRegistration() != this)
+    if (container_host->MatchRegistration() != this)
       continue;
 
     // The remaining steps are performed here:
-    host->container_host()->ClaimedByRegistration(this);
+    container_host->ClaimedByRegistration(this);
   }
 }
 
@@ -439,8 +439,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
     // Whenever activation happens, evict bfcached controllees.
-    if (IsBackForwardCacheEnabled() &&
-        ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    if (IsBackForwardCacheEnabled()) {
       exiting_version->EvictBackForwardCachedControllees(
           BackForwardCacheMetrics::NotRestoredReason::
               kServiceWorkerVersionActivation);

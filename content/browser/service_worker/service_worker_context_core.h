@@ -76,29 +76,31 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
 
-  // Iterates over ServiceWorkerProviderHost objects in the ProviderByIdMap.
-  // Note: As ProviderHostIterator is operating on a member of
+  // Iterates over ServiceWorkerContainerHost objects in the
+  // ContainerHostByClientUUIDMap.
+  // Note: As ContainerHostIterator is operating on a member of
   // ServiceWorkerContextCore, users must ensure the ServiceWorkerContextCore
-  // instance always outlives the ProviderHostIterator one.
-  class CONTENT_EXPORT ProviderHostIterator {
+  // instance always outlives the ContainerHostIterator one.
+  class CONTENT_EXPORT ContainerHostIterator {
    public:
-    ~ProviderHostIterator();
-    ServiceWorkerProviderHost* GetProviderHost();
+    ~ContainerHostIterator();
+    ServiceWorkerContainerHost* GetContainerHost();
     void Advance();
     bool IsAtEnd();
 
    private:
     friend class ServiceWorkerContextCore;
-    using ProviderHostPredicate =
-        base::RepeatingCallback<bool(ServiceWorkerProviderHost*)>;
-    ProviderHostIterator(ProviderByIdMap* map, ProviderHostPredicate predicate);
-    void ForwardUntilMatchingProviderHost();
+    using ContainerHostPredicate =
+        base::RepeatingCallback<bool(ServiceWorkerContainerHost*)>;
+    ContainerHostIterator(ContainerHostByClientUUIDMap* map,
+                          ContainerHostPredicate predicate);
+    void ForwardUntilMatchingContainerHost();
 
-    ProviderByIdMap* const map_;
-    ProviderHostPredicate predicate_;
-    ProviderByIdMap::iterator provider_host_iterator_;
+    ContainerHostByClientUUIDMap* const map_;
+    ContainerHostPredicate predicate_;
+    ContainerHostByClientUUIDMap::iterator container_host_iterator_;
 
-    DISALLOW_COPY_AND_ASSIGN(ProviderHostIterator);
+    DISALLOW_COPY_AND_ASSIGN(ContainerHostIterator);
   };
 
   // This is owned by the StoragePartition, which will supply it with
@@ -159,25 +161,30 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // The context class owns the set of ProviderHosts.
   void AddProviderHost(
       std::unique_ptr<ServiceWorkerProviderHost> provider_host);
-  ServiceWorkerProviderHost* GetProviderHost(int provider_id);
   void RemoveProviderHost(int provider_id);
 
-  // Returns a ProviderHost iterator for all service worker clients for the
+  // Returns a ContainerHost iterator for all service worker clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
   // that are execution ready (i.e., for windows, the document has been
   // created and for workers, the final response after redirects has been
   // delivered).
-  std::unique_ptr<ProviderHostIterator> GetClientProviderHostIterator(
+  std::unique_ptr<ContainerHostIterator> GetClientContainerHostIterator(
       const GURL& origin,
       bool include_reserved_clients);
 
-  // Runs the callback with true if there is a ProviderHost for |origin| of type
-  // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
+  // Returns a ContainerHost iterator for service worker window clients for the
+  // |origin|. If |include_reserved_clients| is false, this only returns clients
+  // that are execution ready.
+  std::unique_ptr<ContainerHostIterator> GetWindowClientContainerHostIterator(
+      const GURL& origin,
+      bool include_reserved_clients);
+
+  // Runs the callback with true if there is a ContainerHost for |origin| of
+  // type blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
   // (top-level) frame. Reserved clients are ignored.
   // TODO(crbug.com/824858): Make this synchronously return bool when the core
   // thread is UI.
-  void HasMainFrameProviderHost(const GURL& origin,
-                                BoolCallback callback) const;
+  void HasMainFrameWindowClient(const GURL& origin, BoolCallback callback);
 
   // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
   // worker clients. |container_host| should not be for a service worker

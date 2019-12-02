@@ -31,7 +31,8 @@ void URLRequestContextBuilderMojo::SetMojoProxyResolverFactory(
 
 #if defined(OS_CHROMEOS)
 void URLRequestContextBuilderMojo::SetDhcpWpadUrlClient(
-    network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client) {
+    mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+        dhcp_wpad_url_client) {
   dhcp_wpad_url_client_ = std::move(dhcp_wpad_url_client);
 }
 #endif  // defined(OS_CHROMEOS)

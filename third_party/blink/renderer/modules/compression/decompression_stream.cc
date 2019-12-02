@@ -34,8 +34,7 @@ void DecompressionStream::Trace(Visitor* visitor) {
 
 DecompressionStream::DecompressionStream(ScriptState* script_state,
                                          const AtomicString& format,
-                                         ExceptionState& exception_state)
-    : transform_(MakeGarbageCollected<TransformStream>()) {
+                                         ExceptionState& exception_state) {
   CompressionFormat inflate_format =
       LookupCompressionFormat(format, exception_state);
   if (exception_state.HadException())
@@ -44,9 +43,10 @@ DecompressionStream::DecompressionStream(ScriptState* script_state,
   UMA_HISTOGRAM_ENUMERATION("Blink.Compression.DecompressionStream.Format",
                             inflate_format);
 
-  transform_->Init(
+  transform_ = TransformStream::Create(
+      script_state,
       MakeGarbageCollected<InflateTransformer>(script_state, inflate_format),
-      script_state, exception_state);
+      exception_state);
 }
 
 }  // namespace blink

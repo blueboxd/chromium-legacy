@@ -101,6 +101,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
     @VisibleForTesting
     public void simulateRendererKilledForTesting(boolean wasOomProtected) {
+        android.util.Log.i("crdebug", "observer: " + mObserver);
         if (mObserver != null) mObserver.renderProcessGone(wasOomProtected);
     }
 
@@ -153,6 +154,11 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             int activityState = ApplicationStatus.getStateForActivity(
                     mTab.getWindowAndroid().getActivity().get());
             int rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_MAX;
+            android.util.Log.i("crdebug",
+                    "tab-hidden: " + mTab.isHidden() + " as: " + activityState + " cond: "
+                            + (mTab.isHidden() || activityState == ActivityState.PAUSED
+                                    || activityState == ActivityState.STOPPED
+                                    || activityState == ActivityState.DESTROYED));
             if (mTab.isHidden() || activityState == ActivityState.PAUSED
                     || activityState == ActivityState.STOPPED
                     || activityState == ActivityState.DESTROYED) {

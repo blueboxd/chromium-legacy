@@ -44,6 +44,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
+#include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
+#include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -229,6 +231,8 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
       &ForwardToJavaFrame<blink::mojom::MediaControlsMenuHost>));
 #endif
+  map->Add<chrome::mojom::OfflinePageAutoFetcher>(
+      base::BindRepeating(&offline_pages::OfflinePageAutoFetcher::Create));
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
         &ForwardToJavaFrame<payments::mojom::PaymentRequest>));

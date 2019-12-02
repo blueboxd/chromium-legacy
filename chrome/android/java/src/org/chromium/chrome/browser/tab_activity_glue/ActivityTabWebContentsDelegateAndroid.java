@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -82,7 +83,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         return mActivity != null ? mActivity.getTabCreator(mTab.isIncognito()) : null;
     }
 
-    private FullscreenManager getFullscreenManager() {
+    private ChromeFullscreenManager getFullscreenManager() {
         return mActivity != null && !mActivity.isActivityFinishingOrDestroyed()
                 ? mActivity.getFullscreenManager()
                 : null;
@@ -312,8 +313,23 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
 
     @Override
     public boolean controlsResizeView() {
-        FullscreenManager manager = getFullscreenManager();
-        return manager != null ? ((ChromeFullscreenManager) manager).controlsResizeView() : false;
+        ChromeFullscreenManager manager = getFullscreenManager();
+        return manager != null ? manager.controlsResizeView() : false;
+    }
+
+    @Override
+    public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+        ChromeFullscreenManager manager = getFullscreenManager();
+        android.util.Log.i("crdebug", "enterFS cfm: " + manager);
+        if (manager != null) {
+            manager.onEnterFullscreen(mTab, new FullscreenOptions(prefersNavigationBar));
+        }
+    }
+
+    @Override
+    public void exitFullscreenModeForTab() {
+        ChromeFullscreenManager manager = getFullscreenManager();
+        if (manager != null) manager.onExitFullscreen(mTab);
     }
 
     @Override

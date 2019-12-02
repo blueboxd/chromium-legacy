@@ -79,8 +79,8 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   }
 
   // Sets the response to checks for a main frame for register attempts.
-  void set_has_main_frame_provider_host(bool value) {
-    has_main_frame_provider_host_ = value;
+  void set_has_main_frame_window_client(bool value) {
+    has_main_frame_window_client_ = value;
   }
 
   // Accessors to internal state
@@ -135,7 +135,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   // Override to avoid actual check for main frame, instead return the value set
   // by tests.
-  void HasMainFrameProviderHost(const url::Origin& origin,
+  void HasMainFrameWindowClient(const url::Origin& origin,
                                 BoolCallback callback) override;
 
  private:
@@ -156,7 +156,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   bool corrupt_backend_ = false;
   bool delay_backend_ = false;
-  bool has_main_frame_provider_host_ = true;
+  bool has_main_frame_window_client_ = true;
   bool last_chance_ = false;
   bool dont_fire_sync_events_ = false;
   base::OnceClosure continuation_;

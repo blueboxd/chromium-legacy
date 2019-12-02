@@ -14,10 +14,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/cookies/canonical_cookie.h"
@@ -126,9 +126,10 @@ class CookieStoreTest : public testing::Test {
         http_baz_com_("http://baz.com"),
         http_bar_com_("http://bar.com") {
     // This test may be used outside of the net test suite, and thus may not
-    // have a message loop.
+    // have a task environment.
     if (!base::MessageLoopCurrent::Get())
-      message_loop_.reset(new base::MessageLoop);
+      task_environment_ =
+          std::make_unique<base::test::SingleThreadTaskEnvironment>();
   }
 
   // Helper methods for the asynchronous Cookie Store API that call the
@@ -393,7 +394,7 @@ class CookieStoreTest : public testing::Test {
   const CookieURLHelper http_baz_com_;
   const CookieURLHelper http_bar_com_;
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
 
  private:
   // Returns a set of strings of type "name=value". Fails in case of duplicate.

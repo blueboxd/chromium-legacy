@@ -112,9 +112,9 @@ class FindTaskController::IdleFindTask
     while (search_start != search_end) {
       // Find in the whole block.
       FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
-      std::unique_ptr<FindBuffer::Results> match_results =
+      FindBuffer::Results match_results =
           buffer.FindMatches(search_text_, find_options);
-      for (FindBuffer::BufferMatchResult match : *match_results) {
+      for (FindBuffer::BufferMatchResult match : match_results) {
         const EphemeralRangeInFlatTree ephemeral_match_range =
             buffer.RangeFromBufferIndex(match.start,
                                         match.start + match.length);

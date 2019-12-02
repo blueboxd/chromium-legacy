@@ -5,26 +5,16 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <memory>
-#include <set>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
-#include "content/browser/service_worker/service_worker_object_host.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/resource_type.h"
-#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,21 +24,12 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
-#include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
-#include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "url/origin.h"
-
-namespace service_worker_object_host_unittest {
-class ServiceWorkerObjectHostTest;
-}
 
 namespace content {
 
@@ -121,6 +102,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // The returned host stays alive as long as the corresponding host ptr for
   // |host_request| stays alive.
+  //
+  // TODO(https://crbug.com/931087): ServiceWorkerProviderHost is not necessary
+  // for window clients. We should remove this creation function, and instead
+  // directly create ServiceWorkerContainerHost for the clients.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
@@ -145,6 +130,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a provider host for the worker. The host stays alive as long as the
   // corresponding host for |host_receiver| stays alive.
+  //
+  // TODO(https://crbug.com/931087): ServiceWorkerProviderHost is not necessary
+  // for worker clients. We should remove this creation function, and instead
+  // directly create ServiceWorkerContainerHost for the clients.
   static base::WeakPtr<ServiceWorkerProviderHost> CreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
@@ -174,9 +163,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   blink::mojom::ServiceWorkerProviderType provider_type() const;
   bool IsProviderForServiceWorker() const;
 
-  // May return nullptr if the context has shut down.
-  base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
-
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
   // the worker.
@@ -196,10 +182,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
  private:
-  friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
-  FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
-                           RegisterWithoutLiveSWRegistration);
-
   static void RegisterToContextCore(
       base::WeakPtr<ServiceWorkerContextCore> context,
       std::unique_ptr<ServiceWorkerProviderHost> host);
@@ -232,13 +214,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.
   const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
-
-  // |context_| owns |this| but if the context is destroyed and a new one is
-  // created, the provider host becomes owned by the new context, while this
-  // |context_| is reset to null.
-  // TODO(https://crbug.com/877356): Don't support copying context, so this can
-  // just be a raw ptr that is never null.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>

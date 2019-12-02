@@ -19,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
@@ -78,10 +77,10 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
 ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    base::WeakPtr<ServiceWorkerContainerHost> container_host,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : fallback_callback_(std::move(fallback_callback)),
-      provider_host_(std::move(provider_host)),
+      container_host_(std::move(container_host)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
@@ -125,10 +124,9 @@ void ServiceWorkerNavigationLoader::StartRequest(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   resource_request_ = resource_request;
-  if (provider_host_ &&
-      provider_host_->container_host()->fetch_request_window_id()) {
-    resource_request_.fetch_window_id = base::make_optional(
-        provider_host_->container_host()->fetch_request_window_id());
+  if (container_host_ && container_host_->fetch_request_window_id()) {
+    resource_request_.fetch_window_id =
+        base::make_optional(container_host_->fetch_request_window_id());
   }
 
   DCHECK(!receiver_.is_bound());
@@ -141,15 +139,15 @@ void ServiceWorkerNavigationLoader::StartRequest(
 
   TransitionToStatus(Status::kStarted);
 
-  if (!provider_host_) {
-    // We lost |provider_host_| (for the client) somehow before dispatching
+  if (!container_host_) {
+    // We lost |container_host_| (for the client) somehow before dispatching
     // FetchEvent.
-    CommitCompleted(net::ERR_ABORTED, "No provider host");
+    CommitCompleted(net::ERR_ABORTED, "No container host");
     return;
   }
 
   scoped_refptr<ServiceWorkerVersion> active_worker =
-      provider_host_->container_host()->controller();
+      container_host_->controller();
   if (!active_worker) {
     CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
@@ -167,7 +165,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
       static_cast<ResourceType>(resource_request_.resource_type),
-      provider_host_->container_host()->client_uuid(), active_worker,
+      container_host_->client_uuid(), active_worker,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(), active_worker,
                      active_worker->running_status()),
@@ -175,7 +173,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                      weak_factory_.GetWeakPtr()));
   did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
       resource_request_, url_loader_factory_getter_.get(), std::move(context),
-      provider_host_->container_host()->frame_tree_node_id());
+      container_host_->frame_tree_node_id());
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.
@@ -271,9 +269,9 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
-  if (!provider_host_) {
+  if (!container_host_) {
     // The navigation or shared worker startup is cancelled. Just abort.
-    CommitCompleted(net::ERR_ABORTED, "No provider host");
+    CommitCompleted(net::ERR_ABORTED, "No container host");
     return;
   }
 
@@ -285,7 +283,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     // It'd be more correct and simpler to remove this path and show an error
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
-    provider_host_->container_host()->NotifyControllerLost();
+    container_host_->NotifyControllerLost();
     if (fallback_callback_) {
       std::move(fallback_callback_)
           .Run(true /* reset_subresource_loader_params */);

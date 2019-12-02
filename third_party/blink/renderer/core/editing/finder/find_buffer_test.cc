@@ -44,10 +44,9 @@ TEST_F(FindBufferTest, FindInline) {
       "style='display: inline;'>e</div></div>");
   FindBuffer buffer(WholeDocumentRange());
   EXPECT_TRUE(buffer.PositionAfterBlock().IsNull());
-  std::unique_ptr<FindBuffer::Results> results =
-      buffer.FindMatches("abce", kCaseInsensitive);
-  EXPECT_EQ(1u, results->CountForTesting());
-  FindBuffer::BufferMatchResult match = *results->begin();
+  FindBuffer::Results results = buffer.FindMatches("abce", kCaseInsensitive);
+  EXPECT_EQ(1u, results.CountForTesting());
+  FindBuffer::BufferMatchResult match = *results.begin();
   EXPECT_EQ(0u, match.start);
   EXPECT_EQ(4u, match.length);
   EXPECT_EQ(
@@ -143,20 +142,26 @@ TEST_F(FindBufferTest, FindBetweenPositionsSameNode) {
   // |end_position| = foofoo| (end of text).
   PositionInFlatTree end_position =
       PositionInFlatTree::LastPositionInNode(*node);
-  FindBuffer buffer(EphemeralRangeInFlatTree(start_position, end_position));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(EphemeralRangeInFlatTree(start_position, end_position));
+    EXPECT_EQ(1u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // |start_position| = fo|ofoo
   // |end_position| = foof|oo
   start_position = PositionInFlatTree(*node, 2u);
   end_position = PositionInFlatTree(*node, 4u);
-  buffer = FindBuffer(EphemeralRangeInFlatTree(start_position, end_position));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(EphemeralRangeInFlatTree(start_position, end_position));
+    EXPECT_EQ(0u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
 }
 
 TEST_F(FindBufferTest, FindBetweenPositionsDifferentNodes) {
@@ -167,48 +172,60 @@ TEST_F(FindBufferTest, FindBetweenPositionsDifferentNodes) {
   Element* b = GetElementById("b");
   // <div>^foo<span>foof|<b>oo</b></span></div>
   // So buffer = "foofoof"
-  FindBuffer buffer(EphemeralRangeInFlatTree(
-      PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
-      PositionInFlatTree::LastPositionInNode(*span->firstChild())));
-  EXPECT_EQ(2u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(3u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(EphemeralRangeInFlatTree(
+        PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
+        PositionInFlatTree::LastPositionInNode(*span->firstChild())));
+    EXPECT_EQ(2u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u,
+              buffer.FindMatches("oof", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(3u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>f^oo<span>foof<b>o|o</b></span></div>
   // So buffer = "oofoofo"
-  buffer = FindBuffer(
-      EphemeralRangeInFlatTree(PositionInFlatTree(*div->firstChild(), 1),
-                               PositionInFlatTree(*b->firstChild(), 1)));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(5u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(PositionInFlatTree(*div->firstChild(), 1),
+                                 PositionInFlatTree(*b->firstChild(), 1)));
+    EXPECT_EQ(1u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u,
+              buffer.FindMatches("oof", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(5u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>foo<span>f^oof|<b>oo</b></span></div>
   // So buffer = "oof"
-  buffer = FindBuffer(
-      EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
-                               PositionInFlatTree(*span->firstChild(), 4)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
+                                 PositionInFlatTree(*span->firstChild(), 4)));
+    EXPECT_EQ(0u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u,
+              buffer.FindMatches("oof", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>foo<span>foof^<b>oo|</b></span></div>
   // So buffer = "oo"
-  buffer = FindBuffer(
+  FindBuffer buffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 4),
                                PositionInFlatTree(*b->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("oof", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
@@ -224,45 +241,58 @@ TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
   // <div>^foo<span style='display:none;'>foo|f</span><b>oo</b>
   // <script>fo</script><a>o</a></div>
   // So buffer = "foo"
-  FindBuffer buffer(EphemeralRangeInFlatTree(
-      PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
-      PositionInFlatTree(*span->firstChild(), 3)));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(EphemeralRangeInFlatTree(
+        PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
+        PositionInFlatTree(*span->firstChild(), 3)));
+    EXPECT_EQ(1u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u,
+              buffer.FindMatches("oof", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("fo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>foo<span style='display:none;'>f^oof</span><b>oo|</b>
   // <script>fo</script><a>o</a></div>
   // So buffer = "oo"
-  buffer = FindBuffer(
-      EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
-                               PositionInFlatTree(*b->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
+                                 PositionInFlatTree(*b->firstChild(), 2)));
+    EXPECT_EQ(0u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>foo<span style='display:none;'>f^oof</span><b>oo|</b>
   // <script>f|o</script><a>o</a></div>
   // So buffer = "oo"
-  buffer = FindBuffer(
-      EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
-                               PositionInFlatTree(*script->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
+                                 PositionInFlatTree(*script->firstChild(), 2)));
+    EXPECT_EQ(0u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
   // <div>foo<span style='display:none;'>foof</span><b>oo|</b>
   // <script>f^o</script><a>o|</a></div>
   // So buffer = "o"
-  buffer = FindBuffer(
-      EphemeralRangeInFlatTree(PositionInFlatTree(*script->firstChild(), 1),
-                               PositionInFlatTree(*a->firstChild(), 1)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
+  {
+    FindBuffer buffer(
+        EphemeralRangeInFlatTree(PositionInFlatTree(*script->firstChild(), 1),
+                                 PositionInFlatTree(*a->firstChild(), 1)));
+    EXPECT_EQ(0u,
+              buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive).CountForTesting());
+  }
 }
 
 TEST_F(FindBufferTest, FindMatchInRange) {
@@ -355,41 +385,50 @@ INSTANTIATE_TEST_SUITE_P(Blocks,
 TEST_P(FindBufferBlockTest, FindBlock) {
   SetBodyContent("text<div id='block' style='display: " + GetParam() +
                  ";'>block</div><span id='span'>span</span>");
-  FindBuffer text_buffer(WholeDocumentRange());
-  EXPECT_EQ(GetElementById("block"),
-            *text_buffer.PositionAfterBlock().ComputeContainerNode());
-  EXPECT_EQ(
-      1u, text_buffer.FindMatches("text", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, text_buffer.FindMatches("textblock", kCaseInsensitive)
-                    ->CountForTesting());
-  EXPECT_EQ(0u, text_buffer.FindMatches("text block", kCaseInsensitive)
-                    ->CountForTesting());
-
-  FindBuffer block_buffer(EphemeralRangeInFlatTree(
-      text_buffer.PositionAfterBlock(), LastPositionInDocument()));
-  EXPECT_EQ(GetElementById("span"),
-            *block_buffer.PositionAfterBlock().ComputeContainerNode());
-  EXPECT_EQ(
-      1u,
-      block_buffer.FindMatches("block", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, block_buffer.FindMatches("textblock", kCaseInsensitive)
-                    ->CountForTesting());
-  EXPECT_EQ(0u, block_buffer.FindMatches("text block", kCaseInsensitive)
-                    ->CountForTesting());
-  EXPECT_EQ(0u, block_buffer.FindMatches("blockspan", kCaseInsensitive)
-                    ->CountForTesting());
-  EXPECT_EQ(0u, block_buffer.FindMatches("block span", kCaseInsensitive)
-                    ->CountForTesting());
-
-  FindBuffer span_buffer(EphemeralRangeInFlatTree(
-      block_buffer.PositionAfterBlock(), LastPositionInDocument()));
-  EXPECT_TRUE(span_buffer.PositionAfterBlock().IsNull());
-  EXPECT_EQ(
-      1u, span_buffer.FindMatches("span", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, span_buffer.FindMatches("blockspan", kCaseInsensitive)
-                    ->CountForTesting());
-  EXPECT_EQ(0u, span_buffer.FindMatches("block span", kCaseInsensitive)
-                    ->CountForTesting());
+  PositionInFlatTree position_after_block;
+  {
+    FindBuffer text_buffer(WholeDocumentRange());
+    EXPECT_EQ(GetElementById("block"),
+              *text_buffer.PositionAfterBlock().ComputeContainerNode());
+    EXPECT_EQ(
+        1u,
+        text_buffer.FindMatches("text", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, text_buffer.FindMatches("textblock", kCaseInsensitive)
+                      .CountForTesting());
+    EXPECT_EQ(0u, text_buffer.FindMatches("text block", kCaseInsensitive)
+                      .CountForTesting());
+    position_after_block = text_buffer.PositionAfterBlock();
+  }
+  {
+    FindBuffer block_buffer(EphemeralRangeInFlatTree(position_after_block,
+                                                     LastPositionInDocument()));
+    EXPECT_EQ(GetElementById("span"),
+              *block_buffer.PositionAfterBlock().ComputeContainerNode());
+    EXPECT_EQ(
+        1u,
+        block_buffer.FindMatches("block", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, block_buffer.FindMatches("textblock", kCaseInsensitive)
+                      .CountForTesting());
+    EXPECT_EQ(0u, block_buffer.FindMatches("text block", kCaseInsensitive)
+                      .CountForTesting());
+    EXPECT_EQ(0u, block_buffer.FindMatches("blockspan", kCaseInsensitive)
+                      .CountForTesting());
+    EXPECT_EQ(0u, block_buffer.FindMatches("block span", kCaseInsensitive)
+                      .CountForTesting());
+    position_after_block = block_buffer.PositionAfterBlock();
+  }
+  {
+    FindBuffer span_buffer(EphemeralRangeInFlatTree(position_after_block,
+                                                    LastPositionInDocument()));
+    EXPECT_TRUE(span_buffer.PositionAfterBlock().IsNull());
+    EXPECT_EQ(
+        1u,
+        span_buffer.FindMatches("span", kCaseInsensitive).CountForTesting());
+    EXPECT_EQ(0u, span_buffer.FindMatches("blockspan", kCaseInsensitive)
+                      .CountForTesting());
+    EXPECT_EQ(0u, span_buffer.FindMatches("block span", kCaseInsensitive)
+                      .CountForTesting());
+  }
 }
 
 class FindBufferSeparatorTest
@@ -409,7 +448,7 @@ INSTANTIATE_TEST_SUITE_P(Separators,
 TEST_P(FindBufferSeparatorTest, FindSeparatedElements) {
   SetBodyContent("a<" + GetParam() + ">a</" + GetParam() + ">a");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(0u, buffer.FindMatches("aa", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("aa", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPreWrap) {
@@ -419,79 +458,75 @@ TEST_F(FindBufferTest, WhiteSpaceCollapsingPreWrap) {
   FindBuffer buffer(WholeDocumentRange());
   EXPECT_EQ(
       1u,
-      buffer.FindMatches("a b c d  e  ", kCaseInsensitive)->CountForTesting());
+      buffer.FindMatches("a b c d  e  ", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPre) {
   SetBodyContent("<div style='white-space: pre;'>a \n b</div>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a  b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a  b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a   b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a   b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a\n b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u,
-            buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a \nb", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u,
-            buffer.FindMatches("a \n b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a \n b", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPreLine) {
   SetBodyContent("<div style='white-space: pre-line;'>a \n b</div>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a  b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a  b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a   b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a   b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a \n b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a \n b", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a\n b", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(0u,
-            buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u,
-            buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u,
-            buffer.FindMatches("a\nb", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("a \nb", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("a\nb", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, BidiTest) {
   SetBodyContent("<bdo dir=rtl id=bdo>foo<span>bar</span></bdo>");
   FindBuffer buffer(WholeDocumentRange());
   EXPECT_EQ(1u,
-            buffer.FindMatches("foobar", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("foobar", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, KanaSmallVsNormal) {
   SetBodyContent("や");  // Normal-sized や
   FindBuffer buffer(WholeDocumentRange());
   // Should find normal-sized や
-  EXPECT_EQ(1u, buffer.FindMatches("や", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("や", kCaseInsensitive).CountForTesting());
   // Should not find smalll-sized ゃ
-  EXPECT_EQ(0u, buffer.FindMatches("ゃ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ゃ", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, KanaDakuten) {
   SetBodyContent("びゃ");  // Hiragana bya
   FindBuffer buffer(WholeDocumentRange());
   // Should find bi
-  EXPECT_EQ(1u, buffer.FindMatches("び", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("び", kCaseInsensitive).CountForTesting());
   // Should find smalll-sized ゃ
-  EXPECT_EQ(1u, buffer.FindMatches("ゃ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ゃ", kCaseInsensitive).CountForTesting());
   // Should find bya
-  EXPECT_EQ(1u,
-            buffer.FindMatches("びゃ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("びゃ", kCaseInsensitive).CountForTesting());
   // Should not find hi
-  EXPECT_EQ(0u, buffer.FindMatches("ひ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ひ", kCaseInsensitive).CountForTesting());
   // Should not find pi
-  EXPECT_EQ(0u, buffer.FindMatches("ぴ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ぴ", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, KanaHalfFull) {
@@ -500,49 +535,48 @@ TEST_F(FindBufferTest, KanaHalfFull) {
   SetBodyContent("らｷナ");
   FindBuffer buffer(WholeDocumentRange());
   // Should find katakana ra
-  EXPECT_EQ(1u, buffer.FindMatches("ラ", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("ﾗ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ラ", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾗ", kCaseInsensitive).CountForTesting());
   // Should find hiragana & katakana ki
-  EXPECT_EQ(1u, buffer.FindMatches("き", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("キ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("き", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("キ", kCaseInsensitive).CountForTesting());
   // Should find hiragana & katakana na
-  EXPECT_EQ(1u, buffer.FindMatches("な", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("ﾅ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("な", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾅ", kCaseInsensitive).CountForTesting());
   // Should find whole word
   EXPECT_EQ(1u,
-            buffer.FindMatches("らきな", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("ﾗｷﾅ", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("らきな", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾗｷﾅ", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u,
-            buffer.FindMatches("ラキナ", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("ラキナ", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, WholeWordTest) {
   SetBodyContent("foo bar foobar 六本木");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(2u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("foo", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive | kWholeWord)
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("bar", kCaseInsensitive)->CountForTesting());
+                    .CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("bar", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u, buffer.FindMatches("bar", kCaseInsensitive | kWholeWord)
-                    ->CountForTesting());
+                    .CountForTesting());
   EXPECT_EQ(1u, buffer.FindMatches("六", kCaseInsensitive | kWholeWord)
-                    ->CountForTesting());
+                    .CountForTesting());
   EXPECT_EQ(1u, buffer.FindMatches("本木", kCaseInsensitive | kWholeWord)
-                    ->CountForTesting());
+                    .CountForTesting());
 }
 
 TEST_F(FindBufferTest, KanaDecomposed) {
   SetBodyContent("は　゛");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(0u, buffer.FindMatches("ば", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ば", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u,
-            buffer.FindMatches("は　゛", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("バ ", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("は　゛", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("バ ", kCaseInsensitive).CountForTesting());
   EXPECT_EQ(1u,
-            buffer.FindMatches("ハ ゛", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("ﾊ ﾞ", kCaseInsensitive)->CountForTesting());
-  EXPECT_EQ(1u,
-            buffer.FindMatches("ﾊ ゛", kCaseInsensitive)->CountForTesting());
+            buffer.FindMatches("ハ ゛", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾊ ﾞ", kCaseInsensitive).CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾊ ゛", kCaseInsensitive).CountForTesting());
 }
 
 TEST_F(FindBufferTest, FindPlainTextInvalidTarget1) {
@@ -557,7 +591,7 @@ TEST_F(FindBufferTest, FindPlainTextInvalidTarget1) {
 
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches(String(kInvalid1), 0);
-  EXPECT_TRUE(results->IsEmpty());
+  EXPECT_TRUE(results.IsEmpty());
 }
 
 TEST_F(FindBufferTest, FindPlainTextInvalidTarget2) {
@@ -570,7 +604,7 @@ TEST_F(FindBufferTest, FindPlainTextInvalidTarget2) {
 
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches(String(kInvalid2), 0);
-  EXPECT_TRUE(results->IsEmpty());
+  EXPECT_TRUE(results.IsEmpty());
 }
 
 TEST_F(FindBufferTest, FindPlainTextInvalidTarget3) {
@@ -582,22 +616,22 @@ TEST_F(FindBufferTest, FindPlainTextInvalidTarget3) {
                                     0xd901u, 0xccadu, 0};
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches(String(kInvalid3), 0);
-  EXPECT_TRUE(results->IsEmpty());
+  EXPECT_TRUE(results.IsEmpty());
 }
 
 TEST_F(FindBufferTest, DisplayInline) {
   SetBodyContent("<span>fi</span>nd");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("find", 0);
-  ASSERT_EQ(1u, results->CountForTesting());
-  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results->front());
+  ASSERT_EQ(1u, results.CountForTesting());
+  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results.front());
 }
 
 TEST_F(FindBufferTest, DisplayBlock) {
   SetBodyContent("<div>fi</div>nd");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("find", 0);
-  ASSERT_EQ(0u, results->CountForTesting())
+  ASSERT_EQ(0u, results.CountForTesting())
       << "We should not match across block.";
 }
 
@@ -605,48 +639,54 @@ TEST_F(FindBufferTest, DisplayContents) {
   SetBodyContent("<div style='display: contents'>fi</div>nd");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("find", 0);
-  ASSERT_EQ(1u, results->CountForTesting());
-  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results->front());
+  ASSERT_EQ(1u, results.CountForTesting());
+  EXPECT_EQ(FindBuffer::BufferMatchResult({0, 4}), results.front());
 }
 
 TEST_F(FindBufferTest, WBRTest) {
   SetBodyContent("fi<wbr>nd and fin<wbr>d");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("find", 0);
-  ASSERT_EQ(2u, results->CountForTesting());
+  ASSERT_EQ(2u, results.CountForTesting());
 }
 
 TEST_F(FindBufferTest, InputTest) {
   SetBodyContent("fi<input type='text'>nd and fin<input type='text'>d");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("find", 0);
-  ASSERT_EQ(0u, results->CountForTesting());
+  ASSERT_EQ(0u, results.CountForTesting());
 }
 
 TEST_F(FindBufferTest, SelectMultipleTest) {
   SetBodyContent("<select multiple><option>find me</option></select>");
-  FindBuffer buffer(WholeDocumentRange());
+  {
+    FindBuffer buffer(WholeDocumentRange());
 #if defined(OS_ANDROID)
-  EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("find", 0).CountForTesting());
 #else
-  EXPECT_EQ(1u, buffer.FindMatches("find", 0)->CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("find", 0).CountForTesting());
 #endif  // defined(OS_ANDROID)
+  }
   SetBodyContent("<select size=2><option>find me</option></select>");
-  buffer = FindBuffer(WholeDocumentRange());
+  {
+    FindBuffer buffer(WholeDocumentRange());
 #if defined(OS_ANDROID)
-  EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
+    EXPECT_EQ(0u, buffer.FindMatches("find", 0).CountForTesting());
 #else
-  EXPECT_EQ(1u, buffer.FindMatches("find", 0)->CountForTesting());
+    EXPECT_EQ(1u, buffer.FindMatches("find", 0).CountForTesting());
 #endif  // defined(OS_ANDROID)
+  }
   SetBodyContent("<select size=1><option>find me</option></select>");
-  buffer = FindBuffer(WholeDocumentRange());
-  EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
+  {
+    FindBuffer buffer(WholeDocumentRange());
+    EXPECT_EQ(0u, buffer.FindMatches("find", 0).CountForTesting());
+  }
 }
 
 TEST_F(FindBufferTest, NullRange) {
   SetBodyContent("x<div></div>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("find", 0).CountForTesting());
 }
 
 TEST_F(FindBufferTest, FindObjectReplacementCharacter) {
@@ -654,27 +694,50 @@ TEST_F(FindBufferTest, FindObjectReplacementCharacter) {
       "some text with <br> and \uFFFC (object replacement character)");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("\uFFFC", 0);
-  ASSERT_EQ(1u, results->CountForTesting());
+  ASSERT_EQ(1u, results.CountForTesting());
 }
 
-TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElementAndMaxCodepoint) {
+TEST_F(FindBufferTest,
+       FindMaxCodepointWithReplacedElementAndMaxCodepointUTF32) {
   SetBodyContent("some text with <img/> <br> and \U0010FFFF (max codepoint)");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("\U0010FFFF", 0);
-  ASSERT_EQ(1u, results->CountForTesting());
+  ASSERT_EQ(1u, results.CountForTesting());
 }
 
-TEST_F(FindBufferTest, FindMaxCodepointNormalText) {
+TEST_F(FindBufferTest, FindMaxCodepointNormalTextUTF32) {
   SetBodyContent("some text");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("\U0010FFFF", 0);
-  ASSERT_EQ(0u, results->CountForTesting());
+  ASSERT_EQ(0u, results.CountForTesting());
 }
 
-TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElement) {
+TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElementUTF32) {
   SetBodyContent("some text with <img/> <br>");
   FindBuffer buffer(WholeDocumentRange());
   const auto results = buffer.FindMatches("\U0010FFFF", 0);
-  ASSERT_EQ(0u, results->CountForTesting());
+  ASSERT_EQ(0u, results.CountForTesting());
+}
+
+TEST_F(FindBufferTest,
+       FindMaxCodepointWithReplacedElementAndMaxCodepointUTF16) {
+  SetBodyContent("some text with <img/> <br> and \uFFFF (max codepoint)");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\uFFFF", 0);
+  ASSERT_EQ(1u, results.CountForTesting());
+}
+
+TEST_F(FindBufferTest, FindMaxCodepointNormalTextUTF16) {
+  SetBodyContent("some text");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\uFFFF", 0);
+  ASSERT_EQ(0u, results.CountForTesting());
+}
+
+TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElementUTF16) {
+  SetBodyContent("some text with <img/> <br>");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\uFFFF", 0);
+  ASSERT_EQ(0u, results.CountForTesting());
 }
 }  // namespace blink

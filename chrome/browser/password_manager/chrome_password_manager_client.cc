@@ -201,7 +201,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
       password_feature_manager_(
-          profile_->GetPrefs(),
           ProfileSyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

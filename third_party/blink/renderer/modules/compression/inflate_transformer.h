@@ -22,10 +22,10 @@ class InflateTransformer final : public TransformStreamTransformer {
   ~InflateTransformer() override;
 
   ScriptPromise Transform(v8::Local<v8::Value> chunk,
-                          TransformStreamDefaultControllerInterface*,
+                          TransformStreamDefaultController*,
                           ExceptionState&) override;
 
-  ScriptPromise Flush(TransformStreamDefaultControllerInterface*,
+  ScriptPromise Flush(TransformStreamDefaultController*,
                       ExceptionState&) override;
 
   ScriptState* GetScriptState() override { return script_state_; }
@@ -38,7 +38,7 @@ class InflateTransformer final : public TransformStreamTransformer {
   void Inflate(const uint8_t*,
                wtf_size_t,
                IsFinished,
-               TransformStreamDefaultControllerInterface*,
+               TransformStreamDefaultController*,
                ExceptionState&);
 
   Member<ScriptState> script_state_;

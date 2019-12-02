@@ -31,12 +31,12 @@ Vector<String> ParseAndSanitize(const String& accept_languages) {
   return languages;
 }
 
-NavigatorLanguage::NavigatorLanguage(ExecutionContext* context)
-    : context_(context) {}
+NavigatorLanguage::NavigatorLanguage(ExecutionContext* execution_context)
+    : execution_context_(execution_context) {}
 
 AtomicString NavigatorLanguage::language() {
   if (RuntimeEnabledFeatures::NavigatorLanguageInInsecureContextEnabled() ||
-      context_->IsSecureContext()) {
+      (execution_context_ && execution_context_->IsSecureContext())) {
     return AtomicString(languages().front());
   }
   return AtomicString();
@@ -44,7 +44,7 @@ AtomicString NavigatorLanguage::language() {
 
 const Vector<String>& NavigatorLanguage::languages() {
   if (RuntimeEnabledFeatures::NavigatorLanguageInInsecureContextEnabled() ||
-      context_->IsSecureContext()) {
+      (execution_context_ && execution_context_->IsSecureContext())) {
     EnsureUpdatedLanguage();
     return languages_;
   }
@@ -82,7 +82,8 @@ void NavigatorLanguage::SetLanguagesForTesting(const String& languages) {
 void NavigatorLanguage::EnsureUpdatedLanguage() {
   if (languages_dirty_) {
     String accept_languages_override;
-    probe::ApplyAcceptLanguageOverride(context_, &accept_languages_override);
+    probe::ApplyAcceptLanguageOverride(execution_context_,
+                                       &accept_languages_override);
 
     if (!accept_languages_override.IsNull()) {
       languages_ = ParseAndSanitize(accept_languages_override);
@@ -95,7 +96,7 @@ void NavigatorLanguage::EnsureUpdatedLanguage() {
 }
 
 void NavigatorLanguage::Trace(blink::Visitor* visitor) {
-  visitor->Trace(context_);
+  visitor->Trace(execution_context_);
 }
 
 }  // namespace blink

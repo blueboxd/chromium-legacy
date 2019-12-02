@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 
-#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -29,18 +28,17 @@ void ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit(
     int render_frame_id,
     network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (provider_host_) {
-    provider_host_->container_host()->OnBeginNavigationCommit(
-        render_process_id, render_frame_id, cross_origin_embedder_policy);
+  if (container_host_) {
+    container_host_->OnBeginNavigationCommit(render_process_id, render_frame_id,
+                                             cross_origin_embedder_policy);
   }
 }
 
 void ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit(
     network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (provider_host_) {
-    provider_host_->container_host()->CompleteWebWorkerPreparation(
-        cross_origin_embedder_policy);
+  if (container_host_) {
+    container_host_->CompleteWebWorkerPreparation(cross_origin_embedder_policy);
   }
 }
 

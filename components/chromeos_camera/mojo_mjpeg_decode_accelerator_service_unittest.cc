@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,8 +51,9 @@ class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
 };
 
 TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
-  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
-  MojoMjpegDecodeAcceleratorService::Create(mojo::MakeRequest(&jpeg_decoder));
+  mojo::Remote<chromeos_camera::mojom::MjpegDecodeAccelerator> jpeg_decoder;
+  MojoMjpegDecodeAcceleratorService::Create(
+      jpeg_decoder.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
   jpeg_decoder->Initialize(

@@ -45,7 +45,8 @@ This bounding box covers another link. Here we test that SpatNav can reach that 
     ["Down", "anotherC"],         // #anotherA and #anotherC are perfectly aligned.
     ["Up", "anotherA"],
     ["Left", "fragmentedA"],
-    ["Left", "now_reachableB"],   // We searched *inside* #fragmentedA's box.
+    ["Right", "now_reachableA"],  // We searched *inside* #fragmentedA's bounding box.
+    ["Right", "now_reachableB"],
     ["Left", "now_reachableA"],
     ["Left", "B"],                // We don't go to the enclosing #fragmentedA. If we did, holding
                                   // Left would cause a loop inside #fragmentedA's bounding box.
@@ -58,14 +59,13 @@ This bounding box covers another link. Here we test that SpatNav can reach that 
                                   // This avoids an endless loop between #fragmentedB and #short if Right is held.
     ["Down", "anotherC"],
     ["Left", "fragmentedB"],
-    ["Right", "short"],           // We searched *inside* #fragmentedB's box.
+    ["Right", "now_reachableC"],  // We searched from the last fragment's end.
     ["Down", "end"],              // This avoids an endless loop between #fragmentedB and #short if Down is held.
     ["Up", "fragmentedB"],
-    ["Down", "short"],            // We searched *inside* #fragmentedB's box.
-    ["Right", "now_reachableC"],
+    ["Down", "now_reachableC"],   // We searched *inside* #fragmentedB's box.
     ["Right", "anotherC"],
     ["Left", "fragmentedB"],
-    ["Left", "now_reachableC"],   // We searched *inside* #fragmentedB's box.
+    ["Left", "short"],            // We searched *inside* #fragmentedB's bounding box, from the first fragment.
     ["Down", "end"]
   ];
   snav.assertFocusMoves(resultMap);

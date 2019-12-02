@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/modules/websockets/close_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -573,8 +574,8 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       for (const auto& span : data) {
         blob_data->AppendBytes(span.data(), span.size());
       }
-      Blob* blob =
-          Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+      auto* blob = MakeGarbageCollected<Blob>(
+          BlobDataHandle::Create(std::move(blob_data), size));
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
       RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeBlob, size);
       event_queue_->Dispatch(MessageEvent::Create(blob, origin_string_));

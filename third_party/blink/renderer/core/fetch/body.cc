@@ -87,7 +87,8 @@ class BodyBlobConsumer final : public BodyConsumerBase {
 
   void DidFetchDataLoadedBlobHandle(
       scoped_refptr<BlobDataHandle> blob_data_handle) override {
-    ResolveLater(WrapPersistent(Blob::Create(std::move(blob_data_handle))));
+    ResolveLater(WrapPersistent(
+        MakeGarbageCollected<Blob>(std::move(blob_data_handle))));
   }
   DISALLOW_COPY_AND_ASSIGN(BodyBlobConsumer);
 };
@@ -216,8 +217,8 @@ ScriptPromise Body::blob(ScriptState* script_state,
   } else {
     auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(MimeType());
-    resolver->Resolve(
-        Blob::Create(BlobDataHandle::Create(std::move(blob_data), 0)));
+    resolver->Resolve(MakeGarbageCollected<Blob>(
+        BlobDataHandle::Create(std::move(blob_data), 0)));
   }
   return promise;
 }

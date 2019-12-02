@@ -1,10 +1,8 @@
-CONSOLE ERROR: line 113: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: line 106: Refused to connect to 'http://127.0.0.1:8000/security/isolatedWorld/resources/empty.html' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
-CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: Refused to connect to 'http://127.0.0.1:8000/security/isolatedWorld/resources/empty.html' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
-CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
-
-CONSOLE ERROR: line 113: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: line 106: Refused to connect to 'http://127.0.0.1:8000/security/isolatedWorld/resources/empty.html' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
 Tests that isolated worlds can have XHRs that the page's CSP wouldn't allow.
 
@@ -14,9 +12,7 @@ XHR from main world
 PASS: The request was disallowed
 XHR from isolated world with unchanged CSP
 PASS: The request was disallowed
-XHR from isolated world with same security origin as XHR target.
-PASS: The request was disallowed
-XHR from isolated world with same security origin as XHR target, and looser CSP.
+XHR from isolated world with looser CSP
 PASS: The request succeeded
 XHR from main world is not affected by the isolated world origin or CSP
 PASS: The request was disallowed

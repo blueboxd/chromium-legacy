@@ -144,6 +144,27 @@ ThreadDescriptor::ChromeThreadType GetThreadType(
   return ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
 }
 
+// Lazily sets |legacy_event| on the |track_event|. Note that you should not set
+// any other fields of |track_event| (outside the LegacyEvent) between any calls
+// to GetOrCreate(), as the protozero serialization requires the writes to a
+// message's fields to be consecutive.
+class LazyLegacyEventInitializer {
+ public:
+  LazyLegacyEventInitializer(TrackEvent* track_event)
+      : track_event_(track_event) {}
+
+  TrackEvent::LegacyEvent* GetOrCreate() {
+    if (!legacy_event_) {
+      legacy_event_ = track_event_->set_legacy_event();
+    }
+    return legacy_event_;
+  }
+
+ private:
+  TrackEvent* track_event_;
+  TrackEvent::LegacyEvent* legacy_event_ = nullptr;
+};
+
 }  // namespace
 
 // static
@@ -211,7 +232,7 @@ void TrackEventThreadLocalEventSink::ResetIncrementalStateIfNeeded(
 void TrackEventThreadLocalEventSink::PrepareTrackEvent(
     base::trace_event::TraceEvent* trace_event,
     base::trace_event::TraceEventHandle* handle,
-    perfetto::protos::pbzero::TrackEvent* track_event) {
+    TrackEvent* track_event) {
   // Each event's updates to InternedData are flushed at the end of
   // AddTraceEvent().
   DCHECK(pending_interning_updates_.empty());
@@ -390,45 +411,54 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
     WriteDebugAnnotations(trace_event, track_event, interned_annotation_names);
   }
 
-  auto* legacy_event = track_event->set_legacy_event();
-
-  // TODO(eseckler): Set name on |track_event| instead.
   if (interned_name.id) {
-    legacy_event->set_name_iid(interned_name.id);
+    track_event->set_name_iid(interned_name.id);
   }
 
-  legacy_event->set_phase(phase);
+  // Only set the |legacy_event| field of the TrackEvent if we need to emit any
+  // of the legacy fields. BEWARE: Do not set any other TrackEvent fields in
+  // between calls to |legacy_event.GetOrCreate()|.
+  LazyLegacyEventInitializer legacy_event(track_event);
 
-  if (phase == TRACE_EVENT_PHASE_COMPLETE) {
-    legacy_event->set_duration_us(trace_event->duration().InMicroseconds());
+  // TODO(eseckler): Also convert async events / flow events to corresponding
+  // native TrackEvent types.
+  TrackEvent::Type track_event_type;
+  switch (phase) {
+    case TRACE_EVENT_PHASE_BEGIN:
+      track_event_type = TrackEvent::TYPE_SLICE_BEGIN;
+      break;
+    case TRACE_EVENT_PHASE_END:
+      track_event_type = TrackEvent::TYPE_SLICE_END;
+      break;
+    case TRACE_EVENT_PHASE_INSTANT:
+      track_event_type = TrackEvent::TYPE_INSTANT;
+      break;
+    default:
+      track_event_type = TrackEvent::TYPE_UNSPECIFIED;
+      break;
+  }
 
-    if (!trace_event->thread_timestamp().is_null()) {
-      int64_t thread_duration = trace_event->thread_duration().InMicroseconds();
-      if (thread_duration != -1) {
-        legacy_event->set_thread_duration_us(thread_duration);
-      }
-    }
+  if (track_event_type != TrackEvent::TYPE_UNSPECIFIED) {
+    track_event->set_type(track_event_type);
+  } else {
+    legacy_event.GetOrCreate()->set_phase(phase);
+  }
 
-    // TODO(acomminos): Add thread instruction count for BEGIN/END events
-    if (!trace_event->thread_instruction_count().is_null()) {
-      int64_t instruction_delta =
-          trace_event->thread_instruction_delta().ToInternalValue();
-      legacy_event->set_thread_instruction_delta(instruction_delta);
-    }
-  } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
+  // TODO(eseckler): Convert instant event scopes to tracks.
+  if (phase == TRACE_EVENT_PHASE_INSTANT) {
     switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
       case TRACE_EVENT_SCOPE_GLOBAL:
-        legacy_event->set_instant_event_scope(
+        legacy_event.GetOrCreate()->set_instant_event_scope(
             TrackEvent::LegacyEvent::SCOPE_GLOBAL);
         break;
 
       case TRACE_EVENT_SCOPE_PROCESS:
-        legacy_event->set_instant_event_scope(
+        legacy_event.GetOrCreate()->set_instant_event_scope(
             TrackEvent::LegacyEvent::SCOPE_PROCESS);
         break;
 
       case TRACE_EVENT_SCOPE_THREAD:
-        legacy_event->set_instant_event_scope(
+        legacy_event.GetOrCreate()->set_instant_event_scope(
             TrackEvent::LegacyEvent::SCOPE_THREAD);
         break;
     }
@@ -439,13 +469,13 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
                TRACE_EVENT_FLAG_HAS_GLOBAL_ID);
   switch (id_flags) {
     case TRACE_EVENT_FLAG_HAS_ID:
-      legacy_event->set_unscoped_id(trace_event->id());
+      legacy_event.GetOrCreate()->set_unscoped_id(trace_event->id());
       break;
     case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
-      legacy_event->set_local_id(trace_event->id());
+      legacy_event.GetOrCreate()->set_local_id(trace_event->id());
       break;
     case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
-      legacy_event->set_global_id(trace_event->id());
+      legacy_event.GetOrCreate()->set_global_id(trace_event->id());
       break;
     default:
       break;
@@ -455,44 +485,47 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
   if (!privacy_filtering_enabled_) {
     if (id_flags &&
         trace_event->scope() != trace_event_internal::kGlobalScope) {
-      legacy_event->set_id_scope(trace_event->scope());
+      legacy_event.GetOrCreate()->set_id_scope(trace_event->scope());
     }
   }
 
   if (flags & TRACE_EVENT_FLAG_ASYNC_TTS) {
-    legacy_event->set_use_async_tts(true);
+    legacy_event.GetOrCreate()->set_use_async_tts(true);
   }
 
   uint32_t flow_flags =
       flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
   switch (flow_flags) {
     case TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN:
-      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_INOUT);
+      legacy_event.GetOrCreate()->set_flow_direction(
+          TrackEvent::LegacyEvent::FLOW_INOUT);
       break;
     case TRACE_EVENT_FLAG_FLOW_OUT:
-      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_OUT);
+      legacy_event.GetOrCreate()->set_flow_direction(
+          TrackEvent::LegacyEvent::FLOW_OUT);
       break;
     case TRACE_EVENT_FLAG_FLOW_IN:
-      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_IN);
+      legacy_event.GetOrCreate()->set_flow_direction(
+          TrackEvent::LegacyEvent::FLOW_IN);
       break;
     default:
       break;
   }
 
   if (flow_flags) {
-    legacy_event->set_bind_id(trace_event->bind_id());
+    legacy_event.GetOrCreate()->set_bind_id(trace_event->bind_id());
   }
 
   if (flags & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING) {
-    legacy_event->set_bind_to_enclosing(true);
+    legacy_event.GetOrCreate()->set_bind_to_enclosing(true);
   }
 
   if ((flags & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
       trace_event->process_id() != base::kNullProcessId) {
-    legacy_event->set_pid_override(trace_event->process_id());
-    legacy_event->set_tid_override(-1);
+    legacy_event.GetOrCreate()->set_pid_override(trace_event->process_id());
+    legacy_event.GetOrCreate()->set_tid_override(-1);
   } else if (thread_id_ != trace_event->thread_id()) {
-    legacy_event->set_tid_override(trace_event->thread_id());
+    legacy_event.GetOrCreate()->set_tid_override(trace_event->thread_id());
   }
 
   if (interned_category.id && !interned_category.was_emitted) {

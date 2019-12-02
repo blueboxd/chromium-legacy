@@ -172,20 +172,20 @@ LayoutObject* SVGFilterPrimitiveStandardAttributes::CreateLayoutObject(
 
 bool SVGFilterPrimitiveStandardAttributes::LayoutObjectIsNeeded(
     const ComputedStyle& style) const {
-  if (IsSVGFilterElement(parentNode()))
+  if (IsA<SVGFilterElement>(parentNode()))
     return SVGElement::LayoutObjectIsNeeded(style);
 
   return false;
 }
 
 void SVGFilterPrimitiveStandardAttributes::Invalidate() {
-  if (SVGFilterElement* filter = ToSVGFilterElementOrNull(parentElement()))
+  if (auto* filter = DynamicTo<SVGFilterElement>(parentElement()))
     filter->InvalidateFilterChain();
 }
 
 void SVGFilterPrimitiveStandardAttributes::PrimitiveAttributeChanged(
     const QualifiedName& attribute) {
-  if (SVGFilterElement* filter = ToSVGFilterElementOrNull(parentElement()))
+  if (auto* filter = DynamicTo<SVGFilterElement>(parentElement()))
     filter->PrimitiveAttributeChanged(*this, attribute);
 }
 

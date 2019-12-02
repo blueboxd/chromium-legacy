@@ -272,6 +272,14 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     }
   }
 
+  if (ui::PageTransitionIsWebTriggerable(
+          request_info->common_params->transition)) {
+    new_request->trusted_params->has_user_activation =
+        request_info->common_params->has_user_gesture;
+  } else {
+    new_request->trusted_params->has_user_activation = true;
+  }
+
   new_request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   new_request->redirect_mode = network::mojom::RedirectMode::kManual;
   new_request->fetch_request_context_type =
@@ -1075,13 +1083,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                 FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                 base::BindOnce(
                     [](ServiceWorkerNavigationHandleCore* core) {
-                      base::WeakPtr<ServiceWorkerProviderHost> host =
-                          core->provider_host();
-                      if (host) {
-                        host->container_host()->SetControllerRegistration(
+                      base::WeakPtr<ServiceWorkerContainerHost> container_host =
+                          core->container_host();
+                      if (container_host) {
+                        container_host->SetControllerRegistration(
                             nullptr, false /* notify_controllerchange */);
-                        host->container_host()->UpdateUrls(GURL(), GURL(),
-                                                           base::nullopt);
+                        container_host->UpdateUrls(GURL(), GURL(),
+                                                   base::nullopt);
                       }
                     },
                     // Unretained() is safe because the handle owns the core,

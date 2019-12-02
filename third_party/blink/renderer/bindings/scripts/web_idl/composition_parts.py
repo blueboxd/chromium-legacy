@@ -17,7 +17,10 @@ class WithIdentifier(object):
     """Implements |identifier| as a readonly attribute."""
 
     def __init__(self, identifier):
+        if isinstance(identifier, WithIdentifier):
+            identifier = identifier.identifier
         assert isinstance(identifier, Identifier)
+
         self._identifier = identifier
 
     @property
@@ -29,9 +32,13 @@ class WithExtendedAttributes(object):
     """Implements |extended_attributes| as a readonly attribute."""
 
     def __init__(self, extended_attributes=None):
-        assert (extended_attributes is None
-                or isinstance(extended_attributes, ExtendedAttributes))
-        self._extended_attributes = extended_attributes or ExtendedAttributes()
+        if isinstance(extended_attributes, WithExtendedAttributes):
+            extended_attributes = extended_attributes.extended_attributes
+        elif extended_attributes is None:
+            extended_attributes = ExtendedAttributes()
+        assert isinstance(extended_attributes, ExtendedAttributes)
+
+        self._extended_attributes = extended_attributes
 
     @property
     def extended_attributes(self):
@@ -41,11 +48,18 @@ class WithExtendedAttributes(object):
 class WithCodeGeneratorInfo(object):
     """Implements |code_generator_info| as a readonly attribute."""
 
-    def __init__(self, code_generator_info=None):
-        assert (code_generator_info is None
-                or isinstance(code_generator_info, CodeGeneratorInfo))
-        self._code_generator_info = (code_generator_info
-                                     or CodeGeneratorInfoMutable())
+    def __init__(self, code_generator_info=None, readonly=False):
+        if isinstance(code_generator_info, WithCodeGeneratorInfo):
+            code_generator_info = code_generator_info.code_generator_info
+        elif code_generator_info is None:
+            code_generator_info = CodeGeneratorInfoMutable()
+        assert isinstance(code_generator_info, CodeGeneratorInfo)
+        assert isinstance(readonly, bool)
+
+        if readonly:
+            self._code_generator_info = CodeGeneratorInfo(code_generator_info)
+        else:
+            self._code_generator_info = code_generator_info
 
     @property
     def code_generator_info(self):
@@ -55,9 +69,18 @@ class WithCodeGeneratorInfo(object):
 class WithExposure(object):
     """Implements |exposure| as a readonly attribute."""
 
-    def __init__(self, exposure=None):
-        assert exposure is None or isinstance(exposure, Exposure)
-        self._exposure = exposure or ExposureMutable()
+    def __init__(self, exposure=None, readonly=False):
+        if isinstance(exposure, WithExposure):
+            exposure = exposure.exposure
+        elif exposure is None:
+            exposure = ExposureMutable()
+        assert isinstance(exposure, Exposure)
+        assert isinstance(readonly, bool)
+
+        if readonly:
+            self._exposure = Exposure(exposure)
+        else:
+            self._exposure = exposure
 
     @property
     def exposure(self):
@@ -81,35 +104,31 @@ class WithComponent(object):
     fragments that are involved into this object.
     """
 
-    def __init__(self, component=None, components=None):
-        """
-        Args:
-            component:
-            components: Either of |component| or |components| must be given.
-        """
-        assert component is None or isinstance(component, Component)
-        assert components is None or (isinstance(components, (list, tuple))
-                                      and all(
-                                          isinstance(component, Component)
-                                          for component in components))
-        assert int(component is not None) + int(components is not None) == 1
-        if components is not None:
-            self._components = list(components)
-        elif component is not None:
-            self._components = [component]
+    def __init__(self, component, readonly=False):
+        if isinstance(component, WithComponent):
+            components = component._components
+        elif isinstance(component, Component):
+            components = [component]
+        else:
+            components = component
+        assert (isinstance(components, (list, tuple)) and all(
+            isinstance(component, Component) for component in components))
+        assert isinstance(readonly, bool)
+
+        if readonly:
+            self._components = tuple(components)
+        else:
+            self._components = components
 
     @property
     def components(self):
-        """
-        Returns a list of components' names where this definition is defined
-        """
-        return tuple(self._components)
+        return self._components
 
     def add_components(self, components):
         assert isinstance(components, (list, tuple)) and all(
             isinstance(component, Component) for component in components)
         for component in components:
-            if component not in self.components:
+            if component not in self._components:
                 self._components.append(component)
 
 
@@ -144,27 +163,19 @@ class Location(object):
 class DebugInfo(object):
     """Provides information useful for debugging."""
 
-    def __init__(self, location=None, locations=None):
+    def __init__(self, location=None):
         assert location is None or isinstance(location, Location)
-        assert locations is None or (isinstance(locations, (list, tuple))
-                                     and all(
-                                         isinstance(location, Location)
-                                         for location in locations))
-        assert not (location and locations)
         # The first entry is the primary location, e.g. location of non-partial
         # interface.  The rest is secondary locations, e.g. location of partial
         # interfaces and mixins.
-        if locations:
-            self._locations = locations
-        else:
-            self._locations = [location or Location()]
+        self._locations = [location] if location else []
 
     @property
     def location(self):
         """
         Returns the primary location, i.e. location of the main definition.
         """
-        return self._locations[0]
+        return self._locations[0] if self._locations else Location()
 
     @property
     def all_locations(self):
@@ -184,8 +195,13 @@ class WithDebugInfo(object):
     """Implements |debug_info| as a readonly attribute."""
 
     def __init__(self, debug_info=None):
-        assert debug_info is None or isinstance(debug_info, DebugInfo)
-        self._debug_info = debug_info or DebugInfo()
+        if isinstance(debug_info, WithDebugInfo):
+            debug_info = debug_info.debug_info
+        elif debug_info is None:
+            debug_info = DebugInfo()
+        assert isinstance(debug_info, DebugInfo)
+
+        self._debug_info = debug_info
 
     @property
     def debug_info(self):
@@ -202,3 +218,31 @@ class WithOwner(object):
     @property
     def owner(self):
         return self._owner
+
+
+class WithOwnerMixin(object):
+    """Implements |owner_mixin| as a readonly attribute."""
+
+    def __init__(self, owner_mixin=None):
+        if isinstance(owner_mixin, WithOwnerMixin):
+            owner_mixin = owner_mixin._owner_mixin
+        # In Python2, we need to avoid circular imports.
+        from .reference import RefById
+        assert owner_mixin is None or isinstance(owner_mixin, RefById)
+
+        self._owner_mixin = owner_mixin
+
+    @property
+    def owner_mixin(self):
+        """
+        Returns the interface mixin object where this construct was originally
+        defined.
+        """
+        return self._owner_mixin.target_object if self._owner_mixin else None
+
+    def set_owner_mixin(self, mixin):
+        # In Python2, we need to avoid circular imports.
+        from .reference import RefById
+        assert isinstance(mixin, RefById)
+        assert self._owner_mixin is None
+        self._owner_mixin = mixin

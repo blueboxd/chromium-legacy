@@ -49,18 +49,26 @@ class CORE_EXPORT FindBuffer {
   // All match results for this buffer. We can iterate through the
   // BufferMatchResults one by one using the Iterator.
   class CORE_EXPORT Results {
+    STACK_ALLOCATED();
+
    public:
     Results();
 
-    Results(const Vector<UChar>& buffer,
-            String search_text,
+    Results(const FindBuffer& find_buffer,
+            TextSearcherICU* text_searcher,
+            const Vector<UChar>& buffer,
+            const String& search_text,
             const blink::FindOptions options);
 
     class CORE_EXPORT Iterator
         : public std::iterator<std::forward_iterator_tag, BufferMatchResult> {
+      STACK_ALLOCATED();
+
      public:
       Iterator() = default;
-      Iterator(TextSearcherICU* text_searcher, String search_text_);
+      Iterator(const FindBuffer& find_buffer,
+               TextSearcherICU* text_searcher,
+               const String& search_text);
 
       bool operator==(const Iterator& other) {
         return has_match_ == other.has_match_;
@@ -75,32 +83,34 @@ class CORE_EXPORT FindBuffer {
       void operator++();
 
      private:
+      const FindBuffer* find_buffer_;
       TextSearcherICU* text_searcher_;
       MatchResultICU match_;
       bool has_match_ = false;
     };
 
-    Iterator begin();
+    Iterator begin() const;
 
     Iterator end() const;
 
-    bool IsEmpty();
+    bool IsEmpty() const;
 
-    BufferMatchResult front();
+    BufferMatchResult front() const;
 
-    BufferMatchResult back();
+    BufferMatchResult back() const;
 
-    unsigned CountForTesting();
+    unsigned CountForTesting() const;
 
    private:
     String search_text_;
-    TextSearcherICU text_searcher_;
+    const FindBuffer* find_buffer_;
+    TextSearcherICU* text_searcher_;
     bool empty_result_ = false;
   };
 
   // Finds all the match for |search_text| in |buffer_|.
-  std::unique_ptr<Results> FindMatches(const WebString& search_text,
-                                       const blink::FindOptions options) const;
+  Results FindMatches(const WebString& search_text,
+                      const blink::FindOptions options);
 
   // Gets a flat tree range corresponding to text in the [start_index,
   // end_index) of |buffer|.
@@ -112,6 +122,8 @@ class CORE_EXPORT FindBuffer {
       return PositionInFlatTree();
     return PositionInFlatTree::FirstPositionInNode(*node_after_block_);
   }
+
+  bool IsInvalidMatch(MatchResultICU match) const;
 
  private:
   // Collects text for one LayoutBlockFlow located within |range| to |buffer_|,
@@ -164,7 +176,7 @@ class CORE_EXPORT FindBuffer {
     const unsigned offset_in_mapping;
   };
 
-  BufferNodeMapping MappingForIndex(unsigned index) const;
+  const BufferNodeMapping* MappingForIndex(unsigned index) const;
 
   PositionInFlatTree PositionAtStartOfCharacterAtIndex(unsigned index) const;
 
@@ -179,6 +191,7 @@ class CORE_EXPORT FindBuffer {
   Vector<UChar> buffer_;
   Vector<BufferNodeMapping> buffer_node_mappings_;
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
+  TextSearcherICU text_searcher_;
 
   const NGOffsetMapping* offset_mapping_ = nullptr;
 };

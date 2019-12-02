@@ -41,10 +41,6 @@ class DOMMimeTypeArray final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 
  public:
-  static DOMMimeTypeArray* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<DOMMimeTypeArray>(frame);
-  }
-
   explicit DOMMimeTypeArray(LocalFrame*);
 
   void UpdatePluginData();

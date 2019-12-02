@@ -26,6 +26,13 @@
         android:summary="@string/block_third_party_cookies_summary"
         android:defaultValue="true"
         android:persistent="false" />
+    <!-- A checkbox for enabling a quiet ui for notification prompts. Only shown in the Notifications category. -->
+    <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
+        android:key="notifications_quiet_ui"
+        android:title="@string/website_settings_category_notifications_quiet"
+        android:summary="@string/website_settings_category_notifications_quiet_summary_enabled"
+        android:defaultValue="false"
+        android:persistent="false" />
     <!-- A toggle for enabling vibration in notifications. -->
     <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
         android:key="notifications_vibrate"

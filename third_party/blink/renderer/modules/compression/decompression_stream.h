@@ -26,7 +26,7 @@ class DecompressionStream final : public ScriptWrappable {
   void Trace(Visitor* visitor) override;
 
  private:
-  const Member<TransformStream> transform_;
+  Member<TransformStream> transform_;
 
   DISALLOW_COPY_AND_ASSIGN(DecompressionStream);
 };

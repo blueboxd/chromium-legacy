@@ -411,8 +411,8 @@ Blob* XMLHttpRequest::ResponseBlob() {
       binary_response_builder_ = nullptr;
       ReportMemoryUsageToV8();
     }
-    response_blob_ =
-        Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+    response_blob_ = MakeGarbageCollected<Blob>(
+        BlobDataHandle::Create(std::move(blob_data), size));
   }
 
   return response_blob_;
@@ -1984,10 +1984,10 @@ void XMLHttpRequest::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
       auto blob_data = std::make_unique<BlobData>();
       blob_data->SetContentType(mime_type);
       blob_data->AppendBlob(std::move(blob), 0, blob_size);
-      response_blob_ =
-          Blob::Create(BlobDataHandle::Create(std::move(blob_data), blob_size));
+      response_blob_ = MakeGarbageCollected<Blob>(
+          BlobDataHandle::Create(std::move(blob_data), blob_size));
     } else {
-      response_blob_ = Blob::Create(std::move(blob));
+      response_blob_ = MakeGarbageCollected<Blob>(std::move(blob));
     }
   }
 }

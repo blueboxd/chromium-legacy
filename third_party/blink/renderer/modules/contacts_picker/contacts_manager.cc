@@ -99,14 +99,7 @@ constexpr char kIcon[] = "icon";
 
 }  // namespace
 
-ContactsManager::ContactsManager() {
-  properties_ = {kEmail, kName, kTel};
-
-  if (RuntimeEnabledFeatures::ContactsManagerExtraPropertiesEnabled()) {
-    properties_.push_back(kAddress);
-    properties_.push_back(kIcon);
-  }
-}
+ContactsManager::ContactsManager() = default;
 
 ContactsManager::~ContactsManager() = default;
 
@@ -118,6 +111,20 @@ ContactsManager::GetContactsManager(ScriptState* script_state) {
         .GetInterface(contacts_manager_.BindNewPipeAndPassReceiver());
   }
   return contacts_manager_;
+}
+
+const Vector<String>& ContactsManager::GetProperties(
+    ScriptState* script_state) {
+  if (properties_.IsEmpty()) {
+    properties_ = {kEmail, kName, kTel};
+
+    if (RuntimeEnabledFeatures::ContactsManagerExtraPropertiesEnabled(
+            ExecutionContext::From(script_state))) {
+      properties_.push_back(kAddress);
+      properties_.push_back(kIcon);
+    }
+  }
+  return properties_;
 }
 
 ScriptPromise ContactsManager::select(ScriptState* script_state,
@@ -162,7 +169,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   bool include_icons = false;
 
   for (const String& property : properties) {
-    if (!base::Contains(properties_, property)) {
+    if (!base::Contains(GetProperties(script_state), property)) {
       return ScriptPromise::Reject(
           script_state,
           V8ThrowException::CreateTypeError(
@@ -225,7 +232,8 @@ void ContactsManager::OnContactsSelected(
 }
 
 ScriptPromise ContactsManager::getProperties(ScriptState* script_state) {
-  return ScriptPromise::Cast(script_state, ToV8(properties_, script_state));
+  return ScriptPromise::Cast(script_state,
+                             ToV8(GetProperties(script_state), script_state));
 }
 
 }  // namespace blink

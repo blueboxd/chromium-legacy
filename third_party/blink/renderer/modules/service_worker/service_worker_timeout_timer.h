@@ -68,19 +68,47 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
   // on the timer before.
   void Start();
 
-  // StartEvent() should be called at the beginning of an event. It returns an
-  // event id, which is unique among threads in the same process.
-  // The event id should be passed to EndEvent() when the event has finished.
-  // If there are pending tasks queued by PushPendingTask(), they will
-  // run in order synchronouslly in StartEvent().
-  // See the class comment to know when |abort_callback| runs.
-  int StartEvent(AbortCallback abort_callback);
-  // This is basically the same as StartEvent, but you can customize the
-  // timeout time until |abort_callback| runs by |timeout|.
-  int StartEventWithCustomTimeout(AbortCallback abort_callback,
-                                  base::TimeDelta timeout);
+  using StartCallback = base::OnceCallback<void(int /* event_id */)>;
+
+  // Represents an event dispatch task, which can be queued into |task_queue_|.
+  struct MODULES_EXPORT Task {
+    enum class Type {
+      // A normal task is pushed to the end of the task queue and triggers
+      // processing of the queue.
+      Normal,
+      // A pending task, which does not start until a normal task is
+      // pushed. A pending task should be used if the idle timeout
+      // occurred (did_idle_timeout() returns true). In practice, the
+      // caller pushes pending tasks after the service worker
+      // requested the browser to terminate it due to idleness. These
+      // tasks run once PushTask() is called due to a new event from
+      // the browser, signalling that the browser decided not to
+      // terminate the worker.
+      Pending,
+    };
+
+    Task(Type type,
+         StartCallback start_callback,
+         AbortCallback abort_callback,
+         base::Optional<base::TimeDelta> custom_timeout);
+    ~Task();
+    Type type;
+    // Callback which is run when the timer starts this task. The
+    // callback receives |event_id|, which is the result of
+    // StartEvent(). When an event finishes, EndEvent() should be
+    // called with the given |event_id|.
+    StartCallback start_callback;
+    // Callback which is run when the timer aborts a started task.
+    AbortCallback abort_callback;
+    // The custom timeout value.
+    base::Optional<base::TimeDelta> custom_timeout;
+  };
 
   void EndEvent(int event_id);
+
+  // Push the task to the task queue in the timer and tasks in the queue can run
+  // synchronously. See also Task's comment.
+  void PushTask(std::unique_ptr<Task> task);
 
   // Returns true if |event_id| was started and hasn't ended.
   bool HasEvent(int event_id) const;
@@ -88,12 +116,6 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
   // Creates a StayAwakeToken to ensure that the idle timer won't be triggered
   // while any of these are alive.
   std::unique_ptr<StayAwakeToken> CreateStayAwakeToken();
-
-  // Pushes a task which is expected to run after any event starts again to a
-  // pending task queue. The tasks will run at the next StartEvent() call.
-  // PushPendingTask() should be called if the idle timeout occurred
-  // (did_idle_timeout() returns true).
-  void PushPendingTask(base::OnceClosure pending_task);
 
   // Sets the |zero_idle_timer_delay_| to true and triggers the idle callback if
   // there are not inflight events. If there are, the callback will be called
@@ -118,6 +140,11 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
       base::TimeDelta::FromSeconds(30);
 
  private:
+  // StartEvent() should be called at the beginning of an event. It returns an
+  // event id, which is unique among threads in the same process.
+  // The event id should be passed to EndEvent() when the event has finished.
+  int StartEvent(AbortCallback abort_callback, base::TimeDelta timeout);
+
   // Updates the internal states and fires timeout callbacks if any.
   void UpdateStatus();
 
@@ -131,6 +158,12 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
 
   // Returns true if there are running events.
   bool HasInflightEvent() const;
+
+  // Processes all tasks in |task_queue_|.
+  void ProcessTasks();
+
+  // Start a single task.
+  void StartTask(std::unique_ptr<Task> task);
 
   struct EventInfo {
     EventInfo(base::TimeTicks expiration_time,
@@ -162,16 +195,13 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
   // StartEvent() is called.
   bool did_idle_timeout_ = false;
 
-  // Tasks that are to be run after the next StartEvent() call. In practice, the
-  // caller adds pending tasks after the service worker requested the browser to
-  // terminate it due to idleness. These tasks run once StartEvent() is called
-  // due to a new event from the browser, signalling that the browser decided
-  // not to terminate the worker.
-  Deque<base::OnceClosure> pending_tasks_;
+  // Tasks that are to be run in the next ProcessTasks() call.
+  Deque<std::unique_ptr<Task>> task_queue_;
 
-  // Set to true during running |pending_tasks_|. This is used for avoiding to
-  // invoke |idle_callback_| when running |pending_tasks_|.
-  bool running_pending_tasks_ = false;
+  // Set to true during running ProcessTasks(). This is used for avoiding to
+  // invoke |idle_callback_| or to re-enter ProcessTasks() when calling
+  // ProcessTasks().
+  bool processing_tasks_ = false;
 
   // The number of the living StayAwakeToken. See also class comments.
   int num_of_stay_awake_tokens_ = 0;

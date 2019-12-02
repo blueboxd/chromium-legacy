@@ -109,7 +109,6 @@ public class ClipDrawableProgressBar extends ImageView {
      * @param progress The new progress, between 0.0 and 1.0.
      */
     public void setProgress(float progress) {
-        android.util.Log.i("crdebug", "progress: " + progress);
         assert 0.0f <= progress && progress <= 1.0f;
         if (mProgress == progress) return;
 

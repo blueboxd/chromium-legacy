@@ -212,7 +212,8 @@ Blob* Blob::slice(int64_t start,
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
-  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), length));
 }
 
 ReadableStream* Blob::stream(ScriptState* script_state) const {
